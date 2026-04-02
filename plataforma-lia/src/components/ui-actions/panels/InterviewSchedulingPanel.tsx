@@ -185,21 +185,21 @@ export function InterviewSchedulingPanel({
     <div className="space-y-6">
       <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             👤 Candidato
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm font-medium dark:text-lia-text-primary text-lia-text-primary">{candidateName}</p>
+          <p className="text-sm font-medium text-lia-text-primary">{candidateName}</p>
           {candidateId && (
-            <p className="text-xs dark:text-lia-text-tertiary text-lia-text-tertiary">ID: {candidateId}</p>
+            <p className="text-xs text-lia-text-tertiary">ID: {candidateId}</p>
           )}
         </CardContent>
       </Card>
 
       <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             <CalendarIcon className="h-4 w-4 text-lia-text-secondary" />
             Data da Entrevista
           </CardTitle>
@@ -210,7 +210,7 @@ export function InterviewSchedulingPanel({
               <Button variant="ghost" size="icon" className="dark:text-lia-text-secondary dark:hover:bg-gray-700" onClick={handlePrevMonth}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-medium capitalize dark:text-lia-text-primary text-lia-text-primary">{monthLabel}</span>
+              <span className="text-sm font-medium capitalize text-lia-text-primary">{monthLabel}</span>
               <Button variant="ghost" size="icon" className="dark:text-lia-text-secondary dark:hover:bg-gray-700" onClick={handleNextMonth}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -219,7 +219,7 @@ export function InterviewSchedulingPanel({
               {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
                 <div
                   key={day}
-                  className="text-xs font-medium py-1 dark:text-lia-text-tertiary text-lia-text-tertiary"
+                  className="text-xs font-medium py-1 text-lia-text-tertiary"
                 >
                   {day}
                 </div>
@@ -267,7 +267,7 @@ export function InterviewSchedulingPanel({
             </div>
           </div>
           <p
-            className="text-xs mt-2 text-center capitalize dark:text-lia-text-tertiary text-lia-text-tertiary"
+            className="text-xs mt-2 text-center capitalize text-lia-text-tertiary"
           >
             {formatDisplayDate(selectedDate)}
           </p>
@@ -276,14 +276,14 @@ export function InterviewSchedulingPanel({
 
       <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             <Clock className="h-4 w-4 text-lia-text-secondary" />
             Horário Disponível
           </CardTitle>
         </CardHeader>
         <CardContent>
           {availableSlots.length === 0 ? (
-            <div className="text-center py-4 text-sm dark:text-lia-text-tertiary text-lia-text-tertiary">
+            <div className="text-center py-4 text-sm text-lia-text-tertiary">
               Sem horários disponíveis nesta data.
               <br />
               Selecione outro dia útil.
@@ -320,7 +320,7 @@ export function InterviewSchedulingPanel({
 
       <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             ⏱️ Duração
           </CardTitle>
         </CardHeader>
@@ -355,7 +355,7 @@ export function InterviewSchedulingPanel({
 
       <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             📍 Tipo de Entrevista
           </CardTitle>
         </CardHeader>
@@ -391,7 +391,7 @@ export function InterviewSchedulingPanel({
 
       <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             <Users className="h-4 w-4 text-lia-text-secondary" />
             Entrevistadores
           </CardTitle>
@@ -413,14 +413,14 @@ export function InterviewSchedulingPanel({
                 htmlFor={`interviewer-${interviewer.id}`}
                 className="flex-1 cursor-pointer"
               >
-                <p className="text-sm font-medium dark:text-lia-text-primary text-lia-text-primary">{interviewer.name}</p>
-                <p className="text-xs dark:text-lia-text-tertiary text-lia-text-tertiary">{interviewer.role}</p>
+                <p className="text-sm font-medium text-lia-text-primary">{interviewer.name}</p>
+                <p className="text-xs text-lia-text-tertiary">{interviewer.role}</p>
               </label>
             </div>
           ))}
           {selectedInterviewers.length > 0 && (
             <div className="pt-2 mt-3 border-t border-lia-border-subtle">
-              <p className="text-xs dark:text-lia-text-tertiary text-lia-text-tertiary">
+              <p className="text-xs text-lia-text-tertiary">
                 {selectedInterviewers.length} entrevistador(es) selecionado(s)
               </p>
             </div>
@@ -430,7 +430,7 @@ export function InterviewSchedulingPanel({
 
       <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             📝 Notas para o Candidato
           </CardTitle>
         </CardHeader>
@@ -440,7 +440,7 @@ export function InterviewSchedulingPanel({
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Instruções especiais, preparação sugerida, link de acesso..."
             rows={4}
-            className="dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary"
+            className="dark:bg-lia-bg-primary dark:border-lia-border-subtle"
           />
         </CardContent>
       </Card>
@@ -449,10 +449,10 @@ export function InterviewSchedulingPanel({
         <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle bg-lia-bg-secondary border-lia-border-default">
           <CardContent className="pt-4">
             <div className="flex items-start gap-3">
-              <CalendarIcon className="h-5 w-5 shrink-0 mt-0.5 dark:text-lia-text-secondary text-lia-text-secondary" />
+              <CalendarIcon className="h-5 w-5 shrink-0 mt-0.5 text-lia-text-secondary" />
               <div>
-                <p className="text-sm font-medium dark:text-lia-text-primary text-lia-text-primary">Resumo do Agendamento</p>
-                <p className="text-xs mt-1 dark:text-lia-text-tertiary text-lia-text-tertiary">
+                <p className="text-sm font-medium text-lia-text-primary">Resumo do Agendamento</p>
+                <p className="text-xs mt-1 text-lia-text-tertiary">
                   {formatDisplayDate(selectedDate)} às {selectedTime}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">

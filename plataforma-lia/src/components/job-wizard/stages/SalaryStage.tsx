@@ -121,8 +121,8 @@ export function SalaryStage() {
       {salaryBenchmark && (salaryBenchmark.market || salaryBenchmark.internal) && (
         <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-wedo-green-bright/5 rounded-md border border-lia-border-default dark:border-lia-border-default">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-            <span className="text-xs font-medium lia-text-strong">
+            <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
+            <span className="text-xs font-medium text-lia-text-primary">
               Benchmark de Mercado
             </span>
             {salaryBenchmark.market?.learning_adjusted && (
@@ -145,7 +145,7 @@ export function SalaryStage() {
                   </span>
                 )}
               </div>
-              <div className="text-xs font-semibold lia-text-strong">
+              <div className="text-xs font-semibold text-lia-text-primary">
                 R$ {salaryBenchmark.internal.min.toLocaleString()} - R$ {salaryBenchmark.internal.max.toLocaleString()}
               </div>
             </div>
@@ -167,7 +167,7 @@ export function SalaryStage() {
                    salaryBenchmark.market.confidence === 'medium' ? 'Média confiança' : 'Baixa confiança'}
                 </span>
               </div>
-              <div className="text-xs font-semibold lia-text-strong">
+              <div className="text-xs font-semibold text-lia-text-primary">
                 R$ {salaryBenchmark.market.min.toLocaleString()} - R$ {salaryBenchmark.market.max.toLocaleString()}
               </div>
             </div>
@@ -193,7 +193,7 @@ export function SalaryStage() {
       {/* Loading Benchmark */}
       {isLoadingBenchmark && (
         <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+          <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
           <span className="text-xs lia-text-secondary">Buscando benchmark de mercado...</span>
         </div>
       )}
@@ -201,7 +201,7 @@ export function SalaryStage() {
       {/* Salary Range */}
       <div>
         <label className="block text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
-          <DollarSign className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <DollarSign className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary" />
           Salário Base (CLT)
         </label>
         <div className="flex gap-2">
@@ -239,7 +239,7 @@ export function SalaryStage() {
       {/* Bonus */}
       <div>
         <label className="block text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
-          <Star className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <Star className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary" />
           Bônus Anual
         </label>
         <div className="flex gap-2 mb-1.5">
@@ -285,10 +285,10 @@ export function SalaryStage() {
       {/* Benefits */}
       <div>
         <label className="block text-micro font-semibold lia-text-secondary uppercase tracking-wide mb-2">
-          <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary" />
           Benefícios
           {companyConfig?.benefits && companyConfig.benefits.length > 0 && (
-            <Settings className="w-3 h-3 inline ml-1.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Settings className="w-3 h-3 inline ml-1.5 text-lia-text-secondary" />
           )}
         </label>
         <div className="space-y-3">
@@ -328,14 +328,14 @@ export function SalaryStage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1">
-                            <span className="text-micro font-medium lia-text-strong block truncate">
+                            <span className="text-micro font-medium text-lia-text-primary block truncate">
                               {benefit.name}
                             </span>
                             {benefit.is_highlighted && (
                               <Heart className="w-2.5 h-2.5 text-wedo-magenta fill-pink-500 flex-shrink-0" />
                             )}
                             {benefit.is_mandatory && (
-                              <span className="text-micro px-1 py-0 rounded-md bg-gray-200 lia-text-base flex-shrink-0">obrig.</span>
+                              <span className="text-micro px-1 py-0 rounded-md bg-gray-200 text-lia-text-secondary flex-shrink-0">obrig.</span>
                             )}
                           </div>
                           {valueDisplay && (
@@ -357,7 +357,7 @@ export function SalaryStage() {
         {/* Add Benefit Button */}
         <button 
           onClick={() => setShowAddBenefitModal(true)}
-          className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+          className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
         >
           <Plus className="w-3.5 h-3.5" /> Adicionar benefício
         </button>

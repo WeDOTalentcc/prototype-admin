@@ -187,18 +187,18 @@ export function IndustrySingleSelect({
           setIsOpen(true)
         }}
       >
-        <Search className="w-3.5 h-3.5 lia-text-400 flex-shrink-0" />
+        <Search className="w-3.5 h-3.5 text-lia-text-tertiary flex-shrink-0" />
         
         {selectedIndustry && !isOpen ? (
           <div className="flex-1 flex items-center justify-between">
-            <span className="text-sm lia-text-950 dark:lia-text-50">
+            <span className="text-sm text-lia-text-primary">
               {selectedIndustry.labelPt}
             </span>
             <button
               onClick={handleClear}
               className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors motion-reduce:transition-none"
             >
-              <X className="w-3.5 h-3.5 lia-text-400" />
+              <X className="w-3.5 h-3.5 text-lia-text-tertiary" />
             </button>
           </div>
         ) : (
@@ -215,14 +215,14 @@ export function IndustrySingleSelect({
               onFocus={() => setIsOpen(true)}
               onKeyDown={handleKeyDown}
               placeholder={selectedIndustry ? selectedIndustry.labelPt : placeholder}
-              className="flex-1 text-sm bg-transparent outline-none lia-text-950 dark:lia-text-50 placeholder:lia-text-400"
+              className="flex-1 text-sm bg-transparent outline-none text-lia-text-primary placeholder:text-lia-text-tertiary"
              
             />
             {isLoadingAI && (
-              <Loader2 className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none flex-shrink-0" />
+              <Loader2 className="w-3.5 h-3.5 text-lia-text-secondary animate-spin motion-reduce:animate-none flex-shrink-0" />
             )}
             <ChevronDown className={cn(
-              "w-3.5 h-3.5 lia-text-400 transition-transform flex-shrink-0",
+              "w-3.5 h-3.5 text-lia-text-tertiary transition-transform flex-shrink-0",
               isOpen && "rotate-180"
             )} />
           </>
@@ -241,8 +241,8 @@ export function IndustrySingleSelect({
               className={cn(
                 "w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors",
                 focusedIndex === idx
-                  ? "bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary"
-                  : "hover:bg-gray-50 dark:hover:bg-gray-700 lia-text-800 dark:text-lia-text-primary",
+                  ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
+                  : "hover:bg-gray-50 dark:hover:bg-gray-700 text-lia-text-primary",
                 item.type === 'ai' && "border-t border-lia-border-subtle dark:border-lia-border-subtle"
               )}
              
@@ -255,7 +255,7 @@ export function IndustrySingleSelect({
               )}
               <span className="truncate">{item.label}</span>
               {item.industry && (
-                <span className="ml-auto text-micro lia-text-400 px-1.5 py-0.5 bg-gray-100 dark:bg-lia-bg-elevated rounded-full">
+                <span className="ml-auto text-micro text-lia-text-tertiary px-1.5 py-0.5 bg-gray-100 dark:bg-lia-bg-elevated rounded-full">
                   {INDUSTRY_CATEGORIES[item.industry.category as IndustryCategory]?.labelPt}
                 </span>
               )}

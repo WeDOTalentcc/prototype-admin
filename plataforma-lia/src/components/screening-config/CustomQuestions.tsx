@@ -71,18 +71,18 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
   }
 
   return (
-    <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary overflow-hidden">
+    <div className="border border-lia-border-subtle rounded-md bg-lia-bg-primary overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-center gap-2">
-          <PenLine className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
-          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary">
+          <PenLine className="w-4 h-4 text-lia-text-tertiary" />
+          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-lia-text-tertiary">
             Personalizadas
           </span>
           {questions.length > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
               {questions.length}
             </span>
           )}
@@ -107,12 +107,12 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
           {questions.map((question) => (
             <div key={question.id}>
               {editingId === question.id ? (
-                <div className="space-y-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg bg-gray-50 dark:bg-lia-bg-secondary">
+                <div className="space-y-2 p-3 border border-lia-border-subtle rounded-lg bg-lia-bg-secondary">
                   <input
                     type="text"
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    className="w-full text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle dark:border-lia-border-default bg-white dark:bg-lia-bg-primary px-3 py-2 text-lia-text-primary dark:text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-50/10 focus:border-gray-900 dark:focus:border-gray-50"
+                    className="w-full text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                     placeholder="Digite a pergunta..."
                     onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit()}
                   />
@@ -120,7 +120,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                     <select
                       value={editCharacter}
                       onChange={(e) => setEditCharacter(e.target.value as 'eliminatoria' | 'classificatoria')}
-                      className="text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle dark:border-lia-border-default bg-white dark:bg-lia-bg-primary px-2.5 py-1.5 text-lia-text-primary dark:text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-50/10"
+                      className="text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle bg-lia-bg-primary px-2.5 py-1.5 text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/10"
                     >
                       <option value="classificatoria">Classificatória</option>
                       <option value="eliminatoria">Eliminatória</option>
@@ -138,7 +138,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                         size="sm"
                         onClick={handleSaveEdit}
                         disabled={!editText.trim()}
-                        className="h-7 w-7 p-0 rounded-lg bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
+                        className="h-7 w-7 p-0 rounded-lg bg-lia-btn-primary-bg text-white hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
                       >
                         <Check className="w-3.5 h-3.5" />
                       </Button>
@@ -146,21 +146,21 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                   </div>
                   {editCharacter === 'eliminatoria' && (
                     <div className="flex items-center gap-2">
-                      <label className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary font-['Open_Sans',sans-serif] whitespace-nowrap">
+                      <label className="text-micro font-medium text-lia-text-tertiary font-['Open_Sans',sans-serif] whitespace-nowrap">
                         Resposta esperada
                       </label>
                       <input
                         type="text"
                         value={editExpectedAnswer}
                         onChange={(e) => setEditExpectedAnswer(e.target.value)}
-                        className="flex-1 text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle dark:border-lia-border-default bg-white dark:bg-lia-bg-primary px-3 py-2 text-lia-text-primary dark:text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-50/10 focus:border-gray-900 dark:focus:border-gray-50"
+                        className="flex-1 text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                         placeholder="Ex: Sim, Não, etc."
                       />
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none group">
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none group">
                   <div className="flex-1 flex flex-col gap-0.5">
                     <span className={`${textStyles.bodySmall}`}>
                       {question.question}
@@ -174,7 +174,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                       eliminatória{question.expectedAnswer ? ` (${question.expectedAnswer})` : ''}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-warning/10 text-status-warning dark:bg-status-warning/30">
                       classificatória
                     </span>
                   )}
@@ -182,13 +182,13 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                       <button
                         onClick={() => handleStartEdit(question)}
-                        className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 text-lia-text-tertiary dark:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
+                        className="p-1 rounded-md hover:bg-lia-interactive-active dark:hover:bg-lia-btn-primary-bg text-lia-text-tertiary transition-colors motion-reduce:transition-none"
                       >
                         <PenLine className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => onRemoveQuestion(question.id)}
-                        className="p-1 rounded-md hover:bg-status-error/10 dark:hover:bg-status-error/30 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-status-error dark:hover:text-status-error transition-colors motion-reduce:transition-none"
+                        className="p-1 rounded-md hover:bg-status-error/10 dark:hover:bg-status-error/30 text-lia-text-tertiary hover:text-status-error dark:hover:text-status-error transition-colors motion-reduce:transition-none"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -200,12 +200,12 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
           ))}
 
           {isAdding && (
-            <div className="space-y-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg bg-gray-50 dark:bg-lia-bg-secondary">
+            <div className="space-y-2 p-3 border border-lia-border-subtle rounded-lg bg-lia-bg-secondary">
               <input
                 type="text"
                 value={newQuestionText}
                 onChange={(e) => setNewQuestionText(e.target.value)}
-                className="w-full text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle dark:border-lia-border-default bg-white dark:bg-lia-bg-primary px-3 py-2 text-lia-text-primary dark:text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-50/10 focus:border-gray-900 dark:focus:border-gray-50"
+                className="w-full text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                 placeholder="Digite a pergunta..."
                 autoFocus
                 onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
@@ -214,7 +214,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                 <select
                   value={newQuestionCharacter}
                   onChange={(e) => setNewQuestionCharacter(e.target.value as 'eliminatoria' | 'classificatoria')}
-                  className="text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle dark:border-lia-border-default bg-white dark:bg-lia-bg-primary px-2.5 py-1.5 text-lia-text-primary dark:text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-50/10"
+                  className="text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle bg-lia-bg-primary px-2.5 py-1.5 text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/10"
                 >
                   <option value="classificatoria">Classificatória</option>
                   <option value="eliminatoria">Eliminatória</option>
@@ -236,7 +236,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                     size="sm"
                     onClick={handleAdd}
                     disabled={!newQuestionText.trim()}
-                    className="h-7 w-7 p-0 rounded-lg bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
+                    className="h-7 w-7 p-0 rounded-lg bg-lia-btn-primary-bg text-white hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
                   >
                     <Check className="w-3.5 h-3.5" />
                   </Button>
@@ -244,14 +244,14 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
               </div>
               {newQuestionCharacter === 'eliminatoria' && (
                 <div className="flex items-center gap-2">
-                  <label className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary font-['Open_Sans',sans-serif] whitespace-nowrap">
+                  <label className="text-micro font-medium text-lia-text-tertiary font-['Open_Sans',sans-serif] whitespace-nowrap">
                     Resposta esperada
                   </label>
                   <input
                     type="text"
                     value={newQuestionExpectedAnswer}
                     onChange={(e) => setNewQuestionExpectedAnswer(e.target.value)}
-                    className="flex-1 text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle dark:border-lia-border-default bg-white dark:bg-lia-bg-primary px-3 py-2 text-lia-text-primary dark:text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-gray-50/10 focus:border-gray-900 dark:focus:border-gray-50"
+                    className="flex-1 text-xs font-['Open_Sans',sans-serif] rounded-md border border-lia-border-subtle bg-lia-bg-primary px-3 py-2 text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                     placeholder="Ex: Sim, Não, etc."
                   />
                 </div>
@@ -262,7 +262,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
           {isEditing && !isAdding && (
             <button
               onClick={() => setIsAdding(true)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-lia-border-default dark:border-lia-border-default rounded-md text-lia-text-tertiary dark:text-lia-text-tertiary hover:border-gray-400 dark:hover:border-gray-500 hover:lia-text-base dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif] text-xs font-medium"
+              className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-lia-border-default rounded-md text-lia-text-tertiary hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:text-lia-text-secondary transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif] text-xs font-medium"
             >
               <Plus className="w-3.5 h-3.5" />
               Adicionar Pergunta

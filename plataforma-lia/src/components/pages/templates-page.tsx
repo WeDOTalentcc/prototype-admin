@@ -239,11 +239,11 @@ export function TemplatesPage() {
   // Cores por categoria
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'search': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default'
+      case 'search': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default'
       case 'communication': return 'bg-status-success/15 text-status-success border-status-success/30'
       case 'workflow': return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
       case 'analysis': return 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30'
-      default: return 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle'
+      default: return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -252,11 +252,11 @@ export function TemplatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold font-sans text-lia-text-primary dark:text-lia-text-primary mb-2 flex items-center gap-2">
+          <h1 className="text-2xl font-semibold font-sans text-lia-text-primary mb-2 flex items-center gap-2">
             <Brain className="w-6 h-6 text-wedo-cyan" />
             Templates LIA
           </h1>
-          <p className="text-lia-text-secondary dark:text-lia-text-tertiary">
+          <p className="text-lia-text-secondary">
             Gerencie comandos personalizados e acelere seu workflow de recrutamento
           </p>
         </div>
@@ -274,10 +274,10 @@ export function TemplatesPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <BookOpen className="w-4 h-4 text-lia-text-secondary" />
               <div>
-                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Templates</p>
-                <p className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{stats.total}</p>
+                <p className="text-sm text-lia-text-secondary">Templates</p>
+                <p className="text-xl font-semibold text-lia-text-primary">{stats.total}</p>
               </div>
             </div>
           </CardContent>
@@ -288,8 +288,8 @@ export function TemplatesPage() {
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-status-success" />
               <div>
-                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Execuções</p>
-                <p className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{stats.totalUsage}</p>
+                <p className="text-sm text-lia-text-secondary">Execuções</p>
+                <p className="text-xl font-semibold text-lia-text-primary">{stats.totalUsage}</p>
               </div>
             </div>
           </CardContent>
@@ -300,8 +300,8 @@ export function TemplatesPage() {
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-wedo-purple" />
               <div>
-                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Taxa Sucesso</p>
-                <p className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{stats.avgSuccessRate}%</p>
+                <p className="text-sm text-lia-text-secondary">Taxa Sucesso</p>
+                <p className="text-xl font-semibold text-lia-text-primary">{stats.avgSuccessRate}%</p>
               </div>
             </div>
           </CardContent>
@@ -312,8 +312,8 @@ export function TemplatesPage() {
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-wedo-orange" />
               <div>
-                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Tempo Poupado</p>
-                <p className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{stats.totalTimeSaved}h</p>
+                <p className="text-sm text-lia-text-secondary">Tempo Poupado</p>
+                <p className="text-xl font-semibold text-lia-text-primary">{stats.totalTimeSaved}h</p>
               </div>
             </div>
           </CardContent>
@@ -324,8 +324,8 @@ export function TemplatesPage() {
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-wedo-cyan" />
               <div>
-                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">Compartilhados</p>
-                <p className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{stats.sharedTemplates}</p>
+                <p className="text-sm text-lia-text-secondary">Compartilhados</p>
+                <p className="text-xl font-semibold text-lia-text-primary">{stats.sharedTemplates}</p>
               </div>
             </div>
           </CardContent>
@@ -347,7 +347,7 @@ export function TemplatesPage() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary"
+            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
           >
             <option value="all">Todas Categorias</option>
             <option value="search">🔍 Busca</option>
@@ -359,7 +359,7 @@ export function TemplatesPage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'usage' | 'recent' | 'success')}
-            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary"
+            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
           >
             <option value="usage">Mais Usados</option>
             <option value="recent">Mais Recentes</option>
@@ -388,7 +388,7 @@ export function TemplatesPage() {
                     )}
                   </div>
                   <CardTitle className="text-lg">{template.name}</CardTitle>
-                  <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mt-1">
+                  <p className="text-sm text-lia-text-primary mt-1">
                     {template.description}
                   </p>
                 </div>
@@ -412,16 +412,16 @@ export function TemplatesPage() {
               {/* Métricas */}
               <div className="grid grid-cols-3 gap-2 text-center mb-4">
                 <div>
-                  <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">{template.usageCount}</p>
-                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Usos</p>
+                  <p className="text-lg font-semibold text-lia-text-primary">{template.usageCount}</p>
+                  <p className="text-xs text-lia-text-primary">Usos</p>
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-status-success">{template.successRate}%</p>
-                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Sucesso</p>
+                  <p className="text-xs text-lia-text-primary">Sucesso</p>
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">{Math.round(template.estimatedTime/60)}min</p>
-                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Economia</p>
+                  <p className="text-lg font-semibold text-lia-text-primary">{Math.round(template.estimatedTime/60)}min</p>
+                  <p className="text-xs text-lia-text-primary">Economia</p>
                 </div>
               </div>
 
@@ -429,7 +429,7 @@ export function TemplatesPage() {
               <div className="flex gap-2">
                 <Button
                   onClick={() => executeTemplate(template)}
-                  className="flex-1 gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+                  className="flex-1 gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200"
                   size="sm"
                 >
                   <Play className="w-3 h-3" />
@@ -457,7 +457,7 @@ export function TemplatesPage() {
 
               {/* Info adicional */}
               <div className="mt-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                <div className="flex items-center justify-between text-xs text-lia-text-primary dark:text-lia-text-primary">
+                <div className="flex items-center justify-between text-xs text-lia-text-primary">
                   <span>Por {template.createdBy}</span>
                   <span>{template.updatedAt.toLocaleDateString()}</span>
                 </div>
@@ -472,10 +472,10 @@ export function TemplatesPage() {
         <Card className="text-center py-12">
           <CardContent>
             <Brain className="w-12 h-12 text-wedo-cyan mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+            <h3 className="text-lg font-medium text-lia-text-primary mb-2">
               Nenhum template encontrado
             </h3>
-            <p className="text-lia-text-primary dark:text-lia-text-primary mb-4">
+            <p className="text-lia-text-primary mb-4">
               {searchTerm || selectedCategory !== "all"
                 ? "Tente ajustar os filtros de busca"
                 : "Crie seu primeiro template para acelerar seu workflow"

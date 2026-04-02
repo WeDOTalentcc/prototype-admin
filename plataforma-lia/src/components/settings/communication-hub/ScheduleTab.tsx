@@ -48,7 +48,7 @@ export function ScheduleTab({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
-              <Clock className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
               Horários de Envio (Conformidade LGPD)
             </CardTitle>
             {!isEditingSchedule ? (
@@ -89,7 +89,7 @@ export function ScheduleTab({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1.5">
+              <label className="block text-micro font-medium text-lia-text-secondary mb-1.5">
                 Horário de Início
               </label>
               <div className="flex items-center gap-2">
@@ -101,12 +101,12 @@ export function ScheduleTab({
                   className="flex-1 disabled:opacity-50 accent-gray-700"
                 />
                 <div className="w-14 text-center">
-                  <span className="text-xs font-semibold lia-text-950 dark:lia-text-50">{sendingHours.start}:00</span>
+                  <span className="text-xs font-semibold text-lia-text-primary">{sendingHours.start}:00</span>
                 </div>
               </div>
             </div>
             <div>
-              <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1.5">
+              <label className="block text-micro font-medium text-lia-text-secondary mb-1.5">
                 Horário de Fim
               </label>
               <div className="flex items-center gap-2">
@@ -118,7 +118,7 @@ export function ScheduleTab({
                   className="flex-1 disabled:opacity-50 accent-gray-700"
                 />
                 <div className="w-14 text-center">
-                  <span className="text-xs font-semibold lia-text-950 dark:lia-text-50">{sendingHours.end}:00</span>
+                  <span className="text-xs font-semibold text-lia-text-primary">{sendingHours.end}:00</span>
                 </div>
               </div>
             </div>
@@ -126,8 +126,8 @@ export function ScheduleTab({
 
           <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-micro font-medium lia-text-600">Janela de Envio</span>
-              <Badge variant="outline" className="text-micro rounded-full border-lia-border-default lia-text-700 dark:border-lia-border-default dark:text-lia-text-secondary">
+              <span className="text-micro font-medium text-lia-text-secondary">Janela de Envio</span>
+              <Badge variant="outline" className="text-micro rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
                 {sendingHours.end - sendingHours.start} horas/dia
               </Badge>
             </div>
@@ -137,27 +137,27 @@ export function ScheduleTab({
                 style={{left: `${((sendingHours.start - 6) / 18) * 100}%`, width: `${((sendingHours.end - sendingHours.start) / 18) * 100}%`}}
               />
               <div className="absolute inset-0 flex items-center justify-between px-2">
-                <span className="text-micro lia-text-600">6:00</span>
-                <span className="text-micro lia-text-600">24:00</span>
+                <span className="text-micro text-lia-text-secondary">6:00</span>
+                <span className="text-micro text-lia-text-secondary">24:00</span>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-micro font-semibold lia-text-600 uppercase tracking-wider">
+            <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider">
               Configurações Adicionais
             </h4>
             <div className="space-y-1.5">
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
-                <span className="text-xs lia-text-800 dark:text-lia-text-primary">Respeitar feriados nacionais</span>
+                <span className="text-xs text-lia-text-primary">Respeitar feriados nacionais</span>
                 <input type="checkbox" checked={respectHolidays} onChange={(e) => setRespectHolidays(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-gray-700" />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
-                <span className="text-xs lia-text-800 dark:text-lia-text-primary">Não enviar nos finais de semana</span>
+                <span className="text-xs text-lia-text-primary">Não enviar nos finais de semana</span>
                 <input type="checkbox" checked={respectWeekends} onChange={(e) => setRespectWeekends(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-gray-700" />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
-                <span className="text-xs lia-text-800 dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">Limite máximo de {maxMessagesPerDay} mensagens/dia por candidato</span>
+                <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">Limite máximo de {maxMessagesPerDay} mensagens/dia por candidato</span>
                 <input type="checkbox" checked={maxMessagesPerDay > 0} onChange={(e) => setMaxMessagesPerDay(e.target.checked ? 3 : 0)} disabled={!isEditingSchedule} className="rounded-md accent-gray-700" />
               </label>
             </div>

@@ -55,7 +55,7 @@ function EmptyState({ message, onRetry }: { message?: string, onRetry?: () => vo
       <h3 className="text-lg font-medium text-lia-text-primary mb-1">
         Nenhum cliente encontrado
       </h3>
-      <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary text-center max-w-md mb-4">
+      <p className="text-sm text-lia-text-tertiary text-center max-w-md mb-4">
         {message || 'Não encontramos clientes com os filtros selecionados. Tente ajustar sua busca ou adicione um novo cliente.'}
       </p>
       {onRetry && (
@@ -77,7 +77,7 @@ function ErrorState({ message, onRetry }: { message: string, onRetry?: () => voi
       <h3 className="text-lg font-medium text-lia-text-primary mb-1">
         Erro ao carregar clientes
       </h3>
-      <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary text-center max-w-md mb-4">
+      <p className="text-sm text-lia-text-tertiary text-center max-w-md mb-4">
         {message}
       </p>
       {onRetry && (

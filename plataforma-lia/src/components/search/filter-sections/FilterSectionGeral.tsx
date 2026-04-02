@@ -67,25 +67,25 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
 
       <div className="space-y-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50">
         <div className="flex items-center gap-2 mb-3">
-          <Eye className="w-4 h-4 lia-text-600" />
+          <Eye className="w-4 h-4 text-lia-text-secondary" />
           <span className={textStyles.subtitle}>Ocultar Perfis Visualizados ou Shortlistados</span>
           <Popover>
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none"
+                className="text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
               >
                 <HelpCircle className="w-4 h-4" />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-3 bg-lia-bg-elevated border border-lia-border-subtle" side="top">
               <div className="space-y-2">
-                <h4 className="font-semibold text-sm lia-text-800">O que significa &quot;Shortlistado&quot;?</h4>
-                <p className="text-xs lia-text-600 leading-relaxed">
+                <h4 className="font-semibold text-sm text-lia-text-primary">O que significa &quot;Shortlistado&quot;?</h4>
+                <p className="text-xs text-lia-text-secondary leading-relaxed">
                   Candidatos <strong>shortlistados</strong> são aqueles que já foram incluídos em vagas e passaram por
                   algum processo de entrevista, seja por você, outros recrutadores ou gestores da organização.
                 </p>
-                <p className="text-xs lia-text-500 leading-relaxed">
+                <p className="text-xs text-lia-text-secondary leading-relaxed">
                   Isso inclui entrevistas técnicas, comportamentais, com gestores, ou qualquer outra etapa de seleção
                   registrada no sistema.
                 </p>
@@ -96,7 +96,7 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label className="text-xs mb-1.5 block lia-text-600">Escopo</Label>
+            <Label className="text-xs mb-1.5 block text-lia-text-secondary">Escopo</Label>
             <Select
               value={filters.general?.hideViewedScope || "dont_hide"}
               onValueChange={(value) => {
@@ -113,7 +113,7 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
                     <div>
                       <div className="font-medium">{option.label}</div>
                       {option.description && (
-                        <div className="text-xs lia-text-500">{option.description}</div>
+                        <div className="text-xs text-lia-text-secondary">{option.description}</div>
                       )}
                     </div>
                   </SelectItem>
@@ -123,7 +123,7 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
           </div>
 
           <div>
-            <Label className="text-xs mb-1.5 block lia-text-600">Período</Label>
+            <Label className="text-xs mb-1.5 block text-lia-text-secondary">Período</Label>
             <Select
               value={filters.general?.hideViewedPeriod || "all_time"}
               onValueChange={(value) => updateFilter("general", "hideViewedPeriod", value as HideViewedPeriod)}
@@ -148,7 +148,7 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
           </div>
         </div>
 
-        <p className="text-xs lia-text-500 flex items-center gap-1.5">
+        <p className="text-xs text-lia-text-secondary flex items-center gap-1.5">
           <AlertCircle className="w-3 h-3" />
           Remove dos resultados candidatos visualizados ou entrevistados no período selecionado
         </p>

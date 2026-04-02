@@ -68,7 +68,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
             key={message.id}
             data-message-id={message.id}
             className={`flex justify-start ${
-              isCurrentMessage ? "ring-2 ring-gray-900/20 rounded-md" : ""
+              isCurrentMessage ? "ring-2 ring-lia-btn-primary-bg/20 rounded-md" : ""
             } ${
               isHighlighted
                 ? "bg-status-warning/10 dark:bg-status-warning/20 rounded-md p-2"
@@ -93,7 +93,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     src="https://randomuser.me/api/portraits/women/44.jpg"
                     alt="Ana Silva"
                   />
-                  <AvatarFallback className="bg-gray-900 dark:lia-bg-50 text-white dark:lia-text-900 text-sm font-medium">
+                  <AvatarFallback className="bg-lia-btn-primary-bg text-white text-sm font-medium">
                     AS
                   </AvatarFallback>
                 </Avatar>
@@ -101,18 +101,18 @@ const ChatMessageListComponent = memo(function ChatMessageList({
 
               {/* Message content */}
               <div
-                className={`rounded-md p-5 flex-1 lia-text-800 dark:text-lia-text-primary ${message.sender === "user" ? "bg-white dark:lia-bg-950" : "bg-gray-100 dark:bg-lia-bg-secondary"}`}
+                className={`rounded-md p-5 flex-1 text-lia-text-primary ${message.sender === "user" ? "bg-white bg-lia-bg-primary" : "bg-lia-bg-tertiary"}`}
               >
                 <div className="flex items-center space-x-2 mb-2">
                   <span
-                    className={`text-sm font-medium lia-text-800 dark:text-lia-text-primary ${
+                    className={`text-sm font-medium text-lia-text-primary ${
                       message.sender === "lia" ? "lia-name -ml-1" : ""
                     }`}
                   >
                     {message.sender === "lia" ? "Lia" : "Ana Silva"}
                   </span>
                   <span
-                    className="text-xs lia-text-400 dark:lia-text-500"
+                    className="text-xs text-lia-text-tertiary"
                   >
                     {getRelativeTime(message.timestamp)}
                   </span>
@@ -128,7 +128,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   message.type !== "command" &&
                   message.type !== "file-creation" && (
                     <div
-                      className={`text-sm leading-relaxed lia-text-800 dark:text-lia-text-primary ${
+                      className={`text-sm leading-relaxed text-lia-text-primary ${
                         message.sender === "user"
                           ? "font-open-sans"
                           : "font-['Open_Sans',sans-serif] lia-markdown-content"
@@ -173,16 +173,16 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     ?.workflow_data as Record<string, any>)
 
                     ?.search_results && (
-                    <Card className="border border-gray-900 dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary mt-4">
+                    <Card className="border border-lia-btn-primary-bg bg-lia-bg-secondary mt-4">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
-                          <Globe className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary mt-0.5 shrink-0" />
+                          <Globe className="w-5 h-5 text-lia-text-secondary mt-0.5 shrink-0" />
                           <div className="flex-1">
-                            <h4 className="font-semibold text-sm mb-1 text-wedo-cyan-dark dark:text-wedo-cyan-dark">
+                            <h4 className="font-semibold text-sm mb-1 text-wedo-cyan-dark">
                               Expandir para Banco de Dados Global
                             </h4>
 
-                            <p className="text-xs text-wedo-cyan-dark dark:text-lia-text-secondary mb-3">
+                            <p className="text-xs text-wedo-cyan-dark mb-3">
                               {(
                                 (
                                   (message.data as Record<string, any>)
@@ -231,20 +231,20 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                               candidatos qualificados.
                             </p>
 
-                            <div className="bg-white/60 dark:bg-lia-bg-secondary/40 rounded-md p-3 mb-3 space-y-1.5">
+                            <div className="bg-white/60/40 rounded-md p-3 mb-3 space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
-                                <span className="lia-text-600 dark:text-lia-text-tertiary">
+                                <span className="text-lia-text-secondary">
                                   Créditos disponíveis:
                                 </span>
-                                <span className="font-semibold lia-text-950 dark:lia-text-50">
+                                <span className="font-semibold text-lia-text-primary">
                                   {availableCredits} créditos
                                 </span>
                               </div>
                               <div className="flex items-center justify-between text-xs">
-                                <span className="lia-text-600 dark:text-lia-text-tertiary">
+                                <span className="text-lia-text-secondary">
                                   Esta busca consumirá:
                                 </span>
-                                <span className="font-semibold lia-text-900 dark:lia-text-50">
+                                <span className="font-semibold text-lia-text-primary">
                                   ~
                                   {((
                                     (
@@ -258,11 +258,11 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                                   créditos
                                 </span>
                               </div>
-                              <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-1.5 flex items-center justify-between text-xs">
-                                <span className="lia-text-600 dark:text-lia-text-tertiary">
+                              <div className="border-t border-lia-border-subtle pt-1.5 flex items-center justify-between text-xs">
+                                <span className="text-lia-text-secondary">
                                   Saldo após busca:
                                 </span>
-                                <span className="font-semibold text-status-success dark:text-status-success">
+                                <span className="font-semibold text-status-success">
                                   {Math.max(
                                     0,
                                     availableCredits -
@@ -292,7 +292,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                             <div className="flex gap-2">
                               <Button
                                 size="sm"
-                                className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                                className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                                 onClick={() =>
                                   onLoadMoreCandidates(
                                     (
@@ -346,7 +346,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="border-lia-border-default lia-text-800 dark:text-lia-text-primary"
+                                className="border-lia-border-default text-lia-text-primary"
                                 onClick={() =>
                                   onSendMessage(
                                     "Não obrigado, vou trabalhar com os resultados locais"
@@ -410,7 +410,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                 {message.type === "completion" && message.completion && (
                   <>
                     <div
-                      className="text-sm lia-text-950 dark:lia-text-50 mb-4"
+                      className="text-sm text-lia-text-primary mb-4"
                       dangerouslySetInnerHTML={{
                         __html: sanitizeHtml(onHighlightSearchTerm(
                           message.content,
@@ -438,17 +438,17 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-2">
                         <Clock
-                          className="w-4 h-4 lia-text-500 dark:text-lia-text-tertiary"
+                          className="w-4 h-4 text-lia-text-secondary"
                         />
                         <h4
-                          className="font-medium text-base lia-text-800 dark:text-lia-text-primary"
+                          className="font-medium text-base text-lia-text-primary"
                         >
                           {message.approvalRequest.title}
                         </h4>
                       </div>
                       <Badge
                         variant="secondary"
-                        className="text-xs border-0 bg-white dark:lia-bg-950 lia-text-500 dark:text-lia-text-tertiary"
+                        className="text-xs border-0 bg-white bg-lia-bg-primary text-lia-text-secondary"
                       >
                         {message.approvalStatus === "pending"
                           ? "Aguardando"
@@ -456,12 +456,12 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                       </Badge>
                     </div>
                     <p
-                      className="text-sm mb-3 lia-text-500 dark:text-lia-text-tertiary"
+                      className="text-sm mb-3 text-lia-text-secondary"
                     >
                       {message.approvalRequest.description}
                     </p>
                     <p
-                      className="text-xs mb-4 lia-text-400 dark:lia-text-500"
+                      className="text-xs mb-4 text-lia-text-tertiary"
                     >
                       👤 {message.approvalRequest.manager}
                     </p>
@@ -472,11 +472,11 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                           key={idx}
                           className="flex justify-between text-sm py-1.5"
                         >
-                          <span className="lia-text-500 dark:text-lia-text-tertiary">
+                          <span className="text-lia-text-secondary">
                             {item.label}:
                           </span>
                           <span
-                            className="font-medium lia-text-800 dark:text-lia-text-primary"
+                            className="font-medium text-lia-text-primary"
                           >
                             {item.value}
                           </span>
@@ -501,29 +501,29 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                         action.label.toLowerCase().includes("não")
 
                       let buttonStyle = {
-                        backgroundColor: "var(--gray-50)",
-                        color: "var(--gray-800)",
-                        borderColor: "var(--gray-300)",
+                        backgroundColor: "var(--lia-bg-secondary)",
+                        color: "var(--lia-text-primary)",
+                        borderColor: "var(--lia-border-default)",
                       }
-                      let iconColor = "var(--gray-400)"
+                      let iconColor = "var(--lia-text-tertiary)"
 
                       if (isApproveAction) {
                         buttonStyle = {
-                          backgroundColor: "var(--gray-50)",
+                          backgroundColor: "var(--lia-bg-secondary)",
                           color: "var(--wedo-green)",
                           borderColor: "var(--wedo-green)",
                         }
                         iconColor = "var(--wedo-green)"
                       } else if (isScheduleAction) {
                         buttonStyle = {
-                          backgroundColor: "var(--gray-50)",
+                          backgroundColor: "var(--lia-bg-secondary)",
                           color: "var(--wedo-orange)",
                           borderColor: "var(--wedo-orange)",
                         }
                         iconColor = "var(--wedo-orange)"
                       } else if (isRejectAction) {
                         buttonStyle = {
-                          backgroundColor: "var(--gray-50)",
+                          backgroundColor: "var(--lia-bg-secondary)",
                           color: "var(--status-error)",
                           borderColor: "var(--status-error)",
                         }
@@ -569,12 +569,12 @@ const ChatMessageListComponent = memo(function ChatMessageList({
               <LIAIcon size="md" />
             </div>
             <div
-              className="rounded-md p-5 flex-1 bg-gray-100 dark:bg-lia-bg-secondary"
+              className="rounded-md p-5 flex-1 bg-lia-bg-tertiary"
             >
               <div className="flex items-center space-x-2" role="status" aria-live="polite" aria-label="Carregando...">
                 <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                 <span
-                  className="text-sm lia-text-500 dark:text-lia-text-tertiary"
+                  className="text-sm text-lia-text-secondary"
                 >
                   LIA está digitando...
                 </span>

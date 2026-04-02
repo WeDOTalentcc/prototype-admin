@@ -14,7 +14,7 @@ export const EAPTabJobDescription = React.memo(function EAPTabJobDescription(pro
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
+      <p className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
         Cole a descrição da vaga para extrair requisitos automaticamente
       </p>
       <textarea
@@ -27,7 +27,7 @@ export const EAPTabJobDescription = React.memo(function EAPTabJobDescription(pro
       <div className="flex justify-between items-center">
         {/* Dica contextual */}
         <div className="flex items-start gap-2 flex-1">
-          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
+          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs lia-body">
             <strong>Dica:</strong> Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.
           </p>

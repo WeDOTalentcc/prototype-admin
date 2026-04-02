@@ -54,9 +54,9 @@ export function InputEvaluationStage({
     <>
       {/* Banner when using company config */}
       {configLoaded && hasConfigData && (
-        <div className="mb-3 px-3 py-2 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md flex items-center gap-2">
-          <Settings className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
-          <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+        <div className="mb-3 px-3 py-2 bg-lia-bg-tertiary border border-lia-border-default rounded-md flex items-center gap-2">
+          <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
+          <span className="text-xs text-lia-text-secondary">
             Usando dados das Configurações da sua empresa
           </span>
         </div>
@@ -91,7 +91,7 @@ export function InputEvaluationStage({
                 key={item.key}
                 className={cn(
  "flex items-center gap-2.5 py-2 px-3 rounded-md transition-colors duration-300",
-                  isDetected ? "bg-gray-50" : "bg-lia-bg-primary",
+                  isDetected ? "bg-lia-bg-secondary" : "bg-lia-bg-primary",
                   isItemHighlighted && "field-highlight field-pulse"
                 )}
               >
@@ -107,14 +107,14 @@ export function InputEvaluationStage({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p
-                    className="text-xs font-medium lia-text-strong transition-colors motion-reduce:transition-none duration-300"
+                    className="text-xs font-medium text-lia-text-primary transition-colors motion-reduce:transition-none duration-300"
                    
                   >
                     {item.label}
                   </p>
                   {isDetected && displayValue && (
                     <p
-                      className="text-micro mt-0.5 truncate text-lia-text-secondary dark:text-lia-text-tertiary font-medium"
+                      className="text-micro mt-0.5 truncate text-lia-text-secondary font-medium"
                      
                     >
                       {displayValue}
@@ -130,7 +130,7 @@ export function InputEvaluationStage({
       {/* Progress Summary */}
       <div className="mt-3 p-2.5 rounded-md bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-micro lia-text-base">
+          <span className="text-micro text-lia-text-secondary">
             Detectando critérios...
           </span>
           <span
@@ -140,9 +140,9 @@ export function InputEvaluationStage({
             {criteriaItems.filter(item => getCriteriaStatus(item.value)).length} / {criteriaItems.length}
           </span>
         </div>
-        <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-lia-interactive-active rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full transition-[width,height] duration-500 bg-gray-900"
+            className="h-full rounded-full transition-[width,height] duration-500 bg-lia-btn-primary-bg"
             style={{width: `${(criteriaItems.filter(item => getCriteriaStatus(item.value)).length / criteriaItems.length) * 100}%`}}
           />
         </div>

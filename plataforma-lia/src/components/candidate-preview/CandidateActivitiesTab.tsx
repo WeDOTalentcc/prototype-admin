@@ -41,8 +41,8 @@ interface CandidateActivitiesTabProps {
 }
 
 const colorToBg: Record<string, string> = {
-  'var(--gray-600)': 'var(--gray-600-bg-10)',
-  'var(--gray-400)': 'var(--gray-bg-10)',
+  'var(--lia-text-secondary)': 'var(--lia-bg-tertiary)',
+  'var(--lia-text-tertiary)': 'var(--lia-bg-tertiary)',
   'var(--status-success)': 'var(--status-success-bg)',
   'var(--status-error)': 'var(--status-error-bg)',
   'var(--status-warning)': 'var(--status-warning-bg)',
@@ -50,7 +50,7 @@ const colorToBg: Record<string, string> = {
   'var(--wedo-orange)': 'var(--wedo-orange-bg-15)',
   'var(--wedo-cyan)': 'var(--wedo-cyan-bg-10)',
 }
-const getBgColor = (color: string) => colorToBg[color] || 'var(--gray-bg-10)'
+const getBgColor = (color: string) => colorToBg[color] || 'var(--lia-bg-tertiary)'
 
 export function CandidateActivitiesTab({
   candidate,
@@ -110,9 +110,9 @@ export function CandidateActivitiesTab({
             className="absolute -left-6 w-3 h-3 rounded-full border-2 border-white z-10"
             style={{backgroundColor: activity.iconColor, marginTop: '14px'}}
           ></div>
-          <div className="flex-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+          <div className="flex-1 border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
             <div
-              className="p-3 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+              className="p-3 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
               onClick={() => setExpandedActivity(isExpanded ? null : activity.id)}
             >
               <div className="flex items-start gap-3">
@@ -130,7 +130,7 @@ export function CandidateActivitiesTab({
                         {activity.jobId && (
                           <a
                             href={`#vaga-${activity.jobId}`}
-                            className="text-xs text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary hover:underline flex items-center gap-0.5"
+                            className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline flex items-center gap-0.5"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Briefcase className="w-2.5 h-2.5" />
@@ -143,16 +143,16 @@ export function CandidateActivitiesTab({
                     </div>
                     <div className="flex items-center gap-1.5">
                       {activity.score && (
-                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle font-medium' : 'bg-status-error/10 text-status-error border-status-error/30 font-medium'}`}>
+                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : 'bg-status-error/10 text-status-error border-status-error/30 font-medium'}`}>
                           {formatScorePercent(activity.score)}
                         </Badge>
                       )}
                       {activity.statusLabel && (
-                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-white text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle'}`}>
+                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-white text-lia-text-secondary border-lia-border-subtle'}`}>
                           {activity.statusLabel}
                         </Badge>
                       )}
-                      <ChevronDown className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`w-3.5 h-3.5 text-lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                     </div>
                   </div>
                 </div>
@@ -180,9 +180,9 @@ export function CandidateActivitiesTab({
     }
 
     return (
-      <div key={activity.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
+      <div key={activity.id} className="border border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
         <div
-          className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+          className="p-2.5 cursor-pointer hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
           onClick={() => setExpandedActivity(isExpanded ? null : activity.id)}
         >
           <div className="flex items-start gap-2">
@@ -200,7 +200,7 @@ export function CandidateActivitiesTab({
                     {activity.jobId && (
                       <a
                         href={`#vaga-${activity.jobId}`}
-                        className="text-xs text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary hover:underline flex items-center gap-0.5"
+                        className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline flex items-center gap-0.5"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Briefcase className="w-2.5 h-2.5" />
@@ -214,16 +214,16 @@ export function CandidateActivitiesTab({
                 </div>
                 <div className="flex items-center gap-1.5">
                   {activity.score && (
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle font-medium' : 'bg-status-error/10 text-status-error border-status-error/30 font-medium'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : 'bg-status-error/10 text-status-error border-status-error/30 font-medium'}`}>
                       {formatScorePercent(activity.score)}
                     </Badge>
                   )}
                   {activity.statusLabel && (
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-white text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-white text-lia-text-secondary border-lia-border-subtle'}`}>
                       {activity.statusLabel}
                     </Badge>
                   )}
-                  <ChevronDown className={`w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                 </div>
               </div>
             </div>

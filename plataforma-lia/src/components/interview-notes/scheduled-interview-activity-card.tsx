@@ -150,17 +150,17 @@ export function ScheduledInterviewActivityCard({
           <Badge className={cn(getUrgencyBadgeStyle(timeInfo.urgency), "border-0")}>
             {timeInfo.label}
           </Badge>
-          <span className={`${textStyles.caption} text-lia-text-tertiary dark:text-lia-text-tertiary`}>
+          <span className={`${textStyles.caption} text-lia-text-tertiary`}>
             Entrevista agendada
           </span>
         </div>
 
         {/* Candidate and Job Info */}
         <div className="space-y-1">
-          <h4 className={`${textStyles.title} dark:text-lia-text-primary`}>
+          <h4 className={`${textStyles.title}`}>
             {interview.candidateName}
           </h4>
-          <p className={`${textStyles.subtitle} dark:text-lia-text-tertiary`}>
+          <p className={`${textStyles.subtitle}`}>
             {interview.jobTitle}
           </p>
         </div>
@@ -169,15 +169,15 @@ export function ScheduledInterviewActivityCard({
         <div className="space-y-1.5 bg-gray-50 dark:bg-lia-bg-primary/30 rounded-md p-2.5">
           {/* Date and Time */}
           <div className="flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
-            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>
+            <Calendar className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
+            <span className={`${textStyles.bodySmall}`}>
               {dateStr}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <Clock className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
-            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>
+            <Clock className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
+            <span className={`${textStyles.bodySmall}`}>
               {timeStr} ({interview.duration}min)
             </span>
           </div>
@@ -185,15 +185,15 @@ export function ScheduledInterviewActivityCard({
           {/* Platform */}
           <div className="flex items-center gap-2">
             {getPlatformIcon(interview.platform)}
-            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>
+            <span className={`${textStyles.bodySmall}`}>
               {getPlatformLabel(interview.platform)}
             </span>
           </div>
 
           {/* Interviewer */}
           <div className="flex items-center gap-2">
-            <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
-            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>
+            <Users className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
+            <span className={`${textStyles.bodySmall}`}>
               {interview.interviewerName}
             </span>
           </div>
@@ -211,7 +211,7 @@ export function ScheduledInterviewActivityCard({
           <Button
             onClick={() => onViewSuggestedQuestions(interview.id)}
             variant="outline"
-            className="flex-1 border border-lia-border-subtle hover:bg-gray-50 dark:border-lia-border-subtle dark:hover:bg-gray-900/50 text-lia-text-primary dark:text-lia-text-primary font-medium rounded-md px-3 py-1.5 transition-colors motion-reduce:transition-none text-xs h-auto"
+            className="flex-1 border border-lia-border-subtle hover:bg-gray-50 dark:border-lia-border-subtle dark:hover:bg-gray-900/50 text-lia-text-primary font-medium rounded-md px-3 py-1.5 transition-colors motion-reduce:transition-none text-xs h-auto"
           >
             <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
             Perguntas

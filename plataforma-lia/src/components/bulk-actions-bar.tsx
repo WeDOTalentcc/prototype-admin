@@ -60,7 +60,7 @@ interface BulkActionsBarProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'new', label: 'Novo', color: 'bg-gray-100 lia-text-strong' },
+  { value: 'new', label: 'Novo', color: 'bg-gray-100 text-lia-text-primary' },
   { value: 'screening', label: 'Em Triagem', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark' },
   { value: 'interview', label: 'Entrevista', color: 'bg-wedo-purple/15 text-wedo-purple' },
   { value: 'offer', label: 'Proposta', color: 'bg-status-warning/15 text-status-warning' },
@@ -333,7 +333,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 hover:bg-gray-700 lia-text-base hover:text-white"
+              className="h-6 w-6 p-0 hover:bg-gray-700 text-lia-text-secondary hover:text-white"
               onClick={onClearSelection}
               disabled={isProcessing}
             >
@@ -483,7 +483,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Briefcase className="h-5 w-5 text-lia-text-secondary" />
               Atribuir à Vaga
             </DialogTitle>
             <DialogDescription>
@@ -528,7 +528,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Mail className="h-5 w-5 text-lia-text-secondary" />
               Enviar Email
             </DialogTitle>
             <DialogDescription>
@@ -626,7 +626,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
           </DialogHeader>
           <div className="py-4 space-y-4">
             <Progress value={progressValue} className="h-2" />
-            <p className="text-sm lia-text-base">{progressMessage}</p>
+            <p className="text-sm text-lia-text-secondary">{progressMessage}</p>
             
             {operationResult && (
               <div className="space-y-2 text-sm">

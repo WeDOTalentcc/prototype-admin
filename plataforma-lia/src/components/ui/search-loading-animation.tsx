@@ -63,21 +63,21 @@ export const SearchLoadingAnimation = React.memo(function SearchLoadingAnimation
           <p className="text-sm font-semibold text-lia-text-primary">
             Processando busca...
           </p>
-          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+          <p className="text-xs text-lia-text-secondary">
             Analisando critérios e perfis
           </p>
         </div>
       </div>
       
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+        <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary">
           <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-wedo-green">
             <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
           </div>
           <span>Interpretando</span>
         </div>
         <span className="lia-text-secondary text-xs">•</span>
-        <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+        <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary">
           <div 
             className="spin-animation w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-lia-text-primary"
           >
@@ -86,7 +86,7 @@ export const SearchLoadingAnimation = React.memo(function SearchLoadingAnimation
           <span>Buscando</span>
         </div>
         <span className="lia-text-secondary text-xs">•</span>
-        <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+        <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary">
           <div className="w-4 h-4 rounded-full bg-lia-interactive-active flex-shrink-0" />
           <span>Rankeando</span>
         </div>

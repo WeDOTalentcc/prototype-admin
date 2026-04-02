@@ -129,7 +129,7 @@ export function LoginPage() {
           {/* Logo */}
           <div className="absolute top-0 left-0">
             <div className="flex items-center space-x-3">
-              <WeDOLogo className="text-xl text-lia-text-primary dark:text-lia-text-primary" />
+              <WeDOLogo className="text-xl text-lia-text-primary" />
             </div>
           </div>
 
@@ -137,10 +137,10 @@ export function LoginPage() {
           <div className="max-w-2xl">
             {/* Header Principal */}
             <div className="mb-6">
-              <h1 className="text-8xl font-bold text-lia-text-primary dark:text-lia-text-primary leading-none mb-4">
+              <h1 className="text-8xl font-bold text-lia-text-primary leading-none mb-4">
                 Prazer, Lia
               </h1>
-              <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary leading-relaxed">
+              <p className="text-2xl font-bold text-lia-text-primary leading-relaxed">
                 Sua assistente de IA de recrutamento.
               </p>
             </div>
@@ -150,7 +150,7 @@ export function LoginPage() {
               <p className="text-lg text-lia-text-secondary leading-relaxed">Automação inteligente, dados organizados e acessiveis,  processos como nunca vistos antes.</p>
               <p className="text-lg text-lia-text-secondary leading-relaxed"></p>
               <p className="text-lg text-lia-text-secondary leading-relaxed">IA nativa que aprende com você e acelera todo o processo de recrutamento.</p>
-              <p className="text-lg text-lia-text-primary dark:text-lia-text-primary leading-relaxed font-semibold">Simples. Inteligente. Revolucionário.</p>
+              <p className="text-lg text-lia-text-primary leading-relaxed font-semibold">Simples. Inteligente. Revolucionário.</p>
             </div>
           </div>
         </div>
@@ -159,7 +159,7 @@ export function LoginPage() {
         <div className="relative z-10">
           {/* Bottom - Company Logos */}
           <div className="space-y-4">
-            <p className="text-lia-text-primary dark:text-lia-text-primary text-sm">
+            <p className="text-lia-text-primary text-sm">
               Empresas inovadoras que trabalham com a LIA.
             </p>
             <div className="flex items-center space-x-8">
@@ -192,7 +192,7 @@ export function LoginPage() {
       <div className="w-full lg:w-2/5 bg-lia-bg-primary flex flex-col shadow-2xl relative z-10">
         {/* Demo Notice */}
         <div className="p-4 text-right">
-          <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+          <div className="text-xs text-lia-text-primary">
             <span className="font-medium">Demo:</span> ana.silva@sodexo.com / 123456
           </div>
         </div>
@@ -202,8 +202,8 @@ export function LoginPage() {
           <div className="w-full max-w-md p-10">
             {/* Header */}
             <div className="text-center mb-6">
-              <h2 className="text-3xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Bem-vindo(a)!</h2>
-              <p className="text-lia-text-primary dark:text-lia-text-primary text-base leading-relaxed">
+              <h2 className="text-3xl font-bold text-lia-text-primary mb-3">Bem-vindo(a)!</h2>
+              <p className="text-lia-text-primary text-base leading-relaxed">
                 Informe suas credenciais para participar do projeto experimental de tecnologia em recrutamento com a LIA.
               </p>
             </div>
@@ -212,7 +212,7 @@ export function LoginPage() {
             <form onSubmit={handleLogin} className="space-y-5">
               {/* Email Field */}
               <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary mb-2">
                   Email
                 </label>
                 <div className="relative">
@@ -237,12 +237,12 @@ export function LoginPage() {
               {ssoInfo?.sso_available && (
                 <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
                   <div className="flex items-start gap-3">
-                    <Building2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5" />
+                    <Building2 className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                     <div className="flex-1">
                       <p className="text-wedo-cyan-dark text-sm font-medium">
                         SSO Corporativo Detectado
                       </p>
-                      <p className="text-lia-text-secondary dark:text-lia-text-tertiary text-xs mt-1">
+                      <p className="text-lia-text-secondary text-xs mt-1">
                         {ssoInfo.company_name ? `Sua empresa (${ssoInfo.company_name}) utiliza login corporativo.` : 'Sua empresa utiliza login corporativo.'}
                       </p>
                     </div>
@@ -250,7 +250,7 @@ export function LoginPage() {
                   <Button
                     type="button"
                     onClick={handleSSOLogin}
-                    className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
+                    className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
                   >
                     <Building2 className="w-4 h-4" />
                     Entrar com SSO Corporativo
@@ -260,7 +260,7 @@ export function LoginPage() {
 
               {/* Password Field */}
               <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary mb-2">
                   Senha
                 </label>
                 <div className="relative">
@@ -289,11 +289,11 @@ export function LoginPage() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary border-lia-border-default rounded-md focus:ring-gray-900"
+                    className="w-4 h-4 text-lia-text-primary border-lia-border-default rounded-md focus:ring-gray-900"
                   />
-                  <span className="ml-2 text-sm text-lia-text-primary dark:text-lia-text-primary">Lembrar de mim</span>
+                  <span className="ml-2 text-sm text-lia-text-primary">Lembrar de mim</span>
                 </label>
-                <a href="/forgot-password" className="text-sm text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
+                <a href="/forgot-password" className="text-sm text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
                   Esqueceu a senha?
                 </a>
               </div>
@@ -327,7 +327,7 @@ export function LoginPage() {
                   <div className="w-full border-t border-lia-border-subtle"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary">Ou continue com:</span>
+                  <span className="px-4 bg-white dark:bg-lia-bg-secondary text-lia-text-primary">Ou continue com:</span>
                 </div>
               </div>
 
@@ -365,16 +365,16 @@ export function LoginPage() {
               </div>
 
               {/* Sign Up Link */}
-              <p className="text-center text-lia-text-primary dark:text-lia-text-primary text-sm">
+              <p className="text-center text-lia-text-primary text-sm">
                 Não tem uma conta?{" "}
-                <a href="/register" className="text-lia-text-primary dark:text-lia-text-primary font-medium hover:underline">
+                <a href="/register" className="text-lia-text-primary font-medium hover:underline">
                   Cadastre-se aqui
                 </a>
               </p>
 
               {/* Demo & Onboarding Section */}
               <div className="border-t border-lia-border-subtle pt-6 mt-6">
-                <h3 className="text-center text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">
+                <h3 className="text-center text-sm font-medium text-lia-text-primary mb-4">
                   🚀 Demonstrações da Plataforma
                 </h3>
                 <div className="space-y-3">
@@ -441,7 +441,7 @@ export function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="p-4 text-center text-xs text-lia-text-primary dark:text-lia-text-primary space-y-1">
+        <div className="p-4 text-center text-xs text-lia-text-primary space-y-1">
           <p>
             Tecnologia avançada para Recursos Humanos do futuro.
             <br />
@@ -455,7 +455,7 @@ export function LoginPage() {
       <div className="lg:hidden w-full bg-gray-50 p-6">
         {/* Demo Notice */}
         <div className="text-center mb-6">
-          <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+          <div className="text-xs text-lia-text-primary">
             <span className="font-medium">Demo:</span> ana.silva@sodexo.com / 123456
           </div>
         </div>
@@ -468,32 +468,32 @@ export function LoginPage() {
             </div>
             <div className="text-lg font-bold">WeDOTalent</div>
           </div>
-          <h1 className="text-4xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3 leading-none">
+          <h1 className="text-4xl font-bold text-lia-text-primary mb-3 leading-none">
             Prazer, Lia
           </h1>
-          <p className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary mb-6">
+          <p className="text-lg font-bold text-lia-text-primary mb-6">
             Sua parceira de Inteligência Artificial no recrutamento.
           </p>
           <div className="space-y-2 text-base text-lia-text-secondary">
             <p>Automação inteligente e processos como nunca vistos antes.</p>
             <p>Dados organizados e acessíveis.</p>
             <p>IA nativa que aprende com você e acelera todo o processo de recrutamento.</p>
-            <p className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Simples. Inteligente. Revolucionário.</p>
+            <p className="font-semibold text-lia-text-primary">Simples. Inteligente. Revolucionário.</p>
           </div>
         </div>
 
         {/* Mobile Login Form */}
         <div className="bg-lia-bg-primary rounded-xl p-8">
           <div className="text-center mb-5">
-            <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Bem-vindo de volta!</h2>
-            <p className="text-lia-text-primary dark:text-lia-text-primary text-base leading-relaxed">
+            <h2 className="text-2xl font-bold text-lia-text-primary mb-3">Bem-vindo de volta!</h2>
+            <p className="text-lia-text-primary text-base leading-relaxed">
               Informe suas credenciais para participar do projeto experimental de tecnologia em recrutamento com a LIA.
             </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Email</label>
+              <label className="block text-sm font-medium text-lia-text-primary mb-2">Email</label>
               <div className="relative">
                 <input
                   type="email"
@@ -516,12 +516,12 @@ export function LoginPage() {
             {ssoInfo?.sso_available && (
               <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
                 <div className="flex items-start gap-3">
-                  <Building2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5" />
+                  <Building2 className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                   <div className="flex-1">
                     <p className="text-wedo-cyan-dark text-sm font-medium">
                       SSO Corporativo Detectado
                     </p>
-                    <p className="text-lia-text-secondary dark:text-lia-text-tertiary text-xs mt-1">
+                    <p className="text-lia-text-secondary text-xs mt-1">
                       {ssoInfo.company_name ? `Sua empresa (${ssoInfo.company_name}) utiliza login corporativo.` : 'Sua empresa utiliza login corporativo.'}
                     </p>
                   </div>
@@ -529,7 +529,7 @@ export function LoginPage() {
                 <Button
                   type="button"
                   onClick={handleSSOLogin}
-                  className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
+                  className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
                 >
                   <Building2 className="w-4 h-4" />
                   Entrar com SSO Corporativo
@@ -538,7 +538,7 @@ export function LoginPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Senha</label>
+              <label className="block text-sm font-medium text-lia-text-primary mb-2">Senha</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -564,7 +564,7 @@ export function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary border-lia-border-default rounded-md"
+                  className="w-4 h-4 text-lia-text-primary border-lia-border-default rounded-md"
                 />
                 <span className="ml-2 text-sm text-lia-text-secondary">Lembrar de mim</span>
               </label>
@@ -593,7 +593,7 @@ export function LoginPage() {
             </Button>
 
             <div className="text-center">
-              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mb-3">Ou continue com:</p>
+              <p className="text-sm text-lia-text-primary mb-3">Ou continue com:</p>
               <Button
                 type="button"
                 onClick={() => handleSocialLogin("Google")}
@@ -612,7 +612,7 @@ export function LoginPage() {
 
             <p className="text-center text-lia-text-secondary text-sm">
               Não tem uma conta?{" "}
-              <a href="/register" className="text-lia-text-primary dark:text-lia-text-primary font-medium hover:underline">
+              <a href="/register" className="text-lia-text-primary font-medium hover:underline">
                 Cadastre-se aqui
               </a>
             </p>
@@ -620,7 +620,7 @@ export function LoginPage() {
         </div>
 
         {/* Mobile Footer */}
-        <div className="text-center text-xs text-lia-text-primary dark:text-lia-text-primary mt-6 space-y-2">
+        <div className="text-center text-xs text-lia-text-primary mt-6 space-y-2">
           <p>Tecnologia avançada para Recursos Humanos do futuro.</p>
           <p>© 2024 WeDOTalent. Todos os direitos reservados.</p>
         </div>

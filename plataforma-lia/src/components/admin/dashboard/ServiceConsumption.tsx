@@ -51,7 +51,7 @@ export function ServiceConsumption({
               <div className="flex items-center gap-3">
                 <Icon className="w-5 h-5" style={{color: item.iconColor}} />
                 <div>
-                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+                  <p className="text-sm font-medium text-lia-text-primary">
                     {item.title}
                   </p>
                   <p className="text-xs text-lia-text-disabled">
@@ -61,7 +61,7 @@ export function ServiceConsumption({
               </div>
               <div className="text-right">
                 {item.value && (
-                  <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                  <p className="text-sm font-semibold text-lia-text-primary">
                     {item.value}
                   </p>
                 )}

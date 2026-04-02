@@ -49,14 +49,14 @@ const STATUS_CONFIG: Record<VoiceStatus, {
   idle: {
     icon: Phone,
     label: 'Pronto para iniciar',
-    color: 'text-lia-text-primary dark:text-lia-text-primary',
-    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary'
+    color: 'text-lia-text-primary',
+    bgColor: 'bg-lia-bg-tertiary'
   },
   initiating: {
     icon: Loader2,
     label: 'Iniciando chamada...',
-    color: 'text-lia-text-secondary dark:text-lia-text-tertiary',
-    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
+    color: 'text-lia-text-secondary',
+    bgColor: 'bg-lia-bg-tertiary',
     animate: true
   },
   calling: {
@@ -254,7 +254,7 @@ export function WSIVoiceScreeningStatus({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Phone className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
+            <Phone className="w-5 h-5 text-lia-text-secondary" />
             Triagem por Voz WSI
           </DialogTitle>
           <DialogDescription>
@@ -333,11 +333,11 @@ export function WSIVoiceScreeningStatus({
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="p-2 bg-white dark:bg-lia-bg-secondary rounded-md text-center">
+                      <div className="p-2 bg-lia-bg-primary rounded-md text-center">
                         <div className="text-lg font-semibold">{result.technical_wsi.toFixed(1)}</div>
                         <div className="text-xs text-muted-foreground">Técnico</div>
                       </div>
-                      <div className="p-2 bg-white dark:bg-lia-bg-secondary rounded-md text-center">
+                      <div className="p-2 bg-lia-bg-primary rounded-md text-center">
                         <div className="text-lg font-semibold">{result.behavioral_wsi.toFixed(1)}</div>
                         <div className="text-xs text-muted-foreground">Comportamental</div>
                       </div>

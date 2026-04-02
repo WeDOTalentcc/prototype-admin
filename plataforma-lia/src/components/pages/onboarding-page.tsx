@@ -220,7 +220,7 @@ export function OnboardingPage() {
   const getStatusColor = (status: string) => {
     const colors = {
       pending: 'bg-status-warning/15 text-status-warning border-status-warning/30',
-      in_progress: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
+      in_progress: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
       completed: 'bg-status-success/15 text-status-success border-status-success/30',
       delayed: 'bg-status-error/15 text-status-error border-status-error/30'
     }
@@ -246,11 +246,11 @@ export function OnboardingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Total de Novos Colaboradores</p>
-                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{onboardingCandidates.length}</p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">este mês</p>
+                <p className="text-2xl font-bold text-lia-text-primary">{onboardingCandidates.length}</p>
+                <p className="text-xs text-lia-text-primary">este mês</p>
               </div>
               <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                <UserPlus className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <UserPlus className="w-6 h-6 text-lia-text-secondary" />
               </div>
             </div>
           </CardContent>
@@ -261,10 +261,10 @@ export function OnboardingPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Em Andamento</p>
-                <p className="text-2xl font-bold text-lia-text-secondary dark:text-lia-text-secondary">
+                <p className="text-2xl font-bold text-lia-text-secondary">
                   {onboardingCandidates.filter(c => c.status === 'in_progress').length}
                 </p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">processos ativos</p>
+                <p className="text-xs text-lia-text-primary">processos ativos</p>
               </div>
               <div className="w-12 h-12 bg-status-warning/15 rounded-md flex items-center justify-center">
                 <Clock className="w-6 h-6 text-status-warning" />
@@ -281,7 +281,7 @@ export function OnboardingPage() {
                 <p className="text-2xl font-bold text-status-success">
                   {onboardingCandidates.filter(c => c.status === 'completed').length}
                 </p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">com sucesso</p>
+                <p className="text-xs text-lia-text-primary">com sucesso</p>
               </div>
               <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center">
                 <CheckCircle className="w-6 h-6 text-status-success" />
@@ -296,7 +296,7 @@ export function OnboardingPage() {
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Taxa de Sucesso</p>
                 <p className="text-2xl font-bold text-wedo-purple">92%</p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">últimos 3 meses</p>
+                <p className="text-xs text-lia-text-primary">últimos 3 meses</p>
               </div>
               <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-wedo-purple" />
@@ -323,9 +323,9 @@ export function OnboardingPage() {
                     </Avatar>
 
                     <div>
-                      <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{candidate.name}</h4>
+                      <h4 className="font-medium text-lia-text-primary">{candidate.name}</h4>
                       <p className="text-sm text-lia-text-secondary">{candidate.position} • {candidate.department}</p>
-                      <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">Início: {new Date(candidate.startDate).toLocaleDateString('pt-BR')}</p>
+                      <p className="text-sm text-lia-text-primary">Início: {new Date(candidate.startDate).toLocaleDateString('pt-BR')}</p>
                     </div>
                   </div>
 
@@ -333,7 +333,7 @@ export function OnboardingPage() {
                     <Badge className={getStatusColor(candidate.status)}>
                       {getStatusLabel(candidate.status)}
                     </Badge>
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mt-1">{candidate.currentStep}</p>
+                    <p className="text-sm text-lia-text-primary mt-1">{candidate.currentStep}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="w-24 bg-gray-200 rounded-full h-2">
                         <div
@@ -343,7 +343,7 @@ export function OnboardingPage() {
                       </div>
                       <span className="text-sm font-medium">{candidate.progress}%</span>
                     </div>
-                    <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">
+                    <p className="text-xs text-lia-text-primary mt-1">
                       {candidate.completedTasks}/{candidate.totalTasks} tarefas
                     </p>
                   </div>
@@ -374,12 +374,12 @@ export function OnboardingPage() {
                     item.priority === 'medium' ? 'bg-status-warning' : 'bg-status-success'
                   }`} />
                   <div>
-                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{item.task}</p>
+                    <p className="font-medium text-lia-text-primary">{item.task}</p>
                     <p className="text-sm text-lia-text-secondary">{item.candidate}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{item.dueDate}</p>
+                  <p className="text-sm font-medium text-lia-text-primary">{item.dueDate}</p>
                   <Badge variant="outline" className="text-xs">
                     {item.priority === 'high' ? 'Alta' : item.priority === 'medium' ? 'Média' : 'Baixa'}
                   </Badge>
@@ -404,14 +404,14 @@ export function OnboardingPage() {
               placeholder="Buscar colaboradores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 w-80"
+              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 w-80"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
           >
             <option value="all">Todos os Status</option>
             <option value="pending">Pendente</option>
@@ -439,7 +439,7 @@ export function OnboardingPage() {
                     <AvatarFallback>{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{candidate.name}</h4>
+                    <h4 className="font-medium text-lia-text-primary">{candidate.name}</h4>
                     <p className="text-sm text-lia-text-secondary">{candidate.position}</p>
                   </div>
                 </div>
@@ -450,30 +450,30 @@ export function OnboardingPage() {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-lia-text-primary dark:text-lia-text-primary">Status:</span>
+                  <span className="text-lia-text-primary">Status:</span>
                   <Badge className={getStatusColor(candidate.status)}>
                     {getStatusLabel(candidate.status)}
                   </Badge>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-lia-text-primary dark:text-lia-text-primary">Departamento:</span>
+                  <span className="text-lia-text-primary">Departamento:</span>
                   <span className="font-medium">{candidate.department}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-lia-text-primary dark:text-lia-text-primary">Gestor:</span>
+                  <span className="text-lia-text-primary">Gestor:</span>
                   <span className="font-medium">{candidate.manager}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-lia-text-primary dark:text-lia-text-primary">Início:</span>
+                  <span className="text-lia-text-primary">Início:</span>
                   <span className="font-medium">{new Date(candidate.startDate).toLocaleDateString('pt-BR')}</span>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-lia-text-primary dark:text-lia-text-primary">Progresso:</span>
+                    <span className="text-lia-text-primary">Progresso:</span>
                     <span className="font-medium">{candidate.progress}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
@@ -488,11 +488,11 @@ export function OnboardingPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-lia-text-primary dark:text-lia-text-primary">Tarefas:</span>
+                  <span className="text-lia-text-primary">Tarefas:</span>
                   <span className="font-medium">{candidate.completedTasks}/{candidate.totalTasks}</span>
                 </div>
 
-                <div className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+                <div className="text-sm text-lia-text-primary">
                   Última atividade: {candidate.lastActivity}
                 </div>
               </div>
@@ -523,7 +523,7 @@ export function OnboardingPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Templates de Onboarding</h3>
+          <h3 className="text-xs font-medium text-lia-text-primary">Templates de Onboarding</h3>
           <p className="text-sm text-lia-text-secondary">Configure fluxos automatizados por departamento</p>
         </div>
         <Button className="gap-2">
@@ -539,7 +539,7 @@ export function OnboardingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-xs">{template.name}</CardTitle>
-                  <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mt-1">{template.description}</p>
+                  <p className="text-sm text-lia-text-primary mt-1">{template.description}</p>
                 </div>
                 <Badge variant={template.isActive ? "default" : "secondary"}>
                   {template.isActive ? 'Ativo' : 'Inativo'}
@@ -551,11 +551,11 @@ export function OnboardingPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-lia-text-secondary">Departamento</p>
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">{template.department}</p>
+                    <p className="text-sm text-lia-text-primary">{template.department}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-lia-text-secondary">Duração</p>
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">{template.duration} dias</p>
+                    <p className="text-sm text-lia-text-primary">{template.duration} dias</p>
                   </div>
                 </div>
 
@@ -565,7 +565,7 @@ export function OnboardingPage() {
                     {template.tasks.slice(0, 3).map(task => (
                       <div key={task.id} className="flex items-center gap-2 text-sm">
                         <CheckCircle className={`w-4 h-4 ${task.isCompleted ? 'text-status-success' : 'text-lia-text-secondary'}`} />
-                        <span className="text-lia-text-primary dark:text-lia-text-primary">{task.title}</span>
+                        <span className="text-lia-text-primary">{task.title}</span>
                         <Badge variant="outline" className="text-xs">
                           {task.type === 'document' ? 'Doc' :
                            task.type === 'meeting' ? 'Reunião' :
@@ -576,7 +576,7 @@ export function OnboardingPage() {
                       </div>
                     ))}
                     {template.tasks.length > 3 && (
-                      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">+{template.tasks.length - 3} tarefas adicionais</p>
+                      <p className="text-xs text-lia-text-primary">+{template.tasks.length - 3} tarefas adicionais</p>
                     )}
                   </div>
                 </div>
@@ -606,7 +606,7 @@ export function OnboardingPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-sm font-semibold font-sans text-lia-text-primary dark:text-lia-text-primary mb-1">
+              <h1 className="text-sm font-semibold font-sans text-lia-text-primary mb-1">
                 Onboarding Automatizado
               </h1>
               <p className="text-lia-text-secondary">
@@ -638,7 +638,7 @@ export function OnboardingPage() {
                 onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
                   selectedView === tab.id
-                    ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
+                    ? 'bg-lia-bg-primary text-lia-text-primary'
                     : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
@@ -656,7 +656,7 @@ export function OnboardingPage() {
         {selectedView === 'analytics' && (
           <div className="text-center py-12">
             <TrendingUp className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-            <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Analytics em Desenvolvimento</h3>
+            <h3 className="text-xs font-medium text-lia-text-primary mb-2">Analytics em Desenvolvimento</h3>
             <p className="text-lia-text-secondary">Métricas avançadas de onboarding em breve</p>
           </div>
         )}
@@ -683,7 +683,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
   const getStatusColor = (status: string) => {
     const colors = {
       pending: 'bg-status-warning/15 text-status-warning border-status-warning/30',
-      in_progress: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
+      in_progress: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
       completed: 'bg-status-success/15 text-status-success border-status-success/30',
       delayed: 'bg-status-error/15 text-status-error border-status-error/30'
     }
@@ -711,7 +711,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
               <AvatarFallback>{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{candidate.name}</h2>
+              <h2 className="text-xl font-semibold text-lia-text-primary">{candidate.name}</h2>
               <p className="text-lia-text-secondary">{candidate.position} • {candidate.department}</p>
               <Badge className={`mt-1 ${getStatusColor(candidate.status)}`}>
                 {getStatusLabel(candidate.status)}
@@ -790,7 +790,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
                         <CheckCircle className={`w-5 h-5 mt-0.5 ${task.isCompleted ? 'text-status-success' : 'text-lia-text-secondary'}`} />
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
-                            <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{task.title}</h4>
+                            <h4 className="font-medium text-lia-text-primary">{task.title}</h4>
                             <div className="flex items-center gap-2">
                               <Badge variant="outline" className="text-xs">
                                 {task.assignedTo === 'candidate' ? 'Colaborador' :
@@ -806,7 +806,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
                             </div>
                           </div>
                           <p className="text-sm text-lia-text-secondary mb-2">{task.description}</p>
-                          <div className="flex items-center gap-4 text-xs text-lia-text-primary dark:text-lia-text-primary">
+                          <div className="flex items-center gap-4 text-xs text-lia-text-primary">
                             <span>Prazo: Dia {task.dueDate}</span>
                             <span>Tempo estimado: {task.estimatedTime}min</span>
                             {task.completedDate && (

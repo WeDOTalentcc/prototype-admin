@@ -48,10 +48,10 @@ export function AlertsTab({
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
-                <Bell className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+                <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
                 Configuração de Alertas
               </CardTitle>
-              <p className="text-xs lia-text-600 mt-0.5">
+              <p className="text-xs text-lia-text-secondary mt-0.5">
                 A LIA aprende com seus padrões e ajusta os alertas automaticamente
               </p>
             </div>
@@ -96,10 +96,10 @@ export function AlertsTab({
                     <Bell className="w-3.5 h-3.5" style={{color: alert.enabled ? 'var(--gray-600)' : undefined}} />
                   </div>
                   <div>
-                    <p className={`text-xs font-medium ${alert.enabled ? 'lia-text-950 dark:lia-text-50' : 'lia-text-800'}`}>
+                    <p className={`text-xs font-medium ${alert.enabled ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>
                       {alert.name}
                     </p>
-                    <p className="text-xs lia-text-600 mt-0.5">{alert.description}</p>
+                    <p className="text-xs text-lia-text-secondary mt-0.5">{alert.description}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ export function AlertsTab({
                     value={alert.channel}
                     onChange={(e) => handleChangeChannel(alert.id, e.target.value as 'email' | 'teams' | 'both')}
                     disabled={!isEditingAlerts || !alert.enabled}
-                    className="text-micro border border-lia-border-subtle dark:border-lia-border-subtle rounded-full px-1.5 py-1 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary disabled:bg-gray-50 disabled:lia-text-600"
+                    className="text-micro border border-lia-border-subtle dark:border-lia-border-subtle rounded-full px-1.5 py-1 bg-white dark:bg-lia-bg-secondary text-lia-text-primary disabled:bg-gray-50 disabled:text-lia-text-secondary"
                   >
                     <option value="email">Email</option>
                     <option value="teams">Teams</option>
@@ -131,7 +131,7 @@ export function AlertsTab({
       <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
-            <MessageSquare className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+            <MessageSquare className="w-3.5 h-3.5 text-lia-text-secondary" />
             Frequência do Briefing da LIA
           </CardTitle>
         </CardHeader>
@@ -157,7 +157,7 @@ export function AlertsTab({
                   <Icon className="w-3.5 h-3.5" style={{color: briefingFrequency === key ? 'var(--gray-600)' : undefined}} />
                   <span className="text-xs font-medium">{label}</span>
                 </div>
-                <p className="text-xs lia-text-600">{desc}</p>
+                <p className="text-xs text-lia-text-secondary">{desc}</p>
               </button>
             ))}
           </div>
@@ -166,8 +166,8 @@ export function AlertsTab({
             <div className="flex items-start gap-2">
               <Brain className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-wedo-cyan" />
               <div>
-                <p className={`${textStyles.subtitle} lia-text-800 dark:text-lia-text-primary`}>A LIA aprende com você</p>
-                <p className="text-xs lia-text-600 mt-0.5">
+                <p className={`${textStyles.subtitle} text-lia-text-primary`}>A LIA aprende com você</p>
+                <p className="text-xs text-lia-text-secondary mt-0.5">
                   Quanto mais você interage, melhor ela entende quais alertas são relevantes.
                   Alertas ignorados consistentemente serão automaticamente desativados.
                 </p>
@@ -180,7 +180,7 @@ export function AlertsTab({
       <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
-            <BarChart3 className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+            <BarChart3 className="w-3.5 h-3.5 text-lia-text-secondary" />
             Resumo Semanal
           </CardTitle>
         </CardHeader>
@@ -201,10 +201,10 @@ export function AlertsTab({
                   <BarChart3 className="w-3.5 h-3.5" style={{color: weeklyDigestEnabled ? 'var(--gray-600)' : undefined}} />
                 </div>
                 <div>
-                  <p className={`text-xs font-medium ${weeklyDigestEnabled ? 'lia-text-950 dark:lia-text-50' : 'lia-text-800'}`}>
+                  <p className={`text-xs font-medium ${weeklyDigestEnabled ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>
                     Insights Proativos Semanais
                   </p>
-                  <p className="text-xs lia-text-600 mt-0.5">
+                  <p className="text-xs text-lia-text-secondary mt-0.5">
                     Toda segunda-feira às 08h, receba um resumo consolidado com pipeline, compliance, vagas em risco e otimizações via Teams, chat e notificação.
                   </p>
                 </div>
@@ -227,7 +227,7 @@ export function AlertsTab({
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs lia-text-600">
+          <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary">
             <Clock className="w-3 h-3" />
             <span>Entrega: segunda-feira, 08h (Brasília) — Teams + Chat + Bell</span>
           </div>

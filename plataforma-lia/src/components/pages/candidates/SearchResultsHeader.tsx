@@ -181,7 +181,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
               onClick={onBack}
               className="flex items-center justify-center hover:opacity-70 transition-opacity motion-reduce:transition-none flex-shrink-0"
             >
-              <ArrowLeft className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" strokeWidth={2.5} />
+              <ArrowLeft className="w-5 h-5 text-lia-text-secondary" strokeWidth={2.5} />
             </button>
           </TooltipTrigger>
           <TooltipContent side="left" className="!animate-none" style={{animation: 'none', transitionDuration: '0ms'}}>
@@ -195,7 +195,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
         {/* Ícone de Search + Frase completa com pills inline */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Ícone de Search para identificar prompt de busca */}
-          <Search className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
+          <Search className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
 
           {/* Frase completa com pills coloridos nas palavras-chave */}
           <div className="flex items-center flex-wrap text-sm text-lia-text-primary font-sans leading-loose">
@@ -209,7 +209,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
                     onClick={() => onOpenEditQueryModal(lastSearchQuery || '')}
                     className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-gray-200 transition-[width,height] ml-1"
                   >
-                    <Edit className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Edit className="w-3 h-3 text-lia-text-secondary" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none" style={{animation: 'none', transitionDuration: '0ms'}}>
@@ -220,7 +220,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
 
             <button
               onClick={onOpenAdvancedSearch}
-              className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse font-bold inline-flex items-center gap-1 transition-colors motion-reduce:transition-none ml-2 font-sans"
+              className="text-xs text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse font-bold inline-flex items-center gap-1 transition-colors motion-reduce:transition-none ml-2 font-sans"
             >
               Editar Filtros
               <ChevronRight className="w-3 h-3" />

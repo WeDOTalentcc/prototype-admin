@@ -38,10 +38,10 @@ export function AddCompetencyModal({
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-overlay flex items-center justify-center bg-lia-overlay">
       <div className="bg-lia-bg-primary rounded-xl w-[440px] p-6">
         <h3
-          className="text-lg font-semibold lia-text-strong mb-4"
+          className="text-lg font-semibold text-lia-text-primary mb-4"
          
         >
           Adicionar Competência Comportamental
@@ -59,8 +59,8 @@ export function AddCompetencyModal({
                   className={cn(
  "px-3 py-1.5 text-xs rounded-md border transition-colors",
                     competencyName === comp.competency
-                      ? "bg-gray-100 dark:bg-lia-bg-secondary border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary"
-                      : "bg-gray-50 border-lia-border-subtle lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50 hover:lia-text-strong dark:hover:lia-text-subtle"
+                      ? "bg-lia-bg-tertiary border-lia-btn-primary-bg text-lia-text-secondary"
+                      : "bg-lia-bg-secondary border-lia-border-subtle lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary"
                   )}
                 >
                   {comp.competency}
@@ -79,7 +79,7 @@ export function AddCompetencyModal({
             value={competencyName}
             onChange={(e) => onCompetencyNameChange(e.target.value)}
             placeholder="Nome da competência (ex: Liderança)"
-            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-gray-400"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium"
            
             autoFocus
           />
@@ -87,7 +87,7 @@ export function AddCompetencyModal({
             value={competencyJustification}
             onChange={(e) => onCompetencyJustificationChange(e.target.value)}
             placeholder="Justificativa (ex: Necessário para gestão de equipe)"
-            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-gray-400 resize-none"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium resize-none"
            
             rows={3}
           />
@@ -104,7 +104,7 @@ export function AddCompetencyModal({
           <Button
             onClick={onAdd}
             disabled={!competencyName.trim()}
-            className={cn("flex-1 h-10 rounded-md", competencyName.trim() ? "bg-gray-900 text-white" : "bg-gray-200")}
+            className={cn("flex-1 h-10 rounded-md", competencyName.trim() ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-lia-interactive-active")}
           >
             Adicionar
           </Button>

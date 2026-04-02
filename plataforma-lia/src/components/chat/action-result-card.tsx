@@ -102,7 +102,7 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
           <div className="flex items-center gap-2">
             {result.from_stage && (
               <>
-                <span className="px-1.5 py-0.5 rounded-md bg-lia-bg-tertiary dark:bg-gray-700/50 text-lia-text-disabled">{result.from_stage}</span>
+                <span className="px-1.5 py-0.5 rounded-md bg-lia-bg-tertiary text-lia-text-disabled">{result.from_stage}</span>
                 <ArrowRight className="w-3 h-3 text-lia-text-secondary" />
               </>
             )}

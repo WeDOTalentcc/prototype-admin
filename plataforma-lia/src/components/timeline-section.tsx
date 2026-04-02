@@ -84,7 +84,7 @@ export function TimelineSection() {
 
               <div className="flex gap-3">
                 <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center relative z-10 flex-shrink-0">
-                  <item.icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <item.icon className="w-4 h-4 text-lia-text-secondary" />
                 </div>
 
                 <div className="flex-1 min-w-0 pb-4">
@@ -92,12 +92,12 @@ export function TimelineSection() {
                     <h4 className="font-medium text-lia-text-primary text-sm">
                       {item.activity}
                     </h4>
-                    <div className="text-xs lia-text-base flex-shrink-0 ml-2">
+                    <div className="text-xs text-lia-text-secondary flex-shrink-0 ml-2">
                       {item.date} • {item.time}
                     </div>
                   </div>
 
-                  <p className="text-sm lia-text-base leading-relaxed">
+                  <p className="text-sm text-lia-text-secondary leading-relaxed">
                     {item.details}
                   </p>
 
@@ -106,10 +106,10 @@ export function TimelineSection() {
                       variant="outline"
                       className={`text-xs ${
  item.type === 'feedback' ? 'border-status-success/30 text-status-success' :
-                        item.type === 'evaluation' ? 'border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary' :
+                        item.type === 'evaluation' ? 'border-lia-border-default dark:border-lia-border-default text-lia-text-secondary' :
                         item.type === 'screening' ? 'border-wedo-purple/30 text-wedo-purple' :
                         item.type === 'analysis' ? 'border-wedo-orange/30 text-wedo-orange' :
-                        item.type === 'status_update' ? 'border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary' :
+                        item.type === 'status_update' ? 'border-lia-border-subtle text-lia-text-primary' :
                         'border-status-warning/30 text-status-warning'
                       }`}
                     >
@@ -130,10 +130,10 @@ export function TimelineSection() {
         {/* Footer */}
         <div className="pt-4 border-t border-lia-border-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+            <span className="text-sm text-lia-text-primary">
               Mostrando atividades das últimas 2 horas
             </span>
-            <Button variant="ghost" size="sm" className="text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse text-xs">
+            <Button variant="ghost" size="sm" className="text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse text-xs">
               Ver histórico completo
             </Button>
           </div>

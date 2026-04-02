@@ -244,7 +244,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
                 </div>
 
                 {/* Traits compactos */}
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary line-clamp-1">
+                <div className="text-xs text-lia-text-secondary line-clamp-1">
                   {relevantTraits.slice(0, 3).join(', ')}
                 </div>
               </div>
@@ -260,10 +260,10 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
               <div className="flex items-start gap-1.5">
                 <Brain className="w-3 h-3 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div className="space-y-1">
-                  <div className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
+                  <div className="text-xs font-medium text-lia-text-secondary">
                     Insight Comportamental
                   </div>
-                  <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary leading-relaxed">
+                  <div className="text-xs text-lia-text-secondary leading-relaxed">
                     {generatePersonalityInsight()}
                   </div>
                 </div>

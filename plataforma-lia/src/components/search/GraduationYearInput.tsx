@@ -24,7 +24,7 @@ export function GraduationYearInput({
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <Label className="text-xs mb-1.5 block font-medium lia-text-600">
+        <Label className="text-xs mb-1.5 block font-medium text-lia-text-secondary">
           Ano de Formatura (Mín)
         </Label>
         <Select
@@ -39,7 +39,7 @@ export function GraduationYearInput({
               value="not_selected"
               className={cn(
                 "py-2 text-xs",
-                minYear === null && "lia-text-800 dark:text-lia-text-primary"
+                minYear === null && "text-lia-text-primary"
               )}
             >
               Não selecionado
@@ -59,7 +59,7 @@ export function GraduationYearInput({
       </div>
 
       <div>
-        <Label className="text-xs mb-1.5 block font-medium lia-text-600">
+        <Label className="text-xs mb-1.5 block font-medium text-lia-text-secondary">
           Ano de Formatura (Máx)
         </Label>
         <Select
@@ -74,7 +74,7 @@ export function GraduationYearInput({
               value="not_selected"
               className={cn(
                 "py-2 text-xs",
-                maxYear === null && "lia-text-800 dark:text-lia-text-primary"
+                maxYear === null && "text-lia-text-primary"
               )}
             >
               Não selecionado

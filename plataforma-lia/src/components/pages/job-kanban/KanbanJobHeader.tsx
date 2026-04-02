@@ -365,7 +365,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       }
                     }}
                     disabled={pipelineInheritance.isLoading}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled bg-lia-bg-tertiary hover:bg-lia-interactive-active rounded-md transition-colors motion-reduce:transition-none"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-lia-text-tertiary hover:text-lia-text-secondary bg-lia-bg-tertiary hover:bg-lia-interactive-active rounded-md transition-colors motion-reduce:transition-none"
                    
                   >
                     <RotateCcw className="w-3 h-3" />

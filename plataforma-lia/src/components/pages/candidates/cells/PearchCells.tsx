@@ -25,7 +25,7 @@ export function renderPearchInsightCell(
       )
     case "is_top_universities":
       return candidate.is_top_universities ? (
-        <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary">
+        <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
           Top University
         </Badge>
       ) : (
@@ -94,7 +94,7 @@ export function renderPearchInsightCell(
       return candidate.best_personal_email ? (
         <a
           href={`mailto:${candidate.best_personal_email}`}
-          className="text-xs text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline truncate"
+          className="text-xs text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline truncate"
         >
           {candidate.best_personal_email}
         </a>
@@ -105,7 +105,7 @@ export function renderPearchInsightCell(
       return candidate.best_business_email ? (
         <a
           href={`mailto:${candidate.best_business_email}`}
-          className="text-xs text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline truncate"
+          className="text-xs text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline truncate"
         >
           {candidate.best_business_email}
         </a>
@@ -165,10 +165,10 @@ export function renderPearchInsightCell(
                   insight.match_level === "Exceeds"
                     ? "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success"
                     : insight.match_level === "Meets"
-                      ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary"
+                      ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
                       : insight.match_level === "Partial"
                         ? "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning"
-                        : "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-secondary"
+                        : "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
                 }`}
               >
                 {insight.match_level}

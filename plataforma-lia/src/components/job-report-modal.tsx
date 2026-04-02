@@ -212,7 +212,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 size="sm"
                 onClick={generatePDF}
                 disabled={isGenerating}
-                className="h-7 px-2 text-micro bg-lia-bg-primary hover:bg-gray-100 lia-text-strong"
+                className="h-7 px-2 text-micro bg-lia-bg-primary hover:bg-gray-100 text-lia-text-primary"
               >
                 {isGenerating ? (
                   <>Gerando...</>
@@ -248,7 +248,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 <h1 className="text-base font-semibold text-lia-text-primary">
                   {(job.title as React.ReactNode)}
                 </h1>
-                <div className="flex items-center gap-3 mt-0.5 text-micro lia-text-base">
+                <div className="flex items-center gap-3 mt-0.5 text-micro text-lia-text-secondary">
                   <span className="flex items-center gap-0.5">
                     <Building className="w-3 h-3" />
                     {(job.department as React.ReactNode)}
@@ -274,35 +274,35 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
             {selectedSections.overview && (
               <div className="space-y-2">
                 <h3 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1">
-                  <Briefcase className="w-3 h-3 lia-text-base" />
+                  <Briefcase className="w-3 h-3 text-lia-text-secondary" />
                   Resumo Executivo
                 </h3>
                 <div className="grid grid-cols-4 gap-2">
                   <div className="text-center p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
-                    <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-0.5" />
+                    <Users className="w-4 h-4 text-lia-text-secondary mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-lia-text-primary">{reportData.funnelMetrics.totalCandidates}</p>
-                    <p className="text-micro lia-text-base">Total Candidatos</p>
+                    <p className="text-micro text-lia-text-secondary">Total Candidatos</p>
                   </div>
                   <div className="text-center p-2 bg-status-success/10 rounded-md border border-status-success/30">
                     <Target className="w-4 h-4 text-status-success mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-status-success">{reportData.funnelMetrics.hired}</p>
-                    <p className="text-micro lia-text-base">Contratados</p>
+                    <p className="text-micro text-lia-text-secondary">Contratados</p>
                   </div>
                   <div className="text-center p-2 bg-wedo-purple/10 rounded-md border border-wedo-purple/30">
                     <Clock className="w-4 h-4 text-wedo-purple mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-wedo-purple">{reportData.funnelMetrics.averageTimeToHire}</p>
-                    <p className="text-micro lia-text-base">Dias p/ Contratar</p>
+                    <p className="text-micro text-lia-text-secondary">Dias p/ Contratar</p>
                   </div>
                   <div className="text-center p-2 bg-wedo-orange/10 rounded-md border border-wedo-orange/30">
                     <DollarSign className="w-4 h-4 text-wedo-orange mx-auto mb-0.5" />
                     <p className="text-lg font-bold text-wedo-orange">R${reportData.funnelMetrics.costPerHire.toLocaleString('pt-BR')}</p>
-                    <p className="text-micro lia-text-base">Custo/Contratação</p>
+                    <p className="text-micro text-lia-text-secondary">Custo/Contratação</p>
                   </div>
                 </div>
                 <div className="p-2 bg-status-warning/10 rounded-md border border-status-warning/30 flex items-start gap-2">
                   <AlertCircle className="w-3 h-3 text-status-warning mt-0.5 flex-shrink-0" />
 
-                  <p className="text-micro text-lia-text-primary dark:text-lia-text-primary">
+                  <p className="text-micro text-lia-text-primary">
                     <span className="font-medium">Status:</span> Processo em fase de {(job as any).stage?.toLowerCase() || 'entrevista'} com {reportData.funnelMetrics.interview} candidatos
                     em entrevista e {reportData.funnelMetrics.final} finalistas. Taxa de conversão: {reportData.funnelMetrics.conversionRate}% (mercado: 2.3%).
                   </p>
@@ -316,7 +316,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               {selectedSections.funnel && (
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1">
-                    <Filter className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Filter className="w-3 h-3 text-lia-text-secondary" />
                     Análise do Funil
                   </h3>
                   <div className="space-y-1.5 p-2 bg-gray-50 rounded-md border border-lia-border-subtle">
@@ -328,7 +328,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                       { stage: "Contratados", value: reportData.funnelMetrics.hired, percentage: 2, color: "bg-status-success" }
                     ].map((item, index) => (
                       <div key={item.stage} className="flex items-center gap-2">
-                        <span className="w-16 text-micro text-lia-text-primary dark:text-lia-text-primary">{item.stage}</span>
+                        <span className="w-16 text-micro text-lia-text-primary">{item.stage}</span>
                         <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
                           <div className={`h-full ${item.color}`} style={{width: `${item.percentage}%`}}></div>
                         </div>
@@ -339,11 +339,11 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </div>
                   <div className="flex gap-2">
                     <div className="flex-1 p-1.5 bg-status-success/10 rounded-md border border-status-success/30 text-center">
-                      <p className="text-micro lia-text-base">Conversão</p>
+                      <p className="text-micro text-lia-text-secondary">Conversão</p>
                       <p className="text-sm font-bold text-status-success">{reportData.funnelMetrics.conversionRate}%</p>
                     </div>
                     <div className="flex-1 p-1.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default text-center">
-                      <p className="text-micro lia-text-base">Qualidade</p>
+                      <p className="text-micro text-lia-text-secondary">Qualidade</p>
                       <div className="flex items-center justify-center gap-0.5 mt-0.5">
                         {[1,2,3,4].map((star) => (
                           <Star key={star} className="w-2.5 h-2.5 fill-yellow-400 text-status-warning" />
@@ -359,18 +359,18 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               {selectedSections.performance && (
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1">
-                    <Globe className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Globe className="w-3 h-3 text-lia-text-secondary" />
                     Performance por Canal
                   </h3>
                   <div className="overflow-hidden rounded-md border border-lia-border-subtle">
                     <table className="w-full text-micro">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="text-left py-1 px-1.5 font-medium text-lia-text-primary dark:text-lia-text-primary">Canal</th>
-                          <th className="text-center py-1 px-1 font-medium text-lia-text-primary dark:text-lia-text-primary">Cand.</th>
-                          <th className="text-center py-1 px-1 font-medium text-lia-text-primary dark:text-lia-text-primary">Qual.</th>
-                          <th className="text-center py-1 px-1 font-medium text-lia-text-primary dark:text-lia-text-primary">Cont.</th>
-                          <th className="text-right py-1 px-1.5 font-medium text-lia-text-primary dark:text-lia-text-primary">Custo</th>
+                          <th className="text-left py-1 px-1.5 font-medium text-lia-text-primary">Canal</th>
+                          <th className="text-center py-1 px-1 font-medium text-lia-text-primary">Cand.</th>
+                          <th className="text-center py-1 px-1 font-medium text-lia-text-primary">Qual.</th>
+                          <th className="text-center py-1 px-1 font-medium text-lia-text-primary">Cont.</th>
+                          <th className="text-right py-1 px-1.5 font-medium text-lia-text-primary">Custo</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -378,7 +378,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                           <tr key={channel.channel} className="border-t border-lia-border-subtle">
                             <td className="py-1 px-1.5">
                               <div className="flex items-center gap-1">
-                                {channel.channel === "LinkedIn" && <Briefcase className="w-2.5 h-2.5 lia-text-base" />}
+                                {channel.channel === "LinkedIn" && <Briefcase className="w-2.5 h-2.5 text-lia-text-secondary" />}
                                 {channel.channel === "Website" && <Globe className="w-2.5 h-2.5 text-status-success" />}
                                 {channel.channel === "LIA Database" && <Brain className="w-2.5 h-2.5 text-wedo-cyan" />}
                                 {channel.channel === "Referral" && <Users className="w-2.5 h-2.5 text-wedo-orange" />}
@@ -387,7 +387,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                             </td>
                             <td className="text-center py-1 px-1 font-medium">{channel.candidates}</td>
                             <td className="text-center py-1 px-1">
-                              <span className={`${channel.quality >= 90 ? 'text-status-success' : channel.quality >= 80 ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-secondary'}`}>
+                              <span className={`${channel.quality >= 90 ? 'text-status-success' : channel.quality >= 80 ? 'text-lia-text-secondary' : 'text-lia-text-secondary'}`}>
                                 {channel.quality}%
                               </span>
                             </td>
@@ -396,7 +396,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                                 {channel.hired}
                               </span>
                             </td>
-                            <td className="text-right py-1 px-1.5 lia-text-base">
+                            <td className="text-right py-1 px-1.5 text-lia-text-secondary">
                               {channel.cost > 0 ? `R$${channel.cost.toLocaleString('pt-BR')}` : '-'}
                             </td>
                           </tr>
@@ -446,7 +446,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
               {selectedSections.timeline && (
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Calendar className="w-3 h-3 text-lia-text-secondary" />
                     Linha do Tempo
                   </h3>
                   <div className="relative pl-3">
@@ -482,23 +482,23 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 </h3>
                 <div className="grid grid-cols-6 gap-2">
                   <div className="col-span-2 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
-                    <p className="text-micro lia-text-base">Orçamento Total</p>
+                    <p className="text-micro text-lia-text-secondary">Orçamento Total</p>
                     <p className="text-sm font-bold text-lia-text-primary">R$ {reportData.budget.total.toLocaleString('pt-BR')}</p>
                   </div>
                   <div className="col-span-2 p-2 bg-wedo-orange/10 rounded-md border border-wedo-orange/30">
-                    <p className="text-micro lia-text-base">Gasto ({Math.round((reportData.budget.spent / reportData.budget.total) * 100)}%)</p>
+                    <p className="text-micro text-lia-text-secondary">Gasto ({Math.round((reportData.budget.spent / reportData.budget.total) * 100)}%)</p>
                     <p className="text-sm font-bold text-wedo-orange">R$ {reportData.budget.spent.toLocaleString('pt-BR')}</p>
                   </div>
                   <div className="col-span-2 p-2 bg-status-success/10 rounded-md border border-status-success/30">
-                    <p className="text-micro lia-text-base">Disponível ({Math.round((reportData.budget.remaining / reportData.budget.total) * 100)}%)</p>
+                    <p className="text-micro text-lia-text-secondary">Disponível ({Math.round((reportData.budget.remaining / reportData.budget.total) * 100)}%)</p>
                     <p className="text-sm font-bold text-status-success">R$ {reportData.budget.remaining.toLocaleString('pt-BR')}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
                   {reportData.budget.breakdown.map((item) => (
                     <div key={item.category} className="p-1.5 bg-gray-50 rounded-md border border-lia-border-subtle text-center">
-                      <p className="text-micro lia-text-base truncate">{item.category}</p>
-                      <p className="text-micro font-semibold lia-text-strong">R$ {item.amount.toLocaleString('pt-BR')}</p>
+                      <p className="text-micro text-lia-text-secondary truncate">{item.category}</p>
+                      <p className="text-micro font-semibold text-lia-text-primary">R$ {item.amount.toLocaleString('pt-BR')}</p>
                       <p className="text-micro lia-text-secondary">{Math.round((item.amount / reportData.budget.spent) * 100)}%</p>
                     </div>
                   ))}
@@ -516,7 +516,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 <div className="space-y-1.5 p-2 bg-lia-bg-primary rounded-b border border-lia-border-subtle border-t-0">
                   {[
                     { icon: CheckCircle, color: "text-status-success", bgColor: "bg-status-success/10", title: "Acelerar Processo de Entrevista", desc: "Com 34 candidatos em fase de entrevista, recomenda-se agendar entrevistas em bloco para reduzir o tempo de processo em 30%." },
-                    { icon: Brain, color: "text-lia-text-secondary dark:text-lia-text-tertiary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary", title: "Otimizar Triagem com LIA", desc: "Aumentar o uso da LIA para triagem inicial pode reduzir custos em R$ 3.000 e melhorar a qualidade dos candidatos em 15%." },
+                    { icon: Brain, color: "text-lia-text-secondary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary", title: "Otimizar Triagem com LIA", desc: "Aumentar o uso da LIA para triagem inicial pode reduzir custos em R$ 3.000 e melhorar a qualidade dos candidatos em 15%." },
                     { icon: Target, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10", title: "Focar em Canais de Alta Performance", desc: "LinkedIn e LIA Database apresentam melhor qualidade de candidatos. Considere realocar 40% do orçamento para estes canais." },
                     { icon: Clock, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10", title: "Definir Prazo para Decisão Final", desc: "Estabelecer deadline de 10 dias para decisões finais pode evitar perda de candidatos qualificados para concorrentes." }
                   ].map((rec, idx) => (
@@ -526,16 +526,16 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                       </div>
                       <div className="flex-1">
                         <h4 className="text-micro font-semibold text-lia-text-primary">{rec.title}</h4>
-                        <p className="text-micro lia-text-base leading-tight">{rec.desc}</p>
+                        <p className="text-micro text-lia-text-secondary leading-tight">{rec.desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
                 <div className="p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default flex items-start gap-2">
-                  <Zap className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
+                  <Zap className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
                   <div>
                     <h4 className="text-micro font-semibold text-lia-text-primary">Ação Prioritária</h4>
-                    <p className="text-micro text-lia-text-primary dark:text-lia-text-primary">
+                    <p className="text-micro text-lia-text-primary">
                       Agendar entrevistas com os 12 finalistas nos próximos 3 dias para manter o momentum do processo e garantir as contratações dentro do prazo.
                     </p>
                   </div>

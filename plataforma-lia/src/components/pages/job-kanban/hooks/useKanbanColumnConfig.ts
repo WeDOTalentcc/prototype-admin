@@ -16,28 +16,28 @@ export function useKanbanColumnConfig({ dynamicStages }: UseKanbanColumnConfigPr
         bg: 'bg-white dark:bg-lia-bg-primary',
         border: 'border-lia-border-subtle dark:border-lia-border-subtle',
         dot: 'bg-gray-700 dark:bg-gray-300',
-        header: 'text-lia-text-primary dark:text-lia-text-primary',
+        header: 'text-lia-text-primary',
         accentColor: 'var(--gray-600)'
       },
       hired: {
         bg: 'bg-white dark:bg-lia-bg-primary',
         border: 'border-lia-border-subtle dark:border-lia-border-subtle',
         dot: 'bg-gray-700 dark:bg-gray-300',
-        header: 'text-lia-text-primary dark:text-lia-text-primary',
+        header: 'text-lia-text-primary',
         accentColor: 'var(--gray-600)'
       },
       rejected: {
         bg: 'bg-white dark:bg-lia-bg-primary',
         border: 'border-lia-border-subtle dark:border-lia-border-subtle',
         dot: 'bg-gray-300 dark:bg-lia-bg-elevated',
-        header: 'text-lia-text-primary dark:text-lia-text-primary',
+        header: 'text-lia-text-primary',
         accentColor: 'var(--gray-200)'
       },
       offer_declined: {
         bg: 'bg-white dark:bg-lia-bg-primary',
         border: 'border-lia-border-subtle dark:border-lia-border-subtle',
         dot: 'bg-gray-300 dark:bg-lia-bg-elevated',
-        header: 'text-lia-text-primary dark:text-lia-text-primary',
+        header: 'text-lia-text-primary',
         accentColor: 'var(--gray-200)'
       }
     }
@@ -54,7 +54,7 @@ export function useKanbanColumnConfig({ dynamicStages }: UseKanbanColumnConfigPr
       bg: 'bg-white dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
       dot: 'bg-gray-500 dark:bg-gray-400',
-      header: 'text-lia-text-primary dark:text-lia-text-primary',
+      header: 'text-lia-text-primary',
       accentColor: stageColor
     }
   }

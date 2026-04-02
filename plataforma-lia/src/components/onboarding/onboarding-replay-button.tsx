@@ -73,7 +73,7 @@ export function OnboardingReplayButton({
           </div>
           <div className="flex-1">
             <div className="font-medium">Central de Ajuda</div>
-            <div className="text-xs lia-text-strong">
+            <div className="text-xs text-lia-text-primary">
               Documentação e tutoriais
             </div>
           </div>
@@ -85,7 +85,7 @@ export function OnboardingReplayButton({
           </div>
           <div className="flex-1">
             <div className="font-medium">Vídeos Tutoriais</div>
-            <div className="text-xs lia-text-strong">
+            <div className="text-xs text-lia-text-primary">
               Aprenda com exemplos práticos
             </div>
           </div>
@@ -97,7 +97,7 @@ export function OnboardingReplayButton({
           </div>
           <div className="flex-1">
             <div className="font-medium">Guia de Início Rápido</div>
-            <div className="text-xs lia-text-strong">
+            <div className="text-xs text-lia-text-primary">
               Setup em 3 passos simples
             </div>
           </div>
@@ -111,7 +111,7 @@ export function OnboardingReplayButton({
           </div>
           <div className="flex-1">
             <div className="font-medium">Feedback</div>
-            <div className="text-xs lia-text-strong">
+            <div className="text-xs text-lia-text-primary">
               Ajude-nos a melhorar a LIA
             </div>
           </div>

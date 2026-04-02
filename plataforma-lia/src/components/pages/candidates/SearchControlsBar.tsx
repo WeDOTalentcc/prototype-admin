@@ -33,13 +33,13 @@ export function SearchControlsBar({
   return (
     <div className="flex items-center gap-3">
       {selectedCandidatesForBatch.size > 0 && (
-        <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-0 text-xs font-medium">
+        <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-0 text-xs font-medium">
           🎯 {selectedCandidatesForBatch.size}
         </Badge>
       )}
 
       {searchSortBy !== 'relevance' && (
-        <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary border-0 text-xs font-medium gap-1">
+        <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-0 text-xs font-medium gap-1">
           <ArrowUpDown className="w-3 h-3" />
           {searchSortBy === 'score_desc' ? 'Maior Score' :
            searchSortBy === 'score_asc' ? 'Menor Score' :

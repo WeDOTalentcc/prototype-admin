@@ -88,7 +88,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
     }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+          <DialogTitle className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary">
             <Brain className="w-5 h-5 text-wedo-cyan" />
             {previewSuggestion?.name}
           </DialogTitle>

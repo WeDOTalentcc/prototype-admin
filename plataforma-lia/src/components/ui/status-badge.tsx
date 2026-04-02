@@ -494,8 +494,8 @@ export function WarningBadge({ days, message, className }: WarningBadgeProps) {
         className
       )}
     >
-      <AlertCircle className="w-2 h-2 flex-shrink-0 text-lia-text-tertiary dark:text-lia-text-secondary" />
-      <span className="text-micro text-lia-text-secondary dark:text-lia-text-primary font-semibold">
+      <AlertCircle className="w-2 h-2 flex-shrink-0 text-lia-text-tertiary" />
+      <span className="text-micro text-lia-text-secondary font-semibold">
         {displayText}
       </span>
     </div>

@@ -49,7 +49,7 @@ export function SearchSourceSelector({
                 searchSource === 'local' ? 'bg-gray-200' : 'hover:bg-gray-100'
               }`}
             >
-              <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'lia-text-700' : 'lia-text-600'}`} />
+              <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`} />
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
@@ -70,7 +70,7 @@ export function SearchSourceSelector({
                   searchSource === 'hybrid' ? 'bg-gray-200' : 'hover:bg-gray-100'
                 }`}
               >
-                <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'lia-text-700' : 'lia-text-600'}`} />
+                <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -92,7 +92,7 @@ export function SearchSourceSelector({
                   searchSource === 'global' ? 'bg-gray-200' : 'hover:bg-gray-100'
                 }`}
               >
-                <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'lia-text-700' : 'lia-text-600'}`} />
+                <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`} />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
@@ -118,12 +118,12 @@ export function SearchSourceSelector({
                   : 'hover:bg-gray-100'
               }`}
             >
-              <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'lia-text-400'}`} />
+              <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'text-lia-text-tertiary'}`} />
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <p className="text-xs font-medium">Apenas com Email</p>
-            <p className="text-micro lia-text-400">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+            <p className="text-micro text-lia-text-tertiary">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -141,12 +141,12 @@ export function SearchSourceSelector({
                   : 'hover:bg-gray-100'
               }`}
             >
-              <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'lia-text-400'}`} />
+              <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'text-lia-text-tertiary'}`} />
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
             <p className="text-xs font-medium">Apenas com Telefone</p>
-            <p className="text-micro lia-text-400">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+            <p className="text-micro text-lia-text-tertiary">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

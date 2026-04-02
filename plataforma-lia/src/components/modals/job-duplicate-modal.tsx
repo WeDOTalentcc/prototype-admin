@@ -115,11 +115,11 @@ export function JobDuplicateModal({
       <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
         <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
               <Copy className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Duplicar Vaga
               </DialogTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5">
@@ -132,7 +132,7 @@ export function JobDuplicateModal({
         <div className="py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-3">
-              <div className="p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
+              <div className="p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
                 <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   Vaga Original
                 </h4>
@@ -143,11 +143,11 @@ export function JobDuplicateModal({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1">
                       {job.code && (
-                        <span className="text-micro font-medium text-lia-text-secondary bg-gray-100 px-1.5 py-0.5 rounded-full">
+                        <span className="text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full">
                           {job.code}
                         </span>
                       )}
-                      <span className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary truncate">
+                      <span className="text-base-ui font-semibold text-lia-text-primary truncate">
                         {job.title}
                       </span>
                     </div>
@@ -177,7 +177,7 @@ export function JobDuplicateModal({
                 <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2 font-['Open_Sans',sans-serif]">
                   O que será mantido
                 </h4>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1 p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
                   {KEPT_ITEMS.map((item) => (
                     <div key={item} className="flex items-center gap-1.5 text-xs text-lia-text-primary">
                       <Check className="w-3 h-3 text-status-success flex-shrink-0" />
@@ -196,22 +196,22 @@ export function JobDuplicateModal({
                   onValueChange={(val) => setCandidateOption(val as 'all' | 'approved' | 'none')}
                   className="space-y-1"
                 >
-                  <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-lia-border-subtle">
-                    <RadioGroupItem value="all" id="all" className="border-gray-400 text-lia-text-primary" />
+                  <div className="flex items-center space-x-2 p-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                    <RadioGroupItem value="all" id="all" className="border-lia-border-medium text-lia-text-primary" />
                     <Label htmlFor="all" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
                       <Users className="w-2.5 h-2.5 text-lia-text-disabled" />
                       Todos ({job.candidates_count || 0})
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-lia-border-subtle">
-                    <RadioGroupItem value="approved" id="approved" className="border-gray-400 text-lia-text-primary" />
+                  <div className="flex items-center space-x-2 p-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                    <RadioGroupItem value="approved" id="approved" className="border-lia-border-medium text-lia-text-primary" />
                     <Label htmlFor="approved" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
                       <Check className="w-2.5 h-2.5 text-lia-text-disabled" />
                       Apenas aprovados ({job.approved_count || 0})
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-2 rounded-md bg-gray-50 border border-lia-border-subtle">
-                    <RadioGroupItem value="none" id="none" className="border-gray-400 text-lia-text-primary" />
+                  <div className="flex items-center space-x-2 p-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                    <RadioGroupItem value="none" id="none" className="border-lia-border-medium text-lia-text-primary" />
                     <Label htmlFor="none" className="text-xs text-lia-text-primary cursor-pointer">
                       Começar com base vazia
                     </Label>
@@ -232,13 +232,13 @@ export function JobDuplicateModal({
                       value={newTitle}
                       onChange={(e) => setNewTitle(e.target.value)}
                       placeholder="Nome da nova vaga"
-                      className="h-8 text-xs border-lia-border-subtle focus:ring-gray-900/20 focus:border-gray-400"
+                      className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-lia-text-primary">Recrutador Responsável</Label>
                     <Select value={recruiterId} onValueChange={setRecruiterId}>
-                      <SelectTrigger className="h-8 text-xs border-lia-border-subtle focus:ring-gray-900/20">
+                      <SelectTrigger className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20">
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent>
@@ -267,7 +267,7 @@ export function JobDuplicateModal({
                       type="date"
                       value={deadlineShortlist}
                       onChange={(e) => setDeadlineShortlist(e.target.value)}
-                      className="h-8 text-xs border-lia-border-subtle focus:ring-gray-900/20 focus:border-gray-400"
+                      className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
                   </div>
                   <div className="space-y-1">
@@ -279,7 +279,7 @@ export function JobDuplicateModal({
                       type="date"
                       value={deadlineScreening}
                       onChange={(e) => setDeadlineScreening(e.target.value)}
-                      className="h-8 text-xs border-lia-border-subtle focus:ring-gray-900/20 focus:border-gray-400"
+                      className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
                   </div>
                   <div className="space-y-1">
@@ -291,7 +291,7 @@ export function JobDuplicateModal({
                       type="date"
                       value={deadlineClosing}
                       onChange={(e) => setDeadlineClosing(e.target.value)}
-                      className="h-8 text-xs border-lia-border-subtle focus:ring-gray-900/20 focus:border-gray-400"
+                      className="h-8 text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     />
                   </div>
                 </div>
@@ -304,14 +304,14 @@ export function JobDuplicateModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleDuplicate}
             disabled={!newTitle.trim() || !recruiterId}
-            className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
           >
             <Copy className="w-3.5 h-3.5 mr-1.5" />
             Criar Duplicata

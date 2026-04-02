@@ -94,7 +94,7 @@ export function CandidateDetailSidebar({
   }
 
   const getScoreColor = (score?: number) => {
-    if (!score) return "bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary"
+    if (!score) return "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
     if (score >= 80) return "bg-status-success/15 text-status-success"
     if (score >= 60) return "bg-status-warning/15 text-status-warning"
     return "bg-wedo-orange/15 text-wedo-orange"
@@ -113,13 +113,13 @@ export function CandidateDetailSidebar({
               {candidate.picture_url ? (
                 <AvatarImage src={candidate.picture_url} alt={candidate.name} />
               ) : null}
-              <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary text-lg">
+              <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-lg">
                 {getInitials(candidate.name)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <SheetTitle className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary">
+                <SheetTitle className="text-xl font-semibold text-lia-text-primary">
                   {candidate.name}
                 </SheetTitle>
                 {candidate.is_open_to_work && (
@@ -130,13 +130,13 @@ export function CandidateDetailSidebar({
                 )}
               </div>
               {candidate.current_title && (
-                <p className="lia-text-600 dark:text-lia-text-tertiary mt-1">
+                <p className="text-lia-text-secondary mt-1">
                   {candidate.current_title}
                   {candidate.current_company && ` @ ${candidate.current_company}`}
                 </p>
               )}
               {candidate.location && (
-                <p className="text-sm lia-text-800 dark:text-lia-text-primary flex items-center gap-1 mt-1">
+                <p className="text-sm text-lia-text-primary flex items-center gap-1 mt-1">
                   <MapPin className="h-3 w-3" />
                   {candidate.location}
                 </p>
@@ -147,8 +147,8 @@ export function CandidateDetailSidebar({
                     variant="outline" 
                     className={`${
                       candidate.source === "local" 
-                        ? "border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary" 
-                        : "border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary"
+                        ? "border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-secondary" 
+                        : "border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
                     }`}
                   >
                     {candidate.source === "local" ? (
@@ -185,7 +185,7 @@ export function CandidateDetailSidebar({
                   </p>
                 )}
                 {!candidate.is_discovered && candidate.source === "pearch" && (
-                  <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                  <p className="text-xs text-lia-text-secondary">
                     Candidato encontrado na busca global (Pearch)
                   </p>
                 )}
@@ -198,11 +198,11 @@ export function CandidateDetailSidebar({
           <div className="p-6 space-y-6">
             {candidate.insights?.overall_summary && (
               <div>
-                <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 flex items-center gap-2">
-                  <Star className="h-4 w-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <h4 className="text-sm font-medium text-lia-text-primary mb-2 flex items-center gap-2">
+                  <Star className="h-4 w-4 text-lia-text-secondary" />
                   Resumo do Match
                 </h4>
-                <p className="text-sm lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                <p className="text-sm text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                   {candidate.insights.overall_summary}
                 </p>
               </div>
@@ -210,20 +210,20 @@ export function CandidateDetailSidebar({
 
             {candidate.summary && (
               <div>
-                <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">Sobre</h4>
-                <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">{candidate.summary}</p>
+                <h4 className="text-sm font-medium text-lia-text-primary mb-2">Sobre</h4>
+                <p className="text-sm text-lia-text-secondary">{candidate.summary}</p>
               </div>
             )}
 
             {candidate.skills.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">Habilidades</h4>
+                <h4 className="text-sm font-medium text-lia-text-primary mb-2">Habilidades</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {candidate.skills.map((skill) => (
                     <Badge 
                       key={skill} 
                       variant="secondary" 
-                      className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary font-normal"
+                      className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary font-normal"
                     >
                       {skill}
                     </Badge>
@@ -234,24 +234,24 @@ export function CandidateDetailSidebar({
 
             {candidate.experiences && candidate.experiences.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-lia-text-primary mb-3 flex items-center gap-2">
                   <Briefcase className="h-4 w-4" />
                   Experiência
                 </h4>
                 <div className="space-y-4">
                   {candidate.experiences.slice(0, 3).map((exp, idx) => (
                     <div key={`exp-${idx}`} className="relative pl-4 border-l-2 border-lia-border-subtle dark:border-lia-border-subtle">
-                      <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-gray-300 dark:lia-bg-600" />
-                      <p className="font-medium lia-text-800 dark:text-lia-text-primary">{exp.title}</p>
-                      <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">{exp.company}</p>
+                      <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-gray-300" />
+                      <p className="font-medium text-lia-text-primary">{exp.title}</p>
+                      <p className="text-sm text-lia-text-secondary">{exp.company}</p>
                       {(exp.start_date || exp.end_date) && (
-                        <p className="text-xs lia-text-800 dark:text-lia-text-primary flex items-center gap-1 mt-1">
+                        <p className="text-xs text-lia-text-primary flex items-center gap-1 mt-1">
                           <Calendar className="h-3 w-3" />
                           {exp.start_date} - {exp.is_current ? "Atual" : exp.end_date}
                         </p>
                       )}
                       {exp.description && (
-                        <p className="text-sm lia-text-800 dark:text-lia-text-primary mt-1 line-clamp-2">{exp.description}</p>
+                        <p className="text-sm text-lia-text-primary mt-1 line-clamp-2">{exp.description}</p>
                       )}
                     </div>
                   ))}
@@ -261,21 +261,21 @@ export function CandidateDetailSidebar({
 
             {candidate.education && candidate.education.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-lia-text-primary mb-3 flex items-center gap-2">
                   <GraduationCap className="h-4 w-4" />
                   Formação
                 </h4>
                 <div className="space-y-3">
                   {candidate.education.slice(0, 2).map((edu, idx) => (
                     <div key={`edu-${idx}`}>
-                      <p className="font-medium lia-text-800 dark:text-lia-text-primary">{edu.school}</p>
+                      <p className="font-medium text-lia-text-primary">{edu.school}</p>
                       {(edu.degree || edu.field_of_study) && (
-                        <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">
+                        <p className="text-sm text-lia-text-secondary">
                           {edu.degree}{edu.field_of_study && ` em ${edu.field_of_study}`}
                         </p>
                       )}
                       {(edu.start_date || edu.end_date) && (
-                        <p className="text-xs lia-text-800 dark:text-lia-text-primary">
+                        <p className="text-xs text-lia-text-primary">
                           {edu.start_date} - {edu.end_date || "Atual"}
                         </p>
                       )}
@@ -287,7 +287,7 @@ export function CandidateDetailSidebar({
 
             {candidate.languages && candidate.languages.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-lia-text-primary mb-2 flex items-center gap-2">
                   <Languages className="h-4 w-4" />
                   Idiomas
                 </h4>
@@ -304,10 +304,10 @@ export function CandidateDetailSidebar({
 
             {candidate.insights?.strengths && candidate.insights.strengths.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">Pontos Fortes</h4>
+                <h4 className="text-sm font-medium text-lia-text-primary mb-2">Pontos Fortes</h4>
                 <ul className="space-y-1">
                   {candidate.insights.strengths.map((strength, idx) => (
-                    <li key={`str-${idx}`} className="text-sm lia-text-600 dark:text-lia-text-tertiary flex items-start gap-2">
+                    <li key={`str-${idx}`} className="text-sm text-lia-text-secondary flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-status-success mt-0.5 flex-shrink-0" />
                       {strength}
                     </li>
@@ -318,12 +318,12 @@ export function CandidateDetailSidebar({
 
             {candidate.insights?.outreach_message && (
               <div>
-                <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-lia-text-primary mb-2 flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
                   Sugestão de Mensagem
                 </h4>
                 <div className="relative">
-                  <p className="text-sm lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle pr-10">
+                  <p className="text-sm text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle pr-10">
                     {candidate.insights.outreach_message}
                   </p>
                   <Button
@@ -341,13 +341,13 @@ export function CandidateDetailSidebar({
             <Separator />
 
             <div>
-              <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3">Contato</h4>
+              <h4 className="text-sm font-medium text-lia-text-primary mb-3">Contato</h4>
               <div className="space-y-2">
                 {candidate.email && (
                   <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                     <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 lia-text-800 dark:text-lia-text-primary" />
-                      <span className="text-sm lia-text-800 dark:text-lia-text-primary">{candidate.email}</span>
+                      <Mail className="h-4 w-4 text-lia-text-primary" />
+                      <span className="text-sm text-lia-text-primary">{candidate.email}</span>
                     </div>
                     <div className="flex gap-1">
                       <Button
@@ -372,8 +372,8 @@ export function CandidateDetailSidebar({
                 {candidate.phone && (
                   <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                     <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 lia-text-800 dark:text-lia-text-primary" />
-                      <span className="text-sm lia-text-800 dark:text-lia-text-primary">{candidate.phone}</span>
+                      <Phone className="h-4 w-4 text-lia-text-primary" />
+                      <span className="text-sm text-lia-text-primary">{candidate.phone}</span>
                     </div>
                     <Button
                       variant="ghost"
@@ -393,19 +393,19 @@ export function CandidateDetailSidebar({
                     className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
                   >
                     <div className="flex items-center gap-2">
-                      <Linkedin className="h-4 w-4 lia-text-600" />
-                      <span className="text-sm lia-text-800 dark:text-lia-text-primary">Ver perfil no LinkedIn</span>
+                      <Linkedin className="h-4 w-4 text-lia-text-secondary" />
+                      <span className="text-sm text-lia-text-primary">Ver perfil no LinkedIn</span>
                     </div>
-                    <ExternalLink className="h-4 w-4 lia-text-600 dark:text-lia-text-tertiary" />
+                    <ExternalLink className="h-4 w-4 text-lia-text-secondary" />
                   </a>
                 )}
                 {!candidate.email && !candidate.phone && candidate.has_email && (
-                  <p className="text-sm lia-text-800 dark:text-lia-text-primary italic">
+                  <p className="text-sm text-lia-text-primary italic">
                     Email disponível via Busca Global (custo: 2 créditos)
                   </p>
                 )}
                 {!candidate.phone && candidate.has_phone && (
-                  <p className="text-sm lia-text-800 dark:text-lia-text-primary italic">
+                  <p className="text-sm text-lia-text-primary italic">
                     Telefone disponível via Busca Global (custo: 14 créditos)
                   </p>
                 )}
@@ -419,7 +419,7 @@ export function CandidateDetailSidebar({
             {candidate.is_discovered && onSaveToBase && (
               <Button 
                 variant="outline"
-                className="w-full border-gray-900 dark:lia-border-50 lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary"
+                className="w-full border-gray-900 dark:lia-border-50 text-lia-text-secondary hover:bg-gray-100 dark:bg-lia-bg-secondary"
                 onClick={() => onSaveToBase(candidate.id)}
               >
                 <Save className="h-4 w-4 mr-2" />
@@ -437,7 +437,7 @@ export function CandidateDetailSidebar({
               </Button>
               {onAddToJob && (
                 <Button 
-                  className="flex-1 bg-gray-900 hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 text-white"
+                  className="flex-1 bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 text-white"
                   onClick={() => onAddToJob(candidate.id)}
                 >
                   <UserPlus className="h-4 w-4 mr-2" />

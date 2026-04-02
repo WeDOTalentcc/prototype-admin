@@ -36,10 +36,10 @@ export function ViewingListBanner({
             <List className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
-            <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
+            <h3 className="font-medium text-lia-text-primary mb-1">
               📋 Visualizando Lista: {viewingList.name}
             </h3>
-            <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+            <p className="text-sm text-lia-text-primary" aria-live="polite" aria-atomic="true">
               {candidates.length} {candidates.length === 1 ? 'candidato' : 'candidatos'} nesta lista
             </p>
           </div>

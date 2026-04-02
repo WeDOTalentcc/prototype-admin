@@ -45,7 +45,7 @@ export const FilterSectionPerfil = React.memo(function FilterSectionPerfil({
       field: "profile" as const,
       key: "isTopUniversities",
       icon: GraduationCap,
-      iconColor: "lia-text-600 dark:text-lia-text-tertiary",
+      iconColor: "text-lia-text-secondary",
       label: "Top Universidades",
       description: "Formados em universidades de elite",
       value: filters.profile?.isTopUniversities || false,
@@ -83,10 +83,10 @@ export const FilterSectionPerfil = React.memo(function FilterSectionPerfil({
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <item.icon className={cn("w-4 h-4", isLocalSearch ? "lia-text-400" : item.iconColor)} />
+                  <item.icon className={cn("w-4 h-4", isLocalSearch ? "text-lia-text-tertiary" : item.iconColor)} />
                   <div>
-                    <div className={cn("text-xs font-medium", isLocalSearch && "lia-text-400")}>{item.label}</div>
-                    <div className="text-xs lia-text-500">{item.description}</div>
+                    <div className={cn("text-xs font-medium", isLocalSearch && "text-lia-text-tertiary")}>{item.label}</div>
+                    <div className="text-xs text-lia-text-secondary">{item.description}</div>
                   </div>
                 </div>
                 <Switch

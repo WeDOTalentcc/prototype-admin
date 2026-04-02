@@ -20,8 +20,8 @@ import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { toast } from "sonner"
 
 const LIST_COLORS = [
-  { value: 'var(--gray-400)', name: 'Cinza' },
-  { value: 'var(--gray-600)', name: 'Cyan (LIA)' },
+  { value: 'var(--lia-text-tertiary)', name: 'Cinza' },
+  { value: 'var(--lia-text-secondary)', name: 'Cyan (LIA)' },
   { value: 'var(--status-success)', name: 'Verde' },
   { value: 'var(--status-warning)', name: 'Amarelo' },
   { value: 'var(--status-error)', name: 'Vermelho' },
@@ -47,7 +47,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [isCreatingNew, setIsCreatingNew] = useState(false)
   const [newListName, setNewListName] = useState('')
-  const [newListColor, setNewListColor] = useState('var(--gray-400)')
+  const [newListColor, setNewListColor] = useState('var(--lia-text-tertiary)')
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -57,7 +57,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
       setSelectedListId(null)
       setIsCreatingNew(false)
       setNewListName('')
-      setNewListColor('var(--gray-400)')
+      setNewListColor('var(--lia-text-tertiary)')
     }
   }, [isOpen])
 
@@ -137,7 +137,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
       <DialogContent className={`max-w-md ${cardStyles.default}`}>
         <DialogHeader>
           <DialogTitle className={`${textStyles.title} flex items-center gap-2`}>
-            <List className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <List className="w-5 h-5 text-lia-text-secondary" />
             Adicionar à Lista
           </DialogTitle>
           <DialogDescription className={textStyles.bodySmall} asChild>
@@ -149,7 +149,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                 </span>
               </span>
               {displayNames.length > 0 && (
-                <span className="block mt-2 text-lia-text-primary dark:text-lia-text-primary">
+                <span className="block mt-2 text-lia-text-primary">
                   {displayNames.join(', ')}
                   {remainingCount > 0 && ` e mais ${remainingCount}`}
                 </span>
@@ -180,14 +180,14 @@ const [lists, setLists] = useState<CandidateList[]>([])
                         key={list.id}
                         className={cn(
                           "flex items-center space-x-3 p-3 rounded-md border border-lia-border-subtle cursor-pointer transition-colors motion-reduce:transition-none hover:border-lia-border-default",
-                          selectedListId === list.id && "border-gray-800 bg-gray-50"
+                          selectedListId === list.id && "border-lia-btn-primary-bg bg-lia-bg-secondary"
                         )}
                         onClick={() => setSelectedListId(list.id)}
                       >
                         <RadioGroupItem value={list.id} id={list.id} />
                         <div
                           className="w-3 h-3 rounded-full flex-shrink-0"
-                          style={{backgroundColor: list.color || 'var(--gray-400)'}}
+                          style={{backgroundColor: list.color || 'var(--lia-text-tertiary)'}}
                         />
                         <div className="flex-1 min-w-0">
                           <Label
@@ -201,7 +201,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                           </span>
                         </div>
                         {selectedListId === list.id && (
-                          <Check className="w-4 h-4 flex-shrink-0 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                          <Check className="w-4 h-4 flex-shrink-0 text-lia-text-secondary" />
                         )}
                       </div>
                     ))}
@@ -214,7 +214,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-dashed border-lia-border-default text-lia-text-primary dark:text-lia-text-primary hover:border-gray-400 hover:text-lia-text-primary"
+                    className="w-full border-dashed border-lia-border-default text-lia-text-primary hover:border-lia-border-medium hover:text-lia-text-primary"
                     onClick={() => {
                       setIsCreatingNew(true)
                       setSelectedListId(null)
@@ -237,11 +237,11 @@ const [lists, setLists] = useState<CandidateList[]>([])
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-2 text-xs text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary"
+                        className="h-6 px-2 text-xs text-lia-text-primary hover:text-lia-text-primary"
                         onClick={() => {
                           setIsCreatingNew(false)
                           setNewListName('')
-                          setNewListColor('var(--gray-400)')
+                          setNewListColor('var(--lia-text-tertiary)')
                         }}
                       >
                         <X className="w-3 h-3 mr-1" />
@@ -276,7 +276,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                           className={cn(
                             "w-8 h-8 rounded-md border-2 transition-colors flex items-center justify-center",
                             newListColor === color.value
-                              ? "border-gray-900 scale-110"
+                              ? "border-lia-btn-primary-bg scale-110"
                               : "border-transparent hover:scale-105"
                           )}
                           style={{backgroundColor: color.value}}
@@ -296,13 +296,13 @@ const [lists, setLists] = useState<CandidateList[]>([])
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
+        <DialogFooter className="gap-2 sm:gap-2 border-t border-lia-border-subtle bg-lia-bg-secondary p-4 -mx-6 -mb-6 rounded-b-xl">
           <Button
             type="button"
             variant="outline"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-lia-text-secondary hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
           >
             Cancelar
           </Button>
@@ -310,7 +310,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || isLoading || !canSubmit}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             {isSubmitting ? (
               <>

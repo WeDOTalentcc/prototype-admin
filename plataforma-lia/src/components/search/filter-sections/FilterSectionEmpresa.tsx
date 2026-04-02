@@ -64,7 +64,7 @@ export const FilterSectionEmpresa = React.memo(function FilterSectionEmpresa({
           onFundingStagesChange={(fundingStages) => updateFilter("company", "fundingStages", fundingStages)}
           placeholder="Digite empresa e pressione Enter (ex: Google, Microsoft, Nubank)"
         />
-        <p className="text-xs mt-2 lia-text-500">
+        <p className="text-xs mt-2 text-lia-text-secondary">
           Dica: Use &quot;Ask AI&quot; para buscar empresas similares ou por descrição (ex: &quot;fintechs em São Paulo&quot;)
         </p>
       </div>
@@ -121,7 +121,7 @@ export const FilterSectionEmpresa = React.memo(function FilterSectionEmpresa({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
+                <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-lia-text-tertiary")}>
                   Sede da Empresa
                   {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                 </Label>
@@ -153,7 +153,7 @@ export const FilterSectionEmpresa = React.memo(function FilterSectionEmpresa({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
+                <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-lia-text-tertiary")}>
                   Porte da Empresa
                   {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                 </Label>
@@ -175,10 +175,10 @@ export const FilterSectionEmpresa = React.memo(function FilterSectionEmpresa({
                         className={cn(
                           "px-3 py-1.5 rounded-full text-xs border transition-[width,height]",
                           isLocalSearch
-                            ? "border-lia-border-subtle bg-gray-100 lia-text-400 cursor-not-allowed"
+                            ? "border-lia-border-subtle bg-gray-100 text-lia-text-tertiary cursor-not-allowed"
                             : isSelected
-                              ? "border-gray-500 bg-gray-100 dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary"
-                              : "border-lia-border-subtle bg-lia-bg-primary lia-text-600 hover:border-lia-border-default"
+                              ? "border-gray-500 bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary"
+                              : "border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-lia-border-default"
                         )}
                       >
                         {size.label}
@@ -202,7 +202,7 @@ export const FilterSectionEmpresa = React.memo(function FilterSectionEmpresa({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
+                <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-lia-text-tertiary")}>
                   Empresa Fundada Após
                   {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                 </Label>
@@ -224,13 +224,13 @@ export const FilterSectionEmpresa = React.memo(function FilterSectionEmpresa({
                       isLocalSearch && "bg-gray-100 cursor-not-allowed"
                     )}
                   />
-                  <div className={cn("absolute right-3 top-1/2 transform -translate-y-1/2", isLocalSearch ? "lia-text-300" : "lia-text-400")}>
+                  <div className={cn("absolute right-3 top-1/2 transform -translate-y-1/2", isLocalSearch ? "text-lia-text-disabled" : "text-lia-text-tertiary")}>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
                 </div>
-                <p className={cn("text-xs mt-1", isLocalSearch ? "lia-text-400" : "lia-text-500")}>
+                <p className={cn("text-xs mt-1", isLocalSearch ? "text-lia-text-tertiary" : "text-lia-text-secondary")}>
                   Filtrar empresas fundadas após este ano
                 </p>
               </div>
@@ -247,7 +247,7 @@ export const FilterSectionEmpresa = React.memo(function FilterSectionEmpresa({
           <Tooltip>
             <TooltipTrigger asChild>
               <div className={cn(isLocalSearch && "opacity-50 cursor-not-allowed")}>
-                <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "lia-text-400")}>
+                <Label className={cn("text-xs mb-1.5 block font-medium", isLocalSearch && "text-lia-text-tertiary")}>
                   Estágio de Funding
                   {isLocalSearch && <span className="ml-1 text-status-warning">(apenas busca global)</span>}
                 </Label>

@@ -220,7 +220,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
-        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
+        <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
       </div>
     )
   }
@@ -245,25 +245,25 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1.5">
-                <Globe className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
-                <span className="font-['Open_Sans',sans-serif] text-base-ui font-semibold lia-text-900 dark:lia-text-50">
+                <Globe className="w-4 h-4 text-lia-text-secondary" />
+                <span className="font-['Open_Sans',sans-serif] text-base-ui font-semibold text-lia-text-primary">
                   Habilitar Busca Global
                 </span>
                 {settings.globalSearchEnabled ? (
                   <Badge className="bg-status-success/15 text-status-success text-xs">Ativo</Badge>
                 ) : (
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-500 dark:text-lia-text-tertiary text-xs">Desativado</Badge>
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">Desativado</Badge>
                 )}
               </div>
-              <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mb-2" aria-live="polite" aria-atomic="true">
+              <p className="text-xs text-lia-text-secondary mb-2" aria-live="polite" aria-atomic="true">
                 Controla o acesso à busca global de candidatos em toda a plataforma.
               </p>
               
               {/* Detailed explanation */}
               <div className={`p-3 rounded-md border ${settings.globalSearchEnabled ? 'bg-gray-50 border-lia-border-subtle dark:bg-lia-bg-primary/20 dark:lia-border-800' : 'bg-status-warning/10 border-status-warning/30 dark:bg-status-warning/20 dark:border-status-warning/30'}`}>
                 <div className="flex items-start gap-1.5">
-                  <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-600 dark:text-lia-text-tertiary" />
-                  <div className="text-micro lia-text-800 dark:text-lia-text-primary space-y-1.5">
+                  <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+                  <div className="text-micro text-lia-text-primary space-y-1.5">
                     {settings.globalSearchEnabled ? (
                       <>
                         <p className="font-medium">Quando habilitado, você tem acesso a:</p>
@@ -317,8 +317,8 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
           <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 lia-text-900 dark:lia-text-50">
-                  <Users className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+                <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+                  <Users className="w-3.5 h-3.5 text-lia-text-secondary" />
                   Limite de Candidatos por Busca Global
                 </CardTitle>
                 {!isEditingLimits ? (
@@ -388,7 +388,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       <div className="flex items-center gap-2">
                         <Label
                           htmlFor={`limit-${option.value}`}
-                          className={`text-xs font-medium lia-text-950 dark:lia-text-50 ${isEditingLimits ? 'cursor-pointer' : 'cursor-default'}`}
+                          className={`text-xs font-medium text-lia-text-primary ${isEditingLimits ? 'cursor-pointer' : 'cursor-default'}`}
                         >
                           {option.label}
                         </Label>
@@ -398,15 +398,15 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                           </Badge>
                         )}
                       </div>
-                      <p className="text-micro lia-text-800 dark:text-lia-text-primary mt-0.5">
+                      <p className="text-micro text-lia-text-primary mt-0.5">
                         {option.description}
                       </p>
                     </div>
                     <div className="text-right ml-3">
-                      <div className="text-xs font-semibold lia-text-950 dark:lia-text-50">
+                      <div className="text-xs font-semibold text-lia-text-primary">
                         ~{option.estimatedCredits.fast} créditos
                       </div>
-                      <div className="text-micro lia-text-800 dark:text-lia-text-primary">
+                      <div className="text-micro text-lia-text-primary">
                         estimativa
                       </div>
                     </div>
@@ -423,8 +423,8 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
           <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 lia-text-900 dark:lia-text-50">
-                  <Settings className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+                <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+                  <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
                   Opções de Busca
                 </CardTitle>
                 {!isEditingOptions ? (
@@ -468,10 +468,10 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
             <CardContent className="pt-3 space-y-2">
               <div className={`flex items-center justify-between gap-4 py-1.5 border-b border-lia-border-subtle dark:lia-border-800 ${!isEditingOptions ? 'opacity-75' : ''}`}>
                 <div>
-                  <div className="text-xs font-medium lia-text-950 dark:lia-text-50">
+                  <div className="text-xs font-medium text-lia-text-primary">
                     Revelar emails automaticamente
                   </div>
-                  <div className="text-micro lia-text-800 dark:text-lia-text-primary">
+                  <div className="text-micro text-lia-text-primary">
                     +2 créditos por candidato com email revelado
                   </div>
                 </div>
@@ -484,10 +484,10 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
               <div className={`flex items-center justify-between gap-4 py-1.5 border-b border-lia-border-subtle dark:lia-border-800 ${!isEditingOptions ? 'opacity-75' : ''}`}>
                 <div>
-                  <div className="text-xs font-medium lia-text-950 dark:lia-text-50">
+                  <div className="text-xs font-medium text-lia-text-primary">
                     Revelar telefones automaticamente
                   </div>
-                  <div className="text-micro lia-text-800 dark:text-lia-text-primary">
+                  <div className="text-micro text-lia-text-primary">
                     +14 créditos por candidato com telefone revelado
                   </div>
                 </div>
@@ -500,10 +500,10 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
               <div className={`flex items-center justify-between gap-4 py-1.5 border-b border-lia-border-subtle dark:lia-border-800 ${!isEditingOptions ? 'opacity-75' : ''}`}>
                 <div>
-                  <div className="text-xs font-medium lia-text-950 dark:lia-text-50">
+                  <div className="text-xs font-medium text-lia-text-primary">
                     Priorizar perfis atualizados recentemente
                   </div>
-                  <div className="text-micro lia-text-800 dark:text-lia-text-primary">
+                  <div className="text-micro text-lia-text-primary">
                     Candidatos ativos nos últimos 90 dias
                   </div>
                 </div>
@@ -518,18 +518,18 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
           <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
             <CardHeader className="pb-2">
-              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 lia-text-900 dark:lia-text-50">
-                <Shield className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+                <Shield className="w-3.5 h-3.5 text-lia-text-secondary" />
                 Controle de Gastos
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-3 space-y-2">
               <div className={`flex items-center justify-between gap-4 py-1.5 border-b border-lia-border-subtle dark:lia-border-800 ${!isEditingOptions ? 'opacity-75' : ''}`}>
                 <div>
-                  <div className="text-xs font-medium lia-text-950 dark:lia-text-50">
+                  <div className="text-xs font-medium text-lia-text-primary">
                     Confirmar antes de cada busca global
                   </div>
-                  <div className="text-micro lia-text-800 dark:text-lia-text-primary">
+                  <div className="text-micro text-lia-text-primary">
                     Exibe estimativa de créditos antes de executar
                   </div>
                 </div>
@@ -542,10 +542,10 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
               <div className={`flex items-center justify-between gap-4 py-1.5 ${!isEditingOptions ? 'opacity-75' : ''}`}>
                 <div>
-                  <div className="text-xs font-medium lia-text-950 dark:lia-text-50">
+                  <div className="text-xs font-medium text-lia-text-primary">
                     Sugerir expansão global automaticamente
                   </div>
-                  <div className="text-micro lia-text-800 dark:text-lia-text-primary">
+                  <div className="text-micro text-lia-text-primary">
                     Quando busca local retorna poucos resultados
                   </div>
                 </div>
@@ -564,8 +564,8 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
         <div className="space-y-3">
           <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
             <CardHeader className="pb-2">
-              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 lia-text-900 dark:lia-text-50">
-                <DollarSign className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+                <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary" />
                 Tabela de Custos da Busca Global
               </CardTitle>
             </CardHeader>
@@ -574,10 +574,10 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                 <table className="w-full text-xs">
                   <thead className="bg-gray-50 dark:bg-lia-bg-secondary">
                     <tr>
-                      <th className="px-2 py-1.5 text-left text-xs font-medium lia-text-600 dark:text-lia-text-secondary">
+                      <th className="px-2 py-1.5 text-left text-xs font-medium text-lia-text-secondary">
                         Limite
                       </th>
-                      <th className="px-2 py-1.5 text-center text-xs font-medium lia-text-600 dark:text-lia-text-secondary">
+                      <th className="px-2 py-1.5 text-center text-xs font-medium text-lia-text-secondary">
                         Créditos Estimados
                       </th>
                     </tr>
@@ -594,18 +594,18 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       >
                         <td className="px-2 py-1.5">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-medium lia-text-950 dark:lia-text-50">
+                            <span className="text-xs font-medium text-lia-text-primary">
                               {option.label}
                             </span>
                             {settings.defaultLimit === option.value && (
-                              <Badge className="bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 text-micro px-1.5">
+                              <Badge className="bg-gray-900 text-white text-micro px-1.5">
                                 Atual
                               </Badge>
                             )}
                           </div>
                         </td>
                         <td className="px-2 py-1.5 text-center">
-                          <span className="text-xs font-semibold lia-text-700 dark:text-lia-text-secondary">
+                          <span className="text-xs font-semibold text-lia-text-primary">
                             ~{option.estimatedCredits.fast} créditos
                           </span>
                         </td>
@@ -630,8 +630,8 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
           {/* Detalhamento de Custos por Campo */}
           <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
             <CardHeader className="pb-2">
-              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 lia-text-900 dark:lia-text-50">
-                <Zap className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+                <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
                 Detalhamento de Custos por Opção
               </CardTitle>
             </CardHeader>
@@ -640,20 +640,20 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
               <div className="p-4 rounded-md border bg-gray-50 border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle mb-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <Zap className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+                    <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span className="font-medium text-xs">Custo Estimado</span>
                   </div>
-                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-lia-border-default lia-text-700 dark:border-lia-border-default dark:text-lia-text-secondary">
+                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
                     Tempo Real
                   </Badge>
                 </div>
                 
                 <div className="flex items-end justify-between mb-3">
                   <div>
-                    <div className="text-base font-bold lia-text-900 dark:lia-text-50">
+                    <div className="text-base font-bold text-lia-text-primary">
                       1-3
                     </div>
-                    <div className="text-xs lia-text-600 dark:text-lia-text-tertiary">
+                    <div className="text-xs text-lia-text-secondary">
                       créditos por candidato
                     </div>
                   </div>
@@ -661,7 +661,7 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <div className="font-medium text-xs">
                       {settings.defaultLimit}-{settings.defaultLimit * 3}
                     </div>
-                    <div className="text-xs lia-text-600 dark:text-lia-text-tertiary">
+                    <div className="text-xs text-lia-text-secondary">
                       total ({settings.defaultLimit} candidatos)
                     </div>
                   </div>
@@ -669,17 +669,17 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
                 <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3 space-y-1.5">
                   <div className="flex justify-between text-xs">
-                    <span className="lia-text-600 dark:text-lia-text-tertiary">
+                    <span className="text-lia-text-secondary">
                       Base (Busca Rápida)
                     </span>
                     <span className="font-medium">1</span>
                   </div>
                   <div className="flex justify-between text-xs pt-1.5 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                    <span className="flex items-center gap-1 font-medium lia-text-800 dark:text-lia-text-primary">
+                    <span className="flex items-center gap-1 font-medium text-lia-text-primary">
                       <TrendingUp className="w-3 h-3" />
                       Total Base por Candidato
                     </span>
-                    <span className="font-bold lia-text-900 dark:lia-text-50">
+                    <span className="font-bold text-lia-text-primary">
                       1
                     </span>
                   </div>
@@ -691,13 +691,13 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                 <table className="w-full text-xs">
                   <thead className="bg-gray-50 dark:bg-lia-bg-secondary">
                     <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium lia-text-600 dark:text-lia-text-secondary">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-lia-text-secondary">
                         Opção / Campo
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium lia-text-600 dark:text-lia-text-secondary">
+                      <th className="px-3 py-2 text-left text-xs font-medium text-lia-text-secondary">
                         Seção
                       </th>
-                      <th className="px-3 py-2 text-center text-xs font-medium lia-text-600 dark:text-lia-text-secondary">
+                      <th className="px-3 py-2 text-center text-xs font-medium text-lia-text-secondary">
                         Custo Adicional
                       </th>
                     </tr>
@@ -707,13 +707,13 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <tr className="bg-gray-100 dark:bg-lia-bg-secondary/50">
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <Globe className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
-                          <span className="font-medium lia-text-950 dark:lia-text-50">Busca Global / Híbrida</span>
+                          <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
+                          <span className="font-medium text-lia-text-primary">Busca Global / Híbrida</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 lia-text-600 dark:text-lia-text-tertiary">Origem da Busca</td>
+                      <td className="px-3 py-2 text-lia-text-secondary">Origem da Busca</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary text-micro">
+                        <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary text-micro">
                           1 crédito/cand.
                         </Badge>
                       </td>
@@ -723,13 +723,13 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <tr className="bg-white dark:bg-lia-bg-primary">
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <Clock className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
-                          <span className="font-medium lia-text-950 dark:lia-text-50">Dados Atualizados (High Freshness)</span>
+                          <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
+                          <span className="font-medium text-lia-text-primary">Dados Atualizados (High Freshness)</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 lia-text-600 dark:text-lia-text-tertiary">Opções de Qualidade</td>
+                      <td className="px-3 py-2 text-lia-text-secondary">Opções de Qualidade</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary text-micro">
+                        <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary text-micro">
                           +2 créditos
                         </Badge>
                       </td>
@@ -739,13 +739,13 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <tr className="bg-white dark:bg-lia-bg-primary">
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <Search className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
-                          <span className="font-medium lia-text-950 dark:lia-text-50">Apenas com Email (filtro)</span>
+                          <Search className="w-3.5 h-3.5 text-lia-text-secondary" />
+                          <span className="font-medium text-lia-text-primary">Apenas com Email (filtro)</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 lia-text-600 dark:text-lia-text-tertiary">Informações de Contato</td>
+                      <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-gray-100 lia-text-800 dark:text-lia-text-primary text-micro">
+                        <Badge className="bg-gray-100 text-lia-text-primary text-micro">
                           +1 crédito
                         </Badge>
                       </td>
@@ -756,10 +756,10 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
                           <Shield className="w-3.5 h-3.5 text-status-success" />
-                          <span className="font-medium lia-text-950 dark:lia-text-50">Mostrar Emails (revelar)</span>
+                          <span className="font-medium text-lia-text-primary">Mostrar Emails (revelar)</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 lia-text-600 dark:text-lia-text-tertiary">Informações de Contato</td>
+                      <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
                         <Badge className="bg-status-success/15 text-status-success text-micro">
                           +2 créditos
@@ -771,13 +771,13 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <tr className="bg-white dark:bg-lia-bg-primary">
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <Search className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
-                          <span className="font-medium lia-text-950 dark:lia-text-50">Apenas com Telefone (filtro)</span>
+                          <Search className="w-3.5 h-3.5 text-lia-text-secondary" />
+                          <span className="font-medium text-lia-text-primary">Apenas com Telefone (filtro)</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 lia-text-600 dark:text-lia-text-tertiary">Informações de Contato</td>
+                      <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-gray-100 lia-text-800 dark:text-lia-text-primary text-micro">
+                        <Badge className="bg-gray-100 text-lia-text-primary text-micro">
                           +1 crédito
                         </Badge>
                       </td>
@@ -788,10 +788,10 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
                           <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
-                          <span className="font-medium lia-text-950 dark:lia-text-50">Mostrar Telefones (revelar)</span>
+                          <span className="font-medium text-lia-text-primary">Mostrar Telefones (revelar)</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 lia-text-600 dark:text-lia-text-tertiary">Informações de Contato</td>
+                      <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
                         <Badge className="bg-status-warning/15 text-status-warning text-micro">
                           +14 créditos
@@ -803,13 +803,13 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                     <tr className="bg-white dark:bg-lia-bg-primary">
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-2">
-                          <Search className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
-                          <span className="font-medium lia-text-950 dark:lia-text-50">Email OU Telefone (filtro)</span>
+                          <Search className="w-3.5 h-3.5 text-lia-text-secondary" />
+                          <span className="font-medium text-lia-text-primary">Email OU Telefone (filtro)</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 lia-text-600 dark:text-lia-text-tertiary">Informações de Contato</td>
+                      <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
                       <td className="px-3 py-2 text-center">
-                        <Badge className="bg-gray-100 lia-text-800 dark:text-lia-text-primary text-micro">
+                        <Badge className="bg-gray-100 text-lia-text-primary text-micro">
                           +1 crédito
                         </Badge>
                       </td>
@@ -821,27 +821,27 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
               {/* Resumo de custos máximos */}
               <div className="mt-4 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center gap-2 mb-2">
-                  <Info className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
-                  <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">Resumo de Custos</span>
+                  <Info className="w-3.5 h-3.5 text-lia-text-secondary" />
+                  <span className="text-xs font-medium text-lia-text-primary">Resumo de Custos</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3 text-center">
                   <div className="p-2 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-                    <div className="text-micro lia-text-500 dark:text-lia-text-tertiary">Custo Mínimo</div>
+                    <div className="text-micro text-lia-text-secondary">Custo Mínimo</div>
                     <div className="text-sm font-bold text-status-success">1 crédito</div>
-                    <div className="text-micro lia-text-400 dark:lia-text-500">por candidato</div>
+                    <div className="text-micro text-lia-text-tertiary">por candidato</div>
                   </div>
                   <div className="p-2 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-                    <div className="text-micro lia-text-500 dark:text-lia-text-tertiary">Custo Típico</div>
-                    <div className="text-sm font-bold lia-text-900 dark:lia-text-50">3-5 créditos</div>
-                    <div className="text-micro lia-text-400 dark:lia-text-500">por candidato</div>
+                    <div className="text-micro text-lia-text-secondary">Custo Típico</div>
+                    <div className="text-sm font-bold text-lia-text-primary">3-5 créditos</div>
+                    <div className="text-micro text-lia-text-tertiary">por candidato</div>
                   </div>
                   <div className="p-2 bg-white dark:bg-lia-bg-primary rounded-md border border-status-warning/30 dark:border-status-warning/30">
-                    <div className="text-micro lia-text-500 dark:text-lia-text-tertiary">Custo Máximo</div>
+                    <div className="text-micro text-lia-text-secondary">Custo Máximo</div>
                     <div className="text-sm font-bold text-status-warning">19 créditos</div>
-                    <div className="text-micro lia-text-400 dark:lia-text-500">por candidato</div>
+                    <div className="text-micro text-lia-text-tertiary">por candidato</div>
                   </div>
                 </div>
-                <p className="text-micro lia-text-500 dark:text-lia-text-tertiary mt-2 text-center">
+                <p className="text-micro text-lia-text-secondary mt-2 text-center">
                   * O custo máximo inclui todas as opções habilitadas (Freshness + Emails + Telefones)
                 </p>
               </div>
@@ -861,30 +861,30 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
 
           <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
             <CardHeader className="pb-2">
-              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 lia-text-900 dark:lia-text-50">
-                <TrendingUp className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+              <CardTitle className="font-['Open_Sans',sans-serif] text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">
+                <TrendingUp className="w-3.5 h-3.5 text-lia-text-secondary" />
                 Resumo da Configuração Atual
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md col-span-2">
-                  <div className="text-micro lia-text-800 dark:text-lia-text-primary mb-0.5">
+                  <div className="text-micro text-lia-text-primary mb-0.5">
                     Limite por busca
                   </div>
-                  <div className="text-lg font-bold lia-text-950 dark:lia-text-50">
+                  <div className="text-lg font-bold text-lia-text-primary">
                     {settings.defaultLimit}
                   </div>
-                  <div className="text-micro lia-text-800 dark:text-lia-text-primary">candidatos (~1 crédito/cand)</div>
+                  <div className="text-micro text-lia-text-primary">candidatos (~1 crédito/cand)</div>
                 </div>
                 <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary/50 rounded-md col-span-2">
-                  <div className="text-micro lia-text-800 dark:text-lia-text-primary mb-0.5">
+                  <div className="text-micro text-lia-text-primary mb-0.5">
                     Custo estimado por busca
                   </div>
-                  <div className="text-xl font-bold lia-text-900 dark:lia-text-50">
+                  <div className="text-xl font-bold text-lia-text-primary">
                     ~{estimatedCreditsPerSearch} créditos
                   </div>
-                  <div className="text-micro lia-text-600 dark:text-lia-text-tertiary mt-0.5">
+                  <div className="text-micro text-lia-text-secondary mt-0.5">
                     {settings.showEmails && '+emails '}
                     {settings.showPhoneNumbers && '+telefones '}
                     {settings.highFreshness && '+freshness'}

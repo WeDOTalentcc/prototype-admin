@@ -206,7 +206,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
   return (
     <div className={`relative inline-flex items-center gap-2 ${className}`}>
       <div className="flex items-center gap-1.5 text-sm lia-text-secondary">
-        <Calendar className="w-4 h-4 lia-text-base" />
+        <Calendar className="w-4 h-4 text-lia-text-secondary" />
         <span className="font-medium">Período:</span>
       </div>
 
@@ -238,7 +238,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
                 onClick={prevMonth}
                 className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
               >
-                <ChevronLeft className="w-4 h-4 lia-text-base" />
+                <ChevronLeft className="w-4 h-4 text-lia-text-secondary" />
               </button>
               <span className="text-sm font-medium text-lia-text-primary">
                 {MONTHS_PT[currentMonth.getMonth()]} {currentMonth.getFullYear()}
@@ -247,7 +247,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
                 onClick={nextMonth}
                 className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
               >
-                <ChevronRight className="w-4 h-4 lia-text-base" />
+                <ChevronRight className="w-4 h-4 text-lia-text-secondary" />
               </button>
             </div>
 
@@ -283,7 +283,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
                         ? "bg-gray-900 text-white font-medium"
                         : isInRange
                           ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
-                          : "hover:bg-gray-100 text-lia-text-primary dark:text-lia-text-primary"
+                          : "hover:bg-gray-100 text-lia-text-primary"
                       }
                       ${isToday && !isSelected ? "ring-1 ring-gray-900/20" : ""}
                     `}
@@ -297,7 +297,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
 
             {tempStart && tempEnd && (
               <div className="mt-3 pt-3 border-t border-lia-border-subtle">
-                <p className="text-xs lia-text-base mb-2">
+                <p className="text-xs text-lia-text-secondary mb-2">
                   Selecionado: <span className="font-medium text-lia-text-primary">
                     {formatDateFull(tempStart)} - {formatDateFull(tempEnd)}
                   </span>

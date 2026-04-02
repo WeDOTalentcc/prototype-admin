@@ -28,7 +28,7 @@ const ORIGIN_CONFIG: Record<FieldOrigin, {
   detected: {
     label: 'Detectado',
     icon: Brain,
-    className: 'bg-wedo-cyan/15 text-wedo-cyan-dark border-wedo-cyan/30 hover:bg-wedo-cyan/20 dark:bg-wedo-cyan/20 dark:text-wedo-cyan dark:border-wedo-cyan/40',
+    className: 'bg-wedo-cyan/15 text-wedo-cyan-dark border-wedo-cyan/30 hover:bg-wedo-cyan/20 dark:bg-wedo-cyan/20 dark:border-wedo-cyan/40',
     description: 'Extraído automaticamente do texto'
   },
   default: {
@@ -40,7 +40,7 @@ const ORIGIN_CONFIG: Record<FieldOrigin, {
   manual: {
     label: 'Manual',
     icon: PenLine,
-    className: 'bg-gray-100 text-lia-text-secondary border-lia-border-subtle hover:bg-gray-200 dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle',
+    className: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle hover:bg-lia-interactive-active',
     description: 'Editado manualmente'
   },
   suggested: {

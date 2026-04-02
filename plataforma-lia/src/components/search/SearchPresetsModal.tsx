@@ -128,8 +128,8 @@ export function SearchPresetsModal<T>({
     cn(
       "flex-1 px-4 py-2.5 text-sm font-medium transition-colors",
       isActive
-        ? "lia-text-900 dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle"
-        : "lia-text-500 hover:lia-text-700 dark:text-lia-text-tertiary dark:hover:lia-text-200"
+        ? "text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle"
+        : "text-lia-text-secondary hover:text-lia-text-primary"
     )
 
   const cardClasses =
@@ -139,14 +139,14 @@ export function SearchPresetsModal<T>({
     <>
       <div className="flex items-start justify-between">
         <div>
-          <div className="font-medium text-sm lia-text-800 dark:text-lia-text-primary">
+          <div className="font-medium text-sm text-lia-text-primary">
             {preset.name}
           </div>
-          <div className="text-xs lia-text-500 dark:text-lia-text-tertiary mt-0.5">
+          <div className="text-xs text-lia-text-secondary mt-0.5">
             {preset.description}
           </div>
         </div>
-        <Badge className="text-micro bg-gray-100 lia-text-600">
+        <Badge className="text-micro bg-gray-100 text-lia-text-secondary">
           {preset.items.length} {itemLabel}
         </Badge>
       </div>
@@ -160,14 +160,14 @@ export function SearchPresetsModal<T>({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary">
+              <span className="font-medium text-sm text-lia-text-primary">
                 {preset.name}
               </span>
-              <span className="text-xs lia-text-400">
+              <span className="text-xs text-lia-text-tertiary">
                 ({getPreviewText(preset.items)})
               </span>
             </div>
-            <div className="text-xs lia-text-500 mt-0.5 line-clamp-1">
+            <div className="text-xs text-lia-text-secondary mt-0.5 line-clamp-1">
               {preset.description}
             </div>
           </div>
@@ -181,7 +181,7 @@ export function SearchPresetsModal<T>({
 
   const renderInlineSaveForm = () => (
     <div className="mt-4 p-4 border border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-      <h3 className="text-sm font-medium lia-text-800 mb-3">Save as Preset</h3>
+      <h3 className="text-sm font-medium text-lia-text-primary mb-3">Save as Preset</h3>
       <div className="space-y-3">
         <div>
           <Label className="text-xs">Preset Name</Label>
@@ -209,7 +209,7 @@ export function SearchPresetsModal<T>({
             size="sm"
             onClick={handleSavePreset}
             disabled={!newPresetName.trim()}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+            className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
           >
             Save Preset
           </Button>
@@ -220,7 +220,7 @@ export function SearchPresetsModal<T>({
 
   const renderFooterSaveForm = () => (
     <div className="px-4 py-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
-      <Label className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">
+      <Label className="text-xs font-medium text-lia-text-primary">
         Create New Preset
       </Label>
       <div className="flex gap-2 mt-2">
@@ -240,7 +240,7 @@ export function SearchPresetsModal<T>({
           size="sm"
           onClick={handleSavePreset}
           disabled={!newPresetName.trim()}
-          className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+          className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
         >
           Save
         </Button>
@@ -263,20 +263,20 @@ export function SearchPresetsModal<T>({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-overlay flex items-center justify-center p-4">
       <div className="bg-white rounded-md w-full max-w-2xl max-h-[80vh] flex flex-col dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <h2 className="text-base font-semibold lia-text-800 dark:text-lia-text-primary">
+          <h2 className="text-base font-semibold text-lia-text-primary">
             {title}
           </h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
           >
-            <X className="w-5 h-5 lia-text-500" />
+            <X className="w-5 h-5 text-lia-text-secondary" />
           </button>
         </div>
 
         <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
             <Input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
@@ -312,11 +312,11 @@ export function SearchPresetsModal<T>({
         <div className="flex-1 overflow-y-auto p-4">
           {activeTab === "custom" ? (
             <div className="space-y-4">
-              <p className="text-xs lia-text-500">Presets que você salvou</p>
+              <p className="text-xs text-lia-text-secondary">Presets que você salvou</p>
 
               {filteredCustomPresets.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-sm lia-text-500">
+                  <p className="text-sm text-lia-text-secondary">
                     Nenhum preset salvo encontrado
                   </p>
                 </div>
@@ -332,15 +332,15 @@ export function SearchPresetsModal<T>({
                           onClick={() => handleSelectAndClose(preset.items)}
                           className="flex-1 text-left"
                         >
-                          <div className="font-medium text-sm lia-text-800">
+                          <div className="font-medium text-sm text-lia-text-primary">
                             {preset.name}
                           </div>
-                          <div className="text-xs lia-text-500 mt-0.5">
+                          <div className="text-xs text-lia-text-secondary mt-0.5">
                             {preset.description}
                           </div>
                         </button>
                         <div className="flex items-center gap-2">
-                          <Badge className="text-micro bg-gray-100 lia-text-600">
+                          <Badge className="text-micro bg-gray-100 text-lia-text-secondary">
                             {preset.items.length} {itemLabel}
                           </Badge>
                           <button
@@ -362,13 +362,13 @@ export function SearchPresetsModal<T>({
             </div>
           ) : activeTab === "organization" ? (
             <div className="space-y-4">
-              <p className="text-xs lia-text-500">
+              <p className="text-xs text-lia-text-secondary">
                 Presets created by you and your team members
               </p>
 
               {filteredOrgPresets.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">
+                  <p className="text-sm text-lia-text-secondary">
                     {searchQuery
                       ? "No organization presets match your search"
                       : "No presets found, please create a new preset"}
@@ -376,7 +376,7 @@ export function SearchPresetsModal<T>({
                   {onSavePreset && !searchQuery && (
                     <Button
                       onClick={() => setShowSaveForm(true)}
-                      className="mt-3 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 gap-2"
+                      className="mt-3 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-2"
                     >
                       <Plus className="w-4 h-4" />
                       Create New Preset
@@ -402,7 +402,7 @@ export function SearchPresetsModal<T>({
           ) : (
             <div className="space-y-4">
               {generalTabSubtitle && (
-                <p className="text-xs lia-text-500">{generalTabSubtitle}</p>
+                <p className="text-xs text-lia-text-secondary">{generalTabSubtitle}</p>
               )}
 
               <div className="space-y-2">
@@ -419,7 +419,7 @@ export function SearchPresetsModal<T>({
 
               {filteredGeneralPresets.length === 0 && (
                 <div className="text-center py-8">
-                  <p className="text-sm lia-text-500">No presets match your search</p>
+                  <p className="text-sm text-lia-text-secondary">No presets match your search</p>
                 </div>
               )}
             </div>

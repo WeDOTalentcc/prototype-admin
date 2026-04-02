@@ -46,13 +46,13 @@ const levelStyles: Record<ConfidenceLevel, {
 }> = {
   high: {
     icon: CheckCircle,
-    color: 'text-status-success dark:text-status-success',
+    color: 'text-status-success',
     bgColor: 'bg-status-success/15 dark:bg-status-success/30',
     label: 'Alta confiança'
   },
   medium: {
     icon: AlertCircle,
-    color: 'text-status-warning dark:text-status-warning',
+    color: 'text-status-warning',
     bgColor: 'bg-status-warning/15',
     label: 'Média confiança'
   },

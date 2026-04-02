@@ -106,7 +106,7 @@ export function CandidateSummaryCard({
                 )}
                 {data.salary_expectation && (
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-3.5 w-3.5 text-lia-text-secondary dark:text-lia-text-secondary" />
+                    <DollarSign className="h-3.5 w-3.5 text-lia-text-secondary" />
                     <span>{data.salary_expectation}</span>
                   </div>
                 )}
@@ -142,7 +142,7 @@ export function CandidateSummaryCard({
                     key={`concern-${index}`}
                     className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
                   >
-                    <ThumbsDown className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />
+                    <ThumbsDown className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary" />
                     <span>{concern}</span>
                   </div>
                 ))}

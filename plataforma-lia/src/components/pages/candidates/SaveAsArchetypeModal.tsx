@@ -110,21 +110,21 @@ export function SaveAsArchetypeModal({
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-sm font-semibold">
-            <Bookmark className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
+            <Bookmark className="w-5 h-5 text-lia-text-secondary" />
             Salvar como Arquétipo
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-4 pt-2">
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
+              <p className="text-xs text-lia-text-primary">
                 Transforme esta busca em um arquétipo reutilizável para encontrar candidatos similares rapidamente.
               </p>
 
               {/* Query atual */}
               <div className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
-                <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
+                <p className="text-xs font-medium text-lia-text-primary mb-1">
                   {isCreatingArchetype ? 'Descrição do perfil:' : 'Busca atual:'}
                 </p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary line-clamp-3">
+                <p className="text-xs text-lia-text-primary line-clamp-3">
                   {queryToDisplay}
                 </p>
               </div>

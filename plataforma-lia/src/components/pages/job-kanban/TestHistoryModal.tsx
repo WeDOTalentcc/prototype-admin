@@ -102,54 +102,54 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
           <div className="grid grid-cols-5 gap-4">
             <div className="bg-white dark:bg-lia-bg-primary rounded-md p-4">
               <div className="flex items-center gap-2 mb-2">
-                <BarChart3 className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
-                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Total de Aplicações</span>
+                <BarChart3 className="w-4 h-4 text-lia-text-primary" />
+                <span className="text-xs text-lia-text-primary">Total de Aplicações</span>
               </div>
-              <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">2,547</p>
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">↑ 12% este mês</p>
+              <p className="text-sm font-semibold text-lia-text-primary">2,547</p>
+              <p className="text-xs text-lia-text-primary mt-1">↑ 12% este mês</p>
             </div>
 
             <div className="bg-white dark:bg-lia-bg-primary rounded-md p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Target className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
-                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Taxa de Sucesso</span>
+                <Target className="w-4 h-4 text-lia-text-primary" />
+                <span className="text-xs text-lia-text-primary">Taxa de Sucesso</span>
               </div>
-              <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">78%</p>
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">Nota ≥ 7.0</p>
+              <p className="text-sm font-semibold text-lia-text-primary">78%</p>
+              <p className="text-xs text-lia-text-primary mt-1">Nota ≥ 7.0</p>
             </div>
 
             <div className="bg-white dark:bg-lia-bg-primary rounded-md p-4">
               <div className="flex items-center gap-2 mb-2">
-                <UserCheck className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
-                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Taxa de Conclusão</span>
+                <UserCheck className="w-4 h-4 text-lia-text-primary" />
+                <span className="text-xs text-lia-text-primary">Taxa de Conclusão</span>
               </div>
-              <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">92%</p>
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">Candidatos finalizam</p>
+              <p className="text-sm font-semibold text-lia-text-primary">92%</p>
+              <p className="text-xs text-lia-text-primary mt-1">Candidatos finalizam</p>
             </div>
 
             <div className="bg-white dark:bg-lia-bg-primary rounded-md p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Timer className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
-                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Tempo Médio</span>
+                <Timer className="w-4 h-4 text-lia-text-primary" />
+                <span className="text-xs text-lia-text-primary">Tempo Médio</span>
               </div>
-              <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">13min</p>
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">De 15min esperados</p>
+              <p className="text-sm font-semibold text-lia-text-primary">13min</p>
+              <p className="text-xs text-lia-text-primary mt-1">De 15min esperados</p>
             </div>
 
             <div className="bg-white dark:bg-lia-bg-primary rounded-md p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Gauge className="w-4 h-4 text-status-error" />
-                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Dificuldade Percebida</span>
+                <span className="text-xs text-lia-text-primary">Dificuldade Percebida</span>
               </div>
-              <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">6.8/10</p>
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">Médio-Alto</p>
+              <p className="text-sm font-semibold text-lia-text-primary">6.8/10</p>
+              <p className="text-xs text-lia-text-primary mt-1">Médio-Alto</p>
             </div>
           </div>
         </div>
 
         {/* Lista de Vagas que Usaram */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-380px)]">
-          <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-4">
+          <h3 className="text-sm font-semibold text-lia-text-primary mb-4">
             Vagas que Utilizaram Este Teste
           </h3>
 
@@ -159,11 +159,11 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">UX Designer Sênior</h4>
-                    <Badge className="bg-gray-900 text-white dark:bg-lia-bg-tertiary dark:text-lia-text-primary text-xs">Finalizada</Badge>
-                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Sodexo • São Paulo</span>
+                    <h4 className="font-medium text-lia-text-primary">UX Designer Sênior</h4>
+                    <Badge className="bg-gray-900 text-white dark:bg-lia-bg-tertiary text-xs">Finalizada</Badge>
+                    <span className="text-xs text-lia-text-primary">Sodexo • São Paulo</span>
                   </div>
-                  <div className="flex items-center gap-6 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                  <div className="flex items-center gap-6 text-xs text-lia-text-secondary">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       Mar 2024
@@ -177,14 +177,14 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                       82% aprovação
                     </span>
                     <span className="flex items-center gap-1">
-                      <Trophy className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
+                      <Trophy className="w-3 h-3 text-lia-text-primary" />
                       3 contratados
                     </span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">Sucesso</p>
-                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">ROI: 320%</p>
+                  <p className="text-sm font-bold text-lia-text-primary">Sucesso</p>
+                  <p className="text-xs text-lia-text-primary">ROI: 320%</p>
                 </div>
               </div>
 
@@ -192,7 +192,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex items-center justify-between mb-1">
                   <span className={textStyles.description}>Distribuição de Notas</span>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary text-xs px-1.5">
+                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
                       <Trophy className="w-2.5 h-2.5 mr-0.5" />
                       Nota Média: 7.8/10
                     </Badge>
@@ -215,11 +215,11 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">Product Designer</h4>
-                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary text-xs">Em Andamento</Badge>
-                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Nubank • Remoto</span>
+                    <h4 className="font-medium text-lia-text-primary">Product Designer</h4>
+                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs">Em Andamento</Badge>
+                    <span className="text-xs text-lia-text-primary">Nubank • Remoto</span>
                   </div>
-                  <div className="flex items-center gap-6 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                  <div className="flex items-center gap-6 text-xs text-lia-text-secondary">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       Nov 2024
@@ -233,14 +233,14 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                       75% aprovação
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" />
+                      <Clock className="w-3 h-3 text-lia-text-primary" />
                       Em entrevistas
                     </span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">Ativo</p>
-                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">5 finalistas</p>
+                  <p className="text-sm font-bold text-lia-text-primary">Ativo</p>
+                  <p className="text-xs text-lia-text-primary">5 finalistas</p>
                 </div>
               </div>
 
@@ -248,7 +248,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex items-center justify-between mb-1">
                   <span className={textStyles.description}>Distribuição de Notas</span>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary text-xs px-1.5">
+                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
                       <Trophy className="w-2.5 h-2.5 mr-0.5" />
                       Nota Média: 7.2/10
                     </Badge>
@@ -271,11 +271,11 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">UI/UX Designer</h4>
-                    <Badge className="bg-gray-100 text-lia-text-primary dark:text-lia-text-primary text-xs">Cancelada</Badge>
-                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">iFood • Campinas</span>
+                    <h4 className="font-medium text-lia-text-primary">UI/UX Designer</h4>
+                    <Badge className="bg-gray-100 text-lia-text-primary text-xs">Cancelada</Badge>
+                    <span className="text-xs text-lia-text-primary">iFood • Campinas</span>
                   </div>
-                  <div className="flex items-center gap-6 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                  <div className="flex items-center gap-6 text-xs text-lia-text-secondary">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       Set 2024
@@ -296,7 +296,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-lia-text-secondary">Encerrada</p>
-                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Sem contratação</p>
+                  <p className="text-xs text-lia-text-primary">Sem contratação</p>
                 </div>
               </div>
 
@@ -304,7 +304,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex items-center justify-between mb-1">
                   <span className={textStyles.description}>Distribuição de Notas</span>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary text-xs px-1.5">
+                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
                       <Trophy className="w-2.5 h-2.5 mr-0.5" />
                       Nota Média: 6.5/10
                     </Badge>
@@ -328,10 +328,10 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
             <div className="flex items-start gap-3">
               <Brain className="w-5 h-5 text-wedo-cyan mt-0.5" />
               <div>
-                <h4 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <h4 className="text-sm font-semibold text-lia-text-primary mb-2">
                   Insights da LIA
                 </h4>
-                <ul className="space-y-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
+                <ul className="space-y-1 text-xs text-lia-text-primary">
                   <li>• Este teste tem melhor performance com candidatos de nível Pleno e Sênior</li>
                   <li>• A questão 3 tem a menor taxa de acerto (45%) - considere revisar ou adicionar contexto</li>
                   <li>• Candidatos que pontuam acima de 75% têm 3x mais chance de serem contratados</li>
@@ -345,7 +345,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
         {/* Footer */}
         <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 bg-gray-50 dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-xs text-lia-text-primary dark:text-lia-text-primary">
+            <div className="flex items-center gap-4 text-xs text-lia-text-primary">
               <span className="flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
                 Performance acima da média
@@ -359,7 +359,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <Button variant="outline" onClick={onClose}>
                 Fechar
               </Button>
-              <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 dark:text-lia-text-disabled">
+              <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200">
                 <Download className="w-4 h-4 mr-2" />
                 Exportar Relatório
               </Button>

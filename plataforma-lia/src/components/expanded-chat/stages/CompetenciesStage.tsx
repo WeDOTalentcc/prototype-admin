@@ -225,7 +225,7 @@ export function CompetenciesStage({
     return (
       <div key={skill.id} className="flex flex-col gap-1.5 p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
         <div className="flex items-center gap-2">
-          <span className="flex-1 text-xs font-medium lia-text-strong flex items-center gap-1.5">
+          <span className="flex-1 text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
             {skill.name}
             {skill.source === 'company_catalog' && (
               <span
@@ -241,7 +241,7 @@ export function CompetenciesStage({
             )}
             {isSkillFromConfig(skill.name) && skill.source !== 'company_catalog' && skill.source !== 'tech_stack' && (
               <span
-                className="w-1.5 h-1.5 rounded-full bg-gray-900 flex-shrink-0"
+                className="w-1.5 h-1.5 rounded-full bg-lia-btn-primary-bg flex-shrink-0"
                 title="Pré-preenchido das Configurações da empresa"
               />
             )}
@@ -264,8 +264,8 @@ export function CompetenciesStage({
             className={cn(
  "px-1.5 py-0.5 text-micro rounded-full transition-[width,height]",
               skill.required
-                ? "bg-gray-900 text-white"
-                : "bg-gray-200 lia-text-secondary"
+                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                : "bg-lia-interactive-active lia-text-secondary"
             )}
             aria-label={skill.required ? 'Marcar como desejável' : 'Marcar como obrigatório'}
           >
@@ -287,14 +287,14 @@ export function CompetenciesStage({
               onClick={() => onSetTechnicalSkills(
                 technicalSkills.map(s => s.id === skill.id ? { ...s, weight: w, isWeightInferred: false } : s)
               )}
-              className="transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
+              className="transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default rounded-md"
               aria-label={`Definir peso ${w}`}
             >
               <Star
                 className={cn(
  "w-3.5 h-3.5 transition-colors",
                   w <= skill.weight
-                    ? "fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary"
+                    ? "fill-lia-text-primary text-lia-text-secondary"
                     : "lia-text-muted"
                 )}
               />
@@ -304,7 +304,7 @@ export function CompetenciesStage({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="ml-1 p-0.5 text-status-warning hover:text-status-warning transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md" aria-label="Ver sugestão de peso da LIA">
+                  <button className="ml-1 p-0.5 text-status-warning hover:text-status-warning transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default rounded-md" aria-label="Ver sugestão de peso da LIA">
                     <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                   </button>
                 </TooltipTrigger>
@@ -312,7 +312,7 @@ export function CompetenciesStage({
                   <div className="flex items-start gap-1.5">
                     <Brain className="w-3 h-3 text-wedo-cyan flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Sugerido por LIA</span>
+                      <span className="font-medium text-lia-text-secondary">Sugerido por LIA</span>
                       <p className="lia-text-secondary mt-0.5">{justificationText}</p>
                     </div>
                   </div>
@@ -328,7 +328,7 @@ export function CompetenciesStage({
   return (
     <div className="space-y-4">
       {!isFieldRequired && (
-        <div className="p-3 bg-gradient-to-r from-green-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-status-success/30/30">
+        <div className="p-3 bg-gradient-to-r from-green-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-md border border-status-success/30/30">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-status-success/20 flex items-center justify-center flex-shrink-0">
               <Brain className="w-3.5 h-3.5 text-status-success" />
@@ -341,7 +341,7 @@ export function CompetenciesStage({
                 Baseadas nas políticas e histórico da empresa.
                 <button
                   onClick={handleToggleExpand}
-                  className="ml-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:underline font-medium"
+                  className="ml-1 text-lia-text-secondary hover:underline font-medium"
                 >
                   {isExpanded ? 'Ocultar detalhes' : 'Editar manualmente'}
                 </button>
@@ -362,7 +362,7 @@ export function CompetenciesStage({
       )}
 
       {hasSkillsFromCatalog && (
-        <div className="p-3 bg-gradient-to-r from-blue-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-wedo-cyan/30/30">
+        <div className="p-3 bg-gradient-to-r from-blue-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-md border border-wedo-cyan/30/30">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-wedo-cyan/20 flex items-center justify-center flex-shrink-0">
               <Settings className="w-3.5 h-3.5 text-wedo-cyan-dark" />
@@ -381,7 +381,7 @@ export function CompetenciesStage({
       )}
 
       {hasSkillsFromTechStack && !hasSkillsFromCatalog && (
-        <div className="p-3 bg-gradient-to-r from-violet-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-wedo-purple/30/30">
+        <div className="p-3 bg-gradient-to-r from-violet-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-md border border-wedo-purple/30/30">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-wedo-purple/20 flex items-center justify-center flex-shrink-0">
               <Laptop className="w-3.5 h-3.5 text-wedo-purple" />
@@ -432,17 +432,17 @@ export function CompetenciesStage({
           )}
 
           <div className={cn(
- "flex items-center gap-2 p-2.5 bg-gray-50 rounded-md transition-colors duration-300",
+ "flex items-center gap-2 p-2.5 bg-lia-bg-secondary rounded-md transition-colors duration-300",
             (isFieldHighlighted('technicalSkill') || isFieldHighlighted('skills') || isFieldHighlighted('competencias') || isFieldHighlighted('competencias_tecnicas')) && "field-highlight field-pulse"
           )}>
-            <Code className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-            <span className="text-xs font-semibold lia-text-strong flex items-center gap-1.5">
+            <Code className="w-4 h-4 text-lia-text-secondary" />
+            <span className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               Competências Técnicas
               {companyConfig?.techStack && companyConfig.techStack.length > 0 && (
-                <Settings className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Settings className="w-3 h-3 text-lia-text-secondary" />
               )}
             </span>
-            <span className="ml-auto text-micro bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary px-1.5 py-0.5 rounded-full">
+            <span className="ml-auto text-micro bg-lia-bg-tertiary text-lia-text-secondary px-1.5 py-0.5 rounded-full">
               {technicalSkills.length}
             </span>
           </div>
@@ -452,7 +452,7 @@ export function CompetenciesStage({
               <>
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Code className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Code className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span className={`${textStyles.label} lia-text-secondary uppercase tracking-wide`}>
                       Linguagens de Programação
                     </span>
@@ -461,7 +461,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'language').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('language')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar linguagem de programação"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar linguagem
@@ -471,7 +471,7 @@ export function CompetenciesStage({
 
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Laptop className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Laptop className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span className={`${textStyles.label} lia-text-secondary uppercase tracking-wide`}>
                       Frameworks
                     </span>
@@ -480,7 +480,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'framework').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('framework')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar framework"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar framework
@@ -490,7 +490,7 @@ export function CompetenciesStage({
 
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Database className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Database className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
                       Bancos de Dados
                     </span>
@@ -499,7 +499,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'database').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('database')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar banco de dados"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar banco
@@ -509,7 +509,7 @@ export function CompetenciesStage({
 
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Wrench className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Wrench className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
                       Ferramentas e Plataformas
                     </span>
@@ -518,7 +518,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'tool').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('tool')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar ferramenta ou plataforma"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar ferramenta
@@ -528,7 +528,7 @@ export function CompetenciesStage({
 
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
                       Competências Técnicas Gerais
                     </span>
@@ -537,7 +537,7 @@ export function CompetenciesStage({
                     {technicalSkills.filter(s => s.category === 'general').map(renderSkillItem)}
                     <button
                       onClick={() => onShowAddSkillModal?.('general')}
-                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                      className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                       aria-label="Adicionar competência técnica geral"
                     >
                       <Plus className="w-3.5 h-3.5" /> Adicionar competência geral
@@ -548,7 +548,7 @@ export function CompetenciesStage({
             ) : (
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Wrench className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Wrench className="w-3.5 h-3.5 text-lia-text-secondary" />
                   <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide">
                     Conhecimentos Específicos da Área
                   </span>
@@ -557,7 +557,7 @@ export function CompetenciesStage({
                   {technicalSkills.map(renderSkillItem)}
                   <button
                     onClick={() => onShowAddSkillModal?.('tool')}
-                    className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                    className="w-full py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                     aria-label="Adicionar conhecimento técnico específico"
                   >
                     <Plus className="w-3.5 h-3.5" /> Adicionar conhecimento técnico
@@ -566,7 +566,7 @@ export function CompetenciesStage({
               </div>
             )}
 
-            <div className="p-2 bg-gray-50 rounded-md border border-lia-border-default dark:border-lia-border-default">
+            <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-default">
               <div className="flex items-center justify-between text-xs">
                 <span className="lia-text-secondary">Total de competências técnicas:</span>
                 <span className="font-semibold text-lia-text-primary">{technicalSkills.length}</span>
@@ -579,14 +579,14 @@ export function CompetenciesStage({
           </div>
 
           <div className={cn(
- "flex items-center gap-2 p-2.5 bg-gray-50 rounded-md mt-4 transition-colors duration-300",
+ "flex items-center gap-2 p-2.5 bg-lia-bg-secondary rounded-md mt-4 transition-colors duration-300",
             (isFieldHighlighted('behavioralCompetency') || isFieldHighlighted('competencias_comportamentais') || isFieldHighlighted('behavioral')) && "field-highlight field-pulse"
           )}>
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <span className="text-xs font-semibold lia-text-strong">
+            <span className="text-xs font-semibold text-lia-text-primary">
               Competências Comportamentais
             </span>
-            <span className="ml-auto text-micro bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary px-1.5 py-0.5 rounded-full">
+            <span className="ml-auto text-micro bg-lia-bg-tertiary text-lia-text-secondary px-1.5 py-0.5 rounded-full">
               {behavioralCompetencies.filter(c => c.enabled).length}
             </span>
           </div>
@@ -607,7 +607,7 @@ export function CompetenciesStage({
  "p-2.5 rounded-md border transition-colors",
                     comp.enabled
                       ? "bg-lia-bg-primary border-lia-border-subtle"
-                      : "bg-gray-50 border-lia-border-subtle opacity-60"
+                      : "bg-lia-bg-secondary border-lia-border-subtle opacity-60"
                   )}
                 >
                   <div className="flex items-center gap-2">
@@ -618,13 +618,13 @@ export function CompetenciesStage({
                       className={cn(
  "w-4 h-4 rounded-md flex-shrink-0 flex items-center justify-center transition-colors",
                         comp.enabled
-                          ? "bg-gray-900 text-white"
+                          ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
                           : "border border-lia-border-subtle"
                       )}
                     >
                       {comp.enabled && <Check className="w-2.5 h-2.5" />}
                     </button>
-                    <span className="text-xs font-medium lia-text-strong flex-1">
+                    <span className="text-xs font-medium text-lia-text-primary flex-1">
                       {comp.name}
                     </span>
                     <div className="flex items-center gap-0.5">
@@ -634,14 +634,14 @@ export function CompetenciesStage({
                           onClick={() => onSetBehavioralCompetencies(
                             behavioralCompetencies.map(c => c.id === comp.id ? { ...c, weight: w, isWeightInferred: false } : c)
                           )}
-                          className="transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md"
+                          className="transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default rounded-md"
                           aria-label={`Definir peso ${w}`}
                         >
                           <Star
                             className={cn(
  "w-3.5 h-3.5 transition-colors",
                               w <= comp.weight
-                                ? "fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary"
+                                ? "fill-lia-text-primary text-lia-text-secondary"
                                 : "lia-text-muted"
                             )}
                           />
@@ -651,7 +651,7 @@ export function CompetenciesStage({
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <button className="ml-0.5 p-0.5 text-status-warning hover:text-status-warning transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md" aria-label="Ver sugestão de peso da LIA">
+                              <button className="ml-0.5 p-0.5 text-status-warning hover:text-status-warning transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default rounded-md" aria-label="Ver sugestão de peso da LIA">
                                 <Lightbulb className="w-3.5 h-3.5 fill-amber-100" />
                               </button>
                             </TooltipTrigger>
@@ -659,7 +659,7 @@ export function CompetenciesStage({
                               <div className="flex items-start gap-1.5">
                                 <Brain className="w-3 h-3 text-wedo-cyan flex-shrink-0 mt-0.5" />
                                 <div>
-                                  <span className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Sugerido por LIA</span>
+                                  <span className="font-medium text-lia-text-secondary">Sugerido por LIA</span>
                                   <p className="lia-text-secondary mt-0.5">{behavioralJustification}</p>
                                 </div>
                               </div>
@@ -670,7 +670,7 @@ export function CompetenciesStage({
                     </div>
                     <button
                       onClick={() => onEditCompetency?.(comp)}
-                      className="p-1 lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle transition-colors motion-reduce:transition-none"
+                      className="p-1 lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
                       aria-label={`Editar competência: ${comp.name}`}
                     >
                       <Edit2 className="w-3 h-3" />
@@ -692,13 +692,13 @@ export function CompetenciesStage({
 
             <button
               onClick={onShowAddCompetencyModal}
-              className="w-full py-2 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+              className="w-full py-2 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
               aria-label="Adicionar competência comportamental"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar competência
             </button>
 
-            <div className="p-2 bg-gray-50 rounded-md border border-lia-border-default dark:border-lia-border-default mt-2">
+            <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-default mt-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="lia-text-secondary">Competências ativas:</span>
                 <span className="font-semibold text-lia-text-primary">{behavioralCompetencies.filter(c => c.enabled).length}</span>

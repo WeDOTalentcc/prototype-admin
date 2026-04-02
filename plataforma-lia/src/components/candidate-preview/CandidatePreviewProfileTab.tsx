@@ -69,14 +69,14 @@ export function CandidatePreviewProfileTab({
             <ExperienceHighlightCard candidate={candidate as { id: string; name: string }} companyId="demo_company" />
             
             {jobId && (opinionsData?.current_general_opinion || (opinionsData?.vacancy_opinions && opinionsData.vacancy_opinions.length > 0)) && (
-              <Card className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle">
-                <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
+              <Card className="bg-lia-bg-primary border border-lia-border-subtle">
+                <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary border-b border-lia-border-subtle">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <div className="p-0.5 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                      <div className="p-0.5 rounded-md bg-lia-bg-tertiary">
                         <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                       </div>
-                      <CardTitle className={`${textStyles.label} text-lia-text-secondary dark:text-lia-text-tertiary`}>Parecer LIA</CardTitle>
+                      <CardTitle className={`${textStyles.label} text-lia-text-secondary`}>Parecer LIA</CardTitle>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className={`flex items-center gap-1 ${textStyles.caption}`}>
@@ -94,11 +94,11 @@ export function CandidatePreviewProfileTab({
                         disabled={isAnalyzingWithLia}
                         size="sm"
                         variant="ghost"
-                        className={`gap-1 px-2 py-1 ${textStyles.caption} h-6 hover:bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary transition-colors motion-reduce:transition-none disabled:opacity-50`}
+                        className={`gap-1 px-2 py-1 ${textStyles.caption} h-6 hover:bg-lia-bg-tertiary text-lia-text-secondary transition-colors motion-reduce:transition-none disabled:opacity-50`}
                       >
                         {isAnalyzingWithLia ? (
                           <>
-                            <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
+                            <div className="w-3 h-3 border-2 border-lia-btn-primary-bg border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
                             <span>Analisando...</span>
                           </>
                         ) : (
@@ -120,7 +120,7 @@ export function CandidatePreviewProfileTab({
                     const displayScore = isWsiOpinion ? opinion.wsi_score : opinion.score
                     
                     const getScoreColor = (score: number | null, isWsi: boolean = false) => {
-                      if (score === null || score === undefined) return 'lia-text-base'
+                      if (score === null || score === undefined) return 'text-lia-text-secondary'
                       if (isWsi) {
                         return score >= 4.0 ? 'text-status-success' : score >= 3.0 ? 'text-status-warning' : 'text-status-error'
                       }
@@ -143,7 +143,7 @@ export function CandidatePreviewProfileTab({
                           )}
                         </div>
                         {opinion.summary && (
-                          <p className={`${textStyles.caption} text-lia-text-secondary dark:text-lia-text-tertiary leading-relaxed`}>
+                          <p className={`${textStyles.caption} text-lia-text-secondary leading-relaxed`}>
                             {opinion.summary}
                           </p>
                         )}
@@ -155,14 +155,14 @@ export function CandidatePreviewProfileTab({
             )}
             
             {jobId && isLoadingOpinions && !opinionsData && (
-              <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3 animate-pulse motion-reduce:animate-none">
+              <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-md p-3 animate-pulse motion-reduce:animate-none">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-4 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
-                  <div className="w-24 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
+                  <div className="w-4 h-4 bg-lia-interactive-active rounded-md"></div>
+                  <div className="w-24 h-4 bg-lia-interactive-active rounded-md"></div>
                 </div>
                 <div className="space-y-1.5">
-                  <div className="w-32 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
-                  <div className="w-full h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md"></div>
+                  <div className="w-32 h-3 bg-lia-interactive-active rounded-md"></div>
+                  <div className="w-full h-3 bg-lia-interactive-active rounded-md"></div>
                 </div>
               </div>
             )}
@@ -191,13 +191,13 @@ export function CandidatePreviewProfileTab({
               if (totalItems === 0) return null
               
               const skillCategories: Record<string, { label: string, bgColor: string, skills: string[] }> = {
-                backend: { label: 'Backend', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
-                frontend: { label: 'Frontend', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
-                data: { label: 'Dados & Analytics', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
-                devops: { label: 'DevOps & Cloud', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
-                design: { label: 'Design', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
-                mobile: { label: 'Mobile', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] },
-                other: { label: 'Outras', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary', skills: [] }
+                backend: { label: 'Backend', bgColor: 'bg-lia-bg-tertiary', skills: [] },
+                frontend: { label: 'Frontend', bgColor: 'bg-lia-bg-tertiary', skills: [] },
+                data: { label: 'Dados & Analytics', bgColor: 'bg-lia-bg-tertiary', skills: [] },
+                devops: { label: 'DevOps & Cloud', bgColor: 'bg-lia-bg-tertiary', skills: [] },
+                design: { label: 'Design', bgColor: 'bg-lia-bg-tertiary', skills: [] },
+                mobile: { label: 'Mobile', bgColor: 'bg-lia-bg-tertiary', skills: [] },
+                other: { label: 'Outras', bgColor: 'bg-lia-bg-tertiary', skills: [] }
               }
               
               const backendKeywords = ['java', 'spring', 'node', 'python', 'django', 'flask', 'fastapi', 'ruby', 'rails', 'php', 'laravel', '.net', 'c#', 'go', 'golang', 'rust', 'express', 'nestjs', 'graphql', 'rest', 'api', 'microservices', 'sql', 'postgresql', 'mysql', 'mongodb', 'redis', 'kafka', 'rabbitmq']
@@ -229,14 +229,14 @@ export function CandidatePreviewProfileTab({
               const categoriesWithSkills = Object.entries(skillCategories).filter(([, cat]) => cat.skills.length > 0)
               
               return (
-                <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
-                  <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
+                <Card className="border-lia-border-subtle">
+                  <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
                     <div className="flex items-center gap-1.5">
-                      <Code className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+                      <Code className="w-3.5 h-3.5 text-lia-text-primary" />
                       <CardTitle className="text-xs font-semibold text-lia-text-primary">
                         Mapa de Skills
                       </CardTitle>
-                      <Badge className="text-micro px-1 py-0 h-4 bg-gray-200 text-lia-text-primary dark:text-lia-text-primary">
+                      <Badge className="text-micro px-1 py-0 h-4 bg-lia-interactive-active text-lia-text-primary">
                         {totalItems} itens
                       </Badge>
                       <Tooltip>
@@ -245,11 +245,11 @@ export function CandidatePreviewProfileTab({
                         </TooltipTrigger>
                         <TooltipContent side="right" className="text-xs max-w-xs">
                           <div className="space-y-1">
-                            <p><span className="inline-block w-2 h-2 rounded-full bg-gray-400 mr-1"></span> Skills do CV</p>
-                            <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-gray-900"></span> Expertise do LinkedIn</p>
-                            <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-gray-900"></span> Soft Skills (LIA)</p>
+                            <p><span className="inline-block w-2 h-2 rounded-full bg-lia-border-medium mr-1"></span> Skills do CV</p>
+                            <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-lia-btn-primary-bg"></span> Expertise do LinkedIn</p>
+                            <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-lia-btn-primary-bg"></span> Soft Skills (LIA)</p>
                             <p><span className="inline-block w-2 h-2 rounded-full bg-wedo-magenta mr-1"></span> Interesses</p>
-                            <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-gray-900"></span> Tags</p>
+                            <p><span className="inline-block w-2 h-2 rounded-full mr-1 bg-lia-btn-primary-bg"></span> Tags</p>
                           </div>
                         </TooltipContent>
                       </Tooltip>
@@ -259,7 +259,7 @@ export function CandidatePreviewProfileTab({
                     {categoriesWithSkills.map(([key, category]) => (
                       <div key={key}>
                         <div className="flex items-center gap-1.5 mb-1">
-                          <div className="w-2 h-2 rounded-full bg-gray-400" />
+                          <div className="w-2 h-2 rounded-full bg-lia-border-medium" />
                           <span className={textStyles.label}>{category.label}</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -274,7 +274,7 @@ export function CandidatePreviewProfileTab({
                           {category.skills.map((skill: string) => (
                             <Badge 
                               key={skill} 
-                              className="text-micro px-1.5 py-0 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary border-0"
+                              className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-primary border-0"
                             >
                               {skill}
                             </Badge>
@@ -287,10 +287,10 @@ export function CandidatePreviewProfileTab({
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
                           <Brain className="w-3 h-3 text-wedo-cyan" />
-                          <span className={`${textStyles.label} lia-text-base`}>Soft Skills</span>
+                          <span className={`${textStyles.label} text-lia-text-secondary`}>Soft Skills</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="cursor-help text-micro lia-text-base">ⓘ</span>
+                              <span className="cursor-help text-micro text-lia-text-secondary">ⓘ</span>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="text-xs">
                               Competências comportamentais inferidas pela LIA
@@ -301,7 +301,7 @@ export function CandidatePreviewProfileTab({
                           {softSkillsList.map((skill: string) => (
                             <Badge 
                               key={skill} 
-                              className="text-micro px-1.5 py-0 border-0 bg-wedo-cyan/15 lia-text-strong"
+                              className="text-micro px-1.5 py-0 border-0 bg-wedo-cyan/15 text-lia-text-primary"
                             >
                               {skill}
                             </Badge>
@@ -313,8 +313,8 @@ export function CandidatePreviewProfileTab({
                     {expertiseList.length > 0 && (
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                          <Linkedin className="w-3 h-3 lia-text-base" />
-                          <span className={`${textStyles.label} text-lia-text-secondary dark:text-lia-text-secondary`}>Expertise LinkedIn</span>
+                          <Linkedin className="w-3 h-3 text-lia-text-secondary" />
+                          <span className={`${textStyles.label} text-lia-text-secondary`}>Expertise LinkedIn</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="cursor-help text-micro text-lia-text-disabled">ⓘ</span>
@@ -328,7 +328,7 @@ export function CandidatePreviewProfileTab({
                           {expertiseList.map((item: string) => (
                             <Badge
                               key={item}
-                              className="text-micro px-1.5 py-0 border-0 bg-gray-200/30 lia-text-strong"
+                              className="text-micro px-1.5 py-0 border-0 bg-lia-interactive-active/30 text-lia-text-primary"
                             >
                               {item}
                             </Badge>
@@ -368,8 +368,8 @@ export function CandidatePreviewProfileTab({
                     {tags.length > 0 && (
                       <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                          <Tag className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                          <span className={`${textStyles.label} text-lia-text-secondary dark:text-lia-text-secondary`}>Tags</span>
+                          <Tag className="w-3 h-3 text-lia-text-secondary" />
+                          <span className={`${textStyles.label} text-lia-text-secondary`}>Tags</span>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="cursor-help text-micro text-lia-text-disabled">ⓘ</span>
@@ -383,7 +383,7 @@ export function CandidatePreviewProfileTab({
                           {tags.map((tag: string) => (
                             <Badge
                               key={tag}
-                              className="text-micro px-1.5 py-0 border-0 bg-gray-200/30 lia-text-strong"
+                              className="text-micro px-1.5 py-0 border-0 bg-lia-interactive-active/30 text-lia-text-primary"
                             >
                               {tag}
                             </Badge>
@@ -410,8 +410,8 @@ export function CandidatePreviewProfileTab({
               return (
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {isOpenToWork === true && (
-                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30 flex items-center gap-1">
-                      <Globe className="w-3 h-3 text-status-success dark:text-status-success" />
+                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30 flex items-center gap-1">
+                      <Globe className="w-3 h-3 text-status-success" />
                       Open to Work
                     </Badge>
                   )}
@@ -421,7 +421,7 @@ export function CandidatePreviewProfileTab({
                     </Badge>
                   )}
                   {isDecisionMaker === true && (
-                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle flex items-center gap-1">
+                    <Badge variant="outline" className="text-micro px-2 py-0.5 h-5 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
                       👔 Decision Maker
                     </Badge>
                   )}
@@ -453,19 +453,19 @@ export function CandidatePreviewProfileTab({
               if (!hasLinkedInData) return null
               
               return (
-                <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
-                  <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
+                <Card className="border-lia-border-subtle">
+                  <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
                     <div className="flex items-center gap-1.5">
-                      <Linkedin className="w-3.5 h-3.5 lia-text-base" />
+                      <Linkedin className="w-3.5 h-3.5 text-lia-text-secondary" />
                       <CardTitle className="text-xs font-semibold text-lia-text-primary">
                         Perfil LinkedIn
                       </CardTitle>
-                      <Globe className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                      <Globe className="w-3 h-3 text-lia-text-secondary" />
                     </div>
                   </CardHeader>
                   <CardContent className="p-2.5 space-y-2">
                     {!!headline && (
-                      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed">
+                      <p className="text-xs text-lia-text-primary leading-relaxed">
                         {String(headline)}
                       </p>
                     )}
@@ -497,10 +497,10 @@ export function CandidatePreviewProfileTab({
               )
             })()}
 
-            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
+            <Card className="border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <Briefcase className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+                  <Briefcase className="w-3.5 h-3.5 text-lia-text-primary" />
                   <CardTitle className="text-xs font-semibold text-lia-text-primary">
                     Experiência Profissional
                   </CardTitle>
@@ -545,18 +545,18 @@ export function CandidatePreviewProfileTab({
                       }
                       
                       return (
-                        <div key={`${index}-${company}`} className={`border-l-2 ${index === 0 ? 'border-gray-700' : 'border-lia-border-default dark:border-lia-border-default'} pl-3`}>
+                        <div key={`${index}-${company}`} className={`border-l-2 ${index === 0 ? 'border-lia-border-medium' : 'border-lia-border-default'} pl-3`}>
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <div>
-                              <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">{title || 'Cargo não informado'}</h5>
-                              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                              <h5 className="text-xs font-medium text-lia-text-primary">{title || 'Cargo não informado'}</h5>
+                              <p className="text-xs text-lia-text-secondary">
                                 {company || 'Empresa não informada'}
                                 {location && ` • ${location}`}
                                 {durationYears && durationYears > 0 && <span className="lia-text-secondary ml-1">({durationYears.toFixed(1)} anos)</span>}
                               </p>
                             </div>
                             {(startDate || endDate) && (
-                              <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary whitespace-nowrap">
+                              <span className="text-micro text-lia-text-tertiary whitespace-nowrap">
                                 {formatDate(startDate)}{startDate && endDate ? ' - ' : ''}{formatDate(endDate)}
                               </span>
                             )}
@@ -564,7 +564,7 @@ export function CandidatePreviewProfileTab({
                           
                           <div className="flex flex-wrap gap-1.5 mb-2">
                             {industriesList.slice(0, 2).map((ind: string) => (
- <span key={ind} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+ <span key={ind} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
                                 <Building className="w-2.5 h-2.5 mr-0.5" />
                                 {ind}
                               </span>
@@ -575,7 +575,7 @@ export function CandidatePreviewProfileTab({
                               </span>
                             )}
                             {!!companySize && (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border border-lia-border-subtle dark:border-lia-border-subtle">
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle">
                                 <Users className="w-2.5 h-2.5" />
                                 {companySize}
                               </span>
@@ -589,7 +589,7 @@ export function CandidatePreviewProfileTab({
                                 Stack:
                               </span>
                               {technologiesList.slice(0, 6).map((tech: string) => (
-                                <span key={tech} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
+                                <span key={tech} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-primary">
                                   {tech}
                                 </span>
                               ))}
@@ -600,7 +600,7 @@ export function CandidatePreviewProfileTab({
                           )}
                           
                           {descriptionList.length > 0 && (
-                            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">{descriptionList[0]}</p>
+                            <p className="text-xs text-lia-text-secondary mt-1">{descriptionList[0]}</p>
                           )}
                         </div>
                       )
@@ -612,10 +612,10 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
+            <Card className="border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <GraduationCap className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+                  <GraduationCap className="w-3.5 h-3.5 text-lia-text-primary" />
                   <CardTitle className="text-xs font-semibold text-lia-text-primary">
                     Formação Acadêmica
                   </CardTitle>
@@ -633,7 +633,7 @@ export function CandidatePreviewProfileTab({
                           {(edu.school || edu.institution || 'Instituição não informada') as string}
                         </p>
                       </div>
-                      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary flex-shrink-0">
+                      <span className="text-xs text-lia-text-primary flex-shrink-0">
                         {(edu.start_date || edu.startDate || '') as string}{((edu.start_date || edu.startDate) && (edu.end_date || edu.endDate)) ? ' - ' : ''}{(edu.end_date || edu.endDate || '') as string}
                       </span>
                     </div>
@@ -644,10 +644,10 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
+            <Card className="border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <Award className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+                  <Award className="w-3.5 h-3.5 text-lia-text-primary" />
                   <CardTitle className="text-xs font-semibold text-lia-text-primary">
                     Cursos e Certificações
                   </CardTitle>
@@ -667,7 +667,7 @@ export function CandidatePreviewProfileTab({
                           </h5>
                           {certIssuer && <p className={textStyles.bodySmall}>{certIssuer}</p>}
                         </div>
-                        {certDate && <span className="text-xs text-lia-text-primary dark:text-lia-text-primary flex-shrink-0">{certDate}</span>}
+                        {certDate && <span className="text-xs text-lia-text-primary flex-shrink-0">{certDate}</span>}
                       </div>
                     )
                   })
@@ -677,10 +677,10 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
+            <Card className="border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <Languages className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+                  <Languages className="w-3.5 h-3.5 text-lia-text-primary" />
                   <CardTitle className="text-xs font-semibold text-lia-text-primary">
                     Idiomas
                   </CardTitle>
@@ -695,7 +695,7 @@ export function CandidatePreviewProfileTab({
                         {lang.language}
                       </span>
                       {lang.proficiency && (
-                        <Badge className="text-xs px-1.5 py-0 h-4 bg-gray-200 text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default font-semibold">
+                        <Badge className="text-xs px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary border-lia-border-default font-semibold">
                           {lang.proficiency}
                         </Badge>
                       )}
@@ -707,10 +707,10 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-lia-border-subtle dark:border-lia-border-subtle col-span-2">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
+            <Card className="border-lia-border-subtle col-span-2">
+              <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+                  <DollarSign className="w-3.5 h-3.5 text-lia-text-primary" />
                   <CardTitle className="text-xs font-semibold text-lia-text-primary">
                     Remuneração
                   </CardTitle>
@@ -761,10 +761,10 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
+            <Card className="border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+                  <User className="w-3.5 h-3.5 text-lia-text-primary" />
                   <CardTitle className="text-xs font-semibold text-lia-text-primary">
                     Preferências e Dados Pessoais
                   </CardTitle>
@@ -798,7 +798,7 @@ export function CandidatePreviewProfileTab({
                 {candidate.is_remote !== undefined && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Aceita Remoto</span>
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? 'bg-status-success/15 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
                       {candidate.is_remote ? 'Sim' : 'Não'}
                     </Badge>
                   </div>
@@ -806,7 +806,7 @@ export function CandidatePreviewProfileTab({
                 {(candidate.willing_to_relocate !== undefined || candidate.willingToRelocate !== undefined) && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Aceita Mudança</span>
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? 'bg-status-success/15 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
                       {(candidate.willing_to_relocate ?? candidate.willingToRelocate) === true ? 'Sim' : 
                        (candidate.willing_to_relocate ?? candidate.willingToRelocate) === false ? 'Não' : 
                        String(candidate.willing_to_relocate ?? candidate.willingToRelocate)}
@@ -816,7 +816,7 @@ export function CandidatePreviewProfileTab({
                 {candidate.mobility !== undefined && (
                   <div className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>Disponibilidade Viagens</span>
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? 'bg-status-success/15 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
                       {candidate.mobility === true ? 'Sim' : candidate.mobility === false ? 'Não' : String(candidate.mobility)}
                     </Badge>
                   </div>
@@ -832,10 +832,10 @@ export function CandidatePreviewProfileTab({
               </CardContent>
             </Card>
 
-            <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
-              <CardHeader className="py-1.5 px-2.5 bg-white dark:bg-lia-bg-primary">
+            <Card className="border-lia-border-subtle">
+              <CardHeader className="py-1.5 px-2.5 bg-lia-bg-primary">
                 <div className="flex items-center gap-1.5">
-                  <Home className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+                  <Home className="w-3.5 h-3.5 text-lia-text-primary" />
                   <CardTitle className="text-xs font-semibold text-lia-text-primary">
                     Endereço
                   </CardTitle>
@@ -845,8 +845,8 @@ export function CandidatePreviewProfileTab({
                 {hasAddressData() ? (
                   <div className="space-y-1">
                     <div className="flex items-start gap-2">
-                      <MapPin className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary whitespace-pre-line">
+                      <MapPin className="w-3 h-3 text-lia-text-secondary mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-lia-text-primary whitespace-pre-line">
                         {getAddressString()}
                       </div>
                     </div>

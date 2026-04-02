@@ -61,7 +61,7 @@ const StarRating = React.forwardRef<HTMLDivElement, StarRatingProps>(
             aria-label={`${star} stars`}
             type="button"
             className={cn(
- "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900/20 rounded-sm disabled:pointer-events-none disabled:opacity-50",
+ "transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-lia-btn-primary-bg/20 rounded-sm disabled:pointer-events-none disabled:opacity-50",
               value !== null && star <= value
                 ? "text-status-warning dark:text-status-warning"
                 : "text-lia-text-disabled hover:text-status-warning dark:hover:text-status-warning"
@@ -124,7 +124,7 @@ const LikertRating = React.forwardRef<HTMLDivElement, LikertRatingProps>(
             disabled={disabled}
             type="button"
             className={cn(
- "rounded-md font-medium transition-opacity duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900/20 disabled:pointer-events-none disabled:opacity-50 border whitespace-nowrap",
+ "rounded-md font-medium transition-opacity duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-lia-btn-primary-bg/20 disabled:pointer-events-none disabled:opacity-50 border whitespace-nowrap",
               buttonSizeClasses[size],
               value === option.value
                 ? "bg-gray-900 text-white border-gray-900"

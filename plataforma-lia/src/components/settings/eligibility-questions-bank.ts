@@ -34,7 +34,7 @@ export interface EligibilityQuestionTemplate {
 export type ScreeningQuestionTemplate = EligibilityQuestionTemplate
 
 export const QUESTION_CATEGORIES: Record<QuestionCategory, { label: string; icon: string; color: string }> = {
-  general: { label: 'Gerais', icon: '📋', color: 'bg-gray-100 lia-text-700' },
+  general: { label: 'Gerais', icon: '📋', color: 'bg-gray-100 text-lia-text-primary' },
   eligibility: { label: 'Elegibilidade e Requisitos Legais', icon: '📋', color: 'bg-wedo-cyan/15 text-wedo-cyan-dark' },
   availability: { label: 'Disponibilidade e Mobilidade', icon: '✈️', color: 'bg-status-success/15 text-status-success' },
   education: { label: 'Formação e Certificações', icon: '🎓', color: 'bg-wedo-purple/15 text-wedo-purple' },
@@ -43,7 +43,7 @@ export const QUESTION_CATEGORIES: Record<QuestionCategory, { label: string; icon
   compensation: { label: 'Remuneração e Contrato', icon: '💰', color: 'bg-status-warning/15 text-status-warning' },
   work_model: { label: 'Modelo de Trabalho', icon: '🏠', color: 'bg-wedo-purple/15 text-wedo-purple' },
   compliance: { label: 'Compliance e Conflito de Interesses', icon: '⚠️', color: 'bg-status-error/15 text-status-error' },
-  system_default: { label: 'Perguntas Padrão do Sistema', icon: '⚙️', color: 'bg-gray-100 lia-text-700' },
+  system_default: { label: 'Perguntas Padrão do Sistema', icon: '⚙️', color: 'bg-gray-100 text-lia-text-primary' },
 }
 
 export const ELIGIBILITY_QUESTIONS_BANK: EligibilityQuestionTemplate[] = [

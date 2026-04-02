@@ -46,7 +46,7 @@ export function TechStackTab({
     <Card className={cardStyles.default}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-sm font-semibold lia-text-900 dark:text-lia-text-primary">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary">
             <Code className="w-4 h-4" />
             Tech Stack por Categoria
           </CardTitle>
@@ -138,7 +138,7 @@ export function TechStackTab({
                             if (!isEditingCompanyData) return;
                             addTechToCategory(category.key, suggestion);
                           }}
-                          className={`text-micro px-2 py-1 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-full lia-text-500 dark:text-lia-text-tertiary hover:border-gray-400 hover:lia-text-700 dark:hover:border-gray-500 dark:hover:lia-text-300 transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          className={`text-micro px-2 py-1 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-full text-lia-text-secondary hover:border-gray-400 hover:text-lia-text-primary dark:hover:border-gray-500 transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                         >
                           + {suggestion}
                         </button>
@@ -174,7 +174,7 @@ export function TechStackTab({
                   outros: !prev.outros,
                 }))
               }
-              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-100 lia-text-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:opacity-90 transition-opacity motion-reduce:transition-none"
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary hover:opacity-90 transition-opacity motion-reduce:transition-none"
             >
               <div className="flex items-center gap-2">
                 <Code className="w-4 h-4" />
@@ -196,7 +196,7 @@ export function TechStackTab({
                   {techStackByCategory["outros"].map((tech, idx) => (
                     <Badge
                       key={idx}
-                      className="bg-gray-100 dark:bg-lia-bg-elevated lia-text-800 dark:text-lia-text-primary text-xs px-2.5 py-1 rounded-full"
+                      className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary text-xs px-2.5 py-1 rounded-full"
                     >
                       {tech}
                       {isEditingCompanyData && (
@@ -230,7 +230,7 @@ export function TechStackTab({
         )}
 
         <div className="border-t border-lia-border-subtle dark:lia-border-800 pt-4">
-          <label className="flex items-center gap-3 text-xs font-medium lia-text-600 dark:text-lia-text-tertiary mb-2">
+          <label className="flex items-center gap-3 text-xs font-medium text-lia-text-secondary mb-2">
             <span className="flex items-center gap-1">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
               Cultura de Engenharia

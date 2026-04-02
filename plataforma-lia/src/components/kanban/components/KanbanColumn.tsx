@@ -40,29 +40,29 @@ const getColumnStyle = (columnId: string, stageColor?: string): ColumnStyle => {
     sourcing: {
       bg: 'bg-white dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-gray-700 dark:lia-bg-300',
-      header: 'lia-text-800 dark:text-lia-text-primary',
+      dot: 'bg-gray-700',
+      header: 'text-lia-text-primary',
       accentColor: 'var(--gray-600)'
     },
     hired: {
       bg: 'bg-white dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-gray-700 dark:lia-bg-300',
-      header: 'lia-text-800 dark:text-lia-text-primary',
+      dot: 'bg-gray-700',
+      header: 'text-lia-text-primary',
       accentColor: 'var(--gray-600)'
     },
     rejected: {
       bg: 'bg-white dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-gray-300 dark:lia-bg-600',
-      header: 'lia-text-800 dark:text-lia-text-primary',
+      dot: 'bg-gray-300',
+      header: 'text-lia-text-primary',
       accentColor: 'var(--gray-200)'
     },
     offer_declined: {
       bg: 'bg-white dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-gray-300 dark:lia-bg-600',
-      header: 'lia-text-800 dark:text-lia-text-primary',
+      dot: 'bg-gray-300',
+      header: 'text-lia-text-primary',
       accentColor: 'var(--gray-200)'
     }
   }
@@ -74,8 +74,8 @@ const getColumnStyle = (columnId: string, stageColor?: string): ColumnStyle => {
   return {
     bg: 'bg-white dark:bg-lia-bg-primary',
     border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-    dot: 'bg-gray-500 dark:lia-bg-400',
-    header: 'lia-text-800 dark:text-lia-text-primary',
+    dot: 'bg-gray-500',
+    header: 'text-lia-text-primary',
     accentColor: stageColor || 'var(--gray-400)'
   }
 }
@@ -164,7 +164,7 @@ const KanbanColumn = memo(function KanbanColumn({
             <h3 className={`font-medium text-xs ${columnStyle.header}`}>
               {stage.displayName}
             </h3>
-            <span className="text-micro lia-text-800 dark:text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
+            <span className="text-micro text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
               {sortedCandidates.length}
             </span>
           </div>

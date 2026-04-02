@@ -67,7 +67,7 @@ const formatTime = (date: Date) => {
 function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
   return (
     <div className="mt-2 pt-2 border-t border-lia-border-subtle/30">
-      <p className="text-micro font-semibold lia-text-500 uppercase tracking-wider mb-1" >
+      <p className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider mb-1" >
         Tarefas agendadas
       </p>
       {tasks.map((task, idx) => (
@@ -76,9 +76,9 @@ function TasksChecklist({ tasks }: { tasks: TaskItem[] }) {
           className="flex items-start gap-1.5 py-0.5"
         >
           <CheckCircle2 className="w-3 h-3 text-chat-cyan flex-shrink-0 mt-0.5" />
-          <span className="text-xs lia-text-600">
+          <span className="text-xs text-lia-text-secondary">
             {task.description || task.type}
-            {task.data_type && <span className="lia-text-400 ml-1">({task.data_type})</span>}
+            {task.data_type && <span className="text-lia-text-tertiary ml-1">({task.data_type})</span>}
           </span>
         </div>
       ))}
@@ -128,7 +128,7 @@ function LearnedSuggestionsChips({ suggestions, onAccept }: { suggestions: Learn
     <div className="mt-2 pt-2 border-t border-lia-border-subtle/30">
       <div className="flex items-center gap-1 mb-1">
         <Lightbulb className="w-3 h-3 text-status-warning" />
-        <span className="text-micro font-medium lia-text-500" >
+        <span className="text-micro font-medium text-lia-text-secondary" >
           Baseado no seu histórico
         </span>
       </div>
@@ -157,7 +157,7 @@ function ConfidenceBadge({ confidence, layer }: { confidence?: number; layer?: n
 
   return (
     <span className={cn("text-micro font-medium ml-1", color)} >
-      {pct}%{layer === 3 && <span className="lia-text-400 ml-0.5">AI</span>}
+      {pct}%{layer === 3 && <span className="text-lia-text-tertiary ml-0.5">AI</span>}
     </span>
   )
 }
@@ -227,7 +227,7 @@ export function TransitionChatPanel({
               <div className="w-7 h-7 rounded-full flex items-center justify-center">
                 <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
               </div>
-              <span className="text-base-ui font-bold lia-text-900 dark:lia-text-50" >
+              <span className="text-base-ui font-bold text-lia-text-primary" >
                 LIA
               </span>
             </div>
@@ -237,7 +237,7 @@ export function TransitionChatPanel({
                   onClick={onNewChat}
                   title="Novo chat"
                   aria-label="Iniciar novo chat"
-                  className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -248,7 +248,7 @@ export function TransitionChatPanel({
                   disabled={messages.length === 0}
                   title="Limpar mensagens"
                   aria-label="Limpar mensagens"
-                  className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <Eraser className="w-3.5 h-3.5" />
                 </button>
@@ -258,7 +258,7 @@ export function TransitionChatPanel({
                   onClick={onToggleHistory}
                   title="Histórico de conversas"
                   aria-label="Ver histórico de conversas"
-                  className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                 >
                   <History className="w-3.5 h-3.5" />
                 </button>
@@ -270,7 +270,7 @@ export function TransitionChatPanel({
                     onClick={onClose}
                     title="Fechar"
                     aria-label="Fechar"
-                    className="p-1.5 rounded-md lia-text-400 hover:lia-text-600 hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                    className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -286,7 +286,7 @@ export function TransitionChatPanel({
         >
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-8 opacity-60">
-              <p className="text-xs lia-text-400">
+              <p className="text-xs text-lia-text-tertiary">
                 Envie uma mensagem para começar
               </p>
             </div>
@@ -300,18 +300,18 @@ export function TransitionChatPanel({
                     <div className="flex flex-col items-end gap-1">
                       <div className="max-w-[85%] px-3.5 py-2.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-[14px] rounded-br-[4px]">
                         <p
-                          className="text-base-ui whitespace-pre-wrap lia-text-700 dark:text-lia-text-primary"
+                          className="text-base-ui whitespace-pre-wrap text-lia-text-primary"
                          
                         >
                           {msg.content}
                         </p>
                       </div>
-                      <span className="text-xs lia-text-400 px-1" >
+                      <span className="text-xs text-lia-text-tertiary px-1" >
                         {formatTime(timestamp)}
                       </span>
                     </div>
                     <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center mt-0.5">
-                      <User className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
+                      <User className="w-3.5 h-3.5 text-lia-text-secondary" />
                     </div>
                   </div>
                 )
@@ -335,7 +335,7 @@ export function TransitionChatPanel({
                   </div>
                   <div className="flex-1 flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
-                      <span className="text-xs font-bold lia-text-800 dark:text-lia-text-primary" >
+                      <span className="text-xs font-bold text-lia-text-primary" >
                         LIA
                       </span>
                       <ConfidenceBadge confidence={meta?.confidence} layer={meta?.layer} />
@@ -345,7 +345,7 @@ export function TransitionChatPanel({
                     >
                       <RichContent
                         html={liaHtml}
-                        className="text-base-ui leading-relaxed lia-text-700 dark:text-lia-text-primary font-['Open_Sans',sans-serif]"
+                        className="text-base-ui leading-relaxed text-lia-text-primary font-['Open_Sans',sans-serif]"
                       />
 
                       {meta?.extracted_preferences && Object.keys(meta.extracted_preferences).length > 0 && (
@@ -355,7 +355,7 @@ export function TransitionChatPanel({
                             return (
                               <span
                                 key={key}
-                                className="inline-flex items-center gap-1 text-micro bg-gray-50 rounded-full px-2 py-0.5 lia-text-600"
+                                className="inline-flex items-center gap-1 text-micro bg-gray-50 rounded-full px-2 py-0.5 text-lia-text-secondary"
                                 
                               >
                                 <span className="font-medium">{label}:</span> {String(value)}
@@ -381,7 +381,7 @@ export function TransitionChatPanel({
                       originalResponse={msg.content}
                       className="px-1"
                     />
-                    <span className="text-xs lia-text-400 px-1" >
+                    <span className="text-xs text-lia-text-tertiary px-1" >
                       {formatTime(timestamp)}
                     </span>
                   </div>
@@ -396,7 +396,7 @@ export function TransitionChatPanel({
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-1.5 mb-1 px-1">
-                  <span className="text-xs font-bold lia-text-800 dark:text-lia-text-primary" >
+                  <span className="text-xs font-bold text-lia-text-primary" >
                     LIA
                   </span>
                 </div>
@@ -415,7 +415,7 @@ export function TransitionChatPanel({
           <div className="flex-shrink-0 px-4 py-2 border-t border-lia-border-subtle dark:lia-border-800 bg-gray-50/50">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Brain className="w-3 h-3 text-chat-cyan" strokeWidth={2.5} />
-              <span className="text-xs font-semibold lia-text-600 dark:text-lia-text-tertiary">
+              <span className="text-xs font-semibold text-lia-text-secondary">
                 Preferências detectadas
               </span>
             </div>
@@ -426,10 +426,10 @@ export function TransitionChatPanel({
                 return (
                   <span
                     key={key}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-default rounded-md text-xs lia-text-700 dark:text-lia-text-secondary"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-default rounded-md text-xs text-lia-text-primary"
                     
                   >
-                    <span className="font-medium lia-text-900 dark:text-lia-text-primary">{label}:</span> {String(value)}
+                    <span className="font-medium text-lia-text-primary">{label}:</span> {String(value)}
                   </span>
                 )
               })}
@@ -450,12 +450,12 @@ export function TransitionChatPanel({
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={placeholder || 'Envie mensagem para a LIA...'}
-              className="flex-1 text-base-ui bg-transparent focus:outline-none min-w-0 lia-text-900 dark:lia-text-50 placeholder:lia-text-400"
+              className="flex-1 text-base-ui bg-transparent focus:outline-none min-w-0 text-lia-text-primary placeholder:text-lia-text-tertiary"
              
               disabled={isLoading}
             />
             <button
-              className="p-1.5 lia-text-400 hover:lia-text-500 dark:lia-text-500 dark:hover:lia-text-300 transition-colors motion-reduce:transition-none rounded-full"
+              className="p-1.5 text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none rounded-full"
               type="button"
               title="Gravar áudio"
               aria-label="Gravar áudio"
@@ -470,7 +470,7 @@ export function TransitionChatPanel({
                 "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors",
                 canSend
                   ? "bg-chat-cyan text-white hover:opacity-90"
-                  : "bg-gray-200 dark:bg-lia-bg-elevated lia-text-400 dark:lia-text-500 cursor-not-allowed"
+                  : "bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-tertiary cursor-not-allowed"
               )}
               type="button"
             >

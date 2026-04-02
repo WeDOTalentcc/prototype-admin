@@ -90,7 +90,7 @@ export function KanbanFiltersPanel({
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Score LIA */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+            <label className="text-xs font-medium text-lia-text-primary">
               Score LIA Mínimo
             </label>
             <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export function KanbanFiltersPanel({
 
           {/* Status */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Status</label>
+            <label className="text-xs font-medium text-lia-text-primary">Status</label>
             <div className="space-y-1.5">
               {STATUS_OPTIONS.map(({ value, label }) => (
                 <label key={value} className="flex items-center gap-2 cursor-pointer">
@@ -126,7 +126,7 @@ export function KanbanFiltersPanel({
 
           {/* Origem */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Origem</label>
+            <label className="text-xs font-medium text-lia-text-primary">Origem</label>
             <div className="space-y-1.5">
               {ORIGIN_OPTIONS.map(({ value, label }) => (
                 <label key={value} className="flex items-center gap-2 cursor-pointer">
@@ -144,7 +144,7 @@ export function KanbanFiltersPanel({
 
           {/* Modelo de Trabalho */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Modelo de Trabalho</label>
+            <label className="text-xs font-medium text-lia-text-primary">Modelo de Trabalho</label>
             <div className="space-y-1.5">
               {WORK_MODEL_OPTIONS.map(({ value, label }) => (
                 <label key={value} className="flex items-center gap-2 cursor-pointer">

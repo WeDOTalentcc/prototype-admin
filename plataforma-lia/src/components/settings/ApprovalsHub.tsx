@@ -59,13 +59,13 @@ const STATUS_CONFIG: Record<string, { label: string, color: string, icon: React.
   pending: { label: 'Pendente', color: 'bg-status-warning/15 text-status-warning', icon: Clock },
   approved: { label: 'Aprovado', color: 'bg-status-success/15 text-status-success', icon: CheckCircle },
   rejected: { label: 'Rejeitado', color: 'bg-status-error/15 text-status-error', icon: XCircle },
-  cancelled: { label: 'Cancelado', color: 'bg-gray-100 lia-text-500', icon: AlertCircle }
+  cancelled: { label: 'Cancelado', color: 'bg-gray-100 text-lia-text-secondary', icon: AlertCircle }
 }
 
 const PRIORITY_CONFIG: Record<string, { label: string, color: string }> = {
-  low: { label: 'Baixa', color: 'bg-gray-100 lia-text-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary' },
-  normal: { label: 'Normal', color: 'bg-gray-50 lia-text-600' },
-  high: { label: 'Alta', color: 'bg-gray-200 lia-text-700 dark:bg-lia-bg-elevated dark:text-lia-text-secondary' },
+  low: { label: 'Baixa', color: 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary' },
+  normal: { label: 'Normal', color: 'bg-gray-50 text-lia-text-secondary' },
+  high: { label: 'Alta', color: 'bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated' },
   urgent: { label: 'Urgente', color: 'bg-status-error/10 text-status-error' }
 }
 
@@ -204,8 +204,8 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base-ui font-semibold font-['Open_Sans',sans-serif] lia-text-800 dark:text-lia-text-primary">Aprovações</h2>
-          <p className="text-xs lia-text-500">
+          <h2 className="text-base-ui font-semibold font-['Open_Sans',sans-serif] text-lia-text-primary">Aprovações</h2>
+          <p className="text-xs text-lia-text-secondary">
             Gerencie solicitações de aprovação de vagas, contratações e propostas
           </p>
         </div>
@@ -232,7 +232,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
         <CardHeader className="border-b border-lia-border-subtle py-2">
           <div className="flex items-center gap-3">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lia-text-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-tertiary" />
               <Input
                 placeholder="Buscar por item, solicitante ou aprovador..."
                 value={searchTerm}
@@ -241,11 +241,11 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
               />
             </div>
             <div className="flex items-center gap-2">
-              <Filter className="w-3.5 h-3.5 lia-text-400" />
+              <Filter className="w-3.5 h-3.5 text-lia-text-tertiary" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="border border-lia-border-subtle dark:border-lia-border-default rounded-full px-2 py-1.5 text-xs bg-white dark:bg-lia-bg-secondary dark:text-lia-text-primary"
+                className="border border-lia-border-subtle dark:border-lia-border-default rounded-full px-2 py-1.5 text-xs bg-white dark:bg-lia-bg-secondary"
               >
                 <option value="all">Todos os status</option>
                 <option value="pending">Pendentes</option>
@@ -259,12 +259,12 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
         <CardContent className="p-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-10">
-              <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-400" />
+              <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <AlertCircle className="w-8 h-8 text-status-error mb-3" />
-              <p className="text-xs lia-text-600">{error}</p>
+              <p className="text-xs text-lia-text-secondary">{error}</p>
               <Button variant="outline" onClick={fetchApprovals} className="mt-3 text-xs">
                 Tentar novamente
               </Button>
@@ -272,8 +272,8 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
           ) : filteredApprovals.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <CheckCircle className="w-8 h-8 text-status-success mb-3" />
-              <p className="text-xs lia-text-600">Nenhuma aprovação encontrada</p>
-              <p className="text-xs lia-text-400 mt-1">
+              <p className="text-xs text-lia-text-secondary">Nenhuma aprovação encontrada</p>
+              <p className="text-xs text-lia-text-tertiary mt-1">
                 {statusFilter === 'pending' 
                   ? 'Não há aprovações pendentes no momento' 
                   : 'Tente ajustar os filtros de busca'}
@@ -299,10 +299,10 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <h4 className="text-xs font-medium lia-text-800 truncate">
+                            <h4 className="text-xs font-medium text-lia-text-primary truncate">
                               {approval.target_name}
                             </h4>
-                            <p className="text-xs lia-text-500 mt-0.5">
+                            <p className="text-xs text-lia-text-secondary mt-0.5">
                               {REQUEST_TYPE_LABELS[approval.request_type] || approval.request_type}
                             </p>
                           </div>
@@ -316,7 +316,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-3 mt-2 text-xs lia-text-500">
+                        <div className="flex items-center gap-3 mt-2 text-xs text-lia-text-secondary">
                           <div className="flex items-center gap-1">
                             <User className="w-3.5 h-3.5" />
                             <span>Solicitante: {approval.requester_name}</span>
@@ -332,7 +332,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
                         </div>
                         
                         {approval.target_description && (
-                          <p className="text-xs lia-text-400 mt-1.5 line-clamp-2">
+                          <p className="text-xs text-lia-text-tertiary mt-1.5 line-clamp-2">
                             {approval.target_description}
                           </p>
                         )}
@@ -382,65 +382,65 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-base-ui font-semibold font-['Open_Sans',sans-serif] lia-text-800 dark:text-lia-text-primary">Detalhes da Solicitação</DialogTitle>
+            <DialogTitle className="text-base-ui font-semibold font-['Open_Sans',sans-serif] text-lia-text-primary">Detalhes da Solicitação</DialogTitle>
           </DialogHeader>
           {selectedApproval && (
             <div className="space-y-3">
               <div>
-                <label className="text-micro font-medium lia-text-600">Item</label>
-                <p className="text-xs lia-text-800 mt-0.5">{selectedApproval.target_name}</p>
+                <label className="text-micro font-medium text-lia-text-secondary">Item</label>
+                <p className="text-xs text-lia-text-primary mt-0.5">{selectedApproval.target_name}</p>
               </div>
               <div>
-                <label className="text-micro font-medium lia-text-600">Tipo</label>
-                <p className="text-xs lia-text-800 mt-0.5">
+                <label className="text-micro font-medium text-lia-text-secondary">Tipo</label>
+                <p className="text-xs text-lia-text-primary mt-0.5">
                   {REQUEST_TYPE_LABELS[selectedApproval.request_type] || selectedApproval.request_type}
                 </p>
               </div>
               {selectedApproval.target_description && (
                 <div>
-                  <label className="text-micro font-medium lia-text-600">Descrição</label>
-                  <p className="text-xs lia-text-800 mt-0.5">{selectedApproval.target_description}</p>
+                  <label className="text-micro font-medium text-lia-text-secondary">Descrição</label>
+                  <p className="text-xs text-lia-text-primary mt-0.5">{selectedApproval.target_description}</p>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-micro font-medium lia-text-600">Solicitante</label>
-                  <p className="text-xs lia-text-800 mt-0.5">{selectedApproval.requester_name}</p>
-                  <p className="text-xs lia-text-500">{selectedApproval.requester_email}</p>
+                  <label className="text-micro font-medium text-lia-text-secondary">Solicitante</label>
+                  <p className="text-xs text-lia-text-primary mt-0.5">{selectedApproval.requester_name}</p>
+                  <p className="text-xs text-lia-text-secondary">{selectedApproval.requester_email}</p>
                 </div>
                 <div>
-                  <label className="text-micro font-medium lia-text-600">Aprovador</label>
-                  <p className="text-xs lia-text-800 mt-0.5">{selectedApproval.approver_name}</p>
-                  <p className="text-xs lia-text-500">{selectedApproval.approver_email}</p>
+                  <label className="text-micro font-medium text-lia-text-secondary">Aprovador</label>
+                  <p className="text-xs text-lia-text-primary mt-0.5">{selectedApproval.approver_name}</p>
+                  <p className="text-xs text-lia-text-secondary">{selectedApproval.approver_email}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-micro font-medium lia-text-600">Status</label>
+                  <label className="text-micro font-medium text-lia-text-secondary">Status</label>
                   <Badge className={`${STATUS_CONFIG[selectedApproval.status].color} text-micro px-2 py-0.5 mt-0.5`}>
                     {STATUS_CONFIG[selectedApproval.status].label}
                   </Badge>
                 </div>
                 <div>
-                  <label className="text-micro font-medium lia-text-600">Criado em</label>
-                  <p className="text-xs lia-text-800 mt-0.5">{formatDate(selectedApproval.created_at)}</p>
+                  <label className="text-micro font-medium text-lia-text-secondary">Criado em</label>
+                  <p className="text-xs text-lia-text-primary mt-0.5">{formatDate(selectedApproval.created_at)}</p>
                 </div>
               </div>
               {selectedApproval.resolved_at && (
                 <div>
-                  <label className="text-micro font-medium lia-text-600">Resolvido em</label>
-                  <p className="text-xs lia-text-800 mt-0.5">{formatDate(selectedApproval.resolved_at)}</p>
+                  <label className="text-micro font-medium text-lia-text-secondary">Resolvido em</label>
+                  <p className="text-xs text-lia-text-primary mt-0.5">{formatDate(selectedApproval.resolved_at)}</p>
                 </div>
               )}
               {selectedApproval.approval_notes && (
                 <div>
-                  <label className="text-micro font-medium lia-text-600">Observações</label>
-                  <p className="text-xs lia-text-800 mt-0.5">{selectedApproval.approval_notes}</p>
+                  <label className="text-micro font-medium text-lia-text-secondary">Observações</label>
+                  <p className="text-xs text-lia-text-primary mt-0.5">{selectedApproval.approval_notes}</p>
                 </div>
               )}
               {selectedApproval.rejection_reason && (
                 <div>
-                  <label className="text-micro font-medium lia-text-600">Motivo da Rejeição</label>
+                  <label className="text-micro font-medium text-lia-text-secondary">Motivo da Rejeição</label>
                   <p className="text-xs text-status-error mt-0.5">{selectedApproval.rejection_reason}</p>
                 </div>
               )}
@@ -457,7 +457,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
       <Dialog open={isActionDialogOpen} onOpenChange={setIsActionDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-base-ui font-semibold font-['Open_Sans',sans-serif] lia-text-800 dark:text-lia-text-primary">
+            <DialogTitle className="text-base-ui font-semibold font-['Open_Sans',sans-serif] text-lia-text-primary">
               {actionType === 'approve' ? 'Aprovar Solicitação' : 'Rejeitar Solicitação'}
             </DialogTitle>
             <DialogDescription className="text-xs">
@@ -466,7 +466,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
-              <label className="text-xs font-medium lia-text-600 block mb-1.5">
+              <label className="text-xs font-medium text-lia-text-secondary block mb-1.5">
                 {actionType === 'approve' ? 'Observações (opcional)' : 'Motivo da rejeição'}
               </label>
               <Textarea

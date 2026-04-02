@@ -120,7 +120,7 @@ function getDecisionBadgeStyles(decision: WSIScore["decision"]): string {
     case "rejected":
       return "bg-status-error/15 text-status-error border-status-error/30"
     default:
-      return "bg-gray-100 lia-text-strong border-lia-border-subtle"
+      return "bg-gray-100 text-lia-text-primary border-lia-border-subtle"
   }
 }
 
@@ -150,7 +150,7 @@ function BlockSection({
     <div className="border border-lia-border-subtle rounded-md p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+          <span className="text-sm font-medium text-lia-text-primary">
             {blockLabels[block.type]}
           </span>
           <span className="text-xs lia-text-secondary">
@@ -173,7 +173,7 @@ function BlockSection({
               question.skipped ? "bg-gray-50 lia-text-secondary" : "bg-gray-50"
             )}
           >
-            <span className="flex-1 truncate lia-text-base">
+            <span className="flex-1 truncate text-lia-text-secondary">
               {question.skillName || question.text}
             </span>
             <span
@@ -185,7 +185,7 @@ function BlockSection({
                     ? "text-status-success"
                     : question.starRating && question.starRating >= 3
                       ? "text-status-warning"
-                      : "lia-text-base"
+                      : "text-lia-text-secondary"
               )}
             >
               {question.skipped
@@ -200,7 +200,7 @@ function BlockSection({
 
       <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle">
         <span className="text-xs lia-text-secondary">Subtotal do Bloco</span>
-        <span className="text-sm font-semibold lia-text-base">
+        <span className="text-sm font-semibold text-lia-text-secondary">
           {score.toFixed(2)}
         </span>
       </div>
@@ -251,10 +251,10 @@ export function ScoreCardWSI({
             <h2 className="text-lg font-semibold text-lia-text-primary">
               Score Card WSI
             </h2>
-            <div className="flex flex-wrap items-center gap-4 text-xs lia-text-base">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-lia-text-secondary">
               <div className="flex items-center gap-1.5">
                 <User className="h-3.5 w-3.5 lia-text-secondary" />
-                <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">
+                <span className="font-medium text-lia-text-primary">
                   {candidateName}
                 </span>
               </div>
@@ -298,18 +298,18 @@ export function ScoreCardWSI({
 
         <div className="border border-lia-border-subtle rounded-md p-4 bg-gray-50">
           <div className="flex items-center gap-2 mb-4">
-            <Calculator className="h-4 w-4 lia-text-base" />
-            <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+            <Calculator className="h-4 w-4 text-lia-text-secondary" />
+            <h3 className="text-sm font-semibold text-lia-text-primary">
               Cálculo do WSI Final
             </h3>
           </div>
 
           <div className="space-y-3">
-            <div className="text-xs lia-text-base font-mono bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+            <div className="text-xs text-lia-text-secondary font-mono bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
               WSI = (Téc × 50%) + (Comp × 20%) + (Gap × 15%) + (Ctx × 15%)
             </div>
 
-            <div className="text-xs lia-text-base font-mono bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
+            <div className="text-xs text-lia-text-secondary font-mono bg-lia-bg-primary p-3 rounded-md border border-lia-border-subtle">
               WSI = ({wsiScore.technicalScore.toFixed(2)} × 0.50) + (
               {wsiScore.behavioralScore.toFixed(2)} × 0.20) + (
               {wsiScore.gapAnalysisScore.toFixed(2)} × 0.15) + (
@@ -317,7 +317,7 @@ export function ScoreCardWSI({
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-lia-border-subtle">
-              <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+              <span className="text-sm font-medium text-lia-text-primary">
                 WSI Final
               </span>
               <div className="flex items-center gap-3">
@@ -326,7 +326,7 @@ export function ScoreCardWSI({
                   className="w-32 h-3"
                 />
                 <span
-                  className="text-xl font-bold lia-text-base"
+                  className="text-xl font-bold text-lia-text-secondary"
                 >
                   {wsiScore.totalWSI.toFixed(2)}
                 </span>
@@ -344,11 +344,11 @@ export function ScoreCardWSI({
           <div className="border border-lia-border-subtle rounded-md p-4">
             <div className="flex items-center gap-2 mb-3">
               <Bot className="h-4 w-4 text-wedo-cyan" />
-              <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+              <h3 className="text-sm font-semibold text-lia-text-primary">
                 Parecer LIA
               </h3>
             </div>
-            <p className="text-sm text-lia-text-primary dark:text-lia-text-primary whitespace-pre-wrap leading-relaxed">
+            <p className="text-sm text-lia-text-primary whitespace-pre-wrap leading-relaxed">
               {liaParecer}
             </p>
           </div>

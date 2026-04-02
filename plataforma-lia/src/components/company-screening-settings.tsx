@@ -152,13 +152,13 @@ Equipe de Recrutamento`
         <div className="flex items-center justify-between p-6 bg-gray-100 dark:bg-lia-bg-secondary">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-              <Settings className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Settings className="w-6 h-6 text-lia-text-secondary" />
             </div>
             <div>
               <h3 className="text-xl font-semibold font-sans text-lia-text-primary">
                 Configurações de Triagem
               </h3>
-              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+              <p className="text-sm text-lia-text-primary">
                 Defina padrões da empresa para roteiros de triagem
               </p>
             </div>
@@ -184,8 +184,8 @@ Equipe de Recrutamento`
                   onClick={() => setActiveSection(section.id as Parameters<typeof setActiveSection>[0])}
                   className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeSection === section.id
-                      ? 'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark dark:text-lia-text-tertiary'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-lia-text-primary dark:text-lia-text-primary'
+                      ? 'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-lia-text-primary'
                   }`}
                 >
                   <section.icon className="w-4 h-4" />
@@ -222,16 +222,16 @@ Equipe de Recrutamento`
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-3">
+                        <p className="text-xs text-lia-text-primary mb-3">
                           {template.description}
                         </p>
                         <div className="space-y-2 text-xs">
                           <div className="flex justify-between">
-                            <span className="lia-text-base">Duração:</span>
+                            <span className="text-lia-text-secondary">Duração:</span>
                             <span className="font-medium">{template.duration}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="lia-text-base">Foco:</span>
+                            <span className="text-lia-text-secondary">Foco:</span>
                             <span className="font-medium">{template.focus}</span>
                           </div>
                         </div>
@@ -277,7 +277,7 @@ Equipe de Recrutamento`
                     <div className="space-y-3">
                       {approachSettings.structure.map((step, index) => (
                         <div key={`step-${index}`} className="flex items-center gap-3">
-                          <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-bold">
+                          <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-xs font-bold">
                             {index + 1}
                           </div>
                           <input
@@ -364,7 +364,7 @@ Equipe de Recrutamento`
                     <CardContent>
                       <div className="space-y-4">
                         <div>
-                          <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Timing:</label>
+                          <label className="text-xs font-medium text-lia-text-primary">Timing:</label>
                           <input
                             type="text"
                             value={feedbackTemplates.approved.timing}
@@ -372,7 +372,7 @@ Equipe de Recrutamento`
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Assunto:</label>
+                          <label className="text-xs font-medium text-lia-text-primary">Assunto:</label>
                           <input
                             type="text"
                             value={feedbackTemplates.approved.subject}
@@ -380,7 +380,7 @@ Equipe de Recrutamento`
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Mensagem:</label>
+                          <label className="text-xs font-medium text-lia-text-primary">Mensagem:</label>
                           <textarea
                             value={feedbackTemplates.approved.message}
                             className="w-full p-3 rounded-md text-sm bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
@@ -402,7 +402,7 @@ Equipe de Recrutamento`
                     <CardContent>
                       <div className="space-y-4">
                         <div>
-                          <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Timing:</label>
+                          <label className="text-xs font-medium text-lia-text-primary">Timing:</label>
                           <input
                             type="text"
                             value={feedbackTemplates.rejected.timing}
@@ -410,7 +410,7 @@ Equipe de Recrutamento`
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Assunto:</label>
+                          <label className="text-xs font-medium text-lia-text-primary">Assunto:</label>
                           <input
                             type="text"
                             value={feedbackTemplates.rejected.subject}
@@ -418,7 +418,7 @@ Equipe de Recrutamento`
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Mensagem:</label>
+                          <label className="text-xs font-medium text-lia-text-primary">Mensagem:</label>
                           <textarea
                             value={feedbackTemplates.rejected.message}
                             className="w-full p-3 rounded-md text-sm bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
@@ -487,7 +487,7 @@ Equipe de Recrutamento`
         {/* Footer Actions */}
         <div className="p-6 bg-gray-50 dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+            <div className="text-sm text-lia-text-primary">
               Configurações serão aplicadas a novos roteiros criados
             </div>
             <div className="flex items-center gap-3">

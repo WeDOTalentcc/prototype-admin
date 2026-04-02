@@ -29,13 +29,13 @@ export const ModalFooterActions = React.memo(function ModalFooterActions({
           variant="ghost"
           size="sm"
           onClick={resetFilters}
-          className="text-xs lia-text-500"
+          className="text-xs text-lia-text-secondary"
         >
           <RotateCcw className="w-3 h-3 mr-1" />
           Limpar filtros
         </Button>
         {onSave && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary">
             {(() => {
               const dest = saveDestinations.find(d => d.key === saveDestination)
               const Icon = dest?.icon || Bookmark
@@ -59,7 +59,7 @@ export const ModalFooterActions = React.memo(function ModalFooterActions({
         <Button
           size="sm"
           onClick={handleApply}
-          className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-100 dark:lia-text-900 dark:hover:bg-gray-200"
+          className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
         >
           Aplicar Filtros
         </Button>

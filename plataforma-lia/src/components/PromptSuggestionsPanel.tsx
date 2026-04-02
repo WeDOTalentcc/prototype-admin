@@ -190,7 +190,7 @@ export function PromptSuggestionsPanel({
         {commandHistory.length > 0 && (
           <button
             onClick={() => setShowHistory(!showHistory)}
-            className="text-xs lia-text-base hover:lia-text-base flex items-center gap-1 transition-colors motion-reduce:transition-none"
+            className="text-xs text-lia-text-secondary hover:text-lia-text-secondary flex items-center gap-1 transition-colors motion-reduce:transition-none"
           >
             📜 Histórico ({commandHistory.length})
           </button>
@@ -199,7 +199,7 @@ export function PromptSuggestionsPanel({
 
       {showHistory && commandHistory.length > 0 && (
         <div className="mb-4 p-3 bg-gray-50 rounded-md border">
-          <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Comandos Recentes</h4>
+          <h4 className="text-xs font-medium text-lia-text-primary mb-2">Comandos Recentes</h4>
           <div className="space-y-1">
             {commandHistory.map((command, index) => (
               <button
@@ -207,7 +207,7 @@ export function PromptSuggestionsPanel({
                 onClick={() => onHistoryCommand(command)}
                 disabled={isProcessing}
                 className={`w-full text-left text-xs p-2 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none ${
- isProcessing ? 'opacity-50' : 'lia-text-base hover:lia-text-strong'
+ isProcessing ? 'opacity-50' : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
                 📝 {command}
@@ -231,14 +231,14 @@ export function PromptSuggestionsPanel({
           >
             <span className="text-lg flex-shrink-0">{suggestion.icon}</span>
             <div className="flex-1">
-              <div className="text-base-ui font-semibold lia-text-strong group-hover:lia-text-base">
+              <div className="text-base-ui font-semibold text-lia-text-primary group-hover:text-lia-text-secondary">
                 {suggestion.label}
               </div>
-              <div className="text-xs lia-text-base mt-1">
+              <div className="text-xs text-lia-text-secondary mt-1">
                 {suggestion.description}
               </div>
               {suggestion.category && (
-                <Badge className="mt-2 text-micro bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-0">
+                <Badge className="mt-2 text-micro bg-gray-100 text-lia-text-primary border-0">
                   {suggestion.category}
                 </Badge>
               )}

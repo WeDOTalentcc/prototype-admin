@@ -41,7 +41,7 @@ function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) 
   const pct = Math.round((value / max) * 100)
   return (
     <div className="flex items-center gap-1.5">
-      <div className="flex-1 h-1.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-full">
+      <div className="flex-1 h-1.5 bg-lia-interactive-active rounded-full">
         <div
           className={cn(
             "h-1.5 rounded-full",
@@ -110,7 +110,7 @@ export function CandidateCompareModal({
               <div className="flex items-center gap-2 p-3 bg-status-success/10 dark:bg-status-success/20 rounded-lg border border-status-success/30 dark:border-status-success/30">
                 <Trophy className="h-4 w-4 text-status-success" />
                 <div>
-                  <span className="text-xs font-semibold text-status-success dark:text-status-success" aria-live="polite" aria-atomic="true">
+                  <span className="text-xs font-semibold text-status-success" aria-live="polite" aria-atomic="true">
                     Candidato indicado: {data.winner_name || nameById[data.winner] || data.winner}
                   </span>
                   <span className="ml-2 text-micro text-status-success opacity-70">
@@ -122,14 +122,14 @@ export function CandidateCompareModal({
 
             {/* Scores gerais */}
             <div>
-              <p className="text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary mb-2">
+              <p className="text-xs font-semibold text-lia-text-secondary mb-2">
                 Score Geral
               </p>
               <div className="grid gap-1.5">
                 {Object.entries(data.candidate_scores).map(([cId, score]) => (
                   <div key={cId} className="grid grid-cols-[1fr_auto] items-center gap-2">
                     <div>
-                      <p className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
+                      <p className="text-micro font-medium text-lia-text-primary truncate">
                         {nameById[cId] || cId}
                       </p>
                       <ScoreBar value={score} />
@@ -145,7 +145,7 @@ export function CandidateCompareModal({
             {/* Dimensões */}
             {Object.keys(data.dimension_comparison).length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-lia-text-secondary dark:text-lia-text-secondary mb-2">
+                <p className="text-xs font-semibold text-lia-text-secondary mb-2">
                   Por Dimensão
                 </p>
                 <div className="space-y-2">
@@ -178,8 +178,8 @@ export function CandidateCompareModal({
 
             {/* Análise */}
             {data.analysis && (
-              <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary leading-relaxed line-clamp-4">
+              <div className="pt-2 border-t border-lia-border-subtle">
+                <p className="text-micro text-lia-text-secondary leading-relaxed line-clamp-4">
                   {data.analysis}
                 </p>
               </div>

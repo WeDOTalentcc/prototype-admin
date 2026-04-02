@@ -95,7 +95,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center justify-center gap-1 text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">
+                <div className="flex items-center justify-center gap-1 text-sm text-lia-text-tertiary">
                   <Clock className="h-3.5 w-3.5" />
                   <span>{formatRelativeDate(dateStr)}</span>
                 </div>
@@ -132,7 +132,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse">
                     <Eye className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
@@ -141,7 +141,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse">
                     <Mail className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
@@ -154,7 +154,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-secondary"
+                      className="h-8 w-8 text-lia-text-tertiary hover:text-lia-text-secondary"
                       onClick={() => window.open(candidate.linkedin_url, "_blank")}
                     >
                       <Linkedin className="h-4 w-4" />
@@ -166,7 +166,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-status-warning">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-lia-text-tertiary hover:text-status-warning">
                     <Star className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
@@ -204,7 +204,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
 
   if (candidates.length === 0 && !isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-lia-text-secondary dark:text-lia-text-tertiary bg-white dark:bg-lia-bg-primary">
+      <div className="flex flex-col items-center justify-center py-20 text-lia-text-secondary bg-white dark:bg-lia-bg-primary">
         <p className="text-lg">Nenhum candidato encontrado</p>
         <p className="text-sm mt-2">Tente ajustar os filtros ou fazer uma nova busca</p>
       </div>

@@ -196,7 +196,7 @@ export function DailyBriefingCard({
   const getGreetingIcon = () => {
     const hour = new Date().getHours()
     if (hour < 12) return <Sun className="w-5 h-5 text-status-warning" />
-    if (hour < 18) return <Cloud className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+    if (hour < 18) return <Cloud className="w-5 h-5 text-lia-text-secondary" />
     return <Moon className="w-5 h-5 text-wedo-purple" />
   }
 
@@ -258,7 +258,7 @@ export function DailyBriefingCard({
       case 'success':
         return 'bg-status-success/10 border-status-success/30 text-status-success'
       default:
-        return 'bg-gray-50 border-lia-border-subtle lia-text-strong'
+        return 'bg-gray-50 border-lia-border-subtle text-lia-text-primary'
     }
   }
 
@@ -299,10 +299,10 @@ export function DailyBriefingCard({
           <div className="flex items-center gap-3">
             {getGreetingIcon()}
             <div>
-              <CardTitle className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary">
+              <CardTitle className="text-base font-semibold text-lia-text-primary">
                 {getGreeting()}, {displayName}!
               </CardTitle>
-              <p className="text-sm mt-0.5 text-lia-text-tertiary dark:text-lia-text-tertiary">
+              <p className="text-sm mt-0.5 text-lia-text-tertiary">
                 Seu resumo do dia - {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </p>
             </div>
@@ -315,7 +315,7 @@ export function DailyBriefingCard({
               disabled={refreshing}
               className="h-8 w-8 p-0"
             >
-              <RefreshCw className={`w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary ${refreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-lia-text-tertiary ${refreshing ? 'animate-spin motion-reduce:animate-none' : ''}`} />
             </Button>
             <Button
               variant="ghost"
@@ -324,9 +324,9 @@ export function DailyBriefingCard({
               className="h-8 w-8 p-0"
             >
               {expanded ? (
-                <ChevronUp className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+                <ChevronUp className="w-4 h-4 text-lia-text-tertiary" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+                <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
               )}
             </Button>
           </div>
@@ -345,8 +345,8 @@ export function DailyBriefingCard({
               onClick={() => handleActionClick('view_urgent')}
             >
               <div className="flex items-center gap-2 mb-1">
-                <AlertCircle className="w-3.5 h-3.5 lia-text-base" />
-                <span className="text-xs font-medium lia-text-base">Urgentes</span>
+                <AlertCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
+                <span className="text-xs font-medium text-lia-text-secondary">Urgentes</span>
               </div>
               <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.urgent_count}
@@ -360,8 +360,8 @@ export function DailyBriefingCard({
               onClick={() => handleActionClick('view_tasks')}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Target className="w-3.5 h-3.5 lia-text-base" />
-                <span className="text-xs font-medium lia-text-base">Tarefas Hoje</span>
+                <Target className="w-3.5 h-3.5 text-lia-text-secondary" />
+                <span className="text-xs font-medium text-lia-text-secondary">Tarefas Hoje</span>
               </div>
               <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.tasks_today}
@@ -375,8 +375,8 @@ export function DailyBriefingCard({
               onClick={() => handleActionClick('view_interviews')}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Calendar className="w-3.5 h-3.5 lia-text-base" />
-                <span className="text-xs font-medium lia-text-base">Entrevistas</span>
+                <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
+                <span className="text-xs font-medium text-lia-text-secondary">Entrevistas</span>
               </div>
               <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.interviews_today}
@@ -390,8 +390,8 @@ export function DailyBriefingCard({
               onClick={() => handleActionClick('view_alerts')}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Bell className="w-3.5 h-3.5 lia-text-base" />
-                <span className="text-xs font-medium lia-text-base">Alertas</span>
+                <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
+                <span className="text-xs font-medium text-lia-text-secondary">Alertas</span>
               </div>
               <p className="text-lg font-bold" style={{color: 'var(--wedo-cyan-dark)'}}>
                 {briefing.summary.alerts_active}
@@ -402,7 +402,7 @@ export function DailyBriefingCard({
           {briefing.urgent_actions.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-xs font-medium flex items-center gap-2" style={{color: 'var(--wedo-cyan-dark)'}}>
-                <Zap className="w-4 h-4 lia-text-base" />
+                <Zap className="w-4 h-4 text-lia-text-secondary" />
                 Ações Urgentes
               </h4>
               <div className="space-y-2">
@@ -417,7 +417,7 @@ export function DailyBriefingCard({
                       <p className="text-xs font-medium truncate" style={{color: 'var(--wedo-cyan-dark)'}}>
                         {action.title}
                       </p>
-                      <p className="text-xs truncate lia-text-base">
+                      <p className="text-xs truncate text-lia-text-secondary">
                         {action.description}
                       </p>
                     </div>
@@ -440,7 +440,7 @@ export function DailyBriefingCard({
           {briefing.schedule.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-xs font-medium flex items-center gap-2" style={{color: 'var(--wedo-cyan-dark)'}}>
-                <Calendar className="w-4 h-4 lia-text-base" />
+                <Calendar className="w-4 h-4 text-lia-text-secondary" />
                 Agenda do Dia
               </h4>
               <div className="flex gap-2 overflow-x-auto pb-1">
@@ -456,13 +456,13 @@ export function DailyBriefingCard({
                       className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
                       style={{backgroundColor: 'var(--gray-100)'}}
                     >
-                      <Clock className="w-4 h-4 lia-text-base" />
+                      <Clock className="w-4 h-4 text-lia-text-secondary" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium" style={{color: 'var(--wedo-cyan-dark)'}}>
                         {item.time}
                       </p>
-                      <p className="text-xs truncate lia-text-base">
+                      <p className="text-xs truncate text-lia-text-secondary">
                         {item.title}
                       </p>
                       {item.location && (
@@ -526,7 +526,7 @@ export function DailyBriefingCard({
                   className="w-8 h-8 rounded-md flex items-center justify-center"
                   style={{backgroundColor: 'var(--gray-100)'}}
                 >
-                  <BarChart3 className="w-4 h-4 lia-text-base" />
+                  <BarChart3 className="w-4 h-4 text-lia-text-secondary" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-lia-text-primary">
@@ -544,7 +544,7 @@ export function DailyBriefingCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-xs font-semibold lia-text-base"
+                className="text-xs font-semibold text-lia-text-secondary"
                 onClick={() => onActionClick?.('open_pipeline_chat', { 
                   pipeline: briefing.pipeline,
                   stale_days: 3 

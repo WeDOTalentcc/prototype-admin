@@ -52,7 +52,7 @@ export function CandidatesFilterPanel({
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b border-lia-border-subtle">
           <div>
-            <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+            <h3 className="text-sm font-semibold text-lia-text-primary">
               Refinar Resultados
             </h3>
             <p className="text-xs mt-0.5 text-lia-text-primary">

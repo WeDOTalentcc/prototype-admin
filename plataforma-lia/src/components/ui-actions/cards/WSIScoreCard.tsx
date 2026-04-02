@@ -95,7 +95,7 @@ export function WSIScoreCard({
           <Badge
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary"
           >
-            <Minus className="h-3 w-3 mr-1 text-lia-text-secondary dark:text-lia-text-secondary" />
+            <Minus className="h-3 w-3 mr-1 text-lia-text-secondary" />
             Aguardando
           </Badge>
         )
@@ -228,7 +228,7 @@ export function WSIScoreCard({
                   key={`area-${index}`}
                   className="flex items-start gap-2 text-xs px-2 py-1 rounded-md bg-lia-bg-tertiary text-lia-text-secondary"
                 >
-                  <TrendingUp className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary dark:text-lia-text-secondary" />
+                  <TrendingUp className="h-3 w-3 mt-0.5 shrink-0 text-lia-text-secondary" />
                   <span>{area}</span>
                 </div>
               ))}

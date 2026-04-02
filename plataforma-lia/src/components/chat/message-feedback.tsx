@@ -73,10 +73,10 @@ export function MessageFeedback({
       <button
         onClick={() => handleThumbs('up')}
         className={cn(
-          "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
+          "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-lia-border-default",
           thumbsState === 'up'
-            ? "bg-status-success/15 text-status-success dark:text-status-success"
-            : "lia-text-400 hover:lia-text-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-300"
+            ? "bg-status-success/15 text-status-success"
+            : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
         )}
         title="Resposta útil"
         aria-label="Resposta útil"
@@ -87,10 +87,10 @@ export function MessageFeedback({
       <button
         onClick={() => handleThumbs('down')}
         className={cn(
-          "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
+          "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-lia-border-default",
           thumbsState === 'down'
             ? "bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error"
-            : "lia-text-400 hover:lia-text-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-300"
+            : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
         )}
         title="Resposta não útil"
         aria-label="Resposta não útil"
@@ -102,10 +102,10 @@ export function MessageFeedback({
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
+              "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-lia-border-default",
               rating > 0
-                ? "bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning"
-                : "lia-text-400 hover:lia-text-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-300"
+                ? "bg-status-warning/15 text-status-warning dark:bg-status-warning/30"
+                : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
             )}
             title="Avaliar resposta"
             aria-label="Avaliar resposta"
@@ -115,7 +115,7 @@ export function MessageFeedback({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-3" align="start" sideOffset={8}>
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">
+            <span className="text-xs font-medium text-lia-text-primary">
               Avalie esta resposta
             </span>
             <div className="flex gap-1">
@@ -127,10 +127,10 @@ export function MessageFeedback({
                   onMouseLeave={() => setHoveredStar(0)}
                   aria-label={`Avaliar ${star} estrela${star > 1 ? 's' : ''}`}
                   className={cn(
-                    "p-1 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
+                    "p-1 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-lia-border-default",
                     (hoveredStar >= star || rating >= star)
                       ? "text-status-warning"
-                      : "lia-text-300 dark:lia-text-600"
+                      : "text-lia-text-disabled"
                   )}
                 >
                   <Star 
@@ -143,7 +143,7 @@ export function MessageFeedback({
               ))}
             </div>
             {rating > 0 && (
-              <div className="flex items-center gap-1 text-xs text-status-success dark:text-status-success">
+              <div className="flex items-center gap-1 text-xs text-status-success">
                 <Check className="w-3 h-3" />
                 <span>Avaliação enviada!</span>
               </div>
@@ -156,10 +156,10 @@ export function MessageFeedback({
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
+              "p-1.5 rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-lia-border-default",
               correctionSubmitted
-                ? "bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark"
-                : "lia-text-400 hover:lia-text-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-300"
+                ? "bg-wedo-cyan/15 text-wedo-cyan-dark"
+                : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
             )}
             title="Sugerir correção"
             aria-label="Sugerir correção"
@@ -170,10 +170,10 @@ export function MessageFeedback({
         <PopoverContent className="w-80 p-3" align="start" sideOffset={8}>
           <div className="flex flex-col gap-3">
             <div>
-              <span className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">
+              <span className="text-xs font-medium text-lia-text-primary">
                 Sugerir correção
               </span>
-              <p className="text-micro lia-text-500 dark:text-lia-text-tertiary mt-0.5">
+              <p className="text-micro text-lia-text-secondary mt-0.5">
                 Ajude a LIA a melhorar suas respostas
               </p>
             </div>
@@ -214,7 +214,7 @@ export function MessageFeedback({
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-2 py-2 text-xs text-status-success dark:text-status-success">
+              <div className="flex items-center gap-2 py-2 text-xs text-status-success">
                 <Check className="w-4 h-4" />
                 <span>Correção enviada! Obrigado pelo feedback.</span>
               </div>

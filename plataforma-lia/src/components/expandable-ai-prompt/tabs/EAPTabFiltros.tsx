@@ -42,7 +42,7 @@ export const EAPTabFiltros = React.memo(function EAPTabFiltros(props: EAPTabFilt
       {activeCount > 0 && (
         <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
+            <span className="text-xs font-medium text-lia-text-secondary">
               {activeCount} filtro{activeCount > 1 ? 's' : ''} ativo{activeCount > 1 ? 's' : ''}
             </span>
             <button
@@ -55,7 +55,7 @@ export const EAPTabFiltros = React.memo(function EAPTabFiltros(props: EAPTabFilt
                 education: {},
                 languages: {}
               } as SearchFilters)}
-              className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:text-status-error"
+              className="text-xs text-lia-text-primary hover:text-status-error"
             >
               Limpar
             </button>
@@ -68,8 +68,8 @@ export const EAPTabFiltros = React.memo(function EAPTabFiltros(props: EAPTabFilt
         className="w-full px-4 py-3 bg-lia-bg-primary border-2 border-dashed border-lia-border-subtle rounded-md hover:border-lia-border-default hover:bg-gray-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
         onClick={() => setShowAdvancedFiltersModal(true)}
       >
-        <Filter className="w-4 h-4 lia-text-strong" />
-        <span className="text-xs lia-text-strong">Abrir Filtros Avançados</span>
+        <Filter className="w-4 h-4 text-lia-text-primary" />
+        <span className="text-xs text-lia-text-primary">Abrir Filtros Avançados</span>
       </button>
 
       {/* Botão de aplicar filtros */}

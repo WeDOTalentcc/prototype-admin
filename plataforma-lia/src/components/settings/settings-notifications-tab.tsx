@@ -38,10 +38,10 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
           ].map((channel) => (
             <div key={channel.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center gap-3">
-                <channel.icon className="w-4 h-4 lia-text-800 dark:text-lia-text-primary" />
+                <channel.icon className="w-4 h-4 text-lia-text-primary" />
                 <div>
-                  <div className="text-sm font-medium lia-text-950 dark:lia-text-50">{channel.label}</div>
-                  <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">{channel.desc}</div>
+                  <div className="text-sm font-medium text-lia-text-primary">{channel.label}</div>
+                  <div className="text-xs text-lia-text-primary">{channel.desc}</div>
                 </div>
               </div>
               <input
@@ -70,8 +70,8 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
           ].map((type) => (
             <div key={type.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div>
-                <div className="text-sm font-medium lia-text-950 dark:lia-text-50">{type.label}</div>
-                <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">{type.desc}</div>
+                <div className="text-sm font-medium text-lia-text-primary">{type.label}</div>
+                <div className="text-xs text-lia-text-primary">{type.desc}</div>
               </div>
               <input
                 type="checkbox"

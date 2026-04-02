@@ -110,15 +110,15 @@ export function ToolConfirmationMessage({
         <div className="flex-shrink-0 text-2xl" aria-hidden="true">{toolInfo.icon}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <AlertTriangle className="h-4 w-4 text-status-warning dark:text-status-warning" aria-hidden="true" />
-            <span id={`${dialogId}-title`} className="font-medium text-status-warning dark:text-status-warning">
+            <AlertTriangle className="h-4 w-4 text-status-warning" aria-hidden="true" />
+            <span id={`${dialogId}-title`} className="font-medium text-status-warning">
               Confirmação necessária
             </span>
           </div>
-          <p id={`${dialogId}-desc`} className="text-sm text-status-warning dark:text-status-warning mb-2">
+          <p id={`${dialogId}-desc`} className="text-sm text-status-warning mb-2">
             {confirmationMessage}
           </p>
-          <p className="text-xs text-status-warning dark:text-status-warning">
+          <p className="text-xs text-status-warning">
             {toolInfo.description}
           </p>
         </div>
@@ -126,10 +126,10 @@ export function ToolConfirmationMessage({
 
       {Object.keys(toolCall.parameters).length > 0 && (
         <div className="bg-status-warning/15/50 dark:bg-status-warning/30 rounded-md p-2 text-xs" aria-label="Parâmetros da ação">
-          <span className="font-medium text-status-warning dark:text-status-warning">Parâmetros:</span>
+          <span className="font-medium text-status-warning">Parâmetros:</span>
           <ul className="mt-1 space-y-0.5" role="list">
             {Object.entries(toolCall.parameters).map(([key, value]) => (
-              <li key={key} className="text-status-warning dark:text-status-warning">
+              <li key={key} className="text-status-warning">
                 <span className="font-medium">{key}:</span>{' '}
                 <span>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
               </li>
@@ -147,7 +147,7 @@ export function ToolConfirmationMessage({
           data-testid="tool-confirm-button"
           aria-label="Confirmar execução"
           aria-busy={isExecuting}
-          className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors motion-reduce:transition-none duration-200"
+          className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text focus:ring-2 focus:ring-lia-border-medium focus:ring-offset-2 transition-colors motion-reduce:transition-none duration-200"
         >
           {isExecuting ? (
             <>
@@ -174,7 +174,7 @@ export function ToolConfirmationMessage({
           <span>Cancelar</span>
         </Button>
         {!isExecuting && (
-          <span className="text-xs text-status-warning dark:text-status-warning ml-2" aria-hidden="true">
+          <span className="text-xs text-status-warning ml-2" aria-hidden="true">
             ou digite &quot;sim&quot; / &quot;não&quot;
           </span>
         )}

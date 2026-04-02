@@ -82,7 +82,7 @@ const CATEGORY_COLORS: Record<Skill['category'], { bg: string; text: string; bor
   database: { bg: 'bg-wedo-green/15', text: 'text-wedo-green', border: 'border-wedo-green/30' },
   tool: { bg: 'bg-status-warning/10', text: 'text-status-warning', border: 'border-status-warning/30' },
   infrastructure: { bg: 'bg-status-error/10', text: 'text-status-error', border: 'border-status-error/30' },
-  general: { bg: 'bg-gray-50', text: 'lia-text-base', border: 'border-lia-border-subtle' },
+  general: { bg: 'bg-lia-bg-secondary', text: 'text-lia-text-secondary', border: 'border-lia-border-subtle' },
 }
 
 interface SkillCardProps {
@@ -100,13 +100,13 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
       className={cn(
  'p-3 rounded-md transition-colors',
         isSelected
-          ? 'bg-gray-50 border-2 border-gray-900 opacity-60 cursor-not-allowed'
-          : 'bg-lia-bg-primary border border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 cursor-pointer'
+          ? 'bg-lia-bg-secondary border-2 border-lia-btn-primary-bg opacity-60 cursor-not-allowed'
+          : 'bg-lia-bg-primary border border-lia-border-subtle hover:border-lia-btn-primary-bg cursor-pointer'
       )}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex-1">
-          <h4 className="text-xs font-semibold lia-text-strong mb-1">
+          <h4 className="text-xs font-semibold text-lia-text-primary mb-1">
             {skill.name}
           </h4>
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -130,7 +130,7 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
                     className={cn(
  'w-2.5 h-2.5',
                       w <= skill.weight!
-                        ? 'fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary'
+                        ? 'fill-lia-text-primary text-lia-text-secondary'
                         : 'lia-text-muted'
                     )}
                   />
@@ -141,14 +141,14 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
         </div>
 
         {isSelected ? (
-          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center">
+          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-lia-btn-primary-bg flex items-center justify-center">
             <Check className="w-3 h-3 text-white" />
           </div>
         ) : (
           <button
             onClick={() => onAdd(skill)}
             disabled={isSelected}
-            className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary transition-[width,height] flex items-center justify-center disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="flex-shrink-0 w-5 h-5 rounded-full border-2 border-lia-btn-primary-bg text-lia-text-secondary hover:bg-lia-bg-tertiary transition-[width,height] flex items-center justify-center disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-lia-border-default"
             aria-label={`Adicionar ${skill.name}`}
           >
             <Plus className="w-3 h-3" />
@@ -194,7 +194,7 @@ function SkillsTabContent({ skills, selectedSkills, onAddSkill, tabLabel }: TabC
           placeholder={`Buscar ${tabLabel.toLowerCase()}...`}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 bg-lia-bg-primary border-lia-border-subtle lia-text-strong placeholder:lia-text-secondary rounded-md focus:border-gray-400"
+          className="pl-9 bg-lia-bg-primary border-lia-border-subtle text-lia-text-primary placeholder:lia-text-secondary rounded-md focus:border-lia-border-medium"
         />
       </div>
 
@@ -299,7 +299,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="skill-name" className="text-xs font-medium lia-text-strong">
+        <Label htmlFor="skill-name" className="text-xs font-medium text-lia-text-primary">
           Nome da Skill
         </Label>
         <Input
@@ -307,12 +307,12 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
           placeholder="ex: Python, React, Docker..."
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="bg-lia-bg-primary border-lia-border-subtle rounded-md focus:border-gray-400"
+          className="bg-lia-bg-primary border-lia-border-subtle rounded-md focus:border-lia-border-medium"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="skill-category" className="text-xs font-medium lia-text-strong">
+        <Label htmlFor="skill-category" className="text-xs font-medium text-lia-text-primary">
           Categoria
         </Label>
         <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v as Skill['category'])}>
@@ -332,29 +332,29 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="skill-weight" className="text-xs font-medium lia-text-strong">
+        <Label htmlFor="skill-weight" className="text-xs font-medium text-lia-text-primary">
           Peso/Importância
         </Label>
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
+        <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md">
           {[1, 2, 3, 4, 5].map((w) => (
             <button
               key={w}
               type="button"
               onClick={() => setWeight(w)}
-              className="transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400 rounded-full"
+              className="transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default rounded-full"
               aria-label={`Peso ${w} de 5`}
             >
               <Star
                 className={cn(
  'w-5 h-5 transition-colors',
                   w <= weight
-                    ? 'fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary'
+                    ? 'fill-lia-text-primary text-lia-text-secondary'
                     : 'lia-text-muted'
                 )}
               />
             </button>
           ))}
-          <span className="ml-auto text-xs font-semibold lia-text-strong">
+          <span className="ml-auto text-xs font-semibold text-lia-text-primary">
             {weight}/5
           </span>
         </div>
@@ -362,7 +362,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
 
       <div className="flex items-center justify-between p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
         <div className="space-y-0.5">
-          <Label htmlFor="save-to-catalog" className="text-xs font-medium lia-text-strong cursor-pointer">
+          <Label htmlFor="save-to-catalog" className="text-xs font-medium text-lia-text-primary cursor-pointer">
             Salvar no Catálogo da Empresa
           </Label>
           <p className="text-micro lia-text-secondary">
@@ -391,7 +391,7 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
       <Button
         type="submit"
         disabled={isSaving}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 font-medium text-xs rounded-md disabled:opacity-50"
+        className="w-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text font-medium text-xs rounded-md disabled:opacity-50"
       >
         <Plus className="w-3.5 h-3.5 mr-1.5" />
         {isSaving ? 'Salvando...' : 'Adicionar Skill Customizado'}
@@ -426,33 +426,33 @@ export function AddSkillModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md" role="dialog" aria-modal="true" aria-labelledby="add-skill-modal-title">
+      <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle rounded-md" role="dialog" aria-modal="true" aria-labelledby="add-skill-modal-title">
         <DialogHeader>
-          <DialogTitle id="add-skill-modal-title" className="text-sm font-semibold lia-text-strong">
+          <DialogTitle id="add-skill-modal-title" className="text-sm font-semibold text-lia-text-primary">
             Adicionar Skill: {CATEGORY_LABELS[category]}
           </DialogTitle>
-          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-1">
+          <p className="text-xs text-lia-text-tertiary mt-1">
             Selecione uma skill do catálogo, sugestões de mercado ou crie uma customizada
           </p>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-50 p-1 rounded-md mb-4">
+          <TabsList className="grid w-full grid-cols-3 bg-lia-bg-secondary p-1 rounded-md mb-4">
             <TabsTrigger
               value="catalog"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary dark:text-lia-text-tertiary text-lia-text-tertiary"
+              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary text-lia-text-tertiary"
             >
               Catálogo da Empresa
             </TabsTrigger>
             <TabsTrigger
               value="market"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary dark:text-lia-text-tertiary text-lia-text-tertiary"
+              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary text-lia-text-tertiary"
             >
               Sugestões de Mercado
             </TabsTrigger>
             <TabsTrigger
               value="custom"
-              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary dark:text-lia-text-tertiary text-lia-text-tertiary"
+              className="text-xs font-medium rounded-md data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-secondary text-lia-text-tertiary"
             >
               Skill Customizado
             </TabsTrigger>
@@ -497,11 +497,11 @@ export function AddSkillModal({
           </TabsContent>
         </Tabs>
 
-        <DialogFooter className="pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+        <DialogFooter className="pt-4 border-t border-lia-border-subtle">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-lia-border-subtle lia-text-secondary hover:bg-gray-50 rounded-md focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="border-lia-border-subtle lia-text-secondary hover:bg-lia-interactive-hover rounded-md focus-visible:ring-2 focus-visible:ring-lia-border-default"
             aria-label="Fechar"
           >
             <X className="w-3.5 h-3.5 mr-1.5" />

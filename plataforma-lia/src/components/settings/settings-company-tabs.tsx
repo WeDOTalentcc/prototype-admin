@@ -37,7 +37,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Razão Social
               </label>
               <input
@@ -48,7 +48,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Nome Fantasia
               </label>
               <input
@@ -59,7 +59,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 CNPJ
               </label>
               <input
@@ -70,7 +70,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Inscrição Estadual
               </label>
               <input
@@ -81,7 +81,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Data de Fundação
               </label>
               <input
@@ -92,7 +92,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Número de Funcionários
               </label>
               <select
@@ -111,7 +111,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Site Institucional
               </label>
               <input
@@ -122,7 +122,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Email Principal
               </label>
               <input
@@ -133,7 +133,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Telefone Principal
               </label>
               <input
@@ -144,7 +144,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 WhatsApp Corporativo
               </label>
               <input
@@ -157,7 +157,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
           </div>
 
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               Descrição da Empresa
             </label>
             <textarea
@@ -176,11 +176,11 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
         </CardHeader>
         <CardContent>
           <div className="rounded-md p-6 text-center bg-gray-50 dark:bg-lia-bg-secondary">
-            <Upload className="w-8 h-8 mx-auto mb-2 lia-text-800" />
-            <p className="text-sm lia-text-800 dark:text-lia-text-primary mb-2">
+            <Upload className="w-8 h-8 mx-auto mb-2 text-lia-text-primary" />
+            <p className="text-sm text-lia-text-primary mb-2">
               Faça upload do logotipo da empresa
             </p>
-            <p className="text-xs lia-text-800">PNG, JPG ou SVG até 2MB • Tamanho recomendado: 400x400px</p>
+            <p className="text-xs text-lia-text-primary">PNG, JPG ou SVG até 2MB • Tamanho recomendado: 400x400px</p>
             <Button variant="outline" className="mt-3" size="sm">
               Escolher Arquivo
             </Button>
@@ -202,7 +202,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 CEP
               </label>
               <input
@@ -214,7 +214,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div className="md:col-span-2">
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Logradouro
               </label>
               <input
@@ -228,7 +228,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Número
               </label>
               <input
@@ -239,7 +239,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div className="md:col-span-2">
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Complemento
               </label>
               <input
@@ -250,7 +250,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Bairro
               </label>
               <input
@@ -264,7 +264,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Cidade
               </label>
               <input
@@ -275,7 +275,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Estado
               </label>
               <select
@@ -316,7 +316,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
           </div>
 
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               País
             </label>
             <select
@@ -348,7 +348,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block flex items-center gap-2">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
                 <div className="w-5 h-5 bg-wedo-magenta rounded-md"></div>
                 Instagram
               </label>
@@ -360,8 +360,8 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-gray-700 dark:lia-bg-300 rounded-md"></div>
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
+                <div className="w-5 h-5 bg-gray-700 rounded-md"></div>
                 Facebook
               </label>
               <input
@@ -372,7 +372,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block flex items-center gap-2">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
                 <div className="w-5 h-5 bg-wedo-cyan-dark rounded-md"></div>
                 LinkedIn
               </label>
@@ -384,8 +384,8 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-gray-900 dark:lia-bg-50 rounded-md"></div>
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
+                <div className="w-5 h-5 bg-gray-900 rounded-md"></div>
                 Twitter/X
               </label>
               <input
@@ -396,7 +396,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block flex items-center gap-2">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
                 <div className="w-5 h-5 bg-status-error rounded-md"></div>
                 YouTube
               </label>
@@ -408,7 +408,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block flex items-center gap-2">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
                 <div className="w-5 h-5 bg-black rounded-md"></div>
                 TikTok
               </label>
@@ -422,10 +422,10 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
           </div>
 
           <div className="pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-            <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3">Outros Canais</h4>
+            <h4 className="text-sm font-medium text-lia-text-primary mb-3">Outros Canais</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+                <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                   Blog Corporativo
                 </label>
                 <input
@@ -436,7 +436,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 />
               </div>
               <div>
-                <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+                <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                   Portal de Carreiras
                 </label>
                 <input
@@ -465,7 +465,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Setor Principal
               </label>
               <select
@@ -489,7 +489,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Subsetor
               </label>
               <input
@@ -501,7 +501,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Fase da Empresa
               </label>
               <select
@@ -517,7 +517,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Modelo de Negócio
               </label>
               <select
@@ -539,7 +539,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Faturamento Anual
               </label>
               <select
@@ -556,7 +556,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Países de Operação
               </label>
               <input
@@ -570,7 +570,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
           </div>
 
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               Principais Produtos/Serviços
             </label>
             <textarea
@@ -638,8 +638,8 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               <div key={branch.id} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h4 className="font-medium lia-text-950 dark:lia-text-50">{branch.name}</h4>
-                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">CNPJ: {branch.cnpj}</p>
+                    <h4 className="font-medium text-lia-text-primary">{branch.name}</h4>
+                    <p className="text-sm text-lia-text-primary">CNPJ: {branch.cnpj}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={branch.type === 'Matriz' ? 'default' : 'secondary'}>
@@ -656,16 +656,16 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
-                    <span className="lia-text-800 dark:text-lia-text-primary">Endereço:</span>
-                    <p className="font-medium lia-text-950 dark:lia-text-50">{branch.address}</p>
+                    <span className="text-lia-text-primary">Endereço:</span>
+                    <p className="font-medium text-lia-text-primary">{branch.address}</p>
                   </div>
                   <div>
-                    <span className="lia-text-800 dark:text-lia-text-primary">Gestor:</span>
-                    <p className="font-medium lia-text-950 dark:lia-text-50">{branch.manager}</p>
+                    <span className="text-lia-text-primary">Gestor:</span>
+                    <p className="font-medium text-lia-text-primary">{branch.manager}</p>
                   </div>
                   <div>
-                    <span className="lia-text-800 dark:text-lia-text-primary">Funcionários:</span>
-                    <p className="font-medium lia-text-950 dark:lia-text-50">{branch.employees}</p>
+                    <span className="text-lia-text-primary">Funcionários:</span>
+                    <p className="font-medium text-lia-text-primary">{branch.employees}</p>
                   </div>
                 </div>
               </div>
@@ -688,8 +688,8 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 onClick={() => setActiveSubTab(tab.id as Parameters<typeof setActiveSubTab>[0])}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors motion-reduce:transition-none font-crimson ${
                   activeSubTab === tab.id
- ? 'bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 lia-text-800 dark:text-lia-text-primary'
+ ? 'bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-primary'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -723,7 +723,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               Missão
             </label>
             <textarea
@@ -734,7 +734,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
             />
           </div>
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               Visão
             </label>
             <textarea
@@ -745,7 +745,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
             />
           </div>
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               Propósito Institucional
             </label>
             <textarea
@@ -772,7 +772,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
             ].map((item, index) => (
               <div key={item.value} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                  <h4 className="text-sm font-medium text-lia-text-primary">
                     {item.value}
                   </h4>
                   <div className="flex gap-1">
@@ -784,7 +784,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
                     </Button>
                   </div>
                 </div>
-                <p className="text-xs lia-text-800 dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-primary">
                   {item.description}
                 </p>
               </div>
@@ -813,11 +813,11 @@ export function StructureTab({ onSettingsChange }: { onSettingsChange: (changed:
         </CardHeader>
         <CardContent>
           <div className="rounded-md p-8 text-center bg-gray-50 dark:bg-lia-bg-secondary">
-            <Upload className="w-12 h-12 mx-auto mb-4 lia-text-800" />
-            <h4 className="text-sm font-medium lia-text-950 dark:lia-text-50 mb-2">
+            <Upload className="w-12 h-12 mx-auto mb-4 text-lia-text-primary" />
+            <h4 className="text-sm font-medium text-lia-text-primary mb-2">
               Faça upload do organograma da empresa
             </h4>
-            <p className="text-sm lia-text-800 dark:text-lia-text-primary mb-4">
+            <p className="text-sm text-lia-text-primary mb-4">
               Formatos aceitos: PNG, JPG, PDF, SVG até 10MB
             </p>
             <Button variant="outline">
@@ -833,11 +833,11 @@ export function StructureTab({ onSettingsChange }: { onSettingsChange: (changed:
         </CardHeader>
         <CardContent>
           <div className="rounded-md p-6 text-center mb-4 bg-gray-50 dark:bg-lia-bg-secondary">
-            <FileText className="w-8 h-8 mx-auto mb-2 lia-text-800" />
-            <p className="text-sm lia-text-800 dark:text-lia-text-primary mb-2">
+            <FileText className="w-8 h-8 mx-auto mb-2 text-lia-text-primary" />
+            <p className="text-sm text-lia-text-primary mb-2">
               Upload da planilha de cargos e descrições
             </p>
-            <p className="text-xs lia-text-800 mb-3">Excel (.xlsx, .xls) ou CSV até 5MB</p>
+            <p className="text-xs text-lia-text-primary mb-3">Excel (.xlsx, .xls) ou CSV até 5MB</p>
             <Button variant="outline" size="sm">
               Upload de Cargos
             </Button>

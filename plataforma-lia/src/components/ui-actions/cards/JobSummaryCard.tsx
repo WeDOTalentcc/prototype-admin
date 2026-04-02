@@ -184,7 +184,7 @@ export function JobSummaryCard({
             )}
             {data.salary_range && (
               <div className="flex items-center gap-2 col-span-2">
-                <DollarSign className="h-3.5 w-3.5 text-lia-text-secondary dark:text-lia-text-secondary" />
+                <DollarSign className="h-3.5 w-3.5 text-lia-text-secondary" />
                 <span>
                   {formatCurrency(data.salary_range.min)} - {formatCurrency(data.salary_range.max)}
                 </span>

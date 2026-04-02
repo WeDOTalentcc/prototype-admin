@@ -115,7 +115,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
         <div className="p-6 space-y-6">
           {/* Candidatos Selecionados */}
           <div>
-            <h4 className="text-sm font-medium lia-text-strong mb-3">
+            <h4 className="text-sm font-medium text-lia-text-primary mb-3">
               Candidatos Selecionados
             </h4>
             <div className="max-h-32 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
@@ -127,7 +127,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
                       <AvatarFallback className="text-xs">{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm">{candidate.name}</span>
-                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">- {candidate.role}</span>
+                    <span className="text-xs text-lia-text-primary">- {candidate.role}</span>
                   </div>
                 ))}
               </div>
@@ -136,7 +136,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
 
           {/* Ação */}
           <div>
-            <h4 className="text-sm font-medium lia-text-strong mb-3">
+            <h4 className="text-sm font-medium text-lia-text-primary mb-3">
               Selecione a Ação
             </h4>
             <div className="grid grid-cols-2 gap-3">
@@ -161,7 +161,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
           {/* Configurações específicas por ação */}
           {action === 'move_stage' && (
             <div>
-              <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+              <label className="block text-sm font-medium text-lia-text-primary mb-2">
                 Nova Etapa
               </label>
               <select
@@ -179,7 +179,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
 
           {action === 'assign' && (
             <div>
-              <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+              <label className="block text-sm font-medium text-lia-text-primary mb-2">
                 Atribuir para
               </label>
               <select
@@ -197,7 +197,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
 
           {/* Comentário */}
           <div>
-            <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+            <label className="block text-sm font-medium text-lia-text-primary mb-2">
               Comentário (opcional)
             </label>
             <textarea
@@ -218,7 +218,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               onChange={(e) => setSendNotification(e.target.checked)}
               className="rounded-md border-lia-border-subtle"
             />
-            <label htmlFor="notification" className="text-sm lia-text-base">
+            <label htmlFor="notification" className="text-sm text-lia-text-secondary">
               Enviar notificação para os candidatos sobre esta alteração
             </label>
           </div>

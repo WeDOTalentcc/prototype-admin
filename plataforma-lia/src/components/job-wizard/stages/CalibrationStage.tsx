@@ -66,9 +66,9 @@ export function CalibrationStage() {
   if (isLoading || (totalCandidates === 0 && !calibrationComplete)) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-4" role="status" aria-live="polite" aria-label="Carregando...">
-        <Loader2 className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+        <Loader2 className="w-8 h-8 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
         <div className="text-center">
-          <p className="text-sm lia-text-strong font-medium" aria-live="polite" aria-atomic="true">
+          <p className="text-sm text-lia-text-primary font-medium" aria-live="polite" aria-atomic="true">
             Buscando candidatos compatíveis...
           </p>
           <p className="text-xs lia-text-secondary mt-1">
@@ -87,7 +87,7 @@ export function CalibrationStage() {
           <Trophy className="w-8 h-8 text-status-success" />
         </div>
         <div className="text-center">
-          <p className="text-sm lia-text-strong font-semibold">
+          <p className="text-sm text-lia-text-primary font-semibold">
             Calibração Concluída!
           </p>
           <p className="text-xs lia-text-secondary mt-1">
@@ -172,11 +172,11 @@ export function CalibrationStage() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold lia-text-strong truncate">
+              <h3 className="text-sm font-semibold text-lia-text-primary truncate">
                 {currentCandidate.name}
               </h3>
               {currentCandidate.linkedinUrl && (
-                <a href={currentCandidate.linkedinUrl} target="_blank" rel="noopener noreferrer" className="lia-text-base">
+                <a href={currentCandidate.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-lia-text-secondary">
                   <Linkedin className="w-4 h-4" />
                 </a>
               )}
@@ -187,7 +187,7 @@ export function CalibrationStage() {
           <div className="text-right">
             <div className="flex items-center gap-1 justify-end">
               <Star className="w-4 h-4 fill-amber-400 text-status-warning" />
-              <span className="text-sm font-semibold lia-text-strong">{currentCandidate.overallScore || 85}%</span>
+              <span className="text-sm font-semibold text-lia-text-primary">{currentCandidate.overallScore || 85}%</span>
             </div>
             <span className="text-micro lia-text-secondary">Match Score</span>
           </div>
@@ -202,7 +202,7 @@ export function CalibrationStage() {
                 <div key={i} className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-md">
                   <span className="text-micro">{h.icon}</span>
                   <span className="text-micro lia-text-secondary">{h.label}:</span>
-                  <span className="text-micro font-medium lia-text-strong">{h.value}</span>
+                  <span className="text-micro font-medium text-lia-text-primary">{h.value}</span>
                 </div>
               ))}
             </div>
@@ -253,7 +253,7 @@ export function CalibrationStage() {
                     ) : (
                       <XCircle className="w-3 h-3 text-status-error" />
                     )}
-                    <span className={mc.isMatch ? "lia-text-strong" : "lia-text-secondary"}>
+                    <span className={mc.isMatch ? "text-lia-text-primary" : "lia-text-secondary"}>
                       {mc.criteria}
                     </span>
                   </div>
@@ -268,7 +268,7 @@ export function CalibrationStage() {
           <button
             onClick={goToPrevious}
             disabled={currentCalibrationIndex === 0}
-            className="p-2 lia-text-secondary hover:lia-text-base disabled:opacity-50"
+            className="p-2 lia-text-secondary hover:text-lia-text-secondary disabled:opacity-50"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -302,7 +302,7 @@ export function CalibrationStage() {
           <button
             onClick={goToNext}
             disabled={currentCalibrationIndex === totalCandidates - 1}
-            className="p-2 lia-text-secondary hover:lia-text-base disabled:opacity-50"
+            className="p-2 lia-text-secondary hover:text-lia-text-secondary disabled:opacity-50"
           >
             <ChevronRight className="w-5 h-5" />
           </button>

@@ -137,7 +137,7 @@ export function SalaryStage({
   return (
     <div className="space-y-3">
       {!isFieldRequired && (
-        <div className="p-3 bg-gradient-to-r from-green-500/10 to-gray-100 dark:to-gray-800 rounded-md border border-status-success/30/30">
+        <div className="p-3 bg-gradient-to-r from-green-500/10 to-lia-bg-tertiary dark:to-lia-bg-primary rounded-md border border-status-success/30/30">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-status-success/20 flex items-center justify-center flex-shrink-0">
               <Brain className="w-3.5 h-3.5 text-status-success" />
@@ -150,7 +150,7 @@ export function SalaryStage({
                 Valores baseados nas políticas salariais da empresa.
                 <button
                   onClick={handleToggleExpand}
-                  className="ml-1 text-lia-text-secondary dark:text-lia-text-tertiary hover:underline font-medium"
+                  className="ml-1 text-lia-text-secondary hover:underline font-medium"
                 >
                   {isExpanded ? 'Ocultar' : 'Editar manualmente'}
                 </button>
@@ -173,10 +173,10 @@ export function SalaryStage({
       {(isFieldRequired || isExpanded) && (
         <>
           {salaryBenchmark && (salaryBenchmark.market || salaryBenchmark.internal) && (
-            <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-green-500/5 rounded-md border border-lia-border-default dark:border-lia-border-default">
+            <div className="p-3 bg-gradient-to-r from-lia-bg-secondary dark:from-lia-bg-primary to-green-500/5 rounded-md border border-lia-border-default">
               <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                <span className="text-xs font-medium lia-text-strong">
+                <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
+                <span className="text-xs font-medium text-lia-text-primary">
                   Benchmark de Mercado
                 </span>
                 {salaryBenchmark.market?.learning_adjusted && (
@@ -196,7 +196,7 @@ export function SalaryStage({
                       </span>
                     )}
                   </div>
-                  <div className="text-xs font-semibold lia-text-strong">
+                  <div className="text-xs font-semibold text-lia-text-primary">
                     R$ {salaryBenchmark.internal.min.toLocaleString()} - R$ {salaryBenchmark.internal.max.toLocaleString()}
                   </div>
                 </div>
@@ -217,7 +217,7 @@ export function SalaryStage({
                        salaryBenchmark.market.confidence === 'medium' ? 'Média confiança' : 'Baixa confiança'}
                     </span>
                   </div>
-                  <div className="text-xs font-semibold lia-text-strong">
+                  <div className="text-xs font-semibold text-lia-text-primary">
                     R$ {salaryBenchmark.market.min.toLocaleString()} - R$ {salaryBenchmark.market.max.toLocaleString()}
                   </div>
                 </div>
@@ -231,7 +231,7 @@ export function SalaryStage({
                       maxSalary: salaryBenchmark.combined!.max.toLocaleString()
                     })
                   }}
-                  className="w-full py-1.5 mt-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-micro font-medium rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-gray-400"
+                  className="w-full py-1.5 mt-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text text-micro font-medium rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-lia-border-default"
                 >
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   Aplicar sugestão: R$ {salaryBenchmark.combined.min.toLocaleString()} - R$ {salaryBenchmark.combined.max.toLocaleString()}
@@ -245,8 +245,8 @@ export function SalaryStage({
           )}
 
           {isLoadingBenchmark && (
-            <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+            <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
               <span className="text-xs lia-text-secondary">Buscando benchmark de mercado...</span>
             </div>
           )}
@@ -256,7 +256,7 @@ export function SalaryStage({
             (isFieldHighlighted('minSalary') || isFieldHighlighted('maxSalary') || isFieldHighlighted('salary') || isFieldHighlighted('salario')) && "field-highlight field-pulse"
           )}>
             <label className={`block ${textStyles.label} lia-text-secondary uppercase tracking-wide mb-2`}>
-              <DollarSign className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <DollarSign className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary" />
               Salário Base (CLT)
             </label>
             <div className="flex gap-2">
@@ -272,7 +272,7 @@ export function SalaryStage({
                     value={salaryInfo.minSalary}
                     onChange={(e) => onSalaryChange({ minSalary: e.target.value })}
                     placeholder="12.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                    
                     aria-label="Salário mínimo base"
                   />
@@ -290,7 +290,7 @@ export function SalaryStage({
                     value={salaryInfo.maxSalary}
                     onChange={(e) => onSalaryChange({ maxSalary: e.target.value })}
                     placeholder="18.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                    
                     aria-label="Salário máximo base"
                   />
@@ -304,7 +304,7 @@ export function SalaryStage({
             (isFieldHighlighted('minBonus') || isFieldHighlighted('maxBonus') || isFieldHighlighted('bonus')) && "field-highlight field-pulse"
           )}>
             <label className={`block ${textStyles.label} lia-text-secondary uppercase tracking-wide mb-2`}>
-              <Star className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Star className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary" />
               Bônus Anual
             </label>
             <div className="flex gap-2 mb-1.5">
@@ -317,7 +317,7 @@ export function SalaryStage({
                     value={salaryInfo.minBonus}
                     onChange={(e) => onSalaryChange({ minBonus: e.target.value })}
                     placeholder="10.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                    
                     aria-label="Bônus mínimo anual"
                   />
@@ -332,7 +332,7 @@ export function SalaryStage({
                     value={salaryInfo.maxBonus}
                     onChange={(e) => onSalaryChange({ maxBonus: e.target.value })}
                     placeholder="20.000"
-                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
+                    className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                    
                     aria-label="Bônus máximo anual"
                   />
@@ -344,7 +344,7 @@ export function SalaryStage({
               value={salaryInfo.bonusCriteria}
               onChange={(e) => onSalaryChange({ bonusCriteria: e.target.value })}
               placeholder="Critérios: Desempenho individual + metas da empresa"
-              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
+              className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
              
             />
           </div>
@@ -354,10 +354,10 @@ export function SalaryStage({
             (isFieldHighlighted('benefit') || isFieldHighlighted('benefits') || isFieldHighlighted('beneficios')) && "field-highlight field-pulse"
           )}>
             <label className={`block ${textStyles.label} lia-text-secondary uppercase tracking-wide mb-2`}>
-              <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <CheckCircle2 className="w-3.5 h-3.5 inline mr-1 text-lia-text-secondary" />
               Benefícios
               {companyConfig?.benefits && companyConfig.benefits.length > 0 && (
-                <Settings className="w-3 h-3 inline ml-1.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Settings className="w-3 h-3 inline ml-1.5 text-lia-text-secondary" />
               )}
             </label>
             <div className="space-y-3">
@@ -385,27 +385,27 @@ export function SalaryStage({
                             className={cn(
  "flex items-center gap-1.5 p-2 rounded-md text-left transition-colors",
                               benefit.enabled
-                                ? "bg-gray-100 dark:bg-lia-bg-secondary border border-gray-900"
-                                : "bg-gray-50 border border-transparent hover:border-lia-border-subtle"
+                                ? "bg-lia-bg-tertiary border border-lia-btn-primary-bg"
+                                : "bg-lia-bg-secondary border border-transparent hover:border-lia-border-subtle"
                             )}
                             aria-label={benefit.enabled ? `Remover benefício: ${benefit.name}` : `Adicionar benefício: ${benefit.name}`}
                           >
                             <div className={cn(
  "w-3.5 h-3.5 rounded-md flex items-center justify-center flex-shrink-0",
-                              benefit.enabled ? "bg-gray-900" : "border border-lia-border-subtle"
+                              benefit.enabled ? "bg-lia-btn-primary-bg" : "border border-lia-border-subtle"
                             )}>
                               {benefit.enabled && <Check className="w-2.5 h-2.5 text-white" />}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1">
-                                <span className="text-micro font-medium lia-text-strong block truncate">
+                                <span className="text-micro font-medium text-lia-text-primary block truncate">
                                   {benefit.name}
                                 </span>
                                 {benefit.is_highlighted && (
                                   <Heart className="w-2.5 h-2.5 text-wedo-magenta fill-pink-500 flex-shrink-0" />
                                 )}
                                 {benefit.is_mandatory && (
-                                  <span className="text-micro px-1 py-0 rounded-md bg-gray-200 lia-text-base flex-shrink-0">obrig.</span>
+                                  <span className="text-micro px-1 py-0 rounded-md bg-lia-interactive-active text-lia-text-secondary flex-shrink-0">obrig.</span>
                                 )}
                               </div>
                               {valueDisplay && (
@@ -425,14 +425,14 @@ export function SalaryStage({
             </div>
             <button
               onClick={onShowAddBenefitModal}
-              className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+              className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
               aria-label="Adicionar benefício para a vaga"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar benefício
             </button>
           </div>
 
-          <div className="p-2 bg-gray-50 rounded-md border border-lia-border-default dark:border-lia-border-default">
+          <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-default">
             <div className="flex items-center justify-between text-xs">
               <span className="lia-text-secondary">Benefícios selecionados:</span>
               <span className="font-semibold text-lia-text-primary">{salaryInfo.benefits.filter(b => b.enabled).length}</span>

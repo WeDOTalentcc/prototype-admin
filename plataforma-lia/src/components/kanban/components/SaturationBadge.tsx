@@ -179,13 +179,13 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
         sideOffset={8}
       >
         <div className="p-3 space-y-3 text-xs font-['Open_Sans']">
-          <div className="font-medium lia-text-900">
+          <div className="font-medium text-lia-text-primary">
             {isSaturated ? "Pipeline Saturado" : "Quase Saturado"}
           </div>
 
           <div className="space-y-2">
             <div className="space-y-1">
-              <div className="flex items-center justify-between lia-text-700">
+              <div className="flex items-center justify-between text-lia-text-primary">
                 <span className="flex items-center gap-1">
                   <Globe className="w-3 h-3 text-wedo-cyan-dark" />
                   Orgânico (Web + WhatsApp)
@@ -203,9 +203,9 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
             </div>
 
             <div className="space-y-1">
-              <div className="flex items-center justify-between lia-text-700">
+              <div className="flex items-center justify-between text-lia-text-primary">
                 <span className="flex items-center gap-1">
-                  <Search className="w-3 h-3 lia-text-500" />
+                  <Search className="w-3 h-3 text-lia-text-secondary" />
                   Busca Ativa (Sourcing + ATS)
                 </span>
                 <span className={data.sourcing.is_saturated ? 'text-status-error font-semibold' : ''}>
@@ -221,18 +221,18 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
             </div>
           </div>
 
-          <div className="space-y-1 lia-text-600">
+          <div className="space-y-1 text-lia-text-secondary">
             <div className="flex items-center gap-1.5">
-              <Users className="w-3 h-3 lia-text-400" />
+              <Users className="w-3 h-3 text-lia-text-tertiary" />
               <span>{data.queued_count} candidatos aguardando triagem</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Clock className="w-3 h-3 lia-text-400" />
+              <Clock className="w-3 h-3 text-lia-text-tertiary" />
               <span>{formatLastScreened(data.last_screened_at)}</span>
             </div>
           </div>
 
-          <div className="flex items-start gap-1.5 lia-text-500">
+          <div className="flex items-start gap-1.5 text-lia-text-secondary">
             <Lightbulb className="w-3 h-3 mt-0.5 text-status-warning shrink-0" />
             <span>{getRecommendationText(data.recommendation)}</span>
           </div>
@@ -242,14 +242,14 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
           <button
             onClick={() => handleUnlock("increase_threshold")}
             disabled={actionLoading}
-            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] lia-text-700 bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-lia-text-primary bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Aumentar limite (+{data.unlock_increment})
           </button>
           <button
             onClick={() => handleUnlock("disable_temporarily")}
             disabled={actionLoading}
-            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] lia-text-700 bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-lia-text-primary bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Desbloquear por {data.unlock_hours}h
           </button>

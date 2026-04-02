@@ -49,7 +49,7 @@ export function Breadcrumbs({
               </Link>
             ) : (
               <span
-                className={`shrink-0 ${isLast ? 'text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-disabled'}`}
+                className={`shrink-0 ${isLast ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}
               >
                 {item.label}
               </span>

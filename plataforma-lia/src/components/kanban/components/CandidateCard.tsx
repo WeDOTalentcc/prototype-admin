@@ -192,8 +192,8 @@ const CandidateCard = memo(function CandidateCard({
           className="px-2 py-0.5 border-b bg-gray-100"
         >
           <div className="flex items-center gap-1">
-            <Zap className="w-2 h-2 animate-pulse motion-reduce:animate-none lia-text-500" />
-            <span className="text-micro font-bold lia-text-500">
+            <Zap className="w-2 h-2 animate-pulse motion-reduce:animate-none text-lia-text-secondary" />
+            <span className="text-micro font-bold text-lia-text-secondary">
               Ação Necessária
             </span>
           </div>
@@ -209,65 +209,65 @@ const CandidateCard = memo(function CandidateCard({
                 onClick={(e) => e.stopPropagation()}
                 title="Mais opções"
               >
-                <MoreVertical className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary" />
+                <MoreVertical className="w-3 h-3 text-lia-text-secondary" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-48">
               <DropdownMenuItem 
                 onClick={handleQuickAction('email')} 
-                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <Mail className="w-3.5 h-3.5 mr-2 lia-text-500" />
+                <Mail className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Enviar Email
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('whatsapp')} 
-                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <MessageCircle className="w-3.5 h-3.5 mr-2 lia-text-500" />
+                <MessageCircle className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Enviar WhatsApp
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('schedule_interview')} 
-                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <Calendar className="w-3.5 h-3.5 mr-2 lia-text-500" />
+                <Calendar className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Agendar Entrevista
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('wsi_screening')} 
-                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <ClipboardList className="w-3.5 h-3.5 mr-2 lia-text-500" />
+                <ClipboardList className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Triagem WSI
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('feedback')} 
-                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <MessageSquareText className="w-3.5 h-3.5 mr-2 lia-text-500" />
+                <MessageSquareText className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Enviar Feedback
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={handleQuickAction('toggle_favorite')} 
-                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <Heart className={`w-3.5 h-3.5 mr-2 ${isFavorite ? 'fill-red-500 text-status-error' : 'lia-text-500'}`} />
+                <Heart className={`w-3.5 h-3.5 mr-2 ${isFavorite ? 'fill-red-500 text-status-error' : 'text-lia-text-secondary'}`} />
                 {isFavorite ? 'Remover dos Favoritos' : 'Adicionar a Favoritos'}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('hide')} 
-                className="text-xs lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
                
               >
-                <EyeOff className="w-3.5 h-3.5 mr-2 lia-text-500" />
+                <EyeOff className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
                 Ocultar Candidato
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -278,7 +278,7 @@ const CandidateCard = memo(function CandidateCard({
             onClick={handleQuickAction('view_details')}
             title="Ver detalhes do candidato"
           >
-            <Eye className="w-3.5 h-3.5 lia-text-800 dark:text-lia-text-primary" />
+            <Eye className="w-3.5 h-3.5 text-lia-text-primary" />
           </button>
         </div>
 
@@ -305,7 +305,7 @@ const CandidateCard = memo(function CandidateCard({
           </div>
 
           <div className="flex items-center gap-1 flex-1 min-w-0">
-            <h4 className="font-medium text-xs truncate lia-text-950 dark:lia-text-50">
+            <h4 className="font-medium text-xs truncate text-lia-text-primary">
               {candidate.name}
             </h4>
           </div>
@@ -383,7 +383,7 @@ const CandidateCard = memo(function CandidateCard({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-44">
-                <DropdownMenuLabel className="text-micro lia-text-500">Alterar Sub-status</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-micro text-lia-text-secondary">Alterar Sub-status</DropdownMenuLabel>
                 {subStatusOptions.map((opt) => {
                   const display = SUB_STATUS_DISPLAY_MAP[opt.code]
                   const isCurrent = opt.code === (candidate.subStatus || candidate.sub_status)

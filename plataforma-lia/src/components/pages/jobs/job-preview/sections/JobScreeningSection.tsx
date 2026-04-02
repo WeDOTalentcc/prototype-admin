@@ -96,8 +96,8 @@ export function JobScreeningSection({
                       {previewJob.description && (
                         <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                           <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('descricao')}>
-                            <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
-                              <FileText className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                            <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
+                              <FileText className="w-3.5 h-3.5 text-lia-text-secondary" />
                               Descrição da Vaga
                             </h5>
                             {collapsedPreviewSections.includes('descricao') ? (
@@ -107,7 +107,7 @@ export function JobScreeningSection({
                             )}
                           </div>
                           {!collapsedPreviewSections.includes('descricao') && (
-                            <p className="text-micro text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed whitespace-pre-line line-clamp-6 mt-2">
+                            <p className="text-micro text-lia-text-secondary leading-relaxed whitespace-pre-line line-clamp-6 mt-2">
                               {previewJob.description}
                             </p>
                           )}
@@ -117,7 +117,7 @@ export function JobScreeningSection({
                       {/* 3. Competências Avaliadas */}
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('competencias')}>
-                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                             Competências Avaliadas
                           </h5>
@@ -141,7 +141,7 @@ export function JobScreeningSection({
                             return (
                               <div className="flex flex-wrap gap-1.5">
                                 {fallbackSkills.slice(0, 6).map((skill: string) => (
-                                  <Badge key={skill} className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-micro px-1.5 py-0.5 h-[18px] font-medium">
+                                  <Badge key={skill} className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-micro px-1.5 py-0.5 h-[18px] font-medium">
                                     {skill}
                                   </Badge>
                                 ))}
@@ -199,8 +199,8 @@ export function JobScreeningSection({
 
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('idiomas')}>
-                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
-                            <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                          <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
+                            <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Idiomas
                           </h5>
                           {collapsedPreviewSections.includes('idiomas') ? (
@@ -214,11 +214,11 @@ export function JobScreeningSection({
                             <div className="space-y-1.5 mt-2">
                               {(previewJob.languages as Language[]).map((lang: Language, idx: number) => (
                                 <div key={`lang-${idx}`} className="flex items-center gap-2">
-                                  <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
+                                  <span className="text-micro text-lia-text-secondary font-medium">
                                     {lang.language}
                                   </span>
                                   {lang.level && (
-                                    <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
+                                    <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary">
                                       {lang.level}
                                     </Badge>
                                   )}
@@ -231,7 +231,7 @@ export function JobScreeningSection({
                               ))}
                             </div>
                           ) : (
-                            <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary italic mt-2">
+                            <p className="text-micro text-lia-text-tertiary italic mt-2">
                               Nenhum idioma configurado
                             </p>
                           )
@@ -240,8 +240,8 @@ export function JobScreeningSection({
 
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('remuneracao')}>
-                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
-                            <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                          <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
+                            <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Remuneração e Benefícios
                           </h5>
                           {collapsedPreviewSections.includes('remuneracao') ? (
@@ -273,30 +273,30 @@ export function JobScreeningSection({
                                 <>
                                   {hasSalary ? (
                                     <div className="flex items-center gap-1.5">
-                                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">Salário:</span>
-                                      <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">
+                                      <span className="text-micro text-lia-text-tertiary">Salário:</span>
+                                      <span className="text-micro font-medium text-lia-text-primary">
                                         {fmt(salaryMin)}{salaryMax ? ` - ${fmt(salaryMax)}` : ''}
                                       </span>
                                     </div>
                                   ) : (
-                                    <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary italic">
+                                    <p className="text-micro text-lia-text-tertiary italic">
                                       Faixa salarial não informada
                                     </p>
                                   )}
                                   {hasBonus && (
                                     <div className="flex items-center gap-1.5">
-                                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">Bônus:</span>
-                                      <span className="text-micro font-medium text-lia-text-primary dark:text-lia-text-primary">
+                                      <span className="text-micro text-lia-text-tertiary">Bônus:</span>
+                                      <span className="text-micro font-medium text-lia-text-primary">
                                         {fmt(bonusMin)}{bonusMax ? ` - ${fmt(bonusMax)}` : ''}
                                       </span>
                                     </div>
                                   )}
                                   {benefits.length > 0 && (
                                     <div>
-                                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary block mb-1">Benefícios:</span>
+                                      <span className="text-micro text-lia-text-tertiary block mb-1">Benefícios:</span>
                                       <div className="flex flex-wrap gap-1.5">
                                         {(benefits as Benefit[]).map((b: Benefit, idx: number) => (
-                                          <Badge key={`benefit-${idx}`} className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
+                                          <Badge key={`benefit-${idx}`} className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-primary">
                                             {typeof b === 'string' ? b : b.name}
                                           </Badge>
                                         ))}
@@ -312,8 +312,8 @@ export function JobScreeningSection({
 
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('etapas')}>
-                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
-                            <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                          <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
+                            <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Etapas do Processo
                           </h5>
                           {collapsedPreviewSections.includes('etapas') ? (
@@ -356,7 +356,7 @@ export function JobScreeningSection({
                                   ))}
                               </div>
                             ) : (
-                              <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary italic">
+                              <p className="text-micro text-lia-text-tertiary italic">
                                 Nenhuma etapa configurada
                               </p>
                             )}
@@ -370,7 +370,7 @@ export function JobScreeningSection({
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <ClipboardList className="w-4 h-4 text-lia-text-secondary" />
-                              <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">Roteiro de Triagem Automática</h4>
+                              <h4 className="text-xs font-semibold text-lia-text-primary">Roteiro de Triagem Automática</h4>
                               <Badge 
                                 className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-gray-200'}`}
                               >
@@ -381,8 +381,8 @@ export function JobScreeningSection({
 
                       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('fluxo-resumido')}>
-                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
-                            <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                          <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
+                            <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Resumo da Triagem
                             <Badge
                               className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-gray-200'}`}
@@ -415,7 +415,7 @@ export function JobScreeningSection({
                       {/* 5. Blocos WSI do Roteiro de Triagem */}
                       <div className="space-y-2">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('fluxo-wsi')}>
-                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Fluxo de Triagem WSI
                             <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-200 text-lia-text-primary">
@@ -646,7 +646,7 @@ export function JobScreeningSection({
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('agendamento')}>
                           <div className="flex items-center gap-2">
                             <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
-                            <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">Agendamento Automático</h5>
+                            <h5 className="text-xs font-semibold text-lia-text-primary">Agendamento Automático</h5>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Badge className={`${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-gray-700 text-white dark:bg-lia-bg-elevated' : 'bg-gray-400 text-white'} text-micro px-1.5 py-0 h-4`}>
@@ -693,7 +693,7 @@ export function JobScreeningSection({
                           {/* 1. Canais + Configurações Agrupados */}
                           <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => onToggleSection('canais')}>
-                          <h5 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+                          <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Canais de Comunicação
                           </h5>

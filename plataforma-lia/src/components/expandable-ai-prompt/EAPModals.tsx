@@ -238,7 +238,7 @@ export function EAPModals({
                       <Badge
                         key={`tag-${index}`}
                         variant="secondary"
-                        className="text-xs bg-gray-100 text-lia-text-primary dark:text-lia-text-primary pr-1 flex items-center gap-1"
+                        className="text-xs bg-gray-100 text-lia-text-primary pr-1 flex items-center gap-1"
                       >
                         {tag}
                         <button
@@ -318,13 +318,13 @@ export function EAPModals({
           style={{backgroundColor: 'var(--gray-50)'}}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base font-semibold lia-text-strong flex items-center gap-2">
+            <AlertDialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
               <Trash2 className="w-4 h-4 text-status-error" />
               Excluir Arquétipo
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-sm lia-text-base">
+            <AlertDialogDescription className="text-sm text-lia-text-secondary">
               Tem certeza que deseja excluir o arquétipo{' '}
-              <span className="font-medium lia-text-strong">"{archetypeToDelete?.name}"</span>?
+              <span className="font-medium text-lia-text-primary">"{archetypeToDelete?.name}"</span>?
               <br />
               <span className="text-xs lia-text-secondary mt-1 block">
                 Esta ação não pode ser desfeita.
@@ -337,7 +337,7 @@ export function EAPModals({
                 setShowDeleteArchetypeDialog(false)
                 setArchetypeToDelete(null)
               }}
-              className="flex-1 h-9 text-sm px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle lia-text-base hover:bg-gray-50"
+              className="flex-1 h-9 text-sm px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
             >
               Cancelar
             </AlertDialogCancel>
@@ -362,11 +362,11 @@ export function EAPModals({
           <div className="space-y-2 text-xs leading-snug">
             <div className="flex items-center gap-1.5">
               {pendingSourceChange === 'hybrid' ? (
-                <Zap className="w-3 h-3 lia-text-base" />
+                <Zap className="w-3 h-3 text-lia-text-secondary" />
               ) : (
                 <Globe className="w-3 h-3 text-status-warning" />
               )}
-              <h3 className="font-semibold text-xs lia-text-strong">
+              <h3 className="font-semibold text-xs text-lia-text-primary">
                 {pendingSourceChange === 'hybrid' ? 'Busca Híbrida' : 'Busca Global'}
               </h3>
             </div>
@@ -380,16 +380,16 @@ export function EAPModals({
             <div className="bg-lia-bg-primary rounded-md p-2 space-y-1 border border-lia-border-subtle">
               {pendingSourceChange === 'hybrid' && (
                 <div className="flex justify-between text-micro">
-                  <span className="lia-text-base">Local:</span>
+                  <span className="text-lia-text-secondary">Local:</span>
                   <span className="font-medium text-wedo-green-light">Grátis</span>
                 </div>
               )}
               <div className="flex justify-between text-micro">
-                <span className="lia-text-base">Global:</span>
+                <span className="text-lia-text-secondary">Global:</span>
                 <span className="font-medium text-status-warning" aria-live="polite" aria-atomic="true">1 cr/candidato</span>
               </div>
               <div className="flex justify-between text-micro pt-1 border-t border-lia-border-subtle">
-                <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">Total estimado:</span>
+                <span className="font-medium text-lia-text-primary">Total estimado:</span>
                 <span className="font-semibold text-status-warning" aria-live="polite" aria-atomic="true">1 cr/candidato</span>
               </div>
             </div>
@@ -400,7 +400,7 @@ export function EAPModals({
                   setShowSourceChangeModal(false)
                   setPendingSourceChange(null)
                 }}
-                className="flex-1 h-6 text-micro px-2 rounded-full bg-lia-bg-primary border border-lia-border-subtle lia-text-base hover:bg-gray-50"
+                className="flex-1 h-6 text-micro px-2 rounded-full bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
               >
                 Cancelar
               </button>

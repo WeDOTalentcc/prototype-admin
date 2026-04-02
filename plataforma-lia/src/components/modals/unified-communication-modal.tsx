@@ -454,7 +454,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[(.*?)\]/g, '<span class="text-lia-text-secondary dark:text-lia-text-tertiary underline cursor-pointer">$1</span>')
+      .replace(/\[(.*?)\]/g, '<span class="text-lia-text-secondary underline cursor-pointer">$1</span>')
       .replace(/•/g, '&bull;')
       .replace(/\n/g, '<br>')
   }
@@ -462,14 +462,14 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
   const modalContent = (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-modal flex items-center justify-center p-4">
       <div 
-        className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col`}
+        className={`${cardStyles.default} rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col`}
        
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-lia-bg-secondary/50/50">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center">
-              <modalInfo.icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <div className="w-8 h-8 bg-lia-bg-tertiary rounded-full flex items-center justify-center">
+              <modalInfo.icon className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
               <h3 className={textStyles.title}>
@@ -482,7 +482,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
           </div>
           <button 
             onClick={onClose} 
-            className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+            className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           >
             <X className="w-4 h-4" />
           </button>
@@ -491,7 +491,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
           {/* Left Panel - Form */}
-          <div className="w-1/2 border-r border-lia-border-subtle dark:border-lia-border-subtle overflow-y-auto">
+          <div className="w-1/2 border-r border-lia-border-subtle overflow-y-auto">
             <div className="p-5 space-y-5">
               {/* Channel Selection */}
               <div>
@@ -503,7 +503,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                     onClick={() => setChannel('email')}
                     className={`flex items-center gap-2 p-3 rounded-md border transition-colors motion-reduce:transition-none ${
                       channel === 'email'
-                        ? 'border-gray-900 bg-gray-50 text-lia-text-primary'
+                        ? 'border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary'
                         : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                     }`}
                     aria-label="Enviar por Email"
@@ -533,7 +533,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                     onClick={() => setChannel('both')}
                     className={`flex items-center gap-2 p-3 rounded-md border transition-colors motion-reduce:transition-none ${
                       channel === 'both'
-                        ? 'border-gray-900 bg-gray-50 text-lia-text-primary'
+                        ? 'border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary'
                         : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                     }`}
                     aria-label="Enviar por Email e WhatsApp"
@@ -552,7 +552,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
 
               {/* Interview Settings (only for agendamento) */}
               {type === 'agendamento' && (
-                <div className={`space-y-4 p-4 ${cardStyles.flat} dark:bg-lia-bg-secondary dark:border-lia-border-subtle`}>
+                <div className={`space-y-4 p-4 ${cardStyles.flat}`}>
                   <h4 className={`${textStyles.label} flex items-center gap-2`}>
                     <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
                     Configurações da Entrevista
@@ -568,7 +568,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                           onClick={() => setInterviewSettings(prev => ({ ...prev, interviewType: iType.id as typeof prev.interviewType }))}
                           className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${
                             interviewSettings.interviewType === iType.id
-                              ? 'border-gray-900 bg-gray-50'
+                              ? 'border-lia-btn-primary-bg bg-lia-bg-secondary'
                               : 'border-lia-border-subtle hover:border-lia-border-default'
                           }`}
                         >
@@ -591,7 +591,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                           onClick={() => setInterviewSettings(prev => ({ ...prev, platform: plat.id as typeof prev.platform }))}
                           className={`p-2 rounded-md border text-center transition-colors motion-reduce:transition-none ${
                             interviewSettings.platform === plat.id
-                              ? 'border-gray-900 bg-gray-50'
+                              ? 'border-lia-btn-primary-bg bg-lia-bg-secondary'
                               : 'border-lia-border-subtle hover:border-lia-border-default'
                           }`}
                         >
@@ -611,7 +611,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                       <select
                         value={interviewSettings.duration}
                         onChange={(e) => setInterviewSettings(prev => ({ ...prev, duration: e.target.value }))}
-                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20"
+                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
                       >
                         <option value="30">30 min</option>
                         <option value="45">45 min</option>
@@ -626,7 +626,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                         value={interviewSettings.date}
                         onChange={(e) => setInterviewSettings(prev => ({ ...prev, date: e.target.value }))}
                         min={new Date().toISOString().split('T')[0]}
-                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20"
+                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
                       />
                     </div>
                     <div>
@@ -635,7 +635,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                         type="time"
                         value={interviewSettings.time}
                         onChange={(e) => setInterviewSettings(prev => ({ ...prev, time: e.target.value }))}
-                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20"
+                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
                       />
                     </div>
                   </div>
@@ -646,7 +646,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                     <select
                       value={interviewSettings.interviewer}
                       onChange={(e) => setInterviewSettings(prev => ({ ...prev, interviewer: e.target.value }))}
-                      className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20"
+                      className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
                     >
                       <option value="">Selecione...</option>
                       {interviewers.map((person) => (
@@ -681,7 +681,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               />
 
               {/* Vacancy Linking Section */}
-              <div className={`${cardStyles.default} dark:bg-lia-bg-secondary dark:border-lia-border-subtle p-4`}>
+              <div className={`${cardStyles.default} p-4`}>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className={`${textStyles.label} flex items-center gap-2`}>
                     <Briefcase className="w-4 h-4 text-lia-text-secondary" />
@@ -704,7 +704,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                         value={selectedVacancyId || ''}
                         onChange={(e) => setSelectedVacancyId(e.target.value || null)}
                         disabled={isLoadingVacancies}
-                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 bg-lia-bg-primary disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary disabled:bg-lia-bg-tertiary disabled:cursor-not-allowed"
                       >
                         <option value="">
                           {isLoadingVacancies ? 'Carregando vagas...' : 'Selecione uma vaga'}
@@ -727,7 +727,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                       <select
                         value={selectedStage}
                         onChange={(e) => setSelectedStage(e.target.value)}
-                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 bg-lia-bg-primary"
+                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary"
                       >
                         {PIPELINE_STAGES.map((stage) => (
                           <option key={stage.value} value={stage.value}>
@@ -790,11 +790,11 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
           </div>
 
           {/* Right Panel - Preview */}
-          <div className="w-1/2 bg-gray-50 overflow-y-auto">
+          <div className="w-1/2 bg-lia-bg-secondary overflow-y-auto">
             <div className="p-5">
               <div className="flex items-center justify-between mb-4">
                 <h4 className={`${textStyles.label} flex items-center gap-2`}>
-                  <Eye className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Eye className="w-3.5 h-3.5 text-lia-text-secondary" />
                   Preview da Mensagem
                 </h4>
                 <Badge variant="outline" className={badgeStyles.default}>
@@ -809,10 +809,10 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 {(channel === 'email' || channel === 'both') ? (
                   <div>
                     {/* Email Header */}
-                    <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary">
+                    <div className="px-4 py-3 border-b border-lia-border-subtle bg-lia-bg-secondary">
                       <div className="flex items-center gap-2 mb-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarFallback className="text-micro bg-gray-900 dark:bg-gray-50 text-white">RH</AvatarFallback>
+                          <AvatarFallback className="text-micro bg-lia-btn-primary-bg text-white">RH</AvatarFallback>
                         </Avatar>
                         <div>
                           <div className={textStyles.bodySmall}>Equipe de Recrutamento</div>
@@ -824,7 +824,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                       </div>
                     </div>
                     {/* Email Subject */}
-                    <div className="px-4 py-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+                    <div className="px-4 py-2 border-b border-lia-border-subtle">
                       <div className={textStyles.subtitle}>
                         {subject || 'Sem assunto'}
                       </div>
@@ -877,9 +877,9 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               )}
 
               {type === 'agendamento' && (
-                <div className="mt-4 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md p-3">
+                <div className="mt-4 bg-lia-bg-tertiary border border-lia-border-default rounded-md p-3">
                   <div className="flex items-start gap-2">
-                    <CalendarDays className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0 mt-0.5" />
+                    <CalendarDays className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5" />
                     <div className="text-micro text-wedo-cyan-dark">
                       <strong>Após Confirmação:</strong>
                       <ul className="mt-1 space-y-0.5 ml-2">
@@ -908,7 +908,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-lia-border-subtle bg-lia-bg-secondary flex items-center justify-between">
           <div className={textStyles.caption}>
             {channel === 'email' && (
               <span className="flex items-center gap-1">
@@ -935,7 +935,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-lia-interactive-hover text-lia-text-secondary dark:hover:bg-lia-btn-primary-bg"
             >
               Cancelar
             </Button>
@@ -943,7 +943,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               size="sm"
               onClick={handleSend}
               disabled={isSending || !message.trim() || ((channel === 'email' || channel === 'both') && !subject.trim())}
-              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 gap-2"
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active gap-2"
             >
               {isSending ? (
                 <>

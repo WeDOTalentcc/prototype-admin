@@ -288,20 +288,20 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
 
   const textStyles = {
     title: 'text-sm font-semibold text-lia-text-primary',
-    subtitle: 'text-xs font-medium text-lia-text-primary dark:text-lia-text-primary',
-    body: 'text-xs text-lia-text-secondary dark:text-lia-text-tertiary',
-    bodySmall: 'text-xs text-lia-text-secondary dark:text-lia-text-tertiary',
+    subtitle: 'text-xs font-medium text-lia-text-primary',
+    body: 'text-xs text-lia-text-secondary',
+    bodySmall: 'text-xs text-lia-text-secondary',
     caption: 'text-micro text-lia-text-tertiary',
-    label: 'text-micro font-medium text-lia-text-primary dark:text-lia-text-primary uppercase tracking-wider',
+    label: 'text-micro font-medium text-lia-text-primary uppercase tracking-wider',
     description: 'text-micro text-lia-text-tertiary'
   }
 
   const localBadgeStyles = {
-    default: 'text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-0',
+    default: 'text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-0',
     success: 'text-micro px-1.5 py-0 h-4 bg-status-success/10 dark:bg-status-success/20 text-status-success dark:text-status-success border-0',
     warning: 'text-micro px-1.5 py-0 h-4 bg-status-warning/10 dark:bg-status-warning/20 text-status-warning dark:text-status-warning border-0',
     error: 'text-micro px-1.5 py-0 h-4 bg-status-error/10 dark:bg-status-error/20 text-status-error dark:text-status-error border-0',
-    info: 'text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border-0'
+    info: 'text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary border-0'
   }
 
   const localCardStyles = {

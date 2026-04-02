@@ -116,7 +116,7 @@ export function CandidatePageActivitiesTab({
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="text-sm font-medium text-lia-text-primary flex items-center gap-1.5">
-              <Activity className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Activity className="w-4 h-4 text-lia-text-secondary" />
               Feed de Atividades
               <Badge className="text-xs px-1.5 py-0">{filteredActivities.length}</Badge>
             </h4>
@@ -137,8 +137,8 @@ export function CandidatePageActivitiesTab({
                   onClick={() => setViewMode('timeline')}
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  viewMode === 'timeline'
-                      ? 'bg-gray-200 text-lia-text-primary dark:text-lia-text-primary'
-                      : 'text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
+                      ? 'bg-gray-200 text-lia-text-primary'
+                      : 'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
                   }`}
                   title="Visualização Timeline"
                 >
@@ -148,8 +148,8 @@ export function CandidatePageActivitiesTab({
                   onClick={() => setViewMode('list')}
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  viewMode === 'list'
-                      ? 'bg-gray-200 text-lia-text-primary dark:text-lia-text-primary'
-                      : 'text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
+                      ? 'bg-gray-200 text-lia-text-primary'
+                      : 'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
                   }`}
                   title="Visualização Lista"
                 >
@@ -174,7 +174,7 @@ export function CandidatePageActivitiesTab({
               className={`px-2 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  activityFilter === 'all'
                   ? 'bg-gray-600 text-white'
-                  : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary hover:bg-gray-200'
               }`}
             >
               Todas
@@ -184,7 +184,7 @@ export function CandidatePageActivitiesTab({
               className={`px-2 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  activityFilter === 'emails'
                   ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200 dark:hover:bg-gray-600'
+                  : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
               📧 Emails
@@ -272,10 +272,10 @@ export function CandidatePageActivitiesTab({
                       >
                         {prediction.probability}%
                       </Badge>
-                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+                      <p className="text-xs text-lia-text-secondary mt-1">
                         {prediction.timeframe}
                       </p>
-                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary italic mt-1">
+                      <p className="text-xs text-lia-text-secondary italic mt-1">
                         💡 {prediction.recommendation}
                       </p>
                     </div>
@@ -322,10 +322,10 @@ export function CandidatePageActivitiesTab({
                                   <h5 className="text-sm font-semibold text-lia-text-primary">
                                     {activity.title}
                                   </h5>
-                                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+                                  <p className="text-xs text-lia-text-secondary mt-1">
                                     {activity.author} • {activity.date}
                                   </p>
-                                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+                                  <p className="text-xs text-lia-text-secondary mt-1">
                                     {activity.summary}
                                   </p>
                                 </div>
@@ -340,7 +340,7 @@ export function CandidatePageActivitiesTab({
                                     </Badge>
                                   )}
                                   <ChevronDown
-                                    className={`w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary transition-transform motion-reduce:transition-none ${
+                                    className={`w-4 h-4 text-lia-text-secondary transition-transform motion-reduce:transition-none ${
  expandedActivity === activity.id ? 'rotate-180' : ''
                                     }`}
                                   />
@@ -356,11 +356,11 @@ export function CandidatePageActivitiesTab({
                               <div className="mt-2 space-y-2">
                                 <div className="grid grid-cols-2 gap-2">
                                   <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
-                                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Score Técnico</span>
+                                    <span className="text-xs text-lia-text-primary">Score Técnico</span>
                                     <p className="text-sm font-semibold">{activity.details.technicalScore}%</p>
                                   </div>
                                   <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
-                                    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">Fit Cultural</span>
+                                    <span className="text-xs text-lia-text-primary">Fit Cultural</span>
                                     <p className="text-sm font-semibold">{activity.details.culturalFit}%</p>
                                   </div>
                                 </div>
@@ -370,7 +370,7 @@ export function CandidatePageActivitiesTab({
                             {activity.type === 'whatsapp-screening' && activity.details.conversation && (
                               <div className="mt-2 space-y-2">
                                 <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md max-h-48 overflow-y-auto">
-                                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-2">Conversa via {activity.platform}</p>
+                                  <p className="text-xs text-lia-text-primary mb-2">Conversa via {activity.platform}</p>
                                   <div className="space-y-2">
                                     {activity.details.conversation.map((msg, i: number) => (
                                       <div
@@ -381,7 +381,7 @@ export function CandidatePageActivitiesTab({
                                           className={`max-w-[70%] px-3 py-2 rounded-md text-xs ${
  msg.sender === 'LIA'
                                               ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
-                                              : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary'
+                                              : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary'
                                           }`}
                                         >
                                           <p>{msg.message}</p>
@@ -417,10 +417,10 @@ export function CandidatePageActivitiesTab({
                         <h5 className="text-sm font-semibold text-lia-text-primary">
                           {activity.title}
                         </h5>
-                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+                        <p className="text-xs text-lia-text-secondary mt-1">
                           {activity.author} • {activity.date}
                         </p>
-                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+                        <p className="text-xs text-lia-text-secondary mt-1">
                           {activity.summary}
                         </p>
                       </div>

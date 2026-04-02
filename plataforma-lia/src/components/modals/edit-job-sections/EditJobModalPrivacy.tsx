@@ -33,7 +33,7 @@ export function EditJobModalPrivacy({
       </p>
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+        <div className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md">
           <div className="flex items-center gap-2">
             <Building className="w-3.5 h-3.5 text-lia-text-tertiary" />
             <span className="text-xs text-lia-text-secondary">LIA pode revelar o nome da empresa?</span>
@@ -68,7 +68,7 @@ export function EditJobModalPrivacy({
           </div>
         )}
 
-        <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+        <div className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md">
           <div className="flex items-center gap-2">
             <DollarSign className="w-3.5 h-3.5 text-lia-text-tertiary" />
             <span className="text-xs text-lia-text-secondary">LIA pode discutir faixa salarial?</span>
@@ -84,7 +84,7 @@ export function EditJobModalPrivacy({
           />
         </div>
 
-        <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+        <div className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md">
           <div className="flex items-center gap-2">
             <Heart className="w-3.5 h-3.5 text-lia-text-tertiary" />
             <span className="text-xs text-lia-text-secondary">LIA pode discutir benefícios?</span>

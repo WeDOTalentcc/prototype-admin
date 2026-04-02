@@ -358,7 +358,7 @@ export function ChatPage() {
                             key={suggestion}
                             size="sm"
                             onClick={() => setInput(suggestion)}
-                            className="text-xs h-7 px-3 transition-transform motion-reduce:transition-none duration-200 hover:scale-105 text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle bg-gray-50"
+                            className="text-xs h-7 px-3 transition-transform motion-reduce:transition-none duration-200 hover:scale-105 text-lia-text-primary border border-lia-border-subtle bg-gray-50"
                           >
                             {suggestion}
                           </Button>
@@ -405,7 +405,7 @@ export function ChatPage() {
                           key={file.name}
                           className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs bg-lia-bg-primary border border-lia-border-default"
                         >
-                          <FileText className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                          <FileText className="w-3.5 h-3.5 text-lia-text-secondary" />
                           <span className="max-w-[150px] truncate text-lia-text-primary">
                             {file.name}
                           </span>
@@ -448,7 +448,7 @@ export function ChatPage() {
                   <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300 bg-gray-200/30 border border-wedo-cyan/30"
                   >
                     <div className="flex items-center gap-2">
-                      <Mic className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                      <Mic className="w-4 h-4 text-lia-text-secondary" />
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-lia-text-secondary">
                           Áudio gravado ({recordingTime}s)
@@ -715,7 +715,7 @@ export function ChatPage() {
                   salary_max: 25000,
                   benefits: []
                 }, "Remuneração e Benefícios")}
-                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none"
               >
                 Debug Panel
               </button>

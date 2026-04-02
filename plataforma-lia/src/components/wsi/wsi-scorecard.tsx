@@ -30,7 +30,7 @@ interface ScoreDisplay {
 const WSI_CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; bgColor: string; textColor: string }> = {
   excepcional:    { label: 'Excepcional',      color: 'text-status-success', bgColor: 'bg-status-success/15', textColor: 'var(--status-success)' },
   excelente:      { label: 'Excelente',         color: 'text-status-success',   bgColor: 'bg-status-success/15',   textColor: 'var(--status-success)' },
-  alto:           { label: 'Alto',               color: 'text-wedo-cyan-dark',   bgColor: 'bg-wedo-cyan/15',    textColor: 'var(--gray-600)' },
+  alto:           { label: 'Alto',               color: 'text-wedo-cyan-dark',   bgColor: 'bg-wedo-cyan/15',    textColor: 'var(--lia-text-secondary)' },
   medio:          { label: 'Médio',              color: 'text-status-warning',  bgColor: 'bg-status-warning/15',   textColor: 'var(--status-warning)' },
   abaixo_da_media:{ label: 'Abaixo da média',   color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15',  textColor: 'var(--status-warning)' },
   regular:        { label: 'Regular / Baixo',   color: 'text-status-error',    bgColor: 'bg-status-error/15',     textColor: 'var(--status-error)' },

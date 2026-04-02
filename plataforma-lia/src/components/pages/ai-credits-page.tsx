@@ -58,7 +58,7 @@ export function AiCreditsPage({ companyId }: Props) {
 
   if (balanceLoading) {
     return (
-      <div className="flex h-64 items-center justify-center text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">
+      <div className="flex h-64 items-center justify-center text-sm text-lia-text-tertiary">
         Carregando dados de consumo de IA...
       </div>
     )
@@ -86,8 +86,8 @@ export function AiCreditsPage({ companyId }: Props) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">Consumo de IA</h1>
-          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">Monitoramento de tokens e custos do período mensal</p>
+          <h1 className="text-lg font-semibold text-lia-text-primary">Consumo de IA</h1>
+          <p className="text-xs text-lia-text-tertiary">Monitoramento de tokens e custos do período mensal</p>
         </div>
         {balance && (
           <Badge variant={alertVariant} className="text-xs">
@@ -102,16 +102,16 @@ export function AiCreditsPage({ companyId }: Props) {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
           <CardHeader className="pb-1 pt-4">
-            <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+            <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary">
               <Zap className="h-3.5 w-3.5" />
               Tokens utilizados
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <p className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-xl font-semibold text-lia-text-primary">
               {balance ? formatTokens(balance.current_usage) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled dark:text-lia-text-tertiary">
+            <p className="mt-0.5 text-xs text-lia-text-disabled">
               de {balance ? formatTokens(balance.monthly_limit) : '—'} no mês
             </p>
           </CardContent>
@@ -119,16 +119,16 @@ export function AiCreditsPage({ companyId }: Props) {
 
         <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
           <CardHeader className="pb-1 pt-4">
-            <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+            <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary">
               <TrendingUp className="h-3.5 w-3.5" />
               Tokens restantes
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <p className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-xl font-semibold text-lia-text-primary">
               {balance ? formatTokens(balance.remaining_tokens) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled dark:text-lia-text-tertiary">
+            <p className="mt-0.5 text-xs text-lia-text-disabled">
               até {balance?.period_end ?? '—'}
             </p>
           </CardContent>
@@ -136,31 +136,31 @@ export function AiCreditsPage({ companyId }: Props) {
 
         <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
           <CardHeader className="pb-1 pt-4">
-            <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+            <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary">
               <DollarSign className="h-3.5 w-3.5" />
               Custo estimado
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <p className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-xl font-semibold text-lia-text-primary">
               {summary ? formatCost(summary.total_cost_cents) : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled dark:text-lia-text-tertiary">no período atual</p>
+            <p className="mt-0.5 text-xs text-lia-text-disabled">no período atual</p>
           </CardContent>
         </Card>
 
         <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
           <CardHeader className="pb-1 pt-4">
-            <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+            <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary">
               <Zap className="h-3.5 w-3.5" />
               Operações
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <p className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-xl font-semibold text-lia-text-primary">
               {summary ? summary.total_operations.toLocaleString('pt-BR') : '—'}
             </p>
-            <p className="mt-0.5 text-xs text-lia-text-disabled dark:text-lia-text-tertiary">chamadas de IA</p>
+            <p className="mt-0.5 text-xs text-lia-text-disabled">chamadas de IA</p>
           </CardContent>
         </Card>
       </div>
@@ -169,7 +169,7 @@ export function AiCreditsPage({ companyId }: Props) {
       {balance && (
         <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
           <CardHeader className="pb-2 pt-4">
-            <CardTitle className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+            <CardTitle className="text-xs font-medium text-lia-text-tertiary">
               Uso do limite mensal — {usagePct.toFixed(1)}%
             </CardTitle>
           </CardHeader>
@@ -186,7 +186,7 @@ export function AiCreditsPage({ companyId }: Props) {
                 style={{width: `${Math.min(usagePct, 100)}%`}}
               />
             </div>
-            <div className="mt-1.5 flex justify-between text-xs text-lia-text-disabled dark:text-lia-text-tertiary">
+            <div className="mt-1.5 flex justify-between text-xs text-lia-text-disabled">
               <span>0</span>
               <span>{formatTokens(balance.monthly_limit)}</span>
             </div>
@@ -197,17 +197,17 @@ export function AiCreditsPage({ companyId }: Props) {
       {/* Gráfico de consumo diário */}
       <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
         <CardHeader className="pb-2 pt-4">
-          <CardTitle className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+          <CardTitle className="text-xs font-medium text-lia-text-tertiary">
             Consumo diário — últimos 30 dias (tokens em K)
           </CardTitle>
         </CardHeader>
         <CardContent className="pb-4">
           {historyLoading ? (
-            <div className="flex h-48 items-center justify-center text-xs text-lia-text-disabled dark:text-lia-text-tertiary">
+            <div className="flex h-48 items-center justify-center text-xs text-lia-text-disabled">
               Carregando histórico...
             </div>
           ) : chartData.length === 0 ? (
-            <div className="flex h-48 items-center justify-center text-xs text-lia-text-disabled dark:text-lia-text-tertiary">
+            <div className="flex h-48 items-center justify-center text-xs text-lia-text-disabled">
               Sem dados de consumo no período
             </div>
           ) : (
@@ -244,7 +244,7 @@ export function AiCreditsPage({ companyId }: Props) {
       {byAgent.length > 0 && (
         <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
           <CardHeader className="pb-2 pt-4">
-            <CardTitle className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+            <CardTitle className="text-xs font-medium text-lia-text-tertiary">
               Consumo por agente
             </CardTitle>
           </CardHeader>
@@ -257,10 +257,10 @@ export function AiCreditsPage({ companyId }: Props) {
                     key={agent.agent_type}
                     className="flex items-center justify-between py-2.5 text-sm"
                   >
-                    <span className="font-medium capitalize text-lia-text-secondary dark:text-lia-text-secondary">
+                    <span className="font-medium capitalize text-lia-text-secondary">
                       {agent.agent_type.replace('_', ' ')}
                     </span>
-                    <div className="flex items-center gap-4 text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                    <div className="flex items-center gap-4 text-xs text-lia-text-tertiary">
                       <span>{formatTokens(agent.total_tokens)} tokens</span>
                       <span>{formatCost(agent.total_cost_cents)}</span>
                       <span>{agent.operation_count} ops</span>

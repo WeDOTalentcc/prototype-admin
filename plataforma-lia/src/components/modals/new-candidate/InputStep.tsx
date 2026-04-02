@@ -53,7 +53,7 @@ function getFileIcon(filename: string) {
   const ext = filename.split('.').pop()?.toLowerCase()
   if (ext === 'pdf') return <FileText className="w-4 h-4 text-status-error" />
   if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-wedo-cyan-dark" />
-  return <File className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+  return <File className="w-4 h-4 text-lia-text-tertiary" />
 }
 
 function formatFileSize(bytes: number) {
@@ -93,14 +93,14 @@ export function InputStep({
 
   return (
     <div className="space-y-4">
-      <div className="flex border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="flex border-b border-lia-border-subtle">
         <button
           onClick={() => { setActiveTab('cv'); setError(null) }}
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'cv'
-              ? "text-lia-text-primary dark:text-lia-text-primary"
-              : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled"
+              ? "text-lia-text-primary"
+              : "text-lia-text-tertiary hover:text-lia-text-secondary"
           )}
         >
           <div className="flex items-center justify-center gap-1.5">
@@ -108,7 +108,7 @@ export function InputStep({
             CV
           </div>
           {activeTab === 'cv' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-lia-btn-primary-bg" />
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg" />
           )}
         </button>
         <button
@@ -116,8 +116,8 @@ export function InputStep({
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'linkedin'
-              ? "text-lia-text-primary dark:text-lia-text-primary"
-              : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled"
+              ? "text-lia-text-primary"
+              : "text-lia-text-tertiary hover:text-lia-text-secondary"
           )}
         >
           <div className="flex items-center justify-center gap-1.5">
@@ -125,7 +125,7 @@ export function InputStep({
             LinkedIn
           </div>
           {activeTab === 'linkedin' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-lia-btn-primary-bg" />
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg" />
           )}
         </button>
         <button
@@ -133,8 +133,8 @@ export function InputStep({
           className={cn(
             "flex-1 py-2.5 text-xs font-medium transition-colors relative",
             activeTab === 'manual'
-              ? "text-lia-text-primary dark:text-lia-text-primary"
-              : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled"
+              ? "text-lia-text-primary"
+              : "text-lia-text-tertiary hover:text-lia-text-secondary"
           )}
         >
           <div className="flex items-center justify-center gap-1.5">
@@ -142,7 +142,7 @@ export function InputStep({
             Manual
           </div>
           {activeTab === 'manual' && (
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:bg-lia-btn-primary-bg" />
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg" />
           )}
         </button>
       </div>
@@ -168,29 +168,29 @@ export function InputStep({
               className={cn(
                 "border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors",
                 isDragging
-                  ? "border-gray-900 bg-gray-100 dark:border-lia-border-subtle dark:bg-lia-bg-secondary"
-                  : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  ? "border-lia-btn-primary-bg bg-lia-bg-tertiary"
+                  : "border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-hover"
               )}
             >
-              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-3">
-                <Upload className={cn("w-5 h-5", isDragging ? "text-lia-text-primary dark:text-lia-text-primary" : "text-lia-text-tertiary")} />
+              <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary flex items-center justify-center mx-auto mb-3">
+                <Upload className={cn("w-5 h-5", isDragging ? "text-lia-text-primary" : "text-lia-text-tertiary")} />
               </div>
-              <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+              <p className="text-xs font-medium text-lia-text-primary">
                 {isDragging ? "Solte o arquivo aqui" : "Arraste ou clique para selecionar"}
               </p>
-              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-1">
+              <p className="text-xs text-lia-text-tertiary mt-1">
                 PDF, DOCX, DOC ou TXT (máx. 5MB)
               </p>
             </div>
           ) : (
-            <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3">
+            <div className="border border-lia-border-subtle rounded-md p-3">
               <div className="flex items-center gap-2">
                 {getFileIcon(selectedFile.name)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
+                  <p className="text-xs font-medium text-lia-text-primary truncate">
                     {selectedFile.name}
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                  <p className="text-xs text-lia-text-tertiary">
                     {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
@@ -211,10 +211,10 @@ export function InputStep({
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-lia-border-subtle dark:border-lia-border-subtle" />
+              <span className="w-full border-t border-lia-border-subtle" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-lia-bg-primary px-2 text-lia-text-tertiary dark:text-lia-text-tertiary">ou cole o texto</span>
+              <span className="bg-lia-bg-primary px-2 text-lia-text-tertiary">ou cole o texto</span>
             </div>
           </div>
 
@@ -237,7 +237,7 @@ export function InputStep({
           <Button
             onClick={handleSubmitCV}
             disabled={!canSubmitCV || isProcessing}
-            className="w-full h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+            className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
           >
             {isProcessing ? (
               <>
@@ -257,10 +257,10 @@ export function InputStep({
       {activeTab === 'linkedin' && (
         <div className="space-y-4">
           <div className="text-center py-2">
-            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary flex items-center justify-center mx-auto mb-3">
               <Linkedin className="w-6 h-6 text-lia-text-secondary" />
             </div>
-            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+            <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
               Cole a URL do perfil do LinkedIn do candidato
             </p>
           </div>
@@ -274,14 +274,14 @@ export function InputStep({
               onChange={(e) => setLinkedinUrl(e.target.value)}
               className="h-9 text-xs font-sans"
             />
-            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary font-sans">
+            <p className="text-xs text-lia-text-tertiary font-sans">
               Ex: linkedin.com/in/joao-silva
             </p>
           </div>
 
-          <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-md">
+          <div className="flex items-center gap-2 p-2.5 bg-lia-bg-secondary/50 border border-lia-border-default rounded-md">
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-sans" aria-live="polite" aria-atomic="true">
+            <p className="text-xs text-lia-text-secondary font-sans" aria-live="polite" aria-atomic="true">
               A LIA irá buscar os dados do candidato
             </p>
           </div>
@@ -289,7 +289,7 @@ export function InputStep({
           <Button
             onClick={handleSubmitLinkedin}
             disabled={!canSubmitLinkedin || isProcessing}
-            className="w-full h-9 text-xs bg-gray-900 hover:bg-gray-950 text-white"
+            className="w-full h-9 text-xs bg-lia-btn-primary-bg hover:bg-lia-bg-primary text-white"
           >
             {isProcessing ? (
               <>
@@ -365,14 +365,14 @@ export function InputStep({
                 />
               </div>
               {manualData.linkedinUrl.includes('linkedin.com/in/') && (
-                <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex items-center gap-1 font-sans">
+                <p className="text-micro text-lia-text-secondary flex items-center gap-1 font-sans">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   A LIA irá buscar os dados do candidato
                 </p>
               )}
             </div>
 
-            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+            <p className="text-xs text-lia-text-tertiary">
               * Informe pelo menos um contato (email ou telefone)
             </p>
           </div>
@@ -380,7 +380,7 @@ export function InputStep({
           <Button
             onClick={handleSubmitManual}
             disabled={!canSubmitManual || isProcessing}
-            className="w-full h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+            className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
           >
             {isProcessing ? (
               <>

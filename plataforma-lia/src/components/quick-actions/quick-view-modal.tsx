@@ -166,7 +166,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
               <h3 className="text-xl font-semibold text-lia-text-primary">
                 {candidate.name}
               </h3>
-              <p className="text-sm lia-text-base">
+              <p className="text-sm text-lia-text-secondary">
                 {candidate.role} • {candidate.experience} • {candidate.location}
               </p>
               <div className="flex items-center gap-3 mt-2">
@@ -241,7 +241,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                             <Badge className={`text-xs ${
  liaInsights.candidateStatus?.priority === 'alta' ? 'bg-status-error/15 text-status-error' :
                               liaInsights.candidateStatus?.priority === 'média' ? 'bg-status-warning/15 text-status-warning' :
-                              'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
+                              'bg-gray-100 text-lia-text-primary'
                             }`}>
                               {liaInsights.candidateStatus?.priority?.toUpperCase()}
                             </Badge>
@@ -271,7 +271,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                                 <Badge className={`text-xs ${
  step.priority === 'alta' ? 'bg-status-error/15 text-status-error' :
                                   step.priority === 'média' ? 'bg-status-warning/15 text-status-warning' :
-                                  'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
+                                  'bg-gray-100 text-lia-text-primary'
                                 }`}>
                                   {step.priority}
                                 </Badge>
@@ -349,21 +349,21 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 lia-text-base" />
+                    <Mail className="w-4 h-4 text-lia-text-secondary" />
                     <span className="text-sm">{candidate.email}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 lia-text-base" />
+                    <Phone className="w-4 h-4 text-lia-text-secondary" />
                     <span className="text-sm">{candidate.phone}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 lia-text-base" />
+                    <MapPin className="w-4 h-4 text-lia-text-secondary" />
                     <span className="text-sm">{candidate.location}</span>
                   </div>
                   {candidate.linkedin && (
                     <div className="flex items-center gap-2">
-                      <Linkedin className="w-4 h-4 lia-text-base" />
-                      <a href={candidate.linkedin} target="_blank" className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary hover:underline">
+                      <Linkedin className="w-4 h-4 text-lia-text-secondary" />
+                      <a href={candidate.linkedin} target="_blank" className="text-sm text-lia-text-secondary hover:underline">
                         LinkedIn
                       </a>
                     </div>
@@ -377,15 +377,15 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="text-sm">
-                    <span className="text-lia-text-primary dark:text-lia-text-primary">Disponibilidade:</span>
+                    <span className="text-lia-text-primary">Disponibilidade:</span>
                     <span className="ml-2 font-medium">{candidate.availability}</span>
                   </div>
                   <div className="text-sm">
-                    <span className="text-lia-text-primary dark:text-lia-text-primary">Salário esperado:</span>
+                    <span className="text-lia-text-primary">Salário esperado:</span>
                     <span className="ml-2 font-medium">{candidate.expectedSalary}</span>
                   </div>
                   <div className="text-sm">
-                    <span className="text-lia-text-primary dark:text-lia-text-primary">Local preferido:</span>
+                    <span className="text-lia-text-primary">Local preferido:</span>
                     <span className="ml-2 font-medium">{candidate.preferredLocation}</span>
                   </div>
                 </CardContent>
@@ -400,7 +400,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm lia-text-base">Match Técnico</span>
+                    <span className="text-sm text-lia-text-secondary">Match Técnico</span>
                     <div className="flex items-center gap-2">
                       <div className="w-16 bg-gray-200 rounded-full h-2">
                         <div
@@ -412,7 +412,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm lia-text-base">Fit Cultural</span>
+                    <span className="text-sm text-lia-text-secondary">Fit Cultural</span>
                     <div className="flex items-center gap-2">
                       <div className="w-16 bg-gray-200 rounded-full h-2">
                         <div
@@ -424,7 +424,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm lia-text-base">Nível de Risco</span>
+                    <span className="text-sm text-lia-text-secondary">Nível de Risco</span>
                     <Badge
                       variant="outline"
                       className={
@@ -471,21 +471,21 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                     <div className="w-2 h-2 bg-status-success rounded-full mt-2"></div>
                     <div>
                       <div className="text-sm font-medium">Candidatura enviada</div>
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.lastActivity}</div>
+                      <div className="text-xs text-lia-text-primary">{candidate.lastActivity}</div>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-2 h-2 bg-gray-900 rounded-full mt-2"></div>
                     <div>
                       <div className="text-sm font-medium">Análise LIA concluída</div>
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Há 2 horas</div>
+                      <div className="text-xs text-lia-text-primary">Há 2 horas</div>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
                     <div>
                       <div className="text-sm font-medium">Perfil visualizado</div>
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Há 1 dia</div>
+                      <div className="text-xs text-lia-text-primary">Há 1 dia</div>
                     </div>
                   </div>
                 </CardContent>
@@ -498,11 +498,11 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 <CardContent>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center">
-                      <Globe className="w-4 h-4 lia-text-base" />
+                      <Globe className="w-4 h-4 text-lia-text-secondary" />
                     </div>
                     <div>
                       <div className="text-sm font-medium">{candidate.source}</div>
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">Fonte de candidatura</div>
+                      <div className="text-xs text-lia-text-primary">Fonte de candidatura</div>
                     </div>
                   </div>
                 </CardContent>

@@ -141,19 +141,19 @@ export function CreateJobWithCandidatesModal({
       aria-labelledby="create-job-with-candidates-modal-title"
     >
       <div
-        className="absolute inset-0 bg-black/50 dark:bg-lia-bg-primary/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50/70 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
 
       <div
         ref={modalRef}
-        className="relative bg-gray-900 border border-gray-700 rounded-md w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col"
+        className="relative bg-lia-btn-primary-bg border border-lia-border-medium rounded-md w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col"
       >
-        <div className="border-b border-gray-700 p-5">
+        <div className="border-b border-lia-border-medium p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+              <div className="p-2 rounded-md bg-lia-bg-tertiary">
                 <Brain className="w-5 h-5 text-wedo-cyan" />
               </div>
               <div>
@@ -171,7 +171,7 @@ export function CreateJobWithCandidatesModal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-md hover:bg-gray-800 text-lia-text-disabled hover:text-lia-text-inverse transition-colors motion-reduce:transition-none"
+              className="p-2 rounded-md hover:bg-lia-btn-primary-hover text-lia-text-disabled hover:text-lia-text-inverse transition-colors motion-reduce:transition-none"
               aria-label="Fechar modal"
             >
               <X className="w-4 h-4" />
@@ -180,9 +180,9 @@ export function CreateJobWithCandidatesModal({
         </div>
 
         <div className="p-5 space-y-5 flex-1 overflow-hidden flex flex-col">
-          <div className="bg-gray-800/50 border border-gray-700 rounded-md p-4">
+          <div className="bg-lia-btn-primary-bg/50 border border-lia-border-medium rounded-md p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Users className="w-4 h-4 text-lia-text-secondary" />
               <span className="text-xs font-medium text-lia-text-inverse">
                 {candidateCount} candidato{candidateCount !== 1 ? 's' : ''} selecionado{candidateCount !== 1 ? 's' : ''}
               </span>
@@ -198,10 +198,10 @@ export function CreateJobWithCandidatesModal({
                   {displayNames.map((name, idx) => (
                     <div 
                       key={idx} 
-                      className="flex items-center gap-2 p-2 bg-gray-800 rounded-md border border-gray-700"
+                      className="flex items-center gap-2 p-2 bg-lia-btn-primary-bg rounded-md border border-lia-border-medium"
                     >
                       <Avatar className="w-6 h-6">
-                        <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+                        <AvatarFallback className="text-micro bg-lia-bg-tertiary text-lia-text-secondary">
                           {getInitials(name)}
                         </AvatarFallback>
                       </Avatar>
@@ -227,15 +227,15 @@ export function CreateJobWithCandidatesModal({
                 Etapa inicial
               </Label>
               <Select value={selectedStage} onValueChange={setSelectedStage}>
-                <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-lia-text-inverse text-xs focus:ring-gray-900 focus:ring-offset-0">
+                <SelectTrigger className="w-full bg-lia-btn-primary-bg border-lia-border-medium text-lia-text-inverse text-xs focus:ring-lia-btn-primary-bg focus:ring-offset-0">
                   <SelectValue placeholder="Selecione a etapa" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent className="bg-lia-btn-primary-bg border-lia-border-medium">
                   {DEFAULT_STAGES.map((stage) => (
                     <SelectItem 
                       key={stage} 
                       value={stage} 
-                      className="text-xs text-lia-text-inverse focus:bg-gray-700 focus:text-lia-text-inverse"
+                      className="text-xs text-lia-text-inverse focus:bg-lia-btn-primary-bg focus:text-lia-text-inverse"
                     >
                       {stage}
                     </SelectItem>
@@ -245,12 +245,12 @@ export function CreateJobWithCandidatesModal({
             </div>
 
             {hasComments && (
-              <div className="flex items-start space-x-3 p-3 bg-gray-800/50 rounded-md border border-gray-700">
+              <div className="flex items-start space-x-3 p-3 bg-lia-btn-primary-bg/50 rounded-md border border-lia-border-medium">
                 <Checkbox
                   id="include-comments"
                   checked={includeComments}
                   onCheckedChange={(checked) => setIncludeComments(checked === true)}
-                  className="mt-0.5 border-gray-600 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                  className="mt-0.5 border-lia-border-medium data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
                 />
                 <div className="flex-1">
                   <Label
@@ -268,11 +268,11 @@ export function CreateJobWithCandidatesModal({
             )}
           </div>
 
-          <div className="bg-gray-100 border border-lia-border-subtle rounded-md p-3 mt-auto">
+          <div className="bg-lia-bg-tertiary border border-lia-border-subtle rounded-md p-3 mt-auto">
             <div className="flex items-start gap-2">
               <Briefcase className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
+                <p className="text-xs text-lia-text-secondary font-medium">
                   Próximo passo
                 </p>
                 <p className="text-micro text-lia-text-disabled mt-1">
@@ -283,17 +283,17 @@ export function CreateJobWithCandidatesModal({
           </div>
         </div>
 
-        <div className="border-t border-gray-700 p-4 flex items-center justify-end gap-3">
+        <div className="border-t border-lia-border-medium p-4 flex items-center justify-end gap-3">
           <Button
             variant="outline"
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium bg-transparent border-gray-600 text-lia-text-disabled hover:bg-gray-800 hover:text-lia-text-inverse hover:border-gray-500"
+            className="h-9 px-4 text-xs font-medium bg-transparent border-lia-border-medium text-lia-text-disabled hover:bg-lia-btn-primary-hover hover:text-lia-text-inverse hover:border-lia-border-medium"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleProceed}
-            className="h-9 px-5 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+            className="h-9 px-5 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             Criar Vaga
             <ChevronRight className="w-4 h-4 ml-1" />

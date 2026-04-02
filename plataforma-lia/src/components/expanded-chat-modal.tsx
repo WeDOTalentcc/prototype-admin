@@ -234,7 +234,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
-                      <span className="text-xs font-bold lia-text-strong" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
+                      <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
                     </div>
                     <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                       <div className="flex items-center gap-1">
@@ -298,7 +298,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsPanelOpen(true)}
-                className="h-7 px-2 lia-text-secondary hover:lia-text-base hover:bg-gray-100 gap-1"
+                className="h-7 px-2 lia-text-secondary hover:text-lia-text-secondary hover:bg-gray-100 gap-1"
                 title="Mostrar painel de etapas"
                 aria-label="Mostrar painel de etapas do wizard"
               >
@@ -591,7 +591,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Upload className="h-5 w-5 text-lia-text-secondary" />
               Analisar Arquivo
             </AlertDialogTitle>
             <AlertDialogDescription>

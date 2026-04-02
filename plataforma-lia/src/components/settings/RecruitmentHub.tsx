@@ -482,7 +482,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             {isEditingPipeline && hasStageChanges && (
-              <Badge variant="outline" className="bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
+              <Badge variant="outline" className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                 Alterações não salvas
               </Badge>
             )}
@@ -557,8 +557,8 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
       )}
 
       <div className="px-3 py-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-subtle">
-        <p className={`${textStyles.caption} lia-text-500`}>
-          <span className="font-semibold lia-text-700 dark:text-lia-text-secondary">Perguntas automáticas</span> (modelo de trabalho, localização, idiomas, regime de contratação) são geradas automaticamente pela LIA a partir dos campos de cada vaga — não precisam ser configuradas aqui.
+        <p className={`${textStyles.caption} text-lia-text-secondary`}>
+          <span className="font-semibold text-lia-text-primary">Perguntas automáticas</span> (modelo de trabalho, localização, idiomas, regime de contratação) são geradas automaticamente pela LIA a partir dos campos de cada vaga — não precisam ser configuradas aqui.
         </p>
       </div>
 
@@ -567,7 +567,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
-                <MessageSquare className="w-3.5 h-3.5 lia-text-700 dark:text-lia-text-secondary" />
+                <MessageSquare className="w-3.5 h-3.5 text-lia-text-primary" />
                 Catálogo de Perguntas de Elegibilidade
               </CardTitle>
               <p className={`${textStyles.description} mt-1`} aria-live="polite" aria-atomic="true">
@@ -671,9 +671,9 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                           </Badge>
                         </div>
                         {isExpanded ? (
-                          <ChevronUp className="w-3.5 h-3.5 lia-text-400" />
+                          <ChevronUp className="w-3.5 h-3.5 text-lia-text-tertiary" />
                         ) : (
-                          <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
+                          <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
                         )}
                       </button>
                       
@@ -733,7 +733,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                     <Button 
                       onClick={handleAddFromBank}
                       size="sm" 
-                      className={`w-full gap-1.5 rounded-md py-2 bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 ${textStyles.label}`}
+                      className={`w-full gap-1.5 rounded-md py-2 bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 ${textStyles.label}`}
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Adicionar {selectedBankQuestions.size} pergunta{selectedBankQuestions.size > 1 ? 's' : ''} selecionada{selectedBankQuestions.size > 1 ? 's' : ''}
@@ -829,7 +829,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                   <Button variant="ghost" size="sm" className={`py-1.5 px-2 ${textStyles.label}`} onClick={() => setShowQuestionForm(false)}>
                     Cancelar
                   </Button>
-                  <Button size="sm" className={`py-1.5 px-2 bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 ${textStyles.label}`} onClick={handleAddQuestion}>
+                  <Button size="sm" className={`py-1.5 px-2 bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 ${textStyles.label}`} onClick={handleAddQuestion}>
                     <Save className="w-3.5 h-3.5 mr-1" />
                     Salvar
                   </Button>
@@ -849,12 +849,12 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                 }`}
               >
                 <div 
-                  className={`flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 transition-opacity motion-reduce:transition-none ${!isEditingQuestions ? 'opacity-60' : ''} ${textStyles.labelSmall}`}
+                  className={`flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-white transition-opacity motion-reduce:transition-none ${!isEditingQuestions ? 'opacity-60' : ''} ${textStyles.labelSmall}`}
                 >
                   {index + 1}
                 </div>
                 <div className="flex-1">
- <p className={`${textStyles.body} transition-colors motion-reduce:transition-none ${isEditingQuestions ? 'lia-text-950' : 'lia-text-600 dark:text-lia-text-tertiary'}`}>
+ <p className={`${textStyles.body} transition-colors motion-reduce:transition-none ${isEditingQuestions ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`}>
                     {q.question}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -862,7 +862,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                       {q.type === 'text' ? 'Texto' : q.type === 'yesno' ? 'Sim/Não' : 'Escala'}
                     </Badge>
                     {q.required && (
-                      <Badge className={`text-micro py-0 px-1.5 bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
+                      <Badge className={`text-micro py-0 px-1.5 bg-gray-900 text-white ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
                     )}
                     {q.is_eliminatory && (
                       <Badge className={`text-micro py-0 px-1.5 bg-status-error/15 text-status-error border border-status-error/30 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
@@ -870,7 +870,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                       </Badge>
                     )}
                     {q.isDefault && (
-                      <span className="text-micro lia-text-400">Padrão</span>
+                      <span className="text-micro text-lia-text-tertiary">Padrão</span>
                     )}
                   </div>
                 </div>
@@ -882,7 +882,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                       className="h-7 w-7 p-0"
                       onClick={() => handleToggleRequired(q.id)}
                     >
-                      {q.required ? <Lock className="w-3.5 h-3.5 lia-text-400" /> : <Eye className="w-3.5 h-3.5 lia-text-400" />}
+                      {q.required ? <Lock className="w-3.5 h-3.5 text-lia-text-tertiary" /> : <Eye className="w-3.5 h-3.5 text-lia-text-tertiary" />}
                     </Button>
                     <Button
                       variant="ghost"

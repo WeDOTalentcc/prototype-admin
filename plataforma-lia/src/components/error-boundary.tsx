@@ -76,10 +76,10 @@ function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
           </svg>
         </div>
 
-        <h1 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
+        <h1 className="text-lg font-semibold text-lia-text-primary mb-2">
           Algo deu errado
         </h1>
-        <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary mb-6">
+        <p className="text-sm text-lia-text-tertiary mb-6">
           Ocorreu um erro inesperado. Nossa equipe foi notificada automaticamente.
         </p>
 
@@ -100,7 +100,7 @@ function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
           )}
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 text-sm font-medium border border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-secondary rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+            className="px-4 py-2 text-sm font-medium border border-lia-border-default dark:border-lia-border-default text-lia-text-secondary rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
           >
             Recarregar página
           </button>

@@ -185,12 +185,12 @@ export function ExcludedUniversitiesInput({
       <div className="flex items-center justify-between">
         {value.length > 0 && (
           <>
-            <span className="text-xs lia-text-500">
+            <span className="text-xs text-lia-text-secondary">
               {value.length} universit{value.length !== 1 ? 'ies' : 'y'} excluded
             </span>
             <button
               onClick={clearAll}
-              className="text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 font-medium"
+              className="text-xs text-lia-text-secondary hover:text-lia-text-primary font-medium"
             >
               Clear all
             </button>
@@ -200,7 +200,7 @@ export function ExcludedUniversitiesInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -213,7 +213,7 @@ export function ExcludedUniversitiesInput({
           />
           {isLoadingAI && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
             </div>
           )}
         </div>
@@ -245,7 +245,7 @@ export function ExcludedUniversitiesInput({
                     <span>{item.label}</span>
                   </div>
                 ) : (
-                  <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
+                  <span className="text-lia-text-primary">{item.label}</span>
                 )}
               </button>
             ))}

@@ -225,13 +225,13 @@ export function PredictiveAnalyticsTab() {
       case "high": return "text-wedo-orange bg-wedo-orange/15"
       case "medium": return "text-status-warning bg-status-warning/15"
       case "low": return "text-status-success bg-status-success/15"
-      default: return "lia-text-base bg-gray-100"
+      default: return "text-lia-text-secondary bg-gray-100"
     }
   }
 
   const getProbabilityColor = (prob: number) => {
     if (prob >= 80) return "text-status-success"
-    if (prob >= 60) return "text-lia-text-secondary dark:text-lia-text-tertiary"
+    if (prob >= 60) return "text-lia-text-secondary"
     if (prob >= 40) return "text-status-warning"
     return "text-status-error"
   }
@@ -244,7 +244,7 @@ export function PredictiveAnalyticsTab() {
           <h2 className="text-lg font-sans font-semibold text-lia-text-primary">
             Analytics Preditivo
           </h2>
-          <Badge variant="outline" className="text-lia-text-secondary dark:text-lia-text-tertiary border-gray-900">
+          <Badge variant="outline" className="text-lia-text-secondary border-gray-900">
             Powered by LIA
           </Badge>
         </div>
@@ -265,10 +265,10 @@ export function PredictiveAnalyticsTab() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs lia-text-base">Vagas Ativas</p>
+                <p className="text-xs text-lia-text-secondary">Vagas Ativas</p>
                 <p className="text-2xl font-bold text-lia-text-primary">{data.summary.total_active_jobs}</p>
               </div>
-              <BarChart3 className="w-8 h-8 lia-text-base opacity-50" />
+              <BarChart3 className="w-8 h-8 text-lia-text-secondary opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -277,10 +277,10 @@ export function PredictiveAnalyticsTab() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs lia-text-base">No Prazo</p>
+                <p className="text-xs text-lia-text-secondary">No Prazo</p>
                 <p className="text-2xl font-bold text-lia-text-primary">{data.summary.jobs_on_track}</p>
               </div>
-              <CheckCircle className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary opacity-50" />
+              <CheckCircle className="w-8 h-8 text-lia-text-secondary opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -289,10 +289,10 @@ export function PredictiveAnalyticsTab() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs lia-text-base">Em Risco</p>
-                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{data.summary.jobs_at_risk}</p>
+                <p className="text-xs text-lia-text-secondary">Em Risco</p>
+                <p className="text-2xl font-bold text-lia-text-primary">{data.summary.jobs_at_risk}</p>
               </div>
-              <AlertTriangle className="w-8 h-8 lia-text-base opacity-50" />
+              <AlertTriangle className="w-8 h-8 text-lia-text-secondary opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -301,10 +301,10 @@ export function PredictiveAnalyticsTab() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs lia-text-base">Candidatos em Risco</p>
-                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{data.summary.high_risk_candidates}</p>
+                <p className="text-xs text-lia-text-secondary">Candidatos em Risco</p>
+                <p className="text-2xl font-bold text-lia-text-primary">{data.summary.high_risk_candidates}</p>
               </div>
-              <XCircle className="w-8 h-8 lia-text-base opacity-50" />
+              <XCircle className="w-8 h-8 text-lia-text-secondary opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -313,10 +313,10 @@ export function PredictiveAnalyticsTab() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs lia-text-base">Quick Wins</p>
+                <p className="text-xs text-lia-text-secondary">Quick Wins</p>
                 <p className="text-2xl font-bold text-lia-text-primary">{data.summary.quick_win_opportunities}</p>
               </div>
-              <Zap className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary opacity-50" />
+              <Zap className="w-8 h-8 text-lia-text-secondary opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -354,7 +354,7 @@ export function PredictiveAnalyticsTab() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-sans flex items-center gap-2">
-                <Activity className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Activity className="w-4 h-4 text-lia-text-secondary" />
                 Insights da LIA
               </CardTitle>
             </CardHeader>
@@ -374,11 +374,11 @@ export function PredictiveAnalyticsTab() {
                     ) : insight.type === "success" ? (
                       <CheckCircle className="w-5 h-5 text-status-success mt-0.5" />
                     ) : (
-                      <AlertCircle className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5" />
+                      <AlertCircle className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                     )}
                     <div className="flex-1">
                       <p className="font-medium text-sm text-lia-text-primary">{insight.title}</p>
-                      <p className="text-xs lia-text-base mt-0.5">{insight.description}</p>
+                      <p className="text-xs text-lia-text-secondary mt-0.5">{insight.description}</p>
                       <Button variant="link" size="sm" className="h-auto p-0 mt-1 text-xs">
                         {insight.action} <ChevronRight className="w-3 h-3 ml-1" />
                       </Button>
@@ -401,16 +401,16 @@ export function PredictiveAnalyticsTab() {
                 {data.predictions.pipeline_health.map((week) => (
                   <div key={week.week} className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="lia-text-base">Semana {week.week}</span>
+                      <span className="text-lia-text-secondary">Semana {week.week}</span>
                       <span className="font-medium">
                         {week.predicted_hires} contratações previstas
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Progress value={week.confidence} className="flex-1 h-2" />
-                      <span className="text-xs lia-text-base w-12">{week.confidence}%</span>
+                      <span className="text-xs text-lia-text-secondary w-12">{week.confidence}%</span>
                     </div>
-                    <p className="text-xs lia-text-base">
+                    <p className="text-xs text-lia-text-secondary">
                       {week.predicted_interviews} entrevistas previstas
                     </p>
                   </div>
@@ -439,7 +439,7 @@ export function PredictiveAnalyticsTab() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <p className="font-medium text-sm">{candidate.candidate_name}</p>
-                      <p className="text-xs lia-text-base">{candidate.job_title}</p>
+                      <p className="text-xs text-lia-text-secondary">{candidate.job_title}</p>
                     </div>
                     <Badge className={getRiskColor(candidate.risk_level)}>
                       {candidate.risk_score}% risco
@@ -480,11 +480,11 @@ export function PredictiveAnalyticsTab() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <p className="font-medium text-sm">{job.job_title}</p>
-                      <p className="text-xs lia-text-base">{job.current_stage}</p>
+                      <p className="text-xs text-lia-text-secondary">{job.current_stage}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-wedo-orange">{job.estimated_days} dias</p>
-                      <p className="text-xs lia-text-base">{job.confidence}% confiança</p>
+                      <p className="text-xs text-lia-text-secondary">{job.confidence}% confiança</p>
                     </div>
                   </div>
                   {job.bottleneck && (
@@ -504,7 +504,7 @@ export function PredictiveAnalyticsTab() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-sans flex items-center gap-2">
-              <Zap className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Zap className="w-4 h-4 text-lia-text-secondary" />
               Quick Wins - Alta Probabilidade de Contratação
             </CardTitle>
           </CardHeader>
@@ -518,18 +518,18 @@ export function PredictiveAnalyticsTab() {
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <p className="font-medium">{candidate.candidate_name}</p>
-                      <p className="text-sm lia-text-base">{candidate.job_title}</p>
+                      <p className="text-sm text-lia-text-secondary">{candidate.job_title}</p>
                     </div>
                     <div className="text-right">
                       <p className={`text-2xl font-bold ${getProbabilityColor(candidate.probability)}`}>
                         {candidate.probability}%
                       </p>
-                      <p className="text-xs lia-text-base">probabilidade</p>
+                      <p className="text-xs text-lia-text-secondary">probabilidade</p>
                     </div>
                   </div>
                   
                   <div className="mb-3">
-                    <p className="text-xs lia-text-base mb-1">Pontos Fortes</p>
+                    <p className="text-xs text-lia-text-secondary mb-1">Pontos Fortes</p>
                     <div className="flex flex-wrap gap-1">
                       {candidate.top_strengths.map((strength, idx) => (
                         <Badge key={idx} variant="outline" className="text-xs bg-status-success/15 text-status-success border-status-success/30">
@@ -540,7 +540,7 @@ export function PredictiveAnalyticsTab() {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <p className="text-xs lia-text-base">{candidate.recommendation}</p>
+                    <p className="text-xs text-lia-text-secondary">{candidate.recommendation}</p>
                     <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
                       Ação <ChevronRight className="w-3 h-3 ml-1" />
                     </Button>

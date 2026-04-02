@@ -85,8 +85,8 @@ export function LiaFieldToggle({
                 "inline-flex items-center justify-center w-5 h-5 rounded-full transition-colors",
                 !localIsActive && "opacity-40 cursor-not-allowed",
                 localIsActive && hasInstruction
- ? "lia-text-700 dark:text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated"
-                  : "bg-gray-100 lia-text-500 hover:bg-gray-200 hover:lia-text-700"
+ ? "text-lia-text-primary hover:bg-gray-200 dark:bg-lia-bg-elevated"
+                  : "bg-gray-100 text-lia-text-secondary hover:bg-gray-200 hover:text-lia-text-primary"
               )}
               title={localIsActive ? (hasInstruction ? "Editar instrução" : "Adicionar instrução") : "Campo desativado"}
             >
@@ -102,18 +102,18 @@ export function LiaFieldToggle({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bot className="w-4 h-4 text-wedo-cyan" />
-                  <span className="text-sm font-semibold lia-text-950">Instrução para LIA</span>
+                  <span className="text-sm font-semibold text-lia-text-primary">Instrução para LIA</span>
                 </div>
                 <button
                   onClick={() => setIsPopoverOpen(false)}
-                  className="lia-text-500 hover:lia-text-700 transition-colors motion-reduce:transition-none"
+                  className="text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="text-xs lia-text-600">
-                Campo: <span className="lia-text-800 font-medium">{fieldDef?.label || fieldKey}</span>
+              <div className="text-xs text-lia-text-secondary">
+                Campo: <span className="text-lia-text-primary font-medium">{fieldDef?.label || fieldKey}</span>
               </div>
 
               <Textarea
@@ -125,7 +125,7 @@ export function LiaFieldToggle({
 
               {examples.length > 0 && (
                 <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
-                  <div className="flex items-center gap-1 text-xs font-medium uppercase lia-text-600">
+                  <div className="flex items-center gap-1 text-xs font-medium uppercase text-lia-text-secondary">
                     <Info className="w-3 h-3" />
                     <span>Exemplos</span>
                   </div>
@@ -134,7 +134,7 @@ export function LiaFieldToggle({
                       <button
                         key={idx}
                         onClick={() => setInstruction(example)}
-                        className="block w-full text-left text-xs lia-text-600 hover:lia-text-700 dark:hover:lia-text-300 p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
+                        className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
                       >
                         "{example}"
                       </button>
@@ -148,7 +148,7 @@ export function LiaFieldToggle({
                   variant="outline"
                   size="sm"
                   onClick={() => setIsPopoverOpen(false)}
-                  className="h-9 px-4 text-xs font-medium border-lia-border-subtle lia-text-700 hover:bg-gray-50"
+                  className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-primary hover:bg-gray-50"
                 >
                   Cancelar
                 </Button>
@@ -187,7 +187,7 @@ export function LiaFieldToggle({
           className="data-[state=checked]:bg-gray-900 dark:data-[state=checked]:bg-gray-50"
         />
         {showLabel && (
-          <span className="text-xs lia-text-700">
+          <span className="text-xs text-lia-text-primary">
             {localIsActive ? 'Ativo' : 'Inativo'}
           </span>
         )}
@@ -202,8 +202,8 @@ export function LiaFieldToggle({
               "inline-flex items-center gap-1.5 px-2 py-1 rounded-full transition-colors text-xs",
               !localIsActive && "opacity-40 cursor-not-allowed",
               localIsActive && hasInstruction
- ? "lia-text-700 dark:text-lia-text-secondary hover:bg-gray-100"
-                : "bg-gray-100 lia-text-600 hover:bg-gray-200"
+ ? "text-lia-text-primary hover:bg-gray-100"
+                : "bg-gray-100 text-lia-text-secondary hover:bg-gray-200"
             )}
             title={localIsActive ? (hasInstruction ? "Editar instrução" : "Adicionar instrução") : "Campo desativado"}
           >
@@ -227,18 +227,18 @@ export function LiaFieldToggle({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bot className="w-4 h-4 text-wedo-cyan" />
-                <span className="text-sm font-semibold lia-text-950">Instrução para LIA</span>
+                <span className="text-sm font-semibold text-lia-text-primary">Instrução para LIA</span>
               </div>
               <button
                 onClick={() => setIsPopoverOpen(false)}
-                className="lia-text-500 hover:lia-text-700 transition-colors motion-reduce:transition-none"
+                className="text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="text-xs lia-text-600">
-              Campo: <span className="lia-text-800 font-medium">{fieldDef?.label || fieldKey}</span>
+            <div className="text-xs text-lia-text-secondary">
+              Campo: <span className="text-lia-text-primary font-medium">{fieldDef?.label || fieldKey}</span>
             </div>
 
             <Textarea
@@ -250,7 +250,7 @@ export function LiaFieldToggle({
 
             {examples.length > 0 && (
               <div className="space-y-2 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
-                <div className="flex items-center gap-1 text-xs font-medium uppercase lia-text-600">
+                <div className="flex items-center gap-1 text-xs font-medium uppercase text-lia-text-secondary">
                   <Info className="w-3 h-3" />
                   <span>Exemplos</span>
                 </div>
@@ -259,7 +259,7 @@ export function LiaFieldToggle({
                     <button
                       key={idx}
                       onClick={() => setInstruction(example)}
-                      className="block w-full text-left text-xs lia-text-600 hover:lia-text-700 dark:hover:lia-text-300 p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
+                      className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
                     >
                       "{example}"
                     </button>
@@ -273,7 +273,7 @@ export function LiaFieldToggle({
                 variant="outline"
                 size="sm"
                 onClick={() => setIsPopoverOpen(false)}
-                className="h-9 px-4 text-xs font-medium border-lia-border-subtle lia-text-700 hover:bg-gray-50"
+                className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-primary hover:bg-gray-50"
               >
                 Cancelar
               </Button>

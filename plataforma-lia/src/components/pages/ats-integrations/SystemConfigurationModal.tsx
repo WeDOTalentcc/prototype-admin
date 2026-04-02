@@ -25,7 +25,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
       <div className="bg-lia-bg-primary rounded-md w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
           <div>
-            <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{system.name}</h2>
+            <h2 className="text-xl font-semibold text-lia-text-primary">{system.name}</h2>
             <p className="text-sm text-lia-text-secondary">Configuração de integração</p>
           </div>
           <Button variant="ghost" onClick={onClose}>×</Button>
@@ -60,7 +60,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
               {system.type === 'sap' && (
                 <>
                   <div>
-                    <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração SAP SuccessFactors</h4>
+                    <h4 className="text-xs font-medium text-lia-text-primary mb-4">Configuração SAP SuccessFactors</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[
                         { label: 'URL do Servidor', type: 'url', placeholder: 'https://api.successfactors.com/v2' },
@@ -69,19 +69,19 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                         { label: 'Client Secret', type: 'password', placeholder: '••••••••••••••••' }
                       ].map(field => (
                         <div key={field.label}>
-                          <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">{field.label}</label>
+                          <label className="block text-sm font-medium text-lia-text-primary mb-2">{field.label}</label>
                           <input type={field.type} placeholder={field.placeholder} className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
                         </div>
                       ))}
                     </div>
                   </div>
                   <div className="border border-lia-border-subtle rounded-md p-4">
-                    <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Módulos para Sincronização</h5>
+                    <h5 className="font-medium text-lia-text-primary mb-3">Módulos para Sincronização</h5>
                     <div className="grid grid-cols-2 gap-2">
                       {['Recruiting', 'Candidate Profile', 'Job Requisition', 'Interview', 'Offer Letter'].map(mod => (
                         <label key={mod} className="flex items-center gap-2">
                           <input type="checkbox" defaultChecked className="rounded-md border-lia-border-default" />
-                          <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{mod}</span>
+                          <span className="text-sm text-lia-text-primary">{mod}</span>
                         </label>
                       ))}
                     </div>
@@ -90,7 +90,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
               )}
               {system.type === 'workday' && (
                 <div>
-                  <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração Workday HCM</h4>
+                  <h4 className="text-xs font-medium text-lia-text-primary mb-4">Configuração Workday HCM</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
                       { label: 'Tenant URL', type: 'url', placeholder: 'https://wd2-impl-services1.workday.com', span: false },
@@ -98,7 +98,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                       { label: 'Password', type: 'password', placeholder: '••••••••••••••••', span: true }
                     ].map(f => (
                       <div key={f.label} className={f.span ? 'md:col-span-2' : ''}>
-                        <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">{f.label}</label>
+                        <label className="block text-sm font-medium text-lia-text-primary mb-2">{f.label}</label>
                         <input type={f.type} placeholder={f.placeholder} className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
                       </div>
                     ))}
@@ -107,14 +107,14 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
               )}
               {system.type === 'bamboohr' && (
                 <div>
-                  <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Configuração BambooHR</h4>
+                  <h4 className="text-xs font-medium text-lia-text-primary mb-4">Configuração BambooHR</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
                       { label: 'Subdomain', type: 'text', placeholder: 'sua-empresa' },
                       { label: 'API Key', type: 'password', placeholder: '••••••••••••••••' }
                     ].map(f => (
                       <div key={f.label}>
-                        <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">{f.label}</label>
+                        <label className="block text-sm font-medium text-lia-text-primary mb-2">{f.label}</label>
                         <input type={f.type} placeholder={f.placeholder} className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-border-strong/20 focus:border-lia-border-strong" />
                       </div>
                     ))}
@@ -128,7 +128,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                   {connectionStatus === 'success' && <CheckCircle className="w-5 h-5 text-status-success" />}
                   {connectionStatus === 'error' && <XCircle className="w-5 h-5 text-status-error" />}
                   <div>
-                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
+                    <p className="font-medium text-lia-text-primary">
                       {connectionStatus === 'idle' && 'Pronto para testar conexão'}
                       {connectionStatus === 'testing' && 'Testando conexão...'}
                       {connectionStatus === 'success' && 'Conexão estabelecida com sucesso!'}
@@ -154,7 +154,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
           {selectedTab === 'mapping' && (
             <div className="space-y-6">
               <div>
-                <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Templates de Mapeamento</h4>
+                <h4 className="text-xs font-medium text-lia-text-primary mb-4">Templates de Mapeamento</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   {mappingTemplates.map(template => (
                     <div
@@ -166,7 +166,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                       }`}
                       onClick={() => applyTemplate(template.id)}
                     >
-                      <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{template.name}</h5>
+                      <h5 className="font-medium text-lia-text-primary">{template.name}</h5>
                       <p className="text-sm text-lia-text-secondary mt-1">{template.description}</p>
                       <p className="text-xs text-lia-text-secondary mt-2">{template.mappings.length} campos mapeados</p>
                     </div>
@@ -175,10 +175,10 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
               </div>
 
               <div>
-                <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">Mapeamento de Campos</h4>
+                <h4 className="text-xs font-medium text-lia-text-primary mb-4">Mapeamento de Campos</h4>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
-                    <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3 flex items-center gap-2">
+                    <h5 className="font-medium text-lia-text-primary mb-3 flex items-center gap-2">
                       <Server className="w-4 h-4" />{system.name} (Origem)
                     </h5>
                     <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
@@ -197,7 +197,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                               <div className="flex items-center gap-2">
                                 <span className="text-xs">{getFieldTypeIcon(field.type)}</span>
                                 <div>
-                                  <p className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">{field.name}</p>
+                                  <p className="font-medium text-lia-text-primary text-sm">{field.name}</p>
                                   <p className="text-xs text-lia-text-secondary">{field.description}</p>
                                 </div>
                               </div>
@@ -212,7 +212,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                     </div>
                   </div>
                   <div>
-                    <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3 flex items-center gap-2">
+                    <h5 className="font-medium text-lia-text-primary mb-3 flex items-center gap-2">
                       <Database className="w-4 h-4" />Plataforma LIA (Destino)
                     </h5>
                     <div className="space-y-2 max-h-96 overflow-y-auto border border-lia-border-subtle rounded-md p-3">
@@ -233,7 +233,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
                               <div className="flex items-center gap-2">
                                 <span className="text-xs">{getFieldTypeIcon(field.type)}</span>
                                 <div>
-                                  <p className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">{field.name}</p>
+                                  <p className="font-medium text-lia-text-primary text-sm">{field.name}</p>
                                   <p className="text-xs text-lia-text-secondary">{field.description}</p>
                                   {mapping && <p className="text-xs text-lia-text-tertiary mt-1">← Mapeado de: {mapping.sourceFieldName}</p>}
                                 </div>
@@ -260,10 +260,10 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
 
               {mappings.length > 0 && (
                 <div className="border border-lia-border-subtle rounded-md p-4">
-                  <h5 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">Resumo do Mapeamento</h5>
+                  <h5 className="font-medium text-lia-text-primary mb-3">Resumo do Mapeamento</h5>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{mappings.length}</p>
+                      <p className="text-2xl font-bold text-lia-text-primary">{mappings.length}</p>
                       <p className="text-sm text-lia-text-secondary">Campos Mapeados</p>
                     </div>
                     <div className="text-center">
@@ -296,8 +296,8 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
               )}
 
               <div className="bg-lia-bg-secondary border border-lia-border-default rounded-md p-4">
-                <h5 className="font-medium text-lia-text-secondary dark:text-lia-text-secondary mb-2">Como usar o mapeamento:</h5>
-                <ul className="text-sm text-lia-text-secondary dark:text-lia-text-secondary space-y-1">
+                <h5 className="font-medium text-lia-text-secondary mb-2">Como usar o mapeamento:</h5>
+                <ul className="text-sm text-lia-text-secondary space-y-1">
                   <li>• Arraste campos da origem para os campos de destino correspondentes</li>
                   <li>• Use templates pré-configurados para mapeamentos comuns</li>
                   <li>• Verifique a porcentagem de confiança de cada mapeamento</li>
@@ -311,7 +311,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
           {selectedTab === 'sync' && (
             <div className="text-center py-12">
               <RefreshCw className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-              <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Configuração de Sincronização</h3>
+              <h3 className="text-xs font-medium text-lia-text-primary mb-2">Configuração de Sincronização</h3>
               <p className="text-lia-text-secondary">Configurações de frequência e filtros em desenvolvimento</p>
             </div>
           )}
@@ -319,7 +319,7 @@ export function SystemConfigurationModal({ system, onClose }: SystemConfiguratio
           {selectedTab === 'webhooks' && (
             <div className="text-center py-12">
               <Zap className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-              <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Configuração de Webhooks</h3>
+              <h3 className="text-xs font-medium text-lia-text-primary mb-2">Configuração de Webhooks</h3>
               <p className="text-lia-text-secondary">Sistema de eventos em tempo real em desenvolvimento</p>
             </div>
           )}

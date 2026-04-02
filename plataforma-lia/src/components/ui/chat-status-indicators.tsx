@@ -33,7 +33,7 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
           </span>
         </div>
         {message && (
-          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+          <p className="text-xs text-lia-text-secondary mt-1">
             {message}
           </p>
         )}
@@ -95,8 +95,8 @@ export const ProgressSteps = ({ steps, currentStep }: {
                   <span className={`text-sm font-medium ${
  isCompleted ? 'text-lia-text-primary' :
                     isProcessing ? 'text-lia-text-primary' :
-                    isError ? 'text-lia-text-primary dark:text-lia-text-primary' :
-                    'text-lia-text-secondary dark:text-lia-text-tertiary'
+                    isError ? 'text-lia-text-primary' :
+                    'text-lia-text-secondary'
                   }`}>
                     {step.label}
                   </span>
@@ -140,7 +140,7 @@ export const CommandExecution = ({
           status === "completed" ? 'bg-lia-text-secondary' :
           'bg-lia-text-secondary'
         }`} />
-        <span className="text-lia-text-primary dark:text-lia-text-primary text-xs">Executando comando:</span>
+        <span className="text-lia-text-primary text-xs">Executando comando:</span>
       </div>
 
       <div className="text-lia-text-primary mb-2">
@@ -148,14 +148,14 @@ export const CommandExecution = ({
       </div>
 
       {output && (
-        <div className="text-lia-text-secondary dark:text-lia-text-tertiary text-xs">
+        <div className="text-lia-text-secondary text-xs">
           {output}
         </div>
       )}
 
       {status === "executing" && (
         <div className="flex items-center gap-2 mt-2" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           <span className="text-xs text-lia-text-primary">Processando...</span>
         </div>
       )}
@@ -179,19 +179,19 @@ export const FileCreationIndicator = ({
     >
       <div className="flex items-center justify-center w-8 h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full" role="status" aria-live="polite" aria-label="Carregando...">
         {status === "creating" ? (
-          <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+          <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
         ) : (
           <CheckCircle className="w-4 h-4 text-lia-text-primary" />
         )}
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <FileText className="w-4 h-4 text-lia-text-secondary" />
           <span className="text-sm font-medium text-lia-text-primary">
             {status === "creating" ? "Criando" : "Criado"}: {fileName}
           </span>
         </div>
-        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+        <p className="text-xs text-lia-text-secondary">
           Tipo: {fileType}
         </p>
       </div>
@@ -250,14 +250,14 @@ export const CompletionMessage = ({
               key={star}
               onClick={() => handleRating(star)}
               className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${
- star <= rating ? 'text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
+ star <= rating ? 'text-lia-text-primary' : 'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
               }`}
             >
               <Star className={`w-5 h-5 ${star <= rating ? 'fill-current' : ''}`} />
             </button>
           ))}
           {hasRated && (
-            <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary ml-2">
+            <span className="text-sm text-lia-text-secondary ml-2">
               Obrigada pelo feedback!
             </span>
           )}
@@ -277,11 +277,11 @@ export const CompletionMessage = ({
                   onClick={() => onFollowUp?.(action.id)}
                   className="w-full flex items-center gap-3 p-3 text-left hover:bg-lia-interactive-hover rounded-md transition-colors motion-reduce:transition-none group"
                 >
-                  <Icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled" />
+                  <Icon className="w-4 h-4 text-lia-text-secondary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled" />
                   <span className="text-sm text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
                     {action.label}
                   </span>
-                  <ArrowRight className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled ml-auto" />
+                  <ArrowRight className="w-3 h-3 text-lia-text-secondary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled ml-auto" />
                 </button>
               )
             })}

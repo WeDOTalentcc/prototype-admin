@@ -213,8 +213,8 @@ export function AlertSettingsModal({
     switch (severity) {
       case 'critical': return <AlertTriangle className="w-4 h-4 text-status-error" />
       case 'warning': return <AlertTriangle className="w-4 h-4 text-status-warning" />
-      case 'info': return <Info className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-      default: return <Info className="w-4 h-4 lia-text-base" />
+      case 'info': return <Info className="w-4 h-4 text-lia-text-secondary" />
+      default: return <Info className="w-4 h-4 text-lia-text-secondary" />
     }
   }
 
@@ -222,8 +222,8 @@ export function AlertSettingsModal({
     switch (severity) {
       case 'critical': return 'bg-status-error/10 text-status-error border-status-error/30'
       case 'warning': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
-      case 'info': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
-      default: return 'bg-gray-100 lia-text-strong border-lia-border-subtle'
+      case 'info': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
+      default: return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -236,7 +236,7 @@ export function AlertSettingsModal({
             <h2 className="text-lg font-semibold font-['Open_Sans'] text-lia-text-primary">
               Configurações de Alertas KPI
             </h2>
-            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-['Open_Sans']">
+            <p className="text-xs text-lia-text-secondary font-['Open_Sans']">
               Gerencie regras de monitoramento e notificações automáticas
             </p>
           </div>
@@ -325,11 +325,11 @@ export function AlertSettingsModal({
                         </div>
                       </div>
 
-                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
+                      <div className="text-sm text-lia-text-secondary mb-2">
                         {metrics.find(m => m.value === rule.metric)?.label} {rule.operator} {rule.threshold}
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <div className="flex items-center gap-4 text-xs text-lia-text-secondary">
                         <span className="flex items-center gap-1">
                           <RefreshCw className="w-3 h-3" />
                           {rule.frequency}
@@ -339,7 +339,7 @@ export function AlertSettingsModal({
                           {rule.departments.includes('all') ? 'Todos' : rule.departments.join(', ')}
                         </span>
                         <div className="flex items-center gap-1">
-                          {rule.notifications.email && <Mail className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />}
+                          {rule.notifications.email && <Mail className="w-3 h-3 text-lia-text-secondary" />}
                           {rule.notifications.push && <Smartphone className="w-3 h-3 text-status-success" />}
                           {rule.notifications.inApp && <Monitor className="w-3 h-3 text-wedo-purple" />}
                         </div>
@@ -349,8 +349,8 @@ export function AlertSettingsModal({
                 ))}
 
                 {rules.length === 0 && (
-                  <div className="text-center py-8 lia-text-base">
-                    <AlertTriangle className="w-12 h-12 mx-auto mb-4 lia-text-base" />
+                  <div className="text-center py-8 text-lia-text-secondary">
+                    <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-lia-text-secondary" />
                     <p>Nenhuma regra configurada</p>
                     <p className="text-sm">Adicione regras para monitorar KPIs automaticamente</p>
                   </div>
@@ -380,7 +380,7 @@ export function AlertSettingsModal({
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
+                        <label className="text-sm font-medium text-lia-text-primary block mb-2">
                           Nome da Regra
                         </label>
                         <input
@@ -393,7 +393,7 @@ export function AlertSettingsModal({
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
+                        <label className="text-sm font-medium text-lia-text-primary block mb-2">
                           Métrica
                         </label>
                         <select
@@ -411,7 +411,7 @@ export function AlertSettingsModal({
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
+                          <label className="text-sm font-medium text-lia-text-primary block mb-2">
                             Operador
                           </label>
                           <select
@@ -428,7 +428,7 @@ export function AlertSettingsModal({
                         </div>
 
                         <div>
-                          <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
+                          <label className="text-sm font-medium text-lia-text-primary block mb-2">
                             Valor Limite
                           </label>
                           <input
@@ -442,7 +442,7 @@ export function AlertSettingsModal({
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
+                          <label className="text-sm font-medium text-lia-text-primary block mb-2">
                             Severidade
                           </label>
                           <select
@@ -457,7 +457,7 @@ export function AlertSettingsModal({
                         </div>
 
                         <div>
-                          <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary block mb-2">
+                          <label className="text-sm font-medium text-lia-text-primary block mb-2">
                             Frequência
                           </label>
                           <select
@@ -512,7 +512,7 @@ export function AlertSettingsModal({
                       <div className="space-y-4">
                         <label className="flex items-center justify-between">
                           <span className="flex items-center gap-2">
-                            <Mail className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                            <Mail className="w-4 h-4 text-lia-text-secondary" />
                             Email
                           </span>
                           <button
@@ -592,10 +592,10 @@ export function AlertSettingsModal({
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12 text-lia-text-secondary dark:text-lia-text-tertiary">
-                  <Settings className="w-12 h-12 mx-auto mb-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <div className="text-center py-12 text-lia-text-secondary">
+                  <Settings className="w-12 h-12 mx-auto mb-4 text-lia-text-secondary" />
                   <p className="dark:text-lia-text-secondary">Selecione uma regra para editar</p>
-                  <p className="text-sm dark:text-lia-text-tertiary">ou adicione uma nova regra para começar</p>
+                  <p className="text-sm">ou adicione uma nova regra para começar</p>
                 </div>
               )}
             </div>

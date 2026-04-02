@@ -40,12 +40,12 @@ import {
 const BENEFIT_CATEGORIES = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error" },
   { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange" },
-  { id: "transport", name: "Transporte", icon: Car, color: "lia-text-700 dark:text-lia-text-secondary" },
+  { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-primary" },
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success" },
-  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "lia-text-600 dark:text-lia-text-tertiary" },
+  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-secondary" },
   { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta" },
-  { id: "security", name: "Segurança", icon: Shield, color: "lia-text-800 dark:text-lia-text-primary" },
+  { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-primary" },
 ]
 
 const VALUE_TYPES = [
@@ -351,7 +351,7 @@ export function BenefitFormModal({
           <Button
             onClick={() => editingBenefit && onSave(editingBenefit)}
             disabled={isSaving || !editingBenefit?.name}
-            className="rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+            className="rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
           >
             {isSaving ? (
               <>

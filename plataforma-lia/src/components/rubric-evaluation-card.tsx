@@ -84,7 +84,7 @@ export function RubricEvaluationCard({
       case 'exceeds':
         return <Check className="w-3.5 h-3.5 text-status-success" />
       case 'meets':
-        return <Check className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+        return <Check className="w-3.5 h-3.5 text-lia-text-secondary" />
       case 'partial':
         return <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
       case 'missing':
@@ -105,7 +105,7 @@ export function RubricEvaluationCard({
       case 'missing':
         return 'text-status-error'
       default:
-        return 'lia-text-base'
+        return 'text-lia-text-secondary'
     }
   }
 
@@ -179,7 +179,7 @@ export function RubricEvaluationCard({
       <div className="flex items-center justify-between border-b border-lia-border-subtle/50 pb-2">
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4" style={{color: ACCENT_COLOR}} />
-          <span className={`${textStyles.subtitle} lia-text-strong`}>
+          <span className={`${textStyles.subtitle} text-lia-text-primary`}>
             Análise CV vs Vaga
           </span>
         </div>
@@ -191,7 +191,7 @@ export function RubricEvaluationCard({
       </div>
 
       <div className="flex items-center justify-between">
-        <p className={`${textStyles.bodySmall} text-lia-text-primary dark:text-lia-text-primary`}>
+        <p className={`${textStyles.bodySmall} text-lia-text-primary`}>
           <span className="font-medium">Vaga:</span> {jobTitle}
         </p>
         {jobCode && (
@@ -203,7 +203,7 @@ export function RubricEvaluationCard({
 
       <div className="space-y-1.5">
         <div className="flex items-center gap-3">
-          <span className={`${textStyles.label} lia-text-base min-w-[45px]`}>Score:</span>
+          <span className={`${textStyles.label} text-lia-text-secondary min-w-[45px]`}>Score:</span>
           <div className="flex-1 h-2.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden max-w-[160px]">
             <div 
               className="h-full rounded-full transition-[width,height] duration-500 ease-out"
@@ -238,7 +238,7 @@ export function RubricEvaluationCard({
                     <span className={`${textStyles.bodySmall} font-medium ${getRubricColor(level)}`}>
                       {getRubricLabel(level)}:
                     </span>
-                    <span className={`${textStyles.bodySmall} lia-text-strong`}>
+                    <span className={`${textStyles.bodySmall} text-lia-text-primary`}>
                       {reqName}
                     </span>
                     {req.priority && (
@@ -248,7 +248,7 @@ export function RubricEvaluationCard({
                     )}
                   </div>
                   {req.evidence && isExpanded && (
-                    <p className={`${textStyles.caption} lia-text-base mt-0.5 line-clamp-1`}>
+                    <p className={`${textStyles.caption} text-lia-text-secondary mt-0.5 line-clamp-1`}>
                       {req.evidence}
                     </p>
                   )}
@@ -260,7 +260,7 @@ export function RubricEvaluationCard({
           {hasMoreRequirements && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className={`flex items-center gap-1 ${textStyles.caption} lia-text-secondary hover:lia-text-base transition-colors motion-reduce:transition-none pl-1 pt-1`}
+              className={`flex items-center gap-1 ${textStyles.caption} lia-text-secondary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none pl-1 pt-1`}
             >
               {isExpanded ? (
                 <>
@@ -285,7 +285,7 @@ export function RubricEvaluationCard({
             <span className={`${textStyles.caption} lia-text-secondary font-medium block mb-0.5`}>
               Resumo LIA:
             </span>
-            <p className={`${textStyles.bodySmall} text-lia-text-primary dark:text-lia-text-primary ${isExpanded ? '' : 'line-clamp-2'} italic`}>
+            <p className={`${textStyles.bodySmall} text-lia-text-primary ${isExpanded ? '' : 'line-clamp-2'} italic`}>
               "{displaySummary}"
             </p>
           </div>
@@ -332,7 +332,7 @@ export function RubricEvaluationCard({
         <Button
           variant="ghost"
           size="sm"
-          className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary`}
+          className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary`}
           onClick={(e) => {
             e.stopPropagation()
             onViewAnalysis?.()

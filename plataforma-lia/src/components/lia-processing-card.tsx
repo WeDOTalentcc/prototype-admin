@@ -53,25 +53,25 @@ const stateConfig: Record<LIAProcessingState, {
 }> = {
   thinking: {
     icon: Brain,
-    color: 'text-lia-text-secondary dark:text-lia-text-tertiary',
+    color: 'text-lia-text-secondary',
     bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     label: 'Pensando...'
   },
   analyzing: {
     icon: BarChart3,
-    color: 'text-lia-text-secondary dark:text-lia-text-tertiary',
+    color: 'text-lia-text-secondary',
     bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     label: 'Analisando...'
   },
   searching: {
     icon: Search,
-    color: 'text-lia-text-secondary dark:text-lia-text-tertiary',
+    color: 'text-lia-text-secondary',
     bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     label: 'Buscando...'
   },
   generating: {
     icon: Brain,
-    color: 'text-lia-text-secondary dark:text-lia-text-tertiary',
+    color: 'text-lia-text-secondary',
     bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
     label: 'Gerando...'
   },
@@ -130,8 +130,8 @@ export function LIATaskStepItem({
             <span className={cn(
  "text-sm font-medium",
               step.isCompleted 
-                ? "text-lia-text-secondary dark:text-lia-text-tertiary" 
-                : "text-lia-text-primary dark:text-lia-text-primary"
+                ? "text-lia-text-secondary" 
+                : "text-lia-text-primary"
             )}>
               {step.label}
             </span>
@@ -149,7 +149,7 @@ export function LIATaskStepItem({
         </div>
 
         {hasDetails && (
-          <button className="p-1 lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted">
+          <button className="p-1 lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted">
             {step.isExpanded ? (
               <ChevronUp className="w-4 h-4" />
             ) : (
@@ -219,7 +219,7 @@ export function LIAProcessingCard({
               )}
             </div>
             <div className="text-left">
-              <span className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+              <span className="text-sm font-semibold text-lia-text-primary">
                 {allCompleted ? "Processamento concluído" : "LIA processando..."}
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -295,7 +295,7 @@ export function LIAFeedbackButtons({
  "p-1.5 rounded-md transition-colors",
           feedback === 'positive'
             ? "bg-status-success/15 text-status-success dark:text-status-success"
-            : "lia-text-secondary hover:lia-text-base hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-muted"
+            : "lia-text-secondary hover:text-lia-text-secondary hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-muted"
         )}
         title="Resposta útil"
       >
@@ -307,7 +307,7 @@ export function LIAFeedbackButtons({
  "p-1.5 rounded-md transition-colors",
           feedback === 'negative'
             ? "bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error"
-            : "lia-text-secondary hover:lia-text-base hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-muted"
+            : "lia-text-secondary hover:text-lia-text-secondary hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:lia-text-muted"
         )}
         title="Resposta não útil"
       >
@@ -334,12 +334,12 @@ export function LIACommandBadge({
       className
     )}>
       {status === 'running' && (
-        <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+        <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
       )}
       {status === 'completed' && (
         <Check className="w-3 h-3 text-status-success" />
       )}
-      <span className="text-xs font-mono text-lia-text-secondary dark:text-lia-text-tertiary truncate max-w-panel-sm">
+      <span className="text-xs font-mono text-lia-text-secondary truncate max-w-panel-sm">
         {command}
       </span>
     </div>
@@ -378,10 +378,10 @@ export function LIAFileBadge({
     onClick={onDownload}
     >
       <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-        <Icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+        <Icon className="w-4 h-4 text-lia-text-secondary" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
+        <div className="text-sm font-medium text-lia-text-primary truncate">
           {fileName}
         </div>
         <div className="text-xs lia-text-secondary">
@@ -393,7 +393,7 @@ export function LIAFileBadge({
         <Check className="w-5 h-5 text-status-success" />
       )}
       {status === 'processing' && (
-        <Loader2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+        <Loader2 className="w-5 h-5 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
       )}
     </div>
   )
@@ -420,7 +420,7 @@ export function LIASimpleProcessing({
       <div className="w-7 h-7 rounded-md bg-white dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0" role="status" aria-live="polite" aria-label="Carregando...">
         <Loader2 className={cn("w-4 h-4 animate-spin motion-reduce:animate-none", config.color)} />
       </div>
-      <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+      <span className="text-sm text-lia-text-secondary">
         {message || config.label}
       </span>
     </div>

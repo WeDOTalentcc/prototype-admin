@@ -507,7 +507,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className={`${textStyles.h3} flex items-center gap-2`}>
-                <Bell className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+                <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
                 Configuração de Alertas
               </CardTitle>
               <p className={`${textStyles.description} mt-1`}>
@@ -560,14 +560,14 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                   <div 
                     className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
                       alert.enabled 
-                        ? 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary' 
-                        : 'bg-gray-100 dark:bg-lia-bg-elevated lia-text-600 dark:text-lia-text-tertiary'
+                        ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary' 
+                        : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary'
                     }`}
                   >
                     <Bell className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <p className={`${textStyles.subtitle} ${alert.enabled ? '' : 'lia-text-600 dark:text-lia-text-tertiary'}`}>
+                    <p className={`${textStyles.subtitle} ${alert.enabled ? '' : 'text-lia-text-secondary'}`}>
                       {alert.name}
                     </p>
                     <p className={textStyles.description}>{alert.description}</p>
@@ -578,7 +578,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                     value={alert.channel}
                     onChange={(e) => handleChangeChannel(alert.id, e.target.value as 'email' | 'teams' | 'both')}
                     disabled={!isEditingAlerts || !alert.enabled}
-                    className={`${textStyles.caption} border border-lia-border-subtle rounded-md px-2 py-1 bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:lia-text-600 dark:disabled:lia-text-400 dark:border-lia-border-default dark:text-lia-text-primary`}
+                    className={`${textStyles.caption} border border-lia-border-subtle rounded-md px-2 py-1 bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary dark:disabled:text-lia-text-tertiary dark:border-lia-border-default`}
                   >
                     <option value="email">Email</option>
                     <option value="teams">Teams</option>
@@ -590,7 +590,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                     className="relative w-10 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60"
                     style={{backgroundColor: alert.enabled ? 'var(--gray-950)' : 'var(--gray-200)'}}
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white dark:lia-bg-200 rounded-full transition-transform motion-reduce:transition-none ${
+                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform motion-reduce:transition-none ${
                       alert.enabled ? 'left-5' : 'left-0.5'
                     }`} />
                   </button>
@@ -604,7 +604,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
       <Card className={cardStyles.default}>
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.h3} flex items-center gap-2`}>
-            <MessageSquare className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+            <MessageSquare className="w-3.5 h-3.5 text-lia-text-secondary" />
             Frequência do Briefing da LIA
           </CardTitle>
         </CardHeader>
@@ -620,7 +620,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
               }`}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
-                <RefreshCw className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary" />
+                <RefreshCw className="w-3 h-3 text-lia-text-secondary" />
                 <span className={textStyles.subtitle}>2x ao Dia</span>
               </div>
               <p className={textStyles.description}>
@@ -637,7 +637,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
               }`}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
-                <Clock className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary" />
+                <Clock className="w-3 h-3 text-lia-text-secondary" />
                 <span className={textStyles.subtitle}>Diário</span>
               </div>
               <p className={textStyles.description}>
@@ -654,7 +654,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
               }`}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
-                <Calendar className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary" />
+                <Calendar className="w-3 h-3 text-lia-text-secondary" />
                 <span className={textStyles.subtitle}>Semanal</span>
               </div>
               <p className={textStyles.description}>
@@ -671,7 +671,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
               }`}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
-                <Calendar className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary" />
+                <Calendar className="w-3 h-3 text-lia-text-secondary" />
                 <span className={textStyles.subtitle}>Mensal</span>
               </div>
               <p className={textStyles.description}>
@@ -680,11 +680,11 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
             </button>
           </div>
 
-          <div className="rounded-md p-2.5 bg-gray-100 dark:bg-lia-bg-secondary dark:lia-bg-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
+          <div className="rounded-md p-2.5 bg-gray-100 dark:bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
             <div className="flex items-start gap-2">
               <Brain className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-wedo-cyan" />
               <div>
-                <p className={`${textStyles.subtitle} lia-text-900 dark:lia-text-50`}>A LIA aprende com você</p>
+                <p className={`${textStyles.subtitle} text-lia-text-primary`}>A LIA aprende com você</p>
                 <p className={`${textStyles.description} mt-0.5`}>
                   Quanto mais você interage, melhor ela entende quais alertas são relevantes. 
                   Alertas ignorados consistentemente serão automaticamente desativados.
@@ -714,7 +714,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className={`${textStyles.h3} flex items-center gap-2 flex-wrap`}>
-                <Calendar className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+                <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
                 Planejamento de Headcount {selectedYear}
                 {departmentsLoaded && (
                   <Badge variant="outline" className={`${badgeStyles.success} text-micro font-normal`}>
@@ -744,7 +744,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
                 disabled={!isEditingWorkforce}
-                className={`${textStyles.caption} border border-lia-border-subtle rounded-md px-2 py-1.5 bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:lia-text-500 dark:border-lia-border-default dark:text-lia-text-primary`}
+                className={`${textStyles.caption} border border-lia-border-subtle rounded-md px-2 py-1.5 bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary dark:border-lia-border-default`}
               >
                 <option value={2024}>2024</option>
                 <option value={2025}>2025</option>
@@ -813,14 +813,14 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                       onChange={(e) => updateDepartmentName(dept.id, e.target.value)}
                       onClick={(e) => e.stopPropagation()}
                       disabled={!isEditingWorkforce}
-                      className={`${textStyles.subtitle} font-semibold border-0 bg-transparent outline-0 disabled:opacity-70 lia-text-900 dark:lia-text-50`}
+                      className={`${textStyles.subtitle} font-semibold border-0 bg-transparent outline-0 disabled:opacity-70 text-lia-text-primary`}
                     />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={textStyles.description}>
                       {dept.positions.length} posição{dept.positions.length !== 1 ? 's' : ''}
                     </span>
-                    <span className={`${textStyles.subtitle} font-semibold lia-text-900 dark:lia-text-50`} aria-live="polite" aria-atomic="true">
+                    <span className={`${textStyles.subtitle} font-semibold text-lia-text-primary`} aria-live="polite" aria-atomic="true">
                       {dept.positions.reduce((acc, p) => acc + getPositionTotal(p), 0)} vagas
                     </span>
                   </div>
@@ -833,12 +833,12 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                         <thead>
                           <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
                             <th className={`text-left p-2 min-w-[140px] sticky left-0 bg-gray-50 dark:bg-lia-bg-secondary ${textStyles.captionBold}`}>Posição</th>
-                            <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} lia-text-700 dark:text-lia-text-secondary`}>Salário Mín.</th>
-                            <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} lia-text-700 dark:text-lia-text-secondary`}>Salário Máx.</th>
+                            <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} text-lia-text-primary`}>Salário Mín.</th>
+                            <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} text-lia-text-primary`}>Salário Máx.</th>
                             {monthLabels.map((month, idx) => (
-                              <th key={idx} className={`text-center p-2 min-w-10 ${textStyles.captionBold} lia-text-700 dark:text-lia-text-secondary`}>{month}</th>
+                              <th key={idx} className={`text-center p-2 min-w-10 ${textStyles.captionBold} text-lia-text-primary`}>{month}</th>
                             ))}
-                            <th className={`text-center p-2 min-w-[50px] font-semibold lia-text-900 dark:lia-text-50`}>Total</th>
+                            <th className={`text-center p-2 min-w-[50px] font-semibold text-lia-text-primary`}>Total</th>
                             <th className="w-8 p-2"></th>
                           </tr>
                         </thead>
@@ -852,7 +852,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                   onChange={(e) => updatePositionName(dept.id, pos.id, e.target.value)}
                                   placeholder="Nome da posição"
                                   disabled={!isEditingWorkforce}
-                                  className={`w-full px-2 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:lia-text-500 dark:disabled:lia-text-500 dark:text-lia-text-primary`}
+                                  className={`w-full px-2 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary dark:disabled:text-lia-text-secondary`}
                                 />
                               </td>
                               <td className="p-1 text-center">
@@ -863,7 +863,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                   onChange={(e) => updatePositionSalary(dept.id, pos.id, 'salary_min', e.target.value ? parseInt(e.target.value) : undefined)}
                                   placeholder="R$ 0"
                                   disabled={!isEditingWorkforce}
-                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:lia-text-500 dark:text-lia-text-primary`}
+                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary`}
                                 />
                               </td>
                               <td className="p-1 text-center">
@@ -874,7 +874,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                   onChange={(e) => updatePositionSalary(dept.id, pos.id, 'salary_max', e.target.value ? parseInt(e.target.value) : undefined)}
                                   placeholder="R$ 0"
                                   disabled={!isEditingWorkforce}
-                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:lia-text-500 dark:text-lia-text-primary`}
+                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary`}
                                 />
                               </td>
                               {monthKeys.map((monthKey, idx) => (
@@ -885,11 +885,11 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                     value={pos.monthlyPlanned[monthKey] || 0}
                                     onChange={(e) => updatePositionMonth(dept.id, pos.id, monthKey, parseInt(e.target.value) || 0)}
                                     disabled={!isEditingWorkforce}
-                                    className={`w-10 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:lia-text-500 dark:text-lia-text-primary`}
+                                    className={`w-10 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary`}
                                   />
                                 </td>
                               ))}
-                              <td className="p-2 text-center font-semibold lia-text-900 dark:lia-text-50">
+                              <td className="p-2 text-center font-semibold text-lia-text-primary">
                                 {getPositionTotal(pos)}
                               </td>
                               <td className="p-1">

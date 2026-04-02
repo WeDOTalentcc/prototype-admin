@@ -167,7 +167,7 @@ export function ProactiveActionsBell({
             // @ts-ignore TODO: fix type
             <Avatar className="h-8 w-8 flex-shrink-0">
               <AvatarImage src={(candidate as any).avatar_url} alt={(candidate as any).name} />
-              <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary">
+              <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary">
                 {(((candidate as any).name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '??') as React.ReactNode)}
               </AvatarFallback>
             </Avatar>
@@ -184,7 +184,7 @@ export function ProactiveActionsBell({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-1.5 min-w-0">
-                <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary line-clamp-1">
+                <p className="text-xs font-medium text-lia-text-primary line-clamp-1">
                   {((candidate as any)?.name || action.title)}
                 </p>
                 {(candidate as any)?.score && (
@@ -202,17 +202,17 @@ export function ProactiveActionsBell({
               </span>
             </div>
             {(candidate as any) && (
-              <p className="text-micro font-medium text-lia-text-secondary dark:text-lia-text-secondary line-clamp-1 mt-0.5">
+              <p className="text-micro font-medium text-lia-text-secondary line-clamp-1 mt-0.5">
                 {(action.title as React.ReactNode)}
               </p>
             )}
-            <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary line-clamp-2 mt-0.5">
+            <p className="text-micro text-lia-text-tertiary line-clamp-2 mt-0.5">
               {action.description}
             </p>
             <div className="flex items-center gap-1 mt-2">
-              <ArrowRight className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary shrink-0" />
+              <ArrowRight className="h-3 w-3 text-lia-text-secondary shrink-0" />
 
-              <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary font-medium line-clamp-1">
+              <span className="text-micro text-lia-text-secondary font-medium line-clamp-1">
                 {typeof action.suggested_action === 'string' 
                   ? action.suggested_action 
 
@@ -278,7 +278,7 @@ export function ProactiveActionsBell({
         >
           <Bell className={cn(
  "h-5 w-5",
-            hasUrgent ? "text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-tertiary"
+            hasUrgent ? "text-lia-text-secondary" : "text-lia-text-tertiary"
           )} />
           {pendingCount > 0 && (
             <span className={cn(
@@ -299,7 +299,7 @@ export function ProactiveActionsBell({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4 text-wedo-cyan-dark" />
-              <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
+              <span className="text-xs font-semibold text-lia-text-primary">
                 Sugestões da LIA
               </span>
             </div>
@@ -314,14 +314,14 @@ export function ProactiveActionsBell({
         <div className="max-h-content-lg overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
           {loading ? (
             <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
             </div>
           ) : visibleActions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4">
               <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-3">
                 <Brain className="h-5 w-5 text-wedo-cyan" />
               </div>
-              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary text-center">
+              <p className="text-xs text-lia-text-tertiary text-center">
                 {deferredIds.size > 0 ? 'Todas as sugestões foram adiadas' : 'Nenhuma sugestão pendente'}
               </p>
               {deferredIds.size > 0 && (
@@ -340,7 +340,7 @@ export function ProactiveActionsBell({
               {groupedByVacancy.map((group) => (
                 <div key={group.vacancyId}>
                   <div className="px-3 py-1.5 bg-gray-50 dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle">
-                    <span className="text-micro font-semibold text-lia-text-secondary dark:text-lia-text-tertiary uppercase tracking-wide">
+                    <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
                       {group.vacancyTitle}
                     </span>
                     <Badge variant="outline" className="ml-2 text-micro py-0 h-4">
@@ -366,7 +366,7 @@ export function ProactiveActionsBell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-micro lia-text-secondary hover:lia-text-base"
+                className="text-micro lia-text-secondary hover:text-lia-text-secondary"
                 onClick={() => setDeferredIds(new Set())}
               >
                 <Clock className="h-3 w-3 mr-1" />
@@ -376,7 +376,7 @@ export function ProactiveActionsBell({
             <Button
               variant="ghost"
               size="sm"
-              className="ml-auto text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-wedo-cyan-dark"
+              className="ml-auto text-xs text-lia-text-secondary hover:text-wedo-cyan-dark"
               onClick={() => setOpen(false)}
             >
               Ver todas as sugestões

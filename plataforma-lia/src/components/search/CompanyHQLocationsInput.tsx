@@ -143,13 +143,13 @@ export function CompanyHQLocationsInput({
               className={cn(
                 "flex items-center gap-2 px-2.5 py-1 rounded-md border text-xs transition-colors",
                 disabled 
-                  ? "border-lia-border-subtle bg-gray-100 lia-text-400 cursor-not-allowed" 
-                  : "border-lia-border-subtle hover:bg-gray-50 lia-text-800 dark:text-lia-text-primary"
+                  ? "border-lia-border-subtle bg-gray-100 text-lia-text-tertiary cursor-not-allowed" 
+                  : "border-lia-border-subtle hover:bg-gray-50 text-lia-text-primary"
               )}
               disabled={disabled}
             >
               <span>{currentTimeOption?.label}</span>
-              <ChevronDown className={cn("w-3.5 h-3.5", disabled ? "lia-text-300" : "lia-text-400")} />
+              <ChevronDown className={cn("w-3.5 h-3.5", disabled ? "text-lia-text-disabled" : "text-lia-text-tertiary")} />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="start">
@@ -167,12 +167,12 @@ export function CompanyHQLocationsInput({
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">{option.label}</span>
+                    <span className="text-xs font-medium text-lia-text-primary">{option.label}</span>
                     {timeFilter === option.value && (
-                      <div className="w-2 h-2 rounded-full bg-gray-900 dark:lia-bg-50" />
+                      <div className="w-2 h-2 rounded-full bg-gray-900" />
                     )}
                   </div>
-                  <p className="text-xs lia-text-500 mt-0.5">{option.description}</p>
+                  <p className="text-xs text-lia-text-secondary mt-0.5">{option.description}</p>
                 </button>
               ))}
             </div>
@@ -183,7 +183,7 @@ export function CompanyHQLocationsInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {value.length > 0 && (
-            <span className="text-xs lia-text-500">
+            <span className="text-xs text-lia-text-secondary">
               {value.length} localidade{value.length !== 1 ? 's' : ''} selecionada{value.length !== 1 ? 's' : ''}
             </span>
           )}
@@ -191,7 +191,7 @@ export function CompanyHQLocationsInput({
         {value.length > 0 && !disabled && (
           <button
             onClick={clearAll}
-            className="text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 font-medium"
+            className="text-xs text-lia-text-secondary hover:text-lia-text-primary font-medium"
           >
             Limpar tudo
           </button>
@@ -200,7 +200,7 @@ export function CompanyHQLocationsInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className={cn("absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4", disabled ? "lia-text-300" : "lia-text-400")} />
+          <Search className={cn("absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4", disabled ? "text-lia-text-disabled" : "text-lia-text-tertiary")} />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -235,7 +235,7 @@ export function CompanyHQLocationsInput({
                       focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50"
                     )}
                   >
-                    <span className="lia-text-800 dark:text-lia-text-primary">{location.name}</span>
+                    <span className="text-lia-text-primary">{location.name}</span>
                   </button>
                 ))}
               </>
@@ -255,7 +255,7 @@ export function CompanyHQLocationsInput({
                       focusedIndex === (filteredCities.length + index) ? "bg-gray-100" : "hover:bg-gray-50"
                     )}
                   >
-                    <span className="lia-text-800 dark:text-lia-text-primary">{location.name}</span>
+                    <span className="text-lia-text-primary">{location.name}</span>
                   </button>
                 ))}
               </>
@@ -269,7 +269,7 @@ export function CompanyHQLocationsInput({
           {value.map(location => (
             <Badge
               key={location}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
             >
               <span>{location}</span>
               <button

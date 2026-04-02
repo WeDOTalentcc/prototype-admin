@@ -31,7 +31,7 @@ export const FilterSectionHabilidades = React.memo(function FilterSectionHabilid
           }
           placeholder="Digite skill e pressione Enter (ex: Python, React, AWS, SQL)"
         />
-        <p className="text-xs mt-2 lia-text-500">
+        <p className="text-xs mt-2 text-lia-text-secondary">
           Dica: Use o ícone de pin para marcar skills obrigatórias. O botão &quot;Find Similar&quot; sugere skills relacionadas via IA.
         </p>
       </div>

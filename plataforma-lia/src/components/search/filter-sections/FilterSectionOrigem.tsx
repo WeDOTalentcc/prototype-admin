@@ -38,17 +38,17 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
         >
           <div className="flex items-center gap-2 mb-2">
             <RadioGroupItem value="local" id="local" className="sr-only" />
-            <Home className={cn("w-4 h-4", searchSource === "local" ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500")} />
-            <span className={cn("font-medium text-xs", searchSource === "local" ? "lia-text-800" : "lia-text-800")}>
+            <Home className={cn("w-4 h-4", searchSource === "local" ? "text-lia-text-primary" : "text-lia-text-secondary")} />
+            <span className={cn("font-medium text-xs", searchSource === "local" ? "text-lia-text-primary" : "text-lia-text-primary")}>
               Base Local
             </span>
           </div>
-          <p className="text-xs lia-text-600" aria-live="polite" aria-atomic="true">
+          <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
             Candidatos já cadastrados na sua base
           </p>
           {searchSource === "local" && (
-            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:lia-bg-100">
-              <Check className="w-3 h-3 text-white dark:lia-text-900" />
+            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900">
+              <Check className="w-3 h-3 text-white" />
             </div>
           )}
         </label>
@@ -69,15 +69,15 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
           </Badge>
           <div className="flex items-center gap-2 mb-2">
             <RadioGroupItem value="hybrid" id="hybrid" className="sr-only" />
-            <RefreshCw className={cn("w-4 h-4", searchSource === "hybrid" ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500")} />
-            <span className={cn("font-medium text-xs", searchSource === "hybrid" ? "lia-text-800" : "lia-text-800")}>
+            <RefreshCw className={cn("w-4 h-4", searchSource === "hybrid" ? "text-lia-text-primary" : "text-lia-text-secondary")} />
+            <span className={cn("font-medium text-xs", searchSource === "hybrid" ? "text-lia-text-primary" : "text-lia-text-primary")}>
               Busca Híbrida
             </span>
           </div>
-          <p className="text-xs lia-text-600">Primeiro local, depois expande para global</p>
+          <p className="text-xs text-lia-text-secondary">Primeiro local, depois expande para global</p>
           {searchSource === "hybrid" && (
-            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:lia-bg-100">
-              <Check className="w-3 h-3 text-white dark:lia-text-900" />
+            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900">
+              <Check className="w-3 h-3 text-white" />
             </div>
           )}
         </label>
@@ -98,15 +98,15 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
           </Badge>
           <div className="flex items-center gap-2 mb-2">
             <RadioGroupItem value="global" id="global" className="sr-only" />
-            <Globe className={cn("w-4 h-4", searchSource === "global" ? "lia-text-800 dark:text-lia-text-primary" : "lia-text-500")} />
-            <span className={cn("font-medium text-xs", searchSource === "global" ? "lia-text-800" : "lia-text-800")}>
+            <Globe className={cn("w-4 h-4", searchSource === "global" ? "text-lia-text-primary" : "text-lia-text-secondary")} />
+            <span className={cn("font-medium text-xs", searchSource === "global" ? "text-lia-text-primary" : "text-lia-text-primary")}>
               Busca Global
             </span>
           </div>
-          <p className="text-xs lia-text-600">Acesso a +800M de perfis profissionais</p>
+          <p className="text-xs text-lia-text-secondary">Acesso a +800M de perfis profissionais</p>
           {searchSource === "global" && (
-            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900 dark:lia-bg-100">
-              <Check className="w-3 h-3 text-white dark:lia-text-900" />
+            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900">
+              <Check className="w-3 h-3 text-white" />
             </div>
           )}
         </label>

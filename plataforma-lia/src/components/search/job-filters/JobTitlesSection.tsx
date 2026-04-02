@@ -153,7 +153,7 @@ export const JobTitlesSection = ({
                 <SelectItem key={option.value} value={option.value} className="text-xs">
                   <div>
                     <div className="font-medium">{option.label}</div>
-                    <div className="text-micro lia-text-500">{option.description}</div>
+                    <div className="text-micro text-lia-text-secondary">{option.description}</div>
                   </div>
                 </SelectItem>
               ))}
@@ -163,7 +163,7 @@ export const JobTitlesSection = ({
         <div className="flex items-center gap-3">
           <button
             onClick={handleClearAll}
-            className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
+            className="text-xs text-lia-text-secondary hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
           >
             <RotateCcw className="w-3 h-3" />
             Limpar tudo
@@ -171,14 +171,14 @@ export const JobTitlesSection = ({
           <button
             onClick={() => onOpenSavePresetModal("titles")}
             disabled={(filters.job?.titles?.length || 0) === 0}
-            className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-xs text-lia-text-secondary hover:text-lia-text-primary flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="w-3.5 h-3.5" />
             Salvar Preset
           </button>
           <button
             onClick={() => onOpenPresetsModal("titles")}
-            className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1"
+            className="text-xs text-lia-text-secondary hover:text-lia-text-primary flex items-center gap-1"
           >
             <List className="w-3.5 h-3.5" />
             Presets
@@ -208,7 +208,7 @@ export const JobTitlesSection = ({
           />
           {isLoadingTitles && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-4 h-4 lia-text-500 animate-spin motion-reduce:animate-none" />
+              <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
             </div>
           )}
         </div>
@@ -217,7 +217,7 @@ export const JobTitlesSection = ({
         {showTitleSuggestions && titleSuggestions.length > 0 && (
           <div className="absolute z-50 mt-1 w-full bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-48 overflow-y-auto">
             <div className="p-1.5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-              <div className="flex items-center gap-1.5 text-micro lia-text-600 dark:text-lia-text-tertiary">
+              <div className="flex items-center gap-1.5 text-micro text-lia-text-secondary">
                 <Zap className="w-3 h-3" />
                 <span>Sugestões semânticas</span>
               </div>
@@ -232,7 +232,7 @@ export const JobTitlesSection = ({
                 className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between gap-2"
               >
                 <span>{suggestion.term}</span>
-                <span className="text-micro lia-text-400">
+                <span className="text-micro text-lia-text-tertiary">
                   {Math.round(suggestion.confidence * 100)}%
                 </span>
               </button>
@@ -254,7 +254,7 @@ export const JobTitlesSection = ({
                   "pl-2 pr-1 py-1 flex items-center gap-1",
                   isAiSuggested
                     ? "bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple"
-                    : "bg-gray-100 lia-text-800 dark:text-lia-text-primary"
+                    : "bg-gray-100 text-lia-text-primary"
                 )}
               >
                 {isAiSuggested && <Brain className="w-3 h-3 text-wedo-purple" />}
@@ -303,7 +303,7 @@ export const JobTitlesSection = ({
             {selectedAiTitles.length > 0 && (
               <button
                 onClick={handleAddSelectedAiTitles}
-                className="px-2 py-1 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center gap-1"
+                className="px-2 py-1 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center gap-1"
               >
                 <Check className="w-3 h-3" />
                 Adicionar {selectedAiTitles.length} selecionado{selectedAiTitles.length > 1 ? 's' : ''}

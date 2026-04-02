@@ -106,8 +106,8 @@ export function CandidatePageOpinionsTab({
             onClick={() => setOpinionsSubTab("pareceres")}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
               opinionsSubTab === "pareceres"
-                ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle"
-                : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-50 dark:hover:bg-gray-800"
+                ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle"
+                : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800"
             }`}
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -123,7 +123,7 @@ export function CandidatePageOpinionsTab({
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
               opinionsSubTab === "analises"
                 ? "bg-wedo-purple/10 dark:bg-wedo-purple/20 text-wedo-purple dark:text-wedo-purple border-b-2 border-wedo-purple/30"
-                : "text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled hover:bg-gray-50 dark:hover:bg-gray-800"
+                : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800"
             }`}
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -207,12 +207,12 @@ export function CandidatePageOpinionsTab({
                                 {isWsiOpinion ? "Parecer WSI" : (opinion.job_vacancy_id ? "Parecer de Vaga" : "Parecer Geral")}
                               </span>
                               {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                                <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
+                                <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
                                   <Briefcase className="w-2.5 h-2.5" />
                                   #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title as string}
                                 </Badge>
                               ) : !opinion.job_vacancy_id ? (
-                                <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle">
+                                <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                                   Sem vaga vinculada
                                 </Badge>
                               ) : null}
@@ -251,7 +251,7 @@ export function CandidatePageOpinionsTab({
                                 {copiedItemId === `opinion-${opinion.id as string}` ? (
                                   <Check className="w-3.5 h-3.5 text-status-success" />
                                 ) : (
-                                  <Copy className="w-3.5 h-3.5 lia-text-secondary hover:lia-text-base" />
+                                  <Copy className="w-3.5 h-3.5 lia-text-secondary hover:text-lia-text-secondary" />
                                 )}
                               </button>
                             </TooltipTrigger>
@@ -269,7 +269,7 @@ export function CandidatePageOpinionsTab({
                         <div className="px-3 pb-3 pt-0 border-t border-lia-border-subtle space-y-3">
                           {!!(opinion.summary) && (
                             <div className="pt-3">
-                              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed">
+                              <p className="text-xs text-lia-text-primary leading-relaxed">
                                 {opinion.summary as string}
                               </p>
                             </div>
@@ -285,8 +285,8 @@ export function CandidatePageOpinionsTab({
                                   value !== null && value !== undefined && (
                                     <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-lia-bg-elevated rounded-full px-2 py-1">
                                       {/* @ts-ignore TODO: fix type */}
-                                      <span className="lia-text-base capitalize">{key.replace(/_/g, ' ')}</span>
-                                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{(typeof value === "number" ? `${Math.round(value)}%` : value as React.ReactNode)}</span>
+                                      <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, ' ')}</span>
+                                      <span className="font-medium text-lia-text-primary">{(typeof value === "number" ? `${Math.round(value)}%` : value as React.ReactNode)}</span>
                                     </div>
                                   )
                                 ))}
@@ -301,7 +301,7 @@ export function CandidatePageOpinionsTab({
                               </h5>
                               <ul className="space-y-0.5">
                                 {(opinion.strengths as string[]).map((s: string, i: number) => (
-                                  <li key={i} className={`${textStyles.caption} lia-text-base flex items-start gap-1`}>
+                                  <li key={i} className={`${textStyles.caption} text-lia-text-secondary flex items-start gap-1`}>
                                     <span className="text-status-success mt-0.5">•</span>
                                     {s}
                                   </li>
@@ -317,7 +317,7 @@ export function CandidatePageOpinionsTab({
                               </h5>
                               <ul className="space-y-0.5">
                                 {(opinion.concerns as string[]).map((c: string, i: number) => (
-                                  <li key={i} className={`${textStyles.caption} lia-text-base flex items-start gap-1`}>
+                                  <li key={i} className={`${textStyles.caption} text-lia-text-secondary flex items-start gap-1`}>
                                     <span className="text-status-warning mt-0.5">•</span>
                                     {c}
                                   </li>
@@ -331,7 +331,7 @@ export function CandidatePageOpinionsTab({
                                 <TrendingUp className="w-3 h-3" />
                                 Próximos Passos
                               </h5>
-                              <p className={`${textStyles.caption} lia-text-base`}>{opinion.next_steps as string}</p>
+                              <p className={`${textStyles.caption} text-lia-text-secondary`}>{opinion.next_steps as string}</p>
                             </div>
                           )}
                         </div>
@@ -431,7 +431,7 @@ export function CandidatePageOpinionsTab({
                                 {copiedItemId === `analysis-${analysis.id}` ? (
                                   <Check className="w-3.5 h-3.5 text-status-success" />
                                 ) : (
-                                  <Copy className="w-3.5 h-3.5 lia-text-secondary hover:lia-text-base" />
+                                  <Copy className="w-3.5 h-3.5 lia-text-secondary hover:text-lia-text-secondary" />
                                 )}
                               </button>
                             </TooltipTrigger>
@@ -443,7 +443,7 @@ export function CandidatePageOpinionsTab({
 
                       {isExpanded && (
                         <div className="px-3 pb-3 border-t border-gray-50">
-                          <div className={`${textStyles.description} text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 rounded-md p-3 mt-2`}>
+                          <div className={`${textStyles.description} text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 rounded-md p-3 mt-2`}>
                             {cleanTextForCopy(analysis.content as string)}
                           </div>
                           <div className="flex justify-end mt-2">

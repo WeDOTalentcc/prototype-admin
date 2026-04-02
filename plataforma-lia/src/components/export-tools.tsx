@@ -113,7 +113,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       format: 'json' as const,
       label: 'JSON',
       description: 'Dados estruturados',
-      color: 'bg-gray-100 lia-text-strong border-lia-border-subtle',
+      color: 'bg-gray-100 text-lia-text-primary border-lia-border-subtle',
       recommended: false
     }
   ]
@@ -123,7 +123,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Download className="w-5 h-5 text-lia-text-secondary" />
             Exportação de Dados
           </CardTitle>
         </CardHeader>
@@ -160,7 +160,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                     </span>
                   </div>
 
-                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-3">
+                  <p className="text-xs text-lia-text-secondary mb-3">
                     {format.description}
                   </p>
 
@@ -170,12 +170,12 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                     </Badge>
 
                     {isExporting ? (
-                      <div className="flex items-center gap-1 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
                         <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin motion-reduce:animate-none"></div>
                         Exportando...
                       </div>
                     ) : (
-                      <Download className="w-4 h-4 lia-text-base" />
+                      <Download className="w-4 h-4 text-lia-text-secondary" />
                     )}
                   </div>
                 </button>
@@ -193,7 +193,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
               {/* Período */}
               <div>
-                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">
+                <label className="text-xs font-medium text-lia-text-primary mb-2 block">
                   Período dos Dados
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -204,7 +204,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                       className={`px-3 py-2 text-xs rounded-md border transition-colors motion-reduce:transition-none ${
  exportConfig.dateRange === period
                           ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-primary text-wedo-cyan-dark'
-                          : 'border-lia-border-subtle lia-text-base hover:border-lia-border-default'
+                          : 'border-lia-border-subtle text-lia-text-secondary hover:border-lia-border-default'
                       }`}
                     >
                       {period === '30d' ? '30 dias' :
@@ -217,7 +217,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
 
               {/* Conteúdo */}
               <div>
-                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">
+                <label className="text-xs font-medium text-lia-text-primary mb-2 block">
                   Incluir no Relatório
                 </label>
                 <div className="space-y-2">
@@ -236,7 +236,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                         }))}
                         className="w-3 h-3 rounded-md border-lia-border-default"
                       />
-                      <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <span className="text-xs text-lia-text-secondary">
                         {option.label}
                       </span>
                     </label>
@@ -298,12 +298,12 @@ export function ExportTools({ data, className }: ExportToolsProps) {
           <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-6">
  <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                 <div>
- <h4 className="text-sm font-medium text-wedo-cyan-dark dark:text-lia-text-secondary mb-1">
+ <h4 className="text-sm font-medium text-wedo-cyan-dark mb-1">
                     Dicas de Exportação
                   </h4>
- <ul className="text-xs text-wedo-cyan-dark dark:text-lia-text-secondary space-y-1">
+ <ul className="text-xs text-wedo-cyan-dark space-y-1">
                     <li>• Use <strong>Excel</strong> para análises detalhadas com gráficos</li>
                     <li>• Use <strong>PDF</strong> para apresentações executivas</li>
                     <li>• Use <strong>CSV</strong> para importar em outras ferramentas</li>

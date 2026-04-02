@@ -110,7 +110,7 @@ export function JobsPage(props: JobsPageProps) {
       <div className="h-full flex items-center justify-center bg-white dark:bg-lia-bg-primary">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-lia-border-default border-t-gray-600 rounded-full animate-spin motion-reduce:animate-none mx-auto mb-3" />
-          <p className="text-base-ui text-lia-text-tertiary dark:text-lia-text-tertiary">Carregando vaga...</p>
+          <p className="text-base-ui text-lia-text-tertiary">Carregando vaga...</p>
         </div>
       </div>
     )
@@ -207,7 +207,7 @@ export function JobsPage(props: JobsPageProps) {
             <div className="flex items-center gap-3">
               <div>
                 <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold wedo-text-black flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Briefcase className="w-5 h-5 text-lia-text-secondary" />
                   Gestão de Vagas
                 </h1>
               </div>
@@ -237,16 +237,16 @@ export function JobsPage(props: JobsPageProps) {
                 aria-selected={activeFilter === filter.id}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
                   activeFilter === filter.id
-                    ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-lia-text-primary'
-                    : 'text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800'
+                    ? 'bg-gray-100 text-gray-900 dark:bg-gray-800'
+                    : 'text-lia-text-secondary hover:bg-gray-100 dark:hover:bg-gray-800'
                 }`}
               >
                 <span>{filter.label}</span>
                 {!filter.isDashboard && (
                   <span className={`text-[10px] font-semibold ${
                     activeFilter === filter.id
-                      ? 'text-gray-500 dark:text-lia-text-tertiary'
-                      : 'text-lia-text-tertiary dark:text-lia-text-tertiary'
+                      ? 'text-gray-500'
+                      : 'text-lia-text-tertiary'
                   }`}>
                     {isLoadingJobs ? (
                       <span className="inline-block w-4 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded animate-pulse motion-reduce:animate-none" />
@@ -332,7 +332,7 @@ export function JobsPage(props: JobsPageProps) {
                       value={liaPromptValue}
                       onChange={(e) => setLiaPromptValue(e.target.value)}
                      
-                      className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-lia-text-primary dark:text-lia-text-primary"
+                      className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-lia-text-primary"
                       onKeyDown={(e) => {
                         if (e.key ==='Enter' && liaPromptValue.trim()) {
                           setActiveFilter('todas')
@@ -463,7 +463,7 @@ export function JobsPage(props: JobsPageProps) {
             <div className="flex items-center gap-3">
               {/* Badge de seleção */}
               {selectedJobsForBatch.size > 0 && (
-                <Badge className="bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default text-xs font-bold">
+                <Badge className="bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs font-bold">
                   🎯 {selectedJobsForBatch.size}
                 </Badge>
               )}
@@ -486,14 +486,14 @@ export function JobsPage(props: JobsPageProps) {
                 // @ts-ignore TODO: fix type
                 variant={showTableFiltersPanel ?"default" :"outline"}
                 size="sm"
-                className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover dark:text-lia-text-disabled text-white' :''}`}
+                className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' :''}`}
                 onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
                 title="Filtrar resultados da tabela"
               >
                 <Target className="w-3 h-3" />
                 Filtros
                 {getActiveJobFiltersCount() > 0 && (
-                  <Badge variant="secondary" className="bg-gray-900 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled ml-1 text-xs font-bold">
+                  <Badge variant="secondary" className="bg-gray-900 text-white dark:bg-lia-btn-primary-bg ml-1 text-xs font-bold">
                     {getActiveJobFiltersCount()}
                   </Badge>
                 )}
@@ -503,7 +503,7 @@ export function JobsPage(props: JobsPageProps) {
                 // @ts-ignore TODO: fix type
                 variant={showColumnConfig ?"default" :"outline"}
                 size="sm"
-                className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-gray-900 hover:bg-black dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover dark:text-lia-text-disabled text-white' :''}`}
+                className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-gray-900 hover:bg-black dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' :''}`}
                 onClick={handleToggleColumnConfig}
                 title="Configurar colunas da tabela"
               >
@@ -513,8 +513,8 @@ export function JobsPage(props: JobsPageProps) {
                   variant="secondary"
                   className={`ml-1 text-xs ${
                     showColumnConfig
-                      ?'bg-gray-800 text-white dark:bg-lia-bg-tertiary dark:text-lia-text-primary font-bold'
-                      :'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary'
+                      ?'bg-gray-800 text-white dark:bg-lia-bg-tertiary font-bold'
+                      :'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated'
                   }`}
                 >
                   6
@@ -526,9 +526,9 @@ export function JobsPage(props: JobsPageProps) {
 
           {/* Results Summary */}
           <div className="flex-shrink-0 flex items-center justify-between mb-2">
-            <div className="text-xs text-lia-text-primary dark:text-lia-text-primary flex items-center gap-3">
+            <div className="text-xs text-lia-text-primary flex items-center gap-3">
               {(searchTerm || selectedDaysFilter !=='todas') && (
-                <Badge variant="outline" className="text-xs bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default font-medium">
+                <Badge variant="outline" className="text-xs bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default font-medium">
                   filtros ativos
                 </Badge>
               )}
@@ -544,14 +544,14 @@ export function JobsPage(props: JobsPageProps) {
           <BulkActionsBar
             selectedCount={selectedJobsForBatch.size}
             entityLabel="vaga"
-            entityIcon={<Briefcase className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />}
+            entityIcon={<Briefcase className="w-3.5 h-3.5 text-lia-text-secondary" />}
             onDeselectAll={deselectAllJobs}
             className="flex-shrink-0 mb-3"
             actions={[
               {
                 id: 'publish',
                 label: 'Publicar',
-                icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: handleJobPublish,
               },
               {
@@ -563,21 +563,21 @@ export function JobsPage(props: JobsPageProps) {
               {
                 id: 'duplicate',
                 label: 'Duplicar',
-                icon: <Copy className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                icon: <Copy className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: handleJobDuplicate,
               },
               {
                 id: 'toggle_status',
                 label: getSelectedJobsHaveActiveStatus() ? 'Pausar' : 'Ativar',
                 icon: getSelectedJobsHaveActiveStatus()
-                  ? <X className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                  : <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                  ? <X className="w-3.5 h-3.5 text-lia-text-secondary" />
+                  : <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: handleJobToggleStatus,
               },
               {
                 id: 'assign_recruiter',
                 label: 'Recrutador',
-                icon: <UserCheck className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                icon: <UserCheck className="w-3.5 h-3.5 text-lia-text-secondary" />,
                 onClick: handleJobAssignRecruiter,
               },
             ]}
@@ -655,7 +655,7 @@ export function JobsPage(props: JobsPageProps) {
                     className="h-10 w-10 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                     title="Expandir tabela de vagas"
                   >
-                    <ChevronRight className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary" />
+                    <ChevronRight className="w-5 h-5 text-lia-text-primary" />
                   </Button>
                   
                   {/* Ícone da tabela */}
@@ -681,7 +681,7 @@ export function JobsPage(props: JobsPageProps) {
                     <div className="flex-shrink-0 px-3 py-2 bg-gray-50 dark:bg-lia-bg-secondary flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-lia-text-primary" />
-                        <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
+                        <span className="text-xs font-medium text-lia-text-primary" aria-live="polite" aria-atomic="true">
                           Vagas ({filteredJobs.length})
                         </span>
                       </div>

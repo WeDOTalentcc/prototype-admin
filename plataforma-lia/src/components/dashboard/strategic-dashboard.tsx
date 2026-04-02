@@ -256,7 +256,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
     <div id="strategic-dashboard-content" className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <BarChart3 className="w-5 h-5 text-lia-text-secondary" />
           <h2 className="text-xs font-semibold text-lia-text-primary font-['Open_Sans']">
             Dashboard Estratégico
           </h2>
@@ -320,7 +320,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                     )}
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center text-lia-text-secondary dark:text-lia-text-tertiary">
+                <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center text-lia-text-secondary">
                   {getCategoryIcon(indicator.category)}
                 </div>
               </div>
@@ -353,7 +353,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
       <Card className="">
         <CardHeader className="pb-2">
           <CardTitle className="text-xs font-semibold font-['Open_Sans'] flex items-center gap-2">
-            <Activity className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Activity className="w-4 h-4 text-lia-text-secondary" />
             Funil de Recrutamento
           </CardTitle>
         </CardHeader>
@@ -372,7 +372,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
               return (
                 <div key={stage.stage_name} className="relative">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans']">
+                    <span className="text-xs font-medium text-lia-text-primary font-['Open_Sans']">
                       {stage.stage_name}
                     </span>
                     <div className="flex items-center gap-4 text-xs lia-text-secondary font-['Open_Sans']">
@@ -409,7 +409,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
       <Card className="">
         <CardHeader className="pb-2">
           <CardTitle className="text-xs font-semibold font-['Open_Sans'] flex items-center gap-2">
-            <Award className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Award className="w-4 h-4 text-lia-text-secondary" />
             Ranking de Recrutadores
           </CardTitle>
         </CardHeader>
@@ -441,9 +441,9 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                       <td className="py-3 px-2">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
  recruiter.rank === 1 ? 'bg-status-warning/10 text-status-warning' :
-                          recruiter.rank === 2 ? 'bg-gray-300 text-lia-text-primary dark:text-lia-text-primary' :
+                          recruiter.rank === 2 ? 'bg-gray-300 text-lia-text-primary' :
                           recruiter.rank === 3 ? 'bg-wedo-orange/10 text-wedo-orange' :
-                          'bg-gray-100 lia-text-base'
+                          'bg-gray-100 text-lia-text-secondary'
                         }`}>
                           {recruiter.rank}
                         </div>
@@ -452,7 +452,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                         <div className="flex items-center gap-2">
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={recruiter.avatar_url} alt={recruiter.recruiter_name} />
-                            <AvatarFallback className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+                            <AvatarFallback className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
                               {recruiter.recruiter_name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
@@ -473,16 +473,16 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-2 text-center text-lia-text-primary dark:text-lia-text-primary">
+                      <td className="py-3 px-2 text-center text-lia-text-primary">
                         {recruiter.candidates_screened}
                       </td>
-                      <td className="py-3 px-2 text-center text-lia-text-primary dark:text-lia-text-primary">
+                      <td className="py-3 px-2 text-center text-lia-text-primary">
                         {recruiter.interviews_conducted}
                       </td>
                       <td className="py-3 px-2 text-center">
                         <span className={`font-medium ${
  recruiter.conversion_rate >= 3 ? 'text-status-success' : 
-                          recruiter.conversion_rate >= 2 ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 
+                          recruiter.conversion_rate >= 2 ? 'text-lia-text-secondary' : 
                           'text-wedo-orange'
                         }`}>
                           {recruiter.conversion_rate.toFixed(1)}%
@@ -491,7 +491,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                       <td className="py-3 px-2 text-center">
                         <span className={`${
  recruiter.avg_time_to_fill_days <= 25 ? 'text-status-success' : 
-                          recruiter.avg_time_to_fill_days <= 30 ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 
+                          recruiter.avg_time_to_fill_days <= 30 ? 'text-lia-text-secondary' : 
                           'text-wedo-orange'
                         }`}>
                           {recruiter.avg_time_to_fill_days}d
@@ -505,7 +505,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                               style={{width: `${recruiter.quality_score}%`}}
                             />
                           </div>
-                          <span className="text-lia-text-primary dark:text-lia-text-primary font-medium">{recruiter.quality_score.toFixed(0)}</span>
+                          <span className="text-lia-text-primary font-medium">{recruiter.quality_score.toFixed(0)}</span>
                         </div>
                       </td>
                     </tr>

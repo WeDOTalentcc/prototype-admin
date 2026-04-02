@@ -106,8 +106,8 @@ export function LIASearchSidebarInput({
       {isCreatingArchetype && (
         <div className="mb-2 p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-            <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
+            <Target className="w-4 h-4 text-lia-text-secondary" />
+            <span className="text-xs font-medium text-lia-text-secondary">
               Criando novo arquétipo...
             </span>
           </div>
@@ -119,7 +119,7 @@ export function LIASearchSidebarInput({
             className="p-1 hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md"
             aria-label="Cancelar criação de arquétipo"
           >
-            <X className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" aria-hidden="true" />
+            <X className="w-3 h-3 text-lia-text-secondary" aria-hidden="true" />
           </button>
         </div>
       )}
@@ -144,7 +144,7 @@ export function LIASearchSidebarInput({
               handleSend()
             }
           }}
-          className="flex-1 text-xs bg-transparent focus:outline-none text-lia-text-primary dark:text-lia-text-primary"
+          className="flex-1 text-xs bg-transparent focus:outline-none text-lia-text-primary"
         />
         <AudioRecordButton
           onTranscription={(text) => setLiaPromptValue(prev => prev ? `${prev} ${text}` : text)}
@@ -165,14 +165,14 @@ export function LIASearchSidebarInput({
         <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
         <button
           onClick={() => onAICommand('Top 5 candidatos')}
-          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700"
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
         >
           <Star className="w-2.5 h-2.5 text-lia-text-tertiary" />
           Top 5
         </button>
         <button
           onClick={() => onAICommand('Resumir esta busca')}
-          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700"
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
         >
           <FileText className="w-2.5 h-2.5 text-lia-text-tertiary" />
           Resumir busca

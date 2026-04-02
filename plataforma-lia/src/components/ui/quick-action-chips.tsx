@@ -21,7 +21,7 @@ export const QuickActionChips = React.memo(function QuickActionChips({ actions, 
   const getVariantStyles = (variant: QuickAction["variant"] = "default") => {
     switch (variant) {
       case "primary":
-        return "text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default hover:bg-lia-interactive-hover"
+        return "text-lia-text-secondary border-lia-border-default hover:bg-lia-interactive-hover"
       case "success":
         return "bg-status-success/10 text-status-success border-status-success/30 hover:bg-status-success/20"
       case "warning":

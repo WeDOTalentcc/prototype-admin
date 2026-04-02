@@ -16,9 +16,9 @@ const STATUS_CONFIG = {
   pending: {
     label: 'Pendente',
     icon: AlertCircle,
-    color: 'var(--gray-400)',
-    bgColor: 'var(--gray-bg-10)',
-    borderColor: 'var(--gray-border)'
+    color: 'var(--lia-text-tertiary)',
+    bgColor: 'var(--lia-bg-tertiary)',
+    borderColor: 'var(--lia-border-default)'
   },
   in_progress: {
     label: 'Em andamento',
@@ -47,7 +47,7 @@ const LEVEL_CONFIG: Record<string, { label: string; description: string; color: 
   'A1': { label: 'A1 - Iniciante', description: 'Nível básico inicial', color: 'var(--status-error)', bgColor: 'var(--status-error-bg)', borderColor: 'var(--status-error-border)' },
   'A2': { label: 'A2 - Básico', description: 'Nível básico', color: 'var(--status-warning)', bgColor: 'var(--status-warning-bg)', borderColor: 'var(--status-warning-border)' },
   'B1': { label: 'B1 - Intermediário', description: 'Nível intermediário', color: 'var(--status-warning)', bgColor: 'var(--status-warning-bg)', borderColor: 'var(--status-warning-border)' },
-  'B2': { label: 'B2 - Intermediário Superior', description: 'Nível intermediário avançado', color: 'var(--gray-600)', bgColor: 'var(--gray-600-bg-10)', borderColor: 'var(--gray-border)' },
+  'B2': { label: 'B2 - Intermediário Superior', description: 'Nível intermediário avançado', color: 'var(--lia-text-secondary)', bgColor: 'var(--lia-bg-tertiary)', borderColor: 'var(--lia-border-default)' },
   'C1': { label: 'C1 - Avançado', description: 'Nível avançado', color: 'var(--status-success)', bgColor: 'var(--status-success-bg)', borderColor: 'var(--status-success-bg-15)' },
   'C2': { label: 'C2 - Proficiente', description: 'Nível de proficiência nativa', color: 'var(--status-success)', bgColor: 'var(--status-success-bg)', borderColor: 'var(--status-success-bg-15)' },
 }
@@ -77,7 +77,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'var(--status-success)'
-    if (score >= 60) return 'var(--gray-600)'
+    if (score >= 60) return 'var(--lia-text-secondary)'
     if (score >= 40) return 'var(--status-warning)'
     return 'var(--status-error)'
   }
@@ -97,21 +97,21 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div 
-        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md"
+        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col bg-lia-bg-primary border border-lia-border-subtle rounded-md"
         
       >
         <div 
-          className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle rounded-t-xl"
+          className="flex items-center justify-between px-4 py-3 bg-lia-bg-secondary border-b border-lia-border-subtle rounded-t-xl"
         >
           <div className="flex items-center gap-2">
             <div 
               className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-blue-500/10"
             >
-              <Globe className="w-4 h-4 text-[var(--gray-600)]" />
+              <Globe className="w-4 h-4 text-[var(--lia-text-secondary)]" />
             </div>
             <div>
               <h2 
-                className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary"
+                className="text-base-ui font-semibold text-lia-text-primary"
                
               >
                 Teste de Inglês
@@ -127,13 +127,13 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-lia-text-tertiary dark:text-lia-text-tertiary"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg rounded-full text-lia-text-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4 bg-white dark:bg-lia-bg-primary">
+        <div className="flex-1 overflow-y-auto px-4 py-4 bg-lia-bg-primary">
           <div 
             className="flex items-center justify-between p-3 rounded-md mb-4"
             style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.borderColor}`}}
@@ -168,7 +168,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                   className="p-3 rounded-md border border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span 
                       className="text-micro text-lia-text-tertiary"
                      
@@ -220,7 +220,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
               <div className="mb-4">
                 <p 
-                  className="text-xs font-semibold mb-3 text-lia-text-primary dark:text-lia-text-primary"
+                  className="text-xs font-semibold mb-3 text-lia-text-primary"
                  
                 >
                   Breakdown por Habilidade
@@ -240,9 +240,9 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <Icon className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                            <Icon className="w-3.5 h-3.5 text-lia-text-secondary" />
                             <span 
-                              className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary"
+                              className="text-xs font-medium text-lia-text-primary"
                              
                             >
                               {skill.label}
@@ -251,8 +251,8 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                           <div className="flex items-center gap-2">
                             <span 
                               className="text-micro px-1.5 py-0.5 rounded-full font-medium"
-                              style={{color: LEVEL_CONFIG[skillLevel]?.color ?? 'var(--gray-400)',
-                                backgroundColor: LEVEL_CONFIG[skillLevel]?.bgColor ?? 'var(--gray-bg-10)'}}
+                              style={{color: LEVEL_CONFIG[skillLevel]?.color ?? 'var(--lia-text-tertiary)',
+                                backgroundColor: LEVEL_CONFIG[skillLevel]?.bgColor ?? 'var(--lia-bg-tertiary)'}}
                             >
                               {skillLevel}
                             </span>
@@ -266,7 +266,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                         </div>
                         <Progress 
                           value={score} 
-                          className="h-2 bg-gray-200"
+                          className="h-2 bg-lia-interactive-active"
                         />
                       </div>
                     )
@@ -276,7 +276,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
               <div className="p-3 rounded-md bg-wedo-cyan/[.08] border border-wedo-cyan/20">
                 <p 
-                  className="text-micro font-medium mb-1 text-lia-text-secondary dark:text-lia-text-secondary"
+                  className="text-micro font-medium mb-1 text-lia-text-secondary"
                  
                 >
                   Sobre o nível CEFR
@@ -334,12 +334,12 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
         </div>
 
         <div 
-          className="px-4 py-3 flex justify-end bg-gray-50 dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle rounded-b-xl"
+          className="px-4 py-3 flex justify-end bg-lia-bg-secondary border-t border-lia-border-subtle rounded-b-xl"
         >
           <Button
             onClick={onClose}
             size="sm"
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             Fechar
           </Button>

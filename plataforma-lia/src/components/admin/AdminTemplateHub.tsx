@@ -41,7 +41,7 @@ const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
   'whatsapp': { label: 'WhatsApp', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
   'bell': { label: 'Bell', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
   'teams': { label: 'Teams', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
- 'briefing': { label: 'Briefing', color: 'bg-gray-50 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-secondary' },
+ 'briefing': { label: 'Briefing', color: 'bg-gray-50 text-lia-text-primary dark:bg-lia-bg-secondary' },
   'parecer': { label: 'Parecer', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
   'report': { label: 'Report', color: 'bg-wedo-magenta/10 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta' },
   'chat_lia': { label: 'Chat LIA', color: 'bg-wedo-cyan/10 text-wedo-cyan dark:bg-wedo-cyan/20 dark:text-wedo-cyan' }
@@ -346,7 +346,7 @@ export function AdminTemplateHub() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
+        <h2 className="text-xl font-semibold text-lia-text-primary">
           Templates de Sistema
         </h2>
         <p className="text-sm text-lia-text-disabled">
@@ -356,7 +356,7 @@ export function AdminTemplateHub() {
 
       {successMessage && (
         <div className="px-3 py-2 rounded-md flex items-center gap-2 border border-wedo-cyan/30 text-wedo-cyan-dark bg-gray-200/30">
-          <CheckCircle className="w-4 h-4 lia-text-base" />
+          <CheckCircle className="w-4 h-4 text-lia-text-secondary" />
           <span>{successMessage}</span>
         </div>
       )}
@@ -395,7 +395,7 @@ export function AdminTemplateHub() {
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
  channelFilter === key 
                     ? 'text-white' 
-                    : 'bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary'
+                    : 'bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated'
                 }`}
                 style={channelFilter === key ? { backgroundColor: 'var(--gray-950)' } : {}}
               >
@@ -409,7 +409,7 @@ export function AdminTemplateHub() {
             <select
               value={triggerTypeFilter}
               onChange={(e) => setTriggerTypeFilter(e.target.value as 'all' | 'automatic' | 'manual' | 'both')}
-              className="px-2.5 py-1.5 rounded-md text-xs font-medium border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary"
+              className="px-2.5 py-1.5 rounded-md text-xs font-medium border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-lia-text-secondary"
             >
               <option value="all">Todos Tipos</option>
               <option value="automatic">Automático</option>
@@ -456,9 +456,9 @@ export function AdminTemplateHub() {
               <Card className="border border-dashed border-lia-border-subtle rounded-md">
                 <CardContent className="p-4 text-center">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-gray-200/30">
-                    <Search className="w-4 h-4 lia-text-base" />
+                    <Search className="w-4 h-4 text-lia-text-secondary" />
                   </div>
-                  <p className="text-sm lia-text-base" aria-live="polite" aria-atomic="true">
+                  <p className="text-sm text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                     Nenhum template encontrado
                   </p>
                   <p className="text-xs lia-text-secondary mt-1">
@@ -506,7 +506,7 @@ export function AdminTemplateHub() {
                               <CardContent className="p-2.5">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <div className={`w-7 h-7 rounded-md ${CHANNEL_LABELS[template.channel || 'email']?.color || 'bg-gray-50 lia-text-base'} flex items-center justify-center flex-shrink-0`}>
+                                    <div className={`w-7 h-7 rounded-md ${CHANNEL_LABELS[template.channel || 'email']?.color || 'bg-gray-50 text-lia-text-secondary'} flex items-center justify-center flex-shrink-0`}>
                                       {getChannelIcon(template.channel || 'email')}
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -594,7 +594,7 @@ export function AdminTemplateHub() {
 
                     {selectedTemplate.subject && (
                       <div>
-                        <label className="block text-xs font-medium lia-text-base mb-1">Assunto</label>
+                        <label className="block text-xs font-medium text-lia-text-secondary mb-1">Assunto</label>
                         {editingTemplate ? (
                           <input
                             type="text"
@@ -610,7 +610,7 @@ export function AdminTemplateHub() {
 
                     <div>
                       <div className="flex items-center justify-between mb-1">
-                        <label className="block text-xs font-medium lia-text-base">Conteúdo</label>
+                        <label className="block text-xs font-medium text-lia-text-secondary">Conteúdo</label>
                         {editingTemplate && (
                           <VariableSelector 
                             onSelect={insertVariableAtCursor}
@@ -637,7 +637,7 @@ export function AdminTemplateHub() {
 
                     {selectedTemplate.variables && selectedTemplate.variables.length > 0 && (
                       <div>
-                        <label className="block text-xs font-medium lia-text-base mb-2">Variáveis Disponíveis</label>
+                        <label className="block text-xs font-medium text-lia-text-secondary mb-2">Variáveis Disponíveis</label>
                         <div className="flex flex-wrap gap-1.5">
                           {selectedTemplate.variables.map((variable, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs font-mono">
@@ -650,7 +650,7 @@ export function AdminTemplateHub() {
 
                     {selectedTemplate.used_in && selectedTemplate.used_in.length > 0 && (
                       <div>
-                        <label className="block text-xs font-medium lia-text-base mb-2">Usado em</label>
+                        <label className="block text-xs font-medium text-lia-text-secondary mb-2">Usado em</label>
                         <div className="flex flex-wrap gap-1.5">
                           {selectedTemplate.used_in.map((usage, idx) => (
                             <Badge key={idx} variant="secondary" className="text-xs">
@@ -671,7 +671,7 @@ export function AdminTemplateHub() {
                           <Brain className="w-4 h-4 text-wedo-cyan" />
                         </div>
                         <div>
-                          <span className="text-base-ui font-semibold lia-text-strong">Ajustar com a LIA</span>
+                          <span className="text-base-ui font-semibold text-lia-text-primary">Ajustar com a LIA</span>
                           <p className="text-xs lia-text-secondary">
                             Descreva as alterações desejadas
                           </p>
@@ -731,7 +731,7 @@ export function AdminTemplateHub() {
                               <Brain className="w-5 h-5 text-wedo-cyan" />
                             </div>
                             <div>
-                              <h3 className="text-sm font-semibold lia-text-strong">
+                              <h3 className="text-sm font-semibold text-lia-text-primary">
                                 Ajustes da LIA
                               </h3>
                               <p className="text-xs lia-text-secondary">
@@ -764,7 +764,7 @@ export function AdminTemplateHub() {
                             <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                               Novo Assunto
                             </label>
-                            <div className="p-3 bg-gray-50 rounded-md text-xs lia-text-strong">
+                            <div className="p-3 bg-gray-50 rounded-md text-xs text-lia-text-primary">
                               {aiResultModal.newSubject}
                             </div>
                           </div>
@@ -774,7 +774,7 @@ export function AdminTemplateHub() {
                           <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                             Novo Conteúdo
                           </label>
-                          <div className="p-3 bg-gray-50 rounded-md text-xs lia-text-strong whitespace-pre-wrap max-h-content-md overflow-y-auto">
+                          <div className="p-3 bg-gray-50 rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto">
                             {aiResultModal.newBody}
                           </div>
                         </div>
@@ -808,9 +808,9 @@ export function AdminTemplateHub() {
               <Card className="border-dashed border-2 border-lia-border-subtle rounded-md h-96 flex items-center justify-center">
                 <CardContent className="text-center">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-gray-200/30">
-                    <Settings className="w-6 h-6 lia-text-base" />
+                    <Settings className="w-6 h-6 text-lia-text-secondary" />
                   </div>
-                  <p className="text-sm lia-text-base mb-1">
+                  <p className="text-sm text-lia-text-secondary mb-1">
                     Selecione um template
                   </p>
                   <p className="text-xs lia-text-secondary">

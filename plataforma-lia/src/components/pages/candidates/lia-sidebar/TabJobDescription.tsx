@@ -102,7 +102,7 @@ export const TabJobDescription = React.memo(function TabJobDescription({
           placeholder="Cole aqui a descri\u00e7\u00e3o da vaga completa..."
           value={jobDescriptionText}
           onChange={(e) => setJobDescriptionText(e.target.value)}
-          className="w-full h-48 p-4 pb-12 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none resize-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle"
+          className="w-full h-48 p-4 pb-12 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none resize-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
           onFocus={(e) => e.target.style.borderColor = 'var(--gray-200)'}
           onBlur={(e) => e.target.style.borderColor = 'var(--gray-50)'}
         />
@@ -119,14 +119,14 @@ export const TabJobDescription = React.memo(function TabJobDescription({
         <div className="p-3 rounded-md border bg-wedo-cyan/[0.06] border-wedo-cyan/30">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="w-4 h-4 text-wedo-cyan" />
-            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Crit\u00e9rios Extra\u00eddos</span>
+            <span className="text-xs font-medium text-lia-text-primary">Crit\u00e9rios Extra\u00eddos</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {extractedJDCriteria.job_title && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">{extractedJDCriteria.job_title}</span>}
-            {extractedJDCriteria.seniority && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">{extractedJDCriteria.seniority}</span>}
-            {extractedJDCriteria.skills.map((skill, idx) => <span key={idx} className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">{skill}</span>)}
-            {extractedJDCriteria.experience_years && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">{extractedJDCriteria.experience_years}+ anos</span>}
-            {extractedJDCriteria.location && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">{extractedJDCriteria.location}</span>}
+            {extractedJDCriteria.job_title && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.job_title}</span>}
+            {extractedJDCriteria.seniority && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.seniority}</span>}
+            {extractedJDCriteria.skills.map((skill, idx) => <span key={idx} className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated">{skill}</span>)}
+            {extractedJDCriteria.experience_years && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.experience_years}+ anos</span>}
+            {extractedJDCriteria.location && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.location}</span>}
           </div>
         </div>
       )}

@@ -263,8 +263,8 @@ const fileInputRef = useRef<HTMLInputElement>(null)
 
         <div className="space-y-6 py-2">
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
-              <Search className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <div className="flex items-center gap-2 text-sm font-medium text-lia-text-primary">
+              <Search className="w-4 h-4 text-lia-text-secondary" />
               Buscar na Base
             </div>
             
@@ -308,7 +308,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                       
                       <Avatar className="w-8 h-8">
                         <AvatarImage src={undefined} />
-                        <AvatarFallback className="bg-gray-200 text-xs text-lia-text-secondary dark:text-lia-text-secondary">
+                        <AvatarFallback className="bg-gray-200 text-xs text-lia-text-secondary">
                           {getInitials(candidate.name)}
                         </AvatarFallback>
                       </Avatar>
@@ -317,13 +317,13 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                         <p className="text-sm font-medium text-lia-text-primary truncate">
                           {candidate.name || "Nome não disponível"}
                         </p>
-                        <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
+                        <p className="text-xs text-lia-text-tertiary truncate">
                           {candidate.contact?.email || candidate.current_title || candidate.headline || ""}
                         </p>
                       </div>
 
                       {candidate.match_score && (
-                        <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary">
+                        <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary">
                           {Math.round(candidate.match_score)}%
                         </span>
                       )}
@@ -334,14 +334,14 @@ const fileInputRef = useRef<HTMLInputElement>(null)
             )}
 
             {searchQuery.length >= 2 && !searching && searchResults.length === 0 && (
-              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary text-center py-3" aria-live="polite" aria-atomic="true">
+              <p className="text-sm text-lia-text-tertiary text-center py-3" aria-live="polite" aria-atomic="true">
                 Nenhum candidato encontrado para "{searchQuery}"
               </p>
             )}
 
             {selectedCandidates.size > 0 && (
               <div className="flex items-center justify-between pt-2">
-                <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+                <span className="text-sm text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   {selectedCandidates.size} candidato(s) selecionado(s)
                 </span>
                 <Button
@@ -376,8 +376,8 @@ const fileInputRef = useRef<HTMLInputElement>(null)
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
-              <Upload className="w-4 h-4 lia-text-base" />
+            <div className="flex items-center gap-2 text-sm font-medium text-lia-text-primary">
+              <Upload className="w-4 h-4 text-lia-text-secondary" />
               Importar Novo Candidato
             </div>
 
@@ -455,18 +455,18 @@ const fileInputRef = useRef<HTMLInputElement>(null)
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-elevated">
-                <Search className="w-5 h-5 lia-text-base" />
+                <Search className="w-5 h-5 text-lia-text-secondary" />
               </div>
               <div className="text-left">
                 <p className="text-sm font-medium text-lia-text-primary">
                   Ir para Busca Avançada
                 </p>
-                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-tertiary">
                   Usar filtros e busca inteligente
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors motion-reduce:transition-none" />
+            <ArrowRight className="w-5 h-5 lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none" />
           </button>
         </div>
       </DialogContent>

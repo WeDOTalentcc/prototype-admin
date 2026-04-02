@@ -34,9 +34,9 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'system': return <Lock className="w-3.5 h-3.5 lia-text-400" />
-      case 'default': return <Target className="w-3.5 h-3.5 lia-text-400" />
-      case 'custom': return <Settings className="w-3.5 h-3.5 lia-text-400" />
+      case 'system': return <Lock className="w-3.5 h-3.5 text-lia-text-tertiary" />
+      case 'default': return <Target className="w-3.5 h-3.5 text-lia-text-tertiary" />
+      case 'custom': return <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
       default: return null
     }
   }
@@ -107,7 +107,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-xl font-medium font-inter">Recrutamento</CardTitle>
-              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mt-1">Pipeline e elegibilidade</p>
+              <p className="text-sm text-lia-text-secondary mt-1">Pipeline e elegibilidade</p>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-status-success border-status-success/30 bg-status-success/10 dark:bg-status-success gap-1.5">
@@ -125,8 +125,8 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                 className={cn(
                   "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
                   activeSubTab === tab.id
-                    ? "border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50"
-                    : "border-transparent lia-text-500 dark:text-lia-text-tertiary hover:lia-text-700 dark:hover:lia-text-300"
+                    ? "border-gray-900 dark:lia-border-50 text-lia-text-primary"
+                    : "border-transparent text-lia-text-secondary hover:text-lia-text-primary"
                 )}
               >
                 <tab.icon className="w-4 h-4" />
@@ -158,10 +158,10 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
               </div>
 
               <div>
-                <h3 className="text-lg font-medium lia-text-900 dark:lia-text-50 mb-1">Jornada de Recrutamento</h3>
-                <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mb-4">Visualize as etapas do processo seletivo configuradas.</p>
+                <h3 className="text-lg font-medium text-lia-text-primary mb-1">Jornada de Recrutamento</h3>
+                <p className="text-sm text-lia-text-secondary mb-4">Visualize as etapas do processo seletivo configuradas.</p>
 
-                <div className="flex items-center gap-6 text-xs lia-text-500 dark:text-lia-text-tertiary mb-6 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-lg">
+                <div className="flex items-center gap-6 text-xs text-lia-text-secondary mb-6 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-lg">
                   <div className="flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5" />
                     <span><strong>Sistema:</strong> Etapas fixas (Funil, Triagem, Entrevista RH, Contratado, Reprovado)</span>
@@ -188,14 +188,14 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-10">
-                        <span className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-lg flex items-center justify-center text-sm font-medium lia-text-600 dark:text-lia-text-secondary">
+                        <span className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-lg flex items-center justify-center text-sm font-medium text-lia-text-secondary">
                           {stage.order}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-2 flex-1">
                         {getCategoryIcon(stage.stageCategory)}
-                        <span className="font-medium lia-text-900 dark:lia-text-50">{stage.displayName}</span>
+                        <span className="font-medium text-lia-text-primary">{stage.displayName}</span>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -223,7 +223,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                         )}
 
                         {stage.stageCategory === 'system' ? (
-                          <span className="text-xs lia-text-400 flex items-center gap-1">
+                          <span className="text-xs text-lia-text-tertiary flex items-center gap-1">
                             <Lock className="w-3 h-3" />
                           </span>
                         ) : (
@@ -232,7 +232,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                             className={cn(
                               "flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors",
                               stage.isActive
-                                ? "lia-text-400 hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error"
+                                ? "text-lia-text-tertiary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error"
                                 : "text-status-success hover:bg-status-success/10 dark:hover:bg-status-success"
                             )}
                           >
@@ -280,21 +280,21 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
           )}
 
           {activeSubTab === "eligibility" && (
-            <div className="text-center py-12 lia-text-500 dark:text-lia-text-tertiary">
+            <div className="text-center py-12 text-lia-text-secondary">
               <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="text-sm">Configurações de Perguntas de Elegibilidade</p>
             </div>
           )}
 
           {activeSubTab === "data-request" && (
-            <div className="text-center py-12 lia-text-500 dark:text-lia-text-tertiary">
+            <div className="text-center py-12 text-lia-text-secondary">
               <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="text-sm">Configurações de Solicitação de Dados</p>
             </div>
           )}
 
           {activeSubTab === "lia-instructions" && (
-            <div className="text-center py-12 lia-text-500 dark:text-lia-text-tertiary">
+            <div className="text-center py-12 text-lia-text-secondary">
               <Brain className="w-12 h-12 mx-auto mb-3 opacity-30 text-wedo-cyan" />
               <p className="text-sm">Instruções para a LIA</p>
             </div>

@@ -203,7 +203,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <KeyRound className="w-5 h-5 lia-text-base" />
+              <KeyRound className="w-5 h-5 text-lia-text-secondary" />
               Alterar Senha
             </DialogTitle>
             <DialogDescription>

@@ -147,7 +147,7 @@ export function WSIQuestionsStage() {
           
           {/* Question content */}
           <div className="flex-1 min-w-0">
-            <p className="text-xs lia-text-strong leading-relaxed">
+            <p className="text-xs text-lia-text-primary leading-relaxed">
               {question.question}
             </p>
             
@@ -159,7 +159,7 @@ export function WSIQuestionsStage() {
                 question.category === 'technical' ? "bg-wedo-cyan/10 text-wedo-cyan-dark" :
                 question.category === 'behavioral' ? "bg-wedo-purple/10 text-wedo-purple" :
                 question.category === 'situacional' ? "bg-status-warning/10 text-status-warning" :
-                "bg-gray-50 lia-text-base"
+                "bg-gray-50 text-lia-text-secondary"
               )}>
                 <CategoryIcon className="w-2.5 h-2.5" />
                 {QUESTION_CATEGORIES.find(c => c.id === question.category)?.label || 'Geral'}
@@ -214,7 +214,7 @@ export function WSIQuestionsStage() {
         <div className="flex items-center gap-1 flex-wrap justify-end">
           <span className={cn(
  "text-xs font-semibold",
-            selectedCount === 5 ? "text-status-success" : "text-lia-text-secondary dark:text-lia-text-tertiary"
+            selectedCount === 5 ? "text-status-success" : "text-lia-text-secondary"
           )}>
             {selectedCount}
           </span>
@@ -222,7 +222,7 @@ export function WSIQuestionsStage() {
           {enabledCompanyQuestionsCount > 0 && (
             <>
               <span className="text-micro lia-text-secondary">(+</span>
-              <span className="text-micro font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{enabledCompanyQuestionsCount}</span>
+              <span className="text-micro font-medium text-lia-text-secondary">{enabledCompanyQuestionsCount}</span>
               <span className="text-micro lia-text-secondary">da empresa)</span>
             </>
           )}
@@ -246,7 +246,7 @@ export function WSIQuestionsStage() {
         <div className="mb-4 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Settings className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="text-xs font-semibold lia-text-secondary uppercase tracking-wide">
                 Perguntas Padrão da Empresa
               </span>
@@ -256,7 +256,7 @@ export function WSIQuestionsStage() {
             </div>
             <button
               onClick={() => setCompanyDefaultQuestions(prev => prev.map(q => ({ ...q, enabled: false })))}
-              className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary hover:underline"
+              className="text-micro text-lia-text-secondary hover:underline"
             >
               Desabilitar todas
             </button>
@@ -284,7 +284,7 @@ export function WSIQuestionsStage() {
                   </button>
                   <span className={cn(
  "text-xs",
-                    q.enabled ? "lia-text-strong" : "lia-text-secondary"
+                    q.enabled ? "text-lia-text-primary" : "lia-text-secondary"
                   )}>
                     {q.question}
                   </span>
@@ -301,8 +301,8 @@ export function WSIQuestionsStage() {
       {/* Loading indicator */}
       {isGeneratingWSI && (
         <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default flex items-center justify-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
-          <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+          <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
+          <span className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
             Gerando perguntas personalizadas para esta vaga...
           </span>
         </div>
@@ -324,7 +324,7 @@ export function WSIQuestionsStage() {
       {/* Add Custom Question Button */}
       <button
         onClick={() => setShowCustomQuestionForm(true)}
-        className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
+        className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
       >
         <Plus className="w-3.5 h-3.5" />
         Adicionar Pergunta Personalizada

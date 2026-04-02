@@ -54,7 +54,7 @@ const ClientCard = memo(function ClientCard({ client, onSelect }: ClientCardProp
             <h3 className="text-sm font-medium text-lia-text-primary truncate group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
               {client.name}
             </h3>
-            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
+            <p className="text-xs text-lia-text-tertiary truncate">
               {formatCNPJ(client.cnpj)}
             </p>
           </div>
@@ -67,7 +67,7 @@ const ClientCard = memo(function ClientCard({ client, onSelect }: ClientCardProp
               <Users className="w-3 h-3 lia-text-secondary" />
             </div>
             <div>
-              <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary uppercase">Usuários</p>
+              <p className="text-micro text-lia-text-tertiary uppercase">Usuários</p>
               <p className="text-xs font-medium text-lia-text-primary">
                 {client.active_users}/{client.user_limit}
               </p>
@@ -78,7 +78,7 @@ const ClientCard = memo(function ClientCard({ client, onSelect }: ClientCardProp
               <Calendar className="w-3 h-3 lia-text-secondary" />
             </div>
             <div>
-              <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary uppercase">Início</p>
+              <p className="text-micro text-lia-text-tertiary uppercase">Início</p>
               <p className="text-xs font-medium text-lia-text-primary">
                 {formatDate(client.start_date)}
               </p>
@@ -93,7 +93,7 @@ const ClientCard = memo(function ClientCard({ client, onSelect }: ClientCardProp
             </Badge>
           </div>
           {client.account_manager && (
-            <div className="flex items-center gap-1 text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+            <div className="flex items-center gap-1 text-xs text-lia-text-tertiary">
               <UserCircle className="w-3 h-3" />
               <span className="truncate max-w-[100px]">{client.account_manager}</span>
             </div>

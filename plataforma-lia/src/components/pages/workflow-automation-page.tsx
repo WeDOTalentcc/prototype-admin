@@ -193,7 +193,7 @@ const nodeTypes = [
     type: 'condition',
     title: 'Condições',
     icon: GitBranch,
-    color: 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary',
+    color: 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary',
     items: [
       { id: 'department_check', name: 'Verificar Departamento', description: 'Condição baseada no departamento' },
       { id: 'score_check', name: 'Verificar Score', description: 'Condição baseada no score LIA' },
@@ -243,11 +243,11 @@ export function WorkflowAutomationPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Workflows Ativos</p>
-                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{workflows.filter(w => w.status === 'active').length}</p>
+                <p className="text-2xl font-bold text-lia-text-primary">{workflows.filter(w => w.status === 'active').length}</p>
                 <p className="text-xs text-status-success">+2 esta semana</p>
               </div>
               <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                <Workflow className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Workflow className="w-6 h-6 text-lia-text-secondary" />
               </div>
             </div>
           </CardContent>
@@ -330,7 +330,7 @@ export function WorkflowAutomationPage() {
                     </div>
 
                     <div>
-                      <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{workflow.name}</h4>
+                      <h4 className="font-medium text-lia-text-primary">{workflow.name}</h4>
                       <p className="text-sm text-lia-text-secondary">{workflow.description}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className="text-xs">{workflow.category}</Badge>
@@ -347,7 +347,7 @@ export function WorkflowAutomationPage() {
 
                   <div className="flex items-center gap-6 text-sm">
                     <div className="text-center">
-                      <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{workflow.executions}</p>
+                      <p className="font-medium text-lia-text-primary">{workflow.executions}</p>
                       <p className="text-lia-text-secondary">Execuções</p>
                     </div>
 
@@ -358,7 +358,7 @@ export function WorkflowAutomationPage() {
 
                     {workflow.lastExecution && (
                       <div className="text-center">
-                        <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
+                        <p className="font-medium text-lia-text-primary">
                           {new Date(workflow.lastExecution).toLocaleDateString('pt-BR')}
                         </p>
                         <p className="text-lia-text-secondary">Última exec.</p>
@@ -405,7 +405,7 @@ export function WorkflowAutomationPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Templates de Automação</h3>
+          <h3 className="text-xs font-medium text-lia-text-primary">Templates de Automação</h3>
           <p className="text-sm text-lia-text-secondary">Use templates prontos para criar workflows rapidamente</p>
         </div>
         <Button className="gap-2">
@@ -440,7 +440,7 @@ export function WorkflowAutomationPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">{template.description}</p>
+                <p className="text-sm text-lia-text-primary">{template.description}</p>
 
                 <div className="flex flex-wrap gap-1">
                   <Badge variant="outline" className="text-xs">
@@ -476,7 +476,7 @@ export function WorkflowAutomationPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Workflow Builder</h3>
+          <h3 className="text-xs font-medium text-lia-text-primary">Workflow Builder</h3>
           <p className="text-sm text-lia-text-secondary">Arraste e solte componentes para criar seu workflow</p>
         </div>
         <div className="flex gap-2">
@@ -494,7 +494,7 @@ export function WorkflowAutomationPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-96">
         {/* Palette */}
         <div className="space-y-4">
-          <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">Componentes</h4>
+          <h4 className="font-medium text-lia-text-primary">Componentes</h4>
           {nodeTypes.map(nodeType => (
             <Card key={nodeType.type}>
               <CardHeader className="pb-2">
@@ -539,8 +539,8 @@ export function WorkflowAutomationPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-sm font-semibold font-sans text-lia-text-primary dark:text-lia-text-primary mb-1 flex items-center gap-1.5">
-                <Workflow className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <h1 className="text-sm font-semibold font-sans text-lia-text-primary mb-1 flex items-center gap-1.5">
+                <Workflow className="w-6 h-6 text-lia-text-secondary" />
                 Automação Avançada de Workflows
               </h1>
               <p className="text-lia-text-secondary">
@@ -572,7 +572,7 @@ export function WorkflowAutomationPage() {
                 onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
                   selectedView === tab.id
-                    ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
+                    ? 'bg-lia-bg-primary text-lia-text-primary'
                     : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
@@ -590,7 +590,7 @@ export function WorkflowAutomationPage() {
         {selectedView === 'analytics' && (
           <div className="text-center py-12">
             <Brain className="w-12 h-12 text-wedo-cyan mx-auto mb-4" />
-            <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Analytics de Automação</h3>
+            <h3 className="text-xs font-medium text-lia-text-primary mb-2">Analytics de Automação</h3>
             <p className="text-lia-text-secondary">Métricas detalhadas de performance em desenvolvimento</p>
           </div>
         )}
@@ -621,7 +621,7 @@ function WorkflowBuilderModal({ workflow, onClose }: WorkflowBuilderModalProps) 
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-lia-bg-primary rounded-md w-full max-w-6xl h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
+          <h2 className="text-xl font-semibold text-lia-text-primary">
             {workflow ? `Editar: ${workflow.name}` : 'Novo Workflow'}
           </h2>
           <Button variant="ghost" onClick={onClose}>×</Button>
@@ -630,7 +630,7 @@ function WorkflowBuilderModal({ workflow, onClose }: WorkflowBuilderModalProps) 
         <div className="flex-1 p-6">
           <div className="text-center py-12">
             <Code className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-            <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Workflow Builder Avançado</h3>
+            <h3 className="text-xs font-medium text-lia-text-primary mb-2">Workflow Builder Avançado</h3>
             <p className="text-lia-text-secondary">Interface visual de drag-and-drop em desenvolvimento</p>
           </div>
         </div>

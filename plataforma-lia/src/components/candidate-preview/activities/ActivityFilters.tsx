@@ -30,10 +30,10 @@ export function ActivityFilters({
   onShowLiaModal,
 }: ActivityFiltersProps) {
   return (
-    <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
+    <div className="p-3 border-b border-lia-border-subtle bg-lia-bg-primary">
       <div className="flex items-center justify-between mb-2">
-        <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
-          <Activity className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+        <h4 className="text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
+          <Activity className="w-3.5 h-3.5 text-lia-text-primary" />
           Feed de Atividades
           <Badge className="text-xs px-1 py-0">{totalCount}</Badge>
         </h4>
@@ -41,24 +41,24 @@ export function ActivityFilters({
           <select
             value={periodFilter}
             onChange={(e) => onPeriodFilterChange((e.target as HTMLSelectElement).value as PeriodFilterType)}
-            className="text-xs px-2 py-1 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400"
+            className="text-xs px-2 py-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-border-default"
           >
             <option value="7days">Últimos 7 dias</option>
             <option value="30days">Últimos 30 dias</option>
             <option value="3months">Últimos 3 meses</option>
             <option value="all">Todo período</option>
           </select>
-          <div className="flex items-center bg-lia-bg-primary rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="flex items-center bg-lia-bg-primary rounded-md p-0.5 border border-lia-border-subtle">
             <button
               onClick={() => onActivityViewChange('timeline')}
-              className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'timeline' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'}`}
+              className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'timeline' ? 'bg-lia-interactive-active text-lia-text-primary' : 'text-lia-text-secondary hover:text-lia-text-primary'}`}
               title="Visualização Timeline"
             >
               <GitBranch className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => onActivityViewChange('list')}
-              className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'list' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary' : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'}`}
+              className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${activityView === 'list' ? 'bg-lia-interactive-active text-lia-text-primary' : 'text-lia-text-secondary hover:text-lia-text-primary'}`}
               title="Visualização Lista"
             >
               <List className="w-3.5 h-3.5" />
@@ -67,7 +67,7 @@ export function ActivityFilters({
           <Button
             onClick={onShowLiaModal}
             size="sm"
-            className="gap-1 px-2 py-1 text-xs h-6 bg-gray-100 hover:bg-gray-200 text-lia-text-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle"
+            className="gap-1 px-2 py-1 text-xs h-6 bg-lia-bg-tertiary hover:bg-lia-interactive-active text-lia-text-secondary border border-lia-border-subtle"
           >
             <PlusCircle className="w-3 h-3" />
             Nova Atividade
@@ -77,51 +77,51 @@ export function ActivityFilters({
       <div className="flex gap-1 flex-wrap">
         <button
           onClick={() => onActivityFilterChange('all')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'all' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-200'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'all' ? 'bg-lia-btn-primary-bg text-white' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           Todas
         </button>
         <button
           onClick={() => onActivityFilterChange('emails')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'emails' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'emails' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           📧 Emails
         </button>
         <button
           onClick={() => onActivityFilterChange('interviews')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'interviews' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'interviews' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           🎤 Entrevistas
         </button>
         <button
           onClick={() => onActivityFilterChange('tests')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'tests' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'tests' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           📝 Testes
         </button>
         <button
           onClick={() => onActivityFilterChange('lia')}
           className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'lia' ? 'text-white font-semibold' : 'hover:opacity-80'}`}
-          style={{backgroundColor: activityFilter === 'lia' ? 'var(--gray-950)' : 'var(--wedo-cyan-bg-15)',
-            color: activityFilter === 'lia' ? 'white' : 'var(--gray-600)'}}
+          style={{backgroundColor: activityFilter === 'lia' ? 'var(--lia-text-primary)' : 'var(--wedo-cyan-bg-15)',
+            color: activityFilter === 'lia' ? 'white' : 'var(--lia-text-secondary)'}}
         >
           🤖 LIA
         </button>
         <button
           onClick={() => onActivityFilterChange('offers')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'offers' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'offers' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           💼 Ofertas
         </button>
         <button
           onClick={() => onActivityFilterChange('applications')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'applications' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-100 text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'applications' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           📋 Inscrições
         </button>
         <button
           onClick={() => onActivityFilterChange('evaluations')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'evaluations' ? 'bg-gray-700 text-white font-semibold' : 'lia-text-base hover:dark:bg-lia-bg-secondary dark:hover:bg-gray-700'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'evaluations' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'text-lia-text-secondary hover:dark:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-bg'}`}
         >
           🎯 Avaliações
         </button>

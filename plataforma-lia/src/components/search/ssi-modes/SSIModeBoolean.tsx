@@ -43,7 +43,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
       {/* Container principal com textarea e controles posicionados absolutamente (como Natural) */}
       <div className="relative">
         <div className="absolute left-3 top-3">
-          <Binary className="w-4 h-4 lia-text-700" />
+          <Binary className="w-4 h-4 text-lia-text-primary" />
         </div>
         <textarea
           ref={textareaRef}
@@ -82,7 +82,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                       searchSource === 'local'
                         ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                         : "hover:bg-gray-100"
-                    , searchSource === 'local' ? "text-wedo-green" : "lia-text-400"
+                    , searchSource === 'local' ? "text-wedo-green" : "text-lia-text-tertiary"
                     )}
                   >
                     <Home className="w-4 h-4" />
@@ -90,7 +90,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium">Seu banco de talentos</p>
-                  <p className="text-xs lia-text-300">Gratuito • Local</p>
+                  <p className="text-xs text-lia-text-disabled">Gratuito • Local</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -107,7 +107,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                         searchSource === 'hybrid'
                           ? "bg-wedo-orange/15 ring-1 ring-wedo-orange"
                           : "hover:bg-gray-100"
-                      , searchSource === 'hybrid' ? "text-wedo-orange" : "lia-text-400"
+                      , searchSource === 'hybrid' ? "text-wedo-orange" : "text-lia-text-tertiary"
                       )}
                     >
                       <Zap className="w-4 h-4" />
@@ -115,7 +115,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Expanda sua busca</p>
-                    <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
+                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -133,7 +133,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                         searchSource === 'global'
                           ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20"
                           : "hover:bg-gray-100"
-                      , searchSource === 'global' ? "lia-text-950" : "lia-text-400"
+                      , searchSource === 'global' ? "text-lia-text-primary" : "text-lia-text-tertiary"
                       )}
                     >
                       <Globe className="w-4 h-4" />
@@ -141,7 +141,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Alcance global</p>
-                    <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
+                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -161,7 +161,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                           requireEmails
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                             : "hover:bg-gray-100"
-                        , requireEmails ? "text-wedo-green" : "lia-text-400"
+                        , requireEmails ? "text-wedo-green" : "text-lia-text-tertiary"
                         )}
                       >
                         <Mail className="w-3.5 h-3.5" />
@@ -169,7 +169,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Email</p>
-                      <p className="text-xs lia-text-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                      <p className="text-xs text-lia-text-disabled">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -185,7 +185,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                           requirePhoneNumbers
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                             : "hover:bg-gray-100"
-                        , requirePhoneNumbers ? "text-wedo-green" : "lia-text-400"
+                        , requirePhoneNumbers ? "text-wedo-green" : "text-lia-text-tertiary"
                         )}
                       >
                         <Phone className="w-3.5 h-3.5" />
@@ -193,7 +193,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Apenas com Telefone</p>
-                      <p className="text-xs lia-text-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                      <p className="text-xs text-lia-text-disabled">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -208,7 +208,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
               className={cn(
                 "flex items-center justify-center p-1.5 rounded-md transition-colors",
                 canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
-              , canSubmit() ? "lia-text-400" : "lia-text-200"
+              , canSubmit() ? "text-lia-text-tertiary" : "text-lia-text-disabled"
               )}
             >
               {isLoading ? (
@@ -229,7 +229,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
       )}
 
       <div className="flex flex-wrap gap-2">
-        <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">Operadores:</span>
+        <span className="text-xs text-lia-text-secondary">Operadores:</span>
         {["AND", "OR", "NOT", "(", ")"].map((op) => (
           <button
             key={op}
@@ -246,8 +246,8 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
       {/* Dica contextual padronizada */}
       <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
         <div className="flex items-start gap-2">
-          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-700" />
-          <p className="text-xs lia-text-800 dark:text-lia-text-primary">
+          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
+          <p className="text-xs text-lia-text-primary">
             <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições. Ex: (Python OR Java) AND &quot;São Paulo&quot;
           </p>
         </div>

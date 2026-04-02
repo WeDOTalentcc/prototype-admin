@@ -181,7 +181,7 @@ export function AsyncJobProgress({
           ) : (
             <XCircle className="h-4 w-4 text-status-error" />
           )}
-          <span className="text-sm font-medium lia-text-strong">{label}</span>
+          <span className="text-sm font-medium text-lia-text-primary">{label}</span>
         </div>
 
         <div className="flex items-center gap-2">

@@ -314,8 +314,8 @@ export function IndustryFilterInput({
         <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
           <PopoverTrigger asChild>
             <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors motion-reduce:transition-none">
-              <span className="lia-text-800 dark:text-lia-text-primary">{currentTimeOption?.label}</span>
-              <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
+              <span className="text-lia-text-primary">{currentTimeOption?.label}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-0" align="start">
@@ -333,12 +333,12 @@ export function IndustryFilterInput({
                   )}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">{option.label}</span>
+                    <span className="text-xs font-medium text-lia-text-primary">{option.label}</span>
                     {timeFilter === option.value && (
-                      <div className="w-2 h-2 rounded-full bg-gray-900 dark:lia-bg-50" />
+                      <div className="w-2 h-2 rounded-full bg-gray-900" />
                     )}
                   </div>
-                  <p className="text-xs lia-text-500 mt-0.5">{option.description}</p>
+                  <p className="text-xs text-lia-text-secondary mt-0.5">{option.description}</p>
                 </button>
               ))}
             </div>
@@ -349,7 +349,7 @@ export function IndustryFilterInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {value.length > 0 && (
-            <span className="text-xs lia-text-500">
+            <span className="text-xs text-lia-text-secondary">
               {value.length} setor{value.length !== 1 ? 'es' : ''} selecionado{value.length !== 1 ? 's' : ''}
             </span>
           )}
@@ -357,7 +357,7 @@ export function IndustryFilterInput({
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 font-medium"
+            className="text-xs text-lia-text-secondary hover:text-lia-text-primary font-medium"
           >
             Limpar tudo
           </button>
@@ -366,7 +366,7 @@ export function IndustryFilterInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -378,7 +378,7 @@ export function IndustryFilterInput({
           />
           {isLoadingAI && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
             </div>
           )}
         </div>
@@ -416,16 +416,16 @@ export function IndustryFilterInput({
                     <span>{item.label}</span>
                   </div>
                 ) : item.type === 'ai-suggestion' ? (
-                  <div className="flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
+                  <div className="flex items-center gap-2 text-lia-text-primary">
                     <Brain className="w-3 h-3 text-wedo-purple" />
                     <span>{item.label}</span>
                     <span className="text-micro px-1.5 py-0.5 bg-wedo-purple/15 text-wedo-purple rounded-full ml-auto">AI</span>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between lia-text-800 dark:text-lia-text-primary">
+                  <div className="flex items-center justify-between text-lia-text-primary">
                     <span>{item.labelPt}</span>
                     {item.labelPt !== item.label && (
-                      <span className="text-xs lia-text-400 ml-2">{item.label}</span>
+                      <span className="text-xs text-lia-text-tertiary ml-2">{item.label}</span>
                     )}
                   </div>
                 )}
@@ -440,7 +440,7 @@ export function IndustryFilterInput({
           {value.map(industry => (
             <Badge
               key={industry}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
             >
               <span>{industry}</span>
               <button

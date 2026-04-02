@@ -15,7 +15,7 @@ export function ChartContainer({ title, description, children, className = "" }:
       <div className="mb-4">
         <h3 className="text-sm font-semibold font-sans text-lia-text-primary">{title}</h3>
         {description && (
-          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">{description}</p>
+          <p className="text-xs text-lia-text-primary mt-1">{description}</p>
         )}
       </div>
       {children}
@@ -177,7 +177,7 @@ export function LineChart({ data, color = "var(--gray-500)" }: LineChartProps) {
           // @ts-ignore TODO: fix type — Property 'name' does not exist on type '{ label: string; value: number; }'.
           // @ts-ignore TODO: fix type — Property 'month' does not exist on type '{ label: string; value: number; }'.
           <div key={item.label || item.month || item.name} className="text-center">
-            <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+            <div className="text-xs text-lia-text-primary">
               {item.label}
             </div>
             <div className="text-xs font-semibold text-lia-text-primary">

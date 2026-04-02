@@ -361,7 +361,7 @@ export function KanbanTableView({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 rounded-full text-micro font-semibold"
+                        className="h-6 px-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 rounded-full text-micro font-semibold"
                         title="Aprovar candidato"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -394,7 +394,7 @@ export function KanbanTableView({
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <MoreVertical className="w-4 h-4 text-lia-text-tertiary hover:text-lia-text-primary dark:text-lia-text-primary" />
+                        <MoreVertical className="w-4 h-4 text-lia-text-tertiary hover:text-lia-text-primary" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">

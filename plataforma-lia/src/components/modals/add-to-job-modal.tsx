@@ -324,17 +324,17 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
         ref={modalRef}
         className={`relative ${cardStyles.default} w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col`}
       >
-        <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle p-5">
+        <div className="border-b border-lia-border-subtle p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Briefcase className="w-5 h-5 text-lia-text-secondary" />
               <h2 id="add-to-job-modal-title" className={textStyles.title}>
                 Adicionar candidatos à vaga
               </h2>
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none"
+              className="p-1 rounded-md hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
               aria-label="Fechar modal"
             >
               <X className="w-4 h-4" />
@@ -345,12 +345,12 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
         <div className="p-4 space-y-4 flex-1 overflow-hidden flex flex-col">
           {isOverLimit && (
             <div className="flex items-start gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
-              <AlertTriangle className="w-4 h-4 text-status-warning dark:text-status-warning mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-xs font-medium text-status-warning dark:text-status-warning" aria-live="polite" aria-atomic="true">
+                <p className="text-xs font-medium text-status-warning" aria-live="polite" aria-atomic="true">
                   Limite de {MAX_BULK_CANDIDATES} candidatos por operação
                 </p>
-                <p className="text-xs text-status-warning dark:text-status-warning mt-0.5">
+                <p className="text-xs text-status-warning mt-0.5">
                   Você selecionou {candidateIds.length}. Apenas os primeiros {MAX_BULK_CANDIDATES} serão adicionados.
                 </p>
               </div>
@@ -359,7 +359,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
 
           <div className={`${cardStyles.flat} p-3`}>
             <div className="flex items-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Users className="w-4 h-4 text-lia-text-secondary" />
               <span className={textStyles.label} aria-live="polite" aria-atomic="true">
                 {effectiveCandidateIds.length} candidato{effectiveCandidateIds.length !== 1 ? 's' : ''} selecionado{effectiveCandidateIds.length !== 1 ? 's' : ''}
               </span>
@@ -367,9 +367,9 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
             {displayNames.length > 0 && (
               <div className="flex items-center gap-1.5 flex-wrap">
                 {displayNames.map((name, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5 bg-white dark:bg-lia-bg-elevated rounded-full px-2 py-1 border border-lia-border-subtle dark:border-lia-border-default">
+                  <div key={idx} className="flex items-center gap-1.5 bg-lia-bg-primary rounded-full px-2 py-1 border border-lia-border-subtle">
                     <Avatar className="w-5 h-5">
-                      <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <AvatarFallback className="text-micro bg-lia-bg-tertiary text-lia-text-secondary">
                         {getInitials(name)}
                       </AvatarFallback>
                     </Avatar>
@@ -394,7 +394,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
               placeholder="Buscar vaga..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 border-lia-border-subtle text-xs placeholder:text-lia-text-disabled focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
+              className="pl-9 border-lia-border-subtle text-xs placeholder:text-lia-text-disabled focus:ring-1 focus:ring-lia-border-default focus:border-lia-border-medium"
               aria-label="Buscar vagas"
             />
           </div>
@@ -428,8 +428,8 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
                     className={cn(
                       "flex items-start gap-3 p-3 rounded-md cursor-pointer transition-colors",
                       selectedJobId === job.id
-                        ? "bg-gray-100 dark:bg-lia-bg-elevated border border-gray-500"
-                        : "hover:bg-gray-50 border border-transparent"
+                        ? "bg-lia-bg-tertiary border border-lia-border-medium"
+                        : "hover:bg-lia-interactive-hover border border-transparent"
                     )}
                   >
                     <RadioGroupItem value={job.id} id={job.id} className="mt-0.5" />
@@ -442,7 +442,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
                           {job.title}
                         </Label>
                         {selectedJobId === job.id && (
-                          <Check className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-secondary flex-shrink-0" />
+                          <Check className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
                         )}
                       </div>
                       <div className={`flex items-center gap-3 mt-1 ${textStyles.caption}`}>
@@ -468,9 +468,9 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
 
           {duplicateIds.length > 0 && selectedJobId && (
             <div className="flex items-start gap-2 p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md">
-              <AlertTriangle className="w-4 h-4 text-status-warning dark:text-status-warning mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-xs font-medium text-status-warning dark:text-status-warning" aria-live="polite" aria-atomic="true">
+                <p className="text-xs font-medium text-status-warning" aria-live="polite" aria-atomic="true">
                   {duplicateIds.length} candidato{duplicateIds.length > 1 ? 's' : ''} já {duplicateIds.length > 1 ? 'estão' : 'está'} nesta vaga
                 </p>
                 <div className="flex items-center gap-2 mt-2">
@@ -481,7 +481,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
                   />
                   <Label
                     htmlFor="skip-duplicates"
-                    className="text-xs text-status-warning dark:text-status-warning cursor-pointer"
+                    className="text-xs text-status-warning cursor-pointer"
                   >
                     Ignorar duplicados e adicionar apenas os novos ({effectiveCandidateIds.length - duplicateIds.length})
                   </Label>
@@ -545,7 +545,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
           )}
         </div>
 
-        <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 flex items-center justify-between gap-2">
+        <div className="border-t border-lia-border-subtle bg-lia-bg-secondary p-4 flex items-center justify-between gap-2">
           <div className="text-xs text-lia-text-tertiary">
             {finalCandidateIds.length} candidato{finalCandidateIds.length !== 1 ? 's' : ''} será{finalCandidateIds.length !== 1 ? 'ão' : ''} adicionado{finalCandidateIds.length !== 1 ? 's' : ''}
           </div>
@@ -554,14 +554,14 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-lia-text-secondary hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={!selectedJobId || isSubmitting || finalCandidateIds.length === 0}
-              className="h-9 px-4 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+              className="h-9 px-4 text-xs font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
             >
               {isSubmitting ? (
                 <>

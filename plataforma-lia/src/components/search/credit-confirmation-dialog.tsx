@@ -52,16 +52,16 @@ export function CreditConfirmationDialog({
             <div 
               className="w-8 h-8 rounded-full flex items-center justify-center bg-wedo-cyan/15"
             >
-              <Coins className="w-4 h-4 lia-text-700" />
+              <Coins className="w-4 h-4 text-lia-text-primary" />
             </div>
             <div>
               <AlertDialogTitle 
-                className="text-base-ui font-semibold lia-text-950 dark:lia-text-50"
+                className="text-base-ui font-semibold text-lia-text-primary"
               >
                 Confirmar Busca Global
               </AlertDialogTitle>
               <div 
-                className="text-micro lia-text-500"
+                className="text-micro text-lia-text-secondary"
               >
                 Esta busca irá consultar a Busca Global com 800M+ perfis
               </div>
@@ -72,22 +72,22 @@ export function CreditConfirmationDialog({
             className="rounded-md p-3 border border-lia-border-subtle bg-gray-50"
           >
             <div
-              className="text-xs mb-2.5 font-medium lia-text-600"
+              className="text-xs mb-2.5 font-medium text-lia-text-secondary"
             >
               {searchTypeTexts[searchType]}
             </div>
             
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-xs">
-                <span className="lia-text-500">Limite:</span>
-                <span className="font-medium lia-text-950 dark:lia-text-50" aria-live="polite" aria-atomic="true">
+                <span className="text-lia-text-secondary">Limite:</span>
+                <span className="font-medium text-lia-text-primary" aria-live="polite" aria-atomic="true">
                   {candidateLimit} candidatos
                 </span>
               </div>
               
               <div className="flex justify-between items-center text-xs">
-                <span className="lia-text-500" aria-live="polite" aria-atomic="true">Custo por candidato:</span>
-                <span className="font-medium lia-text-950 dark:lia-text-50">
+                <span className="text-lia-text-secondary" aria-live="polite" aria-atomic="true">Custo por candidato:</span>
+                <span className="font-medium text-lia-text-primary">
                   {creditPerCandidate} crédito
                 </span>
               </div>
@@ -95,11 +95,11 @@ export function CreditConfirmationDialog({
               <div 
                 className="flex justify-between items-center pt-2 border-t text-xs border border-lia-border-subtle"
               >
-                <span className="font-medium lia-text-700">
+                <span className="font-medium text-lia-text-primary">
                   Total estimado:
                 </span>
                 <span 
-                  className="font-semibold lia-text-700"
+                  className="font-semibold text-lia-text-primary"
                 >
                   {totalCredits} créditos
                 </span>
@@ -108,7 +108,7 @@ export function CreditConfirmationDialog({
           </div>
 
           <div 
-            className="text-micro text-center lia-text-400"
+            className="text-micro text-center text-lia-text-tertiary"
           >
             Créditos serão consumidos ao executar a busca
           </div>
@@ -117,7 +117,7 @@ export function CreditConfirmationDialog({
         <AlertDialogFooter className="flex flex-row justify-end gap-2.5 sm:justify-end pt-3">
           <AlertDialogCancel
             disabled={isLoading}
-            className="mt-0 h-8 text-xs px-4 font-medium lia-text-600" style={{backgroundColor: 'transparent', borderRadius: '6px'}}
+            className="mt-0 h-8 text-xs px-4 font-medium text-lia-text-secondary" style={{backgroundColor: 'transparent', borderRadius: '6px'}}
           >
             Cancelar
           </AlertDialogCancel>

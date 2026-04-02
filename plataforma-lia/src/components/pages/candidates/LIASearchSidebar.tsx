@@ -102,7 +102,7 @@ export function LIASearchSidebar({
                 <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary dark:text-lia-text-primary">Ol&aacute;! Sou a Lia.</h3>
+                <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary">Ol&aacute;! Sou a Lia.</h3>
                 <p className="text-xs leading-tight truncate mt-0.5 text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                   Posso criar vagas, buscar candidatos, analisar m&eacute;tricas e muito mais!
                 </p>

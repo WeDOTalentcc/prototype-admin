@@ -256,7 +256,7 @@ export function RealTimeDashboardPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1 flex items-center gap-1.5">
+              <h1 className="text-sm font-semibold text-lia-text-primary mb-1 flex items-center gap-1.5">
                 <Activity className="w-6 h-6 text-status-success" />
                 Dashboard de Performance em Tempo Real
                 {isLive && (
@@ -266,7 +266,7 @@ export function RealTimeDashboardPage() {
                   </div>
                 )}
               </h1>
-              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+              <p className="text-sm text-lia-text-secondary">
                 Monitoramento em tempo real de sistemas ATS, workflows e performance da plataforma
               </p>
             </div>
@@ -300,7 +300,7 @@ export function RealTimeDashboardPage() {
             </div>
           </div>
 
-          <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+          <div className="text-xs text-lia-text-primary">
             Última atualização: {lastRefresh.toLocaleTimeString('pt-BR')} •
             Atualizando a cada {refreshInterval / 1000}s
           </div>
@@ -317,14 +317,14 @@ export function RealTimeDashboardPage() {
                     {metric.id === 'memory' && <HardDrive className="w-4 h-4 text-lia-text-secondary" />}
                     {metric.id === 'database' && <Database className="w-4 h-4 text-lia-text-secondary" />}
                     {metric.id === 'api' && <Network className="w-4 h-4 text-lia-text-secondary" />}
-                    <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{metric.name}</span>
+                    <span className="text-sm font-medium text-lia-text-primary">{metric.name}</span>
                   </div>
                   {getTrendIcon(metric.trend)}
                 </div>
 
                 <div className="flex items-end justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="text-2xl font-bold text-lia-text-primary">
                       {Math.round(metric.value)}{metric.unit}
                     </div>
                     <Badge variant="outline" className={`text-xs ${getStatusColor(metric.status)}`}>
@@ -355,7 +355,7 @@ export function RealTimeDashboardPage() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Server className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Server className="w-5 h-5 text-lia-text-secondary" />
               Status das Conexões ATS
             </CardTitle>
           </CardHeader>
@@ -365,8 +365,8 @@ export function RealTimeDashboardPage() {
                 <div key={ats.id} className="p-4 border border-lia-border-subtle rounded-md">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{ats.name}</h4>
-                      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Última sync: {ats.lastSync}</p>
+                      <h4 className="font-medium text-lia-text-primary">{ats.name}</h4>
+                      <p className="text-xs text-lia-text-primary">Última sync: {ats.lastSync}</p>
                     </div>
                     <Badge variant="outline" className={`${getStatusColor(ats.status)}`}>
                       {getStatusIcon(ats.status)}
@@ -376,19 +376,19 @@ export function RealTimeDashboardPage() {
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-lia-text-primary dark:text-lia-text-primary">Latência:</span>
+                      <span className="text-lia-text-primary">Latência:</span>
                       <div className="font-medium">{ats.latency}ms</div>
                     </div>
                     <div>
-                      <span className="text-lia-text-primary dark:text-lia-text-primary">Throughput:</span>
+                      <span className="text-lia-text-primary">Throughput:</span>
                       <div className="font-medium">{ats.throughput}/min</div>
                     </div>
                     <div>
-                      <span className="text-lia-text-primary dark:text-lia-text-primary">Registros:</span>
+                      <span className="text-lia-text-primary">Registros:</span>
                       <div className="font-medium">{ats.recordsProcessed.toLocaleString()}</div>
                     </div>
                     <div>
-                      <span className="text-lia-text-primary dark:text-lia-text-primary">Uptime:</span>
+                      <span className="text-lia-text-primary">Uptime:</span>
                       <div className="font-medium text-status-success">{ats.uptime}%</div>
                     </div>
                   </div>
@@ -418,8 +418,8 @@ export function RealTimeDashboardPage() {
                 <div key={workflow.id} className="p-4 border border-lia-border-subtle rounded-md">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">{workflow.name}</h4>
-                      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                      <h4 className="font-medium text-lia-text-primary">{workflow.name}</h4>
+                      <p className="text-xs text-lia-text-primary">
                         Iniciado às {workflow.startTime} •
                         Etapa {workflow.stepsCurrent} de {workflow.stepsTotal}
                       </p>
@@ -478,15 +478,15 @@ export function RealTimeDashboardPage() {
                 { time: "14:43:45", event: "Email NPS enviado para 23 candidatos", system: "Communication", type: "success" }
               ].map((activity, index) => (
                 <div key={`${activity.time}-${index}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
-                  <div className="text-xs text-lia-text-primary dark:text-lia-text-primary w-16">{activity.time}</div>
+                  <div className="text-xs text-lia-text-primary w-16">{activity.time}</div>
                   <div className={`w-2 h-2 rounded-full ${
                     activity.type === 'success' ? 'bg-status-success' :
                     activity.type === 'warning' ? 'bg-status-warning' :
                     activity.type === 'error' ? 'bg-status-error' : 'bg-gray-700 dark:bg-lia-text-tertiary'
                   }`} />
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{activity.event}</div>
-                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">{activity.system}</div>
+                    <div className="text-sm font-medium text-lia-text-primary">{activity.event}</div>
+                    <div className="text-xs text-lia-text-primary">{activity.system}</div>
                   </div>
                 </div>
               ))}

@@ -32,7 +32,7 @@ const statusConfig: Record<
 > = {
   awaiting_transcript: {
     label: "Aguardando Transcrição",
-    color: "bg-gray-100 lia-text-base",
+    color: "bg-gray-100 text-lia-text-secondary",
     icon: Clock,
   },
   transcript_ready: {
@@ -90,7 +90,7 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
             <div className="text-3xl font-bold text-lia-text-primary">
               {result.overall_wsi_score.toFixed(1)}
             </div>
-            <div className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">Score WSI</div>
+            <div className="text-xs text-lia-text-tertiary">Score WSI</div>
           </div>
           <div
             className={cn(
@@ -103,7 +103,7 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
           </div>
         </div>
         <div className="text-right">
-          <div className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">STAR Completeness</div>
+          <div className="text-sm text-lia-text-tertiary">STAR Completeness</div>
           <div className="text-lg font-semibold text-lia-text-primary">
             {(result.star_completeness * 100).toFixed(0)}%
           </div>
@@ -112,12 +112,12 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
 
       {result.key_insights.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">Pontos Fortes</h4>
+          <h4 className="text-sm font-medium text-lia-text-secondary">Pontos Fortes</h4>
           <ul className="space-y-1">
             {result.key_insights.map((insight, idx) => (
               <li
                 key={idx}
-                className="flex items-start gap-2 text-sm text-lia-text-secondary dark:text-lia-text-tertiary"
+                className="flex items-start gap-2 text-sm text-lia-text-secondary"
               >
                 <CheckCircle className="h-4 w-4 text-status-success mt-0.5 flex-shrink-0" />
                 <span>{insight}</span>
@@ -129,12 +129,12 @@ function AnalysisResultDisplay({ result }: { result: InterviewAnalysisResult }) 
 
       {result.concerns.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">Pontos de Atenção</h4>
+          <h4 className="text-sm font-medium text-lia-text-secondary">Pontos de Atenção</h4>
           <ul className="space-y-1">
             {result.concerns.map((concern, idx) => (
               <li
                 key={idx}
-                className="flex items-start gap-2 text-sm text-lia-text-secondary dark:text-lia-text-tertiary"
+                className="flex items-start gap-2 text-sm text-lia-text-secondary"
               >
                 <AlertCircle className="h-4 w-4 text-status-warning mt-0.5 flex-shrink-0" />
                 <span>{concern}</span>
@@ -170,7 +170,7 @@ export function TeamsAnalysisPanel({
       <Card className="w-full rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardContent className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none lia-text-secondary" />
-          <span className="ml-2 text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">Carregando status...</span>
+          <span className="ml-2 text-sm text-lia-text-tertiary">Carregando status...</span>
         </CardContent>
       </Card>
     )
@@ -213,7 +213,7 @@ export function TeamsAnalysisPanel({
         {!status && (
           <div className="text-center py-6 bg-gray-50 rounded-md">
             <Video className="h-8 w-8 lia-text-secondary mx-auto mb-2" />
-            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">
+            <p className="text-sm text-lia-text-tertiary">
               Nenhuma análise disponível para esta entrevista.
             </p>
           </div>
@@ -229,7 +229,7 @@ export function TeamsAnalysisPanel({
         {status?.status === "awaiting_transcript" && (
           <div className="text-center py-6 bg-gray-50 rounded-md">
             <Clock className="h-8 w-8 lia-text-secondary mx-auto mb-2" />
-            <p className="text-sm lia-text-base mb-1">
+            <p className="text-sm text-lia-text-secondary mb-1">
               Aguardando transcrição da entrevista Teams
             </p>
             <p className="text-xs lia-text-secondary">
@@ -241,7 +241,7 @@ export function TeamsAnalysisPanel({
         {status?.status === "transcript_ready" && (
           <div className="text-center py-6 bg-wedo-cyan/10 rounded-md space-y-3">
             <Video className="h-8 w-8 text-wedo-cyan-dark mx-auto" />
-            <p className="text-sm lia-text-base">
+            <p className="text-sm text-lia-text-secondary">
               Transcrição disponível! Clique para iniciar a análise.
             </p>
             <Button
@@ -274,7 +274,7 @@ export function TeamsAnalysisPanel({
                   size="sm"
                   onClick={() => handleAnalyze(true)}
                   disabled={isAnalyzing}
-                  className="gap-2 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
+                  className="gap-2 dark:border-lia-border-default dark:hover:bg-gray-700"
                 >
                   {isAnalyzing ? (
                     <>
@@ -295,7 +295,7 @@ export function TeamsAnalysisPanel({
         {status?.status === "scheduled" && (
           <div className="text-center py-6 bg-status-warning/10 rounded-md">
             <Clock className="h-8 w-8 text-status-warning mx-auto mb-2" />
-            <p className="text-sm lia-text-base">
+            <p className="text-sm text-lia-text-secondary">
               Análise agendada e será processada em breve.
             </p>
           </div>

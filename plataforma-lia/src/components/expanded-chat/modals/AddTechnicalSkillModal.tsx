@@ -45,10 +45,10 @@ export function AddTechnicalSkillModal({
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-overlay flex items-center justify-center bg-lia-overlay">
       <div className="bg-lia-bg-primary rounded-xl w-panel-lg p-6">
         <h3
-          className="text-lg font-semibold lia-text-strong mb-4"
+          className="text-lg font-semibold text-lia-text-primary mb-4"
          
         >
           Adicionar {CATEGORY_LABELS[skillCategory]}
@@ -58,7 +58,7 @@ export function AddTechnicalSkillModal({
           value={skillName}
           onChange={(e) => onSkillNameChange(e.target.value)}
           placeholder={`Nome da ${CATEGORY_PLACEHOLDERS[skillCategory]}...`}
-          className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-gray-400"
+          className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium"
          
           autoFocus
           onKeyDown={(e) => e.key === 'Enter' && onAdd(skillName)}
@@ -74,7 +74,7 @@ export function AddTechnicalSkillModal({
           <Button
             onClick={() => onAdd(skillName)}
             disabled={!skillName.trim()}
-            className={cn("flex-1 h-10 rounded-md", skillName.trim() ? "bg-gray-900 text-white" : "bg-gray-200")}
+            className={cn("flex-1 h-10 rounded-md", skillName.trim() ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-lia-interactive-active")}
           >
             Adicionar
           </Button>

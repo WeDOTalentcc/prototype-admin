@@ -68,17 +68,17 @@ export function ScreeningSettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-md bg-white border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <DialogHeader className="pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <DialogContent className="max-w-md rounded-md bg-white border border-lia-border-subtle">
+        <DialogHeader className="pb-4 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-              <Settings className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
+              <Settings className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
               <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Configurações de Triagem
               </DialogTitle>
-              <p className="text-xs lia-text-base mt-0.5">
+              <p className="text-xs text-lia-text-secondary mt-0.5">
                 Defina os parâmetros para aprovação e timeout
               </p>
             </div>
@@ -89,10 +89,10 @@ export function ScreeningSettingsModal({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Target className="w-4 h-4 text-lia-text-secondary" />
                 <Label className="text-xs font-medium text-lia-text-primary">Score Mínimo para Aprovação</Label>
               </div>
-              <span className="text-xs font-semibold text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold text-lia-text-primary bg-lia-bg-tertiary px-2 py-0.5 rounded-full">
                 {minScore}%
               </span>
             </div>
@@ -111,7 +111,7 @@ export function ScreeningSettingsModal({
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Clock className="w-4 h-4 text-lia-text-secondary" />
               <Label className="text-xs font-medium text-lia-text-primary">Tempo de Resposta</Label>
             </div>
             <div className="flex items-center gap-2">
@@ -124,18 +124,18 @@ export function ScreeningSettingsModal({
                 }}
                 min={1}
                 max={168}
-                className="w-24 h-9 text-xs border-lia-border-subtle dark:border-lia-border-default"
+                className="w-24 h-9 text-xs border-lia-border-subtle"
               />
-              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">horas</span>
+              <span className="text-xs text-lia-text-tertiary">horas</span>
             </div>
-            <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+            <p className="text-micro text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
               Tempo máximo de espera para resposta do candidato (1-168h)
             </p>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <RefreshCw className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <RefreshCw className="w-4 h-4 text-lia-text-secondary" />
               <Label className="text-xs font-medium text-lia-text-primary">Máximo de Retentativas</Label>
             </div>
             <div className="flex items-center gap-2">
@@ -148,7 +148,7 @@ export function ScreeningSettingsModal({
                 }}
                 min={0}
                 max={5}
-                className="w-24 h-9 text-xs border-lia-border-subtle dark:border-lia-border-default"
+                className="w-24 h-9 text-xs border-lia-border-subtle"
               />
               <span className="text-xs lia-text-secondary">tentativas</span>
             </div>
@@ -158,19 +158,19 @@ export function ScreeningSettingsModal({
           </div>
         </div>
 
-        <DialogFooter className="pt-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle gap-2">
+        <DialogFooter className="pt-4 border-t border-lia-border-subtle bg-lia-bg-secondary gap-2">
           <Button
             variant="outline"
             onClick={onClose}
             disabled={isSaving}
-            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 lia-text-base dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-lia-interactive-hover text-lia-text-secondary dark:hover:bg-lia-btn-primary-bg"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             {isSaving ? (
               <>

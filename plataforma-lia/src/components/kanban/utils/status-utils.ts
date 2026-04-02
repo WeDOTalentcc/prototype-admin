@@ -18,41 +18,41 @@ export function getUrgencyLevel(score: number): UrgencyLevel {
     return {
       level: 'excellent',
       label: 'Excelente',
-      color: 'lia-text-950 dark:lia-text-50'
+      color: 'text-lia-text-primary'
     }
   }
   if (score >= 80) {
     return {
       level: 'great',
       label: 'Ótimo',
-      color: 'lia-text-800 dark:lia-text-200'
+      color: 'text-lia-text-primary'
     }
   }
   if (score >= 70) {
     return {
       level: 'good',
       label: 'Bom',
-      color: 'lia-text-800 dark:lia-text-200'
+      color: 'text-lia-text-primary'
     }
   }
   if (score >= 60) {
     return {
       level: 'average',
       label: 'Médio',
-      color: 'lia-text-600 dark:lia-text-400'
+      color: 'text-lia-text-secondary'
     }
   }
   if (score >= 50) {
     return {
       level: 'below',
       label: 'Abaixo',
-      color: 'lia-text-800 dark:lia-text-200'
+      color: 'text-lia-text-primary'
     }
   }
   return {
     level: 'low',
     label: 'Baixo',
-    color: 'lia-text-600 dark:lia-text-600'
+    color: 'text-lia-text-secondary'
   }
 }
 
@@ -115,17 +115,17 @@ export function formatScoreDisplay(score: number | null | undefined, decimals: n
 }
 
 export const URGENCY_ICON_COLORS = {
-  excellent: 'lia-text-950 dark:lia-text-50',
-  great: 'lia-text-800 dark:lia-text-200',
-  good: 'lia-text-800 dark:lia-text-200',
-  average: 'lia-text-600 dark:lia-text-400',
-  below: 'lia-text-800 dark:lia-text-200',
-  low: 'lia-text-600 dark:lia-text-600'
+  excellent: 'text-lia-text-primary',
+  great: 'text-lia-text-primary',
+  good: 'text-lia-text-primary',
+  average: 'text-lia-text-secondary',
+  below: 'text-lia-text-primary',
+  low: 'text-lia-text-secondary'
 } as const
 
 export const ALERT_COLORS = {
-  urgent: 'bg-gray-900 text-white border-gray-900 dark:lia-bg-200 dark:lia-text-950 dark:border-lia-border-subtle',
-  action: 'bg-gray-200 lia-text-800 border-lia-border-default dark:lia-bg-800 dark:lia-text-200 dark:lia-border-700',
-  warning: 'bg-gray-300 lia-text-950 border-gray-400 dark:lia-bg-700 dark:lia-text-100 dark:lia-border-600',
-  pending: 'bg-gray-200 lia-text-800 border-lia-border-default dark:lia-bg-700 dark:lia-text-200 dark:lia-border-600'
+  urgent: 'bg-gray-900 text-white border-gray-900 dark:border-lia-border-subtle',
+  action: 'bg-gray-200 text-lia-text-primary border-lia-border-default dark:lia-border-700',
+  warning: 'bg-gray-300 text-lia-text-primary border-gray-400 dark:lia-border-600',
+  pending: 'bg-gray-200 text-lia-text-primary border-lia-border-default dark:lia-border-600'
 } as const

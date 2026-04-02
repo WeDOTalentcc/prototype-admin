@@ -140,12 +140,12 @@ export function CalibrationFeedbackPanel({
     <div className="space-y-6">
       <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             🎯 Calibração de Busca
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs dark:text-lia-text-tertiary text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+          <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
             Avalie os candidatos abaixo para calibrar a busca. Sua avaliação ajudará
             a IA a entender melhor o perfil ideal para a vaga.
           </p>
@@ -155,28 +155,28 @@ export function CalibrationFeedbackPanel({
                 className="w-3 h-3 rounded-full"
                 style={{backgroundColor: 'var(--lia-btn-primary-bg)'}}
               />
-              <span className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">{stats.approved} aprovados</span>
+              <span className="text-xs text-lia-text-secondary">{stats.approved} aprovados</span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="w-3 h-3 rounded-full"
                 style={{backgroundColor: 'var(--lia-border-default)'}}
               />
-              <span className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">{stats.maybe} talvez</span>
+              <span className="text-xs text-lia-text-secondary">{stats.maybe} talvez</span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="w-3 h-3 rounded-full"
                 style={{backgroundColor: 'var(--lia-text-tertiary)'}}
               />
-              <span className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">{stats.rejected} reprovados</span>
+              <span className="text-xs text-lia-text-secondary">{stats.rejected} reprovados</span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="w-3 h-3 rounded-full"
                 style={{backgroundColor: 'var(--lia-border-subtle)'}}
               />
-              <span className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">{stats.pending} pendentes</span>
+              <span className="text-xs text-lia-text-secondary">{stats.pending} pendentes</span>
             </div>
           </div>
         </CardContent>
@@ -196,7 +196,7 @@ export function CalibrationFeedbackPanel({
 
       <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary">
+          <CardTitle className="text-sm flex items-center gap-2 font-sans text-lia-text-primary">
             💬 Feedback Geral
           </CardTitle>
         </CardHeader>
@@ -206,7 +206,7 @@ export function CalibrationFeedbackPanel({
             onChange={(e) => setGeneralFeedback(e.target.value)}
             placeholder="Descreva o perfil ideal, o que você busca nos candidatos, ajustes na busca..."
             rows={4}
-            className="dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary"
+            className="dark:bg-lia-bg-primary dark:border-lia-border-subtle"
           />
         </CardContent>
       </Card>
@@ -286,10 +286,10 @@ function CandidateCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h3 className="text-sm font-semibold dark:text-lia-text-primary text-lia-text-primary">
+                <h3 className="text-sm font-semibold text-lia-text-primary">
                   {candidate.name}
                 </h3>
-                <p className="text-xs dark:text-lia-text-tertiary text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-tertiary">
                   {candidate.title}
                 </p>
               </div>
@@ -302,7 +302,7 @@ function CandidateCard({
               </Badge>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs dark:text-lia-text-tertiary text-lia-text-tertiary">
+            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-lia-text-tertiary">
               <span className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
                 {candidate.location}
@@ -318,7 +318,7 @@ function CandidateCard({
                 <Badge
                   key={skill}
                   variant="outline"
-                  className="text-xs dark:border-lia-border-default dark:text-lia-text-secondary border-lia-border-subtle text-lia-text-secondary"
+                  className="text-xs dark:border-lia-border-default border-lia-border-subtle text-lia-text-secondary"
                 >
                   {skill}
                 </Badge>
@@ -326,7 +326,7 @@ function CandidateCard({
               {candidate.skills.length > 5 && (
                 <Badge
                   variant="outline"
-                  className="text-xs dark:border-lia-border-default dark:text-lia-text-tertiary border-lia-border-subtle text-lia-text-tertiary"
+                  className="text-xs dark:border-lia-border-default border-lia-border-subtle text-lia-text-tertiary"
                 >
                   +{candidate.skills.length - 5}
                 </Badge>
@@ -340,7 +340,7 @@ function CandidateCard({
                 size="sm"
                 className={status === "approved"
  ? "flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
-                  : "flex-1 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"}
+                  : "flex-1 dark:border-lia-border-default dark:hover:bg-gray-700"}
                 style={status === "approved" ? {} : {
                   backgroundColor: 'transparent',
                   color: 'var(--lia-text-secondary)',
@@ -357,7 +357,7 @@ function CandidateCard({
                 size="sm"
                 className={status === "maybe"
  ? "flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
-                  : "flex-1 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"}
+                  : "flex-1 dark:border-lia-border-default dark:hover:bg-gray-700"}
                 style={status === "maybe" ? {} : {
                   backgroundColor: 'transparent',
                   color: 'var(--lia-text-secondary)',
@@ -374,7 +374,7 @@ function CandidateCard({
                 size="sm"
                 className={status === "rejected"
  ? "flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
-                  : "flex-1 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"}
+                  : "flex-1 dark:border-lia-border-default dark:hover:bg-gray-700"}
                 style={status === "rejected" ? {} : {
                   backgroundColor: 'transparent',
                   color: 'var(--lia-text-secondary)',

@@ -300,7 +300,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
     return text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[(.*?)\]/g, '<span class="text-lia-text-secondary dark:text-lia-text-tertiary underline cursor-pointer">$1</span>')
+      .replace(/\[(.*?)\]/g, '<span class="text-lia-text-secondary underline cursor-pointer">$1</span>')
       .replace(/•/g, '&bull;')
       .replace(/\n/g, '<br>')
   }
@@ -314,10 +314,10 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
        
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-lia-bg-secondary/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center">
-              <ClipboardList className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <div className="w-10 h-10 bg-lia-bg-tertiary rounded-full flex items-center justify-center">
+              <ClipboardList className="w-5 h-5 text-lia-text-secondary" />
             </div>
             <div>
               <h2 className={textStyles.titleLarge}>
@@ -330,7 +330,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
           </div>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
+            className="p-2 hover:bg-lia-interactive-hover rounded-md transition-colors motion-reduce:transition-none"
           >
             <X className="w-4 h-4 lia-text-secondary" />
           </button>
@@ -350,11 +350,11 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   onClick={() => setChannel('email')}
                   className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
  channel === 'email' 
-                      ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
+                      ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50' 
                       : 'border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
-                  <Mail className={`w-4 h-4 ${channel === 'email' ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-tertiary'}`} />
+                  <Mail className={`w-4 h-4 ${channel === 'email' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
                   <div className="flex-1">
                     <div className={textStyles.subtitle}>Email</div>
                     <div className={textStyles.caption}>{candidate.email || 'Não informado'}</div>
@@ -365,11 +365,11 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   onClick={() => setChannel('whatsapp')}
                   className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
  channel === 'whatsapp' 
-                      ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
+                      ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50' 
                       : 'border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
-                  <MessageSquare className={`w-4 h-4 ${channel === 'whatsapp' ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-tertiary'}`} />
+                  <MessageSquare className={`w-4 h-4 ${channel === 'whatsapp' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
                   <div className="flex-1">
                     <div className={textStyles.subtitle}>WhatsApp</div>
                     <div className={textStyles.caption}>{candidate.phone || 'Não informado'}</div>
@@ -380,11 +380,11 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   onClick={() => setChannel('telefone')}
                   className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
  channel === 'telefone' 
-                      ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
+                      ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50' 
                       : 'border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
-                  <Phone className={`w-4 h-4 ${channel === 'telefone' ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-tertiary'}`} />
+                  <Phone className={`w-4 h-4 ${channel === 'telefone' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
                   <div className="flex-1">
                     <div className={textStyles.subtitle}>Telefone (Ligação)</div>
                     <div className={textStyles.caption}>{candidate.phone || 'Não informado'}</div>
@@ -395,13 +395,13 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   onClick={() => setChannel('both')}
                   className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none text-left ${
  channel === 'both' 
-                      ? 'border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50' 
+                      ? 'border-lia-btn-primary-bg bg-lia-bg-secondary/50' 
                       : 'border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
                   <div className="flex items-center gap-0.5">
-                    <Mail className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-tertiary'}`} />
-                    <MessageSquare className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-tertiary'}`} />
+                    <Mail className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
+                    <MessageSquare className={`w-3.5 h-3.5 ${channel === 'both' ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
                   </div>
                   <div className="flex-1">
                     <div className={textStyles.subtitle}>Ambos (Email + WhatsApp)</div>
@@ -434,7 +434,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               />
             ) : (
               <div>
-                <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">
+                <label className="text-xs font-medium text-lia-text-primary mb-2 block">
                   Script de Abordagem
                 </label>
                 <Textarea
@@ -442,16 +442,16 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Script para ligação..."
-                  className="min-h-card-lg text-xs focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border-lia-border-subtle"
+                  className="min-h-card-lg text-xs focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium resize-none border-lia-border-subtle"
                 />
               </div>
             )}
 
             {/* Vincular à Vaga */}
             <div className="border border-lia-border-subtle rounded-md overflow-hidden">
-              <div className="flex items-center justify-between p-3 bg-gray-50">
+              <div className="flex items-center justify-between p-3 bg-lia-bg-secondary">
                 <div className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 lia-text-base" />
+                  <Briefcase className="w-4 h-4 text-lia-text-secondary" />
                   <div>
                     <span className={textStyles.subtitle} aria-live="polite" aria-atomic="true">Vincular à Vaga</span>
                     <span className={`${textStyles.description} ml-2`}>(opcional)</span>
@@ -482,7 +482,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                       <select
                         value={selectedVacancyId || ''}
                         onChange={(e) => setSelectedVacancyId(e.target.value || null)}
-                        className="w-full text-xs border border-lia-border-subtle rounded-md px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                        className="w-full text-xs border border-lia-border-subtle rounded-md px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                       >
                         <option value="">Selecione uma vaga...</option>
                         {vacancies.map((vacancy) => (
@@ -503,7 +503,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                     <select
                       value={selectedStage}
                       onChange={(e) => setSelectedStage(e.target.value)}
-                      className="w-full text-xs border border-lia-border-subtle rounded-md px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                      className="w-full text-xs border border-lia-border-subtle rounded-md px-3 py-2 bg-lia-bg-primary focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium"
                     >
                       {PIPELINE_STAGES.map((stage) => (
                         <option key={stage.value} value={stage.value}>
@@ -514,9 +514,9 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   </div>
                   
                   {selectedVacancyId && (
-                    <div className="p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default">
-                      <p className="text-xs lia-text-base">
-                        Ao enviar, o candidato será automaticamente adicionado à vaga selecionada na etapa <strong className="text-lia-text-secondary dark:text-lia-text-tertiary">{PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}</strong>
+                    <div className="p-2 bg-lia-bg-secondary/50 rounded-md border border-lia-border-default">
+                      <p className="text-xs text-lia-text-secondary">
+                        Ao enviar, o candidato será automaticamente adicionado à vaga selecionada na etapa <strong className="text-lia-text-secondary">{PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}</strong>
                       </p>
                     </div>
                   )}
@@ -528,10 +528,10 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             <div className="border border-lia-border-subtle rounded-md overflow-hidden">
               <button
                 onClick={() => setShowQuestions(!showQuestions)}
-                className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                className="w-full flex items-center justify-between p-3 bg-lia-bg-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
               >
                 <div className="flex items-center gap-2">
-                  <ListChecks className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <ListChecks className="w-4 h-4 text-lia-text-secondary" />
                   <span className={textStyles.subtitle}>
                     Roteiro de Triagem ({screeningQuestions.length} perguntas)
                   </span>
@@ -572,10 +572,10 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
           </div>
 
           {/* Right Panel - Preview */}
-          <div className="w-1/2 bg-gray-50 p-5 overflow-y-auto">
+          <div className="w-1/2 bg-lia-bg-secondary p-5 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Eye className="w-4 h-4 text-lia-text-secondary" />
                 <span className={textStyles.subtitle}>Preview da Mensagem</span>
               </div>
               <Badge variant="outline" className="text-micro">
@@ -590,10 +590,10 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
               {(channel === 'email' || channel === 'both') ? (
                 <>
                   {/* Email Preview Header */}
-                  <div className="p-4 border-b border-lia-border-subtle bg-gray-50/50">
+                  <div className="p-4 border-b border-lia-border-subtle bg-lia-bg-secondary/50">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-8 h-8">
-                        <AvatarFallback className="text-micro bg-gray-900 text-white">
+                        <AvatarFallback className="text-micro bg-lia-btn-primary-bg text-lia-btn-primary-text">
                           RH
                         </AvatarFallback>
                       </Avatar>
@@ -628,7 +628,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   <div className="flex justify-end mb-2">
                     <div className="bg-whatsapp-bubble rounded-md p-3 max-w-[85%]">
                       <div 
-                        className="text-xs lia-text-strong leading-relaxed whitespace-pre-wrap"
+                        className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-wrap"
                         dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="lia-text-secondary">A mensagem aparecerá aqui...</span>') }}
                       />
                       <div className="text-micro lia-text-secondary text-right mt-1">
@@ -660,7 +660,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
                   {/* Script Content */}
                   <div className="p-4">
                     <div 
-                      className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed font-mono bg-gray-50 p-3 rounded-md border border-lia-border-subtle"
+                      className="text-xs text-lia-text-primary leading-relaxed font-mono bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="lia-text-secondary">O script aparecerá aqui...</span>') }}
                     />
                   </div>
@@ -670,9 +670,9 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
 
             {/* Info Box - Different per channel */}
             {(channel === 'email' || channel === 'both') && (
-              <div className={`mt-4 p-3 ${badgeStyles.info} rounded-md border border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary/50`}>
+              <div className={`mt-4 p-3 ${badgeStyles.info} rounded-md border border-lia-border-default bg-lia-bg-secondary/50`}>
                 <div className="flex items-start gap-2">
-                  <Info className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5" />
+                  <Info className="w-4 h-4 text-lia-text-secondary mt-0.5" />
                   <div>
                     <div className={textStyles.label}>{channel === 'both' ? 'Envio Simultâneo:' : 'Após Confirmação:'}</div>
                     <ul className={`${textStyles.caption} mt-1 space-y-0.5`}>
@@ -724,7 +724,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-lia-border-subtle bg-lia-bg-secondary">
           <div className={`flex items-center gap-2 ${textStyles.description}`}>
             <Mail className="w-3.5 h-3.5" />
             {channel === 'email' 
@@ -739,14 +739,14 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             <Button
               onClick={onClose}
               variant="outline"
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover hover:bg-lia-interactive-hover"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleSend}
               disabled={isSending || !message.trim()}
-              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               {isSending ? (
                 <>

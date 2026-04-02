@@ -78,7 +78,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
             <Mail
               className={cn(
                 iconSize,
-                "text-lia-text-secondary dark:text-lia-text-tertiary"
+                "text-lia-text-secondary"
               )}
             />
           </Button>
@@ -103,7 +103,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
             <Phone
               className={cn(
                 iconSize,
-                "text-lia-text-secondary dark:text-lia-text-tertiary"
+                "text-lia-text-secondary"
               )}
             />
           </Button>
@@ -128,7 +128,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
               <Linkedin
                 className={cn(
                   iconSize,
-                  "text-lia-text-secondary dark:text-lia-text-tertiary"
+                  "text-lia-text-secondary"
                 )}
               />
             </Button>

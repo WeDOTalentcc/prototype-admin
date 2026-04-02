@@ -31,7 +31,7 @@ const CandidateSkillsList = memo(function CandidateSkillsList({
           key={skill}
           variant="secondary"
           className={cn(
-            "border-0 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary",
+            "border-0 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary",
             size === "sm" ? "text-micro px-1.5 py-0" : "text-xs px-2 py-0.5"
           )}
         >

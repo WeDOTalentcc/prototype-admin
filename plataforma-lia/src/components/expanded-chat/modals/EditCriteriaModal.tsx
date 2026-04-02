@@ -27,15 +27,15 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
   return (
     <>
       {open && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-lia-overlay">
           <div className="bg-lia-bg-primary rounded-xl w-panel-xl max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle">
-              <h3 className="text-lg font-semibold lia-text-strong">
+              <h3 className="text-lg font-semibold text-lia-text-primary">
                 Editar Critérios
               </h3>
               <button
                 onClick={onClose}
-                className="p-2 rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+                className="p-2 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
               >
                 <X className="w-5 h-5 lia-text-secondary" />
               </button>
@@ -45,7 +45,7 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
               {criteria.map((criterion) => (
                 <div
                   key={criterion.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-md group"
+                  className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md group"
                 >
                   <div className="cursor-move lia-text-muted hover:lia-text-secondary">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -53,10 +53,10 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
                     </svg>
                   </div>
                   <span className="text-sm font-medium lia-text-secondary w-6">①</span>
-                  <span className="flex-1 text-sm lia-text-strong">{criterion.text}</span>
+                  <span className="flex-1 text-sm text-lia-text-primary">{criterion.text}</span>
                   <span className={cn(
  "text-xs px-2 py-0.5 rounded-md",
-                    criterion.source === 'technical' ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary' : 'bg-wedo-purple/10 text-wedo-purple'
+                    criterion.source === 'technical' ? 'bg-lia-bg-tertiary text-lia-text-secondary' : 'bg-wedo-purple/10 text-wedo-purple'
                   )}>
                     {criterion.source === 'technical' ? 'Técnico' : 'Comportamental'}
                   </span>
@@ -72,11 +72,11 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
 
             <div className="px-6 py-4 border-t border-lia-border-subtle space-y-3">
               <div className="flex gap-2">
-                <button className="flex items-center gap-2 px-4 py-2 text-sm lia-text-secondary hover:lia-text-strong transition-colors motion-reduce:transition-none">
+                <button className="flex items-center gap-2 px-4 py-2 text-sm lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
                   <FileText className="w-4 h-4" />
                   Selecionar Preset
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 text-sm lia-text-secondary hover:lia-text-strong transition-colors motion-reduce:transition-none">
+                <button className="flex items-center gap-2 px-4 py-2 text-sm lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
                   <Upload className="w-4 h-4" />
                   Salvar Preset
                 </button>
@@ -87,14 +87,14 @@ export function EditCriteriaModal({ open, criteria, onClose, onAddCriterion, onR
                     const text = prompt('Digite o novo critério:')
                     if (text) onAddCriterion(text)
                   }}
-                  className="flex-1 py-2.5 px-4 border border-lia-border-subtle rounded-md text-sm font-medium lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50 hover:lia-text-strong dark:hover:lia-text-subtle transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 px-4 border border-lia-border-subtle rounded-md text-sm font-medium lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Adicionar Critério
                 </button>
                 <button
                   onClick={onClose}
-                  className="flex-1 py-2.5 px-4 bg-gray-900 text-white rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none"
+                  className="flex-1 py-2.5 px-4 bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-md text-sm font-medium hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
                 >
                   Atualizar ↗
                 </button>

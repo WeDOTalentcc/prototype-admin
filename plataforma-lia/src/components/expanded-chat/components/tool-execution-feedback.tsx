@@ -65,12 +65,12 @@ export function ToolExecutionFeedback({
           className
         )}
       >
-        <Loader2 className="h-5 w-5 text-wedo-cyan-dark dark:text-wedo-cyan-dark animate-spin motion-reduce:animate-none flex-shrink-0" aria-hidden="true" />
+        <Loader2 className="h-5 w-5 text-wedo-cyan-dark animate-spin motion-reduce:animate-none flex-shrink-0" aria-hidden="true" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-wedo-cyan-dark dark:text-wedo-cyan-dark">
+          <p className="text-sm font-medium text-wedo-cyan-dark">
             Executando {displayName}...
           </p>
-          <p className="text-xs text-wedo-cyan-dark dark:text-wedo-cyan-dark">
+          <p className="text-xs text-wedo-cyan-dark">
             Aguarde enquanto processo sua solicitação
           </p>
         </div>
@@ -94,16 +94,16 @@ export function ToolExecutionFeedback({
           className
         )}
       >
-        <CheckCircle2 className="h-5 w-5 text-status-success dark:text-status-success flex-shrink-0 mt-0.5" aria-hidden="true" />
+        <CheckCircle2 className="h-5 w-5 text-status-success flex-shrink-0 mt-0.5" aria-hidden="true" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-status-success dark:text-status-success">
+          <p className="text-sm font-medium text-status-success">
             {displayName} concluída com sucesso!
           </p>
-          <p className="text-xs text-status-success dark:text-status-success mt-0.5">
+          <p className="text-xs text-status-success mt-0.5">
             {result.message}
           </p>
           {result.execution_time_ms > 0 && (
-            <div className="flex items-center gap-1 mt-1.5 text-xs text-status-success dark:text-status-success" aria-label={`Tempo de execução: ${result.execution_time_ms} milissegundos`}>
+            <div className="flex items-center gap-1 mt-1.5 text-xs text-status-success" aria-label={`Tempo de execução: ${result.execution_time_ms} milissegundos`}>
               <Clock className="h-3 w-3" aria-hidden="true" />
               <span>Executado em {result.execution_time_ms}ms</span>
             </div>
@@ -114,7 +114,7 @@ export function ToolExecutionFeedback({
               variant="ghost"
               size="sm"
               aria-label="Desfazer ação"
-              className="mt-2 h-7 text-xs text-status-success hover:text-status-success hover:bg-status-success/15 dark:text-status-success dark:hover:bg-status-success/50 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors motion-reduce:transition-none duration-200"
+              className="mt-2 h-7 text-xs text-status-success hover:text-status-success hover:bg-status-success/15 dark:hover:bg-status-success/50 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors motion-reduce:transition-none duration-200"
             >
               <RefreshCw className="h-3 w-3 mr-1" aria-hidden="true" />
               Desfazer

@@ -24,16 +24,16 @@ export function CrossTabFilterBanner({
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-900 dark:bg-gray-100 rounded-md flex items-center justify-center">
             {cf.type === 'company' ? (
-              <Building className="w-5 h-5 text-white dark:text-lia-text-disabled" />
+              <Building className="w-5 h-5 text-white" />
             ) : (
-              <Target className="w-5 h-5 text-white dark:text-lia-text-disabled" />
+              <Target className="w-5 h-5 text-white" />
             )}
           </div>
           <div className="flex-1">
-            <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
+            <h3 className="font-medium text-lia-text-primary mb-1">
               Filtro Aplicado: {cf.type === 'company' ? 'Empresa' : 'Inteligência Competitiva'}
             </h3>
-            <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary mb-3" aria-live="polite" aria-atomic="true">
+            <p className="text-sm text-lia-text-primary mb-3" aria-live="polite" aria-atomic="true">
               {cf.type === 'company' && cf.company && (
                 <span>Mostrando candidatos da empresa &ldquo;{cf.company as string}&rdquo; mapeada</span>
               )}

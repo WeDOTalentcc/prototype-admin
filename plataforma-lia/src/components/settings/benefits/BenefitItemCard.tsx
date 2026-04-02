@@ -104,7 +104,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
-          <h4 className={textStyles.subtitle + " dark:text-lia-text-primary truncate"}>
+          <h4 className={textStyles.subtitle + " truncate"}>
             {benefit.name}
           </h4>
           {benefit.is_highlighted && (
@@ -122,7 +122,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
         <p className={textStyles.description + " truncate mb-1.5"}>
           {benefit.description || "Sem descrição"}
         </p>
-        <div className="flex items-center gap-3 text-xs lia-text-600 dark:text-lia-text-tertiary">
+        <div className="flex items-center gap-3 text-xs text-lia-text-secondary">
           <span className="flex items-center gap-1">
             <DollarSign className="w-3.5 h-3.5" />
             {formatBenefitValue(benefit)}
@@ -136,7 +136,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
             {getWaitingPeriodLabel(benefit.waiting_period_days)}
           </span>
           {benefit.provider && (
-            <span className="lia-text-600 dark:text-lia-text-tertiary">{benefit.provider}</span>
+            <span className="text-lia-text-secondary">{benefit.provider}</span>
           )}
         </div>
       </div>
@@ -155,7 +155,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
               className="h-7 w-7"
               onClick={() => onEdit(benefit)}
             >
-              <Pencil className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Pencil className="w-3.5 h-3.5 text-lia-text-secondary" />
             </Button>
             <Button
               variant="ghost"

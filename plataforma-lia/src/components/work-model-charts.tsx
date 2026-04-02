@@ -124,7 +124,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               <div className="text-2xl font-bold text-lia-text-primary">
                 {total}
               </div>
-              <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+              <div className="text-xs text-lia-text-primary">
                 Total
               </div>
             </div>
@@ -144,7 +144,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 <div className="font-medium text-lia-text-primary">
                   {item.label}
                 </div>
-                <div className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+                <div className="text-sm text-lia-text-primary">
                   {item.value} ({item.percentage}%)
                 </div>
               </div>
@@ -166,7 +166,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
             <h4 className="font-medium text-lia-text-primary">
               {item.cargo}
             </h4>
-            <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+            <span className="text-sm text-lia-text-primary">
               {item.remoto + item.hibrido + item.presencial} candidatos
             </span>
           </div>
@@ -174,7 +174,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
           <div className="space-y-1">
             {/* Remoto */}
             <div className="flex items-center gap-3">
-              <div className="w-16 text-xs lia-text-base flex items-center gap-1">
+              <div className="w-16 text-xs text-lia-text-secondary flex items-center gap-1">
                 <Home className="w-3 h-3 text-status-success" />
                 Remoto
               </div>
@@ -184,15 +184,15 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   style={{width: `${(item.remoto / maxValue) * 100}%`}}
                 ></div>
               </div>
-              <div className="w-8 text-xs lia-text-base text-right">
+              <div className="w-8 text-xs text-lia-text-secondary text-right">
                 {item.remoto}
               </div>
             </div>
 
             {/* Híbrido */}
             <div className="flex items-center gap-3">
-              <div className="w-16 text-xs lia-text-base flex items-center gap-1">
-                <Globe className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <div className="w-16 text-xs text-lia-text-secondary flex items-center gap-1">
+                <Globe className="w-3 h-3 text-lia-text-secondary" />
                 Híbrido
               </div>
               <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
@@ -201,15 +201,15 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   style={{width: `${(item.hibrido / maxValue) * 100}%`}}
                 ></div>
               </div>
-              <div className="w-8 text-xs lia-text-base text-right">
+              <div className="w-8 text-xs text-lia-text-secondary text-right">
                 {item.hibrido}
               </div>
             </div>
 
             {/* Presencial */}
             <div className="flex items-center gap-3">
-              <div className="w-16 text-xs lia-text-base flex items-center gap-1">
-                <Building className="w-3 h-3 lia-text-base" />
+              <div className="w-16 text-xs text-lia-text-secondary flex items-center gap-1">
+                <Building className="w-3 h-3 text-lia-text-secondary" />
                 Presencial
               </div>
               <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
@@ -218,7 +218,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   style={{width: `${(item.presencial / maxValue) * 100}%`}}
                 ></div>
               </div>
-              <div className="w-8 text-xs lia-text-base text-right">
+              <div className="w-8 text-xs text-lia-text-secondary text-right">
                 {item.presencial}
               </div>
             </div>
@@ -240,7 +240,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
             // @ts-ignore TODO: fix type — Property 'label' does not exist on type 'TrendData'.
             // @ts-ignore TODO: fix type — Property 'month' does not exist on type 'TrendData'.
             <div key={item.month || item.label || item.name} className="text-center">
-              <div className="mb-2 text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
+              <div className="mb-2 text-xs font-medium text-lia-text-secondary">
                 {item.period}
               </div>
 
@@ -258,7 +258,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   minHeight: '4px'}} title={`Presencial: ${item.presencial}`}></div>
               </div>
 
-              <div className="mt-2 text-xs lia-text-strong">
+              <div className="mt-2 text-xs text-lia-text-primary">
                 {item.remoto + item.hibrido + item.presencial}
               </div>
             </div>
@@ -269,15 +269,15 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         <div className="flex items-center justify-center gap-6 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-status-success rounded-md"></div>
-            <span className="text-xs lia-text-base">Remoto</span>
+            <span className="text-xs text-lia-text-secondary">Remoto</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-gray-700 rounded-md"></div>
-            <span className="text-xs lia-text-base">Híbrido</span>
+            <span className="text-xs text-lia-text-secondary">Híbrido</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-gray-500 rounded-md"></div>
-            <span className="text-xs lia-text-base">Presencial</span>
+            <span className="text-xs text-lia-text-secondary">Presencial</span>
           </div>
         </div>
       </div>
@@ -328,15 +328,15 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         <div className="flex items-center justify-center gap-6 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-status-success rounded-md"></div>
-            <span className="text-xs lia-text-base">Baixa densidade (&lt;60)</span>
+            <span className="text-xs text-lia-text-secondary">Baixa densidade (&lt;60)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-status-warning rounded-md"></div>
-            <span className="text-xs lia-text-base">Média densidade (60-100)</span>
+            <span className="text-xs text-lia-text-secondary">Média densidade (60-100)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-status-error rounded-md"></div>
-            <span className="text-xs lia-text-base">Alta densidade (&gt;200)</span>
+            <span className="text-xs text-lia-text-secondary">Alta densidade (&gt;200)</span>
           </div>
         </div>
       </div>
@@ -349,7 +349,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <BarChart3 className="w-5 h-5 text-lia-text-secondary" />
               Visualizações Interativas
             </CardTitle>
 
@@ -360,7 +360,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'donut'
                     ? 'bg-gray-900 text-white'
-                    : 'lia-text-base hover:lia-text-strong'
+                    : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
                 <PieChart className="w-3 h-3" />
@@ -371,7 +371,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'bar'
                     ? 'bg-gray-900 text-white'
-                    : 'lia-text-base hover:lia-text-strong'
+                    : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
                 <BarChart3 className="w-3 h-3" />
@@ -382,7 +382,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'trend'
                     ? 'bg-gray-900 text-white'
-                    : 'lia-text-base hover:lia-text-strong'
+                    : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
                 <TrendingUp className="w-3 h-3" />
@@ -393,7 +393,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'heatmap'
                     ? 'bg-gray-900 text-white'
-                    : 'lia-text-base hover:lia-text-strong'
+                    : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
                 <MapPin className="w-3 h-3" />

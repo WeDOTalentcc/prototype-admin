@@ -154,7 +154,7 @@ export function EditJobModalBasicInfo({
         </div>
         
         <div className="space-y-4">
-          <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
+          <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
             <p className="text-xs font-medium uppercase text-lia-text-secondary mb-2">Recrutador(a)</p>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -178,7 +178,7 @@ export function EditJobModalBasicInfo({
             </div>
           </div>
 
-          <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
+          <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
             <p className="text-xs font-medium uppercase text-lia-text-secondary mb-2">Gestor(a) Solicitante</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -292,7 +292,7 @@ export function EditJobModalBasicInfo({
             <Textarea
               value={formData.description || ''}
               onChange={(e) => updateField('description', e.target.value)}
-              className="min-h-[100px] text-sm resize-none bg-gray-50 border-lia-border-subtle focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
+              className="min-h-[100px] text-sm resize-none bg-lia-bg-secondary border-lia-border-subtle focus:border-lia-border-medium focus:ring-1 focus:ring-lia-btn-primary-bg/20"
               placeholder="Descreva as responsabilidades, objetivos e contexto da vaga..."
             />
           </div>

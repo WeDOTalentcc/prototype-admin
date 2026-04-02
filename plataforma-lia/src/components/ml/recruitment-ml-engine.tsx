@@ -411,7 +411,7 @@ export function RecruitmentMLDashboard({
     switch (trend) {
       case 'up': return <TrendingUp className="w-5 h-5 text-status-success" />
       case 'down': return <TrendingDown className="w-5 h-5 text-status-error" />
-      default: return <Activity className="w-5 h-5 lia-text-base" />
+      default: return <Activity className="w-5 h-5 text-lia-text-secondary" />
     }
   }
 
@@ -427,7 +427,7 @@ export function RecruitmentMLDashboard({
         <CardContent className="p-8">
           <div className="flex items-center justify-center">
             <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            <span className="ml-3 lia-text-base">Processando dados com ML...</span>
+            <span className="ml-3 text-lia-text-secondary">Processando dados com ML...</span>
           </div>
         </CardContent>
       </Card>
@@ -445,7 +445,7 @@ export function RecruitmentMLDashboard({
                 <Brain className="w-5 h-5 text-wedo-cyan" />
                 Inteligência Artificial em Recrutamento
               </CardTitle>
-              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mt-1">
+              <p className="text-sm text-lia-text-primary mt-1">
                 Análises preditivas e insights baseados em Machine Learning
               </p>
             </div>
@@ -485,31 +485,31 @@ export function RecruitmentMLDashboard({
 
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="lia-text-base">Atual:</span>
+                  <span className="text-lia-text-secondary">Atual:</span>
                   <span className="font-medium">{prediction.currentValue}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="lia-text-base">Previsto:</span>
+                  <span className="text-lia-text-secondary">Previsto:</span>
                   <span className={`font-bold ${
  prediction.trend === 'up' ? 'text-status-success' :
-                    prediction.trend === 'down' ? 'text-status-error' : 'lia-text-base'
+                    prediction.trend === 'down' ? 'text-status-error' : 'text-lia-text-secondary'
                   }`}>
                     {prediction.predictedValue}
                   </span>
                 </div>
-                <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                <div className="text-xs text-lia-text-primary">
                   Variação: {prediction.trend === 'up' ? '+' : prediction.trend === 'down' ? '-' : ''}
                   {Math.abs(prediction.predictedValue - prediction.currentValue)}
                 </div>
               </div>
 
               <div className="mt-3 pt-3 border-t">
-                <p className="text-xs lia-text-base">{prediction.recommendation}</p>
+                <p className="text-xs text-lia-text-secondary">{prediction.recommendation}</p>
               </div>
 
               {/* Fatores influenciadores */}
               <div className="mt-2">
-                <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">Fatores chave:</p>
+                <p className="text-xs font-medium text-lia-text-primary mb-1">Fatores chave:</p>
                 <div className="flex flex-wrap gap-1">
                   {prediction.factors.slice(0, 2).map((factor, i) => (
                     <Badge key={i} variant="outline" className="text-xs">
@@ -590,7 +590,7 @@ export function RecruitmentMLDashboard({
               ))}
             </div>
           ) : (
-            <div className="text-center py-6 lia-text-base">
+            <div className="text-center py-6 text-lia-text-secondary">
               <Brain className="w-12 h-12 mx-auto mb-4 text-wedo-cyan" />
               <p>Nenhuma anomalia detectada</p>
               <p className="text-sm">Tudo funcionando dentro dos padrões esperados</p>
@@ -625,19 +625,19 @@ export function RecruitmentMLDashboard({
 
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="lia-text-base">Skills Match:</span>
+                      <span className="text-lia-text-secondary">Skills Match:</span>
                       <span className="font-medium">{score.skillsMatch}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="lia-text-base">Experiência:</span>
+                      <span className="text-lia-text-secondary">Experiência:</span>
                       <span className="font-medium">{score.experienceScore}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="lia-text-base">Fit Cultural:</span>
+                      <span className="text-lia-text-secondary">Fit Cultural:</span>
                       <span className="font-medium">{score.culturalFit}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="lia-text-base">Prob. Sucesso:</span>
+                      <span className="text-lia-text-secondary">Prob. Sucesso:</span>
                       <span className="font-medium text-status-success">{score.successProbability}%</span>
                     </div>
                   </div>

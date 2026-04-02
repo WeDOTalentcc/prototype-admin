@@ -105,7 +105,7 @@ const DATA_SOURCE_CONFIG: Record<DataSource, {
   company_policy: {
     icon: '🏢',
     label: 'Política da Empresa',
-    className: 'bg-wedo-cyan/15 text-wedo-cyan-dark border-wedo-cyan/30 dark:bg-wedo-cyan/10 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30'
+    className: 'bg-wedo-cyan/15 text-wedo-cyan-dark border-wedo-cyan/30 dark:bg-wedo-cyan/10 dark:border-wedo-cyan/30'
   },
   market_benchmark: {
     icon: '📊',
@@ -115,17 +115,17 @@ const DATA_SOURCE_CONFIG: Record<DataSource, {
   internal_history: {
     icon: '📈',
     label: 'Histórico Interno',
-    className: 'bg-status-success/15 text-status-success border-status-success/30 dark:bg-status-success dark:text-status-success dark:border-status-success/30'
+    className: 'bg-status-success/15 text-status-success border-status-success/30 dark:bg-status-success dark:border-status-success/30'
   },
   inference: {
     icon: '🤖',
     label: 'Inferência IA',
-    className: 'bg-status-warning/15 text-status-warning border-status-warning/30 dark:bg-status-warning dark:text-status-warning dark:border-status-warning/30'
+    className: 'bg-status-warning/15 text-status-warning border-status-warning/30 dark:bg-status-warning dark:border-status-warning/30'
   },
   user_input: {
     icon: '✏️',
     label: 'Informado',
-    className: 'bg-gray-100 text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle'
+    className: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle'
   }
 }
 
@@ -140,21 +140,21 @@ const STATUS_CONFIG: Record<CompetitivenessStatus, {
     icon: CheckCircle2,
     label: 'Competitivo',
     description: 'A remuneração está alinhada com o mercado',
-    className: 'text-status-success dark:text-status-success',
+    className: 'text-status-success',
     bgClassName: 'bg-status-success/10 border-status-success/30 dark:bg-status-success/30 dark:border-status-success/30'
   },
   below_market: {
     icon: AlertTriangle,
     label: 'Abaixo do Mercado',
     description: 'A remuneração pode dificultar atração de talentos',
-    className: 'text-status-warning dark:text-status-warning',
+    className: 'text-status-warning',
     bgClassName: 'bg-status-warning/10 border-status-warning/30 dark:bg-status-warning/30 dark:border-status-warning/30'
   },
   above_market: {
     icon: TrendingUp,
     label: 'Acima do Mercado',
     description: 'A remuneração está acima da média de mercado',
-    className: 'text-wedo-cyan-dark dark:text-wedo-cyan-dark',
+    className: 'text-wedo-cyan-dark',
     bgClassName: 'bg-wedo-cyan/10 border-wedo-cyan/30 dark:border-wedo-cyan/30'
   }
 }
@@ -200,7 +200,7 @@ function SalaryComparisonBar({
 
   return (
     <div className="relative h-16 mt-4 mb-2">
-      <div className="absolute inset-x-0 top-6 h-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-full" />
+      <div className="absolute inset-x-0 top-6 h-2 bg-lia-bg-tertiary rounded-full" />
       
       <div 
         className="absolute top-6 h-2 bg-wedo-purple/20 dark:bg-wedo-purple rounded-full"
@@ -297,10 +297,10 @@ export function CompensationAnalysisPanel({
 }: CompensationAnalysisPanelProps) {
   if (isLoading) {
     return (
-      <Card className="border-dashed rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+      <Card className="border-dashed rounded-md">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none text-muted-foreground dark:text-lia-text-tertiary mb-3" />
-          <p className="text-sm text-muted-foreground dark:text-lia-text-tertiary">Analisando remuneração...</p>
+          <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none text-muted-foreground mb-3" />
+          <p className="text-sm text-muted-foreground">Analisando remuneração...</p>
         </CardContent>
       </Card>
     )
@@ -338,23 +338,23 @@ export function CompensationAnalysisPanel({
   }
 
   return (
-    <Card className="overflow-hidden rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-      <CardHeader className={cn('border-b border-lia-border-subtle dark:border-lia-border-subtle', statusConfig.bgClassName)}>
+    <Card className="overflow-hidden rounded-md">
+      <CardHeader className={cn('border-b border-lia-border-subtle', statusConfig.bgClassName)}>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             <StatusIcon className={cn('h-5 w-5', statusConfig.className)} />
             <div>
-              <CardTitle className="text-sm font-sans dark:text-lia-text-primary">{statusConfig.label}</CardTitle>
+              <CardTitle className="text-sm font-sans">{statusConfig.label}</CardTitle>
               <CardDescription className="text-xs mt-0.5">
                 {statusConfig.description}
               </CardDescription>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={onDismiss} className="h-7 w-7 p-0 dark:text-lia-text-tertiary dark:hover:bg-gray-700">
+          <Button variant="ghost" size="sm" onClick={onDismiss} className="h-7 w-7 p-0 hover:bg-lia-interactive-hover">
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground dark:text-lia-text-tertiary mt-2">
+        <p className="text-xs text-muted-foreground mt-2">
           {analysis.executiveSummary}
         </p>
       </CardHeader>
@@ -363,8 +363,8 @@ export function CompensationAnalysisPanel({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-muted-foreground dark:text-lia-text-tertiary" />
-              <h4 className="text-xs font-medium dark:text-lia-text-primary">Salário</h4>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-xs font-medium">Salário</h4>
             </div>
             <DataSourceBadge source={analysis.salary.source} />
           </div>
@@ -372,7 +372,7 @@ export function CompensationAnalysisPanel({
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="p-2 rounded-md bg-status-success/10 dark:bg-status-success/30 border border-status-success/30 dark:border-status-success/30">
               <p className="text-micro text-muted-foreground mb-1">Proposto</p>
-              <p className="text-xs font-semibold text-status-success dark:text-status-success">
+              <p className="text-xs font-semibold text-status-success">
                 {formatCurrency(analysis.salary.proposed.min)} - {formatCurrency(analysis.salary.proposed.max)}
               </p>
             </div>
@@ -385,7 +385,7 @@ export function CompensationAnalysisPanel({
             {analysis.salary.policy && (
               <div className="p-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-muted-foreground mb-1">Política</p>
-                <p className="text-xs font-semibold text-wedo-cyan-dark dark:text-wedo-cyan-dark">
+                <p className="text-xs font-semibold text-wedo-cyan-dark">
                   {formatCurrency(analysis.salary.policy.min)} - {formatCurrency(analysis.salary.policy.max)}
                 </p>
               </div>
@@ -411,7 +411,7 @@ export function CompensationAnalysisPanel({
           {analysis.salary.suggestion && (
             <div className="p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-center gap-2">
               <AlertTriangle className="h-3.5 w-3.5 text-status-warning flex-shrink-0" />
-              <p className="text-micro text-status-warning dark:text-status-warning">
+              <p className="text-micro text-status-warning">
                 Sugestão: Ajustar para {formatCurrency(analysis.salary.suggestion.min)} - {formatCurrency(analysis.salary.suggestion.max)}
               </p>
             </div>
@@ -421,21 +421,21 @@ export function CompensationAnalysisPanel({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-muted-foreground dark:text-lia-text-tertiary" />
-              <h4 className="text-xs font-medium dark:text-lia-text-primary">Bônus</h4>
+              <Target className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-xs font-medium">Bônus</h4>
             </div>
             <DataSourceBadge source={analysis.bonus.source} />
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border">
+            <div className="p-2 rounded-md bg-lia-bg-secondary border">
               <p className="text-micro text-muted-foreground mb-1">Proposto</p>
               <p className="text-sm font-semibold">{analysis.bonus.proposedPercentage}%</p>
             </div>
             {analysis.bonus.policyPercentage !== undefined && (
               <div className="p-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-muted-foreground mb-1">Política da Empresa</p>
-                <p className="text-sm font-semibold text-wedo-cyan-dark dark:text-wedo-cyan-dark">
+                <p className="text-sm font-semibold text-wedo-cyan-dark">
                   {analysis.bonus.policyPercentage}%
                 </p>
               </div>
@@ -451,7 +451,7 @@ export function CompensationAnalysisPanel({
           {analysis.bonus.suggestion !== undefined && analysis.bonus.suggestion !== analysis.bonus.proposedPercentage && (
             <div className="p-2 rounded-md bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 flex items-center gap-2">
               <AlertTriangle className="h-3.5 w-3.5 text-status-warning flex-shrink-0" />
-              <p className="text-micro text-status-warning dark:text-status-warning">
+              <p className="text-micro text-status-warning">
                 Sugestão: Ajustar bônus para {analysis.bonus.suggestion}%
               </p>
             </div>
@@ -461,8 +461,8 @@ export function CompensationAnalysisPanel({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Gift className="h-4 w-4 text-muted-foreground dark:text-lia-text-tertiary" />
-              <h4 className="text-xs font-medium dark:text-lia-text-primary">Benefícios</h4>
+              <Gift className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-xs font-medium">Benefícios</h4>
             </div>
             <DataSourceBadge source={analysis.benefits.source} />
           </div>
@@ -496,7 +496,7 @@ export function CompensationAnalysisPanel({
 
           {analysis.benefits.missingFromStandard.length > 0 && (
             <div className="space-y-2">
-              <p className="text-micro text-status-warning dark:text-status-warning font-medium">
+              <p className="text-micro text-status-warning font-medium">
                 Benefícios Padrão Não Incluídos:
               </p>
               <div className="flex flex-wrap gap-1">
@@ -504,7 +504,7 @@ export function CompensationAnalysisPanel({
                   <Badge 
                     key={benefit.id} 
                     variant="outline" 
-                    className="text-micro gap-1 border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning"
+                    className="text-micro gap-1 border-status-warning/30 text-status-warning dark:border-status-warning/30"
                   >
                     <X className="h-3 w-3" />
                     {benefit.name}
@@ -514,7 +514,7 @@ export function CompensationAnalysisPanel({
             </div>
           )}
 
-          <div className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border">
+          <div className="p-2 rounded-md bg-lia-bg-secondary border">
             <div className="flex items-center justify-between">
               <span className="text-micro text-muted-foreground">Valor Monetizável Anual:</span>
               <span className="text-xs font-semibold">
@@ -526,12 +526,12 @@ export function CompensationAnalysisPanel({
 
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <PieChart className="h-4 w-4 text-muted-foreground dark:text-lia-text-tertiary" />
-            <h4 className="text-xs font-medium dark:text-lia-text-primary">Total Compensation</h4>
+            <PieChart className="h-4 w-4 text-muted-foreground" />
+            <h4 className="text-xs font-medium">Total Compensation</h4>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border">
+            <div className="p-2 rounded-md bg-lia-bg-secondary border">
               <p className="text-micro text-muted-foreground mb-1">Proposto Anual</p>
               <p className="text-xs font-semibold">
                 {formatCurrency(analysis.totalCompensation.proposedAnnual)}
@@ -548,7 +548,7 @@ export function CompensationAnalysisPanel({
             {analysis.totalCompensation.policyAnnual && (
               <div className="p-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30 dark:border-wedo-cyan/30">
                 <p className="text-micro text-muted-foreground mb-1">Política</p>
-                <p className="text-xs font-semibold text-wedo-cyan-dark dark:text-wedo-cyan-dark">
+                <p className="text-xs font-semibold text-wedo-cyan-dark">
                   {formatCurrency(analysis.totalCompensation.policyAnnual)}
                 </p>
               </div>
@@ -558,12 +558,12 @@ export function CompensationAnalysisPanel({
           <CompensationBreakdownChart breakdown={analysis.totalCompensation.breakdown} />
         </div>
 
-        <div className="flex gap-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex gap-2 pt-2 border-t border-lia-border-subtle">
           {hasSuggestions && (
             <Button 
               variant="primary" 
               size="sm" 
-              className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
               onClick={() => onApplySuggestions(buildSuggestions())}
             >
               <Brain className="h-3.5 w-3.5 mr-1 text-wedo-cyan" />
@@ -574,7 +574,7 @@ export function CompensationAnalysisPanel({
             <Button 
               variant="outline" 
               size="sm" 
-              className="flex-1 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
+              className="flex-1 hover:bg-lia-interactive-hover"
               onClick={onAdjustManually}
             >
               <PenLine className="h-3.5 w-3.5 mr-1" />
@@ -584,7 +584,7 @@ export function CompensationAnalysisPanel({
           <Button 
             variant={hasSuggestions ? "ghost" : "primary"}
             size="sm" 
- className={cn("flex-1", !hasSuggestions && "hover:text-white dark:hover:bg-gray-200", hasSuggestions && "dark:text-lia-text-secondary dark:hover:bg-gray-700")}
+ className={cn("flex-1", !hasSuggestions && "hover:text-white dark:hover:bg-lia-interactive-active", hasSuggestions && "dark:text-lia-text-secondary hover:bg-lia-interactive-hover")}
             onClick={onDismiss}
           >
             Prosseguir

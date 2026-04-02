@@ -18,18 +18,18 @@ export function CompanyDefaultQuestions({
   const activeCount = questions.filter(q => !disabledIds.has(q.id)).length
 
   return (
-    <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary overflow-hidden">
+    <div className="border border-lia-border-subtle rounded-md bg-lia-bg-primary overflow-hidden">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
-          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary">
+          <Shield className="w-4 h-4 text-lia-text-tertiary" />
+          <span className="font-['Open_Sans',sans-serif] text-xs uppercase tracking-wider font-semibold text-lia-text-tertiary">
             Padrão da Empresa
           </span>
           {questions.length > 0 && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
               {activeCount}/{questions.length} ativas
             </span>
           )}
@@ -55,8 +55,8 @@ export function CompanyDefaultQuestions({
                   key={q.id}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors motion-reduce:transition-none ${
  enabled
-                      ? 'bg-white dark:bg-lia-bg-primary'
-                      : 'bg-gray-50 dark:bg-lia-bg-secondary/50 opacity-50'
+                      ? 'bg-lia-bg-primary'
+                      : 'bg-lia-bg-secondary/50 opacity-50'
                   }`}
                 >
                   <input
@@ -64,9 +64,9 @@ export function CompanyDefaultQuestions({
                     checked={enabled}
                     disabled={!isEditing}
                     onChange={e => onToggle(q.id, e.target.checked)}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default accent-gray-900 cursor-pointer disabled:cursor-default"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default accent-lia-btn-primary-bg cursor-pointer disabled:cursor-default"
                   />
-                  <span className="font-['Open_Sans',sans-serif] text-xs text-lia-text-secondary dark:text-lia-text-secondary flex-1">
+                  <span className="font-['Open_Sans',sans-serif] text-xs text-lia-text-secondary flex-1">
                     {q.question}
                   </span>
                   {q.is_eliminatory && (

@@ -24,7 +24,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
       <p className="text-xs lia-body">Use operadores booleanos para buscas precisas</p>
       <div className="relative">
         <div className="absolute left-3 top-1/2 -translate-y-1/2">
-          <Code className="w-4 h-4 lia-text-base" />
+          <Code className="w-4 h-4 text-lia-text-secondary" />
         </div>
         <input
           type="text"
@@ -49,7 +49,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
                       : 'hover:bg-gray-100'
                   }`}
                 >
-                  <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'lia-text-base' : 'lia-text-secondary'}`} />
+                  <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -72,7 +72,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
                         : 'hover:bg-gray-100'
                     }`}
                   >
-                    <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'lia-text-base' : 'lia-text-secondary'}`} />
+                    <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
@@ -96,7 +96,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
                         : 'hover:bg-gray-100'
                     }`}
                   >
-                    <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'lia-text-base' : 'lia-text-secondary'}`} />
+                    <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
@@ -184,8 +184,8 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
       {/* Dica contextual */}
       <div className="p-2.5 rounded-md" style={{backgroundColor: 'var(--wedo-cyan-bg-06)'}}>
         <div className="flex items-start gap-2">
-          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
-          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+          <p className="text-xs text-lia-text-primary">
             <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições. Ex: (Python OR Java) AND &quot;São Paulo&quot;
           </p>
         </div>

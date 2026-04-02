@@ -92,7 +92,7 @@ export function CandidatesTableArea({
             className="h-10 w-10 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
             title="Expandir tabela de candidatos"
           >
-            <ChevronRight className="w-5 h-5 text-lia-text-primary dark:text-lia-text-tertiary" />
+            <ChevronRight className="w-5 h-5 text-lia-text-primary" />
           </Button>
 
           <div className="flex flex-col items-center gap-2 text-lia-text-primary">
@@ -187,7 +187,7 @@ export function CandidatesTableArea({
             {!isLoading && !showSearchResults && getPaginatedCandidates().totalPages > 1 && (
               <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3 mt-2">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-lia-text-primary dark:text-lia-text-tertiary">
+                  <div className="text-sm text-lia-text-primary">
                     Mostrando {((currentPage - 1) * itemsPerPage) + 1} -{' '}
                     {Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total)} de{' '}
                     {getPaginatedCandidates().total} candidatos
@@ -258,10 +258,10 @@ export function CandidatesTableArea({
             {!isLoading && sortedCandidates.length === 0 && (
               <div className="bg-white dark:bg-lia-bg-primary rounded-md p-8 text-center">
                 <Users className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <h3 className="text-lg font-medium text-lia-text-primary mb-2">
                   Nenhum candidato encontrado
                 </h3>
-                <p className="text-lia-text-primary dark:text-lia-text-tertiary mb-4">
+                <p className="text-lia-text-primary mb-4">
                   Tente ajustar os filtros ou termos de busca
                 </p>
                 <Button variant="outline" onClick={clearAllFilters}>

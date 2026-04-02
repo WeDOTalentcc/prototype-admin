@@ -164,7 +164,7 @@ const urgency = getUrgencyLevel(ranking as number)
 switch (columnId) {
   case 'id':
     return (
-      <div className="text-xs font-mono text-lia-text-secondary dark:text-lia-text-tertiary">
+      <div className="text-xs font-mono text-lia-text-secondary">
         {(candidate.candidateCode as string | undefined) || (candidate.id as string | undefined)?.substring(0, 6).toUpperCase()}
       </div>
     )
@@ -184,7 +184,7 @@ switch (columnId) {
         title={hasNotaGeral ? 'Clique para ver detalhes' : 'Não avaliado'}
       >
         <Gauge className="w-3.5 h-3.5" style={{color: hasNotaGeral ? 'var(--gray-950)' : 'var(--gray-400)'}} strokeWidth={2} />
- <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-lia-text-primary' : 'text-lia-text-disabled dark:text-lia-text-tertiary'}`}>
+ <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
           {hasNotaGeral ? ranking : '—'}
         </span>
       </div>
@@ -205,7 +205,7 @@ switch (columnId) {
         title={hasTriagem ? 'Clique para ver Triagem LIA' : 'Não avaliado'}
       >
         <Brain className={`w-3.5 h-3.5 ${hasTriagem ? 'text-wedo-cyan' : 'text-lia-text-disabled'}`} strokeWidth={2} />
- <span className={`text-xs font-semibold ${hasTriagem ? 'text-lia-text-primary' : 'text-lia-text-disabled dark:text-lia-text-tertiary'}`}>
+ <span className={`text-xs font-semibold ${hasTriagem ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
           {hasTriagem ? formatScorePercent(triagemValue as number, 0) : '—'}
         </span>
       </div>
@@ -226,7 +226,7 @@ switch (columnId) {
         title={hasFitScore ? 'Clique para ver Análise CV vs Vaga' : 'Não avaliado'}
       >
         <Target className="w-3.5 h-3.5" style={{color: hasFitScore ? 'var(--gray-950)' : 'var(--gray-400)'}} strokeWidth={2} />
- <span className={`text-xs font-semibold ${hasFitScore ? 'text-lia-text-primary' : 'text-lia-text-disabled dark:text-lia-text-tertiary'}`}>
+ <span className={`text-xs font-semibold ${hasFitScore ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
           {hasFitScore ? formatScorePercent(fitValue as number, 0) : '—'}
         </span>
       </div>
@@ -248,7 +248,7 @@ switch (columnId) {
       >
         <Code className="w-3.5 h-3.5" style={{color: hasTechnical ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
         {hasTechnical && (
-          <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
+          <span className="text-xs font-semibold text-lia-text-primary">
             {formatScorePercent(candidate.technicalTestScore as number, 0)}
           </span>
         )}
@@ -271,7 +271,7 @@ switch (columnId) {
       >
         <Globe className="w-3.5 h-3.5" style={{color: hasEnglish ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
         {hasEnglish && (
-          <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
+          <span className="text-xs font-semibold text-lia-text-primary">
             {formatScorePercent(candidate.englishTestScore as number, 0)}
           </span>
         )}
@@ -296,7 +296,7 @@ switch (columnId) {
         title={hasBigFive ? 'Clique para ver relatório Big Five completo' : 'Não realizado'}
       >
         <Fingerprint className="w-3.5 h-3.5" style={{color: hasBigFive ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
- <span className={`text-xs font-semibold ${hasBigFive ? 'text-lia-text-primary' : 'text-lia-text-disabled dark:text-lia-text-tertiary'}`}>
+ <span className={`text-xs font-semibold ${hasBigFive ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
           {hasBigFive && bigFiveAvg !== null ? bigFiveAvg : '—'}
         </span>
       </div>
@@ -383,9 +383,9 @@ switch (columnId) {
         </div>
         <div className="flex items-center gap-1.5">
           {!!(isDemo) && (
-            <span className="text-micro font-medium text-lia-text-disabled dark:text-lia-text-tertiary">[D]</span>
+            <span className="text-micro font-medium text-lia-text-disabled">[D]</span>
           )}
-          <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">
+          <span className="font-medium text-sm text-lia-text-primary">
             {candidate.name as string}
           </span>
           {(() => {
@@ -410,14 +410,14 @@ switch (columnId) {
 
   case 'role':
     return (
-      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+      <div className="text-xs text-lia-text-primary">
         {((candidate.role as string | undefined) || (candidate.position as string | undefined) || 'UX Designer')}
       </div>
     )
 
   case 'currentCompany':
     return (
-      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+      <div className="text-xs text-lia-text-primary">
         {((candidate.currentCompany as string | undefined) || ((candidate.source as string | undefined) === 'LinkedIn' ? 'TechCorp' : 'Digital Agency'))}
       </div>
     )
@@ -430,7 +430,7 @@ switch (columnId) {
         <PopoverTrigger asChild>
           <button className="inline-flex items-center gap-1 group/stage" onClick={(e) => e.stopPropagation()}>
             <Badge
-              className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary dark:text-lia-text-primary cursor-pointer"
+              className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary cursor-pointer"
               style={{backgroundColor: currentStageObj?.color || 'var(--gray-200)'}}
             >
               {currentStageObj?.displayName || (candidate.stage as string | undefined)}
@@ -461,7 +461,7 @@ switch (columnId) {
                     className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                     style={{backgroundColor: stage.color}}
                   />
-                  <span className="flex-1 text-left text-lia-text-primary dark:text-lia-text-primary truncate">
+                  <span className="flex-1 text-left text-lia-text-primary truncate">
                     {stage.displayName}
                   </span>
                   {isCurrent && <CheckCircle className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0" />}
@@ -521,7 +521,7 @@ switch (columnId) {
 
   case 'is_top_universities':
     return candidate.is_top_universities ? (
-      <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary">Top University</Badge>
+      <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">Top University</Badge>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
 
   case 'is_hiring':
@@ -530,26 +530,26 @@ switch (columnId) {
     ) : <span className="text-xs text-lia-text-disabled">—</span>
 
   case 'headline':
-    return <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{(candidate.headline as string | undefined) || ''}</span>
+    return <span className="text-xs text-lia-text-primary truncate">{(candidate.headline as string | undefined) || ''}</span>
 
   case 'expertise':
     const expertiseArray = candidate.expertise
-    return <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{Array.isArray(expertiseArray) ? expertiseArray.join(', ') : (expertiseArray || '')}</span>
+    return <span className="text-xs text-lia-text-primary truncate">{Array.isArray(expertiseArray) ? expertiseArray.join(', ') : (expertiseArray || '')}</span>
 
   case 'linkedin_followers_count':
     return candidate.linkedin_followers_count ? (
-      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{(candidate.linkedin_followers_count as number).toLocaleString('pt-BR')}</span>
+      <span className="text-xs text-lia-text-primary">{(candidate.linkedin_followers_count as number).toLocaleString('pt-BR')}</span>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
 
   case 'linkedin_connections_count':
     return candidate.linkedin_connections_count ? (
-      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{(candidate.linkedin_connections_count as number).toLocaleString('pt-BR')}</span>
+      <span className="text-xs text-lia-text-primary">{(candidate.linkedin_connections_count as number).toLocaleString('pt-BR')}</span>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
 
   case 'outreach_message':
     return candidate.outreach_message ? (
       <div className="flex items-center gap-1">
-        <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate max-w-sidebar-content">{(candidate.outreach_message as string).slice(0, 50)}...</span>
+        <span className="text-xs text-lia-text-primary truncate max-w-sidebar-content">{(candidate.outreach_message as string).slice(0, 50)}...</span>
         <button
           onClick={(e) => {
             e.stopPropagation()
@@ -565,7 +565,7 @@ switch (columnId) {
 
   case 'best_personal_email':
     return candidate.best_personal_email ? (
-      <a href={`mailto:${candidate.best_personal_email as string}`} className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate dark:text-lia-text-secondary dark:hover:text-lia-text-inverse">
+      <a href={`mailto:${candidate.best_personal_email as string}`} className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate dark:hover:text-lia-text-inverse">
         {candidate.best_personal_email as string}
       </a>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
@@ -577,23 +577,23 @@ switch (columnId) {
     const activePhoneTypes = Object.entries(candidate.phone_types)
       .filter(([_, active]) => active)
       .map(([type]) => type)
-    return <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{activePhoneTypes.join(', ') || '—'}</span>
+    return <span className="text-xs text-lia-text-primary">{activePhoneTypes.join(', ') || '—'}</span>
 
   case 'estimated_age':
     return candidate.estimated_age ? (
-      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.estimated_age as number} anos</span>
+      <span className="text-xs text-lia-text-primary">{candidate.estimated_age as number} anos</span>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
 
   case 'match_reasoning':
     return (candidate.pearch_insights as unknown as Record<string, string | undefined>)?.match_reasoning ? (
-      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate" title={(candidate.pearch_insights as unknown as Record<string, string>).match_reasoning}>
+      <span className="text-xs text-lia-text-primary truncate" title={(candidate.pearch_insights as unknown as Record<string, string>).match_reasoning}>
         {(candidate.pearch_insights as unknown as Record<string, string>).match_reasoning.slice(0, 60)}...
       </span>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
 
   case 'overall_summary':
     return candidate.pearch_insights?.overall_summary ? (
-      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate" title={candidate.pearch_insights.overall_summary}>
+      <span className="text-xs text-lia-text-primary truncate" title={candidate.pearch_insights.overall_summary}>
         {candidate.pearch_insights.overall_summary.slice(0, 60)}...
       </span>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
@@ -628,17 +628,17 @@ switch (columnId) {
 
   case 'pearch_insights':
     return candidate.pearch_insights?.overall_summary ? (
-      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{candidate.pearch_insights.overall_summary.slice(0, 50)}...</span>
+      <span className="text-xs text-lia-text-primary truncate">{candidate.pearch_insights.overall_summary.slice(0, 50)}...</span>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
 
   case 'middle_name':
     return candidate.middle_name ? (
-      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate">{candidate.middle_name as string}</span>
+      <span className="text-xs text-lia-text-primary truncate">{candidate.middle_name as string}</span>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
 
   case 'best_business_email':
     return candidate.best_business_email ? (
-      <a href={`mailto:${candidate.best_business_email as string}`} className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate dark:text-lia-text-secondary dark:hover:text-lia-text-inverse">
+      <a href={`mailto:${candidate.best_business_email as string}`} className="text-xs text-lia-text-secondary hover:text-lia-text-primary hover:underline truncate dark:hover:text-lia-text-inverse">
         {candidate.best_business_email as string}
       </a>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
@@ -649,7 +649,7 @@ switch (columnId) {
       return <span className="text-xs text-lia-text-disabled">—</span>
     }
     return (
-      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate" title={personalEmails.join(', ')}>
+      <span className="text-xs text-lia-text-primary truncate" title={personalEmails.join(', ')}>
         {personalEmails.length === 1 ? personalEmails[0] : `${personalEmails[0]} (+${personalEmails.length - 1})`}
       </span>
     )
@@ -660,14 +660,14 @@ switch (columnId) {
       return <span className="text-xs text-lia-text-disabled">—</span>
     }
     return (
-      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary truncate" title={businessEmails.join(', ')}>
+      <span className="text-xs text-lia-text-primary truncate" title={businessEmails.join(', ')}>
         {businessEmails.length === 1 ? businessEmails[0] : `${businessEmails[0]} (+${businessEmails.length - 1})`}
       </span>
     )
 
   case 'company_followers_count':
     return candidate.company_followers_count != null ? (
-      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{(candidate.company_followers_count as number).toLocaleString('pt-BR')}</span>
+      <span className="text-xs text-lia-text-primary">{(candidate.company_followers_count as number).toLocaleString('pt-BR')}</span>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
 
   case 'company_keywords':
@@ -678,7 +678,7 @@ switch (columnId) {
     return (
       <div className="flex flex-wrap gap-1">
         {companyKeywords.slice(0, 3).map((keyword: string, idx: number) => (
-          <Badge key={idx} variant="outline" className="text-micro px-1 py-0 bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+          <Badge key={idx} variant="outline" className="text-micro px-1 py-0 bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-elevated">
             {keyword}
           </Badge>
         ))}
@@ -743,7 +743,7 @@ switch (columnId) {
                 e.stopPropagation()
                 onOpenAnalysis(candidate)
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
             >
               <Eye className="w-4 h-4" />
               Ver perfil completo
@@ -753,7 +753,7 @@ switch (columnId) {
                 e.stopPropagation()
                 onOpenTriagem(candidate)
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
             >
               <Brain className="w-4 h-4 text-wedo-cyan" />
               Ver triagem LIA
@@ -765,7 +765,7 @@ switch (columnId) {
                 onSetScoreModalCandidate(candidate)
                 onSetShowBigFiveModal(true)
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
             >
               <Fingerprint className="w-4 h-4 text-lia-text-secondary" />
               Ver BigFive
@@ -781,7 +781,7 @@ switch (columnId) {
                   openDecisionFlowModal(candidate, 'approve')
                 }
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
             >
               <ThumbsUp className="w-4 h-4" />
               Aprovar

@@ -29,7 +29,7 @@ const CommandDialog = ({ children, ...props }: CommandDialogProps) => {
   return (
     <Dialog {...props}>
       <DialogContent className="overflow-hidden p-0">
-        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:lia-text-base [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5 dark:[&_[cmdk-group-heading]]:lia-text-secondary">
+        <Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [[&_[cmdk-group-heading]]:lia-text-base_[cmdk-group-heading]]:text-lia-text-secondary [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
           {children}
         </Command>
       </DialogContent>
@@ -46,7 +46,7 @@ const CommandInput = React.forwardRef<
     <CommandPrimitive.Input
       ref={ref}
       className={cn(
- "flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:lia-text-base disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:lia-text-secondary",
+ "flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-lia-text-secondary disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:lia-text-secondary",
         className
       )}
       {...props}
@@ -133,7 +133,7 @@ const CommandShortcut = ({
   return (
     <span
       className={cn(
- "ml-auto text-xs tracking-widest text-lia-text-secondary dark:text-lia-text-tertiary",
+ "ml-auto text-xs tracking-widest text-lia-text-secondary",
         className
       )}
       {...props}

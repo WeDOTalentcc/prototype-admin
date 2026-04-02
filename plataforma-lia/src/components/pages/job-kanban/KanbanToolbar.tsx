@@ -200,7 +200,7 @@ export function KanbanToolbar({
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-md"
                 aria-label="Limpar busca"
               >
-                <X className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary" aria-hidden="true" />
+                <X className="w-3 h-3 text-lia-text-primary" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -211,8 +211,8 @@ export function KanbanToolbar({
               onClick={() => setViewMode("kanban")}
               className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
                 viewMode === "kanban"
-                  ? "bg-white dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary font-bold"
-                  : "text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                  ? "bg-white dark:bg-lia-bg-elevated text-lia-text-primary font-bold"
+                  : "text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
               }`}
             >
               <div className="flex items-center gap-1.5">
@@ -224,8 +224,8 @@ export function KanbanToolbar({
               onClick={() => setViewMode("table")}
               className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
                 viewMode === "table"
-                  ? "bg-white dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary font-bold"
-                  : "text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                  ? "bg-white dark:bg-lia-bg-elevated text-lia-text-primary font-bold"
+                  : "text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
               }`}
             >
               <div className="flex items-center gap-1.5">
@@ -238,7 +238,7 @@ export function KanbanToolbar({
           {/* Botão Selecionar Todos */}
           <button
             onClick={handleSelectAll}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary dark:text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors motion-reduce:transition-none"
           >
             {allSelected ? (
               <>
@@ -264,8 +264,8 @@ export function KanbanToolbar({
             }}
             className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
               (viewMode === "kanban" ? showKanbanFiltersPanel : showTableFiltersPanel)
-                ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200'
-                : 'text-lia-text-primary dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
+                ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200'
+                : 'text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             <Target className="w-4 h-4" />
@@ -278,8 +278,8 @@ export function KanbanToolbar({
               title="Configurar colunas da tabela"
               className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
                 showColumnConfig
-                  ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200'
-                  : 'text-lia-text-primary dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200'
+                  : 'text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               <ChevronsLeftRight className="w-4 h-4" />

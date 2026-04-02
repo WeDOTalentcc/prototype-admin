@@ -515,7 +515,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
     switch (type) {
       case 'critical': return <AlertTriangle className="w-5 h-5 text-status-error" />
       case 'warning': return <AlertCircle className="w-5 h-5 text-status-warning" />
-      case 'info': return <Info className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+      case 'info': return <Info className="w-5 h-5 text-lia-text-secondary" />
       case 'success': return <CheckCircle className="w-5 h-5 text-status-success" />
     }
   }
@@ -524,7 +524,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
     switch (type) {
       case 'critical': return 'bg-status-error/10 text-status-error border-status-error/30'
       case 'warning': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
-      case 'info': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
+      case 'info': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
       case 'success': return 'bg-status-success/10 text-status-success border-status-success/30'
     }
   }
@@ -546,10 +546,10 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 font-sans">
-                <Bell className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Bell className="w-5 h-5 text-lia-text-secondary" />
                 Sistema de Alertas KPI
               </CardTitle>
-              <p className="text-sm lia-text-base mt-1">
+              <p className="text-sm text-lia-text-secondary mt-1">
                 Monitoramento automático da performance dos recrutadores
               </p>
             </div>
@@ -580,23 +580,23 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-lia-text-primary">{alertStats.total}</div>
-              <div className="text-sm lia-text-base">Total de Alertas</div>
+              <div className="text-sm text-lia-text-secondary">Total de Alertas</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-status-error">{alertStats.critical}</div>
-              <div className="text-sm lia-text-base">Críticos</div>
+              <div className="text-sm text-lia-text-secondary">Críticos</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-status-warning">{alertStats.warning}</div>
-              <div className="text-sm lia-text-base">Avisos</div>
+              <div className="text-sm text-lia-text-secondary">Avisos</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-wedo-purple">{alertStats.byCategory.performance}</div>
-              <div className="text-sm lia-text-base">Performance</div>
+              <div className="text-sm text-lia-text-secondary">Performance</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-wedo-orange">{alertStats.byCategory.deadline}</div>
-              <div className="text-sm lia-text-base">Prazos</div>
+              <div className="text-sm text-lia-text-secondary">Prazos</div>
             </div>
           </div>
         </CardContent>
@@ -610,7 +610,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Tipo</label>
+              <label className="text-sm font-medium text-lia-text-primary mb-2 block">Tipo</label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
@@ -625,7 +625,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
             </div>
 
             <div>
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Categoria</label>
+              <label className="text-sm font-medium text-lia-text-primary mb-2 block">Categoria</label>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
@@ -641,7 +641,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
             </div>
 
             <div>
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Ordenar por</label>
+              <label className="text-sm font-medium text-lia-text-primary mb-2 block">Ordenar por</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
@@ -654,7 +654,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
             </div>
 
             <div>
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Ações</label>
+              <label className="text-sm font-medium text-lia-text-primary mb-2 block">Ações</label>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -681,8 +681,8 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
         <CardContent>
           <div className="space-y-4">
             {filteredAlerts.length === 0 ? (
-              <div className="text-center py-8 lia-text-base">
-                <Bell className="w-12 h-12 mx-auto mb-4 lia-text-base" />
+              <div className="text-center py-8 text-lia-text-secondary">
+                <Bell className="w-12 h-12 mx-auto mb-4 text-lia-text-secondary" />
                 <p aria-live="polite" aria-atomic="true">Nenhum alerta encontrado</p>
                 <p className="text-sm">Todos os KPIs estão dentro dos parâmetros esperados</p>
               </div>
@@ -720,23 +720,23 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                           </Badge>
                         </div>
 
-                        <p className="text-sm lia-text-base mb-3">{alert.description}</p>
+                        <p className="text-sm text-lia-text-secondary mb-3">{alert.description}</p>
 
                         {/* Métricas */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3 p-3 bg-gray-50 rounded-md">
                           <div className="text-center">
                             <div className="text-lg font-bold text-lia-text-primary">{alert.currentValue}</div>
-                            <div className="text-xs lia-text-base">Atual</div>
+                            <div className="text-xs text-lia-text-secondary">Atual</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold lia-text-base">{alert.targetValue}</div>
-                            <div className="text-xs lia-text-base">Meta</div>
+                            <div className="text-lg font-bold text-lia-text-secondary">{alert.targetValue}</div>
+                            <div className="text-xs text-lia-text-secondary">Meta</div>
                           </div>
                           <div className="text-center">
                             <div className={`text-lg font-bold ${alert.variance > 25 ? 'text-status-error' : 'text-status-warning'}`}>
                               {alert.variance.toFixed(1)}%
                             </div>
-                            <div className="text-xs lia-text-base">Variação</div>
+                            <div className="text-xs text-lia-text-secondary">Variação</div>
                           </div>
                           <div className="text-center">
                             <div className="flex items-center justify-center">
@@ -746,12 +746,12 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                                 <TrendingDown className="w-5 h-5 text-status-success" />
                               )}
                             </div>
-                            <div className="text-xs lia-text-base">Tendência</div>
+                            <div className="text-xs text-lia-text-secondary">Tendência</div>
                           </div>
                         </div>
 
                         {/* Informações Adicionais */}
-                        <div className="flex items-center gap-4 text-xs lia-text-base mb-3">
+                        <div className="flex items-center gap-4 text-xs text-lia-text-secondary mb-3">
                           <span className="flex items-center gap-1">
                             <Users className="w-3 h-3" />
                             {alert.department}
@@ -774,8 +774,8 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                             <h5 className="text-sm font-medium text-lia-text-primary mb-2">Ações Sugeridas:</h5>
                             <ul className="space-y-1">
                               {alert.suggestedActions.slice(0, 2).map((action, index) => (
-                                <li key={`action-${index}`} className="text-sm lia-text-base flex items-start gap-2">
-                                  <span className="text-lia-text-secondary dark:text-lia-text-tertiary mt-1">•</span>
+                                <li key={`action-${index}`} className="text-sm text-lia-text-secondary flex items-start gap-2">
+                                  <span className="text-lia-text-secondary mt-1">•</span>
                                   {action}
                                 </li>
                               ))}
@@ -784,7 +784,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="mt-2 text-lia-text-secondary dark:text-lia-text-tertiary h-auto p-0"
+                                className="mt-2 text-lia-text-secondary h-auto p-0"
                                 onClick={() => setSelectedAlert(alert)}
                               >
                                 Ver todas as {alert.suggestedActions.length} sugestões
@@ -856,8 +856,8 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                   <h4 className="font-medium mb-2">Todas as Ações Sugeridas:</h4>
                   <ul className="space-y-2">
                     {selectedAlert.suggestedActions.map((action, index) => (
-                      <li key={`sel-action-${index}`} className="text-sm lia-text-base flex items-start gap-2 p-2 bg-gray-50 rounded-md">
-                        <span className="text-lia-text-secondary dark:text-lia-text-tertiary mt-1">•</span>
+                      <li key={`sel-action-${index}`} className="text-sm text-lia-text-secondary flex items-start gap-2 p-2 bg-gray-50 rounded-md">
+                        <span className="text-lia-text-secondary mt-1">•</span>
                         {action}
                       </li>
                     ))}

@@ -79,7 +79,7 @@ export function ClientSelector() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[280px] justify-between bg-white border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary"
+          className="w-[280px] justify-between bg-white border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
         >
           {selectedClient ? (
             <div className="flex items-center gap-2 truncate">
@@ -119,14 +119,14 @@ export function ClientSelector() {
                 className="flex items-center gap-3 py-2"
               >
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-lia-bg-secondary">
-                  <Users className="h-4 w-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Users className="h-4 w-4 text-lia-text-secondary" />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-medium">Todos os Clientes</span>
                   <span className="text-xs lia-text-secondary">Visão global do admin</span>
                 </div>
                 {!selectedClient && (
-                  <Check className="ml-auto h-4 w-4 text-lia-text-secondary dark:text-lia-text-secondary" />
+                  <Check className="ml-auto h-4 w-4 text-lia-text-secondary" />
                 )}
               </CommandItem>
             </CommandGroup>
@@ -168,7 +168,7 @@ export function ClientSelector() {
                         {getStatusLabel(client.status)}
                       </Badge>
                       {selectedClient?.id === client.id && (
-                        <Check className="h-4 w-4 text-lia-text-secondary dark:text-lia-text-secondary shrink-0" />
+                        <Check className="h-4 w-4 text-lia-text-secondary shrink-0" />
                       )}
                     </CommandItem>
                   ))}

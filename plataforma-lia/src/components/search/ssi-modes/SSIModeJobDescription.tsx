@@ -65,7 +65,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
             aria-live="polite" aria-atomic="true">
             Buscar vaga existente
           </span>
-          <span className="text-micro lia-text-400">opcional</span>
+          <span className="text-micro text-lia-text-tertiary">opcional</span>
         </div>
 
         {selectedVacancy ? (
@@ -76,12 +76,12 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
               <div
                 className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-200"
               >
-                <Briefcase className="w-3 h-3 lia-text-600" />
+                <Briefcase className="w-3 h-3 text-lia-text-secondary" />
               </div>
               <div>
-                <p className="text-base-ui font-medium lia-text-800">{selectedVacancy.title}</p>
+                <p className="text-base-ui font-medium text-lia-text-primary">{selectedVacancy.title}</p>
                 {selectedVacancy.job_id && (
-                  <p className="text-micro lia-text-500">ID: {selectedVacancy.job_id}</p>
+                  <p className="text-micro text-lia-text-secondary">ID: {selectedVacancy.job_id}</p>
                 )}
               </div>
             </div>
@@ -89,16 +89,16 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
               onClick={clearSelectedVacancy}
               className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
             >
-              <X className="w-3.5 h-3.5 lia-text-400" />
+              <X className="w-3.5 h-3.5 text-lia-text-tertiary" />
             </button>
           </div>
         ) : (
           <div className="relative" role="status" aria-live="polite" aria-label="Carregando...">
             <div className="absolute left-3 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
               {isSearchingVacancies ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none lia-text-400" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
               ) : (
-                <Search className="w-3.5 h-3.5 lia-text-400" />
+                <Search className="w-3.5 h-3.5 text-lia-text-tertiary" />
               )}
             </div>
             <input
@@ -106,7 +106,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
               value={jdVacancySearch}
               onChange={(e) => setJdVacancySearch(e.target.value)}
               placeholder="Digite o nome ou ID da vaga..."
-              className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-gray-50 lia-text-950"
+              className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-gray-50 text-lia-text-primary"
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = "var(--gray-300)"
                 e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
@@ -132,7 +132,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-base-ui font-medium lia-text-800 truncate">{vacancy.title}</p>
+                          <p className="text-base-ui font-medium text-lia-text-primary truncate">{vacancy.title}</p>
                           <Badge
                             variant="outline"
                             className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
@@ -144,17 +144,17 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
                           {vacancy.job_id && (
-                            <span className="text-micro lia-text-500">ID: {vacancy.job_id}</span>
+                            <span className="text-micro text-lia-text-secondary">ID: {vacancy.job_id}</span>
                           )}
-                          <span className="text-micro lia-text-400">{formatDate(vacancy.created_at)}</span>
+                          <span className="text-micro text-lia-text-tertiary">{formatDate(vacancy.created_at)}</span>
                         </div>
                         {vacancy.description_preview && (
-                          <p className="text-xs lia-text-500 mt-1 line-clamp-2">
+                          <p className="text-xs text-lia-text-secondary mt-1 line-clamp-2">
                             {vacancy.description_preview}
                           </p>
                         )}
                       </div>
-                      <ChevronRight className="w-3.5 h-3.5 lia-text-300 flex-shrink-0 mt-0.5" />
+                      <ChevronRight className="w-3.5 h-3.5 text-lia-text-disabled flex-shrink-0 mt-0.5" />
                     </div>
                   </button>
                 ))}
@@ -166,7 +166,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                 className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
                 style={{backgroundColor: 'var(--gray-50)'}}
               >
-                <p className="text-base-ui lia-text-500" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
+                <p className="text-base-ui text-lia-text-secondary" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
               </div>
             )}
           </div>
@@ -176,7 +176,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
       {/* Divisor */}
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-gray-200" />
-        <span className="text-micro lia-text-400 uppercase tracking-wider">ou</span>
+        <span className="text-micro text-lia-text-tertiary uppercase tracking-wider">ou</span>
         <div className="flex-1 h-px bg-gray-200" />
       </div>
 
@@ -243,7 +243,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                         searchSource === 'local'
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                           : "hover:bg-gray-100"
-                      , searchSource === 'local' ? "text-wedo-green" : "lia-text-400"
+                      , searchSource === 'local' ? "text-wedo-green" : "text-lia-text-tertiary"
                       )}
                     >
                       <Home className="w-4 h-4" />
@@ -251,7 +251,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Seu banco de talentos</p>
-                    <p className="text-xs lia-text-300">Gratuito • Local</p>
+                    <p className="text-xs text-lia-text-disabled">Gratuito • Local</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -268,7 +268,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                           searchSource === 'hybrid'
                             ? "bg-wedo-orange/15 ring-1 ring-wedo-orange"
                             : "hover:bg-gray-100"
-                        , searchSource === 'hybrid' ? "text-wedo-orange" : "lia-text-400"
+                        , searchSource === 'hybrid' ? "text-wedo-orange" : "text-lia-text-tertiary"
                         )}
                       >
                         <Zap className="w-4 h-4" />
@@ -276,7 +276,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Expanda sua busca</p>
-                      <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
+                      <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Local + Global • 1 crédito/candidato</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -294,7 +294,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                           searchSource === 'global'
                             ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20"
                             : "hover:bg-gray-100"
-                        , searchSource === 'global' ? "lia-text-950" : "lia-text-400"
+                        , searchSource === 'global' ? "text-lia-text-primary" : "text-lia-text-tertiary"
                         )}
                       >
                         <Globe className="w-4 h-4" />
@@ -302,7 +302,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="!animate-none !duration-0">
                       <p className="text-xs font-medium">Alcance global</p>
-                      <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
+                      <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">800M+ candidatos • 1 crédito/candidato</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -322,7 +322,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                             requireEmails
                               ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                               : "hover:bg-gray-100"
-                          , requireEmails ? "text-wedo-green" : "lia-text-400"
+                          , requireEmails ? "text-wedo-green" : "text-lia-text-tertiary"
                           )}
                         >
                           <Mail className="w-3.5 h-3.5" />
@@ -330,7 +330,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                       </TooltipTrigger>
                       <TooltipContent side="bottom" className="!animate-none !duration-0">
                         <p className="text-xs font-medium">Apenas com Email</p>
-                        <p className="text-xs lia-text-300">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                        <p className="text-xs text-lia-text-disabled">{requireEmails ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -346,7 +346,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                             requirePhoneNumbers
                               ? "bg-wedo-green/15 ring-1 ring-wedo-green"
                               : "hover:bg-gray-100"
-                          , requirePhoneNumbers ? "text-wedo-green" : "lia-text-400"
+                          , requirePhoneNumbers ? "text-wedo-green" : "text-lia-text-tertiary"
                           )}
                         >
                           <Phone className="w-3.5 h-3.5" />
@@ -354,7 +354,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                       </TooltipTrigger>
                       <TooltipContent side="bottom" className="!animate-none !duration-0">
                         <p className="text-xs font-medium">Apenas com Telefone</p>
-                        <p className="text-xs lia-text-300">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
+                        <p className="text-xs text-lia-text-disabled">{requirePhoneNumbers ? 'Ativo (+1 crédito)' : 'Clique para ativar (+1 crédito)'}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -372,7 +372,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                       className={cn(
                         "flex items-center justify-center p-1.5 rounded-md transition-colors",
                         canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
-                      , canSubmit() ? "lia-text-400" : "lia-text-200"
+                      , canSubmit() ? "text-lia-text-tertiary" : "text-lia-text-disabled"
                       )}
                     >
                       {isLoading ? (
@@ -384,13 +384,13 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
                     <p className="text-xs font-medium">Extrair e Buscar</p>
-                    <p className="text-xs lia-text-300" aria-live="polite" aria-atomic="true">Extrai requisitos e busca candidatos</p>
+                    <p className="text-xs text-lia-text-disabled" aria-live="polite" aria-atomic="true">Extrai requisitos e busca candidatos</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
             {/* Hint abaixo dos ícones */}
-            <span className="text-micro lia-text-400 italic">extrair e buscar</span>
+            <span className="text-micro text-lia-text-tertiary italic">extrair e buscar</span>
           </div>
         )}
       </div>
@@ -400,12 +400,12 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 lia-text-700" />
-              <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">
+              <FileText className="w-3.5 h-3.5 text-lia-text-primary" />
+              <span className="text-xs font-medium text-lia-text-primary">
                 Preview do prompt de busca
               </span>
             </div>
-            <span className="text-micro lia-text-400">editável</span>
+            <span className="text-micro text-lia-text-tertiary">editável</span>
           </div>
           <textarea
             value={jdSearchPrompt}
@@ -423,8 +423,8 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
       {/* Dica contextual padronizada */}
       <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
         <div className="flex items-start gap-2">
-          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-700" />
-          <p className="text-xs lia-text-800 dark:text-lia-text-primary">
+          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
+          <p className="text-xs text-lia-text-primary">
             <strong>Dica:</strong> Selecione uma vaga existente ou cole a JD completa para extrair automaticamente requisitos técnicos e comportamentais.
           </p>
         </div>

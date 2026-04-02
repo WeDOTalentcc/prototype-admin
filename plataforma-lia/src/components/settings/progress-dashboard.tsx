@@ -117,16 +117,16 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
 
   // v4: Cores de categoria em grayscale (90% gray + 10% accent apenas para contexto LIA)
   const categoryColors = {
-    basic: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'lia-text-700 dark:text-lia-text-secondary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' },
-    advanced: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'lia-text-700 dark:text-lia-text-secondary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' },
-    integrations: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'lia-text-700 dark:text-lia-text-secondary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' }
+    basic: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' },
+    advanced: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' },
+    integrations: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' }
   }
 
   // v4: Cores de prioridade semânticas
   const priorityColors = {
     high: { bg: 'bg-status-error/10 dark:bg-status-error/20', text: 'text-status-error dark:text-status-error', icon: AlertTriangle },
     medium: { bg: 'bg-status-warning/10 dark:bg-status-warning/20', text: 'text-status-warning dark:text-status-warning', icon: Clock },
-    low: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'lia-text-700 dark:text-lia-text-secondary', icon: Info }
+    low: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', icon: Info }
   }
 
   return (
@@ -163,7 +163,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
             <Card className="rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Gauge className="w-8 h-8 lia-text-700 dark:text-lia-text-secondary" />
+                  <Gauge className="w-8 h-8 text-lia-text-primary" />
                 </div>
                 <div className={`${textStyles.metricLarge} mb-1`}>
                   {Math.round(progressMetrics.overall)}%
@@ -177,7 +177,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                   ) : progressMetrics.trend === 'down' ? (
                     <TrendingDown className="w-4 h-4 text-status-error dark:text-status-error" />
                   ) : (
-                    <Activity className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                    <Activity className="w-4 h-4 text-lia-text-secondary" />
                   )}
                   <span className={textStyles.metricSmall}>
                     {progressMetrics.velocity} seções/dia
@@ -259,7 +259,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
 
                     <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3 mb-3">
                       <div
-                        className="h-3 rounded-full transition-[width,height] duration-500 bg-gray-900 dark:lia-bg-100"
+                        className="h-3 rounded-full transition-[width,height] duration-500 bg-gray-900"
                         style={{width: `${progress}%`}}
                       />
                     </div>
@@ -282,7 +282,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
           <Card className="mb-8 rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
             <CardHeader>
               <CardTitle className={`flex items-center gap-2 ${textStyles.subtitle}`}>
-                <Lightbulb className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <Lightbulb className="w-5 h-5 text-lia-text-secondary" />
                 Próximas Ações Recomendadas
               </CardTitle>
             </CardHeader>
@@ -306,7 +306,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                           </span>
                         </div>
                         <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                          <SectionIcon className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                          <SectionIcon className="w-5 h-5 text-lia-text-secondary" />
                         </div>
                       </div>
 
@@ -393,7 +393,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                       onClick={() => onSectionSelect(section.id)}
                     >
                       <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                        <SectionIcon className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                        <SectionIcon className="w-5 h-5 text-lia-text-secondary" />
                       </div>
 
                       <div className="flex-1">

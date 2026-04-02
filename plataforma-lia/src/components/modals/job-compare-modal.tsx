@@ -131,7 +131,7 @@ const INSIGHT_STYLES: Record<LiaInsight["type"], {
 }
 
 const JOB_COLORS = [
- { bar: "bg-gray-900", text: "text-lia-text-secondary dark:text-lia-text-tertiary", light: "bg-gray-100 dark:bg-lia-bg-secondary" },
+ { bar: "bg-lia-btn-primary-bg", text: "text-lia-text-secondary", light: "bg-lia-bg-tertiary" },
   { bar: "bg-wedo-purple", text: "text-wedo-purple", light: "bg-wedo-purple/15" },
   { bar: "bg-status-success", text: "text-status-success", light: "bg-status-success/15" },
   { bar: "bg-wedo-orange", text: "text-wedo-orange", light: "bg-wedo-orange/15" },
@@ -187,7 +187,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
 
   const getScoreColor = (score?: number) => {
     if (!score) return "text-lia-text-tertiary"
-    if (score >= 80) return "text-lia-text-secondary dark:text-lia-text-tertiary font-semibold"
+    if (score >= 80) return "text-lia-text-secondary font-semibold"
     if (score >= 60) return "text-lia-text-primary"
     return "text-lia-text-primary"
   }
@@ -519,20 +519,20 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md"
+        className="max-w-4xl max-h-[90vh] overflow-y-auto bg-lia-bg-primary border border-lia-border-subtle rounded-md"
        
       >
-        <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-3">
+        <DialogHeader className="border-b border-lia-border-subtle pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
-                <Scale className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <div className="w-8 h-8 bg-lia-bg-tertiary rounded-md flex items-center justify-center">
+                <Scale className="w-4 h-4 text-lia-text-secondary" />
               </div>
               <div>
-                <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                   Comparar Vagas
                 </DialogTitle>
-                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">
+                <p className="text-xs text-lia-text-secondary mt-0.5">
                   {jobs.length} vaga{jobs.length > 1 ? "s" : ""} selecionada{jobs.length > 1 ? "s" : ""}
                 </p>
               </div>
@@ -542,7 +542,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                 variant="outline"
                 size="sm"
                 onClick={handleShare}
-                className="h-7 px-2.5 text-xs gap-1.5 border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
+                className="h-7 px-2.5 text-xs gap-1.5 border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover"
               >
                 <Share2 className="w-3 h-3" />
                 Compartilhar
@@ -552,7 +552,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                 size="sm"
                 onClick={handleExportPDF}
                 disabled={isExporting}
-                className="h-7 px-2.5 text-xs gap-1.5 border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
+                className="h-7 px-2.5 text-xs gap-1.5 border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover"
               >
                 <Download className="w-3 h-3" />
                 {isExporting ? "Gerando..." : "Exportar PDF"}
@@ -572,7 +572,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                   {jobs.map((job) => (
                     <div
                       key={job.id}
-                      className="p-2 rounded-md bg-gray-50 border border-lia-border-subtle"
+                      className="p-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle"
                     >
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-md bg-lia-bg-primary border border-lia-border-subtle flex items-center justify-center flex-shrink-0">
@@ -581,7 +581,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1">
                             {job.code && (
-                              <span className="text-micro font-medium text-lia-text-secondary bg-gray-100 px-1 py-0.5 rounded-full">
+                              <span className="text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary px-1 py-0.5 rounded-full">
                                 {job.code}
                               </span>
                             )}
@@ -600,7 +600,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                 <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
                   Dimensões
                 </h4>
-                <div className="space-y-1.5 p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
+                <div className="space-y-1.5 p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
                   {COMPARISON_DIMENSIONS.map((dim) => (
                     <label
                       key={dim.id}
@@ -609,7 +609,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                       <Checkbox
                         checked={selectedDimensions.has(dim.id)}
                         onCheckedChange={() => toggleDimension(dim.id)}
-                        className="w-3.5 h-3.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                        className="w-3.5 h-3.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
                       />
                       <dim.icon className="w-3 h-3 text-lia-text-tertiary group-hover:text-lia-text-primary" />
                       <span className="text-xs text-lia-text-primary group-hover:text-lia-text-primary">
@@ -624,7 +624,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-xs">
                 <thead>
-                  <tr className="bg-gray-50">
+                  <tr className="bg-lia-bg-secondary">
                     <th className="text-left font-semibold text-lia-text-secondary uppercase tracking-wide p-2.5 border border-lia-border-subtle w-[100px]">
                       Métrica
                     </th>
@@ -636,7 +636,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             {job.code && (
-                              <span className="text-micro text-lia-text-secondary bg-gray-100 px-1.5 py-0.5 rounded-full font-medium">
+                              <span className="text-micro text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full font-medium">
                                 {job.code}
                               </span>
                             )}
@@ -653,7 +653,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="hover:bg-gray-50">
+                  <tr className="hover:bg-lia-interactive-hover">
                     <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                       <div className="flex items-center gap-1.5">
                         <Users className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -667,7 +667,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                     ))}
                   </tr>
 
-                  <tr className="hover:bg-gray-50">
+                  <tr className="hover:bg-lia-interactive-hover">
                     <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                       <div className="flex items-center gap-1.5">
                         <CheckCircle className="w-3.5 h-3.5 text-status-success" />
@@ -681,7 +681,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                     ))}
                   </tr>
 
-                  <tr className="hover:bg-gray-50">
+                  <tr className="hover:bg-lia-interactive-hover">
                     <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -696,7 +696,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                   </tr>
 
                   {selectedDimensions.has("salary_range") && (
-                    <tr className="hover:bg-gray-50">
+                    <tr className="hover:bg-lia-interactive-hover">
                       <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                         <div className="flex items-center gap-1.5">
                           <DollarSign className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -712,7 +712,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                   )}
 
                   {selectedDimensions.has("location") && (
-                    <tr className="hover:bg-gray-50">
+                    <tr className="hover:bg-lia-interactive-hover">
                       <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                         <div className="flex items-center gap-1.5">
                           <MapPin className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -728,7 +728,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                   )}
 
                   {selectedDimensions.has("performance") && (
-                    <tr className="hover:bg-gray-50 bg-gray-50">
+                    <tr className="hover:bg-lia-interactive-hover bg-lia-bg-secondary">
                       <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
                         <div className="flex items-center gap-1.5">
                           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -746,7 +746,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                   )}
 
                   {selectedDimensions.has("technical_requirements") && (
-                    <tr className="hover:bg-gray-50">
+                    <tr className="hover:bg-lia-interactive-hover">
                       <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
                         <div className="flex items-center gap-1.5">
                           <Target className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -759,12 +759,12 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                             <div className="flex flex-wrap gap-1">
                               {job.technical_requirements.slice(0, 4).map((req, idx) => (
                                 // @ts-ignore TODO: fix type
-                                <span key={`req-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
+                                <span key={`req-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
                                   {(typeof req === "string" ? req : (req as any).name || (req as any).skill || "-")}
                                 </span>
                               ))}
                               {job.technical_requirements.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-tertiary">
+                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-tertiary">
                                   +{job.technical_requirements.length - 4}
                                 </span>
                               )}
@@ -778,7 +778,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                   )}
 
                   {selectedDimensions.has("competencies") && (
-                    <tr className="hover:bg-gray-50">
+                    <tr className="hover:bg-lia-interactive-hover">
                       <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
                         <div className="flex items-center gap-1.5">
                           <Award className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -791,12 +791,12 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                             <div className="flex flex-wrap gap-1">
                               {job.behavioral_competencies.slice(0, 4).map((comp, idx) => (
                                 // @ts-ignore TODO: fix type
-                                <span key={`comp-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
+                                <span key={`comp-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
                                   {(typeof comp === "string" ? comp : (comp as any).name || (comp as any).competency || "-")}
                                 </span>
                               ))}
                               {job.behavioral_competencies.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-tertiary">
+                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-tertiary">
                                   +{job.behavioral_competencies.length - 4}
                                 </span>
                               )}
@@ -810,7 +810,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                   )}
 
                   {selectedDimensions.has("benefits") && (
-                    <tr className="hover:bg-gray-50">
+                    <tr className="hover:bg-lia-interactive-hover">
                       <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
                         <div className="flex items-center gap-1.5">
                           <Gift className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -822,12 +822,12 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                           {job.benefits && job.benefits.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.benefits.slice(0, 4).map((benefit, idx) => (
-                                <span key={`ben-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary">
+                                <span key={`ben-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
                                   {benefit}
                                 </span>
                               ))}
                               {job.benefits.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-tertiary">
+                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-tertiary">
                                   +{job.benefits.length - 4}
                                 </span>
                               )}
@@ -853,10 +853,10 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
           )}
         </div>
 
-        <DialogFooter className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+        <DialogFooter className="pt-3 border-t border-lia-border-subtle">
           <Button
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             Fechar
           </Button>

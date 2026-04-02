@@ -179,13 +179,13 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
         onClick={() => setIsOpen(!isOpen)}
         className="gap-2 text-xs font-['Open_Sans'] min-w-sidebar-content justify-start"
       >
-        <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+        <Calendar className="w-4 h-4 text-lia-text-secondary" />
         <span className={value?.start_date ? 'text-lia-text-primary' : 'lia-text-secondary'}>
           {displayValue}
         </span>
         {value?.start_date && (
           <X 
-            className="w-4 h-4 ml-auto lia-text-secondary hover:lia-text-base" 
+            className="w-4 h-4 ml-auto lia-text-secondary hover:text-lia-text-secondary" 
             onClick={(e) => {
               e.stopPropagation()
               handleClear()

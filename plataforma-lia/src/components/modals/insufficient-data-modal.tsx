@@ -57,7 +57,7 @@ export function InsufficientDataModal({
   
   return (
     <AlertDialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
-      <AlertDialogContent className="max-w-md rounded-md dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+      <AlertDialogContent className="max-w-md rounded-md">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className={`p-2.5 rounded-md ${hasEnoughData ? 'bg-status-warning/15 text-status-warning' : 'bg-status-error/15 text-status-error'}`}>
@@ -69,15 +69,15 @@ export function InsufficientDataModal({
           </div>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-              <p className="text-lia-text-primary dark:text-lia-text-primary">
+              <p className="text-lia-text-primary">
                 {hasEnoughData ? (
                   <>
-                    Para gerar um parecer mais preciso para <strong className="text-lia-text-primary dark:text-lia-text-primary">{candidateName || 'este candidato'}</strong>, 
+                    Para gerar um parecer mais preciso para <strong className="text-lia-text-primary">{candidateName || 'este candidato'}</strong>, 
                     seria ideal ter mais informações disponíveis.
                   </>
                 ) : (
                   <>
-                    Não é possível gerar um parecer de qualidade para <strong className="text-lia-text-primary dark:text-lia-text-primary">{candidateName || 'este candidato'}</strong> 
+                    Não é possível gerar um parecer de qualidade para <strong className="text-lia-text-primary">{candidateName || 'este candidato'}</strong> 
                     {' '}sem as informações essenciais abaixo.
                   </>
                 )}
@@ -144,7 +144,7 @@ export function InsufficientDataModal({
                 </div>
               )}
 
-              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+              <p className="text-xs text-lia-text-secondary">
                 {hasEnoughData 
                   ? 'Você pode prosseguir, mas o parecer terá qualidade limitada.'
                   : 'Complete o perfil do candidato com as informações obrigatórias para gerar um parecer.'}
@@ -152,11 +152,11 @@ export function InsufficientDataModal({
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter className="gap-2 sm:gap-2 flex-col sm:flex-row border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
+        <AlertDialogFooter className="gap-2 sm:gap-2 flex-col sm:flex-row border-t border-lia-border-subtle bg-lia-bg-secondary p-4 -mx-6 -mb-6 rounded-b-xl">
           <Button 
             variant="outline" 
             onClick={onClose}
-            className="gap-2 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+            className="gap-2 bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
           >
             <X className="w-4 h-4" />
             {hasEnoughData ? 'Cancelar' : 'Entendi'}
@@ -164,7 +164,7 @@ export function InsufficientDataModal({
           {hasEnoughData && onProceedAnyway && (
             <Button
               onClick={onProceedAnyway}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
             >
               <AlertTriangle className="w-4 h-4" />
               Gerar mesmo assim

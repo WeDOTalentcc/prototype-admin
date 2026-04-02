@@ -94,13 +94,13 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
       )}
 
       {activeSection === 'perguntas' && (
-        <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+        <Card className="border border-lia-border-subtle">
           {!isEditingScreening && (
             <CardContent className="p-4">
               <div className="space-y-4">
                 <div>
-                  <h4 className="text-xs font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3">Blocos WSI</h4>
-                  <div className="flex items-center gap-3 text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex-wrap mb-3">
+                  <h4 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3">Blocos WSI</h4>
+                  <div className="flex items-center gap-3 text-micro text-lia-text-secondary flex-wrap mb-3">
                     <span>Total: {(job as any).screeningQuestions?.length || 0} perguntas WSI</span>
                     <span>•</span>
                     <span>{((job.screeningQuestions as ScreeningQuestionItem[]) || []).filter((q: ScreeningQuestionItem) => q.type === 'eliminatory' || q.required).length} eliminatórias</span>
@@ -115,14 +115,14 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                     const block2Count = block.id === 2 ? (companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length : 0
                     const totalBlockCount = block.id === 2 ? block2Count + blockQuestions.length : blockQuestions.length
                     return (
-                      <div key={block.id} className={`px-3 py-2 rounded-md ${isAutomatic ? 'bg-gray-50/50 border border-lia-border-subtle' : totalBlockCount > 0 ? 'bg-lia-bg-primary border border-lia-border-subtle' : 'bg-lia-bg-primary border border-lia-border-subtle border-dashed/50 dark:border-lia-border-default'}`}>
+                      <div key={block.id} className={`px-3 py-2 rounded-md ${isAutomatic ? 'bg-lia-bg-secondary/50 border border-lia-border-subtle' : totalBlockCount > 0 ? 'bg-lia-bg-primary border border-lia-border-subtle' : 'bg-lia-bg-primary border border-lia-border-subtle border-dashed/50'}`}>
                         <div className="flex items-center gap-2">
-                          <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-gray-100' : 'text-lia-text-disabled dark:text-lia-text-tertiary dark:bg-lia-bg-elevated'}`}>{block.id}</span>
-                          <span className={`text-xs font-medium ${isAutomatic ? 'text-lia-text-tertiary' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>{block.name}</span>
+                          <span className={`text-micro font-semibold rounded-full w-5 h-5 flex items-center justify-center shrink-0 ${isAutomatic ? 'bg-lia-bg-tertiary' : 'text-lia-text-disabled'}`}>{block.id}</span>
+                          <span className={`text-xs font-medium ${isAutomatic ? 'text-lia-text-tertiary' : 'text-lia-text-primary'}`}>{block.name}</span>
                           {isAutomatic ? (
-                            <span className="text-micro px-1.5 py-0.5 bg-gray-100 lia-text-secondary rounded-full font-medium uppercase tracking-wide dark:bg-lia-bg-elevated">Automático</span>
+                            <span className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary lia-text-secondary rounded-full font-medium uppercase tracking-wide">Automático</span>
                           ) : totalBlockCount > 0 ? (
-                            <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
+                            <span className="text-micro text-lia-text-tertiary">({totalBlockCount} {totalBlockCount === 1 ? 'pergunta' : 'perguntas'})</span>
                           ) : (
                             <span className="text-micro text-lia-text-disabled italic">Nenhuma pergunta</span>
                           )}
@@ -137,15 +137,15 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                         {!isAutomatic && block.id !== 2 && blockQuestions.length > 0 && (
                           <div className="space-y-1 ml-7 mt-1.5">
                             {blockQuestions.map((q: ScreeningQuestionItem, idx: number) => (
-                              <p key={q.id || idx} className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed truncate">• {q.question || q.text}</p>
+                              <p key={q.id || idx} className="text-xs text-lia-text-secondary leading-relaxed truncate">• {q.question || q.text}</p>
                             ))}
                           </div>
                         )}
                         {isAutomatic && WSI_AUTOMATIC_MESSAGES[block.id] && (
                           <div className="ml-7 mt-1.5">
-                            <p className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary mb-1">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
-                            <div className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg px-2.5 py-2">
-                              <p className="text-micro text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</p>
+                            <p className="text-micro font-medium text-lia-text-tertiary mb-1">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
+                            <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-lg px-2.5 py-2">
+                              <p className="text-micro text-lia-text-secondary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</p>
                             </div>
                             <p className="text-micro text-lia-text-disabled mt-1 italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
                           </div>
@@ -170,8 +170,8 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
       {/* @ts-ignore TODO: fix type */}
       {(job.liaMetrics?.triagens_realizadas ?? 0) > 0 && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-status-warning/10 border border-status-warning/30 rounded-md dark:bg-status-warning/10 dark:border-status-warning/30">
-          <AlertTriangle className="w-3.5 h-3.5 text-status-warning dark:text-status-warning shrink-0" />
-          <p className="text-xs text-status-warning dark:text-status-warning">
+          <AlertTriangle className="w-3.5 h-3.5 text-status-warning shrink-0" />
+          <p className="text-xs text-status-warning">
             <span className="font-bold">Triagem em andamento</span> — <span className="font-semibold" aria-live="polite" aria-atomic="true">{(job as any).liaMetrics?.triagens_realizadas} candidatos</span> já triados. Alterar perguntas pode afetar a comparabilidade entre candidatos.
           </p>
         </div>

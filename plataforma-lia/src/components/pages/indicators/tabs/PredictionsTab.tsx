@@ -24,7 +24,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               <div>
                 <p className="text-sm text-status-success font-medium">Previsão Q4</p>
                 <p className="text-2xl font-bold text-status-success">156</p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">Contratações</p>
+                <p className="text-xs text-lia-text-primary">Contratações</p>
               </div>
               <TrendingUp className="w-8 h-8 text-status-success" />
             </div>
@@ -36,19 +36,19 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
+                <p className="text-sm text-lia-text-secondary font-medium">
                   Time to Fill
                 </p>
-                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+                <p className="text-2xl font-bold text-lia-text-primary">
                   24 dias
                 </p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                <p className="text-xs text-lia-text-primary">
                   Previsão média
                 </p>
               </div>
-              <Clock className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Clock className="w-8 h-8 text-lia-text-secondary" />
             </div>
-            <div className="mt-2 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+            <div className="mt-2 text-xs text-lia-text-secondary">
               -8% vs atual (IA: 92% confiança)
             </div>
           </CardContent>
@@ -60,7 +60,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               <div>
                 <p className="text-sm text-wedo-purple font-medium">Turnover Risk</p>
                 <p className="text-2xl font-bold text-wedo-purple">8.2%</p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                <p className="text-xs text-lia-text-primary">
                   Próximos 6 meses
                 </p>
               </div>
@@ -76,7 +76,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               <div>
                 <p className="text-sm text-wedo-orange font-medium">Budget Impact</p>
                 <p className="text-2xl font-bold text-wedo-orange">R$ 2.8M</p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                <p className="text-xs text-lia-text-primary">
                   Economia prevista
                 </p>
               </div>
@@ -107,7 +107,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               ].map((item, index) => (
                 <div key={item.area} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">
+                    <span className="font-medium text-lia-text-primary">
                       {item.area}
                     </span>
                     <div className="flex items-center gap-2 text-sm">
@@ -161,7 +161,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
                 >
                   <div>
-                    <div className="font-medium text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="font-medium text-lia-text-primary">
                       {item.skill}
                     </div>
                     <div className="text-sm text-status-success">{item.growth} crescimento</div>
@@ -270,7 +270,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                       💡 Ação recomendada: {alert.action}
                     </p>
                   </div>
-                  <Badge className="ml-4 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary">
+                  <Badge className="ml-4 bg-gray-100 text-lia-text-primary">
                     {alert.confidence}% confiança
                   </Badge>
                 </div>

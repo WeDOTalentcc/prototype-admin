@@ -184,11 +184,11 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
   const getInteractionIcon = (type: string) => {
     switch (type) {
-      case 'email': return <Mail className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+      case 'email': return <Mail className="w-4 h-4 text-lia-text-secondary" />
       case 'call': return <Phone className="w-4 h-4 text-status-success" />
-      case 'view': return <Eye className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+      case 'view': return <Eye className="w-4 h-4 text-lia-text-primary" />
       case 'meeting': return <Video className="w-4 h-4 text-wedo-purple" />
-      default: return <MessageCircle className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+      default: return <MessageCircle className="w-4 h-4 text-lia-text-primary" />
     }
   }
 
@@ -201,11 +201,11 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50/70 flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-6xl max-h-[90vh] bg-white dark:bg-lia-bg-secondary rounded-md overflow-hidden">
+    <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
+      <div className="w-full max-w-6xl max-h-[90vh] bg-lia-bg-primary rounded-md overflow-hidden">
 
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-elevated">
+        <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex items-center gap-4">
 
             <CandidateAvatar
@@ -220,17 +220,17 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 {candidateData.fullName}
               </h2>
               <div className="flex items-center gap-3 mt-1">
-                <span className="text-lia-text-secondary dark:text-lia-text-tertiary">
+                <span className="text-lia-text-secondary">
                   {candidateData.currentRole} • {candidateData.experience}
                 </span>
-                <Badge className={`${candidateData.status === 'Em triagem' ? 'bg-status-warning/15 text-status-warning dark:text-status-warning' : 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary'}`}>
+                <Badge className={`${candidateData.status === 'Em triagem' ? 'bg-status-warning/15 text-status-warning' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
                   {candidateData.status}
                 </Badge>
               </div>
 
               <div className="flex items-center gap-4 mt-2">
                 <div className="flex items-center gap-1">
-                  <BrainCircuit className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
                   <span className="text-sm font-medium text-wedo-cyan-dark">LIA: {candidateData.liaScore}/10</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -238,8 +238,8 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   <span className="text-sm font-medium text-status-success">Match: {candidateData.skillsMatch}%</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
-                  <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{candidateData.location}</span>
+                  <MapPin className="w-4 h-4 text-lia-text-primary" />
+                  <span className="text-sm text-lia-text-secondary">{candidateData.location}</span>
                 </div>
               </div>
             </div>
@@ -266,7 +266,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
+        <div className="border-b border-lia-border-subtle bg-lia-bg-primary">
           <div className="flex gap-8 px-6">
             {[
               { id: 'overview', label: 'Visão Geral', icon: User },
@@ -279,8 +279,8 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 py-4 border-b-2 transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
-                    ? 'border-gray-900 text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary'
-                    : 'border-transparent text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
+                    ? 'border-lia-btn-primary-bg text-lia-text-primary'
+                    : 'border-transparent text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -308,16 +308,16 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Email</label>
+                      <label className="text-sm font-medium text-lia-text-primary">Email</label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Mail className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                        <Mail className="w-4 h-4 text-lia-text-primary" />
                         <span className="text-sm text-lia-text-primary">{candidateData.email}</span>
                       </div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Telefone</label>
+                      <label className="text-sm font-medium text-lia-text-primary">Telefone</label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Phone className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                        <Phone className="w-4 h-4 text-lia-text-primary" />
                         <span className="text-sm text-lia-text-primary">{candidateData.phone}</span>
                       </div>
                     </div>
@@ -325,25 +325,25 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">LinkedIn</label>
+                      <label className="text-sm font-medium text-lia-text-primary">LinkedIn</label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Linkedin className="w-4 h-4 lia-text-base" />
-                        <a href={candidateData.linkedinUrl} className="text-sm text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse hover:underline">Ver perfil</a>
+                        <Linkedin className="w-4 h-4 text-lia-text-secondary" />
+                        <a href={candidateData.linkedinUrl} className="text-sm text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline">Ver perfil</a>
                       </div>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Portfolio</label>
+                      <label className="text-sm font-medium text-lia-text-primary">Portfolio</label>
                       <div className="flex items-center gap-2 mt-1">
-                        <Globe className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
-                        <a href={candidateData.portfolio} className="text-sm text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse hover:underline">Ver portfolio</a>
+                        <Globe className="w-4 h-4 text-lia-text-primary" />
+                        <a href={candidateData.portfolio} className="text-sm text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline">Ver portfolio</a>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Empresa Atual</label>
+                    <label className="text-sm font-medium text-lia-text-primary">Empresa Atual</label>
                     <div className="flex items-center gap-2 mt-1">
-                      <Building className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                      <Building className="w-4 h-4 text-lia-text-primary" />
                       <span className="text-sm text-lia-text-primary">
                         {candidateData.currentRole} na {candidateData.currentCompany}
                       </span>
@@ -362,12 +362,12 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Habilidades Técnicas</label>
+                    <label className="text-sm font-medium text-lia-text-primary mb-2 block">Habilidades Técnicas</label>
                     <CandidateSkillsList skills={candidateData.skills} />
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Idiomas</label>
+                    <label className="text-sm font-medium text-lia-text-primary mb-2 block">Idiomas</label>
                     <div className="space-y-1">
                       {candidateData.languages.map((language: string, index: number) => (
                         <div key={language} className="text-sm text-lia-text-primary">
@@ -378,7 +378,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Tags</label>
+                    <label className="text-sm font-medium text-lia-text-primary mb-2 block">Tags</label>
                     <div className="flex flex-wrap gap-2">
                       {candidateData.tags.map((tag: string, index: number) => (
                         <Badge key={tag} variant="outline" className="text-xs border-status-success/30 text-status-success">
@@ -402,7 +402,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   {candidateData.education.map((edu: { degree?: string; institution?: string; year?: string; location?: string }, index: number) => (
                     <div key={`edu-${index}`} className="space-y-2">
                       <div className="font-medium text-lia-text-primary">{edu.degree}</div>
-                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <div className="text-sm text-lia-text-secondary">
                         {edu.institution} • {edu.year} • {edu.location}
                       </div>
                     </div>
@@ -420,15 +420,15 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Salário Atual</label>
+                    <label className="text-sm font-medium text-lia-text-primary">Salário Atual</label>
                     <div className="text-sm text-lia-text-primary mt-1">{candidateData.salary.current}</div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Pretensão Salarial</label>
+                    <label className="text-sm font-medium text-lia-text-primary">Pretensão Salarial</label>
                     <div className="text-sm text-lia-text-primary mt-1">{candidateData.salary.expected}</div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Disponibilidade</label>
+                    <label className="text-sm font-medium text-lia-text-primary">Disponibilidade</label>
                     <div className="text-sm text-lia-text-primary mt-1">{candidateData.availability}</div>
                   </div>
                 </CardContent>
@@ -445,7 +445,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 </h3>
                 <div className="flex gap-2">
                   <select
-                    className="px-3 py-1 text-sm border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated"
+                    className="px-3 py-1 text-sm border border-lia-border-default rounded-md bg-lia-bg-primary"
                     onChange={(e) => handleStatusChange(e.target.value)}
                     value=""
                   >
@@ -461,11 +461,11 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
               <div className="space-y-4">
                 {candidateData.movementHistory.map((movement: { id: number; from?: string | null; to?: string; toName?: string; fromName?: string; date?: string; user?: string; notes?: string }, index: number) => (
-                  <div key={movement.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-lia-bg-elevated rounded-md">
+                  <div key={movement.id} className="flex gap-4 p-4 bg-lia-bg-secondary rounded-md">
                     <div className="flex flex-col items-center">
-                      <div className="w-3 h-3 bg-gray-400 dark:bg-lia-bg-secondary rounded-full"></div>
+                      <div className="w-3 h-3 bg-lia-border-medium rounded-full"></div>
                       {index < candidateData.movementHistory.length - 1 && (
-                        <div className="w-0.5 h-8 bg-gray-300 mt-2"></div>
+                        <div className="w-0.5 h-8 bg-lia-border-default mt-2"></div>
                       )}
                     </div>
 
@@ -476,7 +476,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                             <span className="text-sm font-medium text-lia-text-primary">
                               {movement.fromName}
                             </span>
-                            <ArrowRight className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                            <ArrowRight className="w-4 h-4 text-lia-text-primary" />
                           </>
                         )}
                         <span className="text-sm font-medium text-lia-text-primary">
@@ -485,13 +485,13 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                       </div>
 
 
-                      <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
+                      <div className="text-xs text-lia-text-secondary mb-1">
                         {formatDate(movement.date!)} • por {movement.user}
                       </div>
 
                       {movement.notes && (
 
-                        <div className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+                        <div className="text-sm text-lia-text-primary">
                           {movement.notes}
                         </div>
                       )}
@@ -517,8 +517,8 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                       onClick={() => setNoteType('positive')}
                       className={`px-3 py-1 text-xs rounded-full border transition-colors motion-reduce:transition-none ${
  noteType === 'positive'
-                          ? 'bg-status-success/15 dark:bg-status-success/20 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30'
-                          : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
+                          ? 'bg-status-success/15 dark:bg-status-success/20 text-status-success border-status-success/30 dark:border-status-success/30'
+                          : 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default'
                       }`}
                     >
                       <ThumbsUp className="w-3 h-3 inline mr-1" />
@@ -528,8 +528,8 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                       onClick={() => setNoteType('neutral')}
                       className={`px-3 py-1 text-xs rounded-full border transition-colors motion-reduce:transition-none ${
  noteType === 'neutral'
-                          ? 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
-                          : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
+                          ? 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default'
+                          : 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default'
                       }`}
                     >
                       <MessageCircle className="w-3 h-3 inline mr-1" />
@@ -540,7 +540,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                       className={`px-3 py-1 text-xs rounded-full border transition-colors motion-reduce:transition-none ${
  noteType === 'negative'
                           ? 'bg-status-error/15 dark:bg-status-error/20 text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30'
-                          : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default'
+                          : 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default'
                       }`}
                     >
                       <ThumbsDown className="w-3 h-3 inline mr-1" />
@@ -552,7 +552,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     value={newNote}
                     onChange={(e) => setNewNote(e.target.value)}
                     placeholder="Escreva sua nota ou comentário sobre o candidato..."
-                    className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-gray-400/30"
+                    className="w-full p-3 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-lia-border-default/30"
                   />
 
                   <Button onClick={handleAddNote} className="gap-2" disabled={!newNote.trim()}>
@@ -580,11 +580,11 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                         </span>
                       </div>
 
-                      <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                      <span className="text-xs text-lia-text-primary">
                         {formatDate(note.date!)}
                       </span>
                     </div>
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary leading-relaxed">
+                    <p className="text-sm text-lia-text-primary leading-relaxed">
                       {note.content}
                     </p>
                   </div>
@@ -602,7 +602,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
 
               <div className="space-y-3">
                 {candidateData.interactions.map((interaction: { id: number; type?: string; title?: string; date?: string; description?: string }) => (
-                  <div key={interaction.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-lia-bg-elevated rounded-md">
+                  <div key={interaction.id} className="flex gap-4 p-4 bg-lia-bg-secondary rounded-md">
 
                     <div className="mt-1">
                       {getInteractionIcon(interaction.type || "")}
@@ -612,11 +612,11 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                       <div className="font-medium text-sm text-lia-text-primary mb-1">
                         {interaction.title}
                       </div>
-                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
+                      <div className="text-sm text-lia-text-secondary mb-1">
                         {interaction.description}
                       </div>
 
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="text-xs text-lia-text-primary">
                         {formatDate(interaction.date!)}
                       </div>
                     </div>

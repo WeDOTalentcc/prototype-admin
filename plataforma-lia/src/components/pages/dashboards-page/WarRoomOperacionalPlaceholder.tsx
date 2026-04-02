@@ -111,11 +111,11 @@ export function WarRoomOperacionalPlaceholder() {
     <div className="space-y-3">
       {/* Header */}
       <div>
-        <h1 className="text-sm leading-tight font-semibold font-['Open_Sans',sans-serif] text-lia-text-primary dark:text-lia-text-primary flex items-center gap-2">
+        <h1 className="text-sm leading-tight font-semibold font-['Open_Sans',sans-serif] text-lia-text-primary flex items-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-wedo-magenta" />
           War Room Operacional
         </h1>
-        <p className="text-lia-text-secondary dark:text-lia-text-tertiary mt-1 font-open-sans text-xs">
+        <p className="text-lia-text-secondary mt-1 font-open-sans text-xs">
           Alertas críticos, ações urgentes e pipelines em risco que exigem atenção imediata
         </p>
       </div>
@@ -159,7 +159,7 @@ export function WarRoomOperacionalPlaceholder() {
       {/* Vagas Críticas Detalhadas */}
       <Card className="border-status-error/30 dark:border-status-error/30">
         <CardHeader className="pb-3 bg-status-error/10 dark:bg-status-error/20">
-          <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.subtitle} flex items-center gap-2`}>
             <AlertTriangle className="w-3.5 h-3.5 text-status-error" />
             Vagas Críticas - Ação Imediata Necessária
           </CardTitle>
@@ -168,8 +168,8 @@ export function WarRoomOperacionalPlaceholder() {
           <div className="p-4 bg-status-error/10 dark:bg-status-error/20 rounded-md border-l-4 border-status-error/30">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <p className="font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Vaga #2847 - Senior ML Engineer</p>
-                <p className="text-sm font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+                <p className="font-open-sans font-semibold text-lia-text-primary">Vaga #2847 - Senior ML Engineer</p>
+                <p className="text-sm font-open-sans text-lia-text-secondary mt-1">
                   62 dias aberta • 0 candidatos qualificados • Prioridade MÁXIMA
                 </p>
               </div>
@@ -184,8 +184,8 @@ export function WarRoomOperacionalPlaceholder() {
           <div className="p-4 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md border-l-4 border-wedo-orange/30">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <p className="font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Vaga #3012 - Tech Lead Backend</p>
-                <p className="text-sm font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary mt-1">51 dias aberta • 3 candidatos em avaliação • Pipeline lento</p>
+                <p className="font-open-sans font-semibold text-lia-text-primary">Vaga #3012 - Tech Lead Backend</p>
+                <p className="text-sm font-open-sans text-lia-text-secondary mt-1">51 dias aberta • 3 candidatos em avaliação • Pipeline lento</p>
               </div>
               <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange font-inter shrink-0">URGENTE</Badge>
             </div>
@@ -200,7 +200,7 @@ export function WarRoomOperacionalPlaceholder() {
       {/* Gargalos e Recomendações LIA */}
       <Card className="border-status-error/30 dark:border-status-error/30 rounded-md bg-white dark:bg-lia-bg-primary">
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Recomendações Urgentes da LIA
           </CardTitle>
@@ -208,19 +208,19 @@ export function WarRoomOperacionalPlaceholder() {
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-error" />
-            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary">
               <strong>Vaga #2847 (ML Engineer) precisa de ação imediata:</strong> 62 dias sem candidatos. LIA sugere flexibilizar requisitos de "PhD obrigatório" para "Mestrado + 5 anos exp."
             </p>
           </div>
           <div className="flex items-start gap-3">
             <Target className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-orange" />
-            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary">
               <strong>Processo Tech Lead está 73% mais lento que a média:</strong> Gargalo identificado na aprovação do gestor. Sugere reunião de alinhamento.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <Users className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
-            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary">
               <strong>47 candidatos em espera podem desistir:</strong> LIA identificou padrão histórico de 65% desistência após 7 dias sem contato. Agendar entrevistas urgente.
             </p>
           </div>

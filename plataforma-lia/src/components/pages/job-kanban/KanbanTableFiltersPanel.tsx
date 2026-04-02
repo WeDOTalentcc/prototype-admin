@@ -55,7 +55,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Filtro por Etapa */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+            <label className="text-xs font-medium text-lia-text-primary">
               Etapa do Pipeline
             </label>
             <div className="space-y-1.5">
@@ -83,7 +83,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
 
           {/* Filtro por Score LIA */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+            <label className="text-xs font-medium text-lia-text-primary">
               Score LIA Mínimo
             </label>
             <div className="flex items-center gap-2">
@@ -100,7 +100,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
 
           {/* Filtro por Status */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+            <label className="text-xs font-medium text-lia-text-primary">
               Status
             </label>
             <div className="space-y-1.5">
@@ -120,7 +120,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
 
           {/* Filtro por Modelo de Trabalho */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+            <label className="text-xs font-medium text-lia-text-primary">
               Modelo de Trabalho
             </label>
             <div className="space-y-1.5">

@@ -242,7 +242,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
                   return (
                     <SelectItem key={type.value} value={type.value}>
                       <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                        <Icon className="h-4 w-4 text-lia-text-secondary" />
                         <span>{type.label}</span>
                       </div>
                     </SelectItem>
@@ -282,7 +282,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
                     className={cn(
  "flex items-center justify-center gap-2 p-3 rounded-md border transition-colors text-xs",
                       scheduleType === option.value
-                        ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 text-lia-text-secondary dark:text-lia-text-tertiary"
+                        ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 text-lia-text-secondary"
                         : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-gray-600"
                     )}
                   >

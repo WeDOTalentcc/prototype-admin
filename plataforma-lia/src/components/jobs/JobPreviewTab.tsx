@@ -116,54 +116,54 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
   return (
     <div className="space-y-4">
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
-          <FileText className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
+          <FileText className="w-3.5 h-3.5 text-lia-text-secondary" />
           Descricao da Vaga
         </h5>
         {description ? (
           <div>
-            <p className="text-micro lia-text-600 dark:text-lia-text-tertiary leading-relaxed whitespace-pre-line">
+            <p className="text-micro text-lia-text-secondary leading-relaxed whitespace-pre-line">
               {truncatedDescription}
             </p>
             {description.length > 300 && (
               <button
                 onClick={() => setShowFullDescription(!showFullDescription)}
-                className="text-micro lia-text-950 dark:lia-text-50 font-medium mt-1 hover:underline"
+                className="text-micro text-lia-text-primary font-medium mt-1 hover:underline"
               >
                 {showFullDescription ? "Ver menos" : "Ver mais"}
               </button>
             )}
           </div>
         ) : (
-          <p className="text-micro lia-text-600 dark:text-lia-text-tertiary italic">
+          <p className="text-micro text-lia-text-secondary italic">
             Nenhuma descricao adicionada
           </p>
         )}
       </div>
 
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
-          <Zap className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
+          <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
           Competencias Tecnicas
         </h5>
         {technicalItems.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {technicalItems.map((item: {competency?: string; name?: string; weight?: number} | string, idx: number) => (
-              <Badge key={`tech-${idx}`} className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary text-micro px-2 py-0.5 h-5 font-medium">
+              <Badge key={`tech-${idx}`} className="bg-lia-bg-tertiary text-lia-text-secondary text-micro px-2 py-0.5 h-5 font-medium">
                 {getCompetencyName(item)}
               </Badge>
             ))}
           </div>
         ) : (
-          <p className="text-micro lia-text-600 dark:text-lia-text-tertiary italic">
+          <p className="text-micro text-lia-text-secondary italic">
             Nenhuma competencia tecnica configurada
           </p>
         )}
       </div>
 
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
-          <Heart className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
+          <Heart className="w-3.5 h-3.5 text-lia-text-secondary" />
           Competencias Comportamentais
         </h5>
         {behavioralItems.length > 0 ? (
@@ -175,26 +175,26 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             ))}
           </div>
         ) : (
-          <p className="text-micro lia-text-600 dark:text-lia-text-tertiary italic">
+          <p className="text-micro text-lia-text-secondary italic">
             Nenhuma competencia comportamental configurada
           </p>
         )}
       </div>
 
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
-          <Globe className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
+          <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
           Idiomas
         </h5>
         {job.languages && job.languages.length > 0 ? (
           <div className="space-y-1.5">
             {job.languages.map((lang, idx) => (
               <div key={`lang-${idx}`} className="flex items-center gap-2">
-                <span className="text-micro lia-text-600 dark:text-lia-text-tertiary font-medium">
+                <span className="text-micro text-lia-text-secondary font-medium">
                   {lang.language}
                 </span>
                 {lang.level && (
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 lia-text-800 dark:text-lia-text-primary">
+                  <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
                     {lang.level}
                   </Badge>
                 )}
@@ -207,41 +207,41 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             ))}
           </div>
         ) : (
-          <p className="text-micro lia-text-600 dark:text-lia-text-tertiary italic">
+          <p className="text-micro text-lia-text-secondary italic">
             Nenhum idioma configurado
           </p>
         )}
       </div>
 
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
-          <DollarSign className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
+          <DollarSign className="w-3.5 h-3.5 text-lia-text-secondary" />
           Remuneracao e Beneficios
         </h5>
         <div className="space-y-2">
           {hasSalary ? (
             <div className="flex items-center gap-1.5">
-              <span className="text-micro lia-text-600 dark:text-lia-text-tertiary">Salario:</span>
-              <span className="text-micro font-medium lia-text-950 dark:lia-text-50">
+              <span className="text-micro text-lia-text-secondary">Salario:</span>
+              <span className="text-micro font-medium text-lia-text-primary">
                 {formatCurrency(salaryMin)}{salaryMax ? ` - ${formatCurrency(salaryMax)}` : ""}
               </span>
             </div>
           ) : (
-            <p className="text-micro lia-text-600 dark:text-lia-text-tertiary italic">
+            <p className="text-micro text-lia-text-secondary italic">
               Faixa salarial nao informada
             </p>
           )}
           {hasBonus && (
             <div className="flex items-center gap-1.5">
-              <span className="text-micro lia-text-600 dark:text-lia-text-tertiary">Bonus:</span>
-              <span className="text-micro font-medium lia-text-950 dark:lia-text-50">
+              <span className="text-micro text-lia-text-secondary">Bonus:</span>
+              <span className="text-micro font-medium text-lia-text-primary">
                 {formatCurrency(bonusMin)}{bonusMax ? ` - ${formatCurrency(bonusMax)}` : ""}
               </span>
             </div>
           )}
           {normalizedBenefits.length > 0 && (
             <div>
-              <span className="text-micro lia-text-600 dark:text-lia-text-tertiary block mb-1">Beneficios:</span>
+              <span className="text-micro text-lia-text-secondary block mb-1">Beneficios:</span>
               <BenefitBadgeList
                 benefits={normalizedBenefits}
                 maxVisible={6}
@@ -254,8 +254,8 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
       </div>
 
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
-          <Layers3 className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
+          <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary" />
           Etapas do Processo
         </h5>
         {pipelineStages && pipelineStages.length > 0 ? (
@@ -263,14 +263,14 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             {pipelineStages.map((stage, idx) => (
               <React.Fragment key={stage.id}>
                 {idx > 0 && (
-                  <ChevronRight className="w-3 h-3 lia-text-300 flex-shrink-0" />
+                  <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
                 )}
-                <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border border-lia-border-subtle rounded-lg flex-shrink-0">
+                <div className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary border border-lia-border-subtle rounded-lg flex-shrink-0">
                   {stage.liaAssisted && (
                     <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
                   )}
-                  <span className="text-micro font-medium lia-text-700">{stage.name}</span>
-                  <Badge className="text-micro px-1 py-0 h-3.5 bg-gray-100 lia-text-600">
+                  <span className="text-micro font-medium text-lia-text-primary">{stage.name}</span>
+                  <Badge className="text-micro px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-secondary">
                     {stage.count}
                   </Badge>
                 </div>
@@ -284,19 +284,19 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
               .map((stage, idx) => (
                 <React.Fragment key={`stage-${idx}`}>
                   {idx > 0 && (
-                    <ChevronRight className="w-3 h-3 lia-text-300 flex-shrink-0" />
+                    <ChevronRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
                   )}
-                  <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 border border-lia-border-subtle rounded-lg flex-shrink-0">
+                  <div className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary border border-lia-border-subtle rounded-lg flex-shrink-0">
                     {stage.liaAssisted && (
                       <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
                     )}
-                    <span className="text-micro font-medium lia-text-700">{stage.stageName}</span>
+                    <span className="text-micro font-medium text-lia-text-primary">{stage.stageName}</span>
                   </div>
                 </React.Fragment>
               ))}
           </div>
         ) : (
-          <p className="text-micro lia-text-600 dark:text-lia-text-tertiary italic">
+          <p className="text-micro text-lia-text-secondary italic">
             Nenhuma etapa configurada
           </p>
         )}
@@ -304,14 +304,14 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
 
       {job.isAffirmative && (
         <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-          <h5 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
-            <Heart className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+          <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
+            <Heart className="w-3.5 h-3.5 text-lia-text-secondary" />
             Acoes Afirmativas
           </h5>
           <div className="p-2 bg-wedo-purple/10 border border-wedo-purple/30 rounded-lg">
             {job.affirmativeType && (
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="text-micro lia-text-600 dark:text-lia-text-tertiary">Tipo:</span>
+                <span className="text-micro text-lia-text-secondary">Tipo:</span>
                 <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30">
                   {job.affirmativeType}
                 </Badge>
@@ -319,14 +319,14 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             )}
             {job.affirmativeCriteriaPrimary && (
               <div className="flex items-center gap-1.5">
-                <span className="text-micro lia-text-600 dark:text-lia-text-tertiary">Criterio:</span>
-                <span className="text-micro font-medium lia-text-950 dark:lia-text-50">
+                <span className="text-micro text-lia-text-secondary">Criterio:</span>
+                <span className="text-micro font-medium text-lia-text-primary">
                   {job.affirmativeCriteriaPrimary}
                 </span>
               </div>
             )}
             {!job.affirmativeType && !job.affirmativeCriteriaPrimary && (
-              <p className="text-micro lia-text-600 dark:text-lia-text-tertiary">
+              <p className="text-micro text-lia-text-secondary">
                 Vaga afirmativa habilitada
               </p>
             )}
@@ -334,97 +334,97 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         </div>
       )}
 
-      <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle" />
+      <div className="border-t border-lia-border-subtle" />
 
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
-          <ClipboardList className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
+          <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary" />
           Fluxo de Triagem WSI
           <Badge
-            className={`text-micro px-1.5 py-0 h-4 lia-text-800 ${screeningEnabled ? "bg-wedo-green-pastel" : "bg-gray-200"}`}
+            className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${screeningEnabled ? "bg-wedo-green-pastel" : "bg-lia-interactive-active"}`}
           >
             {screeningEnabled ? "Ativo" : "Pausado"}
           </Badge>
         </h5>
         <div className="grid grid-cols-2 gap-2">
-          <div className="text-center p-2 bg-gray-50 rounded-lg">
-            <div className="text-base-ui font-semibold lia-text-800">{questions.length}</div>
-            <p className="text-micro lia-text-500">Perguntas</p>
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-lg">
+            <div className="text-base-ui font-semibold text-lia-text-primary">{questions.length}</div>
+            <p className="text-micro text-lia-text-secondary">Perguntas</p>
           </div>
-          <div className="text-center p-2 bg-gray-50 rounded-lg">
-            <div className="text-base-ui font-semibold lia-text-800">{estimatedMinutes}min</div>
-            <p className="text-micro lia-text-500">Tempo Est.</p>
+          <div className="text-center p-2 bg-lia-bg-secondary rounded-lg">
+            <div className="text-base-ui font-semibold text-lia-text-primary">{estimatedMinutes}min</div>
+            <p className="text-micro text-lia-text-secondary">Tempo Est.</p>
           </div>
         </div>
-        <p className="text-micro lia-text-400 mt-2">
+        <p className="text-micro text-lia-text-tertiary mt-2">
           Gerencie o roteiro na aba Detalhes da Vaga
         </p>
       </div>
 
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
-          <CalendarCheck className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
+          <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
           Agendamento
           <Badge
-            className={`text-micro px-1.5 py-0 h-4 lia-text-800 ${schedulingEnabled ? "bg-wedo-green-pastel" : "bg-gray-200"}`}
+            className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${schedulingEnabled ? "bg-wedo-green-pastel" : "bg-lia-interactive-active"}`}
           >
             {schedulingEnabled ? "Ativo" : "Inativo"}
           </Badge>
         </h5>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="text-micro lia-text-500">Score Minimo</span>
-            <p className="text-micro font-medium lia-text-800">{(screeningConfig?.scheduling as any).minScore || 'Recomendado'}</p>
+            <span className="text-micro text-lia-text-secondary">Score Minimo</span>
+            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig?.scheduling as any).minScore || 'Recomendado'}</p>
           </div>
           <div>
-            <span className="text-micro lia-text-500">Calendario</span>
-            <p className="text-micro font-medium lia-text-800">{(screeningConfig?.scheduling as any).calendar || 'Outlook'}</p>
+            <span className="text-micro text-lia-text-secondary">Calendario</span>
+            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig?.scheduling as any).calendar || 'Outlook'}</p>
           </div>
           <div>
-            <span className="text-micro lia-text-500">Horarios</span>
-            <p className="text-micro font-medium lia-text-800">{(screeningConfig?.scheduling as any).hours || '9h-18h'}</p>
+            <span className="text-micro text-lia-text-secondary">Horarios</span>
+            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig?.scheduling as any).hours || '9h-18h'}</p>
           </div>
           <div>
-            <span className="text-micro lia-text-500">Duracao</span>
-            <p className="text-micro font-medium lia-text-800">{(screeningConfig?.scheduling as any).duration || '45min'}</p>
+            <span className="text-micro text-lia-text-secondary">Duracao</span>
+            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig?.scheduling as any).duration || '45min'}</p>
           </div>
         </div>
       </div>
 
       <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
-        <h5 className="text-xs font-semibold lia-text-950 dark:lia-text-50 flex items-center gap-1.5 mb-2">
-          <MessageSquare className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+        <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
+          <MessageSquare className="w-3.5 h-3.5 text-lia-text-secondary" />
           Canais de Comunicacao
         </h5>
         {channels.length > 0 ? (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {channels.map((ch, idx) => (
-              <Badge key={`ch-${idx}`} className="text-micro px-1.5 py-0 h-4 bg-gray-100 lia-text-800 dark:text-lia-text-primary">
+              <Badge key={`ch-${idx}`} className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
                 {ch}
               </Badge>
             ))}
           </div>
         ) : (
-          <p className="text-micro lia-text-600 dark:text-lia-text-tertiary italic mb-2">
+          <p className="text-micro text-lia-text-secondary italic mb-2">
             Nenhum canal configurado
           </p>
         )}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="text-micro lia-text-500">Score Minimo Aprovacao</span>
-            <p className="text-micro font-medium lia-text-800">{(screeningConfig as any)?.minApprovalScore || 'Recomendado'}</p>
+            <span className="text-micro text-lia-text-secondary">Score Minimo Aprovacao</span>
+            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig as any)?.minApprovalScore || 'Recomendado'}</p>
           </div>
           <div>
-            <span className="text-micro lia-text-500">Timeout Resposta</span>
-            <p className="text-micro font-medium lia-text-800">{(screeningConfig as any)?.timeout || '24h'}</p>
+            <span className="text-micro text-lia-text-secondary">Timeout Resposta</span>
+            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig as any)?.timeout || '24h'}</p>
           </div>
           <div>
-            <span className="text-micro lia-text-500">Re-tentativas</span>
-            <p className="text-micro font-medium lia-text-800">{(screeningConfig as any)?.retries || '2x'}</p>
+            <span className="text-micro text-lia-text-secondary">Re-tentativas</span>
+            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig as any)?.retries || '2x'}</p>
           </div>
           <div>
-            <span className="text-micro lia-text-500">Fallback</span>
-            <p className="text-micro font-medium lia-text-800">{(screeningConfig as any)?.fallback || 'Revisao Manual'}</p>
+            <span className="text-micro text-lia-text-secondary">Fallback</span>
+            <p className="text-micro font-medium text-lia-text-primary">{(screeningConfig as any)?.fallback || 'Revisao Manual'}</p>
           </div>
         </div>
       </div>

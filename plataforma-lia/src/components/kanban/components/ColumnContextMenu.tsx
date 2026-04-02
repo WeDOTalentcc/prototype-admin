@@ -103,7 +103,7 @@ export function ColumnContextMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100">
-            <Settings className="w-3.5 h-3.5 lia-text-400 dark:lia-text-500" />
+            <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-48">
@@ -172,7 +172,7 @@ export function ColumnContextMenu({
             </DialogTitle>
           </DialogHeader>
           <div className="py-3">
-            <Label className="text-xs lia-text-600 dark:text-lia-text-tertiary">
+            <Label className="text-xs text-lia-text-secondary">
               Nome da etapa
             </Label>
             <Input
@@ -188,7 +188,7 @@ export function ColumnContextMenu({
             <Button variant="outline" onClick={() => setRenameOpen(false)} className="text-xs h-8">
               Cancelar
             </Button>
-            <Button onClick={handleRename} className="bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
+            <Button onClick={handleRename} className="bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 dark:hover:bg-gray-200">
               Salvar
             </Button>
           </DialogFooter>
@@ -203,7 +203,7 @@ export function ColumnContextMenu({
             </DialogTitle>
           </DialogHeader>
           <div className="py-3">
-            <Label className="text-xs lia-text-600 dark:text-lia-text-tertiary">
+            <Label className="text-xs text-lia-text-secondary">
               Prazo em horas
             </Label>
             <Input
@@ -215,7 +215,7 @@ export function ColumnContextMenu({
               min={0}
               autoFocus
             />
-            <p className="mt-1 text-xs lia-text-400">
+            <p className="mt-1 text-xs text-lia-text-tertiary">
               Tempo maximo de permanencia nesta etapa
             </p>
           </div>
@@ -223,7 +223,7 @@ export function ColumnContextMenu({
             <Button variant="outline" onClick={() => setSlaOpen(false)} className="text-xs h-8">
               Cancelar
             </Button>
-            <Button onClick={handleSLAUpdate} className="bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
+            <Button onClick={handleSLAUpdate} className="bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 dark:hover:bg-gray-200">
               Salvar
             </Button>
           </DialogFooter>
@@ -238,10 +238,10 @@ export function ColumnContextMenu({
             </DialogTitle>
           </DialogHeader>
           <div className="py-3">
-            <p className="text-base-ui lia-text-700 dark:text-lia-text-secondary">
+            <p className="text-base-ui text-lia-text-primary">
               Tem certeza que deseja remover a coluna <strong>{stage.displayName}</strong>?
             </p>
-            <p className="mt-2 text-xs lia-text-500 dark:text-lia-text-tertiary">
+            <p className="mt-2 text-xs text-lia-text-secondary">
               Candidatos nesta etapa serao movidos para a etapa anterior.
             </p>
           </div>

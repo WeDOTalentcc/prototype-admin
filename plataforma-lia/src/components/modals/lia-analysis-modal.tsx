@@ -155,7 +155,7 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
         <div className="flex flex-col items-center justify-center py-6 space-y-2">
           <div className="relative">
             <Brain className="w-6 h-6 text-wedo-cyan animate-pulse motion-reduce:animate-none" />
-            <div className="absolute inset-0 w-6 h-6 border-2 border-gray-900 dark:border-lia-border-medium border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
+            <div className="absolute inset-0 w-6 h-6 border-2 border-lia-btn-primary-bg dark:border-lia-border-medium border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
           </div>
           <p className="text-micro text-lia-text-secondary">
             LIA está gerando a análise...
@@ -226,14 +226,14 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
         sideOffset={8}
       >
         <div className="flex flex-col">
-          <div className="flex items-center justify-between px-3 py-2.5 border-b border-lia-border-subtle bg-gray-50/50 rounded-t-lg">
+          <div className="flex items-center justify-between px-3 py-2.5 border-b border-lia-border-subtle bg-lia-bg-secondary/50 rounded-t-lg">
             <div className="flex items-center gap-1.5">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               <span className="text-xs font-semibold text-lia-text-primary">Resumo do Perfil</span>
             </div>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none"
+              className="p-1 hover:bg-lia-interactive-active rounded-md transition-colors motion-reduce:transition-none"
             >
               <X className="w-4 h-4 text-lia-text-secondary" />
             </button>
@@ -246,8 +246,8 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
                   activeTab === tab.id
-                    ? 'bg-gray-800 text-white'
-                    : 'text-lia-text-primary hover:bg-gray-100'
+                    ? 'bg-lia-btn-primary-bg text-white'
+                    : 'text-lia-text-primary hover:bg-lia-interactive-hover'
                 }`}
               >
                 {tab.label}
@@ -259,7 +259,7 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
             {renderAnalysisContent(activeTab)}
           </div>
 
-          <div className="px-4 py-3 border-t border-lia-border-subtle bg-gray-50/50 rounded-b-lg space-y-2">
+          <div className="px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-secondary/50 rounded-b-lg space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-micro text-lia-text-secondary">Análise gerada pela LIA. Confirme informações.</p>
               <div className="flex items-center gap-1.5">
@@ -285,7 +285,7 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
                 <Button
                   size="sm"
                   onClick={onClose}
-                  className="h-7 px-3 text-xs text-white bg-gray-800 hover:bg-gray-900"
+                  className="h-7 px-3 text-xs text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
                 >
                   Concluído
                 </Button>
@@ -297,7 +297,7 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
                   variant="outline"
                   size="sm"
                   onClick={handleTransport}
-                  className="w-full h-7 gap-1.5 text-xs border-gray-900 dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary"
+                  className="w-full h-7 gap-1.5 text-xs border-lia-btn-primary-bg dark:border-lia-border-medium text-lia-text-secondary hover:bg-lia-interactive-hover"
                 >
                   <ArrowRight className="w-3.5 h-3.5" />
                   Transportar "{ANALYSIS_TABS.find(t => t.id === activeTab)?.label}" para Pareceres

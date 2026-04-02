@@ -280,12 +280,12 @@ export function CVPreview({
 
         {editedCV.extraction_notes.length > 0 && (
           <div className="flex items-start gap-3 p-3 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md">
-            <AlertCircle className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-lia-text-secondary flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
+              <p className="text-sm font-medium text-lia-text-secondary">
                 Notas da extração
               </p>
-              <ul className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary/80 mt-1 space-y-0.5">
+              <ul className="text-xs text-lia-text-secondary/80 mt-1 space-y-0.5">
                 {editedCV.extraction_notes.map((note, i) => (
                   <li key={i}>• {note}</li>
                 ))}
@@ -308,7 +308,7 @@ export function CVPreview({
                 <div className="space-y-2">
                   <Label htmlFor="full_name">Nome Completo *</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-base" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="full_name"
                       value={editedCV.full_name}
@@ -321,7 +321,7 @@ export function CVPreview({
                 <div className="space-y-2">
                   <Label htmlFor="email">E-mail</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-base" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="email"
                       type="email"
@@ -335,7 +335,7 @@ export function CVPreview({
                 <div className="space-y-2">
                   <Label htmlFor="phone">Telefone</Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-base" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="phone"
                       value={editedCV.phone || ""}
@@ -348,7 +348,7 @@ export function CVPreview({
                 <div className="space-y-2">
                   <Label htmlFor="location">Localização</Label>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-base" />
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="location"
                       value={editedCV.location || ""}
@@ -361,7 +361,7 @@ export function CVPreview({
                 <div className="space-y-2">
                   <Label htmlFor="linkedin">LinkedIn</Label>
                   <div className="relative">
-                    <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-base" />
+                    <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="linkedin"
                       value={editedCV.linkedin || ""}
@@ -375,7 +375,7 @@ export function CVPreview({
                 <div className="space-y-2">
                   <Label htmlFor="github">GitHub</Label>
                   <div className="relative">
-                    <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-base" />
+                    <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="github"
                       value={editedCV.github || ""}
@@ -401,7 +401,7 @@ export function CVPreview({
             <TabsContent value="experience" className="space-y-4 m-0">
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                  <Briefcase className="w-4 h-4 text-lia-text-primary" />
                   <h3 className="font-medium text-sm">Experiências Profissionais</h3>
                   <Badge variant="secondary" className="text-xs">
                     {editedCV.experiences.length}
@@ -409,7 +409,7 @@ export function CVPreview({
                 </div>
 
                 {editedCV.experiences.length === 0 ? (
-                  <p className="text-sm text-lia-text-primary dark:text-lia-text-primary italic">Nenhuma experiência extraída</p>
+                  <p className="text-sm text-lia-text-primary italic">Nenhuma experiência extraída</p>
                 ) : (
                   <div className="space-y-3">
                     {editedCV.experiences.map((exp, i) => (
@@ -418,8 +418,8 @@ export function CVPreview({
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="font-medium text-sm">{exp.title}</p>
-                              <p className="text-xs lia-text-base">{exp.company}</p>
-                              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                              <p className="text-xs text-lia-text-secondary">{exp.company}</p>
+                              <p className="text-xs text-lia-text-primary">
                                 {exp.start_date || "?"} - {exp.is_current ? "Atual" : exp.end_date || "?"}
                                 {exp.location && ` • ${exp.location}`}
                               </p>
@@ -429,7 +429,7 @@ export function CVPreview({
                             )}
                           </div>
                           {exp.description && (
-                            <p className="text-xs lia-text-base mt-2 line-clamp-2">{exp.description}</p>
+                            <p className="text-xs text-lia-text-secondary mt-2 line-clamp-2">{exp.description}</p>
                           )}
                         </CardContent>
                       </Card>
@@ -440,7 +440,7 @@ export function CVPreview({
 
               <div className="space-y-3 pt-4 border-t">
                 <div className="flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                  <GraduationCap className="w-4 h-4 text-lia-text-primary" />
                   <h3 className="font-medium text-sm">Formação Acadêmica</h3>
                   <Badge variant="secondary" className="text-xs">
                     {editedCV.education.length}
@@ -448,7 +448,7 @@ export function CVPreview({
                 </div>
 
                 {editedCV.education.length === 0 ? (
-                  <p className="text-sm text-lia-text-primary dark:text-lia-text-primary italic">Nenhuma formação extraída</p>
+                  <p className="text-sm text-lia-text-primary italic">Nenhuma formação extraída</p>
                 ) : (
                   <div className="space-y-3">
                     {editedCV.education.map((edu, i) => (
@@ -459,8 +459,8 @@ export function CVPreview({
                               <p className="font-medium text-sm">
                                 {edu.degree || "Formação"}{edu.field_of_study && ` em ${edu.field_of_study}`}
                               </p>
-                              <p className="text-xs lia-text-base">{edu.institution}</p>
-                              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                              <p className="text-xs text-lia-text-secondary">{edu.institution}</p>
+                              <p className="text-xs text-lia-text-primary">
                                 {edu.start_date || "?"} - {edu.is_completed ? edu.end_date || "Concluído" : "Em andamento"}
                               </p>
                             </div>
@@ -478,11 +478,11 @@ export function CVPreview({
                 <Label>Habilidades</Label>
                 <div className="flex flex-wrap gap-2">
                   {editedCV.skills.map((skill) => (
-                    <Badge key={skill} className="bg-gray-100 text-lia-text-primary dark:text-lia-text-primary px-2 py-1">
+                    <Badge key={skill} className="bg-gray-100 text-lia-text-primary px-2 py-1">
                       {skill}
                       <button
                         onClick={() => handleRemoveSkill(skill)}
-                        className="ml-1 hover:lia-text-strong"
+                        className="ml-1 hover:text-lia-text-primary"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -507,7 +507,7 @@ export function CVPreview({
                 <Label>Idiomas</Label>
                 <div className="flex flex-wrap gap-2">
                   {editedCV.languages.length === 0 ? (
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary italic">Nenhum idioma extraído</p>
+                    <p className="text-sm text-lia-text-primary italic">Nenhum idioma extraído</p>
                   ) : (
                     editedCV.languages.map((lang) => (
                       <Badge key={lang} variant="outline">{lang}</Badge>
@@ -520,7 +520,7 @@ export function CVPreview({
                 <Label>Certificações</Label>
                 <div className="flex flex-wrap gap-2">
                   {editedCV.certifications.length === 0 ? (
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary italic">Nenhuma certificação extraída</p>
+                    <p className="text-sm text-lia-text-primary italic">Nenhuma certificação extraída</p>
                   ) : (
                     editedCV.certifications.map((cert) => (
                       <Badge key={cert} variant="outline">{cert}</Badge>
@@ -535,12 +535,12 @@ export function CVPreview({
                 <Label>Tags</Label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {tags.map((tag) => (
-                    <Badge key={tag} className="bg-gray-100 text-lia-text-primary dark:text-lia-text-primary px-2 py-1">
+                    <Badge key={tag} className="bg-gray-100 text-lia-text-primary px-2 py-1">
                       <Tag className="w-3 h-3 mr-1" />
                       {tag}
                       <button
                         onClick={() => handleRemoveTag(tag)}
-                        className="ml-1 hover:lia-text-strong"
+                        className="ml-1 hover:text-lia-text-primary"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -596,7 +596,7 @@ export function CVPreview({
               )}
 
               {editedCV.file_name && (
-                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md text-xs lia-text-base mt-4">
+                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md text-xs text-lia-text-secondary mt-4">
                   <FileText className="w-4 h-4" />
                   <span>Arquivo: {editedCV.file_name}</span>
                   {editedCV.file_type && <Badge variant="outline">{editedCV.file_type.toUpperCase()}</Badge>}

@@ -26,47 +26,47 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
         <div className="p-4 rounded-md border bg-gray-50 border-lia-border-subtle">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Zap className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="font-medium text-xs">Custo Estimado</span>
             </div>
-            <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-gray-500 lia-text-700 dark:text-lia-text-secondary">
+            <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-gray-500 text-lia-text-primary">
               Tempo Real
             </Badge>
           </div>
 
           <div className="flex items-end justify-between">
             <div>
-              <div className="text-base font-bold lia-text-900 dark:text-lia-text-primary">
+              <div className="text-base font-bold text-lia-text-primary">
                 {creditEstimate.cost_per_candidate}
               </div>
-              <div className="text-xs lia-text-600">créditos por candidato</div>
+              <div className="text-xs text-lia-text-secondary">créditos por candidato</div>
             </div>
             <div className="text-right">
-              <div className="font-semibold lia-text-900 dark:text-lia-text-primary">{creditEstimate.total_estimated}</div>
-              <div className="text-xs lia-text-600">total ({creditEstimate.limit} candidatos)</div>
+              <div className="font-semibold text-lia-text-primary">{creditEstimate.total_estimated}</div>
+              <div className="text-xs text-lia-text-secondary">total ({creditEstimate.limit} candidatos)</div>
             </div>
           </div>
 
           <div className="mt-3 pt-3 border-t border-wedo-cyan/20 space-y-1.5">
             <div className="flex justify-between text-xs">
-              <span className="lia-text-600">
+              <span className="text-lia-text-secondary">
                 Base ({creditEstimate.pearch_type === "fast" ? "Rápida" : "Profissional"})
               </span>
               <span className="font-medium">{creditEstimate.base_cost}</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="lia-text-600">Insights + Scoring</span>
+              <span className="text-lia-text-secondary">Insights + Scoring</span>
               <span className="font-medium">+{creditEstimate.insights_cost}</span>
             </div>
             {creditEstimate.freshness_cost > 0 && (
               <div className="flex justify-between text-xs">
-                <span className="lia-text-600">Dados Atualizados</span>
+                <span className="text-lia-text-secondary">Dados Atualizados</span>
                 <span className="font-medium">+{creditEstimate.freshness_cost}</span>
               </div>
             )}
             {creditEstimate.email_cost > 0 && (
               <div className="flex justify-between text-xs">
-                <span className="lia-text-600">Opções de Email</span>
+                <span className="text-lia-text-secondary">Opções de Email</span>
                 <span className="font-medium">+{creditEstimate.email_cost}</span>
               </div>
             )}
@@ -80,11 +80,11 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
               </div>
             )}
             <div className="flex justify-between text-xs pt-1.5 border-t border-wedo-cyan/15">
-              <span className="flex items-center gap-1 font-medium lia-text-800">
+              <span className="flex items-center gap-1 font-medium text-lia-text-primary">
                 <TrendingUp className="w-3 h-3" />
                 Total por Candidato
               </span>
-              <span className="font-bold lia-text-900 dark:text-lia-text-primary">{creditEstimate.cost_per_candidate}</span>
+              <span className="font-bold text-lia-text-primary">{creditEstimate.cost_per_candidate}</span>
             </div>
           </div>
 
@@ -106,10 +106,10 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
 
         <div className="flex items-center justify-between p-2.5 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2">
-            <Mail className="w-3.5 h-3.5 lia-text-500" />
+            <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />
             <div>
               <div className="text-xs font-medium">Apenas com Email</div>
-              <div className="text-xs lia-text-600">Filtrar candidatos com email</div>
+              <div className="text-xs text-lia-text-secondary">Filtrar candidatos com email</div>
             </div>
           </div>
           <Switch
@@ -120,10 +120,10 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
 
         <div className="flex items-center justify-between p-2.5 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-2">
-            <Mail className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+            <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />
             <div>
               <div className="text-xs font-medium">Mostrar Emails</div>
-              <div className="text-xs lia-text-600">Exibir emails nos resultados</div>
+              <div className="text-xs text-lia-text-secondary">Exibir emails nos resultados</div>
             </div>
           </div>
           <Switch
@@ -134,10 +134,10 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
 
         <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <Phone className="w-4 h-4 lia-text-500" />
+            <Phone className="w-4 h-4 text-lia-text-secondary" />
             <div>
               <div className="text-xs font-medium">Apenas com Telefone</div>
-              <div className="text-xs lia-text-600">Filtrar candidatos com telefone</div>
+              <div className="text-xs text-lia-text-secondary">Filtrar candidatos com telefone</div>
             </div>
           </div>
           <Switch
@@ -148,10 +148,10 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
 
         <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <Phone className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+            <Phone className="w-4 h-4 text-lia-text-secondary" />
             <div>
               <div className="text-xs font-medium">Mostrar Telefones</div>
-              <div className="text-xs lia-text-600">Exibir telefones nos resultados</div>
+              <div className="text-xs text-lia-text-secondary">Exibir telefones nos resultados</div>
             </div>
           </div>
           <Switch
@@ -162,11 +162,11 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
 
         <div className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <Mail className="w-4 h-4 lia-text-500" />
-            <Phone className="w-4 h-4 -ml-2 lia-text-500" />
+            <Mail className="w-4 h-4 text-lia-text-secondary" />
+            <Phone className="w-4 h-4 -ml-2 text-lia-text-secondary" />
             <div>
               <div className="text-xs font-medium">Email OU Telefone</div>
-              <div className="text-xs lia-text-500">Pelo menos um contato</div>
+              <div className="text-xs text-lia-text-secondary">Pelo menos um contato</div>
             </div>
           </div>
           <Switch

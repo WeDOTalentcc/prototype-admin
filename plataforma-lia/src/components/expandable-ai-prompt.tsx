@@ -181,7 +181,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
         <div className="bg-wedo-green-light/5 rounded-md p-3 border border-wedo-green-light/20">
           <div className="flex items-center gap-2 mb-2">
             <LIAIcon size="sm" />
-            <span className="text-base-ui font-semibold lia-text-strong" aria-live="polite" aria-atomic="true">
+            <span className="text-base-ui font-semibold text-lia-text-primary" aria-live="polite" aria-atomic="true">
               Análise LIA para candidato específico
             </span>
           </div>
@@ -192,10 +192,10 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <div className="font-medium lia-text-strong text-base-ui">
+              <div className="font-medium text-lia-text-primary text-base-ui">
                 {(candidateContext.name as React.ReactNode)}
               </div>
-              <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+              <div className="text-xs text-lia-text-primary">
                 {candidateContext.position} • Score: {(candidateContext as any).liaAnalysis?.score || candidateContext.score}%
               </div>
             </div>
@@ -210,8 +210,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
       {!candidateContext && selectedCandidates.length > 0 && (
         <div className="bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
           <div className="flex items-center gap-2 mb-2">
-            <Users className="w-4 h-4 lia-text-base" />
-            <span className="text-base-ui font-semibold lia-text-strong" aria-live="polite" aria-atomic="true">
+            <Users className="w-4 h-4 text-lia-text-secondary" />
+            <span className="text-base-ui font-semibold text-lia-text-primary" aria-live="polite" aria-atomic="true">
               {selectedCandidates.length} candidato{selectedCandidates.length > 1 ? 's' : ''} selecionado{selectedCandidates.length > 1 ? 's' : ''}
             </span>
           </div>
@@ -220,17 +220,17 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'Key | null | undefined'.
               <div key={candidate.name || index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
                 <Avatar className="w-4 h-4">
-                  <AvatarFallback className="bg-gray-200 lia-text-base text-xs">
+                  <AvatarFallback className="bg-gray-200 text-lia-text-secondary text-xs">
                     {(candidate.name as string)?.charAt(0) || 'C'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
+                <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
                   {((candidate.name || `Candidato ${index + 1}`) as React.ReactNode)}
                 </span>
               </div>
             ))}
             {selectedCandidates.length > 3 && (
-              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-lia-text-primary dark:text-lia-text-primary">
+              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-lia-text-primary">
                 +{selectedCandidates.length - 3} mais
               </div>
             )}
@@ -279,7 +279,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                           : 'hover:bg-gray-100'
                       }`}
                     >
-                      <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'lia-text-base' : 'lia-text-base'}`} />
+                      <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-lia-text-secondary' : 'text-lia-text-secondary'}`} />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
@@ -301,7 +301,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                             : 'hover:bg-gray-100'
                         }`}
                       >
-                        <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'lia-text-base' : 'lia-text-base'}`} />
+                        <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-lia-text-secondary' : 'text-lia-text-secondary'}`} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
@@ -324,7 +324,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                             : 'hover:bg-gray-100'
                         }`}
                       >
-                        <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'lia-text-base' : 'lia-text-base'}`} />
+                        <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-lia-text-secondary' : 'text-lia-text-secondary'}`} />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
@@ -620,7 +620,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   </div>
                   
                   {/* Contador de critérios */}
-                  <span className="text-xs lia-text-base hidden md:inline">
+                  <span className="text-xs text-lia-text-secondary hidden md:inline">
                     {filledTagsCount}/5 critérios
                   </span>
                 </div>
@@ -710,8 +710,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               
               {/* Dica contextual */}
               <div className="flex items-start gap-2 p-2 bg-gray-50 rounded-md mb-3 border border-lia-border-subtle">
-                <Lightbulb className="w-3.5 h-3.5 lia-text-base mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
+                <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
                   {activeSearchTab === 'natural' && 'Dica: Para melhores resultados, seja específico sobre skills, senioridade e localização.'}
                   {activeSearchTab === 'similar' && 'Dica: Cole o link do LinkedIn de um candidato que você considera ideal.'}
                   {activeSearchTab === 'job-description' && 'Dica: Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.'}
@@ -736,7 +736,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 {commandHistory.length > 0 && (
                   <button
                     onClick={() => setShowHistory(!showHistory)}
-                    className="text-xs lia-text-base hover:lia-text-base flex items-center gap-1 transition-colors motion-reduce:transition-none"
+                    className="text-xs text-lia-text-secondary hover:text-lia-text-secondary flex items-center gap-1 transition-colors motion-reduce:transition-none"
                   >
                     📜 Histórico ({commandHistory.length})
                   </button>
@@ -746,7 +746,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               {/* Histórico de Comandos */}
               {showHistory && commandHistory.length > 0 && (
                 <div className="mb-4 p-3 bg-gray-50 rounded-md border">
-                  <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Comandos Recentes</h4>
+                  <h4 className="text-xs font-medium text-lia-text-primary mb-2">Comandos Recentes</h4>
                   <div className="space-y-1">
                     {commandHistory.map((command, index) => (
                       <button
@@ -754,7 +754,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                         onClick={() => handleHistoryCommand(command)}
                         disabled={isProcessing}
                         className={`w-full text-left text-xs p-2 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none ${
- isProcessing ? 'opacity-50' : 'lia-text-base hover:lia-text-strong'
+ isProcessing ? 'opacity-50' : 'text-lia-text-secondary hover:text-lia-text-primary'
                         }`}
                       >
                         📝 {command}
@@ -782,14 +782,14 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   >
                     <span className="text-lg flex-shrink-0">{suggestion.icon as React.ReactNode}</span>
                     <div className="flex-1">
-                      <div className="text-base-ui font-semibold lia-text-strong group-hover:lia-text-base">
+                      <div className="text-base-ui font-semibold text-lia-text-primary group-hover:text-lia-text-secondary">
                         {suggestion.label as React.ReactNode}
                       </div>
-                      <div className="text-xs lia-text-base mt-1">
+                      <div className="text-xs text-lia-text-secondary mt-1">
                         {(suggestion.description as React.ReactNode)}
                       </div>
                       {!!(suggestion.category) && (
-                        <Badge className="mt-2 text-micro bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-0">
+                        <Badge className="mt-2 text-micro bg-gray-100 text-lia-text-primary border-0">
                           {(suggestion.category as React.ReactNode)}
                         </Badge>
                       )}
@@ -811,13 +811,13 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
 
               {/* Processing Indicator */}
               {isProcessing && (
-                <div className="flex items-center gap-2 text-xs text-lia-text-secondary dark:text-lia-text-tertiary bg-gray-50 p-2 rounded-md mb-3 border border-lia-border-subtle">
+                <div className="flex items-center gap-2 text-xs text-lia-text-secondary bg-gray-50 p-2 rounded-md mb-3 border border-lia-border-subtle">
                   <div className="w-2 h-2 bg-gray-900 rounded-full animate-pulse motion-reduce:animate-none"></div>
                   <span>🧠 LIA processando: "{lastCommand}"</span>
                 </div>
               )}
 
-              <div className="text-xs text-lia-text-primary dark:text-lia-text-primary text-center pt-2 space-y-1">
+              <div className="text-xs text-lia-text-primary text-center pt-2 space-y-1">
                 <div>💡 LIA aprende com seus padrões para sugerir ações mais precisas</div>
                 <div className="flex justify-center gap-4">
                   <span>⌨️ Esc para fechar</span>

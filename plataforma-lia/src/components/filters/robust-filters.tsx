@@ -47,7 +47,7 @@ interface RobustFiltersProps {
 }
 
 const candidateStatuses = [
-  { id: 'novo', label: 'Novo', color: 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-tertiary', count: 45 },
+  { id: 'novo', label: 'Novo', color: 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary', count: 45 },
   { id: 'em_triagem', label: 'Em Triagem', color: 'bg-status-warning/10 text-status-warning', count: 23 },
   { id: 'aprovado', label: 'Aprovado', color: 'bg-status-success/10 text-status-success', count: 12 },
   { id: 'entrevista', label: 'Entrevista', color: 'bg-wedo-purple/15 text-wedo-purple', count: 8 },
@@ -58,9 +58,9 @@ const candidateStatuses = [
 const jobStatuses = [
   { id: 'ativa', label: 'Ativa', color: 'bg-status-success/10 text-status-success', count: 15 },
   { id: 'pausada', label: 'Pausada', color: 'bg-status-warning/10 text-status-warning', count: 5 },
-  { id: 'fechada', label: 'Fechada', color: 'bg-gray-100 lia-text-strong', count: 8 },
+  { id: 'fechada', label: 'Fechada', color: 'bg-gray-100 text-lia-text-primary', count: 8 },
   { id: 'urgente', label: 'Urgente', color: 'bg-status-error/10 text-status-error', count: 3 },
-  { id: 'rascunho', label: 'Rascunho', color: 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-tertiary', count: 2 }
+  { id: 'rascunho', label: 'Rascunho', color: 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary', count: 2 }
 ]
 
 const locations = ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Porto Alegre', 'Remoto', 'Híbrido']
@@ -132,7 +132,7 @@ export function RobustFilters({
       <div className="relative">
         <div className="relative rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle transition-shadow duration-200 focus-within:shadow-lia-focus">
           <div className="flex items-center">
-            <Search className="absolute left-3 w-4 h-4 lia-text-base" />
+            <Search className="absolute left-3 w-4 h-4 text-lia-text-secondary" />
             <input
               type="text"
               placeholder={type === 'candidates' ? "Buscar candidatos..." : "Buscar vagas..."}
@@ -142,7 +142,7 @@ export function RobustFilters({
             />
             <div className="absolute right-2 flex items-center gap-2">
               {resultsCount !== undefined && (
-                <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                <span className="text-xs text-lia-text-secondary">
                   {resultsCount} resultado{resultsCount !== 1 ? 's' : ''}
                 </span>
               )}
@@ -178,7 +178,7 @@ export function RobustFilters({
               "hover:scale-[1.02] active:scale-[0.98]",
               filters.status.includes(status.id)
                 ? status.color + " border-current"
-                : "bg-gray-100 text-lia-text-secondary border-lia-border-subtle hover:bg-gray-200 dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
+                : "bg-gray-100 text-lia-text-secondary border-lia-border-subtle hover:bg-gray-200 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
             )}
           >
             {status.label}
@@ -226,7 +226,7 @@ export function RobustFilters({
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.location.includes(location)
                           ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-gray-900"
-                          : "bg-white text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
+                          : "bg-white text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
                       )}
                     >
                       {location}
@@ -251,7 +251,7 @@ export function RobustFilters({
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.experience.includes(level)
                           ? "bg-status-success/10 text-status-success border-status-success/30"
-                          : "bg-white text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
+                          : "bg-white text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
                       )}
                     >
                       {level}
@@ -276,7 +276,7 @@ export function RobustFilters({
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.contractType.includes(contract)
                           ? "bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30"
-                          : "bg-white text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
+                          : "bg-white text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
                       )}
                     >
                       {contract}
@@ -294,7 +294,7 @@ export function RobustFilters({
               </h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-1 block">
+                  <label className="text-xs text-lia-text-secondary mb-1 block">
                     Salário Mínimo
                   </label>
                   <input
@@ -309,7 +309,7 @@ export function RobustFilters({
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-1 block">
+                  <label className="text-xs text-lia-text-secondary mb-1 block">
                     Salário Máximo
                   </label>
                   <input
@@ -342,7 +342,7 @@ export function RobustFilters({
                       "hover:scale-[1.05] active:scale-[0.95]",
                       filters.skills.includes(skill)
                         ? "bg-wedo-orange/15 text-wedo-orange"
- : "text-lia-text-primary hover:dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:hover:bg-gray-600"
+ : "text-lia-text-primary hover:dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
                     )}
                   >
                     {skill}
@@ -367,7 +367,7 @@ export function RobustFilters({
                       "hover:scale-[1.02] active:scale-[0.98]",
                       filters.status.includes(status.id)
                         ? status.color + " border-current"
-                        : "bg-white text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
+                        : "bg-white text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
                     )}
                   >
                     <span>{status.label}</span>

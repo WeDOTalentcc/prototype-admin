@@ -21,10 +21,10 @@ export interface ActivityFeedProps {
 
 const activityIcons: Record<ActivityType, { icon: LucideIcon; color: string }> = {
   success: { icon: CheckCircle, color: "text-status-success" },
-  upgrade: { icon: TrendingUp, color: "text-lia-text-secondary dark:text-lia-text-tertiary" },
+  upgrade: { icon: TrendingUp, color: "text-lia-text-secondary" },
   warning: { icon: AlertCircle, color: "text-wedo-orange" },
   integration: { icon: Database, color: "text-wedo-purple" },
-  info: { icon: Info, color: "lia-text-base" },
+  info: { icon: Info, color: "text-lia-text-secondary" },
 }
 
 export function ActivityFeed({
@@ -48,7 +48,7 @@ export function ActivityFeed({
             <div key={`activity-${index}`} className="flex items-start gap-3 text-sm">
               <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${iconColor}`} />
               <div>
-                <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
+                <p className="font-medium text-lia-text-primary">
                   {activity.title}
                 </p>
                 <p className="text-xs text-lia-text-disabled">

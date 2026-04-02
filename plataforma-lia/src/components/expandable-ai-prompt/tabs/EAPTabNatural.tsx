@@ -100,7 +100,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                       : 'hover:bg-gray-100'
                   }`}
                 >
-                  <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'lia-text-base' : 'lia-text-secondary'}`} />
+                  <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
@@ -123,7 +123,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                         : 'hover:bg-gray-100'
                     }`}
                   >
-                    <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'lia-text-base' : 'lia-text-secondary'}`} />
+                    <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
@@ -147,7 +147,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                         : 'hover:bg-gray-100'
                     }`}
                   >
-                    <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'lia-text-base' : 'lia-text-secondary'}`} />
+                    <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
@@ -265,15 +265,15 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
           className="mt-2 p-3 rounded-md border transition-colors motion-reduce:transition-none bg-gray-200/20" style={{ borderColor: 'var(--wedo-cyan-border)' }}
         >
           <div className="flex items-start gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-            <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 lia-text-base" />
+            <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
             <div className="flex-1 min-w-0" role="status" aria-live="polite" aria-label="Carregando...">
               <div className="flex items-center gap-1.5 mb-1" role="status" aria-live="polite" aria-label="Carregando...">
-                <span className="text-xs font-medium lia-text-base">Sugestão da LIA</span>
+                <span className="text-xs font-medium text-lia-text-secondary">Sugestão da LIA</span>
                 {isEnhancingPrompt && (
                   <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
                 )}
               </div>
-              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mb-2">{promptEnhancement.enhanced_query}</p>
+              <p className="text-sm text-lia-text-primary mb-2">{promptEnhancement.enhanced_query}</p>
               {promptEnhancement.explanation && (
                 <p className="text-xs lia-text-secondary mb-2">{promptEnhancement.explanation}</p>
               )}
@@ -287,7 +287,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 </button>
                 <button
                   onClick={handleDismissEnhancement}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium lia-text-secondary hover:lia-text-base hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium lia-text-secondary hover:text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                 >
                   <X className="w-3 h-3" />
                   Ignorar
@@ -387,28 +387,28 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   </span>
                 </div>
                 <div>
-                  <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">
+                  <span className="font-medium text-sm text-lia-text-primary">
                     Assistente de Busca Inteligente
                   </span>
                 </div>
-                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-tertiary">
                   Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
                 </p>
-                <ul className="text-xs space-y-1 text-lia-text-tertiary dark:text-lia-text-tertiary">
+                <ul className="text-xs space-y-1 text-lia-text-tertiary">
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-base" />
+                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
                     <span>Indica critérios faltantes</span>
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-base" />
+                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
                     <span>Sugere sinônimos e termos relacionados</span>
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 lia-text-base" />
+                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
                     <span>Alerta sobre buscas muito amplas ou restritivas</span>
                   </li>
                 </ul>
-                <p className="text-micro pt-1 border-t text-lia-text-tertiary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
+                <p className="text-micro pt-1 border-t text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
                   {autocompleteEnabled ? 'Clique para desativar' : 'Clique para ativar'}
                 </p>
               </div>
@@ -445,7 +445,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+                <span className="text-xs font-medium text-lia-text-tertiary">
                   Qualidade da busca
                 </span>
                 <span
@@ -487,7 +487,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               {searchAnalysis.alerts.slice(0, 2).map((alert, index) => (
                 <div
                   key={`alert-${index}`}
-                  className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-lia-text-tertiary dark:text-lia-text-tertiary"
+                  className="flex items-start gap-2 px-2.5 py-2 rounded-full text-xs text-lia-text-tertiary"
                   style={{backgroundColor: alert.severity === 'warning'
                       ? 'var(--status-warning-bg-08)'
                       : 'var(--wedo-cyan-bg-08)'}}
@@ -495,7 +495,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   {alert.severity === 'warning' ? (
                     <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
                   ) : (
-                    <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-base" />
+                    <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
                   )}
                   <div className="flex-1 min-w-0">
                     <span>{alert.message}</span>
@@ -506,7 +506,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                             setNaturalSearchValue(naturalSearchValue + ', ' + alert.action_value)
                           }
                         }}
-                        className="ml-1 font-medium hover:underline lia-text-base"
+                        className="ml-1 font-medium hover:underline text-lia-text-secondary"
                       >
                         {alert.suggestion}
                       </button>
@@ -521,7 +521,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
 
       {/* Sugestões */}
       <div className="mt-3">
-        <p className="text-xs lia-text-strong mb-1.5">Sugestões:</p>
+        <p className="text-xs text-lia-text-primary mb-1.5">Sugestões:</p>
         <div className="flex flex-wrap gap-1.5">
           {[
             'Backend Sênior em São Paulo, 5+ anos em fintechs, Node.js e Python',
@@ -535,7 +535,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 setNaturalSearchValue(suggestion)
                 parseEntitiesFromQuery(suggestion)
               }}
-              className="px-2.5 py-1.5 text-xs rounded-full border border-lia-border-subtle bg-lia-bg-primary lia-text-base hover:border-gray-400 hover:lia-text-strong transition-colors motion-reduce:transition-none text-left"
+              className="px-2.5 py-1.5 text-xs rounded-full border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-gray-400 hover:text-lia-text-primary transition-colors motion-reduce:transition-none text-left"
             >
               {suggestion}
             </button>

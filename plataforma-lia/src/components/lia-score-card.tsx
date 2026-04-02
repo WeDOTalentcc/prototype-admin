@@ -60,7 +60,7 @@ export function LIAScoreCard({
 
   const hasBreakdown = breakdown && Object.keys(breakdown).length > 0
   const scoreColor =
-    score >= 80 ? "lia-text-strong" : score >= 60 ? "lia-text-base" : "lia-text-secondary"
+    score >= 80 ? "text-lia-text-primary" : score >= 60 ? "text-lia-text-secondary" : "lia-text-secondary"
 
   return (
     <div
@@ -75,7 +75,7 @@ export function LIAScoreCard({
             className="w-4 h-4 text-wedo-cyan"
             aria-hidden="true"
           />
-          <span className="text-xs font-medium lia-text-base">LIA Score</span>
+          <span className="text-xs font-medium text-lia-text-secondary">LIA Score</span>
           {jobTitle && (
             <span className="text-xs lia-text-secondary truncate max-w-[120px]">
               — {jobTitle}
@@ -121,7 +121,7 @@ export function LIAScoreCard({
             return (
               <div key={key} role="listitem">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs lia-text-base">{label}</span>
+                  <span className="text-xs text-lia-text-secondary">{label}</span>
                 </div>
                 <ScoreBar value={value} color={color} />
               </div>

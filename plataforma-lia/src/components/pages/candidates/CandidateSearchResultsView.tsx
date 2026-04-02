@@ -391,13 +391,13 @@ export function CandidateSearchResultsView({
           {
             id: 'add_to_vacancy',
             label: 'Vaga',
-            icon: <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            icon: <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: () => setShowAddToVacancyModal(true),
           },
           {
             id: 'add_to_list',
             label: isAddingToList ? 'Importando...' : 'Lista',
-            icon: <List className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            icon: <List className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: onAddToList,
             disabled: isAddingToList,
             loading: isAddingToList,
@@ -406,7 +406,7 @@ export function CandidateSearchResultsView({
           {
             id: 'share_search',
             label: 'Compartilhar',
-            icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: () => {
               const selectedList = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
               const searchTitle = lastSearchQuery || `Busca - ${new Date().toLocaleDateString('pt-BR')}`
@@ -425,13 +425,13 @@ export function CandidateSearchResultsView({
           {
             id: 'send_message',
             label: 'Mensagem',
-            icon: <Mail className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            icon: <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: onBulkEmail,
           },
           {
             id: 'wsi_screening',
             label: 'Triagem WSI',
-            icon: <ClipboardCheck className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            icon: <ClipboardCheck className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: onBulkWSIScreening,
           },
           {
@@ -446,7 +446,7 @@ export function CandidateSearchResultsView({
           {
             id: 'hide',
             label: 'Ocultar',
-            icon: <EyeOff className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            icon: <EyeOff className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: () => {
               selectedCandidatesForBatch.forEach(id => talentFunnel.hideCandidate(id))
               toast.success("Candidatos ocultos", { description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa` })
@@ -456,7 +456,7 @@ export function CandidateSearchResultsView({
           {
             id: 'save_to_base',
             label: `Salvar na Base (${selectedPearchCount})`,
-            icon: <Database className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            icon: <Database className="w-3.5 h-3.5 text-lia-text-secondary" />,
             onClick: onSaveToLocalBase,
             disabled: isSavingToBase,
             loading: isSavingToBase,

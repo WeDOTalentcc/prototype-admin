@@ -22,10 +22,10 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
 
   const confidenceColor = (conf?: "high" | "medium" | "low") => {
     switch (conf) {
-      case "high": return "text-wedo-cyan dark:text-wedo-cyan"
-      case "medium": return "lia-text-500 dark:text-lia-text-tertiary"
-      case "low": return "lia-text-400 dark:lia-text-500"
-      default: return "text-wedo-cyan dark:text-wedo-cyan"
+      case "high": return "text-wedo-cyan"
+      case "medium": return "text-lia-text-secondary"
+      case "low": return "text-lia-text-tertiary"
+      default: return "text-wedo-cyan"
     }
   }
 
@@ -36,7 +36,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
     )}>
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="w-4 h-4 text-wedo-cyan" />
-        <span className="text-xs font-semibold lia-text-900 dark:text-lia-text-primary uppercase tracking-wide">
+        <span className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide">
           {title}
         </span>
       </div>
@@ -44,14 +44,14 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
         {fields.map((field, index) => (
           <div
             key={field.label}
-            className="flex items-center justify-between py-1.5 px-2 rounded-md bg-white/60 dark:bg-lia-bg-secondary/40"
+            className="flex items-center justify-between py-1.5 px-2 rounded-md bg-white/60/40"
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <CheckCircle2 className={cn("w-3.5 h-3.5 flex-shrink-0", confidenceColor(field.confidence))} />
-              <span className="text-xs lia-text-500 dark:text-lia-text-tertiary flex-shrink-0">
+              <span className="text-xs text-lia-text-secondary flex-shrink-0">
                 {field.label}:
               </span>
-              <span className="text-xs font-medium lia-text-900 dark:text-lia-text-primary truncate">
+              <span className="text-xs font-medium text-lia-text-primary truncate">
                 {field.value}
               </span>
             </div>
@@ -59,7 +59,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
               <button
                 onClick={() => onEdit(field.label)}
                 aria-label={`Editar campo ${field.label}`}
-                className="p-1 lia-text-400 hover:lia-text-600 dark:hover:lia-text-300 transition-colors motion-reduce:transition-none flex-shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded-md"
+                className="p-1 text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none flex-shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-lia-border-default rounded-md"
               >
                 <Edit2 className="w-3 h-3" />
               </button>
@@ -67,7 +67,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
           </div>
         ))}
       </div>
-      <p className="text-micro lia-text-400 dark:lia-text-500 mt-2 italic">
+      <p className="text-micro text-lia-text-tertiary mt-2 italic">
         Campos preenchidos pela LIA com base na sua descrição. Edite se necessário.
       </p>
     </div>

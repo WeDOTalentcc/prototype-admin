@@ -477,7 +477,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     id="terms"
                     checked={userData.acceptTerms}
                     onChange={(e) => setUserData(prev => ({...prev, acceptTerms: e.target.checked}))}
-                    className="mt-1 w-5 h-5 rounded-md text-lia-text-secondary dark:text-lia-text-tertiary focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                    className="mt-1 w-5 h-5 rounded-md text-lia-text-secondary focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
                   />
                   <label htmlFor="terms" className="lia-text-medium lia-text-black">
                     Aceito os <a href="#" className="lia-text-blue hover:underline lia-text-bold">termos de uso</a> e a{' '}

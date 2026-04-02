@@ -27,11 +27,11 @@ export const TenureSection = ({ filters, updateFilter }: TenureSectionProps) => 
     <div className="grid grid-cols-2 gap-4">
       <div className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center gap-1.5 mb-2">
-          <Clock className="w-4 h-4 lia-text-500" />
+          <Clock className="w-4 h-4 text-lia-text-secondary" />
           <Label className="text-xs font-medium">Tempo na Função Atual</Label>
           <Popover>
             <PopoverTrigger asChild>
-              <button className="lia-text-400 hover:lia-text-600">
+              <button className="text-lia-text-tertiary hover:text-lia-text-secondary">
                 <Info className="w-3 h-3" />
               </button>
             </PopoverTrigger>
@@ -41,7 +41,7 @@ export const TenureSection = ({ filters, updateFilter }: TenureSectionProps) => 
           </Popover>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs lia-text-500">Entre</span>
+          <span className="text-xs text-lia-text-secondary">Entre</span>
           <Select
             value={filters.job?.timeInRoleMin || "no_limit"}
             onValueChange={(value) => updateFilter("job", "timeInRoleMin", value)}
@@ -57,7 +57,7 @@ export const TenureSection = ({ filters, updateFilter }: TenureSectionProps) => 
               ))}
             </SelectContent>
           </Select>
-          <span className="text-xs lia-text-500">e</span>
+          <span className="text-xs text-lia-text-secondary">e</span>
           <Select
             value={filters.job?.timeInRoleMax || "no_limit"}
             onValueChange={(value) => updateFilter("job", "timeInRoleMax", value)}
@@ -78,11 +78,11 @@ export const TenureSection = ({ filters, updateFilter }: TenureSectionProps) => 
 
       <div className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center gap-1.5 mb-2">
-          <TrendingUp className="w-4 h-4 lia-text-500" />
+          <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
           <Label className="text-xs font-medium">Tempo Médio nas Empresas</Label>
           <Popover>
             <PopoverTrigger asChild>
-              <button className="lia-text-400 hover:lia-text-600">
+              <button className="text-lia-text-tertiary hover:text-lia-text-secondary">
                 <Info className="w-3 h-3" />
               </button>
             </PopoverTrigger>

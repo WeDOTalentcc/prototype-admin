@@ -155,7 +155,7 @@ export function HistoryTab({
         <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-[var(--lia-bg-tertiary)] dark:bg-lia-bg-secondary">
           <Clock className="w-5 h-5 text-lia-text-tertiary" />
         </div>
-        <h3 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
+        <h3 className="text-sm font-medium text-lia-text-primary mb-1">
           Nenhuma busca realizada
         </h3>
         <p className="text-xs text-lia-text-tertiary max-w-sm leading-relaxed">
@@ -170,17 +170,17 @@ export function HistoryTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] flex items-center gap-2">
-            <Clock className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Clock className="w-5 h-5 text-lia-text-secondary" />
             Histórico de Buscas
           </h2>
-          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">
+          <p className="text-xs text-lia-text-secondary mt-0.5">
             {history.length} {history.length === 1 ? 'busca realizada' : 'buscas realizadas'} • Clique para re-executar
           </p>
         </div>
         <Button 
           variant="ghost" 
           size="sm"
-          className="text-xs text-lia-text-primary dark:text-lia-text-primary hover:text-status-error"
+          className="text-xs text-lia-text-primary hover:text-status-error"
           onClick={() => setShowClearConfirm(true)}
         >
           <Trash2 className="w-3.5 h-3.5 mr-1" />
@@ -192,8 +192,8 @@ export function HistoryTab({
         {Object.entries(groupedHistory).map(([dateGroup, items]) => (
           <div key={dateGroup}>
             <div className="flex items-center gap-2 mb-3">
-              <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-              <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary uppercase tracking-wide">
+              <Calendar className="w-4 h-4 text-lia-text-secondary" />
+              <span className="text-xs font-medium text-lia-text-primary uppercase tracking-wide">
                 {dateGroup}
               </span>
               <div className="flex-1 h-px bg-gray-200 dark:bg-lia-bg-elevated" />
@@ -216,7 +216,7 @@ export function HistoryTab({
                       {item.mode === 'natural' ? (
                         <LIAIcon size="sm" />
                       ) : (
-                        <ModeIcon className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                        <ModeIcon className="w-5 h-5 text-lia-text-secondary" />
                       )}
                     </div>
 
@@ -226,7 +226,7 @@ export function HistoryTab({
                           "{item.query}"
                         </p>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="flex items-center gap-3 text-xs text-lia-text-primary">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {formatRelativeTime(item.timestamp, { includeTime: true })}
@@ -255,7 +255,7 @@ export function HistoryTab({
                         onClick={(e) => handleSaveClick(item, e)}
                         title="Salvar busca"
                       >
-                        <Bookmark className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                        <Bookmark className="w-4 h-4 text-lia-text-secondary" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -268,7 +268,7 @@ export function HistoryTab({
                       </Button>
                     </div>
 
-                    <ChevronRight className="w-5 h-5 lia-text-muted group-hover:lia-text-base transition-colors motion-reduce:transition-none" />
+                    <ChevronRight className="w-5 h-5 lia-text-muted group-hover:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
                   </div>
                 )
               })}
@@ -277,7 +277,7 @@ export function HistoryTab({
         ))}
       </div>
 
-      <div className="flex items-center justify-center gap-2 py-4 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+      <div className="flex items-center justify-center gap-2 py-4 text-xs text-lia-text-secondary">
         <LIAIcon size="xs" />
         <span>Clique em qualquer busca para executá-la novamente</span>
       </div>
@@ -286,7 +286,7 @@ export function HistoryTab({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Bookmark className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Bookmark className="w-5 h-5 text-lia-text-secondary" />
               Salvar Busca
             </DialogTitle>
             <DialogDescription>
@@ -296,7 +296,7 @@ export function HistoryTab({
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+              <label className="text-sm font-medium text-lia-text-primary">
                 Nome da Busca *
               </label>
               <Input
@@ -307,7 +307,7 @@ export function HistoryTab({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+              <label className="text-sm font-medium text-lia-text-primary">
                 Descrição (opcional)
               </label>
               <Input
@@ -319,8 +319,8 @@ export function HistoryTab({
 
             {selectedItem && (
               <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-1">Query:</p>
-                <code className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                <p className="text-xs text-lia-text-primary mb-1">Query:</p>
+                <code className="text-xs text-lia-text-primary">
                   {selectedItem.query}
                 </code>
               </div>

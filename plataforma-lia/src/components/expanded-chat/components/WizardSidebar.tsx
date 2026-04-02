@@ -46,17 +46,17 @@ export function WizardSidebar({
                   className={cn(
  "w-2 h-2 rounded-full transition-[width,height]",
                     isPhaseActive 
-                      ? "bg-gray-900" 
+                      ? "bg-lia-btn-primary-bg" 
                       : isPhaseCompleted 
                         ? "bg-status-success" 
-                        : "bg-gray-300"
+                        : "bg-lia-border-default"
                   )}
                 />
                 <span 
                   className={cn(
  "text-micro font-semibold uppercase tracking-wide",
                     isPhaseActive 
-                      ? "text-lia-text-secondary dark:text-lia-text-tertiary" 
+                      ? "text-lia-text-secondary" 
                       : isPhaseCompleted 
                         ? "lia-text-secondary" 
                         : "lia-text-secondary"
@@ -84,9 +84,9 @@ export function WizardSidebar({
                       onClick={() => handleStageClick(stageId, stageIndex)}
                       disabled={!isClickable}
                       className={cn(
- "flex items-center gap-2 py-1.5 px-2 rounded-md text-left transition-colors focus-visible:ring-2 focus-visible:ring-gray-400",
-                        isActive && "bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default",
-                        isCompleted && isClickable && "hover:bg-gray-100 cursor-pointer",
+ "flex items-center gap-2 py-1.5 px-2 rounded-md text-left transition-colors focus-visible:ring-2 focus-visible:ring-lia-border-default",
+                        isActive && "bg-lia-bg-tertiary border border-lia-border-default",
+                        isCompleted && isClickable && "hover:bg-lia-interactive-hover cursor-pointer",
                         !isClickable && !isActive && "cursor-default"
                       )}
                     >
@@ -94,7 +94,7 @@ export function WizardSidebar({
                         className={cn(
  "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-[width,height]",
                           isActive 
-                            ? "bg-gray-900" 
+                            ? "bg-lia-btn-primary-bg" 
                             : isCompleted 
                               ? "bg-status-success" 
                               : "border border-lia-border-default"
@@ -111,9 +111,9 @@ export function WizardSidebar({
                         className={cn(
  "text-xs font-medium",
                           isActive 
-                            ? "text-lia-text-secondary dark:text-lia-text-tertiary" 
+                            ? "text-lia-text-secondary" 
                             : isCompleted 
-                              ? "lia-text-base" 
+                              ? "text-lia-text-secondary" 
                               : "lia-text-secondary"
                         )}
                        
@@ -153,7 +153,7 @@ export function WizardSidebar({
                 className={cn(
  "text-micro font-semibold uppercase tracking-wide",
                   isPhaseActive 
-                    ? "text-lia-text-secondary dark:text-lia-text-tertiary" 
+                    ? "text-lia-text-secondary" 
                     : isPhaseCompleted 
                       ? "lia-text-secondary" 
                       : "lia-text-secondary"
@@ -181,7 +181,7 @@ export function WizardSidebar({
                     onClick={() => handleStageClick(stageId, stageIndex)}
                     disabled={!isClickable}
                     className={cn(
- "flex-1 flex flex-col items-center transition-colors focus-visible:ring-2 focus-visible:ring-gray-400 rounded-md",
+ "flex-1 flex flex-col items-center transition-colors focus-visible:ring-2 focus-visible:ring-lia-border-default rounded-md",
                       isClickable && "hover:opacity-80 cursor-pointer",
                       !isClickable && "cursor-default"
                     )}
@@ -189,7 +189,7 @@ export function WizardSidebar({
                     <div 
                       className={cn(
  "w-full h-1.5 rounded-full transition-[width,height]",
- isActive ? "bg-gray-900" : isCompleted ? "bg-status-success" : "bg-gray-200"
+ isActive ? "bg-lia-btn-primary-bg" : isCompleted ? "bg-status-success" : "bg-lia-interactive-active"
                       )}
                     />
                     {!compact && (

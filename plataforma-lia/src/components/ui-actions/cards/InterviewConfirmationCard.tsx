@@ -135,7 +135,7 @@ export function InterviewConfirmationCard({
             className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle"
           >
             <div className="flex items-center gap-2 mb-1 text-lia-text-tertiary">
-              <Clock className="h-4 w-4 text-lia-text-secondary dark:text-lia-text-secondary" />
+              <Clock className="h-4 w-4 text-lia-text-secondary" />
               <span className="text-xs">Horário</span>
             </div>
             <div className="font-semibold text-lia-text-primary">
@@ -167,7 +167,7 @@ export function InterviewConfirmationCard({
                 href={data.meeting_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary hover:underline flex items-center gap-1"
+                className="text-sm text-lia-text-secondary hover:underline flex items-center gap-1"
               >
                 Acessar reunião
                 <ExternalLink className="h-3 w-3" />
@@ -219,7 +219,7 @@ export function InterviewConfirmationCard({
           <div
             className="p-3 rounded-md border mb-4 bg-lia-bg-tertiary border-lia-border-subtle"
           >
-            <div className="text-xs mb-1 text-lia-text-secondary dark:text-lia-text-secondary">Notas para o candidato</div>
+            <div className="text-xs mb-1 text-lia-text-secondary">Notas para o candidato</div>
             <p className="text-sm text-lia-text-secondary">{data.notes}</p>
           </div>
         )}

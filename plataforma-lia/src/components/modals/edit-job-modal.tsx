@@ -131,19 +131,19 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div 
-        className="absolute inset-0 bg-black/50 dark:bg-lia-bg-primary/70 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black/50/70 backdrop-blur-[2px]"
         onClick={onClose}
       />
       
-      <div className="relative bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary shrink-0">
+      <div className="relative bg-lia-bg-primary rounded-md w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-lia-bg-primary shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center">
-              <Briefcase className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+              <Briefcase className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">Editar Vaga</h2>
-              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">
+              <h2 className="text-sm font-semibold text-lia-text-primary">Editar Vaga</h2>
+              <p className="text-xs text-lia-text-secondary mt-0.5">
                 <span className="text-lia-text-secondary font-medium mr-1.5">{job.jobId}</span>
                 {job.title}
               </p>
@@ -152,7 +152,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 rounded-md hover:bg-gray-100"
+            className="h-8 w-8 p-0 rounded-md hover:bg-lia-interactive-hover"
             onClick={onClose}
           >
             <X className="w-4 h-4 text-lia-text-tertiary" />
@@ -267,7 +267,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       </Select>
                     </div>
 
-                    <div className="p-4 bg-gray-50 rounded-md border border-lia-border-subtle space-y-3">
+                    <div className="p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Shield className="w-4 h-4 text-wedo-orange" />
@@ -382,7 +382,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <h3 className="text-base-ui font-semibold text-lia-text-primary">Publicação</h3>
                   </div>
                   
-                  <div className="p-4 bg-gray-50 rounded-md border border-lia-border-subtle space-y-3">
+                  <div className="p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Linkedin className="w-4 h-4 text-lia-text-secondary" />
@@ -424,12 +424,12 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <div className="flex items-center gap-2 mb-4">
                       <Users className="w-4 h-4 text-lia-text-disabled" />
                       <h3 className="text-xs font-semibold text-lia-text-tertiary">Informações do Registro</h3>
-                      <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-gray-50 text-lia-text-disabled border-lia-border-subtle">
+                      <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-disabled border-lia-border-subtle">
                         Somente leitura
                       </Badge>
                     </div>
                     
-                    <div className="p-4 bg-gray-50 rounded-md border border-lia-border-subtle">
+                    <div className="p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
                       <div className="grid grid-cols-2 gap-4">
                         {job?.createdBy && (
                           <div>
@@ -471,7 +471,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <Textarea
                       value={formData.targetAudience || ''}
                       onChange={(e) => updateField('targetAudience', e.target.value)}
-                      className="min-h-20 text-sm resize-none bg-gray-50 border-lia-border-subtle focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20"
+                      className="min-h-20 text-sm resize-none bg-lia-bg-secondary border-lia-border-subtle focus:border-lia-border-medium focus:ring-1 focus:ring-lia-btn-primary-bg/20"
                       placeholder="Descreva o perfil ideal de candidato para esta vaga..."
                     />
                     
@@ -519,7 +519,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       placeholder="Ex: Inglês"
                     />
                     <Select value={newLanguageLevel} onValueChange={setNewLanguageLevel}>
-                      <SelectTrigger className="w-32 h-9 text-xs bg-gray-50 border-lia-border-subtle">
+                      <SelectTrigger className="w-32 h-9 text-xs bg-lia-bg-secondary border-lia-border-subtle">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -558,18 +558,18 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
               </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle shrink-0">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-lia-border-subtle bg-lia-bg-secondary shrink-0">
           <Button
             variant="outline"
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-secondary dark:text-lia-text-primary"
+            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg text-lia-text-secondary"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             {isSaving ? (
               <>
@@ -587,16 +587,16 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
       </div>
 
       {showImportQuestionsModal && (
-        <div className="fixed inset-0 bg-black/50 dark:bg-lia-bg-primary/70 flex items-center justify-center z-overlay p-4">
-          <div className="bg-white dark:bg-lia-bg-secondary rounded-md max-w-lg w-full max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="fixed inset-0 bg-black/50/70 flex items-center justify-center z-overlay p-4">
+          <div className="bg-lia-bg-primary rounded-md max-w-lg w-full max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-lia-border-subtle">
               <div className="flex items-center gap-2">
                 <Download className="w-4 h-4 text-status-warning" />
                 <h3 className="text-base-ui font-semibold text-lia-text-primary">Importar Perguntas Padrão</h3>
               </div>
               <button
                 onClick={() => setShowImportQuestionsModal(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors motion-reduce:transition-none"
+                className="p-1 hover:bg-lia-interactive-hover rounded-full transition-colors motion-reduce:transition-none"
               >
                 <X className="w-4 h-4 text-lia-text-tertiary" />
               </button>
@@ -645,7 +645,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-lia-text-primary">{q.question_text}</p>
                         <div className="flex items-center gap-2 mt-1.5">
-                          <Badge variant="outline" className="text-micro bg-gray-50 text-lia-text-secondary border-lia-border-subtle">
+                          <Badge variant="outline" className="text-micro bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle">
                             {getCategoryLabel(q.category)}
                           </Badge>
                           <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30">
@@ -667,7 +667,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
               )}
             </div>
             
-            <div className="flex items-center justify-between px-5 py-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+            <div className="flex items-center justify-between px-5 py-4 border-t border-lia-border-subtle bg-lia-bg-secondary">
               <p className="text-xs text-lia-text-tertiary">
                 {selectedDefaultQuestions.size} pergunta(s) selecionada(s)
               </p>

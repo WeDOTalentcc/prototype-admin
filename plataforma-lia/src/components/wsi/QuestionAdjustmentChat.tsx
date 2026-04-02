@@ -172,8 +172,8 @@ export function QuestionAdjustmentChat({
   return (
     <div className={cn("flex flex-col h-full", className)}>
       <div className="flex items-center gap-1.5 mb-2">
-        <MessageCircle className="h-3.5 w-3.5 lia-text-base" />
-        <span className="text-xs font-semibold lia-text-strong">Chat de Ajuste</span>
+        <MessageCircle className="h-3.5 w-3.5 text-lia-text-secondary" />
+        <span className="text-xs font-semibold text-lia-text-primary">Chat de Ajuste</span>
       </div>
 
       <div
@@ -198,8 +198,8 @@ export function QuestionAdjustmentChat({
               className={cn(
  "max-w-[85%] rounded-md px-3 py-2",
                 msg.role === "user"
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-50 border border-lia-border-subtle lia-text-strong"
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                  : "bg-lia-bg-secondary border border-lia-border-subtle text-lia-text-primary"
               )}
             >
               <p className="text-xs leading-relaxed whitespace-pre-wrap">
@@ -207,15 +207,15 @@ export function QuestionAdjustmentChat({
               </p>
               {msg.diff && msg.diff.length > 0 && (
                 <div className="mt-2 pt-2 border-t border-lia-border-subtle/50">
-                  <p className="text-micro font-medium lia-text-base">
+                  <p className="text-micro font-medium text-lia-text-secondary">
                     {msg.diff.length} alteração(ões) feita(s) ↓
                   </p>
                 </div>
               )}
             </div>
             {msg.role === "user" && (
-              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-                <User className="h-3 w-3 lia-text-base" />
+              <div className="w-6 h-6 rounded-full bg-lia-interactive-active flex items-center justify-center shrink-0">
+                <User className="h-3 w-3 text-lia-text-secondary" />
               </div>
             )}
           </div>
@@ -225,9 +225,9 @@ export function QuestionAdjustmentChat({
             <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-wedo-cyan/15" role="status" aria-live="polite" aria-label="Carregando...">
               <Brain className="h-3 w-3 text-wedo-cyan" />
             </div>
-            <div className="bg-gray-50 border border-lia-border-subtle rounded-md px-3 py-2" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-md px-3 py-2" role="status" aria-live="polite" aria-label="Carregando...">
               <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-                <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none lia-text-base" />
+                <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                 <span className="text-xs lia-text-secondary">Regenerando perguntas...</span>
               </div>
             </div>
@@ -250,7 +250,7 @@ export function QuestionAdjustmentChat({
         <Button
           variant="ghost"
           size="sm"
-          className="absolute right-1.5 bottom-1.5 h-7 w-7 p-0 rounded-md bg-gray-900"
+          className="absolute right-1.5 bottom-1.5 h-7 w-7 p-0 rounded-md bg-lia-btn-primary-bg"
           onClick={handleSend}
           disabled={!input.trim() || isLoading || disabled}
         >

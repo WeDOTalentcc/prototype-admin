@@ -123,7 +123,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{agent.icon}</span>
                 <div>
-                  <h3 className="font-semibold text-sm text-lia-text-primary dark:text-lia-text-primary">
+                  <h3 className="font-semibold text-sm text-lia-text-primary">
                     {agent.name}
                   </h3>
                   <div className="flex items-center gap-2">
@@ -131,7 +131,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                       className="w-2 h-2 rounded-full"
                       style={{backgroundColor: agent.status === 'online' ? 'var(--gray-950)' : agent.status === 'idle' ? 'var(--status-warning)' : 'var(--status-error)'}}
                     />
-                    <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                    <span className="text-xs text-lia-text-tertiary">
                       {agent.status === 'online' ? 'Online' : agent.status === 'idle' ? 'Idle' : 'Atenção'}
                     </span>
                   </div>
@@ -168,7 +168,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
             {/* Trend Chart */}
             <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+                <span className="text-xs font-medium text-lia-text-tertiary">
                   Tendência 24h
                 </span>
                 <div className="flex items-center gap-1">
@@ -177,7 +177,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   ) : agent.delta < 0 ? (
                     <TrendingDown className="w-3 h-3 text-status-error" />
                   ) : (
-                    <Minus className="w-3 h-3 lia-text-base" />
+                    <Minus className="w-3 h-3 text-lia-text-secondary" />
                   )}
                   <span
                     className={`text-xs ${agent.delta === 0 ? 'text-lia-text-disabled' : ''}`}
@@ -202,7 +202,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as 'activity' | 'health' | 'settings')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors motion-reduce:transition-none ${activeTab !== tab.id ? 'text-lia-text-tertiary dark:text-lia-text-tertiary' : ''}`}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors motion-reduce:transition-none ${activeTab !== tab.id ? 'text-lia-text-tertiary' : ''}`}
                   style={{color: activeTab === tab.id ? 'var(--gray-950)' : undefined,
                     backgroundColor: activeTab === tab.id ? 'var(--gray-bg-20)' : 'transparent',
                     borderBottom: activeTab === tab.id ? '2px solid var(--gray-300)' : '2px solid transparent'}}
@@ -236,19 +236,19 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         <div className="flex-shrink-0 mt-0.5">
                           {activity.status === 'success' && <CheckCircle className="w-4 h-4 text-status-success" />}
                           {activity.status === 'in_progress' && <Clock className="w-4 h-4 text-status-warning animate-pulse motion-reduce:animate-none" />}
-                          {activity.status === 'pending' && <Clock className="w-4 h-4 lia-text-base" />}
+                          {activity.status === 'pending' && <Clock className="w-4 h-4 text-lia-text-secondary" />}
                           {activity.status === 'error' && <XCircle className="w-4 h-4 text-status-error" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+                            <span className="text-xs font-medium text-lia-text-primary">
                               {activity.title}
                             </span>
                             <span className="text-xs text-lia-text-disabled">
                               {formatTimeAgo(activity.started_at)}
                             </span>
                           </div>
-                          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                          <p className="text-xs text-lia-text-tertiary">
                             {activity.description}
                           </p>
                         </div>
@@ -290,7 +290,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
 
                   {/* Score Drivers */}
                   <div>
-                    <h4 className="text-xs font-medium mb-3 text-lia-text-primary dark:text-lia-text-primary">
+                    <h4 className="text-xs font-medium mb-3 text-lia-text-primary">
                       Fatores de Score
                     </h4>
                     <div className="space-y-2">
@@ -298,13 +298,13 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         <div key={i} className="flex items-center gap-3">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                              <span className="text-xs text-lia-text-tertiary">
                                 {driver.name}
                               </span>
                               <div className="flex items-center gap-1">
                                 {driver.impact === 'positive' && <TrendingUp className="w-3 h-3 text-status-success" />}
                                 {driver.impact === 'negative' && <TrendingDown className="w-3 h-3 text-status-error" />}
-                                {driver.impact === 'neutral' && <Minus className="w-3 h-3 lia-text-base" />}
+                                {driver.impact === 'neutral' && <Minus className="w-3 h-3 text-lia-text-secondary" />}
                                 <span className="text-xs font-medium" style={{color: getImpactColor(driver.impact)}}>
                                   {driver.value}%
                                 </span>
@@ -326,8 +326,8 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   {/* Recommendations */}
                   {healthScore.recommendations.length > 0 && (
                     <div>
-                      <h4 className="text-xs font-medium mb-3 flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary">
-                        <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                      <h4 className="text-xs font-medium mb-3 flex items-center gap-2 text-lia-text-primary">
+                        <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary" />
                         Recomendações
                       </h4>
                       <div className="space-y-2">
@@ -336,8 +336,8 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                             key={i}
                             className="p-3 rounded-md flex items-start gap-2 bg-gray-200/20"
                           >
-                            <ChevronRight className="w-3 h-3 mt-0.5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
-                            <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                            <ChevronRight className="w-3 h-3 mt-0.5 text-lia-text-secondary flex-shrink-0" />
+                            <span className="text-xs text-lia-text-tertiary">
                               {rec}
                             </span>
                           </div>
@@ -352,7 +352,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               {activeTab === 'settings' && (
                 <div className="p-4 space-y-4">
                   <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
-                    <h4 className="text-xs font-medium mb-2 text-lia-text-primary dark:text-lia-text-primary">
+                    <h4 className="text-xs font-medium mb-2 text-lia-text-primary">
                       Configurações do Agente
                     </h4>
                     <p className="text-xs text-lia-text-disabled">
@@ -360,7 +360,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     </p>
                   </div>
                   <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
-                    <h4 className="text-xs font-medium mb-2 text-lia-text-primary dark:text-lia-text-primary">
+                    <h4 className="text-xs font-medium mb-2 text-lia-text-primary">
                       Integrações
                     </h4>
                     <p className="text-xs text-lia-text-disabled">

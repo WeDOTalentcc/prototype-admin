@@ -99,7 +99,7 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
     if (status.isApproval) return { bg: 'bg-status-success/15 dark:bg-status-success/30', text: 'text-status-success dark:text-status-success' }
     if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error' }
     if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning' }
-    return { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary dark:text-lia-text-secondary' }
+    return { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary' }
   }
 
   const stagesRequiringConfirmation = ['hired', 'rejected', 'offer_declined']

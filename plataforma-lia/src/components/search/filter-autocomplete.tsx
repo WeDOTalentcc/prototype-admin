@@ -159,7 +159,7 @@ export function FilterAutocomplete({
         {selectedValues.map((value) => (
           <span
             key={value}
-            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
+            className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
           >
             {value}
             <button
@@ -185,12 +185,12 @@ export function FilterAutocomplete({
             onKeyDown={handleKeyDown}
             placeholder={selectedValues.length === 0 ? placeholder : "Adicionar..."}
             disabled={disabled || (maxSelections !== undefined && selectedValues.length >= maxSelections)}
-            className="w-full bg-transparent text-xs lia-text-950 dark:lia-text-50 placeholder-gray-400 focus:outline-none"
+            className="w-full bg-transparent text-xs text-lia-text-primary placeholder-gray-400 focus:outline-none"
            
           />
           {isLoading && (
             <div className="absolute right-0 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+              <Loader2 className="w-3 h-3 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
             </div>
           )}
         </div>
@@ -199,8 +199,8 @@ export function FilterAutocomplete({
       {showDropdown && (
         <div className="absolute z-50 w-full mt-1 bg-white dark:bg-lia-bg-secondary rounded-md max-h-60 overflow-auto" role="status" aria-live="polite" aria-label="Carregando...">
           {isLoading ? (
-            <div className="flex items-center justify-center gap-2 p-3 text-xs lia-text-800 dark:text-lia-text-primary" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
+            <div className="flex items-center justify-center gap-2 p-3 text-xs text-lia-text-primary" role="status" aria-live="polite" aria-label="Carregando...">
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
               <span>Buscando...</span>
             </div>
           ) : suggestions.length > 0 ? (
@@ -215,22 +215,22 @@ export function FilterAutocomplete({
                     className={cn(
                       "w-full flex items-center justify-between px-3 py-2 text-left transition-colors",
                       isSelected
-                        ? "bg-gray-100 lia-text-800 dark:text-lia-text-primary"
+                        ? "bg-gray-100 text-lia-text-primary"
                         : "hover:bg-gray-50 dark:hover:bg-gray-700"
                     )}
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       {isSelected ? (
-                        <Check className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary flex-shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                       ) : (
-                        <Plus className="w-3.5 h-3.5 lia-text-600 flex-shrink-0" />
+                        <Plus className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <span className="text-xs font-medium lia-text-950 dark:lia-text-50 truncate block">
+                        <span className="text-xs font-medium text-lia-text-primary truncate block">
                           {suggestion.label}
                         </span>
                         {suggestion.aliases && suggestion.aliases.length > 0 && (
-                          <span className="text-xs lia-text-600 truncate block">
+                          <span className="text-xs text-lia-text-secondary truncate block">
                             Também: {suggestion.aliases.slice(0, 2).join(", ")}
                           </span>
                         )}
@@ -246,13 +246,13 @@ export function FilterAutocomplete({
                           </span>
                         )}
                         {suggestion.global_count && suggestion.global_count > 0 && (
-                          <span className="flex items-center gap-0.5 text-xs lia-text-600 dark:text-lia-text-tertiary font-medium">
+                          <span className="flex items-center gap-0.5 text-xs text-lia-text-secondary font-medium">
                             <Globe className="w-3 h-3" />
                             +{suggestion.global_count > 1000 ? `${(suggestion.global_count / 1000).toFixed(1)}K` : suggestion.global_count}
                           </span>
                         )}
                         {suggestion.source === "suggested" && suggestion.local_count === 0 && (
-                          <span className="text-xs lia-text-600 px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated">
+                          <span className="text-xs text-lia-text-secondary px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated">
                             Sugerido
                           </span>
                         )}
@@ -264,7 +264,7 @@ export function FilterAutocomplete({
             </div>
           ) : query.length >= 2 ? (
             <div className="p-3 text-center">
-              <p className="text-xs lia-text-800 dark:text-lia-text-primary mb-2" aria-live="polite" aria-atomic="true">Nenhum resultado encontrado</p>
+              <p className="text-xs text-lia-text-primary mb-2" aria-live="polite" aria-atomic="true">Nenhum resultado encontrado</p>
               <button
                 onClick={() => {
                   if (!selectedValues.includes(query.trim())) {
@@ -273,7 +273,7 @@ export function FilterAutocomplete({
                   setQuery("")
                   setSuggestions([])
                 }}
-                className="text-xs lia-text-800 dark:text-lia-text-primary hover:underline"
+                className="text-xs text-lia-text-primary hover:underline"
               >
                 Adicionar "{query}" mesmo assim
               </button>
@@ -327,7 +327,7 @@ export function TagInput({
       {value.map((val) => (
         <span
           key={val}
-          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
         >
           {val}
           <button
@@ -351,7 +351,7 @@ export function TagInput({
         onKeyDown={handleKeyDown}
         placeholder={value.length === 0 ? placeholder : ""}
         disabled={disabled}
-        className="flex-1 min-w-[100px] bg-transparent text-xs lia-text-950 dark:lia-text-50 placeholder-gray-400 focus:outline-none"
+        className="flex-1 min-w-[100px] bg-transparent text-xs text-lia-text-primary placeholder-gray-400 focus:outline-none"
        
       />
     </div>

@@ -153,7 +153,7 @@ export function EditArchetypeModal({
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-wedo-cyan/15"
           >
-            <Target className="w-5 h-5 lia-text-700" />
+            <Target className="w-5 h-5 text-lia-text-primary" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-semibold" style={{color: "var(--gray-950)"}}>
@@ -167,7 +167,7 @@ export function EditArchetypeModal({
             onClick={onClose}
             className="p-1.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
           >
-            <X className="w-4 h-4 lia-text-500" />
+            <X className="w-4 h-4 text-lia-text-secondary" />
           </button>
         </div>
 
@@ -176,14 +176,14 @@ export function EditArchetypeModal({
           {/* Seção 1: Identificação */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-base-ui font-semibold lia-text-700">1</span>
-              <h4 className="text-xs font-semibold lia-text-800">Identificação do Arquétipo</h4>
+              <span className="text-base-ui font-semibold text-lia-text-primary">1</span>
+              <h4 className="text-xs font-semibold text-lia-text-primary">Identificação do Arquétipo</h4>
             </div>
 
             {/* Nome e Emoji */}
             <div className="flex gap-2">
               <div className="w-14">
-                <label className="text-micro font-medium mb-0.5 block lia-text-500">Emoji</label>
+                <label className="text-micro font-medium mb-0.5 block text-lia-text-secondary">Emoji</label>
                 <input
                   type="text"
                   value={editArchetypeEmoji}
@@ -193,7 +193,7 @@ export function EditArchetypeModal({
                 />
               </div>
               <div className="flex-1">
-                <label className="text-micro font-medium mb-0.5 block lia-text-500">
+                <label className="text-micro font-medium mb-0.5 block text-lia-text-secondary">
                   Nome do Arquétipo
                 </label>
                 <input
@@ -208,7 +208,7 @@ export function EditArchetypeModal({
 
             {/* Query de Busca */}
             <div>
-              <label className="text-micro font-medium mb-0.5 block lia-text-500">
+              <label className="text-micro font-medium mb-0.5 block text-lia-text-secondary">
                 Query de Busca
               </label>
               <textarea
@@ -222,7 +222,7 @@ export function EditArchetypeModal({
 
             {/* Descrição */}
             <div>
-              <label className="text-micro font-medium mb-0.5 block lia-text-500">Descrição</label>
+              <label className="text-micro font-medium mb-0.5 block text-lia-text-secondary">Descrição</label>
               <textarea
                 value={editArchetypeDescription}
                 onChange={(e) => onEditArchetypeDescriptionChange(e.target.value)}
@@ -236,8 +236,8 @@ export function EditArchetypeModal({
           {/* Seção 2: Requisitos */}
           <div className="space-y-3 pt-2 border-t border-t-gray-100">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-base-ui font-semibold lia-text-700">2</span>
-              <h4 className="text-xs font-semibold lia-text-800">Requisitos do Perfil</h4>
+              <span className="text-base-ui font-semibold text-lia-text-primary">2</span>
+              <h4 className="text-xs font-semibold text-lia-text-primary">Requisitos do Perfil</h4>
             </div>
 
             {/* Grid de 2 colunas: (Senioridade + Exp Min) | (Indústria) */}
@@ -245,7 +245,7 @@ export function EditArchetypeModal({
               {/* Coluna 1: Senioridade + Experiência */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-medium mb-1 block lia-text-500">Senioridade</label>
+                  <label className="text-xs font-medium mb-1 block text-lia-text-secondary">Senioridade</label>
                   <select
                     value={editArchetypeSeniority}
                     onChange={(e) => onEditArchetypeSeniorityChange(e.target.value)}
@@ -263,7 +263,7 @@ export function EditArchetypeModal({
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium mb-1 block lia-text-500">Exp. Mínima</label>
+                  <label className="text-xs font-medium mb-1 block text-lia-text-secondary">Exp. Mínima</label>
                   <input
                     type="number"
                     min={0}
@@ -280,7 +280,7 @@ export function EditArchetypeModal({
 
               {/* Coluna 2: Indústria (searchable dropdown) */}
               <div className="relative">
-                <label className="text-xs font-medium mb-1 block lia-text-500">Indústria</label>
+                <label className="text-xs font-medium mb-1 block text-lia-text-secondary">Indústria</label>
                 <button
                   type="button"
                   onClick={() => onIsIndustryDropdownOpenChange(!isIndustryDropdownOpen)}
@@ -359,8 +359,8 @@ export function EditArchetypeModal({
             {/* Localização e Modelo de Trabalho */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium mb-1 flex items-center gap-1 lia-text-500">
-                  <MapPin className="w-3 h-3 lia-text-700" />
+                <label className="text-xs font-medium mb-1 flex items-center gap-1 text-lia-text-secondary">
+                  <MapPin className="w-3 h-3 text-lia-text-primary" />
                   Localização
                 </label>
                 <input
@@ -372,8 +372,8 @@ export function EditArchetypeModal({
                 />
               </div>
               <div>
-                <label className="text-xs font-medium mb-1 flex items-center gap-1 lia-text-500">
-                  <Building2 className="w-3 h-3 lia-text-700" />
+                <label className="text-xs font-medium mb-1 flex items-center gap-1 text-lia-text-secondary">
+                  <Building2 className="w-3 h-3 text-lia-text-primary" />
                   Modelo de Trabalho
                 </label>
                 <select
@@ -392,8 +392,8 @@ export function EditArchetypeModal({
             {/* Idiomas e Tipo de Contrato */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium mb-1 flex items-center gap-1 lia-text-500">
-                  <Globe className="w-3 h-3 lia-text-700" />
+                <label className="text-xs font-medium mb-1 flex items-center gap-1 text-lia-text-secondary">
+                  <Globe className="w-3 h-3 text-lia-text-primary" />
                   Idiomas
                 </label>
                 <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px] p-2 rounded-md border border-lia-border-subtle">
@@ -410,7 +410,7 @@ export function EditArchetypeModal({
                         }
                         className="hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full p-0.5"
                       >
-                        <X className="w-3 h-3 lia-text-700" />
+                        <X className="w-3 h-3 text-lia-text-primary" />
                       </button>
                     </span>
                   ))}
@@ -433,8 +433,8 @@ export function EditArchetypeModal({
                 />
               </div>
               <div>
-                <label className="text-xs font-medium mb-1 flex items-center gap-1 lia-text-500">
-                  <Briefcase className="w-3 h-3 lia-text-600" />
+                <label className="text-xs font-medium mb-1 flex items-center gap-1 text-lia-text-secondary">
+                  <Briefcase className="w-3 h-3 text-lia-text-secondary" />
                   Tipo de Contrato
                 </label>
                 <select
@@ -456,16 +456,16 @@ export function EditArchetypeModal({
           {/* Seção 3: Competências */}
           <div className="space-y-3 pt-2 border-t border-t-gray-100">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-base-ui font-semibold lia-text-700">3</span>
-              <h4 className="text-xs font-semibold lia-text-800">Competências Técnicas</h4>
+              <span className="text-base-ui font-semibold text-lia-text-primary">3</span>
+              <h4 className="text-xs font-semibold text-lia-text-primary">Competências Técnicas</h4>
             </div>
 
             {/* Skills */}
             <div>
-              <label className="text-xs font-medium mb-1 flex items-center gap-1.5 lia-text-500">
-                <Code className="w-3.5 h-3.5 lia-text-700" />
+              <label className="text-xs font-medium mb-1 flex items-center gap-1.5 text-lia-text-secondary">
+                <Code className="w-3.5 h-3.5 text-lia-text-primary" />
                 Skills
-                <span className="text-micro font-normal lia-text-400">
+                <span className="text-micro font-normal text-lia-text-tertiary">
                   (habilidades técnicas: Python, React, AWS...)
                 </span>
               </label>
@@ -483,12 +483,12 @@ export function EditArchetypeModal({
                       }
                       className="hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full p-0.5"
                     >
-                      <X className="w-3 h-3 lia-text-700" />
+                      <X className="w-3 h-3 text-lia-text-primary" />
                     </button>
                   </span>
                 ))}
                 {editArchetypeSkills.length === 0 && (
-                  <span className="text-xs lia-text-400">Nenhuma skill</span>
+                  <span className="text-xs text-lia-text-tertiary">Nenhuma skill</span>
                 )}
               </div>
               <div className="relative">
@@ -559,7 +559,7 @@ export function EditArchetypeModal({
                       }
                     }}
                     disabled={editArchetypeSkills.length === 0 || isFindingSimilarSkills}
-                    className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeSkills.length > 0 ? "bg-wedo-cyan/15 lia-text-950" : "bg-gray-100 lia-text-400"}`}
+                    className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeSkills.length > 0 ? "bg-wedo-cyan/15 text-lia-text-primary" : "bg-gray-100 text-lia-text-tertiary"}`}
                     title="Buscar skills similares com IA"
                   >
                     {isFindingSimilarSkills ? (
@@ -574,7 +574,7 @@ export function EditArchetypeModal({
                   <div className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-[150px] overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
                     {isLoadingSemanticSkills && (
                       <div className="flex items-center justify-center py-2" role="status" aria-live="polite" aria-label="Carregando...">
-                        <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none lia-text-400" />
+                        <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
                       </div>
                     )}
                     {semanticSkillSuggestions.map((suggestion, idx) => (
@@ -592,10 +592,10 @@ export function EditArchetypeModal({
                           onShowSkillSuggestionsChange(false)
                         }}
                       >
-                        <Code className="w-3 h-3 lia-text-400" />
+                        <Code className="w-3 h-3 text-lia-text-tertiary" />
                         <span style={{color: "var(--gray-950)"}}>{suggestion.term}</span>
                         {suggestion.is_synonym && (
-                          <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary">
+                          <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
                             sinônimo
                           </span>
                         )}
@@ -613,7 +613,7 @@ export function EditArchetypeModal({
                 <div className="mt-2 p-2 rounded-md bg-wedo-cyan/8 border border-wedo-cyan/30">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <Brain className="w-3 h-3 text-wedo-cyan" />
-                    <span className="text-micro font-medium lia-text-700">Sugestões de IA</span>
+                    <span className="text-micro font-medium text-lia-text-primary">Sugestões de IA</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -622,7 +622,7 @@ export function EditArchetypeModal({
                       }}
                       className="ml-auto p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                     >
-                      <X className="w-3 h-3 lia-text-700" />
+                      <X className="w-3 h-3 text-lia-text-primary" />
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-1">
@@ -672,10 +672,10 @@ export function EditArchetypeModal({
 
             {/* Tags */}
             <div>
-              <label className="text-xs font-medium mb-1 flex items-center gap-1.5 lia-text-500">
-                <Tag className="w-3.5 h-3.5 lia-text-700" />
+              <label className="text-xs font-medium mb-1 flex items-center gap-1.5 text-lia-text-secondary">
+                <Tag className="w-3.5 h-3.5 text-lia-text-primary" />
                 Tags
-                <span className="text-micro font-normal lia-text-400">
+                <span className="text-micro font-normal text-lia-text-tertiary">
                   (categorias: liderança, estratégia, backend...)
                 </span>
               </label>
@@ -693,12 +693,12 @@ export function EditArchetypeModal({
                       }
                       className="hover:bg-gray-300 rounded-full p-0.5"
                     >
-                      <X className="w-3 h-3 lia-text-500" />
+                      <X className="w-3 h-3 text-lia-text-secondary" />
                     </button>
                   </span>
                 ))}
                 {editArchetypeTags.length === 0 && (
-                  <span className="text-xs lia-text-400">Nenhuma tag</span>
+                  <span className="text-xs text-lia-text-tertiary">Nenhuma tag</span>
                 )}
               </div>
               <div className="relative">
@@ -769,7 +769,7 @@ export function EditArchetypeModal({
                       }
                     }}
                     disabled={editArchetypeTags.length === 0 || isFindingSimilarTags}
-                    className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeTags.length > 0 ? "bg-wedo-cyan/15 lia-text-950" : "bg-gray-100 lia-text-400"}`}
+                    className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeTags.length > 0 ? "bg-wedo-cyan/15 text-lia-text-primary" : "bg-gray-100 text-lia-text-tertiary"}`}
                     title="Buscar tags similares com IA"
                   >
                     {isFindingSimilarTags ? (
@@ -784,7 +784,7 @@ export function EditArchetypeModal({
                   <div className="absolute z-50 w-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-[150px] overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
                     {isLoadingSemanticTags && (
                       <div className="flex items-center justify-center py-2" role="status" aria-live="polite" aria-label="Carregando...">
-                        <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none lia-text-400" />
+                        <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
                       </div>
                     )}
                     {semanticTagSuggestions.map((suggestion, idx) => (
@@ -802,10 +802,10 @@ export function EditArchetypeModal({
                           onShowTagSuggestionsChange(false)
                         }}
                       >
-                        <Tag className="w-3 h-3 lia-text-400" />
+                        <Tag className="w-3 h-3 text-lia-text-tertiary" />
                         <span style={{color: "var(--gray-950)"}}>{suggestion.term}</span>
                         {suggestion.is_synonym && (
-                          <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary">
+                          <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
                             sinônimo
                           </span>
                         )}
@@ -823,7 +823,7 @@ export function EditArchetypeModal({
                 <div className="mt-2 p-2 rounded-md bg-wedo-cyan/8 border border-wedo-cyan/30">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <Brain className="w-3 h-3 text-wedo-cyan" />
-                    <span className="text-micro font-medium lia-text-700">Sugestões de IA</span>
+                    <span className="text-micro font-medium text-lia-text-primary">Sugestões de IA</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -832,7 +832,7 @@ export function EditArchetypeModal({
                       }}
                       className="ml-auto p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
                     >
-                      <X className="w-3 h-3 lia-text-700" />
+                      <X className="w-3 h-3 text-lia-text-primary" />
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-1">
@@ -884,7 +884,7 @@ export function EditArchetypeModal({
 
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-4 border-t bg-gray-50">
-          <p className="text-xs lia-text-500">Campos obrigatórios: Nome e Query</p>
+          <p className="text-xs text-lia-text-secondary">Campos obrigatórios: Nome e Query</p>
           <div className="flex gap-2">
             <button
               onClick={onClose}

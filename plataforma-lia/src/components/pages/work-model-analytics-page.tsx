@@ -143,11 +143,11 @@ export function WorkModelAnalyticsPage() {
         <div className="p-6 bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2 flex items-center gap-3">
-                <BarChart3 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <h1 className="text-2xl font-semibold text-lia-text-primary mb-2 flex items-center gap-3">
+                <BarChart3 className="w-6 h-6 text-lia-text-secondary" />
                 Analytics: Modelos de Trabalho
               </h1>
-              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+              <p className="text-sm text-lia-text-secondary">
                 Análise completa da distribuição e preferências de modelos de trabalho
               </p>
             </div>
@@ -161,8 +161,8 @@ export function WorkModelAnalyticsPage() {
                     onClick={() => setSelectedPeriod(period)}
                     className={`px-3 py-1 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none ${
                       selectedPeriod === period
-                        ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-lia-text-disabled'
-                        : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
+                        ? 'bg-gray-900 dark:bg-gray-50 text-white'
+                        : 'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
                     }`}
                   >
                     {period === '30d' ? '30 dias' : period === '90d' ? '90 dias' : period === '6m' ? '6 meses' : '1 ano'}
@@ -214,9 +214,9 @@ export function WorkModelAnalyticsPage() {
                 <Card key={item.modelo} className="border-l-4 border-l-gray-400 dark:border-l-gray-500">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary capitalize flex items-center gap-2">
+                      <CardTitle className="text-sm font-medium text-lia-text-secondary capitalize flex items-center gap-2">
                         {item.modelo === 'remoto' && <Home className="w-4 h-4 text-status-success" />}
-                        {item.modelo === 'híbrido' && <Globe className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />}
+                        {item.modelo === 'híbrido' && <Globe className="w-4 h-4 text-lia-text-secondary" />}
                         {item.modelo === 'presencial' && <Building className="w-4 h-4 text-lia-text-secondary" />}
                         {item.modelo}
                       </CardTitle>
@@ -230,13 +230,13 @@ export function WorkModelAnalyticsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="text-2xl font-bold text-lia-text-primary">
                         {item.candidatos}
                       </div>
-                      <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <div className="text-sm text-lia-text-secondary">
                         {item.percentual}% do total
                       </div>
-                      <div className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="text-sm font-medium text-lia-text-primary">
                         R$ {item.salarioMedio.toLocaleString()} salário médio
                       </div>
                     </div>
@@ -247,20 +247,20 @@ export function WorkModelAnalyticsPage() {
               {/* Card de total */}
               <Card className="border-l-4 border-l-purple-500">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary flex items-center gap-2">
+                  <CardTitle className="text-sm font-medium text-lia-text-secondary flex items-center gap-2">
                     <Users className="w-4 h-4 text-wedo-purple" />
                     Total Geral
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="text-2xl font-bold text-lia-text-primary">
                       {totalCandidatos}
                     </div>
-                    <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+                    <div className="text-sm text-lia-text-secondary">
                       Candidatos analisados
                     </div>
-                    <div className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="text-sm font-medium text-lia-text-primary">
                       R$ {Math.round(salarioMedioGeral).toLocaleString()} salário médio
                     </div>
                   </div>
@@ -284,10 +284,10 @@ export function WorkModelAnalyticsPage() {
                     {cargoWorkModels.slice(0, 8).map((cargo, index) => (
                       <div key={cargo.cargo} className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+                          <span className="text-sm font-medium text-lia-text-primary">
                             {cargo.cargo}
                           </span>
-                          <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                          <span className="text-xs text-lia-text-primary">
                             {cargo.total} candidatos
                           </span>
                         </div>
@@ -308,7 +308,7 @@ export function WorkModelAnalyticsPage() {
                             title={`Presencial: ${cargo.presencial}`}
                           />
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                        <div className="flex items-center gap-4 text-xs text-lia-text-secondary">
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 bg-status-success rounded-full"></div>
                             Remoto: {cargo.remoto}
@@ -342,15 +342,15 @@ export function WorkModelAnalyticsPage() {
                       <div key={level.nivel} className="space-y-2">
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+                            <span className="text-sm font-medium text-lia-text-primary">
                               {level.nivel}
                             </span>
-                            <span className="text-xs text-lia-text-primary dark:text-lia-text-primary ml-2">
+                            <span className="text-xs text-lia-text-primary ml-2">
                               ({level.experiencia})
                             </span>
                           </div>
                           <div className="text-right">
-                            <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                            <div className="text-xs text-lia-text-primary">
                               {level.total} candidatos
                             </div>
                             <div className="text-xs font-medium text-status-success">
@@ -375,7 +375,7 @@ export function WorkModelAnalyticsPage() {
                             title={`Presencial: ${level.presencial}`}
                           />
                         </div>
-                        <div className="flex items-center gap-4 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                        <div className="flex items-center gap-4 text-xs text-lia-text-secondary">
                           <div className="flex items-center gap-1">
                             <div className="w-2 h-2 bg-status-success rounded-full"></div>
                             {level.remoto} ({Math.round((level.remoto / level.total) * 100)}%)
@@ -410,10 +410,10 @@ export function WorkModelAnalyticsPage() {
                     <div key={region.estado} className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary">
+                          <h4 className="font-medium text-lia-text-primary">
                             {region.estado}
                           </h4>
-                          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">{region.regiao}</p>
+                          <p className="text-xs text-lia-text-primary">{region.regiao}</p>
                         </div>
                         <Badge variant="outline" className="text-xs">
                           {region.total} candidatos
@@ -439,15 +439,15 @@ export function WorkModelAnalyticsPage() {
                         <div className="grid grid-cols-3 gap-2 text-xs">
                           <div className="text-center">
                             <div className="font-medium text-status-success">{region.remoto}</div>
-                            <div className="text-lia-text-primary dark:text-lia-text-primary">Remoto</div>
+                            <div className="text-lia-text-primary">Remoto</div>
                           </div>
                           <div className="text-center">
-                            <div className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{region.hibrido}</div>
-                            <div className="text-lia-text-primary dark:text-lia-text-primary">Híbrido</div>
+                            <div className="font-medium text-lia-text-secondary">{region.hibrido}</div>
+                            <div className="text-lia-text-primary">Híbrido</div>
                           </div>
                           <div className="text-center">
                             <div className="font-medium text-lia-text-secondary">{region.presencial}</div>
-                            <div className="text-lia-text-primary dark:text-lia-text-primary">Presencial</div>
+                            <div className="text-lia-text-primary">Presencial</div>
                           </div>
                         </div>
                       </div>
@@ -480,10 +480,10 @@ export function WorkModelAnalyticsPage() {
                     </div>
 
                     <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
+                      <h4 className="text-sm font-medium text-lia-text-secondary mb-1">
                         💰 Salário Remoto vs Híbrido
                       </h4>
-                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary dark:text-lia-text-tertiary/80">
+                      <p className="text-xs text-lia-text-secondary/80">
                         Trabalho híbrido oferece salário médio 8.2% maior que remoto
                       </p>
                     </div>
@@ -520,37 +520,37 @@ export function WorkModelAnalyticsPage() {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
+                      <h4 className="text-sm font-medium text-lia-text-primary mb-1">
                         🎯 Focar em Modelo Híbrido
                       </h4>
-                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary">
                         Priorizar vagas híbridas para atrair 48.9% dos candidatos disponíveis
                       </p>
                     </div>
 
                     <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
+                      <h4 className="text-sm font-medium text-lia-text-primary mb-1">
                         💎 Expandir para Regiões
                       </h4>
-                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary">
                         Oportunidade de crescimento em Sul e Nordeste com trabalho remoto
                       </p>
                     </div>
 
                     <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
+                      <h4 className="text-sm font-medium text-lia-text-primary mb-1">
                         📈 Ajustar Estratégia Salarial
                       </h4>
-                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary">
                         Modelo híbrido justifica salários 8% maiores pela produtividade
                       </p>
                     </div>
 
                     <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
+                      <h4 className="text-sm font-medium text-lia-text-primary mb-1">
                         🔄 Revisar Políticas Presenciais
                       </h4>
-                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary">
                         Apenas 16.9% preferem presencial - considerar flexibilização
                       </p>
                     </div>

@@ -45,10 +45,10 @@ interface InterviewNoteCardProps {
 }
 
 const categoryColors: Record<InterviewNoteQuestion["category"], string> = {
-  vaga: "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary",
-  gap_analysis: "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary",
-  fit_cultural: "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary",
-  custom: "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary",
+  vaga: "bg-gray-100 text-lia-text-primary",
+  gap_analysis: "bg-gray-100 text-lia-text-primary",
+  fit_cultural: "bg-gray-100 text-lia-text-primary",
+  custom: "bg-gray-100 text-lia-text-primary",
 }
 
 const categoryLabels: Record<InterviewNoteQuestion["category"], string> = {
@@ -119,7 +119,7 @@ function QuestionItem({
             }
             disabled={disabled}
           />
-          <label className="text-xs lia-text-base whitespace-nowrap">
+          <label className="text-xs text-lia-text-secondary whitespace-nowrap">
             Não perguntei
           </label>
         </div>
@@ -129,7 +129,7 @@ function QuestionItem({
         <>
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-xs lia-text-base">Avaliação:</span>
+              <span className="text-xs text-lia-text-secondary">Avaliação:</span>
               <StarRating
                 value={question.starRating}
                 onChange={handleStarChange}
@@ -137,7 +137,7 @@ function QuestionItem({
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs lia-text-base">Nível:</span>
+              <span className="text-xs text-lia-text-secondary">Nível:</span>
               <LikertRating
                 value={question.likertRating || null}
                 onChange={handleLikertChange}
@@ -269,7 +269,7 @@ export function InterviewNoteCard({
             <h2 className="text-lg font-semibold text-lia-text-primary">
               {note.candidateName}
             </h2>
-            <div className="flex flex-wrap items-center gap-3 text-xs lia-text-base">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-lia-text-secondary">
               {note.jobTitle && (
                 <div className="flex items-center gap-1">
                   <Briefcase className="h-3.5 w-3.5" />
@@ -296,7 +296,7 @@ export function InterviewNoteCard({
  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
                     !showScoreCard
                       ? "bg-gray-900 text-white"
-                      : "bg-lia-bg-primary lia-text-base hover:bg-gray-50"
+                      : "bg-lia-bg-primary text-lia-text-secondary hover:bg-gray-50"
                   )}
                 >
                   <List className="h-3.5 w-3.5" />
@@ -309,7 +309,7 @@ export function InterviewNoteCard({
  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
                     showScoreCard
                       ? "bg-gray-900 text-white"
-                      : "bg-lia-bg-primary lia-text-base hover:bg-gray-50"
+                      : "bg-lia-bg-primary text-lia-text-secondary hover:bg-gray-50"
                   )}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
@@ -346,7 +346,7 @@ export function InterviewNoteCard({
           <>
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 lia-text-base" />
+            <MessageSquare className="h-4 w-4 text-lia-text-secondary" />
             <h3 className="text-sm font-semibold text-lia-text-primary">
               Perguntas da Entrevista
             </h3>
@@ -400,7 +400,7 @@ export function InterviewNoteCard({
             </button>
             {isTranscriptionOpen && (
               <div className="bg-gray-50 rounded-md p-4 max-h-content-md overflow-y-auto">
-                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary whitespace-pre-wrap">
+                <p className="text-sm text-lia-text-primary whitespace-pre-wrap">
                   {note.transcription}
                 </p>
               </div>

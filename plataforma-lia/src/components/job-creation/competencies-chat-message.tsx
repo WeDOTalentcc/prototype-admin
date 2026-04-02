@@ -51,7 +51,7 @@ const SOURCE_CONFIG: Record<'market_benchmark' | 'company_history' | 'platform_c
   market_benchmark: {
     icon: BarChart3,
     label: '📊 benchmark de mercado',
-    className: 'text-wedo-cyan-dark dark:text-wedo-cyan-dark'
+    className: 'text-wedo-cyan-dark'
   },
   company_history: {
     icon: Building2,
@@ -61,7 +61,7 @@ const SOURCE_CONFIG: Record<'market_benchmark' | 'company_history' | 'platform_c
   platform_config: {
     icon: Settings,
     label: '⚙️ configurações da plataforma',
-    className: 'text-lia-text-secondary dark:text-lia-text-tertiary'
+    className: 'text-lia-text-secondary'
   }
 }
 
@@ -72,12 +72,12 @@ const LEVEL_CONFIG: Record<'Básico' | 'Intermediário' | 'Avançado', {
 }> = {
   'Básico': {
     label: 'Básico',
-    className: 'text-status-success dark:text-status-success',
+    className: 'text-status-success',
     bgClassName: 'bg-status-success/10 dark:bg-status-success/30 border-status-success/30 dark:border-status-success/30'
   },
   'Intermediário': {
     label: 'Intermediário',
-    className: 'text-status-warning dark:text-status-warning',
+    className: 'text-status-warning',
     bgClassName: 'bg-status-warning/10 dark:bg-status-warning/30 border-status-warning/30 dark:border-status-warning/30'
   },
   'Avançado': {
@@ -110,10 +110,10 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
   const sourceConfig = SOURCE_CONFIG[skill.source]
 
   return (
-    <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle space-y-2">
+    <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <Code className="h-3.5 w-3.5 text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0" />
+          <Code className="h-3.5 w-3.5 text-lia-text-secondary flex-shrink-0" />
           <span className="text-xs font-medium truncate">{skill.name}</span>
           {skill.required && (
             <Badge variant="outline" className="text-micro h-4 px-1.5 border-status-error/30 bg-status-error/10 text-status-error dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
@@ -140,7 +140,7 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
       </div>
       
       {skill.weightJustification && (
-        <p className="text-micro text-muted-foreground italic pl-1 border-l-2 border-lia-border-default dark:border-lia-border-default">
+        <p className="text-micro text-muted-foreground italic pl-1 border-l-2 border-lia-border-default">
           {skill.weightJustification}
         </p>
       )}
@@ -152,7 +152,7 @@ function BehavioralCompetencyCard({ competency }: { competency: BehavioralCompet
   const sourceConfig = SOURCE_CONFIG[competency.source]
 
   return (
-    <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle space-y-2">
+    <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Brain className="h-3.5 w-3.5 text-wedo-purple flex-shrink-0" />
@@ -194,15 +194,15 @@ export function CompetenciesChatMessage({
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
-        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
+        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
           <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
-          <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
+          <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
             LIA
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
           <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
             <span className="text-sm text-muted-foreground">Analisando competências...</span>
           </div>
         </div>
@@ -216,15 +216,15 @@ export function CompetenciesChatMessage({
 
   return (
     <div className="flex items-start gap-3 max-w-[90%]">
-      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
+      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
         <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
-        <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
+        <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
           LIA
         </AvatarFallback>
       </Avatar>
 
       <div className="flex-1 space-y-3">
-        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4 space-y-4">
+        <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4 space-y-4">
           <p className="text-xs text-muted-foreground">
             Com base em benchmark de mercado, histórico da empresa e configurações de competências, sugiro as seguintes competências com pesos atribuídos:
           </p>
@@ -232,7 +232,7 @@ export function CompetenciesChatMessage({
           {technicalSkills.length > 0 && (
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Code className="h-3.5 w-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Code className="h-3.5 w-3.5 text-lia-text-secondary" />
                 <span>Competências Técnicas</span>
                 <Badge variant="secondary" className="text-micro h-4 px-1.5">
                   {technicalSkills.length}
@@ -266,7 +266,7 @@ export function CompetenciesChatMessage({
           <div className="flex flex-wrap gap-2 pt-2 border-t">
             <Button 
               size="sm" 
-              className="h-8 text-xs bg-gradient-to-r from-gray-100 dark:from-gray-800 to-wedo-cyan-dark hover:from-wedo-cyan-dark hover:to-wedo-cyan text-white"
+              className="h-8 text-xs bg-gradient-to-r from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark hover:from-wedo-cyan-dark hover:to-wedo-cyan text-white"
               onClick={onAccept}
             >
               <Check className="h-3.5 w-3.5 mr-1.5" />

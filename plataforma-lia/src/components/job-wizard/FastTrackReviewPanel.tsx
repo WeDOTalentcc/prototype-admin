@@ -158,10 +158,10 @@ export function FastTrackReviewPanel({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 p-3 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md">
-        <Zap className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-secondary" />
+        <Zap className="w-4 h-4 text-lia-text-secondary" />
         <div>
-          <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">Vaga criada com Fast Track</span>
-          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+          <span className="text-sm font-medium text-lia-text-secondary">Vaga criada com Fast Track</span>
+          <p className="text-xs text-lia-text-tertiary">
             Baseada em: {jobData.sourceJobTitle}
           </p>
         </div>
@@ -324,12 +324,12 @@ export function FastTrackReviewPanel({
                 className={cn(
  "text-xs",
                   skill.required 
-                    ? "bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-secondary" 
+                    ? "bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary" 
                     : "bg-gray-800 border-lia-border-default text-lia-text-disabled"
                 )}
               >
                 {skill.name}
-                {skill.required && <span className="ml-1 text-lia-text-secondary dark:text-lia-text-secondary">*</span>}
+                {skill.required && <span className="ml-1 text-lia-text-secondary">*</span>}
               </Badge>
             ))}
           </div>

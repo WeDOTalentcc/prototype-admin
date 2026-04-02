@@ -357,7 +357,7 @@ export function WizardRightPanel({
   return (
     <div
       ref={resizeRef}
-      className="flex flex-col rounded-md flex-shrink-0 m-3 ml-0 relative bg-gray-50 border border-lia-border-subtle"
+      className="flex flex-col rounded-md flex-shrink-0 m-3 ml-0 relative bg-lia-bg-secondary border border-lia-border-subtle"
       style={{width: `${panelWidth}%`}}
     >
       {/* Resize Handle - cursor change only, no visual indicator */}
@@ -401,18 +401,18 @@ export function WizardRightPanel({
       <div className="flex-1 overflow-y-auto p-4 relative">
         {/* Loading Overlay during stage transitions */}
         {stageTransition === 'loading' && (
-          <div className="absolute inset-0 bg-white/90 dark:bg-lia-bg-primary/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
+          <div className="absolute inset-0 bg-white/90/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
             <div className="relative">
-              <div className="w-12 h-12 rounded-full border-3 border-lia-border-default dark:border-lia-border-default border-t-gray-300 dark:border-t-gray-600 animate-spin motion-reduce:animate-none" />
+              <div className="w-12 h-12 rounded-full border-3 border-lia-border-default border-t-lia-border-default animate-spin motion-reduce:animate-none" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <Brain className="w-5 h-5 text-chat-cyan" />
               </div>
             </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">
+              <p className="text-sm font-medium text-lia-text-secondary">
                 LIA está analisando...
               </p>
-              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-1">
+              <p className="text-xs text-lia-text-tertiary mt-1">
                 Preparando sugestões personalizadas
               </p>
             </div>
@@ -584,11 +584,11 @@ export function WizardRightPanel({
             onSetShowCalibrationModal={onSetShowCalibrationModal}
           />
         ) : currentStage === 'input-evaluation' ? (
-          <div className="text-center text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">
+          <div className="text-center text-micro text-lia-text-tertiary">
             Continue descrevendo a vaga para detectar mais critérios
           </div>
         ) : currentStage === 'jd-enrichment' ? (
-          <div className="text-center text-micro text-lia-text-tertiary dark:text-lia-text-tertiary">
+          <div className="text-center text-micro text-lia-text-tertiary">
             Revise as sugestões no chat e responda o que deseja aceitar ou modificar
           </div>
         ) : (
@@ -596,7 +596,7 @@ export function WizardRightPanel({
             {currentStageIndex > 0 && (
               <Button
                 variant="outline"
-                className="flex-1 h-9 rounded-md text-xs font-medium border-lia-border-subtle lia-text-base hover:border-gray-900 dark:hover:border-gray-50 hover:lia-text-strong dark:hover:lia-text-subtle"
+                className="flex-1 h-9 rounded-md text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:border-lia-btn-primary-bg hover:text-lia-text-primary"
                 onClick={onGoToPreviousStage}
                 aria-label="Voltar para etapa anterior"
               >
@@ -611,10 +611,10 @@ export function WizardRightPanel({
  "flex-1 h-9 rounded-md text-xs font-semibold transition-colors",
                   currentStageIndex === 0 ? "w-full" : "",
                   currentStage === 'review-publish'
-                    ? "bg-gray-900 text-white"
+                    ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
                     : canAdvanceToNextStage()
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-200 text-lia-text-disabled dark:bg-lia-bg-secondary"
+                      ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                      : "bg-lia-interactive-active text-lia-text-disabled"
                 )}
                 disabled={!canAdvanceToNextStage()}
                 onClick={currentStage === 'review-publish' ? onPublishJob : onGoToNextStage}

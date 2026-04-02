@@ -244,7 +244,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-[width,height] hover:bg-gray-100 dark:hover:bg-gray-800",
                 (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-gray-900/20",
-                (activeFiltersCount > 0 || filledCount > 0) ? "lia-text-950" : "lia-text-600"
+                (activeFiltersCount > 0 || filledCount > 0) ? "text-lia-text-primary" : "text-lia-text-secondary"
               )}
               style={{backgroundColor: (activeFiltersCount > 0 || filledCount > 0) ? "var(--gray-bg-30)" : "transparent"}}
             >
@@ -267,14 +267,14 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                 <TooltipTrigger asChild>
                   <button
                     onClick={onGoToResults}
-                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-[width,height] lia-text-700"
+                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-[width,height] text-lia-text-primary"
                   >
                     <Table2 className="w-4 h-4" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
                   <p className="text-xs font-medium" aria-live="polite" aria-atomic="true">Ir para Resultados</p>
-                  <p className="text-xs lia-text-300">Buscar direto na tabela expandida</p>
+                  <p className="text-xs text-lia-text-disabled">Buscar direto na tabela expandida</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -291,7 +291,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
 
       {mode === "natural" && filledCount === 0 && value.length > 0 && (
         <p 
-          className="text-xs px-1 lia-text-500 dark:text-lia-text-tertiary"
+          className="text-xs px-1 text-lia-text-secondary"
          aria-live="polite" aria-atomic="true">
           Dica: Inclua cargo, localização e skills para melhores resultados
         </p>
@@ -374,16 +374,16 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                 style={{backgroundColor: pendingSourceChange === 'hybrid' ? 'var(--wedo-cyan-bg-15)' : 'var(--status-warning-bg-15)'}}
               >
                 {pendingSourceChange === 'hybrid' ? (
-                  <Zap className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                  <Zap className="w-4 h-4 text-lia-text-secondary" />
                 ) : (
                   <Globe className="w-4 h-4 text-status-warning" />
                 )}
               </div>
               <div>
-                <h3 className="font-semibold text-base-ui lia-text-800">
+                <h3 className="font-semibold text-base-ui text-lia-text-primary">
                   {pendingSourceChange === 'hybrid' ? 'Busca Híbrida' : 'Busca Global'}
                 </h3>
-                <p className="text-micro lia-text-500">
+                <p className="text-micro text-lia-text-secondary">
                   {pendingSourceChange === 'hybrid' 
                     ? 'Combina base local + global (800M+ perfis).'
                     : 'Acessa 800M+ perfis profissionais.'}
@@ -394,16 +394,16 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
             <div className="bg-gray-50 rounded-md p-3 space-y-2 border border-lia-border-subtle">
               {pendingSourceChange === 'hybrid' && (
                 <div className="flex justify-between text-xs">
-                  <span className="lia-text-600">Local:</span>
+                  <span className="text-lia-text-secondary">Local:</span>
                   <span className="font-medium text-status-success">Grátis</span>
                 </div>
               )}
               <div className="flex justify-between text-xs">
-                <span className="lia-text-600">Global:</span>
+                <span className="text-lia-text-secondary">Global:</span>
                 <span className="font-medium text-status-warning" aria-live="polite" aria-atomic="true">1 cr/candidato</span>
               </div>
               <div className="flex justify-between text-xs pt-2 border-t border-lia-border-subtle">
-                <span className="font-medium lia-text-800 dark:text-lia-text-primary">Total estimado:</span>
+                <span className="font-medium text-lia-text-primary">Total estimado:</span>
                 <span className="font-semibold text-status-warning" aria-live="polite" aria-atomic="true">1 cr/candidato</span>
               </div>
             </div>
@@ -414,7 +414,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                   setShowSourceChangeModal(false)
                   setPendingSourceChange(null)
                 }}
-                className="flex-1 h-8 text-xs px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle lia-text-600 hover:bg-gray-50 font-medium transition-colors motion-reduce:transition-none"
+                className="flex-1 h-8 text-xs px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50 font-medium transition-colors motion-reduce:transition-none"
               >
                 Cancelar
               </button>

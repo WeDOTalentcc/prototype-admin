@@ -53,16 +53,16 @@ export function RevealCreditsModal({
       >
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-md bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+            <div className="p-2.5 rounded-md bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
               <Icon className="w-5 h-5" />
             </div>
-            <AlertDialogTitle className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary">
+            <AlertDialogTitle className="text-base-ui font-semibold text-lia-text-primary">
               Revelar {typeLabel}
             </AlertDialogTitle>
           </div>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-              <p className="text-lia-text-secondary dark:text-lia-text-tertiary">
+              <p className="text-lia-text-secondary">
                 Deseja revelar o {typeLabel} de <strong className="text-lia-text-primary">{candidateName}</strong>?
               </p>
               
@@ -82,7 +82,7 @@ export function RevealCreditsModal({
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+              <div className="flex items-start gap-2 text-xs text-lia-text-tertiary">
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                 <span>Esta ação consumirá créditos da sua conta.</span>
               </div>
@@ -94,7 +94,7 @@ export function RevealCreditsModal({
             <Button 
               variant="outline" 
               disabled={isLoading} 
-              className="gap-2 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary dark:text-lia-text-primary"
+              className="gap-2 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary"
             >
               <X className="w-4 h-4" />
               Cancelar

@@ -214,7 +214,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
     <Card className="bg-lia-bg-primary border border-lia-border-subtle p-3 mb-4">
       <div className="flex items-start gap-2">
         <Brain className="h-4 w-4 text-wedo-cyan flex-shrink-0 mt-0.5" />
-        <p className="text-xs font-medium lia-text-strong leading-relaxed flex-1">
+        <p className="text-xs font-medium text-lia-text-primary leading-relaxed flex-1">
           {highlight.highlight_text}
         </p>
       </div>
@@ -230,7 +230,7 @@ export function ExperienceHighlightCard({ candidate, companyId = "demo_company" 
                 size="sm"
                 onClick={handleRegenerate}
                 disabled={isRegenerating}
-                className="h-5 w-5 p-0 lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle"
+                className="h-5 w-5 p-0 lia-text-secondary hover:text-lia-text-primary"
               >
                 <RefreshCw className={`h-3 w-3 ${isRegenerating ? 'animate-spin motion-reduce:animate-none' : ''}`} />
               </Button>

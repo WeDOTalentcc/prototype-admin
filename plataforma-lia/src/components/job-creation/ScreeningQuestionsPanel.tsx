@@ -154,7 +154,7 @@ function formatMessageWithVariables(message: string): React.ReactNode[] {
 }
 
 const BLOOM_COLORS: Record<number, string> = {
-  1: "bg-gray-100 lia-text-base border-lia-border-subtle",
+  1: "bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle",
   2: "bg-status-warning/10 text-status-warning border-status-warning/30",
   3: "bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30",
   4: "bg-status-error/10 text-status-error border-status-error/30",
@@ -163,8 +163,8 @@ const BLOOM_COLORS: Record<number, string> = {
 }
 
 const DREYFUS_COLORS: Record<number, string> = {
-  1: "bg-gray-100 lia-text-base border-lia-border-subtle",
-  2: "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default",
+  1: "bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle",
+  2: "bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default",
   3: "bg-status-success/10 text-status-success border-status-success/30",
   4: "bg-status-warning/10 text-status-warning border-status-warning/30",
   5: "bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30"
@@ -367,32 +367,32 @@ export function ScreeningQuestionsPanel({
           className={cn(
  "p-3 rounded-md border cursor-pointer transition-colors duration-200",
             screeningModel === 'compact'
-              ? "border-gray-900 bg-gray-50 ring-1 ring-gray-900/10"
+              ? "border-lia-btn-primary-bg bg-lia-bg-secondary ring-1 ring-lia-btn-primary-bg/10"
               : "border-lia-border-subtle hover:border-lia-border-default"
           )}
           onClick={() => handleModelChange('compact')}
         >
           <div className="flex items-center gap-2 mb-1">
-            <Zap className={cn("h-4 w-4", screeningModel === 'compact' ? "lia-text-strong" : "lia-text-secondary")} />
-            <span className="text-xs font-medium lia-text-strong">Compacto</span>
+            <Zap className={cn("h-4 w-4", screeningModel === 'compact' ? "text-lia-text-primary" : "lia-text-secondary")} />
+            <span className="text-xs font-medium text-lia-text-primary">Compacto</span>
           </div>
-          <p className="text-xs lia-text-base">8 perguntas WSI • ~15 min</p>
+          <p className="text-xs text-lia-text-secondary">8 perguntas WSI • ~15 min</p>
           <p className="text-micro lia-text-secondary mt-0.5">Triagem rápida para alto volume</p>
         </div>
         <div
           className={cn(
  "p-3 rounded-md border cursor-pointer transition-colors duration-200",
             screeningModel === 'full'
-              ? "border-gray-900 bg-gray-50 ring-1 ring-gray-900/10"
+              ? "border-lia-btn-primary-bg bg-lia-bg-secondary ring-1 ring-lia-btn-primary-bg/10"
               : "border-lia-border-subtle hover:border-lia-border-default"
           )}
           onClick={() => handleModelChange('full')}
         >
           <div className="flex items-center gap-2 mb-1">
-            <Target className={cn("h-4 w-4", screeningModel === 'full' ? "lia-text-strong" : "lia-text-secondary")} />
-            <span className="text-xs font-medium lia-text-strong">Completo</span>
+            <Target className={cn("h-4 w-4", screeningModel === 'full' ? "text-lia-text-primary" : "lia-text-secondary")} />
+            <span className="text-xs font-medium text-lia-text-primary">Completo</span>
           </div>
-          <p className="text-xs lia-text-base">12 perguntas WSI • ~30 min</p>
+          <p className="text-xs text-lia-text-secondary">12 perguntas WSI • ~30 min</p>
           <p className="text-micro lia-text-secondary mt-0.5">Avaliação aprofundada</p>
         </div>
       </div>
@@ -421,7 +421,7 @@ export function ScreeningQuestionsPanel({
           {distributionItems.map((item, idx) => (
             <React.Fragment key={item.key}>
               {idx > 0 && <span className="lia-text-muted text-micro">|</span>}
-              <Badge variant="outline" className="text-micro px-2 py-0.5 bg-gray-50 lia-text-base border-lia-border-subtle">
+              <Badge variant="outline" className="text-micro px-2 py-0.5 bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle">
                 Bloco {item.key} · {item.name}: {item.count} {item.count === 1 ? 'pergunta' : 'perguntas'}
               </Badge>
             </React.Fragment>
@@ -457,12 +457,12 @@ export function ScreeningQuestionsPanel({
     ]
 
     return (
-      <div className="grid grid-cols-6 gap-2 mb-4 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
+      <div className="grid grid-cols-6 gap-2 mb-4 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
         {configItems.map((item, idx) => (
           <div key={idx} className="flex flex-col items-center text-center">
             <item.icon className="h-4 w-4 lia-text-secondary mb-1" />
             <span className="text-micro lia-text-secondary uppercase tracking-wide">{item.label}</span>
-            <span className="text-xs font-semibold lia-text-strong">{item.value}</span>
+            <span className="text-xs font-semibold text-lia-text-primary">{item.value}</span>
             <span className="text-micro lia-text-secondary">{item.sublabel}</span>
           </div>
         ))}
@@ -475,13 +475,13 @@ export function ScreeningQuestionsPanel({
     const getCategoryBadge = () => {
       if (isAffirmativeQuestion) return { label: 'Inclusão', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' }
       const cat = (question.category || '').toLowerCase()
-      if (cat.includes('tech')) return { label: 'Técnica', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' }
+      if (cat.includes('tech')) return { label: 'Técnica', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' }
       if (cat.includes('behav') || cat.includes('situa')) return { label: 'Experiência', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' }
-      if (cat.includes('elig') && question.is_eliminatory === false) return { label: 'Informativa', color: 'bg-gray-50 lia-text-base border-lia-border-subtle' }
+      if (cat.includes('elig') && question.is_eliminatory === false) return { label: 'Informativa', color: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' }
       if (cat.includes('elig')) return { label: 'Eliminatória', color: 'bg-status-error/10 text-status-error border-status-error/30' }
       if (cat.includes('cult')) return { label: 'Cultural', color: 'bg-status-success/10 text-status-success border-status-success/30' }
       if (cat.includes('company')) return { label: 'Empresa', color: 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30' }
-      return { label: 'Informativa', color: 'bg-gray-50 lia-text-base border-lia-border-subtle' }
+      return { label: 'Informativa', color: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' }
     }
     
     const badge = getCategoryBadge()
@@ -493,7 +493,7 @@ export function ScreeningQuestionsPanel({
  "p-3 rounded-md border transition-colors duration-200 group",
           question.is_selected
             ? "bg-lia-bg-primary border-lia-border-subtle"
-            : "bg-gray-50/50 border-lia-border-subtle opacity-70"
+            : "bg-lia-bg-secondary/50 border-lia-border-subtle opacity-70"
         )}
       >
         <div className="flex items-start gap-3">
@@ -525,7 +525,7 @@ export function ScreeningQuestionsPanel({
                 </Button>
               )}
             </div>
-            <p className="text-xs lia-text-strong leading-relaxed">
+            <p className="text-xs text-lia-text-primary leading-relaxed">
               {question.text}
             </p>
             <div className="flex items-center gap-3 text-micro lia-text-secondary">
@@ -538,7 +538,7 @@ export function ScreeningQuestionsPanel({
                 0%
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                <span className="w-2 h-2 rounded-full bg-lia-border-default"></span>
                 {question.dreyfus_stage ? `${(question.dreyfus_stage / 5 * 100).toFixed(0)}%` : '55%'}
               </span>
             </div>
@@ -560,22 +560,22 @@ export function ScreeningQuestionsPanel({
           className={cn(
  "flex items-center justify-between p-2.5 rounded-md cursor-pointer transition-colors border",
             block.editable 
-              ? "bg-lia-bg-primary border-lia-border-subtle hover:bg-gray-50"
-              : "bg-gray-100/80 border-lia-border-subtle"
+              ? "bg-lia-bg-primary border-lia-border-subtle hover:bg-lia-interactive-hover"
+              : "bg-lia-bg-tertiary/80 border-lia-border-subtle"
           )}
           onClick={() => toggleBlock(block.id)}
         >
           <div className="flex items-center gap-2.5">
             <div className={cn(
  "w-6 h-6 rounded-full flex items-center justify-center text-micro font-medium",
-              block.editable ? "bg-gray-200 lia-text-base" : "bg-gray-100 lia-text-secondary"
+              block.editable ? "bg-lia-interactive-active text-lia-text-secondary" : "bg-lia-bg-tertiary lia-text-secondary"
             )}>
               {block.id}
             </div>
-            <Icon className={cn("h-4 w-4", block.editable ? "lia-text-base" : "lia-text-secondary")} />
+            <Icon className={cn("h-4 w-4", block.editable ? "text-lia-text-secondary" : "lia-text-secondary")} />
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium lia-text-strong">{block.name}</span>
+                <span className="text-xs font-medium text-lia-text-primary">{block.name}</span>
                 {block.id === 2 && isAffirmative && (
                   <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">
                     Vaga Afirmativa
@@ -589,7 +589,7 @@ export function ScreeningQuestionsPanel({
             {!block.editable && (
               <Badge 
                 variant="outline" 
-                className="text-micro px-1.5 py-0 bg-gray-100 lia-text-secondary border-lia-border-subtle"
+                className="text-micro px-1.5 py-0 bg-lia-bg-tertiary lia-text-secondary border-lia-border-subtle"
               >
                 <Lock className="h-2.5 w-2.5 mr-0.5" />
                 Automático
@@ -599,7 +599,7 @@ export function ScreeningQuestionsPanel({
               <Badge 
                 variant="outline" 
                 className="text-micro px-1.5 py-0"
-                style={{backgroundColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--gray-100)', color: selectedInBlock > 0 ? 'var(--status-success)' : 'var(--gray-500)', borderColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--gray-300)'}}
+                style={{backgroundColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--lia-bg-tertiary)', color: selectedInBlock > 0 ? 'var(--status-success)' : 'var(--lia-text-secondary)', borderColor: selectedInBlock > 0 ? 'var(--wedo-green-pastel)' : 'var(--lia-border-default)'}}
               >
                 {selectedInBlock} {selectedInBlock === 1 ? 'Info.' : 'Infos.'}
               </Badge>
@@ -616,32 +616,32 @@ export function ScreeningQuestionsPanel({
           <div className="space-y-2 pl-3 pr-1">
             {!block.editable ? (
               WSI_AUTOMATIC_MESSAGES[block.id] ? (
-                <div className="rounded-md border border-lia-border-subtle bg-gray-50 overflow-hidden">
-                  <div className="px-3 py-2 border-b border-lia-border-subtle bg-gray-100">
-                    <p className="text-xs font-medium lia-text-strong">
+                <div className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary overflow-hidden">
+                  <div className="px-3 py-2 border-b border-lia-border-subtle bg-lia-bg-tertiary">
+                    <p className="text-xs font-medium text-lia-text-primary">
                       {WSI_AUTOMATIC_MESSAGES[block.id].title}
                     </p>
                   </div>
                   <div className="p-3">
-                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-line">
+                    <div className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-line">
                       {formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}
                     </div>
                   </div>
-                  <div className="px-3 py-2 border-t border-lia-border-subtle bg-gray-50">
+                  <div className="px-3 py-2 border-t border-lia-border-subtle bg-lia-bg-secondary">
                     <p className="text-micro lia-text-secondary italic">
                       {WSI_AUTOMATIC_MESSAGES[block.id].note}
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="p-3 rounded-md bg-gray-50/50 border border-lia-border-subtle">
+                <div className="p-3 rounded-md bg-lia-bg-secondary/50 border border-lia-border-subtle">
                   <p className="text-xs lia-text-secondary italic">
                     {block.description}
                   </p>
                 </div>
               )
             ) : questions.length === 0 ? (
-              <div className="p-3 rounded-md bg-gray-50/50 border border-lia-border-subtle border-dashed">
+              <div className="p-3 rounded-md bg-lia-bg-secondary/50 border border-lia-border-subtle border-dashed">
                 <p className="text-xs lia-text-secondary italic text-center">
                   Nenhuma pergunta neste bloco
                 </p>
@@ -649,7 +649,7 @@ export function ScreeningQuestionsPanel({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 text-micro lia-text-base"
+                    className="h-6 text-micro text-lia-text-secondary"
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelectedBlockForSuggestion(block.id)
@@ -682,10 +682,10 @@ export function ScreeningQuestionsPanel({
         badges.push({ label: 'Eliminatória', color: 'bg-status-error/10 text-status-error border-status-error/30' })
       } else if (cat.includes('elig')) {
         // @ts-ignore TODO: fix type
-        badges.push({ label: 'Informativa', color: 'bg-gray-50 lia-text-base border-lia-border-subtle' })
+        badges.push({ label: 'Informativa', color: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' })
       }
       // @ts-ignore TODO: fix type
-      if (cat.includes('tech')) badges.push({ label: 'Skills', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' })
+      if (cat.includes('tech')) badges.push({ label: 'Skills', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' })
       // @ts-ignore TODO: fix type
       if (cat.includes('behav') || cat.includes('situa')) badges.push({ label: 'Experiência', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' })
       // @ts-ignore TODO: fix type
@@ -710,7 +710,7 @@ export function ScreeningQuestionsPanel({
             className="mt-0.5"
           />
           <div className="flex-1 space-y-2">
-            <p className="text-xs lia-text-strong leading-relaxed">
+            <p className="text-xs text-lia-text-primary leading-relaxed">
               {question.text}
             </p>
             <div className="flex flex-wrap gap-1">
@@ -734,8 +734,8 @@ export function ScreeningQuestionsPanel({
       <Card className={cn("w-full", className)}>
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none mx-auto lia-text-base" />
-            <p className="text-xs lia-text-base">
+            <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none mx-auto text-lia-text-secondary" />
+            <p className="text-xs text-lia-text-secondary">
               Gerando perguntas de triagem com metodologia WSI...
             </p>
           </div>
@@ -805,12 +805,12 @@ export function ScreeningQuestionsPanel({
               <input
                 type="text"
                 placeholder="Peça para a LIA gerar mais perguntas..."
-                className="w-full h-10 pl-3 pr-10 text-xs border border-lia-border-default rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900"
+                className="w-full h-10 pl-3 pr-10 text-xs border border-lia-border-default rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:border-lia-btn-primary-bg"
               />
               <Button
                 variant="ghost"
                 size="sm"
-                className="absolute right-1 top-1 h-8 w-8 p-0 bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 rounded-md"
+                className="absolute right-1 top-1 h-8 w-8 p-0 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active rounded-md"
               >
                 <ArrowRight className="h-4 w-4 text-white" />
               </Button>
@@ -820,8 +820,8 @@ export function ScreeningQuestionsPanel({
               <div className="flex items-start gap-2">
                 <Brain className="h-4 w-4 mt-0.5 flex-shrink-0 text-wedo-cyan" />
                 <div>
-                  <p className="text-xs font-medium lia-text-strong">Metodologia WSI</p>
-                  <p className="text-micro lia-text-base leading-relaxed mt-0.5" aria-live="polite" aria-atomic="true">
+                  <p className="text-xs font-medium text-lia-text-primary">Metodologia WSI</p>
+                  <p className="text-micro text-lia-text-secondary leading-relaxed mt-0.5" aria-live="polite" aria-atomic="true">
                     A LIA gera perguntas seguindo a metodologia WeDoTalent Skill Index, 
                     calibrando complexidade conforme senioridade e skills da vaga.
                   </p>
@@ -833,7 +833,7 @@ export function ScreeningQuestionsPanel({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <Brain className="h-3.5 w-3.5 text-wedo-cyan" />
-                  <span className="text-xs font-medium lia-text-base">Sugestões da LIA</span>
+                  <span className="text-xs font-medium text-lia-text-secondary">Sugestões da LIA</span>
                 </div>
               </div>
 
@@ -891,7 +891,7 @@ export function ScreeningQuestionsPanel({
         </div>
 
         <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle">
-          <div className="flex items-center gap-4 text-xs lia-text-base">
+          <div className="flex items-center gap-4 text-xs text-lia-text-secondary">
             <span>{selectedCount} pergunta(s) no roteiro</span>
             <span className="lia-text-secondary">|</span>
             <span>Blocos editáveis: 2, 3, 4, 5</span>

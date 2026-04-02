@@ -120,14 +120,14 @@ export function CandidateCell({
             />
           )}
           {isPinned && (
-            <Pin className="w-2.5 h-2.5 text-lia-text-secondary dark:text-lia-text-tertiary fill-current flex-shrink-0" />
+            <Pin className="w-2.5 h-2.5 text-lia-text-secondary fill-current flex-shrink-0" />
           )}
           {isFavorite && (
             <Star className="w-2.5 h-2.5 text-wedo-orange fill-current flex-shrink-0" />
           )}
         </div>
         {candidate.email && (
-          <span className="text-xs lia-text-base truncate block">
+          <span className="text-xs text-lia-text-secondary truncate block">
             {candidate.email}
           </span>
         )}
@@ -165,7 +165,7 @@ export function LocationCell({ candidate }: { candidate: TableCandidate }) {
   if (!location) return null
 
   return (
-    <div className="flex items-center gap-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
+    <div className="flex items-center gap-1 text-xs text-lia-text-primary">
       <MapPin className="w-3 h-3 flex-shrink-0" />
       <span className="truncate max-w-[100px]">{location}</span>
     </div>
@@ -178,7 +178,7 @@ export function CompanyCell({ candidate }: { candidate: TableCandidate }) {
   if (!company) return null
 
   return (
-    <div className="flex items-center gap-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
+    <div className="flex items-center gap-1 text-xs text-lia-text-primary">
       <Building2 className="w-3 h-3 flex-shrink-0" />
       <span className="truncate max-w-[120px]">{company}</span>
     </div>
@@ -209,7 +209,7 @@ export function LinkedInCell({ url, onClick }: { url?: string; onClick?: (e: Rea
         e.stopPropagation()
         onClick?.(e)
       }}
-      className="text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
+      className="text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
     >
       <Linkedin className="w-3.5 h-3.5" />
     </a>
@@ -225,7 +225,7 @@ export function SalaryCell({ value, currency = 'BRL' }: { value?: number; curren
   }).format(value)
 
   return (
-    <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+    <span className="text-xs text-lia-text-primary">
       {formatted}
     </span>
   )
@@ -277,13 +277,13 @@ export function ContactCell({
   return (
     <div className="flex items-center gap-2">
       {displayEmail && (
-        <div className="flex items-center gap-1 text-xs lia-text-base">
+        <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
           <Mail className="w-3 h-3" />
           <span className="truncate max-w-[100px]">{displayEmail}</span>
         </div>
       )}
       {displayPhone && (
-        <div className="flex items-center gap-1 text-xs lia-text-base">
+        <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
           <Phone className="w-3 h-3" />
           <span>{displayPhone}</span>
         </div>
@@ -386,11 +386,11 @@ export function NoteCell({
 
 // Helper to get sub-status color based on properties
 function getSubStatusColors(status?: SubStatus): { bg: string; text: string; bgStyle: string; textStyle: string } {
-  if (!status) return { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary dark:text-lia-text-secondary', bgStyle: 'var(--gray-200)', textStyle: 'var(--gray-400)' }
- if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-lia-text-primary dark:text-lia-text-secondary', bgStyle: 'var(--wedo-cyan-bg-15)', textStyle: 'var(--gray-600)' }
+  if (!status) return { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary', bgStyle: 'var(--gray-200)', textStyle: 'var(--gray-400)' }
+ if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-lia-text-primary', bgStyle: 'var(--wedo-cyan-bg-15)', textStyle: 'var(--gray-600)' }
   if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'var(--status-error-bg-15)', textStyle: 'var(--status-error)' }
   if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'var(--status-warning-bg-15)', textStyle: 'var(--status-warning)' }
-  return { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary dark:text-lia-text-secondary', bgStyle: 'var(--gray-bg-15)', textStyle: 'var(--gray-400)' }
+  return { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary', bgStyle: 'var(--gray-bg-15)', textStyle: 'var(--gray-400)' }
 }
 
 export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?: string }) {
@@ -480,7 +480,7 @@ export function InteractiveSubStatusCell({
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-2" align="start" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-        <div className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary mb-2 px-1">
+        <div className="text-xs font-medium text-lia-text-tertiary mb-2 px-1">
           Alterar status
         </div>
         <div className="space-y-1 max-h-48 overflow-y-auto">
@@ -605,7 +605,7 @@ export function InteractiveStageCell({
           <DialogHeader className="px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <DialogTitle className="flex items-center gap-3 font-['Open_Sans',sans-serif] text-base font-semibold text-lia-text-primary">
               <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-                <ArrowRight className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <ArrowRight className="w-5 h-5 text-lia-text-secondary" />
               </div>
               Mover Candidato
             </DialogTitle>
@@ -620,14 +620,14 @@ export function InteractiveStageCell({
                 <div>
                   <span className="text-base-ui font-medium text-lia-text-primary block">{candidateName}</span>
                   {candidateRole && (
-                    <span className="text-xs lia-text-base">{candidateRole}</span>
+                    <span className="text-xs text-lia-text-secondary">{candidateRole}</span>
                   )}
                 </div>
               </div>
             )}
 
             <div className="flex items-center gap-3 justify-center text-sm">
-              <span className="px-3 py-1.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-full text-lia-text-secondary dark:text-lia-text-secondary text-xs font-medium">
+              <span className="px-3 py-1.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-full text-lia-text-secondary text-xs font-medium">
                 {stageDisplayName}
               </span>
               <ArrowRight className="w-4 h-4 lia-text-secondary" />
@@ -637,7 +637,7 @@ export function InteractiveStageCell({
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans']">
+              <label className="text-xs font-semibold text-lia-text-primary font-['Open_Sans']">
                 Nova Etapa
               </label>
               <Select value={selectedStage} onValueChange={setSelectedStage}>
@@ -667,7 +667,7 @@ export function InteractiveStageCell({
             <div className="flex gap-2 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <Button 
                 variant="outline" 
-                className="flex-1 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-white lia-text-strong border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700"
+                className="flex-1 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-white text-lia-text-primary border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
                 onClick={() => {
                   setOpen(false)
                   setSelectedStage('')
@@ -730,8 +730,8 @@ export function ActionButtons({
           <div 
             className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-800/[.08]"
           >
-            <Zap className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary animate-pulse motion-reduce:animate-none" />
-            <span className="text-micro font-semibold text-lia-text-primary dark:text-lia-text-primary">
+            <Zap className="w-3 h-3 text-lia-text-primary animate-pulse motion-reduce:animate-none" />
+            <span className="text-micro font-semibold text-lia-text-primary">
               Ação Necessária
             </span>
           </div>
@@ -745,7 +745,7 @@ export function ActionButtons({
             variant="ghost"
             size="sm"
             className={`h-7 w-7 p-0 hover:bg-wedo-orange/15 dark:hover:bg-wedo-orange/10/20 ${
- isFavorite ? 'text-wedo-orange' : 'lia-text-base'
+ isFavorite ? 'text-wedo-orange' : 'text-lia-text-secondary'
             }`}
             onClick={onToggleFavorite}
             title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}
@@ -759,7 +759,7 @@ export function ActionButtons({
             variant="ghost"
             size="sm"
             className={`h-7 w-7 p-0 hover:bg-wedo-cyan/15 dark:hover:bg-wedo-cyan/10/20 ${
- isPinned ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-secondary'
+ isPinned ? 'text-lia-text-secondary' : 'text-lia-text-secondary'
             }`}
             onClick={onTogglePin}
             title={isPinned ? "Desafixar" : "Fixar"}

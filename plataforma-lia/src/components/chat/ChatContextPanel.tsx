@@ -28,13 +28,13 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
   if (!contextData || !isPanelOpen) return null
 
   return (
-    <div className="w-2/5 p-4 flex transition-colors motion-reduce:transition-none duration-300 overflow-hidden bg-white dark:bg-lia-bg-primary">
-      <Card className="w-full border-0 rounded-md overflow-hidden flex flex-col bg-white dark:lia-bg-950">
-        <CardHeader className="p-6 border-0 bg-white dark:lia-bg-950">
+    <div className="w-2/5 p-4 flex transition-colors motion-reduce:transition-none duration-300 overflow-hidden bg-lia-bg-primary">
+      <Card className="w-full border-0 rounded-md overflow-hidden flex flex-col bg-white bg-lia-bg-primary">
+        <CardHeader className="p-6 border-0 bg-white bg-lia-bg-primary">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">{contextData.title}</h3>
-              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">Powered by LIA Intelligence</p>
+              <h3 className="text-lg font-semibold text-lia-text-primary">{contextData.title}</h3>
+              <p className="text-sm text-lia-text-secondary">Powered by LIA Intelligence</p>
             </div>
             <Button variant="ghost" size="sm" onClick={() => onClose()} className="rounded-full">
               <X className="w-4 h-4" />
@@ -43,7 +43,7 @@ export function ChatContextPanel({ contextData, isPanelOpen, onClose, onPipeline
         </CardHeader>
 
         <CardContent
-          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-gray-300 dark:lia-scrollbar-thumb-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500"
+          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-6 space-y-6 scrollbar-thin scrollbar-thumb-lia-border-default  scrollbar-track-transparent hover:scrollbar-thumb-lia-border-medium dark:hover:scrollbar-thumb-lia-border-medium"
           style={{scrollBehavior: 'smooth'}}
         >
           <ChatContextPanelPart1 contextData={contextData} />

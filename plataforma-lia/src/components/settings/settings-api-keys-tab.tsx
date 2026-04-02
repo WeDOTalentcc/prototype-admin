@@ -21,8 +21,8 @@ export function SettingsAPIKeysTab({ onSettingsChange }: SettingsAPIKeysTabProps
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
             <div>
-              <div className="text-sm font-medium lia-text-950 dark:lia-text-50">Chave de Produção</div>
-              <div className="text-xs lia-text-800 dark:text-lia-text-tertiary font-mono mt-1">sk-prod-****************************</div>
+              <div className="text-sm font-medium text-lia-text-primary">Chave de Produção</div>
+              <div className="text-xs text-lia-text-primary font-mono mt-1">sk-prod-****************************</div>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm">
@@ -36,8 +36,8 @@ export function SettingsAPIKeysTab({ onSettingsChange }: SettingsAPIKeysTabProps
 
           <div className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
             <div>
-              <div className="text-sm font-medium lia-text-950 dark:lia-text-50">Chave de Teste</div>
-              <div className="text-xs lia-text-800 dark:text-lia-text-tertiary font-mono mt-1">sk-test-****************************</div>
+              <div className="text-sm font-medium text-lia-text-primary">Chave de Teste</div>
+              <div className="text-xs text-lia-text-primary font-mono mt-1">sk-test-****************************</div>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm">

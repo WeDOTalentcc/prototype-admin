@@ -79,14 +79,14 @@ export function AgentMemoryIndicator({
         onClick={handleExpand}
         onKeyDown={(e) => e.key === "Enter" && handleExpand()}
         // [OPT-023] py-1.5 px arbitrário — sem canônico Tailwind
-        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md border border-lia-border-subtle bg-gray-50 cursor-pointer text-xs lia-text-500 select-none transition-colors motion-reduce:transition-none"
+        className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary cursor-pointer text-xs text-lia-text-secondary select-none transition-colors motion-reduce:transition-none"
       >
         <Brain
           className="text-wedo-cyan flex-shrink-0 w-3.5 h-3.5"
         />
 
         <span
-          className="lia-text-800 font-medium whitespace-nowrap"
+          className="text-lia-text-primary font-medium whitespace-nowrap"
         >
           {stageName}
         </span>
@@ -95,7 +95,7 @@ export function AgentMemoryIndicator({
           className="flex items-center gap-1 min-w-[80px]"
         >
           <div
-            className="bg-gray-200 flex-1 h-1 rounded-[2px] overflow-hidden"
+            className="bg-lia-interactive-active flex-1 h-1 rounded-[2px] overflow-hidden"
           >
             <div
               className="h-full rounded-[2px] bg-wedo-cyan transition-[width] duration-300 ease-in-out"
@@ -108,14 +108,14 @@ export function AgentMemoryIndicator({
         </div>
 
         <span
-          className="lia-text-400 border-l border-l-gray-200 text-xs pl-2"
+          className="text-lia-text-tertiary border-l border-l-lia-border-subtle text-xs pl-2"
         >
           {memory.fields_count} campos
         </span>
 
         {relTime && (
           <span
-            className="lia-text-400 border-l border-l-gray-200 text-xs pl-2"
+            className="text-lia-text-tertiary border-l border-l-lia-border-subtle text-xs pl-2"
           >
             {relTime}
           </span>
@@ -133,7 +133,7 @@ export function AgentMemoryIndicator({
             className="overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200"
           >
             <div
-              className="mt-1 px-3.5 py-3 rounded-md border border-lia-border-subtle bg-gray-50 max-h-[280px] overflow-y-auto text-xs lia-text-800"
+              className="mt-1 px-3.5 py-3 rounded-md border border-lia-border-subtle bg-lia-bg-secondary max-h-[280px] overflow-y-auto text-xs text-lia-text-primary"
             >
               <div
                 className="font-semibold text-sm mb-2"
@@ -142,7 +142,7 @@ export function AgentMemoryIndicator({
               </div>
 
               <div
-                className="bg-gray-200 h-px mb-2"
+                className="bg-lia-interactive-active h-px mb-2"
               />
 
               <div className="mb-1.5">
@@ -217,14 +217,14 @@ export function AgentMemoryIndicator({
 
               {!fullMemory && (
                 <div
-                  className="lia-text-400 text-xs italic"
+                  className="text-lia-text-tertiary text-xs italic"
                 >
                   Carregando detalhes...
                 </div>
               )}
 
               <div
-                className="bg-gray-200 h-px my-2"
+                className="bg-lia-interactive-active h-px my-2"
               />
 
               <button
@@ -232,7 +232,7 @@ export function AgentMemoryIndicator({
                   e.stopPropagation();
                   handleReset();
                 }}
-                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs cursor-pointer transition-colors motion-reduce:transition-none", confirmReset ? "bg-gray-100 lia-text-600 border-wedo-cyan" : "bg-transparent lia-text-400 border-lia-border-subtle")}
+                className={cn("border flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs cursor-pointer transition-colors motion-reduce:transition-none", confirmReset ? "bg-lia-bg-tertiary text-lia-text-secondary border-wedo-cyan" : "bg-transparent text-lia-text-tertiary border-lia-border-subtle")}
               >
                 <Trash2 className="w-3 h-3" />
                 {confirmReset ? "Confirmar limpeza?" : "Limpar memória"}

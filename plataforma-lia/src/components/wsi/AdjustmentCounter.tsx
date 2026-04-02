@@ -23,7 +23,7 @@ export function AdjustmentCounter({
   return (
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-center justify-between">
-        <span className="text-micro lia-text-base">
+        <span className="text-micro text-lia-text-secondary">
           Ajuste {current} de {max}
         </span>
         {isAtLimit && (

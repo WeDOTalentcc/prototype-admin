@@ -46,25 +46,25 @@ const STATUS_CONFIG: Record<'hired' | 'cancelled', {
   hired: {
     icon: CheckCircle2,
     label: '✅ Contratado',
-    className: 'text-status-success dark:text-status-success',
+    className: 'text-status-success',
     bgClassName: 'bg-status-success/10 dark:bg-status-success/30',
     borderClassName: 'border-status-success/30 dark:border-status-success/30'
   },
   cancelled: {
     icon: Clock,
     label: '⏳ Cancelada',
-    className: 'text-status-warning dark:text-status-warning',
+    className: 'text-status-warning',
     bgClassName: 'bg-status-warning/10 dark:bg-status-warning/30',
     borderClassName: 'border-status-warning/30 dark:border-status-warning/30'
   }
 }
 
 const WORK_MODEL_CONFIG: Record<string, { label: string; className: string }> = {
-  'remote': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' },
+  'remote': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' },
   'hybrid': { label: 'Híbrido', className: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
-  'onsite': { label: 'Presencial', className: 'bg-gray-50 text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-primary dark:text-lia-text-tertiary dark:border-lia-border-subtle' },
-  'presencial': { label: 'Presencial', className: 'bg-gray-50 text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-primary dark:text-lia-text-tertiary dark:border-lia-border-subtle' },
-  'remoto': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:text-wedo-cyan-dark dark:border-wedo-cyan/30' },
+  'onsite': { label: 'Presencial', className: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' },
+  'presencial': { label: 'Presencial', className: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' },
+  'remoto': { label: 'Remoto', className: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' },
   'híbrido': { label: 'Híbrido', className: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30 dark:text-wedo-purple dark:border-wedo-purple/30' },
 }
 
@@ -100,7 +100,7 @@ function VacancyCard({
 
   return (
     <div 
-      className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none cursor-pointer group"
+      className="p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle hover:border-lia-btn-primary-bg hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer group"
       onClick={onClick}
     >
       <div className="flex items-start gap-3">
@@ -121,19 +121,19 @@ function VacancyCard({
           
           <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
-              <Building2 className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Building2 className="h-3 w-3 text-lia-text-secondary" />
               <span className="truncate">{vacancy.department}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <User className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <User className="h-3 w-3 text-lia-text-secondary" />
               <span className="truncate">{vacancy.manager}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Calendar className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Calendar className="h-3 w-3 text-lia-text-secondary" />
               <span>{formatDate(vacancy.date_closed)}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <DollarSign className="h-3 w-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <DollarSign className="h-3 w-3 text-lia-text-secondary" />
               <span>{formatCurrency(vacancy.salary_range.min)} - {formatCurrency(vacancy.salary_range.max)}</span>
             </div>
           </div>
@@ -146,7 +146,7 @@ function VacancyCard({
               {workModelConfig.label}
             </Badge>
             {vacancy.hired_candidate && vacancy.status === 'hired' && (
-              <span className="text-micro text-status-success dark:text-status-success flex items-center gap-1">
+              <span className="text-micro text-status-success flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
                 {vacancy.hired_candidate}
               </span>
@@ -166,15 +166,15 @@ export function VacancySearchResults({
   if (isLoading) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
-        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
+        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
           <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
-          <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
+          <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
             LIA
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4" role="status" aria-live="polite" aria-label="Carregando...">
           <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
             <span className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">Buscando vagas anteriores...</span>
           </div>
         </div>
@@ -185,13 +185,13 @@ export function VacancySearchResults({
   if (vacancies.length === 0) {
     return (
       <div className="flex items-start gap-3 max-w-[85%]">
-        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
+        <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
           <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
-          <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
+          <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
             LIA
           </AvatarFallback>
         </Avatar>
-        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4">
+        <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4">
           <p className="text-sm text-muted-foreground" aria-live="polite" aria-atomic="true">
             Não encontrei vagas anteriores com esses critérios. Podemos criar uma vaga do zero! Me diga o cargo e vou te ajudar.
           </p>
@@ -202,15 +202,15 @@ export function VacancySearchResults({
 
   return (
     <div className="flex items-start gap-3 max-w-[90%]">
-      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default dark:border-lia-border-default">
+      <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-lia-border-default">
         <AvatarImage src="/images/lia-avatar.png" alt="LIA" />
-        <AvatarFallback className="bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark text-white text-xs font-medium">
+        <AvatarFallback className="bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-bg-tertiary to-wedo-cyan-dark text-white text-xs font-medium">
           LIA
         </AvatarFallback>
       </Avatar>
 
       <div className="flex-1 space-y-3">
-        <div className="rounded-xl rounded-tl-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle p-4 space-y-4">
+        <div className="rounded-xl rounded-tl-sm bg-lia-bg-primary border border-lia-border-subtle p-4 space-y-4">
           <p className="text-xs text-muted-foreground">
             Encontrei <span className="font-semibold text-lia-text-primary">{vacancies.length}</span> vaga{vacancies.length > 1 ? 's' : ''} que pode{vacancies.length > 1 ? 'm' : ''} servir como base:
           </p>
@@ -226,7 +226,7 @@ export function VacancySearchResults({
             ))}
           </div>
 
-          <div className="pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="pt-3 border-t border-lia-border-subtle">
             <p className="text-xs text-muted-foreground italic" aria-live="polite" aria-atomic="true">
               Digite o número (ex: "1" ou "2") ou parte do título para selecionar uma vaga. 
               Se preferir criar do zero, digite "criar nova".

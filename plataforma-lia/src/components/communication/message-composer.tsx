@@ -212,7 +212,7 @@ export function MessageComposer({
     <div className={className}>
       {successMessage && (
         <div className="mb-3 px-3 py-2 rounded-md flex items-center gap-2 bg-gray-200/30 border border-wedo-cyan/30 text-wedo-cyan-dark">
-          <Check className="w-4 h-4 lia-text-base" />
+          <Check className="w-4 h-4 text-lia-text-secondary" />
           <span className="text-xs">{successMessage}</span>
         </div>
       )}
@@ -227,10 +227,10 @@ export function MessageComposer({
       {showTemplateSelector && (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-medium lia-text-base uppercase tracking-wide">
+            <label className="text-xs font-medium text-lia-text-secondary uppercase tracking-wide">
               Templates
             </label>
-            <span className="text-micro flex items-center gap-1 lia-text-base">
+            <span className="text-micro flex items-center gap-1 text-lia-text-secondary">
               <Brain className="w-3 h-3 text-wedo-cyan" />
               LIA disponível
             </span>
@@ -238,7 +238,7 @@ export function MessageComposer({
           <div className="space-y-1.5 max-h-[150px] overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
             {templatesLoading ? (
               <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
-                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-base" />
+                <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                 <span className="text-xs lia-text-secondary ml-2">Carregando templates...</span>
               </div>
             ) : filteredTemplates.length === 0 ? (
@@ -256,7 +256,7 @@ export function MessageComposer({
                       : 'border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50'
                   }`}
                 >
-                  <div className="text-xs font-medium lia-text-strong">
+                  <div className="text-xs font-medium text-lia-text-primary">
                     {template.name}
                   </div>
                   {template.subject && channel === 'email' && (
@@ -275,7 +275,7 @@ export function MessageComposer({
         {channel === 'email' && (
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium lia-text-base uppercase tracking-wide">
+              <label className="text-xs font-medium text-lia-text-secondary uppercase tracking-wide">
                 Assunto
               </label>
               {showVariableSelector && (
@@ -283,7 +283,7 @@ export function MessageComposer({
                   onSelect={insertVariableAtCursor}
                   trigger={
                     <button 
-                      className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none lia-text-base"
+                      className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
                       onFocus={() => setFocusedField('subject')}
                     >
                       <span>Inserir Variável</span>
@@ -307,7 +307,7 @@ export function MessageComposer({
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium lia-text-base uppercase tracking-wide">
+            <label className="text-xs font-medium text-lia-text-secondary uppercase tracking-wide">
               {channel === 'email' ? 'Mensagem' : 'Mensagem WhatsApp'}
             </label>
             {showVariableSelector && (
@@ -315,7 +315,7 @@ export function MessageComposer({
                 onSelect={insertVariableAtCursor}
                 trigger={
                   <button 
-                    className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none lia-text-base"
+                    className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
                     onFocus={() => setFocusedField('message')}
                   >
                     <span>Inserir Variável</span>
@@ -345,7 +345,7 @@ export function MessageComposer({
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <div className="flex-1">
-                <span className="text-base-ui font-semibold lia-text-strong">
+                <span className="text-base-ui font-semibold text-lia-text-primary">
                   Ajustar com a LIA
                 </span>
                 <p className="text-xs lia-text-secondary">
@@ -419,7 +419,7 @@ export function MessageComposer({
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold lia-text-strong">
+                    <h3 className="text-sm font-semibold text-lia-text-primary">
                       Ajustes da LIA
                     </h3>
                     <p className="text-xs lia-text-secondary">
@@ -452,7 +452,7 @@ export function MessageComposer({
                   <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                     Novo Assunto
                   </label>
-                  <div className="p-3 bg-gray-50 rounded-md text-xs lia-text-strong">
+                  <div className="p-3 bg-gray-50 rounded-md text-xs text-lia-text-primary">
                     {aiResultModal.newSubject}
                   </div>
                 </div>
@@ -462,7 +462,7 @@ export function MessageComposer({
                 <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                   Nova Mensagem
                 </label>
-                <div className="p-3 bg-gray-50 rounded-md text-xs lia-text-strong whitespace-pre-wrap max-h-content-md overflow-y-auto">
+                <div className="p-3 bg-gray-50 rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto">
                   {aiResultModal.newBody}
                 </div>
               </div>

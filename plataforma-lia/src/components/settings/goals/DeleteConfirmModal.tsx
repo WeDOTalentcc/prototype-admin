@@ -20,8 +20,8 @@ export function DeleteConfirmModal({ goal, isDeleting, onCancel, onConfirm }: De
               <Trash2 className="w-5 h-5 text-status-error" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold lia-text-950">Excluir Meta</h3>
-              <p className="text-sm lia-text-600">Esta ação não pode ser desfeita</p>
+              <h3 className="text-lg font-semibold text-lia-text-primary">Excluir Meta</h3>
+              <p className="text-sm text-lia-text-secondary">Esta ação não pode ser desfeita</p>
             </div>
           </div>
         </div>
@@ -30,17 +30,17 @@ export function DeleteConfirmModal({ goal, isDeleting, onCancel, onConfirm }: De
           <div className="bg-gray-50 rounded-md p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
               {getCategoryIcon(goal.category)}
-              <span className="font-medium lia-text-950">{goal.name}</span>
+              <span className="font-medium text-lia-text-primary">{goal.name}</span>
             </div>
-            <p className="text-sm lia-text-600">{goal.description}</p>
-            <div className="flex items-center gap-4 mt-3 text-xs lia-text-500">
+            <p className="text-sm text-lia-text-secondary">{goal.description}</p>
+            <div className="flex items-center gap-4 mt-3 text-xs text-lia-text-secondary">
               <span>Meta: {goal.target} {goal.unit}</span>
               <span>•</span>
               <span>{goal.period === "monthly" ? "Mensal" : goal.period === "quarterly" ? "Trimestral" : "Anual"}</span>
             </div>
           </div>
 
-          <p className="text-sm lia-text-600 mb-6">
+          <p className="text-sm text-lia-text-secondary mb-6">
             Tem certeza que deseja excluir esta meta? O progresso registrado será perdido permanentemente.
           </p>
 

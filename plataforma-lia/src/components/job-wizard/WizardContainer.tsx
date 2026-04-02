@@ -82,7 +82,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
         </div>
         <span className={cn(
  "text-micro font-medium",
-          isCurrent && "text-lia-text-secondary dark:text-lia-text-tertiary",
+          isCurrent && "text-lia-text-secondary",
           isPast && "text-status-success",
           !isCurrent && !isPast && "lia-text-secondary"
         )}>
@@ -104,7 +104,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark flex items-center justify-center">
               <span className="text-white text-sm font-bold">L</span>
             </div>
-            <span className="text-sm font-semibold lia-text-strong">
+            <span className="text-sm font-semibold text-lia-text-primary">
               LIA • Criação de Vaga
             </span>
           </div>
@@ -132,7 +132,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
           {onMinimize && (
             <button
               onClick={onMinimize}
-              className="p-1.5 lia-text-secondary hover:lia-text-base transition-colors motion-reduce:transition-none"
+              className="p-1.5 lia-text-secondary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
               aria-label="Minimizar"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -140,7 +140,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
           )}
           <button
             onClick={onClose}
-            className="p-1.5 lia-text-secondary hover:lia-text-base transition-colors motion-reduce:transition-none"
+            className="p-1.5 lia-text-secondary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
             aria-label="Fechar"
           >
             ✕
@@ -173,7 +173,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
             style={{width: `${panelWidth}%`}}
           >
             <div className="p-3 border-b border-lia-border-subtle">
-              <h3 className="text-xs font-semibold lia-text-strong">
+              <h3 className="text-xs font-semibold text-lia-text-primary">
                 {currentStageConfig?.panelTitle || 'Painel'}
               </h3>
             </div>
@@ -193,7 +193,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
  "flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-medium transition-colors",
             isFirstStage
               ? "lia-text-secondary cursor-not-allowed"
-              : "text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary"
+              : "text-lia-text-secondary hover:bg-gray-100 dark:bg-lia-bg-secondary"
           )}
          
         >

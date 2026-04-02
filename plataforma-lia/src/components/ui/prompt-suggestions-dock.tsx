@@ -264,7 +264,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           size="sm"
           onClick={() => setIsExpanded(true)}
           onMouseDown={handleMouseDown}
-          className="fixed h-9 px-4 rounded-md transition-transform motion-reduce:transition-none hover:scale-105 z-50 select-none opacity-80 hover:opacity-100 dark:text-lia-text-secondary"
+          className="fixed h-9 px-4 rounded-md transition-transform motion-reduce:transition-none hover:scale-105 z-50 select-none opacity-80 hover:opacity-100"
           style={{top: `${position.top}px`,
             right: `${position.right}px`,
             backgroundColor: 'var(--lia-bg-secondary)',
@@ -275,7 +275,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
           <span 
-            className="text-xs font-medium dark:text-lia-text-secondary"
+            className="text-xs font-medium"
             style={{color: 'var(--lia-text-secondary)'}}
           >
             Sugestões
@@ -304,7 +304,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <h3
-                className="text-sm font-semibold dark:text-lia-text-primary"
+                className="text-sm font-semibold"
                 style={{color: 'var(--lia-text-primary)'}}
               >
                 Tarefas Sugeridas

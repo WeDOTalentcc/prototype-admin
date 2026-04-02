@@ -152,7 +152,7 @@ const [isSaving, setIsSaving] = useState(false)
         <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-              <Target className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Target className="w-5 h-5 text-lia-text-secondary" />
             </div>
             <div>
               <CardTitle className={textStyles.titleLarge}>Salvar como Arquétipo</CardTitle>
@@ -285,7 +285,7 @@ const [isSaving, setIsSaving] = useState(false)
             <Button
               onClick={handleSave}
               disabled={!name.trim() || isSaving}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               {isSaving ? (
                 <>

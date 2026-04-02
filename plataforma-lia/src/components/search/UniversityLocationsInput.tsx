@@ -127,12 +127,12 @@ export function UniversityLocationsInput({
       <div className="flex items-center justify-between">
         {value.length > 0 && (
           <>
-            <span className="text-xs lia-text-500">
+            <span className="text-xs text-lia-text-secondary">
               {value.length} location{value.length !== 1 ? 's' : ''} selected
             </span>
             <button
               onClick={clearAll}
-              className="text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 font-medium"
+              className="text-xs text-lia-text-secondary hover:text-lia-text-primary font-medium"
             >
               Clear all
             </button>
@@ -142,7 +142,7 @@ export function UniversityLocationsInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -183,7 +183,7 @@ export function UniversityLocationsInput({
                     focusedIndex === currentSelectableIndex ? "bg-gray-100" : "hover:bg-gray-50"
                   )}
                 >
-                  <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
+                  <span className="text-lia-text-primary">{item.label}</span>
                 </button>
               )
             })}
@@ -196,7 +196,7 @@ export function UniversityLocationsInput({
           {value.map(location => (
             <Badge
               key={location}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
             >
               <span>{location}</span>
               <button

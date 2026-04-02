@@ -182,7 +182,7 @@ export function ColumnConfigurationModal({
               <Settings className="w-4 h-4" />
               Columns
             </SheetTitle>
-            <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+            <div className="text-sm text-lia-text-secondary">
               {visibleCount} de {columns.length} colunas visíveis
             </div>
           </SheetHeader>
@@ -209,7 +209,7 @@ export function ColumnConfigurationModal({
                   <div key={view.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                     <button
                       onClick={() => onLoadView(view)}
-                      className="flex-1 text-left text-sm text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                      className="flex-1 text-left text-sm text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                     >
                       {view.name}
                     </button>

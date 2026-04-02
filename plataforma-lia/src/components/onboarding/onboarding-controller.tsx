@@ -240,7 +240,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
         <h2 className="text-2xl font-bold text-lia-text-primary mb-4">
           Acesso Restrito
         </h2>
-        <p className="lia-text-strong mb-6">
+        <p className="text-lia-text-primary mb-6">
           Você precisa de um convite para acessar a plataforma LIA.
         </p>
         <div className="space-y-3">
@@ -325,7 +325,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
               <div className="flex items-center gap-3 bg-gray-50 rounded-md p-4">
-                <Clock className="w-5 h-5 lia-text-base" />
+                <Clock className="w-5 h-5 text-lia-text-secondary" />
                 <div>
                   <p className="lia-text-bold text-sm">Tempo estimado</p>
                   <p className="lia-text-small">3-5 minutos</p>
@@ -333,7 +333,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
               </div>
               
               <div className="flex items-center gap-3 bg-gray-50 rounded-md p-4">
-                <Lightbulb className="w-5 h-5 lia-text-base" />
+                <Lightbulb className="w-5 h-5 text-lia-text-secondary" />
                 <div>
                   <p className="lia-text-bold text-sm">Pode continuar depois</p>
                   <p className="lia-text-small">Menu Configurações</p>

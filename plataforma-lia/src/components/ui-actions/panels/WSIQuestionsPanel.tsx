@@ -212,10 +212,10 @@ export function WSIQuestionsPanel({
               <Brain className="h-5 w-5 text-wedo-cyan" />
             </div>
             <div>
-              <CardTitle className="text-base font-sans dark:text-lia-text-primary text-lia-text-primary">
+              <CardTitle className="text-base font-sans text-lia-text-primary">
                 Gerar Perguntas com IA
               </CardTitle>
-              <p className="text-xs mt-1 dark:text-lia-text-tertiary text-lia-text-secondary" aria-live="polite" aria-atomic="true">
+              <p className="text-xs mt-1 text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                 A LIA cria perguntas WSI personalizadas baseadas na vaga e competências definidas
               </p>
             </div>
@@ -224,7 +224,7 @@ export function WSIQuestionsPanel({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+              <Label className="text-xs text-lia-text-secondary">
                 Quantidade de perguntas
               </Label>
               <Select
@@ -246,7 +246,7 @@ export function WSIQuestionsPanel({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+              <Label className="text-xs text-lia-text-secondary">
                 Nível de proficiência
               </Label>
               <Select
@@ -291,7 +291,7 @@ export function WSIQuestionsPanel({
             className="flex items-start gap-2 p-3 rounded-md dark:bg-lia-bg-primary/50 bg-[var(--lia-bg-tertiary)]"
           >
             <Brain className="h-4 w-4 shrink-0 mt-0.5 text-wedo-cyan" />
-            <p className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary" aria-live="polite" aria-atomic="true">
+            <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
               As perguntas são geradas considerando: requisitos técnicos da vaga, 
               competências comportamentais definidas, nível de senioridade e 
               metodologia WSI (Bloom + Dreyfus + Big Five).
@@ -304,12 +304,12 @@ export function WSIQuestionsPanel({
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <CardTitle 
-              className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary text-lia-text-primary"
+              className="text-sm flex items-center gap-2 font-sans text-lia-text-primary"
             >
               <span>📝</span> Perguntas Selecionadas ({questions.length})
             </CardTitle>
             <div 
-              className="flex items-center gap-2 text-xs dark:text-lia-text-tertiary text-lia-text-tertiary"
+              className="flex items-center gap-2 text-xs text-lia-text-tertiary"
             >
               <Clock className="h-3 w-3" />
               {getTotalTime()} min total
@@ -319,12 +319,12 @@ export function WSIQuestionsPanel({
         <CardContent className="space-y-3">
           {questions.length === 0 ? (
             <div 
-              className="text-center py-8 text-sm dark:text-lia-text-tertiary text-lia-text-tertiary"
+              className="text-center py-8 text-sm text-lia-text-tertiary"
             >
               <Brain className="h-8 w-8 mx-auto mb-3 text-wedo-cyan opacity-50" />
               Nenhuma pergunta adicionada.
               <br />
-              <span className="font-medium dark:text-lia-text-secondary text-lia-text-secondary">
+              <span className="font-medium text-lia-text-secondary">
                 Use a geração com IA acima para começar!
               </span>
             </div>
@@ -354,7 +354,7 @@ export function WSIQuestionsPanel({
         >
           <div className="flex items-center gap-2">
             <Lightbulb className="h-4 w-4" />
-            <span className="text-sm font-medium dark:text-lia-text-secondary">
+            <span className="text-sm font-medium">
               Templates de Referência (Opcional)
             </span>
           </div>
@@ -370,7 +370,7 @@ export function WSIQuestionsPanel({
             className="p-4 border-t dark:border-lia-border-subtle border-[var(--lia-border-subtle)] bg-[var(--lia-bg-primary)]"
           >
             <p 
-              className="text-xs mb-4 dark:text-lia-text-tertiary text-lia-text-tertiary"
+              className="text-xs mb-4 text-lia-text-tertiary"
              aria-live="polite" aria-atomic="true">
               Use estes templates como inspiração. Para melhores resultados, 
               recomendamos a geração com IA que personaliza as perguntas para sua vaga.
@@ -406,7 +406,7 @@ export function WSIQuestionsPanel({
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
                           <p 
-                            className="text-sm dark:text-lia-text-primary text-lia-text-primary"
+                            className="text-sm text-lia-text-primary"
                           >
                             {template.question}
                           </p>
@@ -428,7 +428,7 @@ export function WSIQuestionsPanel({
                               {template.competency}
                             </Badge>
                             <span 
-                              className="text-xs flex items-center gap-1 dark:text-lia-text-tertiary text-lia-text-tertiary"
+                              className="text-xs flex items-center gap-1 text-lia-text-tertiary"
                             >
                               <Clock className="h-3 w-3" />
                               {template.time_estimate}min
@@ -438,7 +438,7 @@ export function WSIQuestionsPanel({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="shrink-0 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700 border-[var(--lia-border-default)]"
+                          className="shrink-0 dark:border-lia-border-default dark:hover:bg-gray-700 border-[var(--lia-border-default)]"
                           onClick={() => handleAddTemplate(template)}
                           disabled={isTemplateAdded(template)}
                           style={{color: isTemplateAdded(template) 
@@ -464,7 +464,7 @@ export function WSIQuestionsPanel({
           className="p-4 bg-[var(--lia-bg-secondary)]"
         >
           <Label 
-            className="text-sm font-medium flex items-center gap-2 mb-3 dark:text-lia-text-primary text-lia-text-primary"
+            className="text-sm font-medium flex items-center gap-2 mb-3 text-lia-text-primary"
           >
             <Plus className="h-4 w-4" />
             Adicionar Pergunta Manual
@@ -475,11 +475,11 @@ export function WSIQuestionsPanel({
               onChange={(e) => setNewQuestion((prev) => ({ ...prev, question: e.target.value }))}
               placeholder="Digite sua pergunta WSI personalizada..."
               rows={3}
-              className="dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)] text-lia-text-primary"
+              className="dark:bg-lia-bg-primary dark:border-lia-border-subtle border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)] text-lia-text-primary"
             />
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+                <Label className="text-xs text-lia-text-secondary">
                   Nível Bloom
                 </Label>
                 <Select
@@ -501,7 +501,7 @@ export function WSIQuestionsPanel({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+                <Label className="text-xs text-lia-text-secondary">
                   Nível Dreyfus
                 </Label>
                 <Select
@@ -525,25 +525,25 @@ export function WSIQuestionsPanel({
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+                <Label className="text-xs text-lia-text-secondary">
                   Competência
                 </Label>
                 <Input
                   value={newQuestion.competency}
                   onChange={(e) => setNewQuestion((prev) => ({ ...prev, competency: e.target.value }))}
                   placeholder="Ex: Resolução de Problemas"
-                  className="h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)]"
+                  className="h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)]"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+                <Label className="text-xs text-lia-text-secondary">
                   Tempo (min)
                 </Label>
                 <Input
                   type="number"
                   value={newQuestion.time_estimate}
                   onChange={(e) => setNewQuestion((prev) => ({ ...prev, time_estimate: parseInt(e.target.value) || 10 }))}
-                  className="h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)]"
+                  className="h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)]"
                   min={5}
                   max={60}
                 />
@@ -552,7 +552,7 @@ export function WSIQuestionsPanel({
             <Button
               onClick={handleAddCustomQuestion}
               disabled={!newQuestion.question.trim() || !newQuestion.competency.trim()}
-              className="w-full dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700 border-[var(--lia-border-default)] text-lia-text-primary"
+              className="w-full dark:border-lia-border-default dark:hover:bg-gray-700 border-[var(--lia-border-default)] text-lia-text-primary"
               variant="outline"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -608,19 +608,19 @@ function QuestionCard({
         <div className="flex items-start gap-3">
           <div className="flex items-center gap-2 shrink-0">
             <span 
-              className="text-xs font-medium dark:text-lia-text-tertiary text-lia-text-tertiary"
+              className="text-xs font-medium text-lia-text-tertiary"
             >
               #{index + 1}
             </span>
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4 dark:text-lia-text-tertiary text-lia-text-tertiary" />
+              <ChevronDown className="h-4 w-4 text-lia-text-tertiary" />
             ) : (
-              <ChevronRight className="h-4 w-4 dark:text-lia-text-tertiary text-lia-text-tertiary" />
+              <ChevronRight className="h-4 w-4 text-lia-text-tertiary" />
             )}
           </div>
           <div className="flex-1 min-w-0">
             <p 
-              className="text-sm line-clamp-2 dark:text-lia-text-primary text-lia-text-primary"
+              className="text-sm line-clamp-2 text-lia-text-primary"
             >
               {question.question}
             </p>
@@ -642,7 +642,7 @@ function QuestionCard({
                 {question.competency}
               </Badge>
               <span 
-                className="text-xs flex items-center gap-1 dark:text-lia-text-tertiary text-lia-text-tertiary"
+                className="text-xs flex items-center gap-1 text-lia-text-tertiary"
               >
                 <Clock className="h-3 w-3" />
                 {question.time_estimate}min
@@ -652,7 +652,7 @@ function QuestionCard({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 shrink-0 dark:text-lia-text-tertiary dark:hover:bg-gray-700 text-lia-text-tertiary"
+            className="h-7 w-7 shrink-0 dark:hover:bg-gray-700 text-lia-text-tertiary"
             onClick={(e) => {
               e.stopPropagation()
               onRemove()
@@ -668,19 +668,19 @@ function QuestionCard({
           className="px-3 pb-3 pt-2 border-t space-y-3 dark:border-lia-border-subtle border-[var(--lia-border-subtle)] bg-[var(--lia-bg-tertiary)]"
         >
           <div className="space-y-2">
-            <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+            <Label className="text-xs text-lia-text-secondary">
               Pergunta
             </Label>
             <Textarea
               value={question.question}
               onChange={(e) => onUpdate("question", e.target.value)}
               rows={3}
-              className="text-sm dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)]"
+              className="text-sm dark:bg-lia-bg-primary dark:border-lia-border-subtle border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)]"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+              <Label className="text-xs text-lia-text-secondary">
                 Nível Bloom
               </Label>
               <Select
@@ -702,7 +702,7 @@ function QuestionCard({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+              <Label className="text-xs text-lia-text-secondary">
                 Nível Dreyfus
               </Label>
               <Select
@@ -726,24 +726,24 @@ function QuestionCard({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+              <Label className="text-xs text-lia-text-secondary">
                 Competência
               </Label>
               <Input
                 value={question.competency}
                 onChange={(e) => onUpdate("competency", e.target.value)}
-                className="h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)]"
+                className="h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)]"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs dark:text-lia-text-tertiary text-lia-text-secondary">
+              <Label className="text-xs text-lia-text-secondary">
                 Tempo (min)
               </Label>
               <Input
                 type="number"
                 value={question.time_estimate || 10}
                 onChange={(e) => onUpdate("time_estimate", parseInt(e.target.value) || 10)}
-                className="h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)]"
+                className="h-8 text-xs dark:bg-lia-bg-primary dark:border-lia-border-subtle border-[var(--lia-border-default)] bg-[var(--lia-bg-primary)]"
                 min={5}
                 max={60}
               />

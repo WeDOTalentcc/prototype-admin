@@ -58,7 +58,7 @@ export function KanbanCardInterviewButtons({
       {stageId === "sourcing" && (
         <div className="flex gap-1">
           <button
-            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
+            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
             onClick={(e) => {
               e.stopPropagation()
               onOpenDecisionFlowModal(candidate, "approve")
@@ -84,7 +84,7 @@ export function KanbanCardInterviewButtons({
       {stageId === "screening" && (
         <div className="flex gap-1">
           <button
-            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
+            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
             onClick={(e) => {
               e.stopPropagation()
               onApproveFromScreening(candidate)
@@ -114,7 +114,7 @@ export function KanbanCardInterviewButtons({
           {candidate.agendada ? (
             <>
               <button
-                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
+                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                 onClick={(e) => {
                   e.stopPropagation()
                   const teamsUrl =
@@ -207,7 +207,7 @@ export function KanbanCardInterviewButtons({
                 <span>Urgência</span>
               </button>
               <button
-                className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
+                className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                 onClick={(e) => {
                   e.stopPropagation()
                   setDecisionFlowCandidate(candidate)
@@ -225,7 +225,7 @@ export function KanbanCardInterviewButtons({
 
       {stageId === "offer" && (
         <button
-          className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover dark:text-lia-text-disabled rounded-full text-micro transition-colors motion-reduce:transition-none"
+          className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro transition-colors motion-reduce:transition-none"
           onClick={(e) => {
             e.stopPropagation()
           }}

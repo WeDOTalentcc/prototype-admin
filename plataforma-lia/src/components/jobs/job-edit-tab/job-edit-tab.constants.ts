@@ -78,15 +78,15 @@ export const stageTypeLabels: Record<string, string> = {
 }
 
 export const inputClass = (disabled: boolean) =>
-  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary" : ""}`
+  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary" : ""}`
 
 export const selectClass = (disabled: boolean) =>
-  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary" : ""}`
+  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary" : ""}`
 
-export const labelClass = "text-xs font-semibold lia-text-700 dark:text-lia-text-secondary uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3 block"
+export const labelClass = "text-xs font-semibold text-lia-text-primary uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3 block"
 
 export const groupHeaderClass =
-  "text-xs font-semibold lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3"
+  "text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3"
 
 export function countFilledFields(
   form: Record<string, unknown>,
@@ -113,7 +113,7 @@ export function formatDateValue(value: unknown): string {
 export function getCategoryBadge(category?: string) {
   switch (category) {
     case "system":
-      return { label: "Sistema", icon: Lock, color: "lia-text-400 bg-gray-50 dark:bg-lia-bg-secondary/50" }
+      return { label: "Sistema", icon: Lock, color: "text-lia-text-tertiary bg-lia-bg-secondary/50" }
     case "default":
       return { label: "Padrão", icon: Target, color: "text-wedo-cyan-dark bg-wedo-cyan/10" }
     case "custom":

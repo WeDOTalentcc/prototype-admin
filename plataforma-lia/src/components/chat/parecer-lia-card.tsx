@@ -54,7 +54,7 @@ function ScoreCircle({ score }: { score: number }) {
       <svg width={radius * 2} height={radius * 2} className="-rotate-90" aria-hidden="true">
         <circle
           stroke="currentColor"
-          className="lia-text-200 dark:lia-text-700"
+          className="text-lia-text-disabled"
           fill="transparent"
           strokeWidth={stroke}
           r={normalizedRadius}
@@ -86,14 +86,14 @@ function CompletenessBar({ score }: { score: number }) {
 
   return (
     <div className="flex items-center gap-2 flex-1">
-      <span className="text-micro font-medium lia-text-500 dark:text-lia-text-tertiary whitespace-nowrap">Completude</span>
-      <div className="flex-1 h-1.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+      <span className="text-micro font-medium text-lia-text-secondary whitespace-nowrap">Completude</span>
+      <div className="flex-1 h-1.5 bg-lia-interactive-active rounded-full overflow-hidden">
         <div
           className={cn("h-full rounded-full transition-[width,height] duration-700 ease-out", barColor)}
           style={{width: `${score}%`}}
         />
       </div>
-      <span className="font-['Inter',sans-serif] text-micro font-medium tabular-nums lia-text-600 dark:text-lia-text-tertiary">
+      <span className="font-['Inter',sans-serif] text-micro font-medium tabular-nums text-lia-text-secondary">
         {score}%
       </span>
     </div>
@@ -104,33 +104,33 @@ const sectionStatusConfig = {
   good: {
     icon: CheckCircle2,
     iconColor: "text-wedo-cyan",
-    textColor: "lia-text-700 dark:text-lia-text-secondary",
-    bg: "bg-gray-50 dark:bg-lia-bg-secondary/50",
-    border: "border-lia-border-subtle dark:border-lia-border-subtle",
+    textColor: "text-lia-text-primary",
+    bg: "bg-lia-bg-secondary/50",
+    border: "border-lia-border-subtle",
     extraBorder: "",
   },
   attention: {
     icon: AlertTriangle,
-    iconColor: "lia-text-500",
-    textColor: "lia-text-600 dark:text-lia-text-tertiary",
-    bg: "bg-gray-100/50 dark:bg-lia-bg-secondary/30",
-    border: "border-lia-border-default dark:border-lia-border-default",
+    iconColor: "text-lia-text-secondary",
+    textColor: "text-lia-text-secondary",
+    bg: "bg-lia-bg-tertiary/50/30",
+    border: "border-lia-border-default",
     extraBorder: "",
   },
   missing: {
     icon: AlertCircle,
-    iconColor: "lia-text-400",
-    textColor: "lia-text-500 dark:lia-text-500",
-    bg: "bg-gray-100 dark:bg-lia-bg-secondary/20",
-    border: "border-lia-border-default dark:border-lia-border-default",
+    iconColor: "text-lia-text-tertiary",
+    textColor: "text-lia-text-secondary",
+    bg: "bg-lia-bg-tertiary/20",
+    border: "border-lia-border-default",
     extraBorder: "border-dashed",
   },
 }
 
 const marketStatusColor = {
-  above: "text-wedo-cyan-dark dark:text-wedo-cyan",
-  aligned: "lia-text-600 dark:text-lia-text-tertiary",
-  below: "lia-text-900 dark:text-lia-text-primary font-semibold",
+  above: "text-wedo-cyan-dark",
+  aligned: "text-lia-text-secondary",
+  below: "text-lia-text-primary font-semibold",
 }
 
 export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerLIACardProps) {
@@ -146,7 +146,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <Brain className="w-4 h-4 text-wedo-cyan flex-shrink-0" />
-            <span className="text-xs font-semibold lia-text-900 dark:text-lia-text-primary uppercase tracking-wide font-['Open_Sans',sans-serif]">
+            <span className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide font-['Open_Sans',sans-serif]">
               Parecer LIA
             </span>
           </div>
@@ -157,7 +157,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
       {!expanded && data.recommendations.length > 0 && (
         <div className="mt-3 flex items-start gap-2">
           <Sparkles className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0 mt-0.5" />
-          <p className="text-xs lia-text-700 dark:text-lia-text-secondary line-clamp-2 font-['Open_Sans',sans-serif]">
+          <p className="text-xs text-lia-text-primary line-clamp-2 font-['Open_Sans',sans-serif]">
             {data.recommendations[0]}
           </p>
         </div>
@@ -167,7 +167,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
         aria-label={expanded ? "Ocultar detalhes do parecer LIA" : "Ver análise completa do parecer LIA"}
-        className="mt-3 flex items-center gap-1.5 text-xs font-medium lia-text-600 dark:text-lia-text-tertiary hover:lia-text-800 dark:hover:lia-text-200 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 rounded-md"
+        className="mt-3 flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-lia-border-default rounded-md"
       >
         {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         {expanded ? "Ocultar detalhes" : "Ver análise completa"}
@@ -183,30 +183,30 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
                 <div key={idx} className={cn("rounded-md p-3 border", config.bg, config.border, config.extraBorder)}>
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <Icon className={cn("w-3.5 h-3.5", config.iconColor)} />
-                    <span className="text-xs font-semibold lia-text-900 dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
+                    <span className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                       {section.title}
                     </span>
                   </div>
                   <ul className="space-y-0.5 ml-5">
                     {section.items.map((item, i) => (
-                      <li key={`item-${i}`} className="text-micro lia-text-600 dark:text-lia-text-tertiary list-disc font-['Open_Sans',sans-serif]">
+                      <li key={`item-${i}`} className="text-micro text-lia-text-secondary list-disc font-['Open_Sans',sans-serif]">
                         {item}
                       </li>
                     ))}
                   </ul>
                   {section.suggestions && section.suggestions.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-lia-border-subtle/50 dark:border-lia-border-subtle/50 space-y-1">
+                    <div className="mt-2 pt-2 border-t border-lia-border-subtle/50/50 space-y-1">
                       {section.suggestions.map((sug, i) => (
                         <div key={`sug-${i}`} className="flex items-start gap-1.5">
-                          <Lightbulb className="w-3 h-3 lia-text-400 flex-shrink-0 mt-0.5" />
-                          <span className="text-micro lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif] flex-1">
+                          <Lightbulb className="w-3 h-3 text-lia-text-tertiary flex-shrink-0 mt-0.5" />
+                          <span className="text-micro text-lia-text-secondary font-['Open_Sans',sans-serif] flex-1">
                             {sug}
                           </span>
                           {onAcceptSuggestion && (
                             <button
                               onClick={() => onAcceptSuggestion(sug)}
                               aria-label={`Aplicar sugestão: ${sug.slice(0, 50)}`}
-                              className="text-micro font-medium lia-text-500 hover:lia-text-700 dark:text-lia-text-tertiary dark:hover:lia-text-200 hover:underline flex-shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-400 rounded-md"
+                              className="text-micro font-medium text-lia-text-secondary hover:text-lia-text-primary hover:underline flex-shrink-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-lia-border-default rounded-md"
                             >
                               Aplicar
                             </button>
@@ -221,28 +221,28 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
           </div>
 
           {data.marketComparisons && data.marketComparisons.length > 0 && (
-            <div className="rounded-md bg-white/60 dark:bg-lia-bg-secondary/40 p-3">
+            <div className="rounded-md bg-white/60/40 p-3">
               <div className="flex items-center gap-1.5 mb-2">
                 <BarChart3 className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-xs font-semibold lia-text-900 dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
+                <span className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                   Comparativo de Mercado
                 </span>
               </div>
               <div className="space-y-1">
-                <div className="grid grid-cols-3 gap-2 text-micro font-medium lia-text-400 dark:lia-text-500 uppercase tracking-wider pb-1 border-b border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
+                <div className="grid grid-cols-3 gap-2 text-micro font-medium text-lia-text-tertiary uppercase tracking-wider pb-1 border-b border-lia-border-subtle/50/50">
                   <span>Campo</span>
                   <span>Sua vaga</span>
                   <span>Mercado</span>
                 </div>
                 {data.marketComparisons.map((comp, idx) => (
                   <div key={`comp-${idx}`} className="grid grid-cols-3 gap-2 py-1">
-                    <span className="text-micro lia-text-600 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+                    <span className="text-micro text-lia-text-secondary font-['Open_Sans',sans-serif]">
                       {comp.field}
                     </span>
                     <span className={cn("text-micro font-medium font-['Inter',sans-serif] tabular-nums", marketStatusColor[comp.status])}>
                       {comp.yourValue}
                     </span>
-                    <span className="text-micro lia-text-500 dark:text-lia-text-tertiary font-['Inter',sans-serif] tabular-nums">
+                    <span className="text-micro text-lia-text-secondary font-['Inter',sans-serif] tabular-nums">
                       {comp.marketValue}
                     </span>
                   </div>
@@ -252,41 +252,41 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
           )}
 
           {data.timeToFillEstimate && (
-            <div className="rounded-md bg-white/60 dark:bg-lia-bg-secondary/40 p-3">
+            <div className="rounded-md bg-white/60/40 p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Clock className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-xs font-semibold lia-text-900 dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
+                <span className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                   Tempo estimado para preenchimento
                 </span>
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="font-['Inter',sans-serif] text-lg font-semibold lia-text-900 dark:text-lia-text-primary tabular-nums">
+                <span className="font-['Inter',sans-serif] text-lg font-semibold text-lia-text-primary tabular-nums">
                   {data.timeToFillEstimate.days}
                 </span>
-                <span className="text-micro lia-text-500 dark:text-lia-text-tertiary">dias</span>
-                <span className="text-micro lia-text-400 dark:lia-text-500 ml-1">
+                <span className="text-micro text-lia-text-secondary">dias</span>
+                <span className="text-micro text-lia-text-tertiary ml-1">
                   ({data.timeToFillEstimate.rangeMin}-{data.timeToFillEstimate.rangeMax} dias)
                 </span>
               </div>
               <div className="flex items-center gap-1 mt-1">
-                <span className="text-micro lia-text-400 dark:lia-text-500">Confiança:</span>
-                <span className="font-['Inter',sans-serif] text-micro font-medium tabular-nums lia-text-500 dark:text-lia-text-tertiary">
+                <span className="text-micro text-lia-text-tertiary">Confiança:</span>
+                <span className="font-['Inter',sans-serif] text-micro font-medium tabular-nums text-lia-text-secondary">
                   {data.timeToFillEstimate.confidence}%
                 </span>
               </div>
             </div>
           )}
 
-          <div className="rounded-md bg-white/60 dark:bg-lia-bg-secondary/40 p-3">
+          <div className="rounded-md bg-white/60/40 p-3">
             <div className="flex items-center gap-1.5 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-wedo-cyan" />
-              <span className="text-xs font-semibold lia-text-900 dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <span className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Recomendações
               </span>
             </div>
             <ol className="space-y-1 ml-4">
               {data.recommendations.map((rec, idx) => (
-                <li key={`rec-${idx}`} className="text-micro lia-text-600 dark:text-lia-text-tertiary list-decimal font-['Open_Sans',sans-serif]">
+                <li key={`rec-${idx}`} className="text-micro text-lia-text-secondary list-decimal font-['Open_Sans',sans-serif]">
                   {rec}
                 </li>
               ))}
@@ -296,7 +296,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
       )}
 
       {data.dataSourcesUsed && data.dataSourcesUsed.length > 0 && (
-        <p className="text-micro lia-text-400 dark:lia-text-500 mt-3 italic font-['Open_Sans',sans-serif]">
+        <p className="text-micro text-lia-text-tertiary mt-3 italic font-['Open_Sans',sans-serif]">
           Baseado em: {data.dataSourcesUsed.join(", ")}
         </p>
       )}

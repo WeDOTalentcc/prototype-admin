@@ -249,10 +249,10 @@ export function SmartImportZone({
           <div className="w-10 h-10 rounded-md flex items-center justify-center transition-transform motion-reduce:transition-none duration-200 bg-gray-100 dark:bg-lia-bg-secondary">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
-          <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
+          <h3 className={`${textStyles.title}`}>
             {title}
           </h3>
-          <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary max-w-md`}>
+          <p className={`${textStyles.bodySmall} max-w-md`}>
             {description}
           </p>
           <div className="flex items-center gap-2">
@@ -283,7 +283,7 @@ export function SmartImportZone({
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-1.5 rounded-md text-xs lia-text-800 dark:text-lia-text-primary hover:lia-text-900 font-['Open_Sans',sans-serif]"
+                className="gap-1.5 rounded-md text-xs text-lia-text-primary hover:text-lia-text-primary font-['Open_Sans',sans-serif]"
                 onClick={(e) => {
                   e.stopPropagation()
                   if (!disabled) handleDownloadTemplate()
@@ -305,7 +305,7 @@ export function SmartImportZone({
                   <Badge 
                     key={field} 
                     variant="secondary" 
-                    className="text-micro bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary rounded-md"
+                    className="text-micro bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary rounded-md"
                   >
                     {field}
                   </Badge>
@@ -330,9 +330,9 @@ export function SmartImportZone({
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           </div>
-          <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
+          <h3 className={`${textStyles.title}`}>
             Enviando arquivo...
           </h3>
           <p className={textStyles.bodySmall}>
@@ -350,14 +350,14 @@ export function SmartImportZone({
           <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary animate-pulse motion-reduce:animate-none">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
-          <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
+          <h3 className={`${textStyles.title}`}>
             LIA está analisando...
           </h3>
           <p className={textStyles.bodySmall}>
             Identificando campos e validando dados
           </p>
           <div className="flex items-center gap-2 mt-2">
-            <ThinkingDots dotClassName="bg-gray-900 dark:lia-bg-50" size="md" />
+            <ThinkingDots dotClassName="bg-gray-900" size="md" />
           </div>
         </div>
       </CardContent>
@@ -370,10 +370,10 @@ export function SmartImportZone({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary">
-              <Eye className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+              <Eye className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
+              <h3 className={`${textStyles.title}`}>
                 Pré-visualização dos Dados
               </h3>
               <p className={textStyles.caption} aria-live="polite" aria-atomic="true">
@@ -385,7 +385,7 @@ export function SmartImportZone({
             variant="ghost"
             size="sm"
             onClick={resetState}
-            className="rounded-md lia-text-800 dark:text-lia-text-primary hover:lia-text-900"
+            className="rounded-md text-lia-text-primary hover:text-lia-text-primary"
           >
             <X className="w-3.5 h-3.5" />
           </Button>
@@ -399,7 +399,7 @@ export function SmartImportZone({
               {previewData.matchedFields.length > 0 && (
                 <div className="flex items-center gap-1.5">
                   <CheckCircle className="w-3.5 h-3.5 text-status-success" />
-                  <span className={`${textStyles.labelSmall} dark:text-lia-text-tertiary`}>
+                  <span className={`${textStyles.labelSmall}`}>
                     Campos identificados:
                   </span>
                   {previewData.matchedFields.map((field) => (
@@ -412,7 +412,7 @@ export function SmartImportZone({
               {previewData.unmatchedFields.length > 0 && (
                 <div className="flex items-center gap-1.5 mt-1">
                   <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
-                  <span className={`${textStyles.labelSmall} dark:text-lia-text-tertiary`} aria-live="polite" aria-atomic="true">
+                  <span className={`${textStyles.labelSmall}`} aria-live="polite" aria-atomic="true">
                     Não encontrados:
                   </span>
                   {previewData.unmatchedFields.map((field) => (
@@ -433,7 +433,7 @@ export function SmartImportZone({
                         {previewData.headers.map((header, idx) => (
                           <th 
                             key={idx} 
-                            className="px-2 py-1.5 text-left text-micro font-medium lia-text-600 dark:text-lia-text-tertiary border-b border-lia-border-subtle dark:border-lia-border-subtle font-['Open_Sans',sans-serif]"
+                            className="px-2 py-1.5 text-left text-micro font-medium text-lia-text-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle font-['Open_Sans',sans-serif]"
                           >
                             {header}
                           </th>
@@ -446,7 +446,7 @@ export function SmartImportZone({
                           {previewData.headers.map((header, colIdx) => (
                             <td 
                               key={colIdx} 
-                              className="px-2 py-1.5 text-xs lia-text-800 dark:text-lia-text-primary border-b border-gray-50 dark:lia-border-800 truncate max-w-sidebar-content font-['Open_Sans',sans-serif]"
+                              className="px-2 py-1.5 text-xs text-lia-text-primary border-b border-gray-50 dark:lia-border-800 truncate max-w-sidebar-content font-['Open_Sans',sans-serif]"
                             >
                               {row[header] || '-'}
                             </td>
@@ -457,7 +457,7 @@ export function SmartImportZone({
                   </table>
                 </div>
                 {previewData.totalRows > 5 && (
-                  <div className="px-2 py-1.5 text-center text-micro lia-text-600 bg-gray-50/50 dark:bg-lia-bg-secondary/30 font-['Open_Sans',sans-serif]">
+                  <div className="px-2 py-1.5 text-center text-micro text-lia-text-secondary bg-gray-50/50 dark:bg-lia-bg-secondary/30 font-['Open_Sans',sans-serif]">
                     ... e mais {previewData.totalRows - 5} registros
                   </div>
                 )}
@@ -477,7 +477,7 @@ export function SmartImportZone({
               <Button
                 size="sm"
                 onClick={handleConfirmImport}
-                className="gap-1.5 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
+                className="gap-1.5 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 Confirmar Importação
@@ -494,9 +494,9 @@ export function SmartImportZone({
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           </div>
-          <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
+          <h3 className={`${textStyles.title}`}>
             Importando dados...
           </h3>
           <p className={textStyles.bodySmall}>
@@ -514,7 +514,7 @@ export function SmartImportZone({
           <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-success/15 dark:bg-status-success/30">
             <CheckCircle className="w-4 h-4 text-status-success dark:text-status-success" />
           </div>
-          <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
+          <h3 className={`${textStyles.title}`}>
             Importação Concluída!
           </h3>
           <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success`}>
@@ -541,7 +541,7 @@ export function SmartImportZone({
           <div className="w-10 h-10 rounded-md flex items-center justify-center bg-status-error/15 dark:bg-status-error/30">
             <AlertCircle className="w-4 h-4 text-status-error dark:text-status-error" />
           </div>
-          <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
+          <h3 className={`${textStyles.title}`}>
             Erro na Importação
           </h3>
           <p className={`${textStyles.bodySmall} text-status-error dark:text-status-error max-w-md`}>

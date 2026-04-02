@@ -62,14 +62,14 @@ export function SCMSectionPerguntasEdit({
   return (
     <>
       {/* WSI Generation Controls */}
-      <div className="px-5 py-3 border-t border-lia-border-subtle bg-gray-50/30">
+      <div className="px-5 py-3 border-t border-lia-border-subtle bg-lia-bg-secondary/30">
         {(showTechWarning || showBehavWarning) && (
           <div className="mb-3 rounded-md border border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/30 dark:border-status-warning/30 px-3 py-2.5">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="w-3.5 h-3.5 text-status-warning dark:text-status-warning mt-0.5 shrink-0" />
+              <AlertTriangle className="w-3.5 h-3.5 text-status-warning mt-0.5 shrink-0" />
               <div className="space-y-1">
                 {showTechWarning && (
-                  <p className="text-xs text-status-warning dark:text-status-warning leading-relaxed">
+                  <p className="text-xs text-status-warning leading-relaxed">
                     {techSkillsCount === 0
                       ? 'Nenhuma competência técnica cadastrada — adicione competências na seção Job Description para gerar perguntas de triagem.'
                       : `Apenas ${techSkillsCount} competência${techSkillsCount === 1 ? '' : 's'} técnica${techSkillsCount === 1 ? '' : 's'} cadastrada${techSkillsCount === 1 ? '' : 's'}. Para triagem completa, recomendamos pelo menos 9.`
@@ -77,7 +77,7 @@ export function SCMSectionPerguntasEdit({
                   </p>
                 )}
                 {showBehavWarning && (
-                  <p className="text-xs text-status-warning dark:text-status-warning leading-relaxed">
+                  <p className="text-xs text-status-warning leading-relaxed">
                     {behavCompCount === 0
                       ? 'Nenhuma competência comportamental cadastrada — a triagem usará avaliação padrão.'
                       : `${behavCompCount} competência${behavCompCount === 1 ? '' : 's'} comportamental${behavCompCount === 1 ? '' : 's'} (recomendado: 5 para cobertura completa).`
@@ -85,7 +85,7 @@ export function SCMSectionPerguntasEdit({
                   </p>
                 )}
                 {showFullDisabled && (
-                  <p className="text-micro text-status-warning dark:text-status-warning italic">
+                  <p className="text-micro text-status-warning italic">
                     Modo Completo requer pelo menos 5 competências técnicas.
                   </p>
                 )}
@@ -96,7 +96,7 @@ export function SCMSectionPerguntasEdit({
 
         <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <button onClick={handleGenerateWSI('compact')} disabled={isGeneratingWSI}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors motion-reduce:transition-none disabled:opacity-50 ${wsiGenerationMode === 'compact' ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900/20 ring-offset-1 dark:ring-gray-100/20' : 'bg-white lia-text-strong border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700'}`}>
+            className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors motion-reduce:transition-none disabled:opacity-50 ${wsiGenerationMode === 'compact' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg ring-2 ring-lia-btn-primary-bg/20 ring-offset-1' : 'bg-white text-lia-text-primary border-lia-border-default hover:bg-lia-interactive-hover hover:border-lia-border-medium hover:bg-lia-interactive-hover'}`}>
             {isGeneratingWSI && wsiGenerationMode === 'compact' ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
             ) : (
@@ -108,7 +108,7 @@ export function SCMSectionPerguntasEdit({
           </button>
           <div className="relative flex-1 group/full">
             <button onClick={handleGenerateWSI('full')} disabled={isGeneratingWSI || techSkillsCount < 5}
-              className={`w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors motion-reduce:transition-none disabled:opacity-50 ${wsiGenerationMode === 'full' ? 'bg-gray-900 text-white border-gray-900 ring-2 ring-gray-900/20 ring-offset-1 dark:ring-gray-100/20' : 'bg-white lia-text-strong border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:border-lia-border-default dark:hover:bg-gray-700'}`}>
+              className={`w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors motion-reduce:transition-none disabled:opacity-50 ${wsiGenerationMode === 'full' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg ring-2 ring-lia-btn-primary-bg/20 ring-offset-1' : 'bg-white text-lia-text-primary border-lia-border-default hover:bg-lia-interactive-hover hover:border-lia-border-medium hover:bg-lia-interactive-hover'}`}>
               {isGeneratingWSI && wsiGenerationMode === 'full' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
               ) : (
@@ -119,37 +119,37 @@ export function SCMSectionPerguntasEdit({
               )}
             </button>
             {techSkillsCount < 5 && (
-              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-52 p-2 bg-gray-900 text-white text-micro rounded-md opacity-0 invisible group-hover/full:opacity-100 group-hover/full:visible transition-opacity motion-reduce:transition-none z-50 text-center">
+              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-52 p-2 bg-lia-btn-primary-bg text-lia-btn-primary-text text-micro rounded-md opacity-0 invisible group-hover/full:opacity-100 group-hover/full:visible transition-opacity motion-reduce:transition-none z-50 text-center">
                 <p className="leading-relaxed">Adicione pelo menos 5 competências técnicas na seção Job Description para habilitar o modo Completo.</p>
-                <div className="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-lia-btn-primary-bg"></div>
               </div>
             )}
           </div>
           <div className="relative group">
             <Brain className="w-5 h-5 cursor-help text-wedo-cyan" />
-            <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-64 p-3 bg-gray-900 text-white text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none z-50">
+            <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 w-64 p-3 bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none z-50">
               <p className="leading-relaxed" aria-live="polite" aria-atomic="true">A LIA gera perguntas seguindo a metodologia WeDoTalent Skill Index, calibrando complexidade conforme senioridade e skills da vaga.</p>
-              <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+              <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 rotate-45 w-2 h-2 bg-lia-btn-primary-bg"></div>
             </div>
           </div>
         </div>
 
         {/* WSI Generation Progress */}
         {(isGeneratingWSI || wsiGenerationCompleted) && wsiGenerationStep > 0 && (
-          <div className="mt-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary overflow-hidden" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="mt-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary overflow-hidden" role="status" aria-live="polite" aria-label="Carregando...">
             <div className="flex items-center gap-3 px-5 py-3 cursor-pointer" onClick={() => setWsiProgressCollapsed(!wsiProgressCollapsed)}>
               <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0">
                 {wsiGenerationStep < 4 ? (
-                  <Loader2 className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary animate-spin motion-reduce:animate-none" />
+                  <Loader2 className="w-5 h-5 text-lia-text-primary animate-spin motion-reduce:animate-none" />
                 ) : (
                   <Brain className="w-5 h-5 text-wedo-cyan" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-base-ui font-semibold lia-text-strong">
+                <p className="text-base-ui font-semibold text-lia-text-primary">
                   {wsiGenerationStep < 4 ? 'Gerando Roteiro e Perguntas de Triagem...' : 'Roteiro e Perguntas de Triagem'}
                 </p>
-                <p className="text-xs lia-text-base mt-0.5">
+                <p className="text-xs text-lia-text-secondary mt-0.5">
                   {wsiGenerationStep < 4
                     ? `Analisando ${wsiGenerationMode === 'compact' ? 'modo compacto' : 'modo completo'}`
                     : `Status: ${wsiGeneratedCount} perguntas geradas · Metodologia WeDoTalent Skill Index (WSI) Completa`
@@ -158,7 +158,7 @@ export function SCMSectionPerguntasEdit({
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 {wsiGenerationStep >= 4 && (
-                  <button onClick={(e) => { e.stopPropagation(); setWsiGenerationCompleted(false); setWsiGenerationStep(0); setWsiDynamicMessage(''); setWsiGenerationContext(null) }} className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none">
+                  <button onClick={(e) => { e.stopPropagation(); setWsiGenerationCompleted(false); setWsiGenerationStep(0); setWsiDynamicMessage(''); setWsiGenerationContext(null) }} className="p-1 hover:bg-lia-interactive-hover rounded-md transition-colors motion-reduce:transition-none">
                     <X className="w-3.5 h-3.5 lia-text-secondary" />
                   </button>
                 )}
@@ -197,7 +197,7 @@ export function SCMSectionPerguntasEdit({
                     </div>
                     {idx < arr.length - 1 && (
                       <div className="flex-1 flex items-center" style={{marginTop: '11px'}}>
-                        <div className={`w-full h-0.5 rounded-full transition-[width,height] duration-700 ${wsiGenerationStep > step.num ? 'bg-wedo-cyan' : 'bg-gray-200'}`} />
+                        <div className={`w-full h-0.5 rounded-full transition-[width,height] duration-700 ${wsiGenerationStep > step.num ? 'bg-wedo-cyan' : 'bg-lia-interactive-active'}`} />
                       </div>
                     )}
                   </React.Fragment>
@@ -207,23 +207,23 @@ export function SCMSectionPerguntasEdit({
 
             {wsiGenerationStep < 4 && wsiTypedMessage && (
               <div className="px-5 pb-3 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-900 animate-pulse motion-reduce:animate-none" />
-                <p className="text-base-ui lia-text-strong">
+                <div className="w-1.5 h-1.5 rounded-full bg-lia-btn-primary-bg animate-pulse motion-reduce:animate-none" />
+                <p className="text-base-ui text-lia-text-primary">
                   {wsiTypedMessage}
                   {wsiTypedMessage.length < wsiDynamicMessage.length && (
-                    <span className="inline-block w-[2px] h-[14px] bg-gray-900 ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />
+                    <span className="inline-block w-[2px] h-[14px] bg-lia-btn-primary-bg ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />
                   )}
                 </p>
               </div>
             )}
 
             {!wsiProgressCollapsed && (
-              <div className="px-5 pb-4 pt-1 space-y-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="px-5 pb-4 pt-1 space-y-3 border-t border-lia-border-subtle">
                 {wsiGenerationStep >= 1 && wsiGenerationContext && (
                   <div className="pt-2">
                     <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-0.5">Cargo analisado</p>
-                    <p className="text-xs lia-text-strong">
-                      {wsiGenerationContext.title}{wsiGenerationContext.seniority ? <span className="text-lia-text-secondary dark:text-lia-text-tertiary"> · {wsiGenerationContext.seniority}</span> : ''}
+                    <p className="text-xs text-lia-text-primary">
+                      {wsiGenerationContext.title}{wsiGenerationContext.seniority ? <span className="text-lia-text-secondary"> · {wsiGenerationContext.seniority}</span> : ''}
                     </p>
                   </div>
                 )}
@@ -234,7 +234,7 @@ export function SCMSectionPerguntasEdit({
                         <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Responsabilidades Chave</p>
                         <div className="flex flex-wrap gap-1">
                           {wsiGenerationContext.responsibilities.map((resp: string, i: number) => (
-                            <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">
+                            <span key={`resp-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle rounded-full">
                               {resp.length > 35 ? resp.slice(0, 35) + '...' : resp}
                             </span>
                           ))}
@@ -246,17 +246,17 @@ export function SCMSectionPerguntasEdit({
                         <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Competências Técnicas</p>
                         <div className="flex flex-wrap gap-1">
                           {wsiGenerationContext.technicalSkills.map((skill: string, i: number) => (
-                            <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{skill}</span>
+                            <span key={`tech-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle rounded-full">{skill}</span>
                           ))}
                         </div>
                       </div>
                     )}
                     {wsiGenerationContext.behavioralCompetencies.length > 0 && (
                       <div>
-                        <p className="text-micro font-semibold text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wider mb-1">Competências Comportamentais</p>
+                        <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider mb-1">Competências Comportamentais</p>
                         <div className="flex flex-wrap gap-1">
                           {wsiGenerationContext.behavioralCompetencies.map((comp: string, i: number) => (
-                            <span key={`behav-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{comp}</span>
+                            <span key={`behav-${i}`} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle rounded-full">{comp}</span>
                           ))}
                         </div>
                       </div>
@@ -267,7 +267,7 @@ export function SCMSectionPerguntasEdit({
                   <div>
                     <p className="text-micro font-semibold lia-text-secondary uppercase tracking-wider mb-1">Metodologias Utilizadas para Gerar Perguntas</p>
                     {wsiGenerationStep >= 4 && wsiGenerationContext?.methodologyBreakdown && Object.keys(wsiGenerationContext.methodologyBreakdown).length > 0 ? (
-                      <p className="text-xs lia-text-base">
+                      <p className="text-xs text-lia-text-secondary">
                         {Object.entries(wsiGenerationContext.methodologyBreakdown)
                           .filter(([key]) => key !== 'Dreyfus')
                           .map(([method, count]) => {
@@ -279,7 +279,7 @@ export function SCMSectionPerguntasEdit({
                     ) : (
                       <div className="flex flex-wrap gap-1.5">
                         {['CBI', 'Bloom', 'Big Five', 'Dreyfus'].map(m => (
-                          <span key={m} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-tertiary border border-lia-border-subtle dark:border-lia-border-default rounded-full">{m}</span>
+                          <span key={m} className="inline-flex px-2.5 py-0.5 text-micro font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle rounded-full">{m}</span>
                         ))}
                       </div>
                     )}
@@ -288,60 +288,60 @@ export function SCMSectionPerguntasEdit({
                 {wsiGenerationStep >= 4 && wsiGenerationContext && (
                   <div className="space-y-4 pt-1">
                     <div>
-                      <p className="text-base-ui lia-text-strong">
+                      <p className="text-base-ui text-lia-text-primary">
                         {wsiSummaryTypedText}
-                        {!wsiSummaryTypingDone && <span className="inline-block w-[2px] h-[14px] bg-gray-900 ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />}
+                        {!wsiSummaryTypingDone && <span className="inline-block w-[2px] h-[14px] bg-lia-btn-primary-bg ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />}
                       </p>
                     </div>
                     {wsiSummaryTypingDone && (<>
                       <div className="space-y-1.5 pl-1">
                         {(wsiGenerationContext.blockBreakdown?.[2] || 0) > 0 && (
-                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui lia-text-strong"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[2]} perguntas de elegibilidade</span>, para validar aderência mínima ao cargo</p></div>
+                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[2]} perguntas de elegibilidade</span>, para validar aderência mínima ao cargo</p></div>
                         )}
                         {(wsiGenerationContext.blockBreakdown?.[3] || 0) > 0 && (
-                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui lia-text-strong"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[3]} perguntas técnicas</span>, para investigar o nível de conhecimento e experiência prática</p></div>
+                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[3]} perguntas técnicas</span>, para investigar o nível de conhecimento e experiência prática</p></div>
                         )}
                         {(wsiGenerationContext.blockBreakdown?.[4] || 0) > 0 && (
-                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui lia-text-strong"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[4]} perguntas comportamentais</span>, para explorar as competências exigidas para a vaga</p></div>
+                          <div className="flex items-start gap-2"><span className="text-lia-text-disabled mt-0.5">•</span><p className="text-base-ui text-lia-text-primary"><span className="font-semibold">{wsiGenerationContext.blockBreakdown[4]} perguntas comportamentais</span>, para explorar as competências exigidas para a vaga</p></div>
                         )}
                       </div>
                       <div className="space-y-1">
-                        <p className="text-base-ui lia-text-strong">Ao todo, a triagem será composta por <span className="font-semibold">{wsiGeneratedCount} perguntas</span>.</p>
-                        <p className="text-base-ui lia-text-strong">O tempo médio estimado de triagem é de <span className="font-semibold">15 a 20 minutos</span>, considerando o tempo de leitura e resposta do candidato.</p>
+                        <p className="text-base-ui text-lia-text-primary">Ao todo, a triagem será composta por <span className="font-semibold">{wsiGeneratedCount} perguntas</span>.</p>
+                        <p className="text-base-ui text-lia-text-primary">O tempo médio estimado de triagem é de <span className="font-semibold">15 a 20 minutos</span>, considerando o tempo de leitura e resposta do candidato.</p>
                       </div>
                       {!wsiSummaryExpanded ? (
-                        <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
+                        <button onClick={() => setWsiSummaryExpanded(true)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
                           <ChevronDown className="w-3.5 h-3.5" />Ver detalhes completos
                         </button>
                       ) : (
                         <>
-                          <div><p className="text-base-ui font-semibold lia-text-strong mb-1">Próximo passo</p><p className="text-base-ui lia-text-strong">Selecione as perguntas em cada um dos blocos abaixo.</p></div>
+                          <div><p className="text-base-ui font-semibold text-lia-text-primary mb-1">Próximo passo</p><p className="text-base-ui text-lia-text-primary">Selecione as perguntas em cada um dos blocos abaixo.</p></div>
                           <div className="space-y-1.5">
-                            <p className="text-base-ui lia-text-strong">As perguntas foram geradas com base na metodologia <span className="font-semibold text-lia-text-primary">WeDoTalent Skill Index</span>, considerando:</p>
+                            <p className="text-base-ui text-lia-text-primary">As perguntas foram geradas com base na metodologia <span className="font-semibold text-lia-text-primary">WeDoTalent Skill Index</span>, considerando:</p>
                             <div className="space-y-0.5 pl-1">
-                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">•</span><p className="text-base-ui lia-text-base">Senioridade do cargo</p></div>
-                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">•</span><p className="text-base-ui lia-text-base">Responsabilidades e competências mapeadas</p></div>
-                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">•</span><p className="text-base-ui lia-text-base">Metodologias de avaliação (CBI, Bloom, Big Five e Dreyfus)</p></div>
+                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">•</span><p className="text-base-ui text-lia-text-secondary">Senioridade do cargo</p></div>
+                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">•</span><p className="text-base-ui text-lia-text-secondary">Responsabilidades e competências mapeadas</p></div>
+                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">•</span><p className="text-base-ui text-lia-text-secondary">Metodologias de avaliação (CBI, Bloom, Big Five e Dreyfus)</p></div>
                             </div>
                           </div>
-                          <p className="text-base-ui lia-text-base" aria-live="polite" aria-atomic="true">As perguntas estão organizadas em ordem de prioridade, mas você pode escolher aquelas que julgar mais adequadas ao contexto da vaga.</p>
-                          <p className="text-base-ui lia-text-strong font-semibold">Caso deseje perguntas adicionais, utilize a opção de adicionar perguntas personalizadas manualmente em cada bloco.</p>
+                          <p className="text-base-ui text-lia-text-secondary" aria-live="polite" aria-atomic="true">As perguntas estão organizadas em ordem de prioridade, mas você pode escolher aquelas que julgar mais adequadas ao contexto da vaga.</p>
+                          <p className="text-base-ui text-lia-text-primary font-semibold">Caso deseje perguntas adicionais, utilize a opção de adicionar perguntas personalizadas manualmente em cada bloco.</p>
                           <div className="border-t border-lia-border-subtle pt-3">
-                            <p className="text-base-ui font-semibold lia-text-strong mb-1.5">Finalização</p>
-                            <p className="text-base-ui lia-text-strong mb-1">Após concluir a seleção das perguntas:</p>
+                            <p className="text-base-ui font-semibold text-lia-text-primary mb-1.5">Finalização</p>
+                            <p className="text-base-ui text-lia-text-primary mb-1">Após concluir a seleção das perguntas:</p>
                             <div className="space-y-0.5 pl-1">
-                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">1.</span><p className="text-base-ui lia-text-base">Salve as alterações</p></div>
-                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">2.</span><p className="text-base-ui lia-text-base">Inicie o disparo da triagem</p></div>
-                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">3.</span><p className="text-base-ui lia-text-base" aria-live="polite" aria-atomic="true">A LIA realizará a avaliação inicial e sinalizará os candidatos aprovados para a próxima etapa</p></div>
+                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">1.</span><p className="text-base-ui text-lia-text-secondary">Salve as alterações</p></div>
+                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">2.</span><p className="text-base-ui text-lia-text-secondary">Inicie o disparo da triagem</p></div>
+                              <div className="flex items-start gap-2"><span className="lia-text-secondary mt-0.5">3.</span><p className="text-base-ui text-lia-text-secondary" aria-live="polite" aria-atomic="true">A LIA realizará a avaliação inicial e sinalizará os candidatos aprovados para a próxima etapa</p></div>
                             </div>
                           </div>
                           {wsiGenerationContext.companyStandardFound && (
                             <div className="flex items-center gap-1.5 pt-1">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-status-success dark:text-status-success" />
-                              <span className="text-xs lia-text-base">Perguntas padrão da empresa incluídas</span>
+                              <CheckCircle2 className="w-3.5 h-3.5 text-status-success" />
+                              <span className="text-xs text-lia-text-secondary">Perguntas padrão da empresa incluídas</span>
                             </div>
                           )}
-                          <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none pt-1">
+                          <button onClick={() => setWsiSummaryExpanded(false)} className="flex items-center gap-1.5 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none pt-1">
                             <ChevronUp className="w-3.5 h-3.5" />Recolher detalhes
                           </button>
                         </>
@@ -391,54 +391,54 @@ export function SCMSectionPerguntasEdit({
             const informativeCount = blockQuestions.length - eliminatoryCount
 
             return (
-              <div key={block.id} className={`border rounded-md overflow-hidden ${block.editable ? 'border-lia-border-subtle' : 'border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/30'}`}>
-                <div className={`flex items-center justify-between p-3 cursor-pointer transition-colors motion-reduce:transition-none ${block.editable ? 'bg-gray-50 hover:bg-gray-100 dark:bg-lia-bg-secondary dark:hover:bg-gray-700' : 'bg-gray-100/80 dark:bg-lia-bg-secondary/50'}`}
+              <div key={block.id} className={`border rounded-md overflow-hidden ${block.editable ? 'border-lia-border-subtle' : 'border-lia-border-subtle bg-lia-bg-secondary/50/30'}`}>
+                <div className={`flex items-center justify-between p-3 cursor-pointer transition-colors motion-reduce:transition-none ${block.editable ? 'bg-lia-bg-secondary hover:bg-lia-bg-tertiary hover:bg-lia-interactive-hover' : 'bg-lia-bg-tertiary/80/50'}`}
                   // @ts-ignore TODO: fix type — Argument of type '(prev: number[]) => (string | number)[]' is not assignable to 
                   onClick={() => setExpandedBlocks(prev => isExpanded ? prev.filter(id => id !== block.id) : [...prev, block.id])}>
                   <div className="flex items-center gap-2">
-                    <span className={`w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center ${block.editable ? 'bg-gray-700' : 'bg-gray-400'}`}>{block.id}</span>
+                    <span className={`w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center ${block.editable ? 'bg-lia-btn-primary-bg' : 'bg-lia-border-medium'}`}>{block.id}</span>
                     <div>
-                      <span className={`text-xs font-semibold ${block.editable ? 'text-lia-text-primary' : 'text-lia-text-primary dark:text-lia-text-primary'}`}>{block.name}</span>
-                      <span className="text-micro lia-text-base ml-2">({block.duration})</span>
+                      <span className={`text-xs font-semibold ${block.editable ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>{block.name}</span>
+                      <span className="text-micro text-lia-text-secondary ml-2">({block.duration})</span>
                     </div>
-                    {!block.editable && <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-200 lia-text-base ml-1">Automático</Badge>}
+                    {!block.editable && <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-secondary ml-1">Automático</Badge>}
                   </div>
                   <div className="flex items-center gap-2">
                     {block.editable && blockQuestions.length > 0 && (
                       <>
                         {eliminatoryCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-status-error/10 text-status-error border border-status-error/30">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Badge>}
-                        {informativeCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-gray-100 lia-text-strong">{informativeCount} Informativa{informativeCount > 1 ? 's' : ''}</Badge>}
+                        {informativeCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{informativeCount} Informativa{informativeCount > 1 ? 's' : ''}</Badge>}
                       </>
                     )}
                     {blockGenerated.length > 0 && (
                       <>
-                        <Badge className="text-micro px-2 py-0.5 bg-gray-100 lia-text-base border border-lia-border-subtle">{acceptedCountForBlock}/{blockGenerated.length} aceitas</Badge>
+                        <Badge className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">{acceptedCountForBlock}/{blockGenerated.length} aceitas</Badge>
                         {acceptedCountForBlock < blockGenerated.length && <span className="w-2 h-2 rounded-full bg-status-warning animate-pulse motion-reduce:animate-none"></span>}
                       </>
                     )}
-                    {isExpanded ? <ChevronUp className="w-4 h-4 lia-text-base" /> : <ChevronDown className="w-4 h-4 lia-text-base" />}
+                    {isExpanded ? <ChevronUp className="w-4 h-4 text-lia-text-secondary" /> : <ChevronDown className="w-4 h-4 text-lia-text-secondary" />}
                   </div>
                 </div>
 
                 {isExpanded && (
-                  <div className={`p-3 space-y-2 ${!block.editable ? 'bg-gray-50/30' : ''}`}>
+                  <div className={`p-3 space-y-2 ${!block.editable ? 'bg-lia-bg-secondary/30' : ''}`}>
                     {!block.editable ? (
                       WSI_AUTOMATIC_MESSAGES[block.id] ? (
-                        <div className="rounded-md border border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary/50 overflow-hidden">
-                          <div className="px-3 py-2 border-b border-lia-border-subtle dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary">
-                            <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
+                        <div className="rounded-md border border-lia-border-default bg-lia-bg-secondary/50 overflow-hidden">
+                          <div className="px-3 py-2 border-b border-lia-border-subtle bg-lia-bg-tertiary">
+                            <p className="text-xs font-medium text-lia-text-primary">{WSI_AUTOMATIC_MESSAGES[block.id].title}</p>
                           </div>
                           <div className="p-3">
-                            <div className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</div>
+                            <div className="text-xs text-lia-text-primary leading-relaxed whitespace-pre-line">{formatMessageWithVariables(WSI_AUTOMATIC_MESSAGES[block.id].message)}</div>
                           </div>
-                          <div className="px-3 py-2 border-t border-lia-border-subtle dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary/50">
-                            <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
+                          <div className="px-3 py-2 border-t border-lia-border-subtle bg-lia-bg-secondary/50">
+                            <p className="text-micro text-lia-text-secondary italic">{WSI_AUTOMATIC_MESSAGES[block.id].note}</p>
                           </div>
                         </div>
                       ) : (
                         <div className="p-3 bg-lia-bg-primary/60 border border-lia-border-subtle rounded-md">
-                          <p className="text-xs lia-text-strong italic">{block.description}</p>
-                          <p className="text-micro lia-text-base mt-1">Este bloco é gerenciado automaticamente pela LIA</p>
+                          <p className="text-xs text-lia-text-primary italic">{block.description}</p>
+                          <p className="text-micro text-lia-text-secondary mt-1">Este bloco é gerenciado automaticamente pela LIA</p>
                         </div>
                       )
                     ) : (
@@ -453,7 +453,7 @@ export function SCMSectionPerguntasEdit({
                           </div>
                         )}
                         {blockQuestions.length === 0 && blockGenerated.length === 0 && block.id !== 2 ? (
-                          <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-default border-dashed rounded-md text-center">
+                          <div className="p-4 bg-lia-bg-secondary/50 border border-lia-border-subtle border-dashed rounded-md text-center">
                             <p className="text-xs lia-text-secondary">Nenhuma pergunta neste bloco</p>
                           </div>
                         ) : block.id !== 2 || blockQuestions.length > 0 || blockGenerated.length > 0 ? (
@@ -462,7 +462,7 @@ export function SCMSectionPerguntasEdit({
                               const isDeactivated = deactivatedQuestions.has(item.id)
                               const isDetailsExpanded = expandedQuestionDetails.has(item.id)
                               return (
-                                <div key={item.id || idx} className={`p-3 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md group hover:border-lia-border-default dark:hover:border-gray-600 transition-colors motion-reduce:transition-none ${isDeactivated ? 'opacity-50' : ''}`}>
+                                <div key={item.id || idx} className={`p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md group hover:border-lia-border-default transition-colors motion-reduce:transition-none ${isDeactivated ? 'opacity-50' : ''}`}>
                                   <div className="flex items-start gap-3">
                                     <SCMQuestionDetailView
                                       item={item}
@@ -473,15 +473,15 @@ export function SCMSectionPerguntasEdit({
                                     />
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none shrink-0">
                                       {isDeactivated ? (
-                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-gray-100 text-lia-text-tertiary border border-lia-border-subtle dark:bg-lia-bg-elevated dark:text-lia-text-tertiary dark:border-lia-border-default">Inativa</Badge>
+                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-lia-bg-tertiary text-lia-text-tertiary border border-lia-border-subtle">Inativa</Badge>
                                       ) : (
-                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-success/10 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30">
+                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-status-success/10 text-status-success border border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30">
                                           <CheckCircle className="w-3 h-3 mr-1" />Aceita
                                         </Badge>
                                       )}
                                     </div>
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
-                                      <button className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${isDeactivated ? 'hover:bg-status-success/10' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+                                      <button className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${isDeactivated ? 'hover:bg-status-success/10' : 'hover:bg-lia-interactive-hover hover:bg-lia-interactive-hover'}`}
                                         onClick={() => {
                                           setDeactivatedQuestions(prev => {
                                             const next = new Set(prev)
@@ -501,7 +501,7 @@ export function SCMSectionPerguntasEdit({
                               const isAccepted = acceptedQuestions.has(item.id)
                               const genDetailsExpanded = expandedQuestionDetails.has(item.id)
                               return (
-                                <div key={item.id || `gen-${idx}`} className={`p-3 rounded-md transition-colors motion-reduce:transition-none ${isAccepted ? 'bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default' : 'bg-white dark:bg-lia-bg-secondary border border-dashed border-lia-border-default dark:border-lia-border-default'}`}>
+                                <div key={item.id || `gen-${idx}`} className={`p-3 rounded-md transition-colors motion-reduce:transition-none ${isAccepted ? 'bg-lia-bg-secondary border border-lia-border-default' : 'bg-lia-bg-primary border border-dashed border-lia-border-default'}`}>
                                   <div className="flex items-start gap-3">
                                     <SCMQuestionDetailView
                                       item={item}
@@ -520,7 +520,7 @@ export function SCMSectionPerguntasEdit({
                                         }}>Remover</button>
                                       ) : (
                                         <>
-                                          <button className="bg-gray-900 text-white text-micro px-2 py-1 rounded-full hover:bg-gray-800 transition-colors motion-reduce:transition-none" onClick={() => setAcceptedQuestions(prev => new Set(prev).add(item.id))}>Aceitar</button>
+                                          <button className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-micro px-2 py-1 rounded-full hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none" onClick={() => setAcceptedQuestions(prev => new Set(prev).add(item.id))}>Aceitar</button>
                                           <button className="border border-lia-border-subtle lia-text-secondary text-micro px-2 py-1 rounded-full hover:bg-status-error/10 transition-colors motion-reduce:transition-none" onClick={() => setGeneratedQuestions(prev => ({ ...prev, [block.id]: (prev[block.id] || []).filter((q: ScreeningQuestionItem) => q.id !== item.id) }))}>Descartar</button>
                                         </>
                                       )}
@@ -542,12 +542,12 @@ export function SCMSectionPerguntasEdit({
       </div>
 
       {/* Save/Cancel buttons */}
-      <div className="flex items-center justify-between px-5 py-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-        <Button variant="outline" size="sm" className="h-7 text-micro px-3 border-lia-border-subtle text-lia-text-secondary dark:border-lia-border-default dark:text-lia-text-secondary" onClick={resetScreeningEditing}>
+      <div className="flex items-center justify-between px-5 py-3 border-t border-lia-border-subtle">
+        <Button variant="outline" size="sm" className="h-7 text-micro px-3 border-lia-border-subtle text-lia-text-secondary" onClick={resetScreeningEditing}>
           Cancelar
         </Button>
         <div className="flex items-center gap-2">
-          <Button size="sm" className="h-7 text-micro px-4 bg-gray-900 hover:bg-gray-800 text-white" onClick={async () => {
+          <Button size="sm" className="h-7 text-micro px-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" onClick={async () => {
             // @ts-ignore TODO: fix type — Property 'length' does not exist on type '{}'.
             const existingCount = (job.screeningQuestions || []).length
             const acceptedCount = Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length

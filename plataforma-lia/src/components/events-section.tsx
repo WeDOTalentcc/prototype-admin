@@ -173,21 +173,21 @@ export function EventsSection() {
   // Funções utilitárias
   const getTypeIcon = (type: string) => {
     const icons = {
-      interview: <Video className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />,
-      feedback: <MessageSquare className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />,
-      publication: <FileText className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />,
-      offer: <Send className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />,
-      review: <FileText className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />,
-      reminder: <Bell className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+      interview: <Video className="w-4 h-4 text-lia-text-secondary" />,
+      feedback: <MessageSquare className="w-4 h-4 text-lia-text-secondary" />,
+      publication: <FileText className="w-4 h-4 text-lia-text-secondary" />,
+      offer: <Send className="w-4 h-4 text-lia-text-secondary" />,
+      review: <FileText className="w-4 h-4 text-lia-text-secondary" />,
+      reminder: <Bell className="w-4 h-4 text-lia-text-secondary" />
     }
-    return icons[type as keyof typeof icons] || <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+    return icons[type as keyof typeof icons] || <Calendar className="w-4 h-4 text-lia-text-secondary" />
   }
 
   const getPriorityBadge = (priority: string) => {
     const badges = {
       high: <Badge variant="outline" className="text-xs border-status-error/30 text-status-error dark:border-status-error/30 dark:text-status-error">Urgente</Badge>,
       medium: <Badge variant="outline" className="text-xs border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning">Média</Badge>,
-      low: <Badge variant="outline" className="text-xs border-lia-border-subtle text-lia-text-primary dark:border-lia-border-subtle dark:text-lia-text-primary">Baixa</Badge>
+      low: <Badge variant="outline" className="text-xs border-lia-border-subtle text-lia-text-primary dark:border-lia-border-subtle">Baixa</Badge>
     }
     return badges[priority as keyof typeof badges]
   }
@@ -208,7 +208,7 @@ export function EventsSection() {
           : 'bg-white border-lia-border-subtle dark:border-lia-border-medium'
       }`}>
         {event.isSuggested ? (
-          <BrainCircuit className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
         ) : (
           getTypeIcon(event.type)
         )}
@@ -221,33 +221,33 @@ export function EventsSection() {
               {event.title}
             </h4>
             {event.isSuggested && (
- <Badge variant="outline" className="text-xs border-lia-border-default lia-text-base">
+ <Badge variant="outline" className="text-xs border-lia-border-default text-lia-text-secondary">
                 LIA
               </Badge>
             )}
             {getPriorityBadge(event.priority)}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary flex-shrink-0 font-mono">
+            <span className="text-xs text-lia-text-tertiary flex-shrink-0 font-mono">
               {event.time}
             </span>
             {isExpanded && (
-              <ChevronRight className={`w-3 h-3 lia-text-base transition-transform motion-reduce:transition-none ${selectedEvent === event.id ? 'rotate-90' : ''}`} />
+              <ChevronRight className={`w-3 h-3 text-lia-text-secondary transition-transform motion-reduce:transition-none ${selectedEvent === event.id ? 'rotate-90' : ''}`} />
             )}
           </div>
         </div>
 
-        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2 leading-relaxed">
+        <p className="text-xs text-lia-text-secondary mb-2 leading-relaxed">
           {event.subtitle}
         </p>
 
         <div className="flex items-center justify-between mb-2">
-          <div className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+          <div className="text-xs text-lia-text-tertiary">
             {event.details.split('•')[1]?.trim()}
           </div>
 
           {event.hasReminder && (
- <div className="flex items-center gap-1 lia-text-base text-xs">
+ <div className="flex items-center gap-1 text-lia-text-secondary text-xs">
               <Bell className="w-3 h-3" />
               <span>Lembrete</span>
             </div>
@@ -261,7 +261,7 @@ export function EventsSection() {
               key={actionIndex}
               size="sm"
               variant="outline"
-              className="h-7 px-2 text-xs border-lia-border-default dark:border-lia-border-medium hover:border-gray-400 dark:hover:border-gray-400 text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors motion-reduce:transition-none duration-200"
+              className="h-7 px-2 text-xs border-lia-border-default dark:border-lia-border-medium hover:border-gray-400 dark:hover:border-gray-400 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors motion-reduce:transition-none duration-200"
             >
               <action.icon className="w-3 h-3 mr-1" />
               {action.label}
@@ -281,7 +281,7 @@ export function EventsSection() {
               <CardTitle className="text-xl font-semibold text-lia-text-primary">
                 Próximas Atividades e Tarefas
               </CardTitle>
-              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary mt-1">
+              <p className="text-sm text-lia-text-tertiary mt-1">
                 {totalTasks} tarefas • {urgentTasks} urgentes • {suggestedTasks} sugeridas pela LIA
               </p>
             </div>
@@ -294,7 +294,7 @@ export function EventsSection() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0 text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse"
+                className="h-7 w-7 p-0 text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-inverse"
                 onClick={() => setIsExpanded(!isExpanded)}
               >
                 {isExpanded ? (
@@ -304,7 +304,7 @@ export function EventsSection() {
                 )}
               </Button>
 
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse">
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-inverse">
                 <Calendar className="w-3 h-3" />
               </Button>
             </div>
@@ -320,7 +320,7 @@ export function EventsSection() {
               </div>
               <div>
                 <h3 className="font-medium text-lia-text-primary text-sm">Sessão Manhã</h3>
-                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-tertiary">
                   Organizado pela LIA • {morningEvents.length} atividades • {morningEvents.filter(e => e.isSuggested).length} sugeridas
                 </p>
               </div>
@@ -338,7 +338,7 @@ export function EventsSection() {
               </div>
               <div>
                 <h3 className="font-medium text-lia-text-primary text-sm">Sessão Tarde</h3>
-                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                <p className="text-xs text-lia-text-tertiary">
                   Organizado pela LIA • {afternoonEvents.length} atividades • {afternoonEvents.filter(e => e.isSuggested).length} sugeridas
                 </p>
               </div>
@@ -367,7 +367,7 @@ export function EventsSection() {
                             : 'bg-white border-lia-border-subtle dark:border-lia-border-medium'
                         }`}>
                           {event.isSuggested ? (
- <BrainCircuit className="w-4 h-4 lia-text-base" />
+ <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
                           ) : (
                             getTypeIcon(event.type)
                           )}
@@ -378,16 +378,16 @@ export function EventsSection() {
                               {event.title}
                             </h3>
                             {event.isSuggested && (
- <Badge variant="outline" className="text-xs border-lia-border-default lia-text-base">
+ <Badge variant="outline" className="text-xs border-lia-border-default text-lia-text-secondary">
                                 Sugerido pela LIA
                               </Badge>
                             )}
                             {getPriorityBadge(event.priority)}
                           </div>
-                          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+                          <p className="text-sm text-lia-text-secondary">
                             {event.subtitle}
                           </p>
-                          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-1">
+                          <p className="text-xs text-lia-text-tertiary mt-1">
                             {event.details}
                           </p>
                         </div>
@@ -401,13 +401,13 @@ export function EventsSection() {
                           </h4>
                           <div className="text-sm space-y-1">
                             <div>
-                              <span className="text-lia-text-tertiary dark:text-lia-text-tertiary">Nome:</span>
+                              <span className="text-lia-text-tertiary">Nome:</span>
                               <p className="font-medium text-lia-text-primary">
                                 {event.candidateInfo.name}
                               </p>
                             </div>
                             <div>
-                              <span className="text-lia-text-tertiary dark:text-lia-text-tertiary">Experiência:</span>
+                              <span className="text-lia-text-tertiary">Experiência:</span>
                               <p className="font-medium text-lia-text-primary">
                                 {event.candidateInfo.experience}
                               </p>

@@ -140,7 +140,7 @@ export function IntelligenceNotifications({
       case 'low':
         return 'bg-wedo-cyan/15 text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default'
       default:
-        return 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle'
+        return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -280,8 +280,8 @@ export function IntelligenceNotifications({
           <div className="max-h-80 overflow-y-auto" role="status" aria-live="polite" aria-label="Carregando...">
             {isLoading && notifications.length === 0 ? (
               <div className="p-6 text-center" role="status" aria-live="polite" aria-label="Carregando...">
-                <Loader2 className="w-8 h-8 lia-text-base mx-auto mb-2 animate-spin motion-reduce:animate-none" />
-                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">Carregando notificações...</p>
+                <Loader2 className="w-8 h-8 text-lia-text-secondary mx-auto mb-2 animate-spin motion-reduce:animate-none" />
+                <p className="text-sm text-lia-text-primary">Carregando notificações...</p>
               </div>
             ) : error ? (
               <div className="p-6 text-center">
@@ -299,8 +299,8 @@ export function IntelligenceNotifications({
               </div>
             ) : notifications.length === 0 ? (
               <div className="p-6 text-center">
-                <Bell className="w-8 h-8 lia-text-base mx-auto mb-2" />
-                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">Nenhuma notificação</p>
+                <Bell className="w-8 h-8 text-lia-text-secondary mx-auto mb-2" />
+                <p className="text-sm text-lia-text-primary">Nenhuma notificação</p>
               </div>
             ) : (
               notifications.map((notification) => (
@@ -325,12 +325,12 @@ export function IntelligenceNotifications({
                         </Badge>
                       </div>
 
-                      <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
+                      <p className="text-sm text-lia-text-secondary mb-2">
                         {notification.message}
                       </p>
 
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                        <span className="text-xs text-lia-text-primary">
                           {formatTimestamp(notification.timestamp)}
                         </span>
 
@@ -372,7 +372,7 @@ export function IntelligenceNotifications({
           <div className="p-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
             <div className="flex items-center justify-between">
               {lastFetch && (
-                <span className="text-xs lia-text-base">
+                <span className="text-xs text-lia-text-secondary">
                   Atualizado: {formatTimestamp(lastFetch)}
                 </span>
               )}

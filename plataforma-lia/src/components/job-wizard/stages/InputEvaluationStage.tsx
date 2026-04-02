@@ -62,8 +62,8 @@ export function InputEvaluationStage() {
       {/* Banner when using company config */}
       {configLoaded && hasConfigData && (
         <div className="mb-3 px-3 py-2 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md flex items-center gap-2">
-          <Settings className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
-          <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+          <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
+          <span className="text-xs text-lia-text-secondary">
             Usando dados das Configurações da sua empresa
           </span>
         </div>
@@ -108,13 +108,13 @@ export function InputEvaluationStage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p 
-                    className="text-xs font-medium lia-text-strong transition-colors motion-reduce:transition-none duration-300"
+                    className="text-xs font-medium text-lia-text-primary transition-colors motion-reduce:transition-none duration-300"
                    
                   >
                     {item.label}
                   </p>
                   {isDetected && displayValue && (
-                    <p className="text-micro mt-0.5 truncate text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
+                    <p className="text-micro mt-0.5 truncate text-lia-text-secondary font-medium">
                       {displayValue}
                     </p>
                   )}
@@ -128,7 +128,7 @@ export function InputEvaluationStage() {
       {/* Progress Summary */}
       <div className="mt-3 p-2.5 rounded-md bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-micro lia-text-base">
+          <span className="text-micro text-lia-text-secondary">
             Detectando critérios...
           </span>
           <span className="text-micro font-semibold text-lia-text-primary">

@@ -96,7 +96,7 @@ export function BigFiveRadar({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1"
-                className="lia-text-200 dark:lia-text-700"
+                className="text-lia-text-disabled"
               />
             )
           })}
@@ -112,7 +112,7 @@ export function BigFiveRadar({
                 y2={point.y}
                 stroke="currentColor"
                 strokeWidth="1"
-                className="lia-text-200 dark:lia-text-700"
+                className="text-lia-text-disabled"
               />
             )
           })}
@@ -177,7 +177,7 @@ export function BigFiveRadar({
                 <Label className={textStyles.label}>
                   {trait.label}
                 </Label>
-                <span className="text-xs font-semibold lia-text-900 dark:text-lia-text-primary">
+                <span className="text-xs font-semibold text-lia-text-primary">
                   {scores[trait.key]}%
                 </span>
               </div>
@@ -201,7 +201,7 @@ export function BigFiveRadar({
         <div className="grid grid-cols-5 gap-2 text-center">
           {TRAITS.map((trait) => (
             <div key={trait.key} className="space-y-1">
-              <div className="text-sm font-bold lia-text-900 dark:text-lia-text-primary">
+              <div className="text-sm font-bold text-lia-text-primary">
                 {scores[trait.key]}%
               </div>
               <div className={textStyles.description}>

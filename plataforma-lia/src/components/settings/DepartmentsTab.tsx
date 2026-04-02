@@ -170,7 +170,7 @@ export function DepartmentsTab({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="flex items-center gap-2 text-base-ui font-semibold lia-text-950 dark:lia-text-50">
+            <h3 className="flex items-center gap-2 text-base-ui font-semibold text-lia-text-primary">
               Departamentos
               <LiaFieldToggle
                 fieldKey="departments"
@@ -182,7 +182,7 @@ export function DepartmentsTab({
                 compact
               />
             </h3>
-            <p className="text-xs lia-text-600">
+            <p className="text-xs text-lia-text-secondary">
               Gerencie a estrutura organizacional da empresa
             </p>
           </div>
@@ -235,7 +235,7 @@ export function DepartmentsTab({
                 <Button
                   onClick={() => setShowDepartmentForm(true)}
                   size="sm"
-                  className="gap-1.5 py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                  className="gap-1.5 py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Novo Departamento
@@ -270,7 +270,7 @@ export function DepartmentsTab({
           <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
             <CardContent className="p-3 space-y-2">
               <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold lia-text-950 dark:lia-text-50">
+                <h4 className="text-xs font-semibold text-lia-text-primary">
                   {editingDepartment ? "Editar Departamento" : "Novo Departamento"}
                 </h4>
                 <Button
@@ -284,7 +284,7 @@ export function DepartmentsTab({
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
+                  <label className="block text-micro font-medium text-lia-text-secondary mb-1">
                     Nome
                   </label>
                   <input
@@ -298,7 +298,7 @@ export function DepartmentsTab({
                   />
                 </div>
                 <div>
-                  <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
+                  <label className="block text-micro font-medium text-lia-text-secondary mb-1">
                     Gestor
                   </label>
                   <input
@@ -314,7 +314,7 @@ export function DepartmentsTab({
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
+                  <label className="block text-micro font-medium text-lia-text-secondary mb-1">
                     Cargo do Gestor
                   </label>
                   <input
@@ -328,7 +328,7 @@ export function DepartmentsTab({
                   />
                 </div>
                 <div>
-                  <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
+                  <label className="block text-micro font-medium text-lia-text-secondary mb-1">
                     Email do Gestor
                   </label>
                   <input
@@ -342,7 +342,7 @@ export function DepartmentsTab({
                   />
                 </div>
                 <div>
-                  <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
+                  <label className="block text-micro font-medium text-lia-text-secondary mb-1">
                     Telefone/WhatsApp
                   </label>
                   <input
@@ -357,7 +357,7 @@ export function DepartmentsTab({
                 </div>
               </div>
               <div>
-                <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
+                <label className="block text-micro font-medium text-lia-text-secondary mb-1">
                   Descrição
                 </label>
                 <textarea
@@ -371,7 +371,7 @@ export function DepartmentsTab({
                 />
               </div>
               <div>
-                <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
+                <label className="block text-micro font-medium text-lia-text-secondary mb-1">
                   Cor
                 </label>
                 <div className="flex gap-2">
@@ -391,7 +391,7 @@ export function DepartmentsTab({
               {editingDepartment && (
                 <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3 mt-3">
                   <div className="flex items-center justify-between mb-2">
-                    <h5 className="text-xs font-semibold lia-text-800 dark:text-lia-text-primary">
+                    <h5 className="text-xs font-semibold text-lia-text-primary">
                       Colaboradores do Departamento
                     </h5>
                     <Button
@@ -403,7 +403,7 @@ export function DepartmentsTab({
                         setNewMember({ ...DEFAULT_NEW_MEMBER });
                       }}
                       disabled={!isEditingDepartments}
-                      className={`py-1 px-2 text-micro rounded-full border-lia-border-subtle dark:border-lia-border-subtle lia-text-700 dark:text-lia-text-secondary hover:bg-gray-100 dark:hover:bg-gray-700 ${!isEditingDepartments ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`py-1 px-2 text-micro rounded-full border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 ${!isEditingDepartments ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <Plus className="w-3 h-3 mr-1" />
                       Adicionar
@@ -412,7 +412,7 @@ export function DepartmentsTab({
 
                   <div className="space-y-2 max-h-chart-sm overflow-y-auto">
                     {departmentMembers.length === 0 ? (
-                      <p className="text-micro lia-text-500 text-center py-3">
+                      <p className="text-micro text-lia-text-secondary text-center py-3">
                         Nenhum colaborador cadastrado
                       </p>
                     ) : (
@@ -423,15 +423,15 @@ export function DepartmentsTab({
                         >
                           <div className="flex items-center gap-2">
                             <Avatar className="w-7 h-7">
-                              <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary">
+                              <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary">
                                 {member.name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="text-xs font-medium lia-text-950 dark:lia-text-50">
+                              <p className="text-xs font-medium text-lia-text-primary">
                                 {member.name}
                               </p>
-                              <p className="text-micro lia-text-500">
+                              <p className="text-micro text-lia-text-secondary">
                                 {member.title || "Sem cargo"} • {member.level}
                               </p>
                             </div>
@@ -463,7 +463,7 @@ export function DepartmentsTab({
 
                   {showMemberForm && (
                     <div className="mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary">
-                      <h6 className="text-micro font-medium lia-text-600 mb-2">
+                      <h6 className="text-micro font-medium text-lia-text-secondary mb-2">
                         {editingMember ? "Editar Colaborador" : "Novo Colaborador"}
                       </h6>
                       <div className="grid grid-cols-2 gap-2 mb-2">
@@ -562,7 +562,7 @@ export function DepartmentsTab({
                         <Button
                           size="sm"
                           onClick={handleSaveMember}
-                          className="py-1 px-2 text-micro rounded-full bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                          className="py-1 px-2 text-micro rounded-full bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
                           disabled={savingMember}
                         >
                           {savingMember ? (
@@ -592,7 +592,7 @@ export function DepartmentsTab({
                 <Button
                   size="sm"
                   onClick={handleSaveDepartment}
-                  className="py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                  className="py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 >
                   <Save className="w-3.5 h-3.5 mr-1" />
                   {editingDepartment ? "Atualizar" : "Salvar"}
@@ -617,12 +617,12 @@ export function DepartmentsTab({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {departments.length === 0 && !showDepartmentForm ? (
-            <div className="col-span-2 text-center py-8 lia-text-600">
+            <div className="col-span-2 text-center py-8 text-lia-text-secondary">
               <Network className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">
+              <p className="text-xs font-medium text-lia-text-primary">
                 Nenhum departamento cadastrado
               </p>
-              <p className="text-xs mt-1 lia-text-500 dark:lia-text-500">
+              <p className="text-xs mt-1 text-lia-text-secondary">
                 Clique em "Novo Departamento" ou importe uma planilha para começar
               </p>
             </div>
@@ -641,10 +641,10 @@ export function DepartmentsTab({
                         <Building2 className="w-4 h-4" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-semibold lia-text-950 dark:lia-text-50">
+                        <h4 className="text-xs font-semibold text-lia-text-primary">
                           {dept.name}
                         </h4>
-                        <p className="text-micro lia-text-600">
+                        <p className="text-micro text-lia-text-secondary">
                           {dept.description}
                         </p>
                       </div>
@@ -657,7 +657,7 @@ export function DepartmentsTab({
                         onClick={() => handleOpenOrgChart(dept)}
                         title="Ver organograma"
                       >
-                        <Maximize2 className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+                        <Maximize2 className="w-3.5 h-3.5 text-lia-text-secondary" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -680,14 +680,14 @@ export function DepartmentsTab({
                     </div>
                   </div>
                   <div className="mt-2 pt-2 border-t border-lia-border-subtle dark:lia-border-800 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-micro lia-text-600">
+                    <div className="flex items-center gap-2 text-micro text-lia-text-secondary">
                       <Users className="w-3 h-3" />
                       <span>{dept.headcount} colaboradores</span>
                     </div>
                     {dept.manager && (
                       <Badge
                         variant="outline"
-                        className="text-micro rounded-md border-lia-border-subtle dark:border-lia-border-subtle lia-text-700 dark:text-lia-text-secondary"
+                        className="text-micro rounded-md border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
                       >
                         {dept.manager}
                       </Badge>
@@ -705,7 +705,7 @@ export function DepartmentsTab({
         >
           <AlertDialogContent className="rounded-md">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-sm font-semibold lia-text-900 dark:lia-text-50">
+              <AlertDialogTitle className="text-sm font-semibold text-lia-text-primary">
                 Excluir Departamento
               </AlertDialogTitle>
               <AlertDialogDescription>
@@ -756,12 +756,12 @@ export function DepartmentsTab({
             <div className="overflow-y-auto max-h-[60vh] mt-4" role="status" aria-live="polite" aria-label="Carregando...">
               {loadingOrgChart ? (
                 <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-                  <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-500 dark:text-lia-text-tertiary" />
+                  <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                 </div>
               ) : orgChartMembers.length === 0 ? (
                 <div className="text-center py-12">
-                  <Users className="w-12 h-12 mx-auto mb-3 lia-text-300" />
-                  <p className="text-xs font-medium lia-text-600">
+                  <Users className="w-12 h-12 mx-auto mb-3 text-lia-text-disabled" />
+                  <p className="text-xs font-medium text-lia-text-secondary">
                     Nenhum colaborador cadastrado
                   </p>
                   <p className={`${textStyles.description} mt-1`}>
@@ -795,7 +795,7 @@ export function DepartmentsTab({
                             {getLevelLabel(level)}
                           </Badge>
                           <div className="flex-1 h-px bg-gray-200"></div>
-                          <span className="text-micro lia-text-400">
+                          <span className="text-micro text-lia-text-tertiary">
                             {members.length}{" "}
                             {members.length === 1 ? "pessoa" : "pessoas"}
                           </span>
@@ -814,7 +814,7 @@ export function DepartmentsTab({
                                     className="w-full h-full object-cover rounded-full"
                                   />
                                 ) : (
-                                  <AvatarFallback className="text-xs bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary">
+                                  <AvatarFallback className="text-xs bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary">
                                     {member.name
                                       .split(" ")
                                       .map((n) => n[0])
@@ -826,7 +826,7 @@ export function DepartmentsTab({
                               </Avatar>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
-                                  <p className="text-xs font-medium lia-text-950 dark:lia-text-50 truncate">
+                                  <p className="text-xs font-medium text-lia-text-primary truncate">
                                     {member.name}
                                   </p>
                                   {member.linkedin_url && (
@@ -840,11 +840,11 @@ export function DepartmentsTab({
                                     </a>
                                   )}
                                 </div>
-                                <p className="text-micro lia-text-500 truncate">
+                                <p className="text-micro text-lia-text-secondary truncate">
                                   {member.title || "Sem cargo"}
                                 </p>
                                 {member.email && (
-                                  <p className="text-micro lia-text-400 truncate">
+                                  <p className="text-micro text-lia-text-tertiary truncate">
                                     {member.email}
                                   </p>
                                 )}

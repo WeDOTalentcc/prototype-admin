@@ -36,7 +36,7 @@ export function PromptContextViewer({
         <div className="bg-wedo-green-light/5 rounded-md p-3 border border-wedo-green-light/20">
           <div className="flex items-center gap-2 mb-2">
             <LIAIcon size="sm" />
-            <span className="text-base-ui font-semibold lia-text-strong">
+            <span className="text-base-ui font-semibold text-lia-text-primary">
               Análise LIA para candidato específico
             </span>
           </div>
@@ -47,10 +47,10 @@ export function PromptContextViewer({
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <div className="font-medium lia-text-strong text-base-ui">
+              <div className="font-medium text-lia-text-primary text-base-ui">
                 {ctx.name}
               </div>
-              <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+              <div className="text-xs text-lia-text-primary">
                 {ctx.position} • Score: {ctx.liaAnalysis?.score || ctx.score}%
               </div>
             </div>
@@ -64,8 +64,8 @@ export function PromptContextViewer({
       {!candidateContext && selectedCandidates.length > 0 && (
         <div className="bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
           <div className="flex items-center gap-2 mb-2">
-            <Users className="w-4 h-4 lia-text-base" />
-            <span className="text-base-ui font-semibold lia-text-strong">
+            <Users className="w-4 h-4 text-lia-text-secondary" />
+            <span className="text-base-ui font-semibold text-lia-text-primary">
               {selectedCandidates.length} candidato{selectedCandidates.length > 1 ? 's' : ''} selecionado{selectedCandidates.length > 1 ? 's' : ''}
             </span>
           </div>
@@ -75,18 +75,18 @@ export function PromptContextViewer({
               return (
                 <div key={c.name || index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
                   <Avatar className="w-4 h-4">
-                    <AvatarFallback className="bg-gray-200 lia-text-base text-xs">
+                    <AvatarFallback className="bg-gray-200 text-lia-text-secondary text-xs">
                       {c.name?.charAt(0) || 'C'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                  <span className="text-xs text-lia-text-primary">
                     {c.name || `Candidato ${index + 1}`}
                   </span>
                 </div>
               )
             })}
             {selectedCandidates.length > 3 && (
-              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-lia-text-primary dark:text-lia-text-primary">
+              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-lia-text-primary">
                 +{selectedCandidates.length - 3} mais
               </div>
             )}

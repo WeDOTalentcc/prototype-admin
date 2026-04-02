@@ -176,8 +176,8 @@ export const DataRequestIndicator = React.memo(function DataRequestIndicator({
                     <span className={cn(
  "truncate",
                       field.status === 'completed' 
-                        ? "text-lia-text-secondary dark:text-lia-text-secondary" 
-                        : "text-lia-text-tertiary dark:text-lia-text-tertiary"
+                        ? "text-lia-text-secondary" 
+                        : "text-lia-text-tertiary"
                     )}>
                       {field.displayName}
                     </span>
@@ -191,10 +191,10 @@ export const DataRequestIndicator = React.memo(function DataRequestIndicator({
 
             {expiresAt && (
               <div className="flex items-center justify-between text-xs">
-                <span className="text-lia-text-tertiary dark:text-lia-text-tertiary">Expira em:</span>
+                <span className="text-lia-text-tertiary">Expira em:</span>
                 <span className={cn(
  "font-medium",
-                  expired ? "text-status-error" : "text-lia-text-secondary dark:text-lia-text-secondary"
+                  expired ? "text-status-error" : "text-lia-text-secondary"
                 )}>
                   {formatDate(expiresAt)}
                   {expired && " (expirado)"}

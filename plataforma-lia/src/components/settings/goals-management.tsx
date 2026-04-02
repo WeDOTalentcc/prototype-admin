@@ -90,7 +90,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
         <div className="flex items-center gap-3">
           <div>
             <h3 className={`${textStyles.titleLarge} flex items-center gap-2`}>
-              <Target className="w-5 h-5 lia-text-700 dark:text-lia-text-secondary" />
+              <Target className="w-5 h-5 text-lia-text-primary" />
               Gestão de Metas - {selectedYear}
             </h3>
             <p className={textStyles.description}>
@@ -127,7 +127,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
               }))
               setShowCustomGoal(true)
             }} 
-            className="gap-2 h-8 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+            className="gap-2 h-8 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             disabled={users.length === 0 || isLoading}
           >
             <Target className="w-3.5 h-3.5" />
@@ -153,21 +153,21 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
         </CardHeader>
         <CardContent className="p-4">
           {users.length === 0 ? (
-            <div className="text-center py-8 lia-text-800 dark:text-lia-text-primary">
+            <div className="text-center py-8 text-lia-text-primary">
               <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <h3 className={`${textStyles.titleLarge} mb-2`}>Nenhum usuário cadastrado</h3>
               <p className={textStyles.body}>Primeiro cadastre usuários na aba "Usuários" para poder configurar metas</p>
             </div>
           ) : activeTemplatesWithUsers.length === 0 ? (
-            <div className="text-center py-8 lia-text-500 dark:text-lia-text-tertiary">
+            <div className="text-center py-8 text-lia-text-secondary">
               <Target className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <h3 className={`${textStyles.titleLarge} mb-2 !lia-text-950`}>Nenhuma meta configurada</h3>
+              <h3 className={`${textStyles.titleLarge} mb-2 !text-lia-text-primary`}>Nenhuma meta configurada</h3>
               <p className={`${textStyles.body} mb-4`}>
                 Clique em "Aplicar Template" para adicionar metas aos usuários
               </p>
               <Button 
                 onClick={() => setShowTemplates(true)}
-                className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
               >
                 <Plus className="w-4 h-4" />
                 Aplicar Template
@@ -195,7 +195,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                         )}
                         {getCategoryIcon(template.category)}
                         <div>
-                          <h4 className={`${textStyles.label} !lia-text-900 dark:!lia-text-50`}>
+                          <h4 className={`${textStyles.label} !text-lia-text-primary dark:!text-lia-text-disabled`}>
                             {template.name}
                           </h4>
                           <p className={textStyles.caption}>
@@ -229,18 +229,18 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                         <table className="w-full text-xs font-['Open_Sans',sans-serif]">
                           <thead>
                             <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                              <th className="text-left p-2 min-w-[140px] sticky left-0 bg-gray-50 dark:bg-lia-bg-secondary font-medium lia-text-600 dark:text-lia-text-tertiary border-r border-lia-border-subtle dark:border-lia-border-subtle">
+                              <th className="text-left p-2 min-w-[140px] sticky left-0 bg-gray-50 dark:bg-lia-bg-secondary font-medium text-lia-text-secondary border-r border-lia-border-subtle dark:border-lia-border-subtle">
                                 Usuário
                               </th>
                               {MONTHS.map((month) => (
                                 <th 
                                   key={month.num} 
-                                  className="text-center p-2 min-w-10 lia-text-600 font-medium"
+                                  className="text-center p-2 min-w-10 text-lia-text-secondary font-medium"
                                 >
                                   {month.short}
                                 </th>
                               ))}
-                              <th className="text-center p-2 min-w-[50px] font-semibold lia-text-900 dark:lia-text-50">
+                              <th className="text-center p-2 min-w-[50px] font-semibold text-lia-text-primary">
                                 Total
                               </th>
                             </tr>
@@ -252,12 +252,12 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                                   <div className="flex items-center gap-2">
                                     <Avatar className="w-5 h-5">
                                       <AvatarImage src={user!.avatar} alt={user!.name} />
-                                      <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated lia-text-700 dark:text-lia-text-secondary font-medium text-micro">
+                                      <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary font-medium text-micro">
                                         {user!.name.split(' ').map((n: string) => n[0]).join('')}
                                       </AvatarFallback>
                                     </Avatar>
 
-                                    <span className="font-medium text-xs lia-text-800 dark:text-lia-text-primary truncate">{user!.name}</span>
+                                    <span className="font-medium text-xs text-lia-text-primary truncate">{user!.name}</span>
                                   </div>
                                 </td>
                                 {MONTHS.map((month) => (
@@ -273,25 +273,25 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                                     />
                                   </td>
                                 ))}
-                                <td className="p-2 text-center font-semibold lia-text-900 dark:lia-text-50">
+                                <td className="p-2 text-center font-semibold text-lia-text-primary">
                                   {calculateRowTotal(template.id, user!.id, selectedYear)}
                                 </td>
                               </tr>
                             ))}
                             <tr className="border-t-2 border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary">
-                              <td className="p-2 font-semibold lia-text-800 dark:text-lia-text-primary sticky left-0 bg-gray-100 border-r border-lia-border-subtle">
+                              <td className="p-2 font-semibold text-lia-text-primary sticky left-0 bg-gray-100 border-r border-lia-border-subtle">
                                 TOTAL EQUIPE
                               </td>
                               {MONTHS.map((month) => (
                                 <td 
                                   key={month.num} 
                                   // @ts-ignore TODO: fix type
-                                  className="p-2 text-center font-semibold lia-text-800 dark:text-lia-text-primary"
+                                  className="p-2 text-center font-semibold text-lia-text-primary"
                                 >
                                   {calculateColumnTotal(template.id, month.num, selectedYear, template.assignedUsers)}
                                 </td>
                               ))}
-                              <td className="p-2 text-center font-bold lia-text-900 dark:lia-text-50">
+                              <td className="p-2 text-center font-bold text-lia-text-primary">
                                 {calculateGrandTotal(template.id, selectedYear, template.assignedUsers)}
                               </td>
                             </tr>
@@ -303,7 +303,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => handleAddUserToTemplate(template.id)}
-                            className="text-micro h-6 gap-1.5 rounded-xl lia-text-700 border-lia-border-default hover:bg-gray-100"
+                            className="text-micro h-6 gap-1.5 rounded-xl text-lia-text-primary border-lia-border-default hover:bg-gray-100"
                             disabled={isSaving}
                           >
                             <Plus className="w-3 h-3" />
@@ -354,7 +354,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
             {selectedTemplateIds.size > 0 && (
               <div className="border rounded-md px-2.5 py-1.5 mb-3 flex items-center justify-between bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default">
                 <div className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3 h-3 lia-text-700 dark:text-lia-text-secondary" />
+                  <CheckCircle className="w-3 h-3 text-lia-text-primary" />
                   <span className={textStyles.caption}>
                     <strong>{selectedTemplateIds.size}</strong> template(s) selecionado(s)
                   </span>
@@ -363,7 +363,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   <select
                     value={templateApplyMode}
                     onChange={(e) => setTemplateApplyMode(e.target.value as 'all' | 'selected')}
-                    className="border rounded-full px-1.5 py-0.5 text-micro bg-white dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default lia-text-900 dark:text-lia-text-primary font-['Open_Sans',sans-serif]"
+                    className="border rounded-full px-1.5 py-0.5 text-micro bg-white dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-primary font-['Open_Sans',sans-serif]"
                   >
                     <option value="all">Aplicar a todos usuários</option>
                     {selectedUser && <option value="selected">Aplicar a {selectedUser.name}</option>}
@@ -372,7 +372,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     size="sm"
                     onClick={handleApplySelectedTemplates}
                     disabled={isSaving}
-                    className="text-micro h-6 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
+                    className="text-micro h-6 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
                   >
                     {isSaving ? <Loader2 className="w-2.5 h-2.5 animate-spin motion-reduce:animate-none mr-1" /> : <Plus className="w-2.5 h-2.5 mr-1" />}
                     Aplicar Selecionados
@@ -392,20 +392,20 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
             <div className="flex gap-2 mb-3">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 lia-text-400 dark:lia-text-500" />
+                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-lia-text-tertiary" />
                   <input
                     type="text"
                     placeholder="Buscar templates..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-7 pr-2.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary text-micro font-['Open_Sans',sans-serif]"
+                    className="w-full pl-7 pr-2.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary text-micro font-['Open_Sans',sans-serif]"
                   />
                 </div>
               </div>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
+                className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-white dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
               >
                 <option value="all">Todas Categorias</option>
                 <option value="recruitment">Recrutamento</option>
@@ -416,7 +416,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
               <select
                 value={filterPeriod}
                 onChange={(e) => setFilterPeriod(e.target.value)}
-                className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
+                className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-white dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
               >
                 <option value="all">Todos Períodos</option>
                 <option value="monthly">Mensal</option>
@@ -472,10 +472,10 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                         isAppliedToAll 
                           ? 'bg-status-success border-status-success/30'
                           : isSelected 
-                            ? 'bg-gray-900 border-gray-900 dark:lia-bg-50 dark:lia-border-50' 
+                            ? 'bg-gray-900 border-gray-900 dark:lia-border-50' 
                             : 'border-lia-border-default bg-lia-bg-primary'
                       }`}>
-                        {(isSelected || isAppliedToAll) && <CheckCircle className="w-2.5 h-2.5 text-white dark:lia-text-900" />}
+                        {(isSelected || isAppliedToAll) && <CheckCircle className="w-2.5 h-2.5 text-white" />}
                       </div>
                       {getCategoryIcon(template.category)}
                       <div>
@@ -499,7 +499,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                         </Badge>
                       )}
                       {selectedUser && isAppliedToSelectedUser && !isAppliedToAll && (
-                        <Badge className="text-micro px-1.5 py-0.5 bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle font-['Open_Sans',sans-serif]">
+                        <Badge className="text-micro px-1.5 py-0.5 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle font-['Open_Sans',sans-serif]">
                           Já aplicado a {selectedUser.name.split(' ')[0]}
                         </Badge>
                       )}
@@ -508,9 +508,9 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   
                   <div className="bg-gray-50 rounded-md px-1.5 py-1 mb-2 border-l-2 border-gray-400 ml-6">
                     <div className="flex items-start gap-1">
-                      <BarChart3 className="w-2.5 h-2.5 lia-text-500 dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
+                      <BarChart3 className="w-2.5 h-2.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
                       <p className={textStyles.caption}>
-                        <span className="font-medium lia-text-600 dark:text-lia-text-tertiary">Como é calculado:</span>{' '}
+                        <span className="font-medium text-lia-text-secondary">Como é calculado:</span>{' '}
                         {template.formula}
                       </p>
                     </div>
@@ -533,7 +533,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             e.stopPropagation()
                             setEditingTemplate(template)
                           }}
-                          className="h-5 w-5 p-0 hover:bg-gray-100 hover:lia-text-900"
+                          className="h-5 w-5 p-0 hover:bg-gray-100 hover:text-lia-text-primary"
                           title="Editar template"
                         >
                           <Edit className="w-2.5 h-2.5" />
@@ -575,7 +575,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                <label className="block text-sm font-medium text-lia-text-primary mb-1">
                   Aplicar para *
                 </label>
                 <Select
@@ -595,7 +595,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   <SelectContent>
                     <SelectItem value="__all__">
                       <span className="flex items-center gap-2">
-                        <Users className="w-4 h-4 lia-text-700 dark:text-lia-text-secondary" />
+                        <Users className="w-4 h-4 text-lia-text-primary" />
                         <span className="font-medium">Todos os Usuários</span>
                       </span>
                     </SelectItem>
@@ -615,7 +615,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                <label className="block text-sm font-medium text-lia-text-primary mb-1">
                   Nome da Meta *
                 </label>
                 <input
@@ -628,7 +628,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                <label className="block text-sm font-medium text-lia-text-primary mb-1">
                   Descrição
                 </label>
                 <textarea
@@ -642,7 +642,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
                     Meta *
                   </label>
                   <input
@@ -655,7 +655,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
                     Unidade
                   </label>
                   <input
@@ -670,7 +670,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
                     Período
                   </label>
                   <select
@@ -684,7 +684,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
                     Categoria
                   </label>
                   <select
@@ -702,7 +702,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
                     Data Início
                   </label>
                   <input
@@ -713,7 +713,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
                     Data Fim
                   </label>
                   <input
@@ -763,7 +763,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                <label className="block text-sm font-medium text-lia-text-primary mb-1">
                   Nome da Meta
                 </label>
                 <input
@@ -776,7 +776,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
                     Meta
                   </label>
                   <input
@@ -789,7 +789,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
                     Atual
                   </label>
                   <input
@@ -804,7 +804,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-1">
+                <label className="block text-sm font-medium text-lia-text-primary mb-1">
                   Status
                 </label>
                 <select
@@ -860,7 +860,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
             <div className="bg-gray-50 px-5 py-3 border-b border-lia-border-subtle">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200">
-                  <Settings className="w-4 h-4 lia-text-700" />
+                  <Settings className="w-4 h-4 text-lia-text-primary" />
                 </div>
                 <div>
                   <h3 className={textStyles.h4}>Editar Template</h3>
@@ -966,7 +966,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                       setEditingTemplate(null)
                     }
                   }}
-                  className="text-xs h-8 font-['Open_Sans',sans-serif] bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                  className="text-xs h-8 font-['Open_Sans',sans-serif] bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 >
                   <Save className="w-3 h-3 mr-1.5" />
                   Salvar Alterações

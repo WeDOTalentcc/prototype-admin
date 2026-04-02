@@ -50,8 +50,8 @@ export function DegreeRequirementsInput({
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-[width,height]",
             mode === 'regular'
-              ? "border-lia-border-default bg-lia-bg-primary lia-text-800 dark:text-lia-text-primary"
-              : "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50"
+              ? "border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
+              : "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
           )}
         >
           {mode === 'regular' ? 'Regular' : 'Nested'}
@@ -81,9 +81,9 @@ export function DegreeRequirementsInput({
                     <div className="w-full h-full rounded-full bg-lia-bg-primary scale-50" />
                   )}
                 </div>
-                <span className="font-medium text-sm lia-text-800">Regular</span>
+                <span className="font-medium text-sm text-lia-text-primary">Regular</span>
               </div>
-              <p className="text-xs lia-text-500 mt-1 ml-5">
+              <p className="text-xs text-lia-text-secondary mt-1 ml-5">
                 Find people who have this degree from any university
               </p>
             </button>
@@ -102,16 +102,16 @@ export function DegreeRequirementsInput({
                 <div className={cn(
                   "w-3 h-3 rounded-full border-2",
                   mode === 'nested' 
-                    ? "border-gray-900 bg-gray-900 dark:lia-border-50 dark:lia-bg-50" 
+                    ? "border-gray-900 bg-gray-900 dark:lia-border-50" 
                     : "border-lia-border-default"
                 )}>
                   {mode === 'nested' && (
                     <div className="w-full h-full rounded-full bg-lia-bg-primary scale-50" />
                   )}
                 </div>
-                <span className="font-medium text-sm lia-text-800">Nested</span>
+                <span className="font-medium text-sm text-lia-text-primary">Nested</span>
               </div>
-              <p className="text-xs lia-text-500 mt-1 ml-5">
+              <p className="text-xs text-lia-text-secondary mt-1 ml-5">
                 Find people who have this degree from selected universities
               </p>
             </button>
@@ -122,15 +122,15 @@ export function DegreeRequirementsInput({
       <div className="flex items-center gap-2">
         <Popover>
           <PopoverTrigger asChild>
-            <button className="lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none">
+            <button className="text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none">
               <Info className="w-3.5 h-3.5" />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-64 p-3 text-xs bg-lia-bg-elevated" side="right">
-            <p className="lia-text-600 leading-relaxed">
+            <p className="text-lia-text-secondary leading-relaxed">
               <strong>Regular:</strong> Matches candidates with this degree from any university.
             </p>
-            <p className="lia-text-600 leading-relaxed mt-2">
+            <p className="text-lia-text-secondary leading-relaxed mt-2">
               <strong>Nested:</strong> Only matches candidates who have this degree from the universities you've selected above.
             </p>
           </PopoverContent>
@@ -151,7 +151,7 @@ export function DegreeRequirementsInput({
               value={option.value}
               className={cn(
                 "py-2 text-xs",
-                option.value === "not_selected" && value === null && "lia-text-800 dark:text-lia-text-primary"
+                option.value === "not_selected" && value === null && "text-lia-text-primary"
               )}
             >
               {option.label}

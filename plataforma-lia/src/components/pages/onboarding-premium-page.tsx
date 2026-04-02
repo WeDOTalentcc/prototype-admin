@@ -159,7 +159,7 @@ const approvedCandidates: ApprovedCandidate[] = [
 ]
 
 const kanbanStages = [
-  { id: 'welcome', name: 'Boas-vindas', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary', description: 'Email de boas-vindas enviado' },
+  { id: 'welcome', name: 'Boas-vindas', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary', description: 'Email de boas-vindas enviado' },
   { id: 'documentation', name: 'Documentação', color: 'bg-status-warning/15 text-status-warning', description: 'Coleta de documentos' },
   { id: 'equipment', name: 'Equipamentos', color: 'bg-wedo-orange/15 text-wedo-orange', description: 'Entrega de equipamentos' },
   { id: 'systems', name: 'Sistemas', color: 'bg-wedo-purple/15 text-wedo-purple', description: 'Criação de acessos' },
@@ -266,7 +266,7 @@ export function OnboardingPremiumPage() {
 
   const getStageColor = (stage: string) => {
     const stageData = kanbanStages.find(s => s.id === stage)
-    return stageData?.color || 'bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
+    return stageData?.color || 'bg-gray-100 text-lia-text-primary'
   }
 
   const filteredCandidates = approvedCandidates.filter(candidate => {
@@ -285,11 +285,11 @@ export function OnboardingPremiumPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Novos Colaboradores</p>
-                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{approvedCandidates.length}</p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">em onboarding</p>
+                <p className="text-2xl font-bold text-lia-text-primary">{approvedCandidates.length}</p>
+                <p className="text-xs text-lia-text-primary">em onboarding</p>
               </div>
               <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                <UserPlus className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <UserPlus className="w-6 h-6 text-lia-text-secondary" />
               </div>
             </div>
           </CardContent>
@@ -303,7 +303,7 @@ export function OnboardingPremiumPage() {
                 <p className="text-2xl font-bold text-status-warning">
                   {approvedCandidates.filter(c => c.stage !== 'completed').length}
                 </p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">processos ativos</p>
+                <p className="text-xs text-lia-text-primary">processos ativos</p>
               </div>
               <div className="w-12 h-12 bg-status-warning/15 rounded-md flex items-center justify-center">
                 <Clock className="w-6 h-6 text-status-warning" />
@@ -320,7 +320,7 @@ export function OnboardingPremiumPage() {
                 <p className="text-2xl font-bold text-status-success">
                   {approvedCandidates.filter(c => c.stage === 'completed').length}
                 </p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">este mês</p>
+                <p className="text-xs text-lia-text-primary">este mês</p>
               </div>
               <div className="w-12 h-12 bg-status-success/15 rounded-md flex items-center justify-center">
                 <CheckCircle className="w-6 h-6 text-status-success" />
@@ -335,7 +335,7 @@ export function OnboardingPremiumPage() {
               <div>
                 <p className="text-sm font-medium text-lia-text-secondary">Tempo Médio</p>
                 <p className="text-2xl font-bold text-wedo-purple">12d</p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">para conclusão</p>
+                <p className="text-xs text-lia-text-primary">para conclusão</p>
               </div>
               <div className="w-12 h-12 bg-wedo-purple/15 rounded-md flex items-center justify-center">
                 <Timer className="w-6 h-6 text-wedo-purple" />
@@ -355,14 +355,14 @@ export function OnboardingPremiumPage() {
               placeholder="Buscar colaboradores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 w-80"
+              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 w-80"
             />
           </div>
 
           <select
             value={stageFilter}
             onChange={(e) => setStageFilter(e.target.value)}
-            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
           >
             <option value="all">Todas as Etapas</option>
             {kanbanStages.map(stage => (
@@ -408,7 +408,7 @@ export function OnboardingPremiumPage() {
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">{stage.description}</p>
+                <p className="text-xs text-lia-text-primary mt-1">{stage.description}</p>
               </div>
 
               {/* Cards */}
@@ -426,7 +426,7 @@ export function OnboardingPremiumPage() {
 
                 {/* Empty state */}
                 {filteredCandidates.filter(c => c.stage === stage.id).length === 0 && (
-                  <div className="text-center py-8 text-lia-text-primary dark:text-lia-text-primary">
+                  <div className="text-center py-8 text-lia-text-primary">
                     <Users className="w-8 h-8 mx-auto mb-2 opacity-50 text-lia-text-secondary" />
                     <p className="text-sm">Nenhum colaborador</p>
                   </div>
@@ -443,7 +443,7 @@ export function OnboardingPremiumPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Templates de Comunicação</h3>
+          <h3 className="text-xs font-medium text-lia-text-primary">Templates de Comunicação</h3>
           <p className="text-sm text-lia-text-secondary">Personalize mensagens automáticas para cada etapa</p>
         </div>
         <Button className="gap-2">
@@ -475,13 +475,13 @@ export function OnboardingPremiumPage() {
                 {template.subject && (
                   <div>
                     <p className="text-sm font-medium text-lia-text-secondary">Assunto:</p>
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">{template.subject}</p>
+                    <p className="text-sm text-lia-text-primary">{template.subject}</p>
                   </div>
                 )}
 
                 <div>
                   <p className="text-sm font-medium text-lia-text-secondary">Conteúdo:</p>
-                  <p className="text-sm text-lia-text-primary dark:text-lia-text-primary line-clamp-4">
+                  <p className="text-sm text-lia-text-primary line-clamp-4">
                     {template.content}
                   </p>
                 </div>
@@ -515,8 +515,8 @@ export function OnboardingPremiumPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-sm font-semibold font-sans text-lia-text-primary dark:text-lia-text-primary mb-1 flex items-center gap-1.5">
-                <Crown className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <h1 className="text-sm font-semibold font-sans text-lia-text-primary mb-1 flex items-center gap-1.5">
+                <Crown className="w-6 h-6 text-lia-text-secondary" />
                 Onboarding Automatizado Premium
               </h1>
               <p className="text-lia-text-secondary">
@@ -548,7 +548,7 @@ export function OnboardingPremiumPage() {
                 onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
                   selectedView === tab.id
-                    ? 'bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary'
+                    ? 'bg-lia-bg-primary text-lia-text-primary'
                     : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
@@ -565,14 +565,14 @@ export function OnboardingPremiumPage() {
         {selectedView === 'candidates' && (
           <div className="text-center py-12">
             <Users className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-            <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Lista de Colaboradores</h3>
+            <h3 className="text-xs font-medium text-lia-text-primary mb-2">Lista de Colaboradores</h3>
             <p className="text-lia-text-secondary">Visão detalhada em desenvolvimento</p>
           </div>
         )}
         {selectedView === 'analytics' && (
           <div className="text-center py-12">
             <BarChart3 className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
-            <h3 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Analytics de Onboarding</h3>
+            <h3 className="text-xs font-medium text-lia-text-primary mb-2">Analytics de Onboarding</h3>
             <p className="text-lia-text-secondary">Métricas detalhadas em desenvolvimento</p>
           </div>
         )}
@@ -614,11 +614,11 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
           </Avatar>
 
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm text-lia-text-primary dark:text-lia-text-primary truncate">
+            <h4 className="font-semibold text-sm text-lia-text-primary truncate">
               {candidate.name}
             </h4>
             <p className="text-xs text-lia-text-secondary">{candidate.position}</p>
-            <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">{candidate.department}</p>
+            <p className="text-xs text-lia-text-primary">{candidate.department}</p>
           </div>
         </div>
 
@@ -691,7 +691,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
               <AvatarFallback>{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{candidate.name}</h2>
+              <h2 className="text-xl font-semibold text-lia-text-primary">{candidate.name}</h2>
               <p className="text-lia-text-secondary">{candidate.position} • {candidate.department}</p>
               <div className="flex items-center gap-2 mt-1">
                 <Badge className={kanbanStages.find(s => s.id === candidate.stage)?.color}>
@@ -721,7 +721,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
               onClick={() => setActiveTab(tab.id as Parameters<typeof setActiveTab>[0])}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none ${
                 activeTab === tab.id
-                  ? "text-lia-text-secondary dark:text-lia-text-tertiary border-b-2 border-gray-900 dark:border-lia-border-medium"
+                  ? "text-lia-text-secondary border-b-2 border-gray-900 dark:border-lia-border-medium"
                   : "text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >
@@ -845,7 +845,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                        <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                        <Calendar className="w-4 h-4 text-lia-text-secondary" />
                         <div className="flex-1">
                           <p className="text-sm font-medium">Agendar exame admissional</p>
                           <p className="text-xs text-lia-text-secondary">Vence em 2 dias</p>
@@ -891,7 +891,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
           {activeTab === 'communications' && (
             <div className="space-y-4">
               <h3 className="text-xs font-medium">Histórico de Comunicações</h3>
-              <div className="text-center py-8 text-lia-text-primary dark:text-lia-text-primary">
+              <div className="text-center py-8 text-lia-text-primary">
                 <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50 text-lia-text-secondary" />
                 <p className="text-sm">Nenhuma comunicação enviada ainda</p>
               </div>
@@ -901,7 +901,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
           {activeTab === 'schedule' && (
             <div className="space-y-4">
               <h3 className="text-xs font-medium">Agenda de Onboarding</h3>
-              <div className="text-center py-8 text-lia-text-primary dark:text-lia-text-primary">
+              <div className="text-center py-8 text-lia-text-primary">
                 <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50 text-lia-text-secondary" />
                 <p className="text-sm">Agenda será configurada automaticamente</p>
               </div>

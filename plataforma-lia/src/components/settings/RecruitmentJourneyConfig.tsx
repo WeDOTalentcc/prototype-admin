@@ -195,7 +195,7 @@ export function RecruitmentJourneyConfig({
       {!hideHeader && (
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className={`${textStyles.titleLarge} lia-text-800 dark:text-lia-text-primary`}>
+            <h3 className={`${textStyles.titleLarge} text-lia-text-primary`}>
               Jornada de Recrutamento
             </h3>
             <p className={`${textStyles.description} mt-1`}>
@@ -208,14 +208,14 @@ export function RecruitmentJourneyConfig({
           {isEditMode && (
             <Popover open={catalogOpen} onOpenChange={setCatalogOpen}>
               <PopoverTrigger asChild>
-                <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 rounded-md px-4 py-2 text-xs font-semibold transition-colors motion-reduce:transition-none">
+                <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 rounded-md px-4 py-2 text-xs font-semibold transition-colors motion-reduce:transition-none">
                   <Plus className="h-4 w-4 mr-2" />
                   Adicionar etapa
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-80 p-0">
                 <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                  <h4 className={`${textStyles.bodyLarge} font-semibold lia-text-800 dark:text-lia-text-primary`}>
+                  <h4 className={`${textStyles.bodyLarge} font-semibold text-lia-text-primary`}>
                     Adicionar do Catálogo
                   </h4>
                 </div>
@@ -228,9 +228,9 @@ export function RecruitmentJourneyConfig({
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors motion-reduce:transition-none text-left"
                       >
                         <span className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cs.color || 'var(--gray-400)'}} />
-                        <span className={`flex-1 ${textStyles.body} lia-text-800 dark:text-lia-text-primary`}>{cs.display_name}</span>
+                        <span className={`flex-1 ${textStyles.body} text-lia-text-primary`}>{cs.display_name}</span>
                         {cs.action_behavior && (
-                          <span className="text-micro lia-text-400">{getActionBehaviorShort(cs.action_behavior)}</span>
+                          <span className="text-micro text-lia-text-tertiary">{getActionBehaviorShort(cs.action_behavior)}</span>
                         )}
                       </button>
                     ))
@@ -245,8 +245,8 @@ export function RecruitmentJourneyConfig({
                     onClick={handleAddStage}
                     className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors motion-reduce:transition-none text-left"
                   >
-                    <Plus className="h-4 w-4 lia-text-500" />
-                    <span className={`${textStyles.body} lia-text-600 dark:text-lia-text-tertiary`}>Criar etapa customizada</span>
+                    <Plus className="h-4 w-4 text-lia-text-secondary" />
+                    <span className={`${textStyles.body} text-lia-text-secondary`}>Criar etapa customizada</span>
                   </button>
                 </div>
               </PopoverContent>
@@ -258,7 +258,7 @@ export function RecruitmentJourneyConfig({
       <div className="mb-4 p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:lia-border-800">
         <div className={`flex items-center gap-4 flex-wrap ${textStyles.caption}`}>
           <div className="flex items-center gap-1">
-            <Lock className="h-3 w-3 lia-text-400" />
+            <Lock className="h-3 w-3 text-lia-text-tertiary" />
             <span><strong>Sistema:</strong> SLA, ação e canal configuráveis — nome e exclusão bloqueados</span>
           </div>
           <div className="flex items-center gap-1">

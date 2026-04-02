@@ -45,14 +45,14 @@ export function SettingsSecurityTab({ onSettingsChange }: SettingsSecurityTabPro
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium">Compartilhar dados de uso</div>
-                <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">Ajuda a melhorar a plataforma</div>
+                <div className="text-xs text-lia-text-primary">Ajuda a melhorar a plataforma</div>
               </div>
               <input type="checkbox" defaultChecked onChange={() => onSettingsChange(true)} />
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium">Análise de comportamento</div>
-                <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">Para personalizar sua experiência</div>
+                <div className="text-xs text-lia-text-primary">Para personalizar sua experiência</div>
               </div>
               <input type="checkbox" defaultChecked onChange={() => onSettingsChange(true)} />
             </div>

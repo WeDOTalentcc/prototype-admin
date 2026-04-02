@@ -175,7 +175,7 @@ export function CandidateTableRow({
         const value = candidate[columnId]
         if (value === null || value === undefined) return null
         if (typeof value === 'object') return JSON.stringify(value)
-        return <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">{String(value)}</span>
+        return <span className="text-xs text-lia-text-primary">{String(value)}</span>
     }
   }
 

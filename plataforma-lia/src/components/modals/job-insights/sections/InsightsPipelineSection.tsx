@@ -57,7 +57,7 @@ function DemoCard({
   items: DemographicDistribution[]
 }) {
   return (
-    <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+    <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
       <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
         <Icon className="w-3.5 h-3.5 text-lia-text-tertiary" />
         {title}
@@ -68,8 +68,8 @@ function DemoCard({
             <div key={item.name} className="flex items-center justify-between">
               <span className="text-xs text-lia-text-secondary">{item.name}</span>
               <div className="flex items-center gap-2">
-                <div className="w-16 h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
-                  <div className="h-full bg-gray-900 dark:bg-gray-50" style={{ width: `${item.percentage}%` }} />
+                <div className="w-16 h-2 bg-lia-interactive-active rounded-full overflow-hidden">
+                  <div className="h-full bg-lia-btn-primary-bg" style={{ width: `${item.percentage}%` }} />
                 </div>
                 <span className="text-xs text-lia-text-secondary w-8 text-right">{item.count}</span>
               </div>
@@ -99,7 +99,7 @@ export function InsightsPipelineSection({
   return (
     <div className="space-y-4">
       {/* ── Funil de Triagem LIA ────────────────────────────────────────── */}
-      <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Funil de Triagem LIA
@@ -143,7 +143,7 @@ export function InsightsPipelineSection({
           )}
         </div>
       ) : (
-        <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Dados Demográficos
@@ -156,7 +156,7 @@ export function InsightsPipelineSection({
 
       {/* ── Competências Requeridas ─────────────────────────────────────── */}
       {jobs.some((job) => job.behavioral_competencies && job.behavioral_competencies.length > 0) && (
-        <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Lightbulb className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Competências Requeridas
@@ -182,7 +182,7 @@ export function InsightsPipelineSection({
 
       {/* ── Benefícios Oferecidos ───────────────────────────────────────── */}
       {jobs.some((job) => job.benefits && job.benefits.length > 0) && (
-        <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Award className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Benefícios Oferecidos

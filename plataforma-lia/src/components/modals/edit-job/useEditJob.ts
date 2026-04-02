@@ -604,9 +604,9 @@ export function useEditJob({ isOpen, job: rawJob, onSave, onClose }: UseEditJobP
       'Frameworks': 'bg-status-success/10 text-status-success border-status-success/30',
       'Banco de Dados': 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30',
       'Cloud': 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30',
-      'Containers': 'bg-gray-50 dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default',
+      'Containers': 'bg-lia-bg-secondary text-lia-text-primary border-lia-border-default',
       'CI/CD': 'bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30',
-      'Outros': 'bg-gray-50 text-lia-text-secondary border-lia-border-subtle',
+      'Outros': 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle',
     }
     return colors[category] || colors['Outros']
   }
@@ -617,7 +617,7 @@ export function useEditJob({ isOpen, job: rawJob, onSave, onClose }: UseEditJobP
       'Importante': 'bg-status-warning/10 text-status-warning border-status-warning/30',
       'Desejável': 'bg-status-success/10 text-status-success border-status-success/30',
     }
-    return colors[weight] || 'bg-gray-50 text-lia-text-secondary border-lia-border-subtle'
+    return colors[weight] || 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle'
   }
 
   return {

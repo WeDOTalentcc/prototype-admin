@@ -71,7 +71,7 @@ export function WSIQualityBar({
             </div>
 
             <div className="flex-1 max-w-[140px]">
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-lia-interactive-active rounded-full overflow-hidden">
                 <div
                   className={cn('h-full rounded-full transition-[width,height] duration-500', colors.bg)}
                   style={{width: `${score}%`}}
@@ -96,7 +96,7 @@ export function WSIQualityBar({
  'w-5 h-5 rounded-full flex items-center justify-center transition-[width,height]',
                       field.isMet 
                         ? 'bg-status-success/15 text-status-success' 
-                        : 'bg-gray-100 lia-text-secondary'
+                        : 'bg-lia-bg-tertiary lia-text-secondary'
                     )}
                   >
                     {field.isMet ? (
@@ -119,7 +119,7 @@ export function WSIQualityBar({
 
         <div className="mt-1.5 flex items-center justify-between gap-2">
           <p 
-            className="text-micro lia-text-base truncate"
+            className="text-micro text-lia-text-secondary truncate"
            
           >
             {summaryText}

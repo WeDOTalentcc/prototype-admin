@@ -345,7 +345,7 @@ export function KanbanColumnRenderer({
               }`}
             ></div>
             <h3 className={`font-medium text-xs ${columnStyle.header}`}>{displayTitle}</h3>
-            <span className="text-micro text-lia-text-primary dark:text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
+            <span className="text-micro text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
               {filteredCandidates.length}
             </span>
             {stageId === "screening" && (currentJob.backendId || currentJob.id) && (
@@ -551,7 +551,7 @@ export function KanbanColumnRenderer({
 
                 {/* Nome do candidato + Data Request Indicator */}
                 <div className="flex items-center gap-1 flex-1 min-w-0">
-                  <h4 className="font-medium text-xs truncate text-lia-text-primary dark:text-lia-text-primary">
+                  <h4 className="font-medium text-xs truncate text-lia-text-primary">
                     {candidate.name}
                   </h4>
                   {(() => {

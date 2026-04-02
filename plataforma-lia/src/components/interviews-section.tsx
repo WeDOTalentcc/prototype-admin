@@ -57,7 +57,7 @@ const getStatusIcon = (status: string) => {
     case "Rejeitado":
       return <XCircle className="w-4 h-4 text-status-error" />
     default:
-      return <Clock className="w-4 h-4 lia-text-base" />
+      return <Clock className="w-4 h-4 text-lia-text-secondary" />
   }
 }
 
@@ -70,7 +70,7 @@ const getStatusBadge = (status: string) => {
     case "Rejeitado":
       return "bg-status-error/10 text-status-error border-status-error/30"
     default:
-      return "bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle"
+      return "bg-gray-50 text-lia-text-primary border-lia-border-subtle"
   }
 }
 
@@ -79,7 +79,7 @@ export function InterviewsSection() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-sans font-semibold text-lia-text-primary">Últimas Triagens</h2>
-        <Button variant="ghost" size="sm" className="text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse">
+        <Button variant="ghost" size="sm" className="text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse">
           Ver mais
         </Button>
       </div>
@@ -96,7 +96,7 @@ export function InterviewsSection() {
                     alt={candidate.name}
                     className="object-cover"
                   />
-                  <AvatarFallback className="bg-gray-100 lia-text-base">
+                  <AvatarFallback className="bg-gray-100 text-lia-text-secondary">
                     {candidate.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
@@ -108,7 +108,7 @@ export function InterviewsSection() {
                     </h3>
                     {getStatusIcon(candidate.status)}
                   </div>
-                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2">{candidate.position}</p>
+                  <p className="text-xs text-lia-text-secondary mb-2">{candidate.position}</p>
 
                   <Badge
                     variant="outline"
@@ -121,11 +121,11 @@ export function InterviewsSection() {
 
               {/* Informações da vaga */}
               <div className="space-y-2">
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
-                  <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">Vaga:</span> {candidate.job}
+                <div className="text-xs text-lia-text-secondary">
+                  <span className="font-medium text-lia-text-primary">Vaga:</span> {candidate.job}
                 </div>
-                <div className="flex items-center gap-1 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
-                  <Calendar className="w-3 h-3 lia-text-base" />
+                <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
+                  <Calendar className="w-3 h-3 text-lia-text-secondary" />
                   <span>{candidate.date} às {candidate.time}</span>
                 </div>
               </div>
@@ -137,7 +137,7 @@ export function InterviewsSection() {
                   <span className="text-sm font-semibold text-lia-text-primary">
                     {candidate.score}
                   </span>
-                  <span className="text-xs lia-text-base">/10</span>
+                  <span className="text-xs text-lia-text-secondary">/10</span>
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -157,24 +157,24 @@ export function InterviewsSection() {
               {/* Contatos com botões intuitivos */}
               <div className="space-y-2 py-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center gap-2">
-                  <Phone className="w-3 h-3 lia-text-base" />
-                  <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex-1">{candidate.phone}</span>
+                  <Phone className="w-3 h-3 text-lia-text-secondary" />
+                  <span className="text-xs text-lia-text-secondary flex-1">{candidate.phone}</span>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-6 px-2 text-xs bg-gray-50 hover:bg-gray-100 border-lia-border-subtle lia-text-strong dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default dark:text-lia-text-primary"
+                    className="h-6 px-2 text-xs bg-gray-50 hover:bg-gray-100 border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default"
                     onClick={() => window.open(`https://wa.me/${candidate.phone.replace(/\D/g, '')}`, '_blank')}
                   >
                     WhatsApp
                   </Button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Mail className="w-3 h-3 lia-text-base" />
-                  <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex-1 truncate">{candidate.email}</span>
+                  <Mail className="w-3 h-3 text-lia-text-secondary" />
+                  <span className="text-xs text-lia-text-secondary flex-1 truncate">{candidate.email}</span>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-6 px-2 text-xs bg-gray-50 hover:bg-gray-100 border-lia-border-subtle lia-text-strong dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default dark:text-lia-text-primary"
+                    className="h-6 px-2 text-xs bg-gray-50 hover:bg-gray-100 border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default"
                     onClick={() => window.open(`mailto:${candidate.email}`, '_blank')}
                   >
                     Email
@@ -184,11 +184,11 @@ export function InterviewsSection() {
 
               {/* Ações */}
               <div className="flex items-center gap-2 pt-2">
-                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-lia-border-subtle hover:border-lia-border-default lia-text-strong dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default dark:text-lia-text-primary">
+                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default">
                   <MessageSquare className="w-3 h-3" />
                   Ver Chat
                 </Button>
-                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-lia-border-subtle hover:border-lia-border-default lia-text-strong dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default dark:text-lia-text-primary">
+                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default">
                   <FileText className="w-3 h-3" />
                   Perfil
                 </Button>

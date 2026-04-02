@@ -241,7 +241,7 @@ const [currentStep, setCurrentStep] = useState<Step>('input')
     const ext = filename.split('.').pop()?.toLowerCase()
     if (ext === 'pdf') return <FileText className="w-4 h-4 text-status-error" />
     if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-wedo-cyan-dark" />
-    return <File className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+    return <File className="w-4 h-4 text-lia-text-tertiary" />
   }
 
   const formatFileSize = (bytes: number) => {
@@ -678,10 +678,10 @@ const [currentStep, setCurrentStep] = useState<Step>('input')
         <div className="w-12 h-12 rounded-full bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center mx-auto mb-3">
           <AlertCircle className="w-6 h-6 text-status-warning" />
         </div>
-        <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+        <h3 className="text-sm font-semibold text-lia-text-primary">
           Candidato já existe
         </h3>
-        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+        <p className="text-xs text-lia-text-secondary mt-1">
           {duplicateResult?.message}
         </p>
       </div>
@@ -690,15 +690,15 @@ const [currentStep, setCurrentStep] = useState<Step>('input')
         <Card className="border-status-warning/30 dark:border-status-warning/30 bg-status-warning/10/50 dark:bg-status-warning/20 rounded-md">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-gray-600 dark:bg-lia-bg-elevated flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-lia-btn-primary-bg flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
                 {duplicateResult.candidate.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || '?'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+                <p className="text-sm font-medium text-lia-text-primary">
                   {duplicateResult.candidate.name}
                 </p>
                 {duplicateResult.candidate.current_title && (
-                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">
+                  <p className="text-xs text-lia-text-secondary mt-0.5">
                     {duplicateResult.candidate.current_title}
                   </p>
                 )}
@@ -737,7 +737,7 @@ const [currentStep, setCurrentStep] = useState<Step>('input')
       <div className="flex flex-col gap-2">
         <Button
           onClick={handleOpenExistingCandidate}
-          className="w-full h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+          className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
         >
           <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
           Abrir Perfil Existente
@@ -770,17 +770,17 @@ const [currentStep, setCurrentStep] = useState<Step>('input')
 
   const renderProcessing = () => (
     <div className="py-8 text-center" role="status" aria-live="polite" aria-label="Carregando...">
-      <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary flex items-center justify-center mx-auto mb-4" role="status" aria-live="polite" aria-label="Carregando...">
         {isEnriching ? (
           <Brain className="w-6 h-6 text-wedo-cyan animate-pulse motion-reduce:animate-none" />
         ) : (
-          <Loader2 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+          <Loader2 className="w-6 h-6 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
         )}
       </div>
-      <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
+      <h3 className="text-sm font-semibold text-lia-text-primary mb-2">
         {isEnriching ? 'Enriquecendo perfil...' : 'Processando...'}
       </h3>
-      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+      <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
         {isEnriching 
           ? 'Buscando dados adicionais via LinkedIn...'
           : activeTab === 'cv' 
@@ -799,10 +799,10 @@ const [currentStep, setCurrentStep] = useState<Step>('input')
       <div className="w-12 h-12 rounded-full bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center mx-auto mb-4">
         <CheckCircle className="w-6 h-6 text-status-success" />
       </div>
-      <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
+      <h3 className="text-sm font-semibold text-lia-text-primary mb-2">
         Candidato cadastrado!
       </h3>
-      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+      <p className="text-xs text-lia-text-secondary">
         Abrindo perfil completo...
       </p>
     </div>
@@ -810,9 +810,9 @@ const [currentStep, setCurrentStep] = useState<Step>('input')
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-white dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
+      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden bg-lia-bg-primary border-lia-border-subtle">
         <DialogHeader className="p-4 pb-0">
-          <DialogTitle className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary font-sans">
+          <DialogTitle className="text-base font-semibold text-lia-text-primary font-sans">
             Novo Candidato
           </DialogTitle>
           <DialogDescription className="text-xs text-lia-text-tertiary font-sans">

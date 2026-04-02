@@ -159,10 +159,10 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col bg-white dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col bg-lia-bg-primary border-lia-border-subtle rounded-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <User className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
+            <User className="w-5 h-5 text-lia-text-secondary" />
             Adicionar Novo Candidato
           </DialogTitle>
           <DialogDescription>
@@ -184,7 +184,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome Completo *</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="name"
                       value={formData.name}
@@ -198,7 +198,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="email">E-mail *</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="email"
                       type="email"
@@ -213,7 +213,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="phone">Telefone *</Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="phone"
                       value={formData.phone}
@@ -227,7 +227,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="location">Localização</Label>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="location"
                       value={formData.location}
@@ -285,7 +285,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="position">Cargo Desejado *</Label>
                   <div className="relative">
-                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="position"
                       value={formData.position}
@@ -299,7 +299,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="currentCompany">Empresa Atual</Label>
                   <div className="relative">
-                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="currentCompany"
                       value={formData.currentCompany}
@@ -324,7 +324,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="education">Formação</Label>
                   <div className="relative">
-                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="education"
                       value={formData.education}
@@ -338,7 +338,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="currentSalary">Salário Atual</Label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="currentSalary"
                       value={formData.currentSalary}
@@ -352,7 +352,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="expectedSalary">Pretensão Salarial</Label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="expectedSalary"
                       value={formData.expectedSalary}
@@ -368,7 +368,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="linkedin">LinkedIn</Label>
                   <div className="relative">
-                    <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="linkedin"
                       value={formData.linkedin}
@@ -382,7 +382,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="github">GitHub</Label>
                   <div className="relative">
-                    <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="github"
                       value={formData.github}
@@ -396,7 +396,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="portfolio">Portfólio</Label>
                   <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Input
                       id="portfolio"
                       value={formData.portfolio}
@@ -410,10 +410,10 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
 
               <div className="space-y-2">
                 <Label htmlFor="resume">Upload do Currículo</Label>
-                <div className="rounded-md p-4 text-center bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none cursor-pointer border border-lia-border-subtle dark:border-lia-border-subtle">
-                  <Upload className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-2" />
-                  <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">Clique para fazer upload ou arraste o arquivo</p>
-                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">PDF, DOC ou DOCX (máx. 10MB)</p>
+                <div className="rounded-md p-4 text-center bg-lia-bg-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg transition-colors motion-reduce:transition-none cursor-pointer border border-lia-border-subtle">
+                  <Upload className="w-8 h-8 text-lia-text-secondary mx-auto mb-2" />
+                  <p className="text-sm text-lia-text-primary">Clique para fazer upload ou arraste o arquivo</p>
+                  <p className="text-xs text-lia-text-secondary mt-1">PDF, DOC ou DOCX (máx. 10MB)</p>
                 </div>
               </div>
             </TabsContent>
@@ -452,7 +452,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                   ))}
                 </div>
                 {liaAnalysis?.suggestedSkills && (
-                  <div className="mt-3 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="mt-3 p-3 bg-lia-bg-tertiary rounded-md">
                     <p className="text-xs text-wedo-cyan-dark mb-2 flex items-center gap-1">
                       <Brain className="w-3 h-3 text-wedo-cyan" />
                       Sugestões da LIA baseadas no perfil:
@@ -462,7 +462,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                         <Badge
                           key={skill}
                           variant="outline"
-                          className="cursor-pointer hover:bg-gray-100 dark:bg-lia-bg-secondary"
+                          className="cursor-pointer hover:bg-lia-interactive-hover"
                           onClick={() => {
                             if (!skills.includes(skill)) {
                               setSkills([...skills, skill])
@@ -482,7 +482,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="languages">Idiomas</Label>
                   <div className="relative">
-                    <Languages className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Languages className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Textarea
                       id="languages"
                       value={formData.languages}
@@ -497,7 +497,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 <div className="space-y-2">
                   <Label htmlFor="certifications">Certificações</Label>
                   <div className="relative">
-                    <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
                     <Textarea
                       id="certifications"
                       value={formData.certifications}
@@ -517,8 +517,8 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                   <CardContent className="pt-6">
                     <div className="text-center py-8">
                       <LIAIcon size="lg" className="mx-auto mb-4 opacity-50" />
-                      <h3 className="text-lg font-semibold mb-2 text-lia-text-primary dark:text-lia-text-primary">Análise Inteligente com LIA</h3>
-                      <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mb-4">
+                      <h3 className="text-lg font-semibold mb-2 text-lia-text-primary">Análise Inteligente com LIA</h3>
+                      <p className="text-sm text-lia-text-primary mb-4">
                         A LIA irá analisar o perfil do candidato e fornecer insights valiosos
                       </p>
                       <Button onClick={handleLIAAnalysis} disabled={isAnalyzing}>
@@ -544,13 +544,13 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                     <Card>
                       <CardContent className="pt-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Score Geral</span>
-                          <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                          <span className="text-sm text-lia-text-primary">Score Geral</span>
+                          <Target className="w-4 h-4 text-lia-text-secondary" />
                         </div>
-                        <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{liaAnalysis.score}%</div>
-                        <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5 mt-2">
+                        <div className="text-2xl font-bold text-lia-text-primary">{liaAnalysis.score}%</div>
+                        <div className="w-full bg-lia-interactive-active rounded-full h-1.5 mt-2">
                           <div
-                            className="bg-gray-700 dark:bg-lia-text-tertiary h-1.5 rounded-full"
+                            className="bg-lia-btn-primary-bg dark:bg-lia-text-tertiary h-1.5 rounded-full"
                             style={{width: `${liaAnalysis.score}%`}}
                           />
                         </div>
@@ -560,11 +560,11 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                     <Card>
                       <CardContent className="pt-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Fit Cultural</span>
+                          <span className="text-sm text-lia-text-primary">Fit Cultural</span>
                           <User className="w-4 h-4 text-status-success" />
                         </div>
                         <div className="text-2xl font-bold text-status-success">{liaAnalysis.culturalFit}%</div>
-                        <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5 mt-2">
+                        <div className="w-full bg-lia-interactive-active rounded-full h-1.5 mt-2">
                           <div
                             className="bg-status-success h-1.5 rounded-full"
                             style={{width: `${liaAnalysis.culturalFit}%`}}
@@ -576,11 +576,11 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                     <Card>
                       <CardContent className="pt-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Fit Técnico</span>
+                          <span className="text-sm text-lia-text-primary">Fit Técnico</span>
                           <Zap className="w-4 h-4 text-wedo-purple" />
                         </div>
                         <div className="text-2xl font-bold text-wedo-purple">{liaAnalysis.technicalFit}%</div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                        <div className="w-full bg-lia-interactive-active rounded-full h-1.5 mt-2">
                           <div
                             className="bg-wedo-purple h-1.5 rounded-full"
                             style={{width: `${liaAnalysis.technicalFit}%`}}
@@ -628,7 +628,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                   </div>
 
                   {/* Recommendation */}
-                  <Card className="bg-gray-100 dark:bg-lia-bg-secondary">
+                  <Card className="bg-lia-bg-tertiary">
                     <CardContent className="pt-4">
                       <div className="flex items-center gap-2 mb-2">
                         <LIAIcon size="sm" />
@@ -645,19 +645,19 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       <div className="space-y-3">
                         {Object.entries(liaAnalysis.softSkills || {}).map(([skill, value]) => (
                           <div key={skill} className="flex items-center gap-3">
-                            <span className="text-sm text-lia-text-primary dark:text-lia-text-primary capitalize w-32">
+                            <span className="text-sm text-lia-text-primary capitalize w-32">
                               {skill === 'communication' ? 'Comunicação' :
                                skill === 'teamwork' ? 'Trabalho em equipe' :
                                skill === 'leadership' ? 'Liderança' :
                                'Resolução de problemas'}
                             </span>
-                            <div className="flex-1 bg-gray-200 rounded-full h-2">
+                            <div className="flex-1 bg-lia-interactive-active rounded-full h-2">
                               <div
-                                className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full"
+                                className="bg-lia-btn-primary-bg dark:bg-lia-text-tertiary h-2 rounded-full"
                                 style={{width: `${value}%`}}
                               />
                             </div>
-                            <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary w-12 text-right">
+                            <span className="text-sm font-medium text-lia-text-primary w-12 text-right">
                               {value as number}%
                             </span>
                           </div>
@@ -671,14 +671,14 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
           </div>
         </Tabs>
 
-        <DialogFooter className="mt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
-          <Button variant="outline" onClick={onClose} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
+        <DialogFooter className="mt-4 border-t border-lia-border-subtle bg-lia-bg-secondary p-4 -mx-6 -mb-6 rounded-b-xl">
+          <Button variant="outline" onClick={onClose} className="bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg">
             Cancelar
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={!formData.name || !formData.email || !formData.phone || !formData.position}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             <Plus className="w-4 h-4 mr-2" />
             Adicionar Candidato

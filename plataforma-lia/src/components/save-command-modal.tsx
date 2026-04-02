@@ -48,7 +48,7 @@ export interface SavedCommandData {
 }
 
 const categories = [
-  { id: "candidates", name: "Candidatos", icon: Users, color: "text-lia-text-secondary dark:text-lia-text-tertiary" },
+  { id: "candidates", name: "Candidatos", icon: Users, color: "text-lia-text-secondary" },
   { id: "jobs", name: "Vagas", icon: Briefcase, color: "text-status-success" },
   { id: "analytics", name: "Indicadores", icon: BarChart3, color: "text-wedo-purple" },
   { id: "automation", name: "Automações", icon: Zap, color: "text-wedo-orange" },
@@ -175,7 +175,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               <CardTitle className="text-lg font-semibold text-lia-text-primary">
                 Salvar Novo Comando
               </CardTitle>
-              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-tertiary">
+              <p className="text-sm text-lia-text-tertiary">
                 Adicione este comando à biblioteca da LIA para futuros usos
               </p>
             </div>
@@ -194,10 +194,10 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
           {/* Comando Original */}
  <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-default">
             <div className="flex items-center gap-2 mb-2">
-              <MessageCircle className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
- <span className="text-sm font-medium lia-text-base">Comando Original:</span>
+              <MessageCircle className="w-4 h-4 text-lia-text-secondary" />
+ <span className="text-sm font-medium text-lia-text-secondary">Comando Original:</span>
             </div>
- <div className="text-sm lia-text-base font-mono bg-lia-bg-primary rounded-md p-2">
+ <div className="text-sm text-lia-text-secondary font-mono bg-lia-bg-primary rounded-md p-2">
               "{originalCommand}"
             </div>
           </div>
@@ -226,7 +226,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
           {/* Título */}
           <div>
-            <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+            <label className="block text-sm font-medium text-lia-text-primary mb-2">
               Título do Comando *
             </label>
             <input
@@ -240,7 +240,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
           {/* Categoria */}
           <div>
-            <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+            <label className="block text-sm font-medium text-lia-text-primary mb-2">
               Categoria *
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -265,7 +265,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
           {/* Descrição */}
           <div>
-            <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+            <label className="block text-sm font-medium text-lia-text-primary mb-2">
               Descrição *
             </label>
             <textarea
@@ -279,13 +279,13 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
           {/* Exemplos */}
           <div>
-            <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+            <label className="block text-sm font-medium text-lia-text-primary mb-2">
               Exemplos de Uso
             </label>
             <div className="space-y-2">
               {examples.map((example, index) => (
                 <div key={`example-${index}`} className="flex items-center gap-2">
-                  <div className="flex-1 text-sm text-lia-text-primary dark:text-lia-text-primary bg-gray-50 dark:bg-lia-bg-elevated rounded-md px-3 py-2">
+                  <div className="flex-1 text-sm text-lia-text-primary bg-gray-50 dark:bg-lia-bg-elevated rounded-md px-3 py-2">
                     "{example}"
                   </div>
                   {examples.length > 1 && (
@@ -319,7 +319,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+            <label className="block text-sm font-medium text-lia-text-primary mb-2">
               Tags (palavras-chave)
             </label>
             <div className="space-y-2">
@@ -330,7 +330,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                       {tag}
                       <button
                         onClick={() => handleRemoveTag(tag)}
-                        className="ml-1 lia-text-base hover:lia-text-strong"
+                        className="ml-1 text-lia-text-secondary hover:text-lia-text-primary"
                       >
                         <X className="w-3 h-3" />
                       </button>

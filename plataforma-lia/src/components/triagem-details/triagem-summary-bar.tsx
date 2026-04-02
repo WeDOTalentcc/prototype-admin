@@ -30,7 +30,7 @@ export function TriagemSummaryBar({
   const DecisionIcon = decisionDisplay.icon
   return (
     <>
-      <div className="px-4 py-2.5 border-b border-b-gray-100 bg-gray-50">
+      <div className="px-4 py-2.5 border-b border-b-lia-border-subtle bg-lia-bg-secondary">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-2">
@@ -81,7 +81,7 @@ export function TriagemSummaryBar({
         </div>
       </div>
 
-      <div className="px-4 py-2 border-b border-b-gray-100">
+      <div className="px-4 py-2 border-b border-b-lia-border-subtle">
         <div className="flex gap-1">
           {[
             { key: 'triagem' as const, icon: MessageSquare, label: 'Respostas e Avaliação' },
@@ -91,7 +91,7 @@ export function TriagemSummaryBar({
             <button
               key={tab.key}
               onClick={() => onTabChange(tab.key)}
-              className={cn("px-3 py-1.5 text-xs font-medium transition-colors motion-reduce:transition-none flex items-center gap-1.5 rounded-full", activeTab === tab.key ? "bg-gray-800 text-white" : "bg-transparent lia-text-secondary hover:bg-gray-100")}
+              className={cn("px-3 py-1.5 text-xs font-medium transition-colors motion-reduce:transition-none flex items-center gap-1.5 rounded-full", activeTab === tab.key ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-transparent lia-text-secondary hover:bg-lia-interactive-hover")}
             >
               <tab.icon className="w-3 h-3" />
               {tab.label}

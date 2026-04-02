@@ -16,7 +16,7 @@ export function NPSTab({ onSettingsChange }: { onSettingsChange: (changed: boole
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Escala de NPS
               </label>
               <select
@@ -29,7 +29,7 @@ export function NPSTab({ onSettingsChange }: { onSettingsChange: (changed: boole
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
                 Frequência de Envio
               </label>
               <select
@@ -45,7 +45,7 @@ export function NPSTab({ onSettingsChange }: { onSettingsChange: (changed: boole
           </div>
 
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               Pergunta Principal
             </label>
             <textarea

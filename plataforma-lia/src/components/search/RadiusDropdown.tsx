@@ -61,12 +61,12 @@ export function RadiusDropdown({
         <button 
           className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-lia-border-subtle",
-            "text-xs font-medium lia-text-800 dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-lia-border-subtle transition-colors motion-reduce:transition-none",
+            "text-xs font-medium text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-lia-border-subtle transition-colors motion-reduce:transition-none",
             className
           )}
         >
           <span>{selectedOption.label}</span>
-          <ChevronDown className="w-3.5 h-3.5 lia-text-400" />
+          <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-0 rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle" align="start">
@@ -89,16 +89,16 @@ export function RadiusDropdown({
                 <div className="flex items-center justify-between">
                   <span className={cn(
                     "text-xs",
- value === option.value ? "font-medium lia-text-950" : "lia-text-800 dark:text-lia-text-primary"
+ value === option.value ? "font-medium text-lia-text-primary" : "text-lia-text-primary"
                   )}>
                     {option.label}
                   </span>
                   {value === option.value && (
-                    <Check className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                    <Check className="w-4 h-4 text-lia-text-secondary" />
                   )}
                 </div>
                 {option.description && (
-                  <p className="text-xs lia-text-500 dark:text-lia-text-tertiary mt-0.5">{option.description}</p>
+                  <p className="text-xs text-lia-text-secondary mt-0.5">{option.description}</p>
                 )}
               </button>
             </div>

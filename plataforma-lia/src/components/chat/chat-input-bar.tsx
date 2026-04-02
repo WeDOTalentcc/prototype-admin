@@ -62,7 +62,7 @@ export function ChatInputBar({
   return (
     <div
       className={cn(
-        "flex items-end gap-2 rounded-[24px] border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary px-3 py-2",
+        "flex items-end gap-2 rounded-[24px] border border-lia-border-subtle bg-lia-bg-primary px-3 py-2",
         className
       )}
     >
@@ -82,7 +82,7 @@ export function ChatInputBar({
         aria-label="Mensagem para a LIA"
         className={cn(
           "flex-1 bg-transparent text-base-ui font-['Open_Sans',sans-serif]",
-          "lia-text-900 dark:lia-text-50 placeholder:lia-text-400 dark:placeholder:lia-text-500",
+          "text-lia-text-primary placeholder:text-lia-text-tertiary dark:placeholder:text-lia-text-secondary",
           "focus:outline-none leading-relaxed min-w-0 resize-none"
         )}
         style={{maxHeight: "120px"}}
@@ -92,7 +92,7 @@ export function ChatInputBar({
         <button
           type="button"
           onClick={onMicClick}
-          className="flex-shrink-0 p-1.5 rounded-full lia-text-400 dark:lia-text-500 hover:lia-text-600 dark:hover:lia-text-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none mb-0.5"
+          className="flex-shrink-0 p-1.5 rounded-full text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none mb-0.5"
           aria-label="Gravar áudio"
         >
           <Mic className="w-4 h-4" />
@@ -107,7 +107,7 @@ export function ChatInputBar({
           "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors mb-0.5",
           canSend
             ? "bg-chat-cyan text-white hover:opacity-90"
-            : "bg-gray-200 dark:bg-lia-bg-elevated lia-text-400 dark:lia-text-500 cursor-not-allowed"
+            : "bg-lia-interactive-active text-lia-text-tertiary cursor-not-allowed"
         )}
         aria-label="Enviar mensagem"
       >

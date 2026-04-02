@@ -107,13 +107,13 @@ export function PauseOptionsStep({
       <div>
         <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">Vagas Selecionadas</h4>
         <ScrollArea className="max-h-[100px]">
-          <div className="space-y-1 bg-gray-50 rounded-md p-2 border border-lia-border-subtle">
+          <div className="space-y-1 bg-lia-bg-secondary rounded-md p-2 border border-lia-border-subtle">
             {jobs.map((job) => (
               <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    {job.code && <span className="text-micro font-medium text-lia-text-secondary bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
+                    {job.code && <span className="text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
                     <span className="text-xs font-medium text-lia-text-primary truncate">{job.title}</span>
                   </div>
                 </div>
@@ -176,7 +176,7 @@ export function PauseOptionsStep({
         </div>
         <div>
           <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">Impacto</h4>
-          <div className="space-y-1.5 p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
+          <div className="space-y-1.5 p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
             <div className="flex items-start gap-2 text-xs text-lia-text-primary"><span className="flex-shrink-0">⏸️</span><span>Triagens em andamento serão pausadas</span></div>
             <div className="flex items-start gap-2 text-xs text-lia-text-primary"><span className="flex-shrink-0">📅</span><span>{totalInterviews} entrevista(s) agendada(s)</span></div>
             <div className="flex items-start gap-2 text-xs text-lia-text-primary"><span className="flex-shrink-0">📢</span><span>Publicações serão desativadas</span></div>
@@ -185,26 +185,26 @@ export function PauseOptionsStep({
         </div>
       </div>
 
-      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
+      <div className="space-y-3 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
           <CalendarOff className="w-3.5 h-3.5 text-lia-text-secondary" />
           Ações ao Pausar
         </h4>
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            <Checkbox id="cancelScreenings" checked={cancelScreenings} onCheckedChange={(c) => onCancelScreeningsChange(c === true)} disabled={hasProposalBlock} className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900" />
+            <Checkbox id="cancelScreenings" checked={cancelScreenings} onCheckedChange={(c) => onCancelScreeningsChange(c === true)} disabled={hasProposalBlock} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
             <Label htmlFor="cancelScreenings" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
               <Filter className="w-3 h-3 text-lia-text-disabled" />Desmarcar triagens pendentes ({totalScreenings})
             </Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Checkbox id="cancelInterviews" checked={cancelInterviews} onCheckedChange={(c) => onCancelInterviewsChange(c === true)} disabled={hasProposalBlock} className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900" />
+            <Checkbox id="cancelInterviews" checked={cancelInterviews} onCheckedChange={(c) => onCancelInterviewsChange(c === true)} disabled={hasProposalBlock} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
             <Label htmlFor="cancelInterviews" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
               <Calendar className="w-3 h-3 text-lia-text-disabled" />Desmarcar entrevistas agendadas ({totalInterviews})
             </Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Checkbox id="cancelTests" checked={cancelTests} onCheckedChange={(c) => onCancelTestsChange(c === true)} disabled={hasProposalBlock} className="border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900" />
+            <Checkbox id="cancelTests" checked={cancelTests} onCheckedChange={(c) => onCancelTestsChange(c === true)} disabled={hasProposalBlock} className="border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
             <Label htmlFor="cancelTests" className="text-xs text-lia-text-primary cursor-pointer flex items-center gap-1">
               <FileText className="w-3 h-3 text-lia-text-disabled" />Cancelar testes agendados ({totalTests})
             </Label>
@@ -212,14 +212,14 @@ export function PauseOptionsStep({
         </div>
       </div>
 
-      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
+      <div className="space-y-3 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
           <Megaphone className="w-3.5 h-3.5 text-lia-text-secondary" />
           Notificações
         </h4>
         <div className="space-y-3">
           <div className="flex items-start gap-2">
-            <Checkbox id="notifyRecruiters" checked={notifyRecruiters} onCheckedChange={(c) => onNotifyRecruitersChange(c === true)} className="mt-0.5 border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900" />
+            <Checkbox id="notifyRecruiters" checked={notifyRecruiters} onCheckedChange={(c) => onNotifyRecruitersChange(c === true)} className="mt-0.5 border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
             <div className="flex-1">
               <Label htmlFor="notifyRecruiters" className="text-xs font-medium text-lia-text-primary cursor-pointer">Notificar recrutadores</Label>
               <p className="text-micro text-lia-text-secondary">Enviar resumo das ações por email ou Teams</p>
@@ -231,7 +231,7 @@ export function PauseOptionsStep({
                       // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                       <Button key={channel} type="button" variant={recruiterChannel === channel ? 'default' : 'outline'} size="sm"
                         onClick={() => onRecruiterChannelChange(channel)}
-                        className={cn("h-6 px-2 text-micro gap-1", recruiterChannel === channel ? "bg-gray-900 hover:bg-gray-800 text-white" : "border border-lia-border-default text-lia-text-secondary")}>
+                        className={cn("h-6 px-2 text-micro gap-1", recruiterChannel === channel ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white" : "border border-lia-border-default text-lia-text-secondary")}>
                         {channel === 'email' && <Mail className="w-3 h-3" />}
                         {channel === 'teams' && <MessageSquare className="w-3 h-3" />}
                         {channel === 'bell' && <Bell className="w-3 h-3" />}
@@ -245,7 +245,7 @@ export function PauseOptionsStep({
           </div>
           <div className="border-t border-lia-border-subtle pt-3">
             <div className="flex items-start gap-2">
-              <Checkbox id="notifyApplicants" checked={notifyApplicants} onCheckedChange={(c) => onNotifyApplicantsChange(c === true)} disabled={hasProposalBlock} className="mt-0.5 border-lia-border-default data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900" />
+              <Checkbox id="notifyApplicants" checked={notifyApplicants} onCheckedChange={(c) => onNotifyApplicantsChange(c === true)} disabled={hasProposalBlock} className="mt-0.5 border-lia-border-default data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg" />
               <div className="flex-1">
                 <Label htmlFor="notifyApplicants" className="text-xs font-medium text-lia-text-primary cursor-pointer">Enviar email aos candidatos</Label>
                 <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Comunicar candidatos sobre o congelamento da vaga</p>

@@ -118,7 +118,7 @@ export function LiaExpandedPrompt({
               style={{backgroundColor: colors.iconBg}}
               className="p-2 rounded-md"
             >
-              <LIAIcon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <LIAIcon className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div className="flex-1">
               <h3
@@ -128,7 +128,7 @@ export function LiaExpandedPrompt({
                 {title}
               </h3>
               {description && (
-                <p className="text-xs lia-text-base mt-1">{description}</p>
+                <p className="text-xs text-lia-text-secondary mt-1">{description}</p>
               )}
             </div>
           </div>
@@ -149,7 +149,7 @@ export function LiaExpandedPrompt({
         {/* Sugestões rápidas */}
         {suggestions.length > 0 && (
           <div className="space-y-2">
-            <label className="text-xs font-medium lia-text-base">
+            <label className="text-xs font-medium text-lia-text-secondary">
               💡 Sugestões Rápidas
             </label>
             <div className="grid grid-cols-1 gap-2">
@@ -165,7 +165,7 @@ export function LiaExpandedPrompt({
                   <span className="flex-shrink-0 mt-0.5">{suggestion.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-medium">{suggestion.label}</div>
-                    <div className="text-xs lia-text-base mt-0.5">
+                    <div className="text-xs text-lia-text-secondary mt-0.5">
                       {suggestion.description}
                     </div>
                   </div>
@@ -180,7 +180,7 @@ export function LiaExpandedPrompt({
 
         {/* Footer com dica */}
         <div
-          className="text-xs p-2 rounded-md lia-text-base"
+          className="text-xs p-2 rounded-md text-lia-text-secondary"
           style={{backgroundColor: colors.iconBg}}
         >
           <div className="flex items-start gap-2">

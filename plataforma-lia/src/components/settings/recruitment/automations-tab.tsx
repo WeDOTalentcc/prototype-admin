@@ -66,11 +66,11 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium lia-text-800">Workflows Ativos</p>
+                <p className="text-sm font-medium text-lia-text-primary">Workflows Ativos</p>
                 <p className="text-2xl font-bold text-status-success">
                   {workflows.filter(w => w.status === 'active').length}
                 </p>
-                <p className="text-xs lia-text-800">de {workflows.length} total</p>
+                <p className="text-xs text-lia-text-primary">de {workflows.length} total</p>
               </div>
               <div className="w-10 h-10 bg-status-success/15 rounded-md flex items-center justify-center">
                 <Workflow className="w-5 h-5 text-status-success" />
@@ -83,12 +83,12 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium lia-text-800">Execuções Hoje</p>
-                <p className="text-2xl font-bold lia-text-900 dark:lia-text-50">47</p>
+                <p className="text-sm font-medium text-lia-text-primary">Execuções Hoje</p>
+                <p className="text-2xl font-bold text-lia-text-primary">47</p>
                 <p className="text-xs text-status-success">+12% vs ontem</p>
               </div>
               <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
-                <Zap className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <Zap className="w-5 h-5 text-lia-text-secondary" />
               </div>
             </div>
           </CardContent>
@@ -98,9 +98,9 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium lia-text-800">Taxa de Sucesso</p>
+                <p className="text-sm font-medium text-lia-text-primary">Taxa de Sucesso</p>
                 <p className="text-2xl font-bold text-wedo-orange">97.3%</p>
-                <p className="text-xs lia-text-800">últimos 7 dias</p>
+                <p className="text-xs text-lia-text-primary">últimos 7 dias</p>
               </div>
               <div className="w-10 h-10 bg-wedo-orange/15 rounded-md flex items-center justify-center">
                 <Target className="w-5 h-5 text-wedo-orange" />
@@ -113,9 +113,9 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium lia-text-800">Templates</p>
+                <p className="text-sm font-medium text-lia-text-primary">Templates</p>
                 <p className="text-2xl font-bold text-wedo-purple">12</p>
-                <p className="text-xs lia-text-800">pré-configurados</p>
+                <p className="text-xs text-lia-text-primary">pré-configurados</p>
               </div>
               <div className="w-10 h-10 bg-wedo-purple/15 rounded-md flex items-center justify-center">
                 <FileText className="w-5 h-5 text-wedo-purple" />
@@ -144,13 +144,13 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
                     workflow.status === 'active' ? 'bg-status-success/15' : 'bg-gray-100'
                   }`}>
                     <Workflow className={`w-5 h-5 ${
-                      workflow.status === 'active' ? 'text-status-success' : 'lia-text-800'
+                      workflow.status === 'active' ? 'text-status-success' : 'text-lia-text-primary'
                     }`} />
                   </div>
                   <div>
-                    <h4 className="font-medium lia-text-950">{workflow.name}</h4>
-                    <p className="text-sm lia-text-800">{workflow.description}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs lia-text-800">
+                    <h4 className="font-medium text-lia-text-primary">{workflow.name}</h4>
+                    <p className="text-sm text-lia-text-primary">{workflow.description}</p>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-primary">
                       <span>Trigger: {workflow.trigger}</span>
                       <span>•</span>
                       <span>{workflow.actions} ações</span>
@@ -187,10 +187,10 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button variant="outline" className="h-auto p-4 justify-start gap-3">
-              <Plus className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Plus className="w-5 h-5 text-lia-text-secondary" />
               <div className="text-left">
                 <div className="font-medium">Criar Workflow</div>
-                <div className="text-sm lia-text-800">Do zero ou usando template</div>
+                <div className="text-sm text-lia-text-primary">Do zero ou usando template</div>
               </div>
             </Button>
 
@@ -198,7 +198,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
               <Download className="w-5 h-5 text-status-success" />
               <div className="text-left">
                 <div className="font-medium">Importar Template</div>
-                <div className="text-sm lia-text-800">Da biblioteca de templates</div>
+                <div className="text-sm text-lia-text-primary">Da biblioteca de templates</div>
               </div>
             </Button>
 
@@ -206,7 +206,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
               <BarChart3 className="w-5 h-5 text-wedo-purple" />
               <div className="text-left">
                 <div className="font-medium">Ver Analytics</div>
-                <div className="text-sm lia-text-800">Performance detalhada</div>
+                <div className="text-sm text-lia-text-primary">Performance detalhada</div>
               </div>
             </Button>
           </div>
@@ -217,25 +217,25 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
 
   const renderBuilder = () => (
     <div className="text-center py-12">
-      <Workflow className="w-12 h-12 lia-text-800 mx-auto mb-4" />
-      <h3 className="text-lg font-medium lia-text-950 mb-2">Workflow Builder Visual</h3>
-      <p className="lia-text-800">Interface de arrastar e soltar para criar workflows</p>
+      <Workflow className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
+      <h3 className="text-lg font-medium text-lia-text-primary mb-2">Workflow Builder Visual</h3>
+      <p className="text-lia-text-primary">Interface de arrastar e soltar para criar workflows</p>
     </div>
   )
 
   const renderTemplates = () => (
     <div className="text-center py-12">
-      <FileText className="w-12 h-12 lia-text-800 mx-auto mb-4" />
-      <h3 className="text-lg font-medium lia-text-950 mb-2">Biblioteca de Templates</h3>
-      <p className="lia-text-800">Templates pré-configurados para casos comuns</p>
+      <FileText className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
+      <h3 className="text-lg font-medium text-lia-text-primary mb-2">Biblioteca de Templates</h3>
+      <p className="text-lia-text-primary">Templates pré-configurados para casos comuns</p>
     </div>
   )
 
   const renderLogs = () => (
     <div className="text-center py-12">
-      <Activity className="w-12 h-12 lia-text-800 mx-auto mb-4" />
-      <h3 className="text-lg font-medium lia-text-950 mb-2">Logs de Execução</h3>
-      <p className="lia-text-800">Histórico detalhado de todas as execuções</p>
+      <Activity className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
+      <h3 className="text-lg font-medium text-lia-text-primary mb-2">Logs de Execução</h3>
+      <p className="text-lia-text-primary">Histórico detalhado de todas as execuções</p>
     </div>
   )
 
@@ -243,11 +243,11 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold lia-text-950 flex items-center gap-2">
-            <Workflow className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+          <h2 className="text-xl font-semibold text-lia-text-primary flex items-center gap-2">
+            <Workflow className="w-5 h-5 text-lia-text-secondary" />
             Automação Workflows Enterprise
           </h2>
-          <p className="text-sm lia-text-800">
+          <p className="text-sm text-lia-text-primary">
             Builder visual para automações inteligentes de recrutamento
           </p>
         </div>
@@ -275,8 +275,8 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             onClick={() => setSelectedView(tab.id as Parameters<typeof setSelectedView>[0])}
             className={`flex items-center gap-2 px-3 py-3 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none font-crimson ${
               selectedView === tab.id
-                ? 'bg-lia-bg-primary lia-text-950'
-                : 'lia-text-800 hover:lia-text-950'
+                ? 'bg-lia-bg-primary text-lia-text-primary'
+                : 'text-lia-text-primary hover:text-lia-text-primary'
             }`}
           >
             <tab.icon className="w-4 h-4" />

@@ -241,7 +241,7 @@ export function CompetenciesStage() {
     return (
       <div key={skill.id} className="flex flex-col gap-1.5 p-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
         <div className="flex items-center gap-2">
-          <span className="flex-1 text-xs font-medium lia-text-strong flex items-center gap-1.5">
+          <span className="flex-1 text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
             {skill.name}
             {isSkillFromConfig(skill.name) && (
               <span className="w-1.5 h-1.5 rounded-full bg-gray-900 flex-shrink-0" title="Pré-preenchido das Configurações" />
@@ -278,7 +278,7 @@ export function CompetenciesStage() {
             <button key={w} onClick={() => updateSkillWeight(skill.id, w)} className="transition-colors motion-reduce:transition-none">
               <Star className={cn(
  "w-3.5 h-3.5 transition-colors",
-                w <= skill.weight ? "fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-inverse"
+                w <= skill.weight ? "fill-gray-700 dark:fill-gray-300 text-lia-text-secondary" : "text-lia-text-inverse"
               )} />
             </button>
           ))}
@@ -294,7 +294,7 @@ export function CompetenciesStage() {
                   <div className="flex items-start gap-1.5">
                     <Brain className="w-3 h-3 text-wedo-cyan flex-shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Sugerido por LIA</span>
+                      <span className="font-medium text-lia-text-secondary">Sugerido por LIA</span>
                       <p className="lia-text-secondary mt-0.5">{skill.weightJustification || inference.justificativa}</p>
                     </div>
                   </div>
@@ -322,7 +322,7 @@ export function CompetenciesStage() {
         >
           {comp.enabled && <CheckCircle2 className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
         </button>
-        <span className="flex-1 text-xs font-medium lia-text-strong">
+        <span className="flex-1 text-xs font-medium text-lia-text-primary">
           {comp.name}
         </span>
       </div>
@@ -335,7 +335,7 @@ export function CompetenciesStage() {
               <button key={w} onClick={() => updateBehavioralWeight(comp.id, w)} className="transition-colors motion-reduce:transition-none">
                 <Star className={cn(
  "w-3.5 h-3.5 transition-colors",
-                  w <= comp.weight ? "fill-gray-700 dark:fill-gray-300 text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-inverse"
+                  w <= comp.weight ? "fill-gray-700 dark:fill-gray-300 text-lia-text-secondary" : "text-lia-text-inverse"
                 )} />
               </button>
             ))}
@@ -352,7 +352,7 @@ export function CompetenciesStage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
-              <Code className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Code className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="text-micro lia-text-secondary">Técnicas:</span>
               <span className={`text-xs font-medium ${technicalSkills.length >= 3 ? 'text-status-success' : 'text-status-warning'}`}>
                 {technicalSkills.length}/3
@@ -404,7 +404,7 @@ export function CompetenciesStage() {
           {/* Add Skill Button */}
           <button
             onClick={() => setShowAddSkillModal(true)}
-            className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
+            className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
             Adicionar Competência Técnica

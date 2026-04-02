@@ -89,7 +89,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
     <div className={_hideOwnSidebar ? "" : "flex gap-6"}>
       {!_hideOwnSidebar && (
       <div className="flex-shrink-0" style={{width: '220px'}}>
-        <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary rounded-md overflow-hidden">
+        <Card className="border border-lia-border-subtle bg-lia-bg-primary rounded-md overflow-hidden">
           <nav className="space-y-1 p-3 h-full overflow-y-auto">
             {SCREENING_SECTIONS.map((section) => {
               const sectionDone = section.id === 'configuracoes' ? configDone : section.id === 'descricao' ? jdDone : questionsDone
@@ -99,8 +99,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors motion-reduce:transition-none font-open-sans ${
  activeSection === section.id
-                      ? 'bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle text-wedo-cyan-dark dark:text-lia-text-secondary'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
+                      ? 'bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-dark'
+                      : 'hover:bg-lia-interactive-hover text-lia-text-primary border border-transparent'
                   }`}
                   style={{fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500'}}
                 >
@@ -122,9 +122,9 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
 
       <div className="flex-1 min-w-0">
         <div className="space-y-4">
-          <div className="flex items-center justify-between bg-white dark:bg-lia-bg-secondary rounded-md p-4">
+          <div className="flex items-center justify-between bg-lia-bg-primary rounded-md p-4">
             <div className="flex items-center gap-3">
-              <currentSection.icon className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />
+              <currentSection.icon className="w-5 h-5 text-lia-text-secondary" />
               <div>
                 <h2 className={textStyles.h3}>{currentSection.title}</h2>
                 <p className={textStyles.description}>{currentSection.description}</p>
@@ -133,7 +133,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
             <div className="flex items-center gap-3">
               {activeSection === 'configuracoes' && (
                 <>
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-secondary font-['Open_Sans',sans-serif]">
                     {getConfigStatusInfo()}
                   </span>
                   {!isEditingScreeningConfig ? (
@@ -170,7 +170,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       }}>
                         Cancelar
                       </Button>
-                      <Button size="sm" className="gap-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200" onClick={async () => {
+                      <Button size="sm" className="gap-1.5 text-xs rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover" onClick={async () => {
                         try {
                           const presetToScore = (preset: string) => {
                             switch(preset) {
@@ -223,21 +223,21 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                 </>
               )}
               {activeSection === 'descricao' && (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-secondary font-['Open_Sans',sans-serif]">
                   {jdDone ? 'Descrição preenchida' : 'Descrição pendente'}
                 </span>
               )}
               {activeSection === 'perguntas' && (
                 <>
                   {/* @ts-ignore TODO: fix type */}
-                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-secondary font-['Open_Sans',sans-serif]">
                     {(job.screeningQuestions as any[])?.length || 0} WSI
                     {((companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length) > 0 && (
                       <> · {(companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length} extras</>
                     )}
                   </span>
-                  <div className="flex items-center gap-2 border-l border-lia-border-subtle dark:border-lia-border-subtle pl-3 ml-1">
-                    <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary" >
+                  <div className="flex items-center gap-2 border-l border-lia-border-subtle pl-3 ml-1">
+                    <span className="text-micro text-lia-text-tertiary" >
                       Triagem
                     </span>
                     {(job.screeningStatus === 'not_configured' || !job.screeningStatus) ? (
@@ -251,7 +251,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           }
                           setShowScreeningToggleConfirm('activate')
                         }}
-                        className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none duration-200 bg-gray-300"
+                        className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none duration-200 bg-lia-border-default"
                       >
                         <span
                           className="inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-secondary transition-transform motion-reduce:transition-none duration-200"
@@ -259,7 +259,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         />
                       </button>
                     ) : job.screeningStatus === 'completed' ? (
-                      <span className="text-micro font-medium px-2 py-0.5 rounded-full bg-wedo-cyan/15 text-wedo-cyan-dark dark:text-wedo-cyan-dark">
+                      <span className="text-micro font-medium px-2 py-0.5 rounded-full bg-wedo-cyan/15 text-wedo-cyan-dark">
                         Concluída
                       </span>
                     ) : (
@@ -278,7 +278,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           }
                         }}
                         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none duration-200 ${
- job.screeningStatus === 'active' ? 'bg-status-success' : 'bg-gray-300'
+ job.screeningStatus === 'active' ? 'bg-status-success' : 'bg-lia-border-default'
                         }`}
                       >
                         <span
@@ -310,25 +310,25 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
           </div>
 
           {showScreeningToggleConfirm && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle w-[380px] p-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-lia-overlay">
+              <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle w-[380px] p-5 animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-lia-bg-tertiary">
                     {showScreeningToggleConfirm === 'activate'
-                      ? <Play className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                      : <Pause className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                      ? <Play className="w-5 h-5 text-lia-text-secondary" />
+                      : <Pause className="w-5 h-5 text-lia-text-secondary" />
                     }
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                    <h3 className="text-sm font-semibold text-lia-text-primary">
                       {showScreeningToggleConfirm === 'activate' ? 'Ativar Triagem' : 'Pausar Triagem'}
                     </h3>
-                    <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                    <p className="text-xs text-lia-text-tertiary">
                       {(job.title as React.ReactNode)}
                     </p>
                   </div>
                 </div>
-                <div className="rounded-md p-3 mb-4 border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
+                <div className="rounded-md p-3 mb-4 border border-lia-border-subtle bg-lia-bg-secondary/50">
                   <div className="flex items-start gap-2.5">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
  showScreeningToggleConfirm === 'activate' ? 'bg-status-success/15 dark:bg-status-success/30' : 'bg-status-warning/15 dark:bg-status-warning/30'
@@ -338,7 +338,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                         : <Pause className="w-3 h-3 text-status-warning" />
                       }
                     </div>
-                    <p className="text-xs leading-relaxed text-lia-text-secondary dark:text-lia-text-tertiary"  aria-live="polite" aria-atomic="true">
+                    <p className="text-xs leading-relaxed text-lia-text-secondary"  aria-live="polite" aria-atomic="true">
                       {showScreeningToggleConfirm === 'activate'
                         ? 'A LIA começará a avaliar candidatos automaticamente conforme as configurações definidas neste roteiro.'
                         : 'Candidatos em avaliação serão mantidos no estado atual até a reativação. Nenhum novo candidato será triado enquanto a triagem estiver pausada.'
@@ -350,14 +350,14 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs rounded-md px-4 border-lia-border-subtle dark:border-lia-border-subtle"
+                    className="text-xs rounded-md px-4 border-lia-border-subtle"
                     onClick={() => setShowScreeningToggleConfirm(null)}
                   >
                     Cancelar
                   </Button>
                   <Button
                     size="sm"
-                    className="text-xs rounded-md px-4 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                    className="text-xs rounded-md px-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
                     onClick={() => {
                       const newStatus = showScreeningToggleConfirm === 'activate' ? 'active' : 'paused'
                       onJobUpdate?.({ ...job, screeningStatus: newStatus })

@@ -180,7 +180,7 @@ export function JobTemplatesPage() {
       case "alta": return "bg-status-success/15 text-status-success border-status-success/30"
       case "média": return "bg-status-warning/15 text-status-warning border-status-warning/30"
       case "baixa": return "bg-status-error/15 text-status-error border-status-error/30"
-      default: return "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle"
+      default: return "bg-gray-100 text-lia-text-primary border-lia-border-subtle"
     }
   }
 
@@ -191,11 +191,11 @@ export function JobTemplatesPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-1 flex items-center gap-1.5">
+              <h1 className="text-sm font-semibold text-lia-text-primary mb-1 flex items-center gap-1.5">
                 <Brain className="w-6 h-6 text-wedo-cyan" />
                 Templates de Vagas com IA
               </h1>
-              <p className="text-lia-text-secondary dark:text-lia-text-tertiary">
+              <p className="text-lia-text-secondary">
                 Acelere a criação de vagas com templates inteligentes e sugestões da IA
               </p>
             </div>
@@ -227,7 +227,7 @@ export function JobTemplatesPage() {
                   <p className="text-xs text-status-success">+3 este mês</p>
                 </div>
                 <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <FileText className="w-5 h-5 text-lia-text-secondary" />
                 </div>
               </div>
             </CardContent>
@@ -369,17 +369,17 @@ export function JobTemplatesPage() {
                   </Button>
                 </div>
 
-                <CardTitle className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                <CardTitle className="text-xs font-semibold text-lia-text-primary">
                   {template.name}
                 </CardTitle>
 
-                <div className="flex items-center gap-2 text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+                <div className="flex items-center gap-2 text-sm text-lia-text-secondary">
                   <Building className="w-4 h-4" />
                   <span>{template.department}</span>
                   <span>•</span>
                   <span>{template.level}</span>
                   <Badge variant="outline" className={`text-xs ${
-                    template.workModel === 'remoto' ? 'border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary' :
+                    template.workModel === 'remoto' ? 'border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary' :
                     template.workModel === 'híbrido' ? 'border-wedo-purple/30 bg-wedo-purple/10 text-wedo-purple' :
                     'border-status-success/30 bg-status-success/10 text-status-success'
                   }`}>
@@ -387,7 +387,7 @@ export function JobTemplatesPage() {
                   </Badge>
                 </div>
 
-                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary line-clamp-2">
+                <p className="text-sm text-lia-text-secondary line-clamp-2">
                   {template.template.description}
                 </p>
               </CardHeader>
@@ -396,18 +396,18 @@ export function JobTemplatesPage() {
                 {/* Metrics */}
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div className="text-center">
-                    <div className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary">{template.usage}</div>
-                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">usos</div>
+                    <div className="text-xs font-bold text-lia-text-primary">{template.usage}</div>
+                    <div className="text-xs text-lia-text-primary">usos</div>
                   </div>
                   <div className="text-center">
                     <div className={`text-xs font-bold ${getSuccessColor(template.successRate)}`}>
                       {template.successRate}%
                     </div>
-                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">sucesso</div>
+                    <div className="text-xs text-lia-text-primary">sucesso</div>
                   </div>
                   <div className="text-center">
                     <div className="text-xs font-bold text-wedo-orange">{template.avgTimeToHire}d</div>
-                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">tempo</div>
+                    <div className="text-xs text-lia-text-primary">tempo</div>
                   </div>
                 </div>
 
@@ -415,9 +415,9 @@ export function JobTemplatesPage() {
                 <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-3 mb-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
-                    <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary/80">Insights da IA</span>
+                    <span className="text-sm font-medium text-lia-text-secondary/80">Insights da IA</span>
                   </div>
-                  <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary/80 space-y-1">
+                  <div className="text-xs text-lia-text-secondary/80 space-y-1">
                     <div>Previsão: {template.aiInsights.predictedApplications} candidatos</div>
                     <div>Competitividade: {template.aiInsights.competitiveness}/10</div>
                   </div>
@@ -444,13 +444,13 @@ export function JobTemplatesPage() {
                       Usar Template
                     </Button>
                   </div>
-                  <Button size="sm" variant={"default" as any} className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200">
+                  <Button size="sm" variant={"default" as any} className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200">
                     <Wand2 className="w-3 h-3" />
                     Criar Vaga
                   </Button>
                 </div>
 
-                <div className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-3">
+                <div className="text-xs text-lia-text-primary mt-3">
                   Último uso: {new Date(template.lastUsed).toLocaleDateString("pt-BR")}
                 </div>
               </CardContent>
@@ -534,7 +534,7 @@ export function JobTemplatesPage() {
                   <Button variant="outline" onClick={() => setShowAIGenerator(false)}>
                     Cancelar
                   </Button>
-                  <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200">
+                  <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     Gerar Template
                   </Button>

@@ -63,10 +63,10 @@ export function IndicatorsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+          <h1 className="text-2xl font-bold text-lia-text-primary">
             Indicadores e Analytics
           </h1>
-          <p className="text-lia-text-secondary dark:text-lia-text-tertiary">
+          <p className="text-lia-text-secondary">
             Dashboard executivo com insights estratégicos e performance de recrutadores
           </p>
         </div>
@@ -103,8 +103,8 @@ export function IndicatorsPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-1 py-4 text-sm font-medium border-b-2 transition-colors motion-reduce:transition-none ${
                 activeTab === tab.id
-                  ? "border-gray-900 dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-tertiary"
-                  : "border-transparent text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-disabled"
+                  ? "border-gray-900 dark:border-lia-border-medium text-lia-text-secondary"
+                  : "border-transparent text-lia-text-primary hover:text-lia-text-primary"
               }`}
             >
               <tab.icon className="w-4 h-4" />

@@ -65,14 +65,14 @@ const CollapsibleSection = ({
       className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
     >
       <div className="flex items-center gap-2">
-        <Icon className="w-4 h-4 lia-text-700 dark:text-lia-text-secondary" />
+        <Icon className="w-4 h-4 text-lia-text-primary" />
         <span className={textStyles.subtitle}>{title}</span>
         {count !== undefined && (
           <Badge variant="outline" className="ml-1 text-micro">{count} itens</Badge>
         )}
       </div>
       <ChevronDown className={cn(
-        "w-4 h-4 lia-text-500 dark:text-lia-text-tertiary transition-transform duration-200",
+        "w-4 h-4 text-lia-text-secondary transition-transform duration-200",
         isExpanded && "rotate-180"
       )} />
     </button>
@@ -90,7 +90,7 @@ const FieldBadges = ({ field }: { field: DataField }) => (
       {field.type}
     </Badge>
     {field.isDefault && (
-      <Badge className="bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary text-micro px-1 py-0 h-4">
+      <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary text-micro px-1 py-0 h-4">
         <Database className="w-2.5 h-2.5 mr-0.5" />
         Banco
       </Badge>
@@ -108,7 +108,7 @@ const FieldBadges = ({ field }: { field: DataField }) => (
       </Badge>
     )}
     {!field.isDefault && (
-      <Badge className="bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary text-micro px-1 py-0 h-4">
+      <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary text-micro px-1 py-0 h-4">
         <Brain className="w-2.5 h-2.5 mr-0.5 text-wedo-cyan" />
         Custom
       </Badge>
@@ -202,8 +202,8 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
         <Card className="border-0 rounded-md">
           <CardContent className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-8 h-8 lia-text-700 dark:text-lia-text-secondary animate-spin motion-reduce:animate-none" />
-              <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">Carregando configurações...</p>
+              <Loader2 className="w-8 h-8 text-lia-text-primary animate-spin motion-reduce:animate-none" />
+              <p className="text-xs text-lia-text-secondary">Carregando configurações...</p>
             </div>
           </CardContent>
         </Card>
@@ -226,7 +226,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className={`flex items-center gap-2 ${textStyles.h3}`}>
-                <ClipboardList className="w-4 h-4 lia-text-700 dark:text-lia-text-secondary" />
+                <ClipboardList className="w-4 h-4 text-lia-text-primary" />
                 Solicitação de Dados
               </CardTitle>
               <p className={`mt-1 ${textStyles.description}`} aria-live="polite" aria-atomic="true">
@@ -250,7 +250,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     size="sm" 
                     onClick={handleSaveChanges} 
                     disabled={isSaving || !hasChanges}
-                    className="h-8 text-xs px-3 bg-gray-900 hover:bg-gray-800 dark:lia-bg-50 dark:hover:bg-gray-200 text-white dark:lia-text-900"
+                    className="h-8 text-xs px-3 bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 text-white"
                   >
                     <Save className="w-3.5 h-3.5 mr-1" />
                     {isSaving ? 'Salvando...' : 'Salvar Alterações'}
@@ -272,13 +272,13 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
         </CardHeader>
         <CardContent className="space-y-4 px-4 pb-4">
           <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-            <Lightbulb className="w-4 h-4 lia-text-700 dark:text-lia-text-secondary mt-0.5 flex-shrink-0" />
+            <Lightbulb className="w-4 h-4 text-lia-text-primary mt-0.5 flex-shrink-0" />
             <div className={textStyles.description}>
               <p className={`mb-0.5 ${textStyles.subtitle}`}>
                 Como Funciona
               </p>
               <p>
-                Configure os campos que deseja solicitar. O sistema pode enviar solicitações <strong className="lia-text-700 dark:text-lia-text-secondary">automaticamente</strong> ou <strong>manualmente</strong>.
+                Configure os campos que deseja solicitar. O sistema pode enviar solicitações <strong className="text-lia-text-primary">automaticamente</strong> ou <strong>manualmente</strong>.
               </p>
             </div>
           </div>
@@ -293,10 +293,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center gap-2">
-                  <Shield className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
+                  <Shield className="w-3.5 h-3.5 text-lia-text-secondary" />
                   <div>
-                    <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">OTP Obrigatório</Label>
-                    <p className="text-micro lia-text-500 dark:text-lia-text-tertiary">Verificação por código</p>
+                    <Label className="text-xs font-medium text-lia-text-primary">OTP Obrigatório</Label>
+                    <p className="text-micro text-lia-text-secondary">Verificação por código</p>
                   </div>
                 </div>
                 {isEditing ? (
@@ -313,10 +313,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
               <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center gap-2">
-                  <Bell className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
+                  <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
                   <div>
-                    <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">Lembretes Automáticos</Label>
-                    <p className="text-micro lia-text-500 dark:text-lia-text-tertiary">Enviar lembretes pendentes</p>
+                    <Label className="text-xs font-medium text-lia-text-primary">Lembretes Automáticos</Label>
+                    <p className="text-micro text-lia-text-secondary">Enviar lembretes pendentes</p>
                   </div>
                 </div>
                 {isEditing ? (
@@ -333,8 +333,8 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
               <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
-                  <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">Dias para Expiração</Label>
+                  <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
+                  <Label className="text-xs font-medium text-lia-text-primary">Dias para Expiração</Label>
                 </div>
                 {isEditing ? (
                   <Select
@@ -352,15 +352,15 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <p className="text-xs font-medium lia-text-900 dark:text-lia-text-primary">{config.expirationDays} dias</p>
+                  <p className="text-xs font-medium text-lia-text-primary">{config.expirationDays} dias</p>
                 )}
               </div>
 
               {config.autoReminders && (
                 <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                   <div className="flex items-center gap-2 mb-2">
-                    <Bell className="w-3.5 h-3.5 lia-text-500 dark:text-lia-text-tertiary" />
-                    <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">Enviar Lembrete Após</Label>
+                    <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
+                    <Label className="text-xs font-medium text-lia-text-primary">Enviar Lembrete Após</Label>
                   </div>
                   {isEditing ? (
                     <Select
@@ -378,7 +378,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <p className="text-xs font-medium lia-text-900 dark:text-lia-text-primary">{config.reminderDays} dia(s)</p>
+                    <p className="text-xs font-medium text-lia-text-primary">{config.reminderDays} dia(s)</p>
                   )}
                 </div>
               )}
@@ -394,7 +394,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
           >
             <div className="space-y-4">
               <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary mb-2 block">
+                <Label className="text-xs font-medium text-lia-text-primary mb-2 block">
                   Como o candidato responde?
                 </Label>
                 {isEditing ? (
@@ -417,30 +417,30 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         <div className="flex items-center gap-2 mb-1">
                           <option.icon className={cn(
                             "w-4 h-4",
-                            config.collectionMode === option.value ? "lia-text-900 dark:lia-text-50" : "lia-text-400"
+                            config.collectionMode === option.value ? "text-lia-text-primary" : "text-lia-text-tertiary"
                           )} />
                           <span className={cn(
                             "text-xs font-medium",
- config.collectionMode === option.value ? "lia-text-900" : "lia-text-700 dark:text-lia-text-secondary"
+ config.collectionMode === option.value ? "text-lia-text-primary" : "text-lia-text-primary"
                           )}>
                             {option.label}
                           </span>
                         </div>
-                        <p className="text-micro lia-text-500 dark:text-lia-text-tertiary">{option.desc}</p>
+                        <p className="text-micro text-lia-text-secondary">{option.desc}</p>
                         {option.value === 'candidate_choice' && (
-                          <Badge className="mt-1 bg-gray-100 lia-text-700 dark:bg-lia-bg-elevated dark:text-lia-text-primary text-micro h-4">Recomendado</Badge>
+                          <Badge className="mt-1 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated text-micro h-4">Recomendado</Badge>
                         )}
                       </button>
                     ))}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-gray-100 lia-text-700 dark:bg-lia-bg-elevated dark:text-lia-text-primary text-micro">
+                    <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated text-micro">
                       {config.collectionMode === 'portal_only' && 'Apenas Portal'}
                       {config.collectionMode === 'chat_only' && 'Apenas Chat'}
                       {config.collectionMode === 'candidate_choice' && 'Candidato Escolhe'}
                     </Badge>
-                    <span className="text-micro lia-text-500 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+                    <span className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                       {config.collectionMode === 'portal_only' && '- Envia link direto para formulário'}
                       {config.collectionMode === 'chat_only' && '- Coleta via conversa no WhatsApp'}
                       {config.collectionMode === 'candidate_choice' && '- LIA pergunta preferência ao candidato'}
@@ -450,13 +450,13 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               </div>
 
               <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-4">
-                <h4 className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary mb-3 flex items-center gap-2">
-                  <Send className="w-3.5 h-3.5 lia-text-700 dark:text-lia-text-secondary" />
+                <h4 className="text-xs font-medium text-lia-text-primary mb-3 flex items-center gap-2">
+                  <Send className="w-3.5 h-3.5 text-lia-text-primary" />
                   Mensagens do WhatsApp
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger>
-                        <Info className="w-3 h-3 lia-text-400 dark:lia-text-500" />
+                        <Info className="w-3 h-3 text-lia-text-tertiary" />
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
                         <p className="text-micro">
@@ -468,16 +468,16 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 </h4>
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-micro lia-text-600 dark:text-lia-text-tertiary mb-1 block">Solicitação Inicial</Label>
+                    <Label className="text-micro text-lia-text-secondary mb-1 block">Solicitação Inicial</Label>
                     {isEditing ? (
                       <textarea
                         value={config.collectionMessages.initialRequest}
                         onChange={(e) => updateCollectionMessages({ initialRequest: e.target.value })}
                         rows={2}
-                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                       />
                     ) : (
-                      <p className="text-xs lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                      <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                         {config.collectionMessages.initialRequest}
                       </p>
                     )}
@@ -485,16 +485,16 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
                   {(config.collectionMode === 'candidate_choice') && (
                     <div>
-                      <Label className="text-micro lia-text-600 dark:text-lia-text-tertiary mb-1 block">Mensagem de Escolha</Label>
+                      <Label className="text-micro text-lia-text-secondary mb-1 block">Mensagem de Escolha</Label>
                       {isEditing ? (
                         <textarea
                           value={config.collectionMessages.choicePrompt}
                           onChange={(e) => updateCollectionMessages({ choicePrompt: e.target.value })}
                           rows={3}
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                         />
                       ) : (
-                        <p className="text-xs lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                        <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                           {config.collectionMessages.choicePrompt}
                         </p>
                       )}
@@ -504,32 +504,32 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                   {(config.collectionMode === 'chat_only' || config.collectionMode === 'candidate_choice') && (
                     <>
                       <div>
-                        <Label className="text-micro lia-text-600 dark:text-lia-text-tertiary mb-1 block">Início da Coleta via Chat</Label>
+                        <Label className="text-micro text-lia-text-secondary mb-1 block">Início da Coleta via Chat</Label>
                         {isEditing ? (
                           <textarea
                             value={config.collectionMessages.chatStartMessage}
                             onChange={(e) => updateCollectionMessages({ chatStartMessage: e.target.value })}
                             rows={2}
-                            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                           />
                         ) : (
-                          <p className="text-xs lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                          <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                             {config.collectionMessages.chatStartMessage}
                           </p>
                         )}
                       </div>
 
                       <div>
-                        <Label className="text-micro lia-text-600 dark:text-lia-text-tertiary mb-1 block">Confirmação de Documento</Label>
+                        <Label className="text-micro text-lia-text-secondary mb-1 block">Confirmação de Documento</Label>
                         {isEditing ? (
                           <textarea
                             value={config.collectionMessages.documentReceived}
                             onChange={(e) => updateCollectionMessages({ documentReceived: e.target.value })}
                             rows={1}
-                            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                           />
                         ) : (
-                          <p className="text-xs lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                          <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                             {config.collectionMessages.documentReceived}
                           </p>
                         )}
@@ -538,32 +538,32 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                   )}
 
                   <div>
-                    <Label className="text-micro lia-text-600 dark:text-lia-text-tertiary mb-1 block">Lembrete de Pendência</Label>
+                    <Label className="text-micro text-lia-text-secondary mb-1 block">Lembrete de Pendência</Label>
                     {isEditing ? (
                       <textarea
                         value={config.collectionMessages.pendingReminder}
                         onChange={(e) => updateCollectionMessages({ pendingReminder: e.target.value })}
                         rows={2}
-                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                       />
                     ) : (
-                      <p className="text-xs lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                      <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                         {config.collectionMessages.pendingReminder}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <Label className="text-micro lia-text-600 dark:text-lia-text-tertiary mb-1 block">Confirmação Final</Label>
+                    <Label className="text-micro text-lia-text-secondary mb-1 block">Confirmação Final</Label>
                     {isEditing ? (
                       <textarea
                         value={config.collectionMessages.allComplete}
                         onChange={(e) => updateCollectionMessages({ allComplete: e.target.value })}
                         rows={1}
-                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                       />
                     ) : (
-                      <p className="text-xs lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                      <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                         {config.collectionMessages.allComplete}
                       </p>
                     )}
@@ -593,7 +593,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                   <div className="flex items-center justify-between mb-2">
-                    <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">Exigir Consentimento</Label>
+                    <Label className="text-xs font-medium text-lia-text-primary">Exigir Consentimento</Label>
                     {isEditing ? (
                       <Switch
                         checked={config.lgpd.requireConsent}
@@ -605,12 +605,12 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-micro lia-text-500 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Candidato deve autorizar antes de enviar dados</p>
+                  <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Candidato deve autorizar antes de enviar dados</p>
                 </div>
 
                 <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
                   <div className="flex items-center justify-between mb-2">
-                    <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">Permitir Exclusão</Label>
+                    <Label className="text-xs font-medium text-lia-text-primary">Permitir Exclusão</Label>
                     {isEditing ? (
                       <Switch
                         checked={config.lgpd.allowDataDeletion}
@@ -622,12 +622,12 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-micro lia-text-500 dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Candidato pode solicitar exclusão dos dados</p>
+                  <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Candidato pode solicitar exclusão dos dados</p>
                 </div>
               </div>
 
               <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary mb-2 block">
+                <Label className="text-xs font-medium text-lia-text-primary mb-2 block">
                   Retenção de Dados
                 </Label>
                 {isEditing ? (
@@ -638,19 +638,19 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       onChange={(e) => updateLgpdConfig({ dataRetentionDays: parseInt(e.target.value) || 365 })}
                       min={30}
                       max={1825}
-                      className="w-20 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-primary lia-text-900 dark:text-lia-text-primary"
+                      className="w-20 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-primary text-lia-text-primary"
                     />
-                    <span className="text-micro lia-text-500 dark:text-lia-text-tertiary">dias após término do processo</span>
+                    <span className="text-micro text-lia-text-secondary">dias após término do processo</span>
                   </div>
                 ) : (
-                  <p className="text-xs lia-text-600 dark:text-lia-text-tertiary">
+                  <p className="text-xs text-lia-text-secondary">
                     {config.lgpd.dataRetentionDays} dias após término do processo
                   </p>
                 )}
               </div>
 
               <div>
-                <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary mb-1 block">
+                <Label className="text-xs font-medium text-lia-text-primary mb-1 block">
                   Mensagem de Consentimento (WhatsApp)
                 </Label>
                 {isEditing ? (
@@ -658,17 +658,17 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.lgpd.consentMessage}
                     onChange={(e) => updateLgpdConfig({ consentMessage: e.target.value })}
                     rows={4}
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                   />
                 ) : (
-                  <p className="text-xs lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                  <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                     {config.lgpd.consentMessage}
                   </p>
                 )}
               </div>
 
               <div>
-                <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary mb-1 block">
+                <Label className="text-xs font-medium text-lia-text-primary mb-1 block">
                   Disclaimer (Portal)
                 </Label>
                 {isEditing ? (
@@ -676,10 +676,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.lgpd.disclaimerText}
                     onChange={(e) => updateLgpdConfig({ disclaimerText: e.target.value })}
                     rows={3}
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                   />
                 ) : (
-                  <p className="text-xs lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                  <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                     {config.lgpd.disclaimerText}
                   </p>
                 )}
@@ -700,21 +700,21 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 <>
                   {showAddField ? (
                     <div className="p-3 border border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                      <h4 className="text-xs font-medium mb-2 lia-text-900 dark:text-lia-text-primary">Novo Campo Customizado</h4>
+                      <h4 className="text-xs font-medium mb-2 text-lia-text-primary">Novo Campo Customizado</h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div>
-                          <Label className="text-micro lia-text-700 dark:text-lia-text-secondary">Nome do Campo</Label>
+                          <Label className="text-micro text-lia-text-primary">Nome do Campo</Label>
                           <input
                             type="text"
                             value={newFieldName}
                             onChange={(e) => setNewFieldName(e.target.value)}
                             placeholder="Ex: Número do Passaporte"
-                            className="w-full mt-1 px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                            className="w-full mt-1 px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                           />
                         </div>
                         <div>
                           {/* @ts-ignore TODO: fix type */}
-                          <Label className="text-micro lia-text-700 dark:text-lia-text-secondary">Tipo</Label>
+                          <Label className="text-micro text-lia-text-primary">Tipo</Label>
                           <Select value={newFieldType} onValueChange={(v) => setNewFieldType(v as "textarea" | "text" | "email" | "phone" | "file" | "date")}>
                             <SelectTrigger className="mt-1 h-7 text-xs">
                               <SelectValue />
@@ -750,7 +750,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
               {defaultFields.length > 0 && (
                 <div>
-                  <h4 className="text-micro font-medium lia-text-500 dark:text-lia-text-tertiary mb-2 uppercase tracking-wide">Campos do Sistema</h4>
+                  <h4 className="text-micro font-medium text-lia-text-secondary mb-2 uppercase tracking-wide">Campos do Sistema</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {defaultFields.map((field) => (
                       <TooltipProvider key={field.id}>
@@ -764,11 +764,11 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         >
                           <div className="flex-1 min-w-0 mr-2">
                             <div className="flex items-center gap-1">
-                              <span className="text-xs font-medium lia-text-900 dark:text-lia-text-primary truncate">{field.displayName}</span>
+                              <span className="text-xs font-medium text-lia-text-primary truncate">{field.displayName}</span>
                               {field.id === 'cv_document' && (
                                 <Tooltip>
                                   <TooltipTrigger>
-                                    <Info className="w-3 h-3 lia-text-500 dark:text-lia-text-tertiary" />
+                                    <Info className="w-3 h-3 text-lia-text-secondary" />
                                   </TooltipTrigger>
                                   <TooltipContent className="max-w-xs">
                                     <p className="text-micro">O CV enviado será parseado automaticamente pela LIA para extração de dados estruturados.</p>
@@ -798,7 +798,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
               {customFields.length > 0 && (
                 <div>
-                  <h4 className="text-micro font-medium lia-text-500 dark:text-lia-text-tertiary mb-2 uppercase tracking-wide">Campos Personalizados</h4>
+                  <h4 className="text-micro font-medium text-lia-text-secondary mb-2 uppercase tracking-wide">Campos Personalizados</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {customFields.map((field) => (
                       <div
@@ -811,14 +811,14 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         )}
                       >
                         <div className="flex-1 min-w-0 mr-2">
-                          <span className="text-xs font-medium lia-text-900 dark:text-lia-text-primary truncate block">{field.displayName}</span>
+                          <span className="text-xs font-medium text-lia-text-primary truncate block">{field.displayName}</span>
                           <FieldBadges field={field} />
                         </div>
                         <div className="flex items-center gap-1">
                           {isEditing && (
                             <button
                               onClick={() => removeCustomField(field.id)}
-                              className="p-0.5 lia-text-400 dark:lia-text-500 hover:text-status-error transition-colors motion-reduce:transition-none"
+                              className="p-0.5 text-lia-text-tertiary hover:text-status-error transition-colors motion-reduce:transition-none"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -842,7 +842,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               )}
 
               {customFields.length === 0 && !isEditing && (
-                <p className="text-xs lia-text-500 dark:text-lia-text-tertiary italic">
+                <p className="text-xs text-lia-text-secondary italic">
                   Nenhum campo personalizado configurado. Clique em &quot;Editar Configurações&quot; para adicionar.
                 </p>
               )}
@@ -859,7 +859,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
             <div className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="p-3 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-md">
-                  <Label className="text-xs font-medium mb-2 block lia-text-700 dark:text-lia-text-secondary">Logo da Empresa</Label>
+                  <Label className="text-xs font-medium mb-2 block text-lia-text-primary">Logo da Empresa</Label>
                   <div className="flex items-center gap-3">
                     {config.branding.logoUrl ? (
                       <div className="relative w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md overflow-hidden">
@@ -867,7 +867,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       </div>
                     ) : (
                       <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                        <Upload className="w-4 h-4 lia-text-400 dark:lia-text-500" />
+                        <Upload className="w-4 h-4 text-lia-text-tertiary" />
                       </div>
                     )}
                     {isEditing && (
@@ -880,7 +880,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 </div>
 
                 <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                  <Label className="text-xs font-medium mb-2 block lia-text-700 dark:text-lia-text-secondary">Cor Primária</Label>
+                  <Label className="text-xs font-medium mb-2 block text-lia-text-primary">Cor Primária</Label>
                   <div className="flex items-center gap-2">
                     {isEditing ? (
                       <>
@@ -894,7 +894,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           type="text"
                           value={config.branding.primaryColor}
                           onChange={(e) => updateBranding({ primaryColor: e.target.value })}
-                          className="flex-1 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-full font-mono uppercase bg-white dark:bg-lia-bg-primary lia-text-900 dark:text-lia-text-primary"
+                          className="flex-1 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-full font-mono uppercase bg-white dark:bg-lia-bg-primary text-lia-text-primary"
                         />
                       </>
                     ) : (
@@ -903,7 +903,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           className="w-6 h-6 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle" 
                           style={{backgroundColor: config.branding.primaryColor}}
                         />
-                        <span className="text-xs font-mono lia-text-700 dark:text-lia-text-secondary">{config.branding.primaryColor}</span>
+                        <span className="text-xs font-mono text-lia-text-primary">{config.branding.primaryColor}</span>
                       </div>
                     )}
                   </div>
@@ -912,13 +912,13 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">Mensagem de Boas-vindas</Label>
+                  <Label className="text-xs font-medium text-lia-text-primary">Mensagem de Boas-vindas</Label>
                   {isEditing && (
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => generateLiaSuggestion('welcome')}
-                      className="h-6 text-micro px-2 lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 hover:bg-gray-50"
+                      className="h-6 text-micro px-2 text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-50"
                     >
                       <Bot className="w-3 h-3 mr-1" />
                       Sugerir com LIA
@@ -930,11 +930,11 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.branding.welcomeMessage}
                     onChange={(e) => updateBranding({ welcomeMessage: e.target.value })}
                     rows={2}
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                     placeholder="Mensagem exibida no início do formulário..."
                   />
                 ) : (
-                  <p className="text-xs lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
+                  <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
                     {config.branding.welcomeMessage}
                   </p>
                 )}
@@ -942,13 +942,13 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <Label className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary">Mensagem de Agradecimento</Label>
+                  <Label className="text-xs font-medium text-lia-text-primary">Mensagem de Agradecimento</Label>
                   {isEditing && (
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => generateLiaSuggestion('thankYou')}
-                      className="h-6 text-micro px-2 lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 hover:bg-gray-50"
+                      className="h-6 text-micro px-2 text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-50"
                     >
                       <Bot className="w-3 h-3 mr-1" />
                       Sugerir com LIA
@@ -960,11 +960,11 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.branding.thankYouMessage}
                     onChange={(e) => updateBranding({ thankYouMessage: e.target.value })}
                     rows={2}
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                     placeholder="Mensagem exibida após o envio do formulário..."
                   />
                 ) : (
-                  <p className="text-xs lia-text-600 dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
+                  <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
                     {config.branding.thankYouMessage}
                   </p>
                 )}

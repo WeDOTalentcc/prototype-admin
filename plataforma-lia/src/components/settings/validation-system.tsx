@@ -428,7 +428,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
     switch (category) {
       case 'required': return badgeStyles.error
       case 'format': return badgeStyles.info
-      case 'business': return 'bg-gray-100 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-secondary'
+      case 'business': return 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary'
       case 'security': return badgeStyles.warning
       case 'compliance': return badgeStyles.success
       default: return badgeStyles.default
@@ -444,9 +444,9 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-xs">
-            <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+            <Shield className="w-5 h-5 text-lia-text-secondary" />
             Sistema de Validação
-            {isValidating && <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />}
+            {isValidating && <RefreshCw className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />}
           </CardTitle>
           <div className="flex items-center gap-2">
             <Button

@@ -32,7 +32,7 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
     <div className="space-y-6">
       <div>
         <h4 className="text-lg font-semibold text-lia-text-primary mb-4">Estratégia de Feedback</h4>
-        <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-6">
+        <p className="text-sm text-lia-text-secondary mb-6">
           Diretrizes para fornecer feedback construtivo e manter relacionamento positivo com todos os candidatos
         </p>
       </div>
@@ -40,7 +40,7 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
       <Card>
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
-            <Clock className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Clock className="w-4 h-4 text-lia-text-secondary" />
             Timeline de Feedback
           </CardTitle>
         </CardHeader>
@@ -77,11 +77,11 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
         <CardContent>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Assunto:</label>
+              <label className="text-xs font-medium text-lia-text-secondary">Assunto:</label>
               <div className="p-2 bg-status-success/10 dark:bg-status-success/20 rounded-md text-sm text-status-success dark:text-status-success">{feedbackStrategy.approvedTemplate.subject}</div>
             </div>
             <div>
-              <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Mensagem:</label>
+              <label className="text-xs font-medium text-lia-text-secondary">Mensagem:</label>
               <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md text-sm text-status-success dark:text-status-success whitespace-pre-line">{feedbackStrategy.approvedTemplate.message}</div>
             </div>
           </div>
@@ -101,11 +101,11 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
         <CardContent>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Assunto:</label>
+              <label className="text-xs font-medium text-lia-text-secondary">Assunto:</label>
               <div className="p-2 bg-wedo-orange/10 rounded-md text-sm text-wedo-orange">{feedbackStrategy.rejectedTemplate.subject}</div>
             </div>
             <div>
-              <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Mensagem:</label>
+              <label className="text-xs font-medium text-lia-text-secondary">Mensagem:</label>
               <div className="p-3 bg-wedo-orange/10 rounded-md text-sm text-wedo-orange whitespace-pre-line">{feedbackStrategy.rejectedTemplate.message}</div>
             </div>
           </div>
@@ -141,11 +141,11 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
         <CardContent>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Pontos Fortes Identificados</label>
+              <label className="text-sm font-medium text-lia-text-primary mb-2 block">Pontos Fortes Identificados</label>
               <textarea placeholder="Ex: Excelente comunicação, conhecimento técnico sólido em React..." className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm" rows={3} />
             </div>
             <div>
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Áreas de Desenvolvimento Sugeridas</label>
+              <label className="text-sm font-medium text-lia-text-primary mb-2 block">Áreas de Desenvolvimento Sugeridas</label>
               <textarea placeholder="Ex: Aprofundar conhecimentos em TypeScript, ganhar experiência em liderança..." className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm" rows={3} />
             </div>
             <div className="flex gap-3">

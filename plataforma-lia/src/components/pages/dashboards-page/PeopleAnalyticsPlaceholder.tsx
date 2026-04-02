@@ -118,11 +118,11 @@ export function PeopleAnalyticsPlaceholder() {
       {/* Header com Navegação Interna */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
+          <h1 className={`${textStyles.title} flex items-center gap-2`}>
             <Users className="w-3.5 h-3.5 text-wedo-green" />
             People Analytics
           </h1>
-          <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary mt-1`}>
+          <p className={`${textStyles.bodySmall} mt-1`}>
             Big Five, Diversidade & Inclusão, NPS e Satisfação de candidatos
           </p>
         </div>

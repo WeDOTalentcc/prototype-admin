@@ -58,11 +58,11 @@ export function CandidatePageFilesTab({
               input.click()
             }}
           >
-            <Upload className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-3" />
+            <Upload className="w-8 h-8 text-lia-text-secondary mx-auto mb-3" />
             <h3 className="text-sm font-medium mb-2">
               {isDragging ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}
             </h3>
-            <p className="text-xs lia-text-base">PDF, DOC, JPG, PNG, MP4, MP3, WAV até 25MB</p>
+            <p className="text-xs text-lia-text-secondary">PDF, DOC, JPG, PNG, MP4, MP3, WAV até 25MB</p>
             <Button className="mt-3 h-7 text-xs">
               <Plus className="w-3 h-3 mr-1" />
               Selecionar Arquivos
@@ -80,10 +80,10 @@ export function CandidatePageFilesTab({
               <FileText className="w-5 h-5 text-status-error" />
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-sm truncate">CV_{(_candidate.name as string).replace(" ", "_")}_2025.pdf</h4>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">2.1 MB • há 3 dias</p>
+                <p className="text-xs text-lia-text-primary">2.1 MB • há 3 dias</p>
                 <div className="flex gap-1 mt-2">
                   <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-xs">LIA: 95%</Badge>
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">LIA: 95%</Badge>
                 </div>
               </div>
             </div>
@@ -114,7 +114,7 @@ export function CandidatePageFilesTab({
               <FileText className="w-5 h-5 text-wedo-purple" />
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-sm truncate">Portfolio_UX_2025.pdf</h4>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">12.3 MB • há 1 dia</p>
+                <p className="text-xs text-lia-text-primary">12.3 MB • há 1 dia</p>
                 <div className="flex gap-1 mt-2">
                   <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
                   <Badge className="bg-wedo-purple/15 text-wedo-purple text-xs">Destacado</Badge>
@@ -139,7 +139,7 @@ export function CandidatePageFilesTab({
               <Video className="w-5 h-5 text-status-error" />
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-sm truncate">Apresentacao_Pessoal.mp4</h4>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">25.4 MB • 3:45 min</p>
+                <p className="text-xs text-lia-text-primary">25.4 MB • 3:45 min</p>
                 <div className="flex gap-1 mt-2">
                   <Badge className="bg-status-success/15 text-status-success text-xs">✓ Analisado</Badge>
                   <Badge className="bg-status-error/15 text-status-error text-xs">Triagem</Badge>
@@ -167,7 +167,7 @@ export function CandidatePageFilesTab({
               <Video className="w-5 h-5 text-wedo-purple" />
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-sm truncate">Case_UX_Design.mp4</h4>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">45.2 MB • 8:20 min</p>
+                <p className="text-xs text-lia-text-primary">45.2 MB • 8:20 min</p>
                 <div className="flex gap-1 mt-2">
                   <Badge className="bg-wedo-purple/15 text-wedo-purple text-xs">Destaque</Badge>
                   <Badge className="bg-status-success/15 text-status-success text-xs">Score: 88%</Badge>
@@ -192,12 +192,12 @@ export function CandidatePageFilesTab({
         <Card className="hover:transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <Mic className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Mic className="w-5 h-5 text-lia-text-secondary" />
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-sm truncate">Triagem_Voz_{_candidate.name.split(" ")[0]}.mp3</h4>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">1.8 MB • 4:32 min • há 1 dia</p>
+                <p className="text-xs text-lia-text-primary">1.8 MB • 4:32 min • há 1 dia</p>
                 <div className="flex gap-1 mt-2">
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary text-xs">Triagem WSI</Badge>
+                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">Triagem WSI</Badge>
                   <Badge className="bg-status-success/15 text-status-success text-xs">Score: 92%</Badge>
                 </div>
               </div>
@@ -235,7 +235,7 @@ export function CandidatePageFilesTab({
               <Image className="w-5 h-5 text-status-success" />
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-sm truncate">foto_perfil.jpg</h4>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">456 KB • há 2 horas</p>
+                <p className="text-xs text-lia-text-primary">456 KB • há 2 horas</p>
                 <div className="flex gap-1 mt-2">
                   <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
                 </div>
@@ -269,7 +269,7 @@ export function CandidatePageFilesTab({
               <Award className="w-5 h-5 text-wedo-orange" />
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-sm truncate">Certificados.zip</h4>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">3.2 MB • há 1 semana</p>
+                <p className="text-xs text-lia-text-primary">3.2 MB • há 1 semana</p>
                 <div className="flex gap-1 mt-2">
                   <Badge className="bg-wedo-orange/15 text-wedo-orange text-xs">5 arquivos</Badge>
                 </div>

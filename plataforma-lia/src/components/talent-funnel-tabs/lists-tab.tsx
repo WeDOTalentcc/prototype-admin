@@ -255,7 +255,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
       case 'expired':
         return <Badge className="bg-status-error/15 text-status-error border-status-error/30 text-micro">Expirado</Badge>
       case 'revoked':
-        return <Badge className="bg-gray-100 lia-text-base border-lia-border-subtle text-micro">Revogado</Badge>
+        return <Badge className="bg-gray-100 text-lia-text-secondary border-lia-border-subtle text-micro">Revogado</Badge>
     }
   }
 
@@ -346,17 +346,17 @@ const [lists, setLists] = useState<CandidateList[]>([])
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-lg font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] flex items-center gap-2">
-            <List className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <List className="w-5 h-5 text-lia-text-secondary" />
             Listas de Candidatos
           </h2>
-          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-0.5" aria-live="polite" aria-atomic="true">
+          <p className="text-xs text-lia-text-primary mt-0.5" aria-live="polite" aria-atomic="true">
             {lists.length} {lists.length === 1 ? 'lista' : 'listas'} • {totalCandidates} {totalCandidates === 1 ? 'candidato' : 'candidatos'} no total
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
             <Input
               placeholder="Buscar listas..."
               value={searchTerm}
@@ -378,8 +378,8 @@ const [lists, setLists] = useState<CandidateList[]>([])
 
       {loading ? (
         <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
-          <span className="ml-2 text-sm text-lia-text-primary dark:text-lia-text-primary">Carregando listas...</span>
+          <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
+          <span className="ml-2 text-sm text-lia-text-primary">Carregando listas...</span>
         </div>
       ) : filteredLists.length > 0 ? (
         <div className="space-y-2">
@@ -392,7 +392,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
               <div 
                 className="flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center relative bg-gray-100"
               >
-                <List className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <List className="w-5 h-5 text-lia-text-secondary" />
                 <div
                   className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white"
                   style={{backgroundColor: list.color || 'var(--gray-400)'}}
@@ -406,22 +406,22 @@ const [lists, setLists] = useState<CandidateList[]>([])
                   </p>
                 </div>
                 {list.description && (
-                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary truncate">
+                  <p className="text-xs text-lia-text-secondary truncate">
                     {truncateText(list.description, 60)}
                   </p>
                 )}
               </div>
 
               <div className="flex-shrink-0 flex flex-col items-center justify-center px-4 border-l border-r border-lia-border-subtle dark:border-lia-border-subtle">
-                <span className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+                <span className="text-2xl font-bold text-lia-text-primary">
                   {list.candidate_count || 0}
                 </span>
-                <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary uppercase tracking-wide" aria-live="polite" aria-atomic="true">
+                <span className="text-micro text-lia-text-tertiary uppercase tracking-wide" aria-live="polite" aria-atomic="true">
                   {(list.candidate_count || 0) === 1 ? 'candidato' : 'candidatos'}
                 </span>
               </div>
 
-              <div className="flex-shrink-0 flex items-center gap-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary min-w-[100px]">
+              <div className="flex-shrink-0 flex items-center gap-1.5 text-xs text-lia-text-secondary min-w-[100px]">
                 <Calendar className="w-3.5 h-3.5" />
                 <span>{formatDate(list.updated_at || list.created_at)}</span>
               </div>
@@ -434,7 +434,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                   onClick={(e) => { e.stopPropagation(); openAddCandidateModal(list) }}
                   title="Adicionar candidatos"
                 >
-                  <UserPlus className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <UserPlus className="w-4 h-4 text-lia-text-secondary" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -443,7 +443,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                   onClick={(e) => { e.stopPropagation(); handleShareList(list) }}
                   title="Compartilhar lista"
                 >
-                  <Share2 className="w-4 h-4 lia-text-base" />
+                  <Share2 className="w-4 h-4 text-lia-text-secondary" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -452,7 +452,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                   onClick={(e) => { e.stopPropagation(); openEditModal(list) }}
                   title="Editar lista"
                 >
-                  <Edit2 className="w-4 h-4 lia-text-base" />
+                  <Edit2 className="w-4 h-4 text-lia-text-secondary" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -461,7 +461,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                   onClick={(e) => { e.stopPropagation(); onAddToJobs(list.id) }}
                   title="Adicionar a vagas"
                 >
-                  <Briefcase className="w-4 h-4 lia-text-base" />
+                  <Briefcase className="w-4 h-4 text-lia-text-secondary" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -515,7 +515,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                 </DropdownMenu>
               </div>
 
-              <ChevronRight className="w-5 h-5 lia-text-muted group-hover:lia-text-base transition-colors motion-reduce:transition-none flex-shrink-0" />
+              <ChevronRight className="w-5 h-5 lia-text-muted group-hover:text-lia-text-secondary transition-colors motion-reduce:transition-none flex-shrink-0" />
             </div>
           ))}
         </div>
@@ -524,12 +524,12 @@ const [lists, setLists] = useState<CandidateList[]>([])
           <div
             className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-gray-100"
           >
-            <FolderOpen className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+            <FolderOpen className="w-8 h-8 text-lia-text-tertiary" />
           </div>
           <h3 className="text-lg font-medium text-lia-text-primary mb-2 font-['Open_Sans',sans-serif]">
             {searchTerm ? 'Nenhuma lista encontrada' : 'Nenhuma lista criada'}
           </h3>
-          <p className="text-sm text-lia-text-primary dark:text-lia-text-primary text-center max-w-md mb-6" aria-live="polite" aria-atomic="true">
+          <p className="text-sm text-lia-text-primary text-center max-w-md mb-6" aria-live="polite" aria-atomic="true">
             {searchTerm
               ? `Não encontramos listas com o termo "${searchTerm}". Tente outro termo ou crie uma nova lista.`
               : 'Crie sua primeira lista para organizar candidatos de forma eficiente. Você pode agrupar candidatos por vaga, perfil ou qualquer critério.'}
@@ -550,10 +550,10 @@ const [lists, setLists] = useState<CandidateList[]>([])
       <div className="mt-8 pt-6 border-t border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
-            <Link2 className="w-4 h-4 lia-text-base" />
+            <Link2 className="w-4 h-4 text-lia-text-secondary" />
             Compartilhados
             {totalNewFeedbacks > 0 && (
-              <Badge className="bg-gray-100 lia-text-base border-lia-border-subtle text-micro ml-2">
+              <Badge className="bg-gray-100 text-lia-text-secondary border-lia-border-subtle text-micro ml-2">
                 {totalNewFeedbacks} {totalNewFeedbacks === 1 ? 'novo' : 'novos'} ●
               </Badge>
             )}
@@ -563,7 +563,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
         {loadingShared ? (
           <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
             <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-secondary" />
-            <span className="ml-2 text-xs lia-text-base">Carregando compartilhamentos...</span>
+            <span className="ml-2 text-xs text-lia-text-secondary">Carregando compartilhamentos...</span>
           </div>
         ) : sharedSearches.length > 0 ? (
           <div className="space-y-2">
@@ -575,7 +575,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-                      <Link2 className="w-5 h-5 lia-text-base" />
+                      <Link2 className="w-5 h-5 text-lia-text-secondary" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
@@ -584,7 +584,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                         </p>
                         {getStatusBadge(shared.status)}
                       </div>
-                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+                      <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                         {shared.share_type === 'search' ? 'Busca' : 'Lista'} • {shared.candidate_count} {shared.candidate_count === 1 ? 'candidato' : 'candidatos'}
                       </p>
                     </div>
@@ -592,7 +592,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                 </div>
 
                 <div className="space-y-2 mb-3">
-                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary">
+                  <p className="text-xs text-lia-text-secondary">
                     <span className="font-medium">Destinatário:</span> {shared.recipient_name || shared.recipient_email}
                   </p>
                   <p className="text-xs flex items-center gap-1">
@@ -610,7 +610,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                   </p>
                 </div>
 
-                <div className={`flex items-center gap-3 text-xs ${shared.feedback_counts?.new_count > 0 ? 'lia-text-strong font-medium' : 'lia-text-base'}`}>
+                <div className={`flex items-center gap-3 text-xs ${shared.feedback_counts?.new_count > 0 ? 'text-lia-text-primary font-medium' : 'text-lia-text-secondary'}`}>
                   <span className="font-medium">Feedbacks:</span>
                   <span className="flex items-center gap-1">
                     <ThumbsUp className="w-3 h-3" />
@@ -680,7 +680,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
             <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-gray-100 dark:bg-lia-bg-secondary">
               <Link2 className="w-6 h-6 text-lia-text-disabled" />
             </div>
-            <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary text-center max-w-sm">
+            <p className="text-sm text-lia-text-secondary text-center max-w-sm">
               Nenhum compartilhamento. Compartilhe buscas ou listas com gestores para receber feedback.
             </p>
           </div>
@@ -697,7 +697,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+              <label className="text-sm font-medium text-lia-text-primary">
                 Nome da lista <span className="text-status-error">*</span>
               </label>
               <Input
@@ -709,7 +709,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+              <label className="text-sm font-medium text-lia-text-primary">
                 Descrição
               </label>
               <Textarea
@@ -722,7 +722,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+              <label className="text-sm font-medium text-lia-text-primary">
                 Cor
               </label>
               <div className="flex flex-wrap gap-2">

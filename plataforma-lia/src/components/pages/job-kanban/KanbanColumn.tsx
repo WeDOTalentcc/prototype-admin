@@ -37,10 +37,10 @@ export function KanbanColumn({
             className="w-3 h-3 rounded-full" 
             style={{backgroundColor: stage.color}}
           />
-          <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{stage.name}</span>
+          <span className="font-medium text-lia-text-primary">{stage.name}</span>
           <Badge 
             variant="outline" 
-            className="ml-1 border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary text-xs"
+            className="ml-1 border-lia-border-default dark:border-lia-border-default text-lia-text-secondary text-xs"
           >
             {candidates.length}
           </Badge>
@@ -51,7 +51,7 @@ export function KanbanColumn({
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-7 w-7 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+              className="h-7 w-7 text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
               onClick={onAddCandidate}
             >
               <Plus className="h-4 w-4" />
@@ -60,7 +60,7 @@ export function KanbanColumn({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-7 w-7 text-lia-text-tertiary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+            className="h-7 w-7 text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
           >
             <MoreVertical className="h-4 w-4" />
           </Button>

@@ -402,7 +402,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             {recentItems.length >= 2 && onRecentItemsClear && (
               <button
                 onClick={onRecentItemsClear}
-                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-lia-text-disabled hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none duration-200"
+                className="flex items-center gap-1.5 mt-2 px-2 py-1 text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none duration-200"
               >
                 <Trash2 className="w-3 h-3" />
                 Limpar recentes

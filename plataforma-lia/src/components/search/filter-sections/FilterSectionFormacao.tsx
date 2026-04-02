@@ -33,7 +33,7 @@ export const FilterSectionFormacao = React.memo(function FilterSectionFormacao({
           placeholder="Digite universidade e pressione Enter"
           showPresets={true}
         />
-        <p className="text-xs mt-2 lia-text-500">
+        <p className="text-xs mt-2 text-lia-text-secondary">
           Dica: Use &quot;Ask AI&quot; para buscar universidades similares ou por descrição
         </p>
       </div>

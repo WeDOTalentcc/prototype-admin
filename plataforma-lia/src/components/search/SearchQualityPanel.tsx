@@ -30,7 +30,7 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary">
+            <span className="text-xs font-medium text-lia-text-secondary">
               Qualidade da busca
             </span>
             <span className="text-xs font-bold" style={{color: scoreColor}}>
@@ -71,14 +71,14 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
               {alert.severity === 'warning' ? (
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />
               ) : (
-                <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 lia-text-600" />
+                <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
               )}
               <div className="flex-1 min-w-0">
                 <span>{alert.message}</span>
                 {alert.suggestion && alert.action_value && (
                   <button
                     onClick={() => onAlertActionClick(alert.action_value!)}
-                    className="ml-1 font-medium hover:underline lia-text-700"
+                    className="ml-1 font-medium hover:underline text-lia-text-primary"
                   >
                     {alert.suggestion}
                   </button>

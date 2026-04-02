@@ -31,10 +31,10 @@ export function AddBenefitModal({
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-overlay flex items-center justify-center bg-lia-overlay">
       <div className="bg-lia-bg-primary rounded-xl w-panel-lg p-6">
         <h3
-          className="text-lg font-semibold lia-text-strong mb-4"
+          className="text-lg font-semibold text-lia-text-primary mb-4"
          
         >
           Adicionar Benefício
@@ -45,7 +45,7 @@ export function AddBenefitModal({
             value={benefitName}
             onChange={(e) => onBenefitNameChange(e.target.value)}
             placeholder="Nome do benefício (ex: Auxílio Creche)"
-            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-gray-400"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium"
            
             autoFocus
           />
@@ -54,7 +54,7 @@ export function AddBenefitModal({
             value={benefitValue}
             onChange={(e) => onBenefitValueChange(e.target.value)}
             placeholder="Valor (opcional, ex: R$ 500/mês)"
-            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-gray-400"
+            className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium"
            
           />
         </div>
@@ -69,7 +69,7 @@ export function AddBenefitModal({
           <Button
             onClick={onAdd}
             disabled={!benefitName.trim()}
-            className={cn("flex-1 h-10 rounded-md", benefitName.trim() ? "bg-gray-900 text-white" : "bg-gray-200")}
+            className={cn("flex-1 h-10 rounded-md", benefitName.trim() ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-lia-interactive-active")}
           >
             Adicionar
           </Button>

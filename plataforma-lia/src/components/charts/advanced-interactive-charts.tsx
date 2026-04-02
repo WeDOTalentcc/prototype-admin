@@ -466,14 +466,14 @@ export function AdvancedInteractiveChart({
       case 'treemap':
       case 'scatter':
         return (
-          <div className="flex items-center justify-center h-full text-lia-text-primary dark:text-lia-text-primary">
+          <div className="flex items-center justify-center h-full text-lia-text-primary">
             Tipo de gráfico não disponível no Chart.js. Considere usar Bar ou Pie como alternativa.
           </div>
         )
       
       default:
         return (
-          <div className="flex items-center justify-center h-full text-lia-text-primary dark:text-lia-text-primary">
+          <div className="flex items-center justify-center h-full text-lia-text-primary">
             Tipo de gráfico não suportado
           </div>
         )
@@ -486,11 +486,11 @@ export function AdvancedInteractiveChart({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <BarChart3 className="w-5 h-5 text-lia-text-secondary" />
               {title}
             </CardTitle>
             {selectedDataPoint && (
-              <p className="text-sm lia-text-base mt-1">
+              <p className="text-sm text-lia-text-secondary mt-1">
                 📊 Selecionado: {String(selectedDataPoint[dataKeys[0]] ?? '')}
               </p>
             )}
@@ -559,7 +559,7 @@ export function AdvancedInteractiveChart({
         {/* Drill-down Details */}
         {selectedDataPoint && (
           <div className="mt-4 p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
-            <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">
+            <h4 className="font-medium text-lia-text-primary mb-3">
               📊 Detalhes - {String(selectedDataPoint[dataKeys[0]] ?? '')}
             </h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -567,7 +567,7 @@ export function AdvancedInteractiveChart({
                 key !== dataKeys[0] && (
                   <div key={key} className="text-center">
                     <div className="text-lg font-bold text-lia-text-primary">{String(value)}</div>
-                    <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary capitalize">{key}</div>
+                    <div className="text-xs text-lia-text-secondary capitalize">{key}</div>
                   </div>
                 )
               ))}
@@ -576,7 +576,7 @@ export function AdvancedInteractiveChart({
               variant="ghost"
               size="sm"
               onClick={() => setSelectedDataPoint(null)}
-              className="mt-3 text-lia-text-secondary dark:text-lia-text-tertiary"
+              className="mt-3 text-lia-text-secondary"
             >
               Fechar detalhes
             </Button>

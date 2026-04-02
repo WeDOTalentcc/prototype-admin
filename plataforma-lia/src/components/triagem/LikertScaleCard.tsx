@@ -46,7 +46,7 @@ export function LikertScaleCard({
       role="group"
       aria-label={question}
     >
-      <p className="text-sm text-lia-text-secondary dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
+      <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif]">
         {question}
       </p>
 
@@ -65,7 +65,7 @@ export function LikertScaleCard({
  "flex-1 min-w-[44px] h-11 flex items-center justify-center rounded-lg text-sm font-semibold font-['Inter',sans-serif] transition-colors duration-200 focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none",
                 isSelected
                   ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border border-lia-btn-primary-bg"
-                  : "bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated",
+                  : "bg-white dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated",
                 (disabled || (selectedValue !== null && !isSelected)) && "opacity-50 cursor-not-allowed"
               )}
             >

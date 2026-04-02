@@ -223,7 +223,7 @@ function SystemsView({ atsSystems, getStatusColor, openSystemModal }: Pick<HookS
               <div className="space-y-4">
                 <p className={textStyles.body}>{system.description}</p>
                 <div>
-                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Funcionalidades:</p>
+                  <p className="text-sm font-medium text-lia-text-primary mb-2">Funcionalidades:</p>
                   <div className="flex flex-wrap gap-1">
                     {system.features.map(f => <Badge key={f} variant="outline" className="text-xs">{f}</Badge>)}
                   </div>
@@ -287,9 +287,9 @@ function IntegrationsView({ integrations }: Pick<HookState, 'integrations'>) {
                   </div>
                 </div>
                 <div className="flex items-center gap-6 text-sm">
-                  <div className="text-center"><p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{integration.mappedFields}/{integration.totalFields}</p><p className="text-lia-text-secondary">Campos</p></div>
-                  <div className="text-center"><p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{new Date(integration.lastRun).toLocaleDateString('pt-BR')}</p><p className="text-lia-text-secondary">Última exec.</p></div>
-                  <div className="text-center"><p className="font-medium text-lia-text-primary dark:text-lia-text-primary">{new Date(integration.nextRun).toLocaleDateString('pt-BR')}</p><p className="text-lia-text-secondary">Próxima</p></div>
+                  <div className="text-center"><p className="font-medium text-lia-text-primary">{integration.mappedFields}/{integration.totalFields}</p><p className="text-lia-text-secondary">Campos</p></div>
+                  <div className="text-center"><p className="font-medium text-lia-text-primary">{new Date(integration.lastRun).toLocaleDateString('pt-BR')}</p><p className="text-lia-text-secondary">Última exec.</p></div>
+                  <div className="text-center"><p className="font-medium text-lia-text-primary">{new Date(integration.nextRun).toLocaleDateString('pt-BR')}</p><p className="text-lia-text-secondary">Próxima</p></div>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline"><Edit className="w-4 h-4" /></Button>
                     <Button size="sm" variant="outline"><Play className="w-4 h-4" /></Button>
@@ -329,7 +329,7 @@ function LogsView({ syncLogs }: Pick<HookState, 'syncLogs'>) {
             <table className="w-full">
               <thead className="bg-lia-bg-secondary">
                 <tr>{['Status','Sistema','Operação','Registros','Duração','Data/Hora','Ações'].map(h => (
-                  <th key={h} className="text-left py-3 px-4 font-medium text-lia-text-primary dark:text-lia-text-primary">{h}</th>
+                  <th key={h} className="text-left py-3 px-4 font-medium text-lia-text-primary">{h}</th>
                 ))}</tr>
               </thead>
               <tbody>
@@ -341,9 +341,9 @@ function LogsView({ syncLogs }: Pick<HookState, 'syncLogs'>) {
                         <span className={`text-xs px-2 py-1 rounded-full ${statusCls(log.status)}`} aria-live="polite">{statusLabel(log.status)}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-4"><span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{log.system}</span></td>
+                    <td className="py-3 px-4"><span className="font-medium text-lia-text-primary">{log.system}</span></td>
                     <td className="py-3 px-4">
-                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{log.message}</p>
+                      <p className="text-sm font-medium text-lia-text-primary">{log.message}</p>
                       {log.details && <p className="text-xs text-lia-text-secondary">{log.details}</p>}
                     </td>
                     <td className="py-3 px-4"><span className="font-medium">{log.records}</span></td>
@@ -372,7 +372,7 @@ export function ATSIntegrationsPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+              <h1 className="text-xl font-semibold text-lia-text-primary flex items-center gap-1.5">
                 <Link2 className="w-6 h-6 text-lia-text-tertiary" />Integrações ATS Enterprise
               </h1>
               <p className="text-sm text-lia-text-secondary">Conecte e sincronize dados com sistemas HR externos</p>

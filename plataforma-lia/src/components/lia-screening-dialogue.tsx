@@ -455,24 +455,24 @@ Boa sorte com as triagens! 🚀`,
             <Card className="">
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2 font-sans">
-                  <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Target className="w-4 h-4 text-lia-text-secondary" />
                   Visão Geral da Triagem
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Objetivo:</label>
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-gray-50 p-2 rounded-md">
+                    <label className="text-xs font-medium text-lia-text-primary">Objetivo:</label>
+                    <p className="text-sm text-lia-text-primary bg-gray-50 p-2 rounded-md">
                       {screeningData.overview.objective}
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Duração:</label>
-                    <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">{screeningData.overview.duration}</p>
+                    <label className="text-xs font-medium text-lia-text-primary">Duração:</label>
+                    <p className="text-sm font-medium text-lia-text-secondary">{screeningData.overview.duration}</p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Critérios de Avaliação:</label>
+                    <label className="text-xs font-medium text-lia-text-primary">Critérios de Avaliação:</label>
                     <div className="space-y-1">
                       {screeningData.overview.criteria.map((criterion) => (
                         <div key={criterion.name} className="flex items-center justify-between text-sm">
@@ -501,11 +501,11 @@ Boa sorte com as triagens! 🚀`,
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Tom da Conversa:</label>
+                    <label className="text-xs font-medium text-lia-text-primary">Tom da Conversa:</label>
                     <p className="text-sm text-status-success font-medium">{screeningData.approach.tone}</p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Estrutura:</label>
+                    <label className="text-xs font-medium text-lia-text-primary">Estrutura:</label>
                     <div className="space-y-2">
                       {screeningData.approach.structure.map((step, index) => (
                         <div key={`step-${index}`} className="flex items-center gap-2 text-sm">
@@ -569,7 +569,7 @@ Boa sorte com as triagens! 🚀`,
                       <h4 className="font-medium text-wedo-purple text-sm mb-2">{section.category}</h4>
                       <div className="space-y-1">
                         {section.questions.map((question, qIndex) => (
-                          <div key={qIndex} className="text-xs lia-text-base">• {question}</div>
+                          <div key={qIndex} className="text-xs text-lia-text-secondary">• {question}</div>
                         ))}
                       </div>
                     </div>
@@ -593,25 +593,25 @@ Boa sorte com as triagens! 🚀`,
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-medium lia-text-base">Empresa:</label>
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
+                    <label className="text-xs font-medium text-lia-text-secondary">Empresa:</label>
+                    <p className="text-sm text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
                       Líder em inovação tecnológica, focada em soluções impactantes
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium lia-text-base">Vaga:</label>
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
+                    <label className="text-xs font-medium text-lia-text-secondary">Vaga:</label>
+                    <p className="text-sm text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
                       {jobData?.title} - Projetos desafiadores e de grande impacto
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium lia-text-base">Time:</label>
-                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
+                    <label className="text-xs font-medium text-lia-text-secondary">Time:</label>
+                    <p className="text-sm text-lia-text-primary bg-status-warning/10 p-2 rounded-md">
                       Equipe multidisciplinar, colaborativa e de excelência
                     </p>
                   </div>
                   <div>
-                    <label className="text-xs font-medium lia-text-base">Benefícios:</label>
+                    <label className="text-xs font-medium text-lia-text-secondary">Benefícios:</label>
 
                     <div className="flex flex-wrap gap-1">
                       {((jobData?.benefits as any[]) || ['Benefícios competitivos']).map((benefit: string) => (
@@ -650,7 +650,7 @@ Boa sorte com as triagens! 🚀`,
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-medium lia-text-base">Diretrizes:</label>
+                    <label className="text-xs font-medium text-lia-text-secondary">Diretrizes:</label>
                     <div className="space-y-1 mt-1">
                       {[
                         "Sempre construtivo e respeitoso",
@@ -658,7 +658,7 @@ Boa sorte com as triagens! 🚀`,
                         "Sugerir desenvolvimento",
                         "Manter relacionamento positivo"
                       ].map((guideline, index) => (
-                        <div key={`gl-${index}`} className="text-xs lia-text-base flex items-center gap-1">
+                        <div key={`gl-${index}`} className="text-xs text-lia-text-secondary flex items-center gap-1">
                           <Star className="w-3 h-3 text-wedo-magenta" />
                           {guideline}
                         </div>
@@ -677,7 +677,7 @@ Boa sorte com as triagens! 🚀`,
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Clock className="w-4 h-4 text-lia-text-secondary" />
                   Timeline de Execução
                 </CardTitle>
               </CardHeader>
@@ -692,13 +692,13 @@ Boa sorte com as triagens! 🚀`,
                   ].map((item, index) => (
                     <div key={item.step} className="flex items-start gap-3 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
 
-                      <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary dark:text-lia-text-tertiary text-xs font-bold">
+                      <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-xs font-bold">
                         {(index + 1 as React.ReactNode)}
                       </div>
                       <div className="flex-1">
                         <div className="text-sm font-medium text-wedo-cyan-dark">{item.step}</div>
-                        <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">{item.time}</div>
-                        <div className="text-xs lia-text-base">{item.desc}</div>
+                        <div className="text-xs text-lia-text-secondary">{item.time}</div>
+                        <div className="text-xs text-lia-text-secondary">{item.desc}</div>
                       </div>
                     </div>
                   ))}
@@ -734,7 +734,7 @@ Boa sorte com as triagens! 🚀`,
                       "✅ Estratégia de feedback",
                       "✅ Timeline estruturada"
                     ].map((item, index) => (
-                      <div key={`ci-${index}`} className="text-xs lia-text-base">{item}</div>
+                      <div key={`ci-${index}`} className="text-xs text-lia-text-secondary">{item}</div>
                     ))}
                   </div>
                   <div className="pt-3 border-t">
@@ -775,7 +775,7 @@ Boa sorte com as triagens! 🚀`,
               <h3 className="text-lg font-semibold font-sans text-lia-text-primary">
                 Construção de Roteiro de Triagem
               </h3>
-              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+              <p className="text-sm text-lia-text-primary">
                 {jobData?.title} • Criando roteiro personalizado
               </p>
             </div>
@@ -830,7 +830,7 @@ Boa sorte com as triagens! 🚀`,
                   <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-r-2xl rounded-tl-2xl p-3" role="status" aria-live="polite" aria-label="Carregando...">
                     <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
                       <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-status-success" />
-                      <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">LIA está digitando...</span>
+                      <span className="text-sm text-lia-text-secondary">LIA está digitando...</span>
                     </div>
                   </div>
                 </div>
@@ -875,7 +875,7 @@ Boa sorte com as triagens! 🚀`,
                 {currentStep === 'timeline' && '⏰ Timeline de Execução'}
                 {currentStep === 'review' && '✅ Roteiro Finalizado'}
               </h4>
-              <div className="text-xs lia-text-base">
+              <div className="text-xs text-lia-text-secondary">
                 Etapa {['overview', 'approach', 'questions', 'presentation', 'feedback', 'timeline', 'review'].indexOf(currentStep) + 1} de 7
               </div>
             </div>
@@ -900,15 +900,15 @@ Boa sorte com as triagens! 🚀`,
               <div className="space-y-4 text-sm">
                 <div className="p-3 border rounded-md">
                   <div className="font-medium">Template Padrão</div>
-                  <div className="text-xs lia-text-base mt-1">Duração: 25-30 min • Foco: Técnico + Cultural</div>
+                  <div className="text-xs text-lia-text-secondary mt-1">Duração: 25-30 min • Foco: Técnico + Cultural</div>
                 </div>
                 <div className="p-3 border rounded-md">
                   <div className="font-medium">Abordagem</div>
-                  <div className="text-xs lia-text-base mt-1">Tom: Profissional, mas acolhedor</div>
+                  <div className="text-xs text-lia-text-secondary mt-1">Tom: Profissional, mas acolhedor</div>
                 </div>
                 <div className="p-3 border rounded-md">
                   <div className="font-medium">Feedback</div>
-                  <div className="text-xs lia-text-base mt-1">Aprovados: 24h • Reprovados: 48h</div>
+                  <div className="text-xs text-lia-text-secondary mt-1">Aprovados: 24h • Reprovados: 48h</div>
                 </div>
               </div>
             </div>

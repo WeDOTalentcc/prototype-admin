@@ -212,7 +212,7 @@ export function InlineChatPanel({
                   <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary dark:text-lia-text-primary">
+                  <h3 className="text-sm font-semibold leading-tight truncate text-lia-text-primary">
                     Olá! Sou a Lia.
                   </h3>
                   <p className="text-xs leading-tight truncate mt-0.5 text-lia-text-tertiary">
@@ -339,7 +339,7 @@ export function InlineChatPanel({
                 <div className="flex justify-start" role="status" aria-live="polite" aria-label="Carregando...">
                   <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
                     <div className="w-5 h-5 rounded-md bg-lia-bg-primary flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando...">
-                      <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+                      <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                     </div>
                     <span className="text-micro text-lia-text-tertiary">Pensando...</span>
                   </div>
@@ -369,7 +369,7 @@ export function InlineChatPanel({
                   }
                 }}
                 disabled={liaInlineLoading}
-                className="flex-1 text-xs bg-transparent focus:outline-none text-lia-text-primary dark:text-lia-text-primary disabled:opacity-50"
+                className="flex-1 text-xs bg-transparent focus:outline-none text-lia-text-primary disabled:opacity-50"
               />
               <AudioRecordButton
                 onTranscription={(text) => onSetLiaPromptValue((prev) => (prev ? `${prev} ${text}` : text))}
@@ -477,7 +477,7 @@ export function InlineChatPanel({
                       placeholder="Cole aqui o job description completo (requisitos, responsabilidades, benefícios...)..."
                       value={jobDescriptionText}
                       onChange={(e) => setJobDescriptionText(e.target.value)}
-                      className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle"
+                      className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary border border-lia-border-subtle"
                       style={{backgroundColor: "var(--gray-50)"}}
                     />
                     {/* Botões de Anexo */}

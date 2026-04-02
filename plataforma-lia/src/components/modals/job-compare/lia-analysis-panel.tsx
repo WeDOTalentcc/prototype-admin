@@ -80,9 +80,9 @@ interface LiaAnalysisPanelProps {
 export function LiaAnalysisPanel({ liaAnalysis }: LiaAnalysisPanelProps) {
   return (
     <div className="border border-lia-border-subtle rounded-md overflow-hidden">
-      <div className="bg-gray-50 border-b border-lia-border-subtle px-4 py-2.5">
+      <div className="bg-lia-bg-secondary border-b border-lia-border-subtle px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+          <div className="w-6 h-6 bg-lia-bg-tertiary rounded-md flex items-center justify-center">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
           <h3 className="text-base-ui font-semibold text-lia-text-primary">Análise LIA</h3>
@@ -105,8 +105,8 @@ export function LiaAnalysisPanel({ liaAnalysis }: LiaAnalysisPanelProps) {
                 key={`metric-${idx}`}
                 className={`p-3 rounded-md border ${
                   metric.highlight
-                    ? "bg-gray-50 dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default"
-                    : "bg-gray-50 border-lia-border-subtle"
+                    ? "bg-lia-bg-secondary border-lia-border-default"
+                    : "bg-lia-bg-secondary border-lia-border-subtle"
                 }`}
               >
                 <p className="text-micro text-lia-text-tertiary uppercase tracking-wide mb-1">
@@ -114,7 +114,7 @@ export function LiaAnalysisPanel({ liaAnalysis }: LiaAnalysisPanelProps) {
                 </p>
                 <div className="flex items-center gap-1.5">
                   <span className={`text-lg font-semibold ${
-                    metric.highlight ? "text-lia-text-secondary dark:text-lia-text-tertiary" : "text-lia-text-primary"
+                    metric.highlight ? "text-lia-text-secondary" : "text-lia-text-primary"
                   }`}>
                     {metric.value}
                   </span>

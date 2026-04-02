@@ -54,10 +54,10 @@ export function useJobInsights({
   // ── recruitment funnel bars ─────────────────────────────────────────────
   const funnelData = useMemo(() => {
     const stages = [
-      { name: "Inscritos", value: aggregateMetrics.totalCandidates, color: "bg-gray-200 dark:bg-lia-bg-elevated" },
-      { name: "Em Triagem", value: aggregateMetrics.totalScreening, color: "bg-gray-200 dark:bg-lia-bg-elevated" },
-      { name: "Aprovados", value: aggregateMetrics.totalApproved, color: "bg-gray-200 dark:bg-lia-bg-elevated" },
-      { name: "Contratados", value: Math.round(aggregateMetrics.totalApproved * 0.3), color: "bg-gray-900 dark:bg-gray-50" },
+      { name: "Inscritos", value: aggregateMetrics.totalCandidates, color: "bg-lia-interactive-active" },
+      { name: "Em Triagem", value: aggregateMetrics.totalScreening, color: "bg-lia-interactive-active" },
+      { name: "Aprovados", value: aggregateMetrics.totalApproved, color: "bg-lia-interactive-active" },
+      { name: "Contratados", value: Math.round(aggregateMetrics.totalApproved * 0.3), color: "bg-lia-btn-primary-bg" },
     ]
     const maxValue = Math.max(...stages.map((s) => s.value), 1)
     return stages.map((stage) => ({
@@ -315,7 +315,7 @@ export function useJobInsights({
 
   const getScoreColor = useCallback((score?: number) => {
     if (!score) return "text-lia-text-tertiary"
-    if (score >= 85) return "text-lia-text-secondary dark:text-lia-text-tertiary font-semibold"
+    if (score >= 85) return "text-lia-text-secondary font-semibold"
     if (score >= 50) return "text-lia-text-primary"
     return "text-lia-text-secondary"
   }, [])

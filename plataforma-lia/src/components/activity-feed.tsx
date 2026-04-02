@@ -110,11 +110,11 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       case 'urgent':
         return 'bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30'
       case 'normal':
-        return 'bg-gray-100 text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default'
+        return 'bg-gray-100 text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default'
       case 'low':
-        return 'bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-primary/20'
+        return 'bg-gray-50 text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-primary/20'
       default:
-        return 'bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border-lia-border-subtle'
+        return 'bg-gray-50 text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -183,7 +183,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
   const getScoreBadge = (score: number) => {
     if (score >= 80) return { label: 'Forte', className: 'bg-status-success/15 text-status-success border-status-success/30' }
-    if (score >= 60) return { label: 'Bom', className: 'bg-gray-100 lia-text-base border-lia-border-default' }
+    if (score >= 60) return { label: 'Bom', className: 'bg-gray-100 text-lia-text-secondary border-lia-border-default' }
     if (score >= 40) return { label: 'Moderado', className: 'bg-status-warning/15 text-status-warning border-status-warning/30' }
     return { label: 'Fraco', className: 'bg-status-error/15 text-status-error border-status-error/30' }
   }
@@ -213,7 +213,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       case 'missing':
         return 'text-status-error'
       default:
-        return 'lia-text-base'
+        return 'text-lia-text-secondary'
     }
   }
 
@@ -236,7 +236,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
     return (
       <div className={`flex items-center justify-center py-8 ${className}`} role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex flex-col items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-base" />
+          <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           <p className={textStyles.bodySmall}>Carregando atividades...</p>
         </div>
       </div>
@@ -247,7 +247,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
     return (
       <div className={`flex items-center justify-center py-8 ${className}`}>
         <div className="text-center">
-          <AlertCircle className="w-5 h-5 lia-text-base mx-auto mb-2" />
+          <AlertCircle className="w-5 h-5 text-lia-text-secondary mx-auto mb-2" />
           <p className={textStyles.bodySmall}>{error}</p>
         </div>
       </div>
@@ -258,7 +258,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
     return (
       <div className={`flex items-center justify-center py-8 ${className}`}>
         <div className="text-center">
-          <Clock className="w-5 h-5 lia-text-base mx-auto mb-2" />
+          <Clock className="w-5 h-5 text-lia-text-secondary mx-auto mb-2" />
           <p className={textStyles.bodySmall}>Nenhuma atividade registrada ainda</p>
           {candidateId && (
             <p className={`${textStyles.description} mt-1`} aria-live="polite" aria-atomic="true">
@@ -291,7 +291,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
             <div className="flex-1 min-w-0">
               {/* Header */}
               <div className="flex items-start justify-between gap-2 mb-1">
-                <h4 className={`${textStyles.title} dark:text-lia-text-primary`}>
+                <h4 className={`${textStyles.title}`}>
                   {activity.title}
                 </h4>
                 <span className={`${textStyles.description} flex-shrink-0`}>
@@ -303,7 +303,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
               {activity.activity_type === 'voice_screening' && activity.extra_data && (
                 <div className="space-y-1.5">
                   {/* Candidate + Job */}
-                  <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`} aria-live="polite" aria-atomic="true">
+                  <p className={`${textStyles.bodySmall}`} aria-live="polite" aria-atomic="true">
                     {activity.target?.name} • {activity.extra_data.screening_id ? 'Backend Sênior' : 'Vaga'}
                   </p>
 
@@ -346,7 +346,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                   {/* Summary */}
                   {activity.summary && (
                     // @ts-ignore TODO: fix type
-                    <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary line-clamp-2`}>
+                    <p className={`${textStyles.bodySmall} line-clamp-2`}>
                       {activity.summary}
                     </p>
                   )}
@@ -357,7 +357,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={textStyles.label}>Pontos fortes:</span>
                       {activity.extra_data.key_strengths.slice(0, 3).map((strength: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className={`${badgeStyles.default} dark:bg-lia-bg-secondary dark:text-lia-text-secondary`}>
+                        <Badge key={idx} variant="secondary" className={`${badgeStyles.default} dark:bg-lia-bg-secondary`}>
                           {strength}
                         </Badge>
                       ))}
@@ -406,7 +406,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
                   {/* Summary */}
                   {activity.summary && (
-                    <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>
+                    <p className={`${textStyles.bodySmall}`}>
                       {activity.summary}
                     </p>
                   )}
@@ -451,12 +451,12 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
               {activity.activity_type !== 'voice_screening' && activity.activity_type !== 'rubric_evaluation' && activity.activity_type !== 'screening_analysis' && (
                 <div className="space-y-1">
                   {activity.summary && (
-                    <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>
+                    <p className={`${textStyles.bodySmall}`}>
                       {activity.summary}
                     </p>
                   )}
                   {activity.description && (
-                    <p className={`${textStyles.bodySmall} text-lia-text-primary dark:text-lia-text-primary line-clamp-2`}>
+                    <p className={`${textStyles.bodySmall} text-lia-text-primary line-clamp-2`}>
                       {activity.description}
                     </p>
                   )}

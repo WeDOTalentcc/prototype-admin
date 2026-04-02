@@ -42,7 +42,7 @@ export function renderMatchScoreCell(candidate: Candidate, searchQuery: string):
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-lia-text-tertiary dark:text-lia-text-tertiary"
+            className="text-lia-text-tertiary"
           />
         </svg>
         {/* Progress ring */}
@@ -62,7 +62,7 @@ export function renderMatchScoreCell(candidate: Candidate, searchQuery: string):
         </svg>
         {/* Percentage text */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`${textStyles.label} font-bold dark:text-lia-text-primary`}>
+          <span className={`${textStyles.label} font-bold`}>
             {matchScore}
           </span>
         </div>

@@ -18,7 +18,7 @@ export function renderSourceCell(candidate: Candidate): React.ReactNode {
         </div>
       ) : (
         <div className="w-6 h-6 rounded-full flex items-center justify-center transition-[width,height] hover:scale-110 bg-gray-100 dark:bg-lia-bg-elevated">
-          <Globe className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-secondary" />
+          <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
         </div>
       )}
       {/* Tooltip dinâmico com informações de créditos */}

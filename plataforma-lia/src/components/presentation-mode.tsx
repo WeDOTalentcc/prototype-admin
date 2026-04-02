@@ -58,7 +58,7 @@ const KPICard = React.memo(({ kpi, index }: { kpi: { label: string; value: numbe
       <div className="text-5xl font-bold text-lia-text-primary mb-4">
         {kpi.value}
       </div>
-      <div className="text-xl font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">
+      <div className="text-xl font-medium text-lia-text-primary mb-4">
         {kpi.label}
       </div>
       <div className="flex items-center justify-center gap-2">
@@ -87,7 +87,7 @@ const KPISlide = React.memo(({ data }: { data: Record<string, unknown> }) => {
       <h1 className="text-6xl font-bold text-lia-text-primary mb-4 text-center">
         Indicadores Principais
       </h1>
-      <p className="text-2xl text-lia-text-secondary dark:text-lia-text-tertiary text-center mb-16">
+      <p className="text-2xl text-lia-text-secondary text-center mb-16">
         Performance de Recrutamento - {currentDate}
       </p>
 
@@ -113,7 +113,7 @@ const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; effi
         <div className="text-6xl font-bold text-lia-text-primary mb-4">
           {dept.efficiency}%
         </div>
-        <div className="text-lg text-lia-text-secondary dark:text-lia-text-tertiary">
+        <div className="text-lg text-lia-text-secondary">
           Eficiência
         </div>
       </div>
@@ -122,7 +122,7 @@ const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; effi
           <div className="text-2xl font-bold text-lia-text-primary">
             {((dept as any).jobs as React.ReactNode)}
           </div>
-          <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+          <div className="text-sm text-lia-text-secondary">
             Vagas
           </div>
         </div>
@@ -131,7 +131,7 @@ const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; effi
           <div className="text-2xl font-bold text-lia-text-primary">
             {((dept as any).hires as React.ReactNode)}
           </div>
-          <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+          <div className="text-sm text-lia-text-secondary">
             Contratações
           </div>
         </div>
@@ -147,7 +147,7 @@ const DepartmentSlide = React.memo(({ data }: { data: Record<string, unknown> })
     <h1 className="text-6xl font-bold text-lia-text-primary mb-4 text-center">
       Performance por Departamento
     </h1>
-    <p className="text-2xl text-lia-text-secondary dark:text-lia-text-tertiary text-center mb-16">
+    <p className="text-2xl text-lia-text-secondary text-center mb-16">
       Eficiência de Recrutamento por Área
     </p>
 
@@ -168,7 +168,7 @@ const AlertItem = React.memo(({ alert, index }: { alert: { type: string; message
       case "success": return <CheckCircle className="w-8 h-8 text-status-success" />
       case "warning": return <AlertTriangle className="w-8 h-8 text-status-warning" />
       case "error": return <AlertTriangle className="w-8 h-8 text-status-error" />
-      default: return <Activity className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
+      default: return <Activity className="w-8 h-8 text-lia-text-secondary" />
     }
   }, [alert.type])
 
@@ -200,7 +200,7 @@ const AlertsSlide = React.memo(({ data }: { data: Record<string, unknown> }) => 
     <h1 className="text-6xl font-bold text-lia-text-primary mb-4 text-center">
       Alertas e Status
     </h1>
-    <p className="text-2xl text-lia-text-secondary dark:text-lia-text-tertiary text-center mb-16">
+    <p className="text-2xl text-lia-text-secondary text-center mb-16">
       Monitoramento em Tempo Real
     </p>
 
@@ -354,7 +354,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
               <ChevronLeft className="w-4 h-4" />
             </Button>
 
-            <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
+            <span className="text-sm font-medium text-lia-text-secondary">
               {currentSlide + 1} / {slides.length}
             </span>
 

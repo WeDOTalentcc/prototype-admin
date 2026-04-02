@@ -109,7 +109,7 @@ export function ExpandedChatInput({
     <div className="px-4 py-4 flex-shrink-0 bg-white mt-auto">
       <div className="flex justify-center">
         <div className="w-full max-w-lg">
-          <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-full">
+          <div className="flex items-center gap-2 px-3 py-2 bg-lia-bg-primary border border-lia-border-subtle rounded-full">
             <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
               <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
             </div>
@@ -146,7 +146,7 @@ export function ExpandedChatInput({
                   className="hidden"
                 />
                 <button
-                  className="p-1.5 lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted transition-colors motion-reduce:transition-none rounded-full"
+                  className="p-1.5 lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted transition-colors motion-reduce:transition-none rounded-full"
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   title="Anexar arquivo para análise"
@@ -181,7 +181,7 @@ export function ExpandedChatInput({
  "w-8 h-8 rounded-full flex items-center justify-center transition-[width,height] duration-200 ml-1",
                   inputValue.trim() && !isLoading && !isTypingEffect
                     ? "bg-chat-cyan text-white hover:opacity-90"
-                    : "bg-gray-200 dark:bg-lia-bg-elevated lia-text-secondary cursor-not-allowed"
+                    : "bg-lia-interactive-active lia-text-secondary cursor-not-allowed"
                 )}
                 type="button"
               >
@@ -202,8 +202,8 @@ export function ExpandedChatInput({
                 className={cn(
  "px-2.5 py-1 rounded-full text-xs font-medium transition-[width,height]",
                   activeInputTab === 'ia-natural'
-                    ? "text-white bg-gray-900"
-                    : "text-lia-text-secondary dark:text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700"
+                    ? "text-white bg-lia-btn-primary-bg"
+                    : "text-lia-text-secondary bg-lia-bg-tertiary hover:bg-lia-interactive-active hover:bg-lia-interactive-hover"
                 )}
               >
                 <div className="flex items-center gap-1">
@@ -216,8 +216,8 @@ export function ExpandedChatInput({
                 className={cn(
  "px-2.5 py-1 rounded-full text-xs font-medium transition-[width,height]",
                   activeInputTab === 'job-description'
-                    ? "text-white bg-gray-900"
-                    : "text-lia-text-secondary dark:text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700"
+                    ? "text-white bg-lia-btn-primary-bg"
+                    : "text-lia-text-secondary bg-lia-bg-tertiary hover:bg-lia-interactive-active hover:bg-lia-interactive-hover"
                 )}
               >
                 <div className="flex items-center gap-1">
@@ -230,8 +230,8 @@ export function ExpandedChatInput({
                 className={cn(
  "px-2.5 py-1 rounded-full text-xs font-medium transition-[width,height]",
                   activeInputTab === 'templates'
-                    ? "text-white bg-gray-900"
-                    : "text-lia-text-secondary dark:text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700"
+                    ? "text-white bg-lia-btn-primary-bg"
+                    : "text-lia-text-secondary bg-lia-bg-tertiary hover:bg-lia-interactive-active hover:bg-lia-interactive-hover"
                 )}
               >
                 <div className="flex items-center gap-1">
@@ -245,7 +245,7 @@ export function ExpandedChatInput({
           {/* Badges de sugestão abaixo das tabs (só quando IA Natural selecionado) */}
           {!hideModeButtons && activeInputTab === 'ia-natural' && (
             <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1.5">
-              <span className="text-micro font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">Sugestões:</span>
+              <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
               {suggestionTags.map((tag) => {
                 const IconComponent = tag.icon
                 return (
@@ -299,13 +299,13 @@ export function ExpandedChatInput({
                     }}
                     disabled={isTypingEffect || isLoading}
                     className={cn(
- "inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary dark:text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary rounded-full transition-[width,height]",
+ "inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary rounded-full transition-[width,height]",
                       isTypingEffect || isLoading
                         ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-gray-200 dark:hover:bg-gray-700"
+                        : "hover:bg-lia-interactive-active hover:bg-lia-interactive-hover"
                     )}
                   >
-                    <IconComponent className="w-2.5 h-2.5 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+                    <IconComponent className="w-2.5 h-2.5 text-lia-text-tertiary" />
                     {tag.label}
                   </button>
                 )
@@ -322,15 +322,15 @@ export function ExpandedChatInput({
 
           {/* Conteúdo da aba Job Description */}
           {activeInputTab === 'job-description' && (
-            <div className="mt-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
-              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2" aria-live="polite" aria-atomic="true">
+            <div className="mt-3 p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
+              <p className="text-xs text-lia-text-secondary mb-2" aria-live="polite" aria-atomic="true">
                 Cole ou anexe uma descrição de vaga e eu vou criar a vaga automaticamente para você, configurando todos os detalhes.
               </p>
               <textarea
                 value={inputValue}
                 onChange={(e) => onSetInputValue(e.target.value)}
                 placeholder="Cole aqui o job description completo (requisitos, responsabilidades, benefícios...)."
-                className="w-full px-3 py-2.5 text-xs rounded-md border border-lia-border-subtle dark:border-lia-border-subtle focus:border-gray-400 dark:focus:border-gray-500 focus:outline-none resize-none transition-colors motion-reduce:transition-none bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary min-h-20"
+                className="w-full px-3 py-2.5 text-xs rounded-md border border-lia-border-subtle focus:border-lia-border-medium focus:outline-none resize-none transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary min-h-20"
                 rows={4}
               />
               <div className="flex items-center justify-between mt-2">
@@ -342,7 +342,7 @@ export function ExpandedChatInput({
                   size="sm"
                   className={cn(
  "h-7 px-3 text-xs font-medium",
-                    inputValue.trim() ? "bg-gray-900 text-white" : "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-disabled"
+                    inputValue.trim() ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-lia-bg-tertiary text-lia-text-disabled"
                   )}
                   onClick={() => {
                     if (inputValue.trim()) {
@@ -364,13 +364,13 @@ export function ExpandedChatInput({
 
           {/* Conteúdo da aba Templates */}
           {activeInputTab === 'templates' && (
-            <div className="mt-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary space-y-3">
+            <div className="mt-3 p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary space-y-3">
               {/* Seção 1: Criar a partir de Template */}
               <div>
-                <h4 className="text-xs font-medium mb-1 text-lia-text-primary dark:text-lia-text-primary">
+                <h4 className="text-xs font-medium mb-1 text-lia-text-primary">
                   Criar Vaga a Partir de Template
                 </h4>
-                <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary mb-2" aria-live="polite" aria-atomic="true">
+                <p className="text-micro text-lia-text-tertiary mb-2" aria-live="polite" aria-atomic="true">
                   Selecione um modelo pronto e eu inicio a criação da vaga para você
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
@@ -382,7 +382,7 @@ export function ExpandedChatInput({
                   ].map((template) => (
                     <div
                       key={template.title}
-                      className="cursor-pointer transition-colors motion-reduce:transition-none rounded-md p-2 hover:border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:border-gray-900 dark:hover:border-gray-50"
+                      className="cursor-pointer transition-colors motion-reduce:transition-none rounded-md p-2 hover:border border-lia-border-subtle bg-lia-bg-primary hover:border-lia-btn-primary-bg"
                       onClick={() => {
                         onSetInternalJobCreationMode(true)
                         const dynamicGreeting = wizardGreeting?.greeting_message || INITIAL_JOB_CREATION_MESSAGE
@@ -395,12 +395,12 @@ export function ExpandedChatInput({
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm">{template.icon}</span>
                         <div className="flex-1 min-w-0">
-                          <h5 className="text-xs font-medium truncate text-lia-text-primary dark:text-lia-text-primary">
+                          <h5 className="text-xs font-medium truncate text-lia-text-primary">
                             {template.title}
                           </h5>
                           <div className="flex gap-1 mt-0.5">
                             {template.tags.map(tag => (
-                              <span key={tag} className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-tertiary dark:text-lia-text-tertiary">{tag}</span>
+                              <span key={tag} className="text-micro px-1 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-tertiary">{tag}</span>
                             ))}
                           </div>
                         </div>
@@ -411,11 +411,11 @@ export function ExpandedChatInput({
               </div>
 
               {/* Seção 2: Criar a partir de Vaga Existente */}
-              <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                <h4 className="text-xs font-medium mb-1 text-lia-text-primary dark:text-lia-text-primary">
+              <div className="pt-2 border-t border-lia-border-subtle">
+                <h4 className="text-xs font-medium mb-1 text-lia-text-primary">
                   Criar a Partir de Vaga Existente
                 </h4>
-                <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary mb-2" aria-live="polite" aria-atomic="true">
+                <p className="text-micro text-lia-text-tertiary mb-2" aria-live="polite" aria-atomic="true">
                   Copie uma vaga já criada e faça ajustes
                 </p>
                 <div className="relative">
@@ -423,7 +423,7 @@ export function ExpandedChatInput({
                   <input
                     type="text"
                     placeholder="Buscar vaga por título ou ID..."
-                    className="w-full pl-8 pr-3 py-2 text-xs rounded-md border border-lia-border-subtle dark:border-lia-border-subtle focus:border-gray-400 dark:focus:border-gray-500 focus:outline-none transition-colors motion-reduce:transition-none bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary"
+                    className="w-full pl-8 pr-3 py-2 text-xs rounded-md border border-lia-border-subtle focus:border-lia-border-medium focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary"
                   />
                 </div>
               </div>

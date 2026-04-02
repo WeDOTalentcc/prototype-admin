@@ -108,8 +108,8 @@ export function CompanyDataCard({
                 "inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors flex-shrink-0",
                 (!localIsActive || !isEditing) && "opacity-40 cursor-not-allowed",
                 localIsActive && isEditing && hasInstruction
- ? "lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100"
-                  : "bg-gray-50 lia-text-500 hover:bg-gray-100 hover:lia-text-600 dark:bg-lia-bg-elevated dark:text-lia-text-tertiary dark:hover:bg-gray-600"
+ ? "text-lia-text-secondary hover:bg-gray-100"
+                  : "bg-gray-50 text-lia-text-secondary hover:bg-gray-100 hover:text-lia-text-secondary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
               )}
             >
               <Bot className="w-4 h-4" />
@@ -123,19 +123,19 @@ export function CompanyDataCard({
             <div className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Bot className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                  <Bot className="w-4 h-4 text-lia-text-secondary" />
                   <span className={textStyles.h4}>Instrução para LIA</span>
                 </div>
                 <button
                   onClick={() => setIsPopoverOpen(false)}
-                  className="lia-text-500 hover:lia-text-700 dark:text-lia-text-tertiary dark:hover:lia-text-200 transition-colors motion-reduce:transition-none"
+                  className="text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               <div className={textStyles.description}>
-                Campo: <span className="lia-text-800 dark:text-lia-text-primary font-medium">{label}</span>
+                Campo: <span className="text-lia-text-primary font-medium">{label}</span>
               </div>
 
               <Textarea
@@ -147,7 +147,7 @@ export function CompanyDataCard({
 
               {examples.length > 0 && (
                 <div className="space-y-2 p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-                  <div className="flex items-center gap-1 text-xs font-medium uppercase lia-text-600 dark:text-lia-text-tertiary">
+                  <div className="flex items-center gap-1 text-xs font-medium uppercase text-lia-text-secondary">
                     <Info className="w-3 h-3" />
                     <span>Exemplos</span>
                   </div>
@@ -156,7 +156,7 @@ export function CompanyDataCard({
                       <button
                         key={idx}
                         onClick={() => setInstruction(example)}
-                        className="block w-full text-left text-xs lia-text-600 dark:text-lia-text-tertiary hover:lia-text-900 dark:hover:lia-text-50 p-1.5 rounded-md hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+                        className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-md hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
                       >
                         "{example}"
                       </button>
@@ -178,7 +178,7 @@ export function CompanyDataCard({
                   size="sm"
                   onClick={handleSaveInstruction}
                   disabled={isSaving}
-                  className="text-xs h-8 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                  className="text-xs h-8 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
                 >
                   {isSaving ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1" />
@@ -203,7 +203,7 @@ export function CompanyDataCard({
       {hasInstruction && (
         <div className="mt-2 p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-md">
           <div className="flex items-start gap-2">
-            <Bot className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
+            <Bot className="w-3 h-3 text-lia-text-secondary mt-0.5 flex-shrink-0" />
             <p className={cn(textStyles.caption, "leading-relaxed")}>
               {currentInstruction}
             </p>

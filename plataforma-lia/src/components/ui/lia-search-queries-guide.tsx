@@ -210,7 +210,7 @@ export function LiaSearchQueriesGuide({
             className="px-3 py-2 border-b flex items-center gap-2"
             style={{borderColor: 'var(--lia-border-subtle)', backgroundColor: 'var(--lia-bg-secondary)'}}
           >
-            <UserCheck className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <UserCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
             <span 
               className="text-micro"
              
@@ -242,7 +242,7 @@ export function LiaSearchQueriesGuide({
                 <div 
                   className="p-1.5 rounded-md flex-shrink-0 bg-gray-900/[0.08]"
                 >
-                  <query.icon className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <query.icon className="w-3 h-3 text-lia-text-secondary" />
                 </div>
                 <span 
                   className="text-xs leading-snug font-medium"

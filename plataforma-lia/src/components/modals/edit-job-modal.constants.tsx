@@ -81,5 +81,5 @@ export const COMPETENCY_WEIGHTS = [
   { value: 'Desejável', label: 'Desejável' },
 ]
 
-export const inputStyle = 'h-9 text-xs text-lia-text-primary bg-gray-50 border-lia-border-subtle focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20'
-export const selectTriggerStyle = 'h-9 text-xs text-lia-text-primary bg-gray-50 border-lia-border-subtle focus:border-gray-400 focus:ring-1 focus:ring-gray-900/20'
+export const inputStyle = 'h-9 text-xs text-lia-text-primary bg-lia-bg-secondary border-lia-border-subtle focus:border-lia-border-medium focus:ring-1 focus:ring-lia-btn-primary-bg/20'
+export const selectTriggerStyle = 'h-9 text-xs text-lia-text-primary bg-lia-bg-secondary border-lia-border-subtle focus:border-lia-border-medium focus:ring-1 focus:ring-lia-btn-primary-bg/20'

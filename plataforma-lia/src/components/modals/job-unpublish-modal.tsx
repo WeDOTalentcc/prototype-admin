@@ -417,14 +417,14 @@ export function JobUnpublishModal({
               <div className={cn(
                 "w-5 h-5 rounded-full flex items-center justify-center text-micro font-medium",
                 step.done 
-                  ? "bg-gray-900 text-white" 
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                   : currentStep === 'options' && index === 0 
-                    ? "bg-gray-100 text-lia-text-primary border border-gray-900"
+                    ? "bg-lia-bg-tertiary text-lia-text-primary border border-lia-btn-primary-bg"
                     : currentStep === 'communication' && index === 1
-                      ? "bg-gray-100 text-lia-text-primary border border-gray-900"
+                      ? "bg-lia-bg-tertiary text-lia-text-primary border border-lia-btn-primary-bg"
                       : currentStep === 'confirmation' && index === 1
-                        ? "bg-gray-100 text-lia-text-primary border border-gray-900"
-                        : "bg-gray-100 text-lia-text-tertiary"
+                        ? "bg-lia-bg-tertiary text-lia-text-primary border border-lia-btn-primary-bg"
+                        : "bg-lia-bg-tertiary text-lia-text-tertiary"
               )}>
                 {step.done ? <Check className="w-3 h-3" /> : index + 1}
               </div>
@@ -450,13 +450,13 @@ export function JobUnpublishModal({
         <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
           Vagas Selecionadas
         </h4>
-        <div className="max-h-[100px] overflow-y-auto space-y-1 bg-gray-50 rounded-md p-2 border border-lia-border-subtle">
+        <div className="max-h-[100px] overflow-y-auto space-y-1 bg-lia-bg-secondary rounded-md p-2 border border-lia-border-subtle">
           {jobs.map((job) => (
             <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  {job.code && <span className="text-micro font-medium text-lia-text-secondary bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
+                  {job.code && <span className="text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
                   <span className="text-xs font-medium text-lia-text-primary truncate">{job.title}</span>
                 </div>
               </div>
@@ -465,7 +465,7 @@ export function JobUnpublishModal({
         </div>
       </div>
 
-      <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
+      <div className="space-y-3 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
         <div className="flex items-center gap-2 text-lia-text-primary mb-2">
           <AlertTriangle className="w-3.5 h-3.5 text-lia-text-secondary" />
           <span className="text-xs font-semibold text-lia-text-primary">Opções ao despublicar</span>
@@ -477,7 +477,7 @@ export function JobUnpublishModal({
               id="freezeJob"
               checked={freezeJob}
               onCheckedChange={(checked) => setFreezeJob(!!checked)}
-              className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+              className="mt-0.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
             />
             <div className="flex-1">
               <Label htmlFor="freezeJob" className="text-xs font-medium text-lia-text-primary cursor-pointer flex items-center gap-1">
@@ -540,7 +540,7 @@ export function JobUnpublishModal({
               id="notifyApplicants"
               checked={notifyApplicants}
               onCheckedChange={(checked) => setNotifyApplicants(!!checked)}
-              className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+              className="mt-0.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
             />
             <div className="flex-1">
               <Label htmlFor="notifyApplicants" className="text-xs font-medium text-lia-text-primary cursor-pointer flex items-center gap-1">
@@ -605,7 +605,7 @@ export function JobUnpublishModal({
             className={cn(
               "h-7 px-2.5 text-micro",
               (notificationChannel === 'email' || notificationChannel === 'both') 
-                ? "bg-gray-800 text-white" 
+                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                 : "border-lia-border-subtle text-lia-text-secondary"
             )}
           >
@@ -713,20 +713,20 @@ export function JobUnpublishModal({
                   className={cn(
                     "flex items-center gap-2 p-1.5 rounded-md cursor-pointer transition-colors",
                     selectedCandidateIds.has(candidate.id)
-                      ? "bg-gray-100 border border-gray-900"
+                      ? "bg-lia-bg-tertiary border border-lia-btn-primary-bg"
                       : "bg-lia-bg-primary border border-lia-border-subtle hover:border-lia-border-default"
                   )}
                   onClick={() => toggleCandidateSelection(candidate.id)}
                 >
                   <Checkbox
                     checked={selectedCandidateIds.has(candidate.id)}
-                    className="data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                    className="data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-lia-text-primary truncate">{candidate.name}</p>
                     <p className="text-micro text-lia-text-tertiary">{candidate.email || candidate.phone || 'Sem contato'}</p>
                   </div>
-                  <Badge className="text-micro px-1.5 py-0.5 bg-gray-100 text-lia-text-secondary font-normal">
+                  <Badge className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary font-normal">
                     {candidate.stage}
                   </Badge>
                 </div>
@@ -774,12 +774,12 @@ export function JobUnpublishModal({
         </div>
       </div>
 
-      <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
+      <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
         <Checkbox
           id="acknowledgeWarning"
           checked={acknowledgedWarning}
           onCheckedChange={(checked) => setAcknowledgedWarning(!!checked)}
-          className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+          className="mt-0.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
         />
         <Label htmlFor="acknowledgeWarning" className="text-xs text-lia-text-secondary cursor-pointer">
           Li e estou ciente de que todas as ações acima serão executadas e não podem ser desfeitas.
@@ -797,7 +797,7 @@ export function JobUnpublishModal({
       <p className="text-xs text-lia-text-secondary mb-4" aria-live="polite" aria-atomic="true">
         A vaga foi despublicada e congelada com sucesso.
       </p>
-      <div className="bg-gray-50 rounded-md p-3 border border-lia-border-subtle text-left space-y-2">
+      <div className="bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle text-left space-y-2">
         <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Check className="w-3.5 h-3.5 text-status-success" />
           <span aria-live="polite" aria-atomic="true">Vaga despublicada dos job boards</span>
@@ -831,14 +831,14 @@ export function JobUnpublishModal({
               variant="outline"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleProceed}
               disabled={isSubmitting || hasProposalBlock || (freezeJob && !freezeReason)}
-              className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               {isSubmitting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
@@ -859,14 +859,14 @@ export function JobUnpublishModal({
               variant="outline"
               onClick={() => setCurrentStep('options')}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
             >
               Voltar
             </Button>
             <Button
               onClick={handleCommunicationProceed}
               disabled={isSubmitting || selectedCandidateIds.size === 0 || !notificationMessage}
-              className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               {isSubmitting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
@@ -887,14 +887,14 @@ export function JobUnpublishModal({
               variant="outline"
               onClick={() => setCurrentStep('communication')}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
             >
               Voltar
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || !acknowledgedWarning}
-              className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               {isSubmitting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
@@ -910,7 +910,7 @@ export function JobUnpublishModal({
         return (
           <Button
             onClick={handleClose}
-            className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
           >
             <Check className="w-3.5 h-3.5 mr-1.5" />
             Concluir
@@ -924,7 +924,7 @@ export function JobUnpublishModal({
       <DialogContent className="max-w-lg bg-lia-bg-primary border border-lia-border-subtle">
         <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
               {currentStep === 'complete' ? (
                 <CheckCircle2 className="w-4 h-4 text-status-success" />
               ) : (

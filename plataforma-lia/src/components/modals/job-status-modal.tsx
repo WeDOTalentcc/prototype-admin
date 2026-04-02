@@ -477,14 +477,14 @@ export function JobStatusModal({
               <div className={cn(
                 "w-5 h-5 rounded-full flex items-center justify-center text-micro font-medium",
                 step.done 
-                  ? "bg-gray-900 text-white" 
+                  ? "bg-lia-btn-primary-bg text-white" 
                   : currentStep === 'options' && index === 0 
-                    ? "bg-gray-100 text-lia-text-primary border border-gray-900"
+                    ? "bg-lia-bg-tertiary text-lia-text-primary border border-lia-btn-primary-bg"
                     : currentStep === 'communication' && index === 1
-                      ? "bg-gray-100 text-lia-text-primary border border-gray-900"
+                      ? "bg-lia-bg-tertiary text-lia-text-primary border border-lia-btn-primary-bg"
                       : currentStep === 'confirmation' && index === 1
-                        ? "bg-gray-100 text-lia-text-primary border border-gray-900"
-                        : "bg-gray-100 text-lia-text-tertiary"
+                        ? "bg-lia-bg-tertiary text-lia-text-primary border border-lia-btn-primary-bg"
+                        : "bg-lia-bg-tertiary text-lia-text-tertiary"
               )}>
                 {step.done ? <Check className="w-3 h-3" /> : index + 1}
               </div>
@@ -506,7 +506,7 @@ export function JobStatusModal({
 
   const renderCommunicationStep = () => (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 p-2.5 rounded-md bg-gray-100 border border-lia-border-subtle">
+      <div className="flex items-center gap-2 p-2.5 rounded-md bg-lia-bg-tertiary border border-lia-border-subtle">
         <Mail className="w-4 h-4 text-lia-text-secondary" />
         <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
           Configure a mensagem para {jobCandidates.length - candidatesInProposal.length} candidato(s)
@@ -529,7 +529,7 @@ export function JobStatusModal({
               className={cn(
                 "h-8 px-3 text-xs gap-1.5",
                 notificationChannel === channel 
-                  ? "bg-gray-900 hover:bg-gray-800 text-white" 
+                  ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white" 
                   : "border border-lia-border-default text-lia-text-secondary"
               )}
             >
@@ -547,7 +547,7 @@ export function JobStatusModal({
           Template
         </Label>
         {templatesLoading ? (
-          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="flex items-center gap-2 p-3 bg-lia-bg-secondary rounded-md" role="status" aria-live="polite" aria-label="Carregando...">
             <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-disabled" />
             <span className="text-xs text-lia-text-tertiary">Carregando templates...</span>
           </div>
@@ -604,7 +604,7 @@ export function JobStatusModal({
         </span>
       </div>
 
-      <div className="space-y-2 p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
+      <div className="space-y-2 p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
         <h4 className="text-xs font-semibold text-lia-text-primary mb-2">Resumo das Ações</h4>
         
         <div className="space-y-1.5">
@@ -655,7 +655,7 @@ export function JobStatusModal({
       </div>
 
       {pauseReason && (
-        <div className="p-3 rounded-md bg-gray-50 border border-lia-border-subtle">
+        <div className="p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
           <h4 className="text-xs font-semibold text-lia-text-secondary mb-1">Motivo</h4>
           <p className="text-xs text-lia-text-primary">
             {pauseReason === 'other' ? customReason : PAUSE_REASONS.find(r => r.value === pauseReason)?.label}
@@ -686,7 +686,7 @@ export function JobStatusModal({
       <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
         <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100">
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
               {isPauseMode ? (
                 <Pause className="w-4 h-4 text-lia-text-secondary" />
               ) : (
@@ -756,7 +756,7 @@ export function JobStatusModal({
           {currentStep === 'complete' ? (
             <Button
               onClick={handleClose}
-              className="h-9 px-4 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800"
+              className="h-9 px-4 text-xs font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
             >
               Fechar
             </Button>
@@ -766,7 +766,7 @@ export function JobStatusModal({
                 <Button
                   variant="outline"
                   onClick={() => setCurrentStep(currentStep === 'confirmation' ? (notifyApplicants ? 'communication' : 'options') : 'options')}
-                  className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-gray-50"
+                  className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover"
                 >
                   Voltar
                 </Button>
@@ -774,14 +774,14 @@ export function JobStatusModal({
               <Button
                 variant="outline"
                 onClick={handleClose}
-                className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-gray-50"
+                className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={currentStep === 'options' ? handleProceed : currentStep === 'communication' ? handleCommunicationProceed : handleSubmit}
                 disabled={isSubmitting || (isPauseMode && hasProposalBlock)}
-                className="h-9 px-4 text-xs font-medium text-white bg-gray-900 hover:bg-gray-800 disabled:opacity-50"
+                className="h-9 px-4 text-xs font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />

@@ -148,21 +148,21 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg border-lia-border-subtle dark:border-lia-border-subtle rounded-md dark:bg-lia-bg-primary">
+      <DialogContent className="max-w-lg border-lia-border-subtle rounded-md">
         <DialogHeader>
           <DialogTitle className="font-['Open_Sans',sans-serif] text-lg flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Briefcase className="w-5 h-5 text-lia-text-secondary" />
             Adicionar a Vagas
           </DialogTitle>
           <DialogDescription className="text-xs">
             <div className="flex items-center gap-4 mt-1">
               <div className="flex items-center gap-2">
                 <div 
-                  className="w-3 h-3 rounded-full bg-gray-500 dark:bg-lia-text-secondary" 
+                  className="w-3 h-3 rounded-full bg-lia-bg-secondary0 dark:bg-lia-text-secondary" 
                 />
-                <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{listName}</span>
+                <span className="font-medium text-lia-text-primary">{listName}</span>
               </div>
-              <div className="flex items-center gap-1.5 text-lia-text-primary dark:text-lia-text-primary">
+              <div className="flex items-center gap-1.5 text-lia-text-primary">
                 <Users className="w-4 h-4" />
                 <span aria-live="polite" aria-atomic="true">
                   {isAddingSelected 
@@ -193,7 +193,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
           ) : vacancies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Briefcase className="w-10 h-10 text-lia-text-disabled mb-3" />
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">Nenhuma vaga aberta encontrada</p>
+              <p className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">Nenhuma vaga aberta encontrada</p>
               <p className="text-xs text-lia-text-secondary mt-1" aria-live="polite" aria-atomic="true">
                 Crie uma vaga primeiro para poder adicionar candidatos
               </p>
@@ -201,7 +201,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
           ) : filteredVacancies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Search className="w-10 h-10 text-lia-text-disabled mb-3" />
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
+              <p className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
               <p className="text-xs text-lia-text-secondary mt-1">
                 Tente buscar com outros termos
               </p>
@@ -212,7 +212,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="text-xs text-lia-text-secondary dark:text-lia-text-secondary hover:underline flex items-center gap-1.5"
+                  className="text-xs text-lia-text-secondary hover:underline flex items-center gap-1.5"
                 >
                   <Checkbox 
                     checked={selectedVacancyIds.size === filteredVacancies.length && filteredVacancies.length > 0}
@@ -223,7 +223,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
                     : 'Selecionar todas'
                   }
                 </button>
-                <span className="text-xs text-lia-text-primary dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
+                <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
                   {filteredVacancies.length} vaga{filteredVacancies.length !== 1 ? 's' : ''} disponíve{filteredVacancies.length !== 1 ? 'is' : 'l'}
                 </span>
               </div>
@@ -234,8 +234,8 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
                     <div
                       key={vacancy.id}
                       className={cn(
-                        "flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle cursor-pointer transition-colors motion-reduce:transition-none hover:border-gray-400 dark:hover:border-gray-500",
-                        selectedVacancyIds.has(vacancy.id) && "border-gray-900 dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary"
+                        "flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle cursor-pointer transition-colors motion-reduce:transition-none hover:border-lia-border-medium dark:hover:border-lia-border-medium",
+                        selectedVacancyIds.has(vacancy.id) && "border-lia-btn-primary-bg bg-lia-bg-secondary"
                       )}
                       onClick={() => toggleVacancy(vacancy.id)}
                     >
@@ -248,10 +248,10 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
+                            <h4 className="text-xs font-medium text-lia-text-primary truncate">
                               {vacancy.title}
                             </h4>
-                            <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
+                            <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-primary">
                               {vacancy.department && (
                                 <div className="flex items-center gap-1">
                                   <Building2 className="w-3 h-3" />
@@ -272,13 +272,13 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
                           </div>
                         </div>
                         {vacancy.funnel_data?.total !== undefined && (
-                          <div className="mt-2 text-xs text-lia-text-primary dark:text-lia-text-primary">
+                          <div className="mt-2 text-xs text-lia-text-primary">
                             {vacancy.funnel_data.total} candidato{vacancy.funnel_data.total !== 1 ? 's' : ''} no funil
                           </div>
                         )}
                       </div>
                       {selectedVacancyIds.has(vacancy.id) && (
-                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-lia-text-primary dark:text-lia-text-primary" />
+                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5 text-lia-text-primary" />
                       )}
                     </div>
                   ))}
@@ -286,9 +286,9 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
               </ScrollArea>
 
               {selectedVacancyIds.size > 0 && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
-                  <Check className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
-                  <span className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                <div className="flex items-center gap-2 px-3 py-2 bg-lia-bg-secondary rounded-md border border-lia-border-default">
+                  <Check className="w-4 h-4 text-lia-text-primary" />
+                  <span className="text-xs text-lia-text-primary">
                     <strong>{selectedVacancyIds.size}</strong> vaga{selectedVacancyIds.size !== 1 ? 's' : ''} selecionada{selectedVacancyIds.size !== 1 ? 's' : ''}
                     {' · '}
                     <strong>{candidatesToAdd}</strong> candidato{candidatesToAdd !== 1 ? 's' : ''} serão adicionados
@@ -299,13 +299,13 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
+        <DialogFooter className="gap-2 sm:gap-2 border-t border-lia-border-subtle bg-lia-bg-secondary p-4 -mx-6 -mb-6 rounded-b-xl">
           <Button
             type="button"
             variant="outline"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
+            className="bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
           >
             Cancelar
           </Button>
@@ -313,7 +313,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || isLoading || selectedVacancyIds.size === 0}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             {isSubmitting ? (
               <>

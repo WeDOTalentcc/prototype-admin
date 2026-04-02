@@ -307,8 +307,8 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
         className={cn(
           "p-3 rounded-md cursor-pointer transition-colors outline-none",
           selectedVacancyId === vacancy.id
-            ? "bg-gray-100 dark:bg-lia-bg-elevated border-2 border-gray-500"
-            : "hover:bg-gray-50 border-2 border-transparent focus:ring-2 focus:ring-gray-400/50"
+            ? "bg-lia-bg-tertiary border-2 border-lia-border-medium"
+            : "hover:bg-lia-interactive-hover border-2 border-transparent focus:ring-2 focus:ring-lia-border-default/50"
         )}
       >
         <div className="flex items-start justify-between">
@@ -318,7 +318,7 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
                 {vacancy.title}
               </span>
               {selectedVacancyId === vacancy.id && (
-                <Check className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-secondary flex-shrink-0" />
+                <Check className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
               )}
               {isOwn && (
                 <Star className="w-3 h-3 text-status-warning flex-shrink-0" fill="var(--status-warning)" />
@@ -375,17 +375,17 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
         ref={modalRef}
         className={`relative ${cardStyles.default} w-full max-w-md mx-4 max-h-[90vh] overflow-hidden flex flex-col`}
       >
-        <div className="border-b border-lia-border-subtle dark:border-lia-border-subtle p-5">
+        <div className="border-b border-lia-border-subtle p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Briefcase className="w-5 h-5 text-lia-text-secondary" />
               <h2 id="add-vacancy-modal-title" className={textStyles.title}>
                 Adicionar à Vaga
               </h2>
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled transition-colors motion-reduce:transition-none"
+              className="p-1 rounded-md hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
               aria-label="Fechar modal"
             >
               <X className="w-4 h-4" />
@@ -398,7 +398,7 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
 
         <div className="p-4 space-y-4 flex-1 overflow-hidden flex flex-col">
           <div className={`flex items-center gap-2 p-2 ${cardStyles.flat}`}>
-            <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Users className="w-4 h-4 text-lia-text-secondary" />
             <span className={textStyles.bodySmall}>
               {candidateNames.slice(0, 2).join(', ')}
               {candidateNames.length > 2 && ` e mais ${candidateNames.length - 2}`}
@@ -412,7 +412,7 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
               placeholder="Buscar vagas por título, departamento ou local..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 border-lia-border-subtle text-xs placeholder:text-lia-text-disabled focus:ring-1 focus:ring-gray-400 focus:border-gray-500"
+              className="pl-9 border-lia-border-subtle text-xs placeholder:text-lia-text-disabled focus:ring-1 focus:ring-lia-border-default focus:border-lia-border-medium"
               aria-label="Buscar vagas"
             />
           </div>
@@ -486,19 +486,19 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
           </ScrollArea>
         </div>
 
-        <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 flex items-center justify-end gap-2">
+        <div className="border-t border-lia-border-subtle bg-lia-bg-secondary p-4 flex items-center justify-end gap-2">
           <Button 
             variant="outline" 
             onClick={onClose} 
             disabled={isSubmitting}
-            className="bg-white border border-lia-border-default text-lia-text-primary hover:bg-gray-50 text-xs dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+            className="bg-white border border-lia-border-default text-lia-text-primary hover:bg-lia-interactive-hover text-xs dark:hover:bg-lia-btn-primary-bg"
           >
             Cancelar
           </Button>
           <Button 
             onClick={handleSubmit} 
             disabled={!selectedVacancyId || isSubmitting}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             {isSubmitting ? (
               <>

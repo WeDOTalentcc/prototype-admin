@@ -233,7 +233,7 @@ export function PromptSuggestionsPopover({
           size="sm"
           className={cn(
  "h-7 px-2 gap-1.5 text-xs font-medium transition-colors",
-            "hover:bg-lia-interactive-hover hover:lia-text-strong dark:hover:lia-text-subtle",
+            "hover:bg-lia-interactive-hover hover:text-lia-text-primary",
             "border border-transparent hover:border-lia-border-default",
             isOpen && "bg-lia-interactive-hover text-lia-text-secondary border-lia-border-default",
             className
@@ -311,14 +311,14 @@ export function PromptSuggestionsPopover({
                 >
                   <div className="flex items-start gap-2.5">
                     <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 group-hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none">
-                      <Icon className="w-3.5 h-3.5 lia-text-base group-hover:lia-text-strong dark:group-hover:lia-text-subtle" />
+                      <Icon className="w-3.5 h-3.5 text-lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <h4 className="text-xs font-medium truncate text-lia-text-primary">
                           {suggestion.title}
                         </h4>
-                        <ChevronRight className="w-3 h-3 lia-text-base opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
+                        <ChevronRight className="w-3 h-3 text-lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
                       </div>
                       <p className="text-xs text-lia-text-primary line-clamp-1">
                         {suggestion.description}
@@ -338,7 +338,7 @@ export function PromptSuggestionsPopover({
         </div>
 
         <div className="p-2 border-t border-lia-border-subtle">
-          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary text-center">
+          <p className="text-xs text-lia-text-secondary text-center">
             Dica: Selecione candidatos ou abra uma vaga para mais ações
           </p>
         </div>

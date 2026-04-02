@@ -91,7 +91,7 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
     <div>
       {/* Label row — with optional AI suggestion button */}
       <div className="flex items-center gap-2 mb-2">
-        <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide dark:text-lia-text-primary">
+        <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide">
           {label}
         </label>
         {onFetchAI && (
@@ -110,17 +110,17 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
         )}
       </div>
 
-      <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary p-3">
+      <div className="bg-white rounded-md border border-lia-border-subtle p-3">
         {/* Items */}
         {variant === "list" && (
           <div className="space-y-0.5">
             {items.map((item, idx) => (
               <div
                 key={`${fieldKey}-${idx}`}
-                className="group flex items-start gap-2 py-1 px-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="group flex items-start gap-2 py-1 px-1 rounded-md hover:bg-lia-interactive-hover"
               >
                 <span className="text-xs lia-text-secondary mt-0.5 shrink-0">•</span>
-                <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary flex-1 leading-relaxed">
+                <span className="text-xs text-lia-text-secondary flex-1 leading-relaxed">
                   {item}
                 </span>
                 <button
@@ -140,7 +140,7 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
             {items.map((item, idx) => (
               <span
                 key={`${fieldKey}-tag-${idx}-${item}`}
-                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-gray-100 lia-text-base rounded-full border border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-subtle"
+                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-lia-bg-tertiary text-lia-text-secondary rounded-full border border-lia-border-subtle"
               >
                 {item}
                 <button
@@ -159,7 +159,7 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
                 onClick={() => onAcceptSuggestion?.(s.key)}
                 className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors motion-reduce:transition-none hover:opacity-80 border-wedo-cyan/40 text-wedo-cyan-dark bg-wedo-cyan/[0.08]"
               >
-                <Plus className="h-3 w-3 lia-text-base" />
+                <Plus className="h-3 w-3 text-lia-text-secondary" />
                 {s.label}
               </button>
             ))}
@@ -173,7 +173,7 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
               value={newItemValue}
               onChange={(e) => onNewItemChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 h-7 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900/20 bg-gray-50 dark:bg-lia-bg-secondary dark:text-lia-text-primary"
+              className="flex-1 h-7 text-xs border border-lia-border-subtle rounded-md px-2.5 focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-secondary"
               placeholder={placeholder}
               autoFocus
             />
@@ -182,7 +182,7 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
                 handleAdd()
                 onStopEditing()
               }}
-              className="text-xs lia-text-base hover:lia-text-strong px-2"
+              className="text-xs text-lia-text-secondary hover:text-lia-text-primary px-2"
             >
               OK
             </button>
@@ -193,7 +193,7 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
               onNewItemChange("")
               onStartEditing(fieldKey)
             }}
-            className="text-xs lia-text-secondary hover:lia-text-base flex items-center gap-1 mt-2"
+            className="text-xs lia-text-secondary hover:text-lia-text-secondary flex items-center gap-1 mt-2"
           >
             <Plus className="h-3 w-3" /> Adicionar
           </button>

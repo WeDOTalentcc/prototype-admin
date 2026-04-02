@@ -34,7 +34,7 @@ const ConsumptionSummaryCard = memo(function ConsumptionSummaryCard({
       </CardHeader>
       <CardContent>
         <div
-          className={`text-2xl font-bold ${!valueColor ? 'text-lia-text-primary dark:text-lia-text-primary' : ''}`}
+          className={`text-2xl font-bold ${!valueColor ? 'text-lia-text-primary' : ''}`}
           style={valueColor ? { color: valueColor } : undefined}
         >
           {value}

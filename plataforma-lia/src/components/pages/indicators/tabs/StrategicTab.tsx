@@ -35,13 +35,13 @@ export function StrategicTab() {
         <Card className="border-lia-border-default dark:border-lia-border-default">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Target className="w-4 h-4 text-lia-text-secondary" />
               Eficiência Operacional
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">87.3%</div>
-            <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">Metas atingidas</div>
+            <div className="text-2xl font-bold text-lia-text-primary">87.3%</div>
+            <div className="text-xs text-lia-text-secondary mt-1">Metas atingidas</div>
             <div className="mt-3 text-xs text-lia-text-secondary">
               94% das vagas preenchidas dentro do prazo
             </div>
@@ -144,7 +144,7 @@ export function StrategicTab() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">
+              <h4 className="font-medium text-lia-text-primary mb-3">
                 Distribuição por Gênero
               </h4>
               <div className="space-y-2">
@@ -173,7 +173,7 @@ export function StrategicTab() {
             </div>
 
             <div>
-              <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">
+              <h4 className="font-medium text-lia-text-primary mb-3">
                 Representatividade Étnica
               </h4>
               <div className="space-y-2">
@@ -197,14 +197,14 @@ export function StrategicTab() {
             </div>
 
             <div>
-              <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3">
+              <h4 className="font-medium text-lia-text-primary mb-3">
                 Inclusão PCD
               </h4>
               <div className="text-center p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+                <div className="text-2xl font-bold text-lia-text-primary">
                   8.2%
                 </div>
-                <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+                <div className="text-sm text-lia-text-secondary">
                   Pessoas com Deficiência
                 </div>
                 <div className="text-xs text-lia-text-secondary mt-2">Acima da cota legal de 5%</div>

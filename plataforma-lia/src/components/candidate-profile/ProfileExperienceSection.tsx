@@ -34,8 +34,8 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
   return (
     <Card className="border-lia-border-subtle">
       <CardHeader className="py-2.5 px-4">
-        <CardTitle className="text-sm font-semibold lia-text-800 flex items-center gap-2">
-          <Briefcase className="w-4 h-4 lia-text-600" />
+        <CardTitle className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
+          <Briefcase className="w-4 h-4 text-lia-text-secondary" />
           Experiência Profissional
         </CardTitle>
       </CardHeader>
@@ -60,18 +60,18 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div>
-                    <h5 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                    <h5 className="text-sm font-medium text-lia-text-primary">
                       {title || "Cargo não informado"}
                     </h5>
-                    <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">
+                    <p className="text-sm text-lia-text-secondary">
                       {company || "Empresa não informada"}
-                      {location && <span className="lia-text-400"> · {location}</span>}
+                      {location && <span className="text-lia-text-tertiary"> · {location}</span>}
                       {exp.duration_years != null && (
-                        <span className="lia-text-400 ml-1">({exp.duration_years.toFixed(1)} anos)</span>
+                        <span className="text-lia-text-tertiary ml-1">({exp.duration_years.toFixed(1)} anos)</span>
                       )}
                     </p>
                   </div>
-                  <span className="text-xs lia-text-500 whitespace-nowrap">
+                  <span className="text-xs text-lia-text-secondary whitespace-nowrap">
                     {formatDateShort(startDate)}
                     {startDate && endDate ? " - " : ""}
                     {endDate === "Atual" ? "Atual" : formatDateShort(endDate)}
@@ -82,7 +82,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
                   {industries.slice(0, 2).map((ind: string) => (
                     <span
                       key={ind}
-                      className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary border border-lia-border-subtle"
+                      className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
                     >
                       <Building2 className="w-2.5 h-2.5 mr-0.5" />
                       {ind}
@@ -94,7 +94,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
                     </span>
                   )}
                   {companySize && (
-                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary border border-lia-border-subtle">
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle">
                       <Users className="w-2.5 h-2.5" />
                       {companySize}
                     </span>
@@ -103,32 +103,32 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
 
                 {technologies.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-2">
-                    <span className="text-micro lia-text-400 flex items-center gap-0.5">
+                    <span className="text-micro text-lia-text-tertiary flex items-center gap-0.5">
                       <Code className="w-2.5 h-2.5" />
                       Stack:
                     </span>
                     {technologies.slice(0, 6).map((tech: string) => (
                       <span
                         key={tech}
-                        className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary lia-text-800 dark:text-lia-text-primary"
+                        className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
                       >
                         {tech}
                       </span>
                     ))}
                     {technologies.length > 6 && (
-                      <span className="text-micro lia-text-400">+{technologies.length - 6}</span>
+                      <span className="text-micro text-lia-text-tertiary">+{technologies.length - 6}</span>
                     )}
                   </div>
                 )}
 
                 {description && (
-                  <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mt-1">{description}</p>
+                  <p className="text-xs text-lia-text-secondary mt-1">{description}</p>
                 )}
               </div>
             )
           })
         ) : (
-          <p className="text-sm lia-text-500 italic">Não informado</p>
+          <p className="text-sm text-lia-text-secondary italic">Não informado</p>
         )}
       </CardContent>
     </Card>

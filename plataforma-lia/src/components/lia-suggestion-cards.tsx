@@ -40,7 +40,7 @@ const PRIORITY_STYLES: Record<string, { bg: string; border: string; iconBg: stri
   low: {
     bg: "bg-gray-50",
     border: "border-lia-border-subtle hover:border-lia-border-default",
-    iconBg: "bg-gray-100 lia-text-base",
+    iconBg: "bg-gray-100 text-lia-text-secondary",
   },
 }
 
@@ -63,7 +63,7 @@ export function LiaSuggestionCards({
   if (loading) {
     return (
       <div className={`flex items-center justify-center py-8 ${className}`} role="status" aria-live="polite" aria-label="Carregando...">
-        <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+        <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
         <span className="ml-2 text-xs lia-text-secondary">Carregando sugestões...</span>
       </div>
     )
@@ -78,7 +78,7 @@ export function LiaSuggestionCards({
             variant="ghost"
             size="sm"
             onClick={onRefresh}
-            className="mt-2 text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:text-wedo-cyan-dark"
+            className="mt-2 text-xs text-lia-text-secondary hover:text-wedo-cyan-dark"
           >
             <RefreshCw className="w-3 h-3 mr-1" />
             Atualizar
@@ -99,7 +99,7 @@ export function LiaSuggestionCards({
             variant="ghost"
             size="sm"
             onClick={onRefresh}
-            className="h-6 px-2 text-micro lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle"
+            className="h-6 px-2 text-micro lia-text-secondary hover:text-lia-text-primary"
           >
             <RefreshCw className="w-3 h-3" />
           </Button>
@@ -124,7 +124,7 @@ export function LiaSuggestionCards({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h5 className="text-xs font-medium lia-text-strong truncate">
+                    <h5 className="text-xs font-medium text-lia-text-primary truncate">
                       {suggestion.title}
                     </h5>
                     <Badge 
@@ -134,13 +134,13 @@ export function LiaSuggestionCards({
                       {typeInfo.label}
                     </Badge>
                   </div>
-                  <p className="text-xs lia-text-base line-clamp-2">
+                  <p className="text-xs text-lia-text-secondary line-clamp-2">
                     {suggestion.description}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge 
                       variant="secondary" 
-                      className="text-micro px-1.5 py-0 h-4 bg-gray-100 lia-text-base"
+                      className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary"
                     >
                       {suggestion.category}
                     </Badge>

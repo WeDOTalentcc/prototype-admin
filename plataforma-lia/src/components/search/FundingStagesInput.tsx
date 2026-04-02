@@ -46,7 +46,7 @@ export function FundingStagesInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {value.length > 0 && (
-            <span className={cn("text-xs", disabled ? "lia-text-400" : "lia-text-500")}>
+            <span className={cn("text-xs", disabled ? "text-lia-text-tertiary" : "text-lia-text-secondary")}>
               {value.length} stage{value.length !== 1 ? 's' : ''} selected
             </span>
           )}
@@ -54,7 +54,7 @@ export function FundingStagesInput({
         {value.length > 0 && !disabled && (
           <button
             onClick={clearAll}
-            className="text-xs lia-text-900 dark:lia-text-50 hover:lia-text-700 dark:hover:lia-text-300 font-medium"
+            className="text-xs text-lia-text-primary hover:text-lia-text-primary font-medium"
           >
             Clear all
           </button>
@@ -72,10 +72,10 @@ export function FundingStagesInput({
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium border transition-[width,height]",
                 disabled
-                  ? "border-lia-border-subtle bg-gray-100 lia-text-400 cursor-not-allowed"
+                  ? "border-lia-border-subtle bg-gray-100 text-lia-text-tertiary cursor-not-allowed"
                   : isSelected 
-                    ? "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50" 
-                    : "border-lia-border-subtle bg-lia-bg-primary lia-text-600 hover:border-lia-border-default hover:bg-gray-50"
+                    ? "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary" 
+                    : "border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-lia-border-default hover:bg-gray-50"
               )}
             >
               {stage.label}

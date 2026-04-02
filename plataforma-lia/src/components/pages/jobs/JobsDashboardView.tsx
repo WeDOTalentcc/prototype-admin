@@ -83,7 +83,7 @@ export function JobsDashboardView({
                 value={liaPromptValue}
                 onChange={(e) => onSetLiaPromptValue(e.target.value)}
                
-                className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-lia-text-primary dark:text-lia-text-primary"
+                className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-lia-text-primary"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && liaPromptValue.trim()) {
                     onSetActiveFilter('todas')

@@ -26,7 +26,7 @@ export function ClearDraftConfirmModal({ open, onClose, onConfirm }: ClearDraftC
                 <Trash2 className="w-5 h-5 text-status-error" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold lia-text-strong">
+                <h3 className="text-lg font-semibold text-lia-text-primary">
                   Começar do zero?
                 </h3>
               </div>
@@ -41,7 +41,7 @@ export function ClearDraftConfirmModal({ open, onClose, onConfirm }: ClearDraftC
               <Button
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 h-10 rounded-md border-lia-border-default lia-text-base"
+                className="flex-1 h-10 rounded-md border-lia-border-default text-lia-text-secondary"
               >
                 Cancelar
               </Button>

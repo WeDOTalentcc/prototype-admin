@@ -2,8 +2,8 @@ import React from 'react'
 import type { JobStatus, WSIBlock, WSIAutomaticMessage } from './jobsPageTypes'
 
 export function getBloomComplexity(bloomLevel: number): { label: string; color: string } {
-  if (bloomLevel <= 2) return { label: 'Baixa', color: 'bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30' }
-  if (bloomLevel <= 4) return { label: 'Média', color: 'bg-status-warning/10 text-status-warning border-status-warning/30 dark:bg-status-warning/20 dark:text-status-warning dark:border-status-warning/30' }
+  if (bloomLevel <= 2) return { label: 'Baixa', color: 'bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30' }
+  if (bloomLevel <= 4) return { label: 'Média', color: 'bg-status-warning/10 text-status-warning border-status-warning/30 dark:bg-status-warning/20 dark:border-status-warning/30' }
   return { label: 'Alta', color: 'bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30' }
 }
 
@@ -52,22 +52,22 @@ export function getStatusColor(status: JobStatus): string {
     'Aprovada': 'var(--status-success)',
     'Aguardando aprovação': 'var(--status-warning)',
     'Reaberta': 'var(--status-warning)',
-    'Paralisada': 'var(--gray-400)',
-    'Interna': 'var(--gray-300)',
-    'Fechada (preenchida)': 'var(--gray-600)',
-    'Fechada (expirada)': 'var(--gray-400)',
+    'Paralisada': 'var(--lia-text-tertiary)',
+    'Interna': 'var(--lia-border-default)',
+    'Fechada (preenchida)': 'var(--lia-text-secondary)',
+    'Fechada (expirada)': 'var(--lia-text-tertiary)',
     'Cancelada': 'var(--status-error)',
-    'Rascunho': 'var(--gray-200)',
-    'Arquivada': 'var(--gray-200)',
-    'Concluída': 'var(--gray-600)'
+    'Rascunho': 'var(--lia-border-subtle)',
+    'Arquivada': 'var(--lia-border-subtle)',
+    'Concluída': 'var(--lia-text-secondary)'
   }
-  return statusColors[status] || 'var(--gray-200)'
+  return statusColors[status] || 'var(--lia-border-subtle)'
 }
 
 export const priorityColors = {
   "alta": "bg-status-error/10 text-status-error dark:text-status-error",
-  "média": "bg-gray-50 lia-text-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary",
-  "baixa": "bg-gray-50 lia-text-800 dark:bg-lia-bg-secondary dark:lia-text-500"
+  "média": "bg-lia-bg-secondary text-lia-text-primary",
+  "baixa": "bg-lia-bg-secondary text-lia-text-primary"
 }
 
 export const WSI_BLOCKS: WSIBlock[] = [

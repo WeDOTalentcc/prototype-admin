@@ -205,7 +205,7 @@ export function VoiceChatButton({
         variant="ghost"
         size="icon"
         disabled
-        className={cn("h-8 w-8 lia-text-300 focus-visible:ring-2 focus-visible:ring-gray-400", className)}
+        className={cn("h-8 w-8 text-lia-text-disabled focus-visible:ring-2 focus-visible:ring-lia-border-default", className)}
         title="Chat por voz não disponível"
         aria-label="Chat por voz não disponível"
       >
@@ -224,14 +224,14 @@ export function VoiceChatButton({
       title={getTooltip()}
       aria-label={getTooltip()}
       className={cn(
-        "transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-gray-400",
+        "transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-lia-border-default",
         isRecording 
           ? "text-status-error hover:text-status-error hover:bg-status-error/10 animate-pulse motion-reduce:animate-none px-3" 
           : isPlaying 
-            ? "lia-text-600 dark:text-lia-text-tertiary hover:text-wedo-cyan-dark hover:bg-gray-100 dark:bg-lia-bg-secondary px-3"
+            ? "text-lia-text-secondary hover:text-wedo-cyan-dark hover:bg-lia-bg-tertiary px-3"
             : isProcessing
-              ? "lia-text-400 px-3"
-              : "h-8 w-8 lia-text-500 hover:lia-text-900 dark:hover:lia-text-50 hover:bg-gray-100",
+              ? "text-lia-text-tertiary px-3"
+              : "h-8 w-8 text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover",
         className
       )}
     >

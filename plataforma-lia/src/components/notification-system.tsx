@@ -44,7 +44,7 @@ const NotificationItem = React.memo(({
       case "success": return <CheckCircle className="w-4 h-4 text-status-success" />
       case "warning": return <AlertCircle className="w-4 h-4 text-status-warning" />
       case "error": return <AlertCircle className="w-4 h-4 text-status-error" />
-      default: return <Info className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+      default: return <Info className="w-4 h-4 text-lia-text-secondary" />
     }
   }, [notification.type])
 
@@ -89,7 +89,7 @@ const NotificationItem = React.memo(({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h4 className={`text-xs font-medium leading-tight ${
- !notification.read ? "text-lia-text-primary" : "text-lia-text-secondary dark:text-lia-text-tertiary"
+ !notification.read ? "text-lia-text-primary" : "text-lia-text-secondary"
  }`}>
               {notification.title}
             </h4>
@@ -97,13 +97,13 @@ const NotificationItem = React.memo(({
               variant="ghost"
               size="sm"
               onClick={handleRemove}
-              className="h-5 w-5 p-0 lia-text-base hover:lia-text-base dark:hover:lia-text-muted opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none -mt-0.5 -mr-1"
+              className="h-5 w-5 p-0 text-lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none -mt-0.5 -mr-1"
             >
               <X className="w-3 h-3" />
             </Button>
           </div>
           <p className={`text-xs mt-0.5 leading-relaxed ${
- !notification.read ? "text-lia-text-secondary" : "text-lia-text-primary dark:text-lia-text-primary"
+ !notification.read ? "text-lia-text-secondary" : "text-lia-text-primary"
  }`}>
             {notification.message}
           </p>
@@ -125,7 +125,7 @@ const NotificationItem = React.memo(({
               {!notification.read && (
                 <button
                   onClick={handleMarkAsRead}
-                  className="text-xs font-medium hover:underline lia-text-base"
+                  className="text-xs font-medium hover:underline text-lia-text-secondary"
                 >
                   Marcar lida
                 </button>
@@ -238,21 +238,21 @@ export function NotificationSystem({
               <h3 className="text-sm font-semibold text-lia-text-primary">
                 Notificações
                 {unreadCount > 0 && (
-                  <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+                  <span className="ml-2 text-xs font-medium px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
                     {unreadCount} nova{unreadCount > 1 ? 's' : ''}
                   </span>
                 )}
               </h3>
               <div className="flex items-center gap-1" role="status" aria-live="polite" aria-label="Carregando...">
                 {isLoading && (
-                  <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none lia-text-base" />
+                  <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                 )}
                 {unreadCount > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={markAllAsRead}
-                    className="text-xs h-6 px-2 text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                    className="text-xs h-6 px-2 text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                   >
                     Marcar lidas
                   </Button>
@@ -261,7 +261,7 @@ export function NotificationSystem({
                   variant="ghost"
                   size="sm"
                   onClick={toggleOpen}
-                  className="h-6 w-6 p-0 lia-text-base hover:lia-text-base dark:hover:lia-text-muted"
+                  className="h-6 w-6 p-0 text-lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted"
                   aria-label="Fechar notificações"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -329,7 +329,7 @@ export function NotificationSystem({
             ) : (
               <div className="py-10 px-4 text-center">
                 <Bell className="w-8 h-8 mx-auto mb-2 text-lia-text-disabled" aria-hidden="true" />
-                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
+                <p className="text-sm text-lia-text-primary">
                   {isLoading ? "Carregando..." : activeCategory ? `Nenhuma notificação em ${CATEGORY_LABELS[activeCategory]}` : "Nenhuma notificação"}
                 </p>
                 {!isLoading && !activeCategory && (
@@ -349,7 +349,7 @@ export function NotificationSystem({
         ref={buttonRef}
         type="button"
         onClick={toggleOpen}
-        className="inline-flex items-center justify-center h-7 w-7 p-0 relative rounded-lg border-0 bg-transparent text-lia-text-primary dark:text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary cursor-pointer transition-colors"
+        className="inline-flex items-center justify-center h-7 w-7 p-0 relative rounded-lg border-0 bg-transparent text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-tertiary cursor-pointer transition-colors"
         aria-label={unreadCount > 0 ? `Notificações, ${unreadCount} não lidas` : 'Notificações'}
         aria-expanded={isOpen}
         aria-haspopup="true"

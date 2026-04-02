@@ -95,7 +95,7 @@ export function PipelineStagesCarousel({
           className="absolute left-0 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default rounded-full hover:bg-lia-interactive-hover transition-[width,height]"
           aria-label="Scroll esquerda"
         >
-          <ChevronLeft className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-primary" />
+          <ChevronLeft className="w-5 h-5 text-lia-text-secondary" />
         </button>
       )}
 
@@ -144,8 +144,8 @@ export function PipelineStagesCarousel({
                         className={cn(
  'text-xl font-bold leading-none',
                           isSelected
-                            ? 'text-lia-text-primary dark:text-lia-text-primary'
-                            : 'text-lia-text-primary dark:text-lia-text-primary'
+                            ? 'text-lia-text-primary'
+                            : 'text-lia-text-primary'
                         )}
                       >
                         {stage.count}
@@ -194,7 +194,7 @@ export function PipelineStagesCarousel({
           className="absolute right-0 top-1/2 -translate-y-1/2 z-30 w-8 h-8 flex items-center justify-center bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default rounded-full hover:bg-lia-interactive-hover transition-[width,height]"
           aria-label="Scroll direita"
         >
-          <ChevronRight className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-primary" />
+          <ChevronRight className="w-5 h-5 text-lia-text-secondary" />
         </button>
       )}
     </div>

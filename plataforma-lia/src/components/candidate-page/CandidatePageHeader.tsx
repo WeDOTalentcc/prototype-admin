@@ -84,7 +84,7 @@ export function CandidatePageHeader({
                 </Badge>
                 <CandidateScoreBadge score={liaScore} format="percent" />
               </div>
-              <div className="flex items-center gap-2 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+              <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
                 <span>{_candidate.position as string | undefined}</span>
                 <span className="lia-text-secondary">•</span>
                 <MapPin className="w-3 h-3" />
@@ -106,7 +106,7 @@ export function CandidatePageHeader({
                       rel="noopener noreferrer"
                       className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                     >
-                      <Linkedin className="w-4 h-4 lia-text-base" />
+                      <Linkedin className="w-4 h-4 text-lia-text-secondary" />
                     </a>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="text-xs">LinkedIn</TooltipContent>
@@ -136,7 +136,7 @@ export function CandidatePageHeader({
                       rel="noopener noreferrer"
                       className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
                     >
-                      <Globe className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                      <Globe className="w-4 h-4 text-lia-text-secondary" />
                     </a>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="text-xs">Portfolio</TooltipContent>
@@ -155,7 +155,7 @@ export function CandidatePageHeader({
                     onClick={() => onSendEmail ? onSendEmail(candidate) : (_candidate.email && window.open(`mailto:${_candidate.email}`, '_self'))}
                     disabled={!_candidate.email && !onSendEmail}
                   >
-                    <Mail className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Mail className="w-4 h-4 text-lia-text-secondary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Email</TooltipContent>
@@ -176,7 +176,7 @@ export function CandidatePageHeader({
                     }}
                     disabled={!_candidate.phone && !onSendWhatsApp}
                   >
-                    <Phone className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Phone className="w-4 h-4 text-lia-text-secondary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">WhatsApp</TooltipContent>
@@ -204,7 +204,7 @@ export function CandidatePageHeader({
                     className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => onWSIScreening?.(candidate)}
                   >
-                    <ClipboardCheck className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <ClipboardCheck className="w-4 h-4 text-lia-text-secondary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Triagem WSI</TooltipContent>
@@ -218,7 +218,7 @@ export function CandidatePageHeader({
                     className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => onAddToVacancy?.(candidate)}
                   >
-                    <Briefcase className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Briefcase className="w-4 h-4 text-lia-text-secondary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Adicionar à Vaga</TooltipContent>

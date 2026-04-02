@@ -20,7 +20,7 @@ export function ConsumptionChart({
   return (
     <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
       <CardHeader>
-        <CardTitle className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary">
+        <CardTitle className="text-base font-semibold text-lia-text-primary">
           {title}
         </CardTitle>
       </CardHeader>

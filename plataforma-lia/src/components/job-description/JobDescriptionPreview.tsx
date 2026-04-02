@@ -179,7 +179,7 @@ export function JobDescriptionPreview({
             <ul className="space-y-2">
               {data.responsibilities.map((resp, index) => (
                 <li key={`resp-${index}`} className="flex items-start gap-2">
-                  <span className="text-lia-text-secondary dark:text-lia-text-secondary mt-1">•</span>
+                  <span className="text-lia-text-secondary mt-1">•</span>
                   <span className="flex-1">
                     {resp.description}
                     <SuggestionBadge isNew={resp.is_new} />
@@ -210,7 +210,7 @@ export function JobDescriptionPreview({
                     {requiredTech.map((comp) => (
                       // @ts-ignore TODO: fix type — Property 'skill' does not exist on type 'Competency'.
                       <li key={comp.name || comp.skill || String(comp)} className="flex items-center gap-2">
-                        <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
+                        <span className="text-lia-text-secondary">•</span>
                         <span>
                           {comp.name}
                           {comp.years_experience && ` (${comp.years_experience}+ anos)`}
@@ -231,7 +231,7 @@ export function JobDescriptionPreview({
                     {requiredBeh.map((comp) => (
                       // @ts-ignore TODO: fix type — Property 'skill' does not exist on type 'Competency'.
                       <li key={comp.name || comp.skill || String(comp)} className="flex items-center gap-2">
-                        <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
+                        <span className="text-lia-text-secondary">•</span>
                         <span>
                           {comp.name}
                           <SuggestionBadge isNew={comp.is_new} />
@@ -253,7 +253,7 @@ export function JobDescriptionPreview({
                 {niceTech.map((comp) => (
                   // @ts-ignore TODO: fix type — Property 'skill' does not exist on type 'Competency'.
                   <li key={comp.name || comp.skill || String(comp)} className="flex items-center gap-2">
-                    <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
+                    <span className="text-lia-text-secondary">•</span>
                     <span>
                       {comp.name}
                       <SuggestionBadge isNew={comp.is_new} />
@@ -355,7 +355,7 @@ export function JobDescriptionPreview({
 
         <div className="text-xs text-muted-foreground flex items-center gap-4">
           <span className="flex items-center gap-1">
-            <Lightbulb className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-secondary" />
+            <Lightbulb className="w-3 h-3 text-lia-text-secondary" />
             = Sugerido pela LIA
           </span>
           <span className="flex items-center gap-1">

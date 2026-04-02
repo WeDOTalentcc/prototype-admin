@@ -111,11 +111,11 @@ export function IndicadoresEstrategicosPlaceholder() {
     <div className="space-y-3">
       {/* Header */}
       <div>
-        <h1 className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
+        <h1 className={`${textStyles.title} flex items-center gap-2`}>
           <Target className="w-3.5 h-3.5 text-wedo-purple" />
           Indicadores Estratégicos
         </h1>
-        <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary mt-1`}>
+        <p className={`${textStyles.bodySmall} mt-1`}>
           KPIs de negócio, performance de recrutadores e retorno sobre investimento
         </p>
       </div>
@@ -126,10 +126,10 @@ export function IndicadoresEstrategicosPlaceholder() {
         <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Taxa de Crescimento</p>
+              <p className={`${textStyles.bodySmall}`}>Taxa de Crescimento</p>
               <TrendingUp className="w-3.5 h-3.5 text-wedo-purple" />
             </div>
-            <div className="text-xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">+28%</div>
+            <div className="text-xl font-inter font-bold text-lia-text-primary">+28%</div>
             <p className={`${textStyles.bodySmall} text-wedo-purple dark:text-wedo-purple mt-1`}>vs. trimestre anterior</p>
           </CardContent>
         </Card>
@@ -138,11 +138,11 @@ export function IndicadoresEstrategicosPlaceholder() {
         <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Eficiência Operacional</p>
-              <Activity className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <p className={`${textStyles.bodySmall}`}>Eficiência Operacional</p>
+              <Activity className="w-3.5 h-3.5 text-lia-text-secondary" />
             </div>
-            <div className="text-xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">87%</div>
- <p className={`${textStyles.bodySmall} text-lia-text-primary dark:text-lia-text-secondary mt-1`}>+5% este mês</p>
+            <div className="text-xl font-inter font-bold text-lia-text-primary">87%</div>
+ <p className={`${textStyles.bodySmall} text-lia-text-primary mt-1`}>+5% este mês</p>
           </CardContent>
         </Card>
 
@@ -150,10 +150,10 @@ export function IndicadoresEstrategicosPlaceholder() {
         <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>ROI do Processo</p>
+              <p className={`${textStyles.bodySmall}`}>ROI do Processo</p>
               <Target className="w-3.5 h-3.5 text-wedo-green" />
             </div>
-            <div className="text-xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">340%</div>
+            <div className="text-xl font-inter font-bold text-lia-text-primary">340%</div>
             <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>Meta: 250%</p>
           </CardContent>
         </Card>
@@ -162,10 +162,10 @@ export function IndicadoresEstrategicosPlaceholder() {
         <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardContent className="p-3">
             <div className="flex items-start justify-between mb-2">
-              <p className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Budget Utilizado</p>
+              <p className={`${textStyles.bodySmall}`}>Budget Utilizado</p>
               <BarChart3 className="w-3.5 h-3.5 text-wedo-orange" />
             </div>
-            <div className="text-xl font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">67%</div>
+            <div className="text-xl font-inter font-bold text-lia-text-primary">67%</div>
             <p className={`${textStyles.bodySmall} text-wedo-orange dark:text-wedo-orange mt-1`}>R$ 842k / R$ 1.25M</p>
           </CardContent>
         </Card>
@@ -176,7 +176,7 @@ export function IndicadoresEstrategicosPlaceholder() {
         {/* Performance de Recrutadores */}
         <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
-            <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
+            <CardTitle className={`${textStyles.subtitle} flex items-center gap-2`}>
               <Users className="w-3.5 h-3.5 text-wedo-green" />
               Performance de Recrutadores
             </CardTitle>
@@ -184,8 +184,8 @@ export function IndicadoresEstrategicosPlaceholder() {
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md border border-status-success/30 dark:border-status-success/30">
               <div className="flex-1">
-                <p className={`${textStyles.subtitle} text-lia-text-primary dark:text-lia-text-primary`}>Mariana Silva</p>
-                <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>23 contratações • 94% taxa de aprovação</p>
+                <p className={`${textStyles.subtitle} text-lia-text-primary`}>Mariana Silva</p>
+                <p className={`${textStyles.description}`}>23 contratações • 94% taxa de aprovação</p>
               </div>
               <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                 🥇 Top 1
@@ -194,18 +194,18 @@ export function IndicadoresEstrategicosPlaceholder() {
 
  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
               <div className="flex-1">
-                <p className={`${textStyles.subtitle} text-lia-text-primary dark:text-lia-text-primary`}>Roberto Costa</p>
-                <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>19 contratações • 89% taxa de aprovação</p>
+                <p className={`${textStyles.subtitle} text-lia-text-primary`}>Roberto Costa</p>
+                <p className={`${textStyles.description}`}>19 contratações • 89% taxa de aprovação</p>
               </div>
- <Badge className={`${badgeStyles.info} dark:bg-lia-bg-secondary dark:text-lia-text-secondary`}>
+ <Badge className={`${badgeStyles.info} dark:bg-lia-bg-secondary`}>
                 🥈 Top 2
               </Badge>
             </div>
 
             <div className="flex items-center justify-between p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <div className="flex-1">
-                <p className={`${textStyles.subtitle} text-lia-text-primary dark:text-lia-text-primary`}>Juliana Mendes</p>
-                <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>17 contratações • 91% taxa de aprovação</p>
+                <p className={`${textStyles.subtitle} text-lia-text-primary`}>Juliana Mendes</p>
+                <p className={`${textStyles.description}`}>17 contratações • 91% taxa de aprovação</p>
               </div>
               <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-micro font-medium">
                 🥉 Top 3
@@ -214,8 +214,8 @@ export function IndicadoresEstrategicosPlaceholder() {
 
             <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex-1">
-                <p className={`${textStyles.subtitle} text-lia-text-primary dark:text-lia-text-primary`}>Carlos Almeida</p>
-                <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>15 contratações • 86% taxa de aprovação</p>
+                <p className={`${textStyles.subtitle} text-lia-text-primary`}>Carlos Almeida</p>
+                <p className={`${textStyles.description}`}>15 contratações • 86% taxa de aprovação</p>
               </div>
               <Badge className={badgeStyles.default}>
                 Top 4
@@ -227,7 +227,7 @@ export function IndicadoresEstrategicosPlaceholder() {
         {/* Time to Fill por Senioridade */}
         <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
           <CardHeader className="pb-3">
-            <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
+            <CardTitle className={`${textStyles.subtitle} flex items-center gap-2`}>
               <Activity className="w-3.5 h-3.5 text-wedo-orange" />
               Time to Fill por Senioridade
             </CardTitle>
@@ -235,9 +235,9 @@ export function IndicadoresEstrategicosPlaceholder() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className={`${textStyles.subtitle} dark:text-lia-text-secondary`}>Júnior</span>
+                <span className={`${textStyles.subtitle}`}>Júnior</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">12 dias</span>
+                  <span className="text-sm font-inter font-bold text-lia-text-primary">12 dias</span>
                   <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                     -2d
                   </Badge>
@@ -250,10 +250,10 @@ export function IndicadoresEstrategicosPlaceholder() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className={`${textStyles.subtitle} dark:text-lia-text-secondary`}>Pleno</span>
+                <span className={`${textStyles.subtitle}`}>Pleno</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">18 dias</span>
- <Badge className={`${badgeStyles.info} dark:bg-lia-bg-secondary dark:text-lia-text-secondary`}>
+                  <span className="text-sm font-inter font-bold text-lia-text-primary">18 dias</span>
+ <Badge className={`${badgeStyles.info} dark:bg-lia-bg-secondary`}>
                     -3d
                   </Badge>
                 </div>
@@ -265,9 +265,9 @@ export function IndicadoresEstrategicosPlaceholder() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className={`${textStyles.subtitle} dark:text-lia-text-secondary`}>Sênior</span>
+                <span className={`${textStyles.subtitle}`}>Sênior</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">27 dias</span>
+                  <span className="text-sm font-inter font-bold text-lia-text-primary">27 dias</span>
                   <Badge className={`${badgeStyles.warning} dark:bg-wedo-orange/30 dark:text-wedo-orange`}>
                     -1d
                   </Badge>
@@ -280,9 +280,9 @@ export function IndicadoresEstrategicosPlaceholder() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className={`${textStyles.subtitle} dark:text-lia-text-secondary`}>Especialista/C-Level</span>
+                <span className={`${textStyles.subtitle}`}>Especialista/C-Level</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">45 dias</span>
+                  <span className="text-sm font-inter font-bold text-lia-text-primary">45 dias</span>
                   <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-micro font-medium">
                     +2d
                   </Badge>
@@ -299,7 +299,7 @@ export function IndicadoresEstrategicosPlaceholder() {
       {/* Skills Gap Analysis */}
       <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
         <CardHeader className="pb-3">
-          <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.subtitle} flex items-center gap-2`}>
             <AlertTriangle className="w-3.5 h-3.5 text-wedo-magenta" />
             Skills Gap Analysis - Competências Mais Difíceis de Preencher
           </CardTitle>
@@ -308,69 +308,69 @@ export function IndicadoresEstrategicosPlaceholder() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="p-4 bg-status-error/10 dark:bg-status-error/20 rounded-md border-l-4 border-status-error/30">
               <div className="flex items-start justify-between mb-2">
-                <p className={`${textStyles.subtitle} text-lia-text-primary dark:text-lia-text-primary`}>Machine Learning Engineer</p>
+                <p className={`${textStyles.subtitle} text-lia-text-primary`}>Machine Learning Engineer</p>
                 <Badge className={`${badgeStyles.error} dark:bg-status-error/30 dark:text-status-error`}>
                   Crítico
                 </Badge>
               </div>
               <div className="space-y-1">
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
-                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Vagas abertas</span>
-                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">14</span>
+                  <span className="font-open-sans text-lia-text-secondary">Vagas abertas</span>
+                  <span className="font-inter font-bold text-lia-text-primary">14</span>
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
-                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Tempo médio</span>
+                  <span className="font-open-sans text-lia-text-secondary">Tempo médio</span>
                   <span className="font-inter font-bold text-status-error dark:text-status-error">62 dias</span>
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
-                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Taxa sucesso</span>
-                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">28%</span>
+                  <span className="font-open-sans text-lia-text-secondary">Taxa sucesso</span>
+                  <span className="font-inter font-bold text-lia-text-primary">28%</span>
                 </div>
               </div>
             </div>
 
             <div className="p-4 bg-wedo-orange/10 dark:bg-wedo-orange/20 rounded-md border-l-4 border-wedo-orange/30">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">DevOps Architect</p>
+                <p className="text-sm font-open-sans font-semibold text-lia-text-primary">DevOps Architect</p>
                 <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange text-xs font-inter">
                   Alto
                 </Badge>
               </div>
               <div className="space-y-1">
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
-                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Vagas abertas</span>
-                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">9</span>
+                  <span className="font-open-sans text-lia-text-secondary">Vagas abertas</span>
+                  <span className="font-inter font-bold text-lia-text-primary">9</span>
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
-                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Tempo médio</span>
+                  <span className="font-open-sans text-lia-text-secondary">Tempo médio</span>
                   <span className="font-inter font-bold text-wedo-orange dark:text-wedo-orange">48 dias</span>
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
-                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Taxa sucesso</span>
-                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">42%</span>
+                  <span className="font-open-sans text-lia-text-secondary">Taxa sucesso</span>
+                  <span className="font-inter font-bold text-lia-text-primary">42%</span>
                 </div>
               </div>
             </div>
 
             <div className="p-4 bg-status-warning/10 dark:bg-status-warning/20 rounded-md border-l-4 border-status-warning/30">
               <div className="flex items-start justify-between mb-2">
-                <p className="text-sm font-open-sans font-semibold text-lia-text-primary dark:text-lia-text-primary">Security Specialist</p>
+                <p className="text-sm font-open-sans font-semibold text-lia-text-primary">Security Specialist</p>
                 <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning text-xs font-inter">
                   Médio
                 </Badge>
               </div>
               <div className="space-y-1">
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
-                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Vagas abertas</span>
-                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">7</span>
+                  <span className="font-open-sans text-lia-text-secondary">Vagas abertas</span>
+                  <span className="font-inter font-bold text-lia-text-primary">7</span>
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
-                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Tempo médio</span>
+                  <span className="font-open-sans text-lia-text-secondary">Tempo médio</span>
                   <span className="font-inter font-bold text-status-warning dark:text-status-warning">35 dias</span>
                 </div>
                 <div className={`flex items-center justify-between ${textStyles.bodySmall}`}>
-                  <span className="font-open-sans text-lia-text-secondary dark:text-lia-text-tertiary">Taxa sucesso</span>
-                  <span className="font-inter font-bold text-lia-text-primary dark:text-lia-text-primary">58%</span>
+                  <span className="font-open-sans text-lia-text-secondary">Taxa sucesso</span>
+                  <span className="font-inter font-bold text-lia-text-primary">58%</span>
                 </div>
               </div>
             </div>
@@ -381,7 +381,7 @@ export function IndicadoresEstrategicosPlaceholder() {
       {/* Budget vs Performance */}
       <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
         <CardHeader className="pb-3">
-          <CardTitle className={`${textStyles.subtitle} dark:text-lia-text-primary flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.subtitle} flex items-center gap-2`}>
             <BarChart3 className="w-3.5 h-3.5 text-wedo-purple" />
             Budget vs Performance por Departamento
           </CardTitle>
@@ -391,8 +391,8 @@ export function IndicadoresEstrategicosPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Tecnologia</span>
-                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>R$ 420k investidos • 47 contratações</p>
+                  <span className="text-sm font-open-sans font-medium text-lia-text-primary">Tecnologia</span>
+                  <p className={`${textStyles.description}`}>R$ 420k investidos • 47 contratações</p>
                 </div>
                 <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                   112% ROI
@@ -407,10 +407,10 @@ export function IndicadoresEstrategicosPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Vendas</span>
-                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>R$ 186k investidos • 28 contratações</p>
+                  <span className="text-sm font-open-sans font-medium text-lia-text-primary">Vendas</span>
+                  <p className={`${textStyles.description}`}>R$ 186k investidos • 28 contratações</p>
                 </div>
- <Badge className={`${badgeStyles.info} dark:bg-lia-bg-secondary dark:text-lia-text-secondary`}>
+ <Badge className={`${badgeStyles.info} dark:bg-lia-bg-secondary`}>
                   94% ROI
                 </Badge>
               </div>
@@ -423,8 +423,8 @@ export function IndicadoresEstrategicosPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Marketing</span>
-                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>R$ 124k investidos • 19 contratações</p>
+                  <span className="text-sm font-open-sans font-medium text-lia-text-primary">Marketing</span>
+                  <p className={`${textStyles.description}`}>R$ 124k investidos • 19 contratações</p>
                 </div>
                 <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-micro font-medium">
                   87% ROI
@@ -439,8 +439,8 @@ export function IndicadoresEstrategicosPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-sm font-open-sans font-medium text-lia-text-primary dark:text-lia-text-primary">Operações</span>
-                  <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>R$ 112k investidos • 15 contratações</p>
+                  <span className="text-sm font-open-sans font-medium text-lia-text-primary">Operações</span>
+                  <p className={`${textStyles.description}`}>R$ 112k investidos • 15 contratações</p>
                 </div>
                 <Badge className={`${badgeStyles.warning} dark:bg-wedo-orange/30 dark:text-wedo-orange`}>
                   76% ROI
@@ -458,7 +458,7 @@ export function IndicadoresEstrategicosPlaceholder() {
       {/* Insights Estratégicos */}
       <Card className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle`}>
         <CardHeader className="px-4 py-3">
-          <CardTitle className={`${textStyles.title} dark:text-lia-text-primary flex items-center gap-2`}>
+          <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
             <Target className="w-3.5 h-3.5 text-wedo-purple" />
             Recomendações Estratégicas
           </CardTitle>
@@ -466,19 +466,19 @@ export function IndicadoresEstrategicosPlaceholder() {
         <CardContent className="space-y-3">
           <div className="flex items-start gap-3">
             <CheckCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-green-bright" />
-            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary">
               <strong>Tech lidera ROI:</strong> Departamento de Tecnologia com 112% ROI - modelo de referência para outros setores.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-magenta" />
-            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary">
               <strong>Skills gap crítico:</strong> ML Engineer leva 62 dias em média. Considere parcerias estratégicas com universidades.
             </p>
           </div>
           <div className="flex items-start gap-3">
             <TrendingUp className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-purple" />
-            <p className="text-sm font-open-sans text-lia-text-primary dark:text-lia-text-primary">
+            <p className="text-sm font-open-sans text-lia-text-primary">
               <strong>Crescimento acelerado:</strong> +28% vs. trimestre anterior. Pipeline atual suporta expansão planejada.
             </p>
           </div>

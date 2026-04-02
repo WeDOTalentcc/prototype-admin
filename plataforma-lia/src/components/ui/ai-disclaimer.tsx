@@ -59,7 +59,7 @@ export function AIDisclaimer({ variant = "icon", className = "" }: AIDisclaimerP
             <p className="font-medium text-lia-text-primary">
               Dados gerados por IA
             </p>
-            <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+            <p className="text-xs text-lia-text-secondary">
               Estas informações foram geradas a partir de análises e inferências. 
               Podem faltar precisão ou necessitar de ajustes.
             </p>

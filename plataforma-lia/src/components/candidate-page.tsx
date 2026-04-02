@@ -186,7 +186,7 @@ export function CandidatePage({
               className={`flex items-center gap-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                   ? 'border-b-2 lia-text-secondary border-gray-400'
-                  : 'text-lia-text-primary dark:text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
+                  : 'text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
               }`}
             >
               <tab.icon className="w-3 h-3" />

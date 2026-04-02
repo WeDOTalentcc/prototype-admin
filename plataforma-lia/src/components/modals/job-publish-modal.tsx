@@ -196,11 +196,11 @@ export function JobPublishModal({
       <DialogContent className="max-w-2xl bg-lia-bg-primary border border-lia-border-subtle">
         <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
               <Share2 className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 {getModalTitle()}
               </DialogTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
@@ -221,7 +221,7 @@ export function JobPublishModal({
                   Vagas Selecionadas
                 </h4>
                 <div className={cn(
-                  "overflow-y-auto space-y-1 bg-gray-50 rounded-md p-2 border border-lia-border-subtle",
+                  "overflow-y-auto space-y-1 bg-lia-bg-secondary rounded-md p-2 border border-lia-border-subtle",
                   mode === 'unpublish' ? "max-h-[120px]" : "max-h-[100px]"
                 )}>
                   {jobs.map((job) => (
@@ -232,7 +232,7 @@ export function JobPublishModal({
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                         <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                          {job.code && <span className="text-micro font-medium text-lia-text-secondary bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
+                          {job.code && <span className="text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
                           <span className="text-xs font-medium text-lia-text-primary truncate">{job.title}</span>
                         </div>
                       </div>
@@ -264,7 +264,7 @@ export function JobPublishModal({
                       <RadioGroupItem
                         value="now"
                         id="schedule-now"
-                        className="border-lia-border-default text-lia-text-primary data-[state=checked]:border-gray-900"
+                        className="border-lia-border-default text-lia-text-primary data-[state=checked]:border-lia-btn-primary-bg"
                       />
                       <Label htmlFor="schedule-now" className="text-xs text-lia-text-primary cursor-pointer">
                         Publicar agora
@@ -276,7 +276,7 @@ export function JobPublishModal({
                         <RadioGroupItem
                           value="scheduled"
                           id="schedule-later"
-                          className="border-lia-border-default text-lia-text-primary data-[state=checked]:border-gray-900"
+                          className="border-lia-border-default text-lia-text-primary data-[state=checked]:border-lia-btn-primary-bg"
                         />
                         <Label htmlFor="schedule-later" className="text-xs text-lia-text-primary cursor-pointer">
                           Agendar para:
@@ -305,7 +305,7 @@ export function JobPublishModal({
               )}
 
               {(mode === 'unpublish' || mode === 'mixed') && (
-                <div className="space-y-3 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
+                <div className="space-y-3 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
                   <div className="flex items-center gap-2 text-lia-text-primary mb-2">
                     <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
                     <span className="text-xs font-semibold text-lia-text-primary">Opções ao despublicar</span>
@@ -318,7 +318,7 @@ export function JobPublishModal({
                         id="freezeJob"
                         checked={freezeJob}
                         onCheckedChange={(checked) => setFreezeJob(!!checked)}
-                        className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                        className="mt-0.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
                       />
                       <div className="flex-1">
                         <Label htmlFor="freezeJob" className="text-xs font-medium text-lia-text-primary cursor-pointer">
@@ -335,7 +335,7 @@ export function JobPublishModal({
                           <select
                             value={freezeReason}
                             onChange={(e) => setFreezeReason(e.target.value)}
-                            className="w-full h-8 px-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-gray-900/20"
+                            className="w-full h-8 px-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
                           >
                             <option value="">Selecione um motivo...</option>
                             <option value="budget_review">Revisão orçamentária</option>
@@ -371,7 +371,7 @@ export function JobPublishModal({
                         id="notifyApplicants"
                         checked={notifyApplicants}
                         onCheckedChange={(checked) => setNotifyApplicants(!!checked)}
-                        className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                        className="mt-0.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
                       />
                       <div className="flex-1">
                         <Label htmlFor="notifyApplicants" className="text-xs font-medium text-lia-text-primary cursor-pointer">
@@ -381,7 +381,7 @@ export function JobPublishModal({
                           Todos os candidatos do processo receberão uma mensagem
                         </p>
                         {notifyApplicants && (
-                          <div className="mt-1.5 flex items-center gap-1.5 text-micro text-lia-text-secondary dark:text-lia-text-tertiary bg-gray-50 dark:bg-lia-bg-secondary/50 px-2 py-1 rounded-full">
+                          <div className="mt-1.5 flex items-center gap-1.5 text-micro text-lia-text-secondary bg-lia-bg-secondary/50 px-2 py-1 rounded-full">
                             <Brain className="w-3 h-3 text-wedo-cyan" />
                             <span>LIA abrirá o modal de envio por email/WhatsApp com template sugerido</span>
                           </div>
@@ -395,7 +395,7 @@ export function JobPublishModal({
 
             <div className="space-y-3">
               {(mode === 'publish' || mode === 'mixed') && (
-                <div className="rounded-md border border-lia-border-subtle bg-gray-50 p-3 space-y-2">
+                <div className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary p-3 space-y-2">
                   <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide font-['Open_Sans',sans-serif]">
                     Checklist de Publicação
                   </h4>
@@ -464,7 +464,7 @@ export function JobPublishModal({
                           className={cn(
                             "flex items-center gap-2 p-2 rounded-md border transition-colors cursor-pointer",
                             selectedChannels.has(channel.id) && channel.connected
-                              ? "border-gray-900 bg-gray-50"
+                              ? "border-lia-btn-primary-bg bg-lia-bg-secondary"
                               : "border-lia-border-subtle bg-lia-bg-primary hover:border-lia-border-default"
                           )}
                           onClick={() => channel.connected && toggleChannel(channel.id)}
@@ -472,10 +472,10 @@ export function JobPublishModal({
                           <Checkbox
                             checked={selectedChannels.has(channel.id)}
                             disabled={!channel.connected}
-                            className="data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                            className="data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
                           />
                           <div className="flex items-center gap-1.5">
-                            <div className="w-5 h-5 rounded-md bg-gray-100 flex items-center justify-center text-lia-text-secondary">
+                            <div className="w-5 h-5 rounded-md bg-lia-bg-tertiary flex items-center justify-center text-lia-text-secondary">
                               {channel.icon}
                             </div>
                             <span className="text-xs font-medium text-lia-text-primary">{channel.name}</span>
@@ -499,13 +499,13 @@ export function JobPublishModal({
                       <Search className="w-3 h-3" />
                       Busca Automática
                     </h4>
-                    <div className="space-y-2 bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
+                    <div className="space-y-2 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
                       <div className="flex items-start gap-2">
                         <Checkbox
                           id="autoSearchInternal"
                           checked={autoSearchInternal}
                           onCheckedChange={(checked) => setAutoSearchInternal(!!checked)}
-                          className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                          className="mt-0.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
                         />
                         <div>
                           <Label htmlFor="autoSearchInternal" className="text-xs font-medium text-lia-text-primary cursor-pointer">
@@ -520,19 +520,19 @@ export function JobPublishModal({
                           id="autoSearchGlobal"
                           checked={autoSearchGlobal}
                           onCheckedChange={(checked) => setAutoSearchGlobal(!!checked)}
-                          className="mt-0.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                          className="mt-0.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
                         />
                         <div className="flex-1">
                           <Label htmlFor="autoSearchGlobal" className="text-xs font-medium text-lia-text-primary cursor-pointer flex items-center gap-1">
                             Busca Global
-                            <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+                            <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
                               <Brain className="w-2 h-2 text-wedo-cyan" />
                               IA
                             </span>
                           </Label>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <p className="text-micro text-lia-text-secondary">Fontes externas</p>
-                            <span className="inline-flex items-center gap-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 px-1 py-0.5 rounded-full">
+                            <span className="inline-flex items-center gap-0.5 text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary px-1 py-0.5 rounded-full">
                               <Coins className="w-2 h-2" />
                               {globalSearchCredits} créd.
                             </span>
@@ -552,7 +552,7 @@ export function JobPublishModal({
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
           >
             Cancelar
           </Button>
@@ -562,7 +562,7 @@ export function JobPublishModal({
               variant="outline"
               onClick={handleUnpublish}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle bg-gray-50 text-lia-text-secondary hover:bg-gray-100"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-bg-tertiary"
             >
               {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" /> : <X className="w-3.5 h-3.5 mr-1.5" />}
               Despublicar ({publishedCount})
@@ -573,7 +573,7 @@ export function JobPublishModal({
             <Button
               onClick={handleUnpublish}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" /> : <X className="w-3.5 h-3.5 mr-1.5" />}
               Despublicar Vagas
@@ -582,7 +582,7 @@ export function JobPublishModal({
             <Button
               onClick={handlePublish}
               disabled={isSubmitting || (selectedChannels.size === 0 && (mode === 'publish' || mode === 'mixed')) || (needsWSIWarning && !wsiWarningConfirmed)}
-              className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" /> : <Share2 className="w-3.5 h-3.5 mr-1.5" />}
               {mode === 'mixed' ? `Publicar (${unpublishedCount})` : 'Publicar Vagas'}

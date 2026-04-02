@@ -42,7 +42,7 @@ export function GlobalExpansionConfirmModal({
             Expandir para Busca Global
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-4">
-            <p className="text-sm text-lia-text-primary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+            <p className="text-sm text-lia-text-primary" aria-live="polite" aria-atomic="true">
               A Busca Global encontra candidatos além da sua base local em um pool de mais de 800 milhões de perfis profissionais.
             </p>
 

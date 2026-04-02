@@ -141,7 +141,7 @@ export function SidePanelContainer({
         )
       default:
         return (
-          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground dark:text-lia-text-tertiary">
+          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
             <p>Painel "{panelType}" em desenvolvimento</p>
           </div>
         )
@@ -161,13 +161,13 @@ export function SidePanelContainer({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-2xl">{icon}</span>
-              <SheetTitle className="text-xl font-semibold font-sans dark:text-lia-text-primary">
+              <SheetTitle className="text-xl font-semibold font-sans">
                 {displayTitle}
               </SheetTitle>
             </div>
           </div>
           {isLoading && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-lia-text-tertiary mt-2" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
               Salvando...
             </div>

@@ -321,8 +321,8 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'email' 
-            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover' 
-            : 'border border-lia-border-default text-lia-text-secondary hover:bg-gray-50'
+            ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover' 
+            : 'border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover'
         )}
       >
         <Mail className="w-3.5 h-3.5" />
@@ -338,8 +338,8 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'whatsapp' 
-            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover' 
-            : 'border border-lia-border-default text-lia-text-secondary hover:bg-gray-50'
+            ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover' 
+            : 'border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover'
         )}
       >
         <MessageSquare className="w-3.5 h-3.5" />
@@ -355,8 +355,8 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'both' 
-            ? 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover' 
-            : 'border border-lia-border-default text-lia-text-secondary hover:bg-gray-50'
+            ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover' 
+            : 'border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover'
         )}
       >
         <Mail className="w-3.5 h-3.5" />
@@ -460,7 +460,7 @@ export function CloseVacancyModal({
             variant="ghost"
             size="sm"
             onClick={toggleAllCandidates}
-            className="text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
           >
             {selectedCandidateIds.length === otherCandidates.length
               ? 'Desmarcar todos'
@@ -481,8 +481,8 @@ export function CloseVacancyModal({
                   className={cn(
                     'flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors',
                     selectedCandidateIds.includes(candidate.id)
-                      ? 'bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-lia-bg-secondary border border-lia-btn-primary-bg'
+                      : 'hover:bg-lia-interactive-hover'
                   )}
                   onClick={() => toggleCandidateSelection(candidate.id)}
                 >
@@ -491,7 +491,7 @@ export function CloseVacancyModal({
                     onCheckedChange={() => toggleCandidateSelection(candidate.id)}
                   />
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-gray-100 text-lia-text-secondary text-xs">
+                    <AvatarFallback className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">
                       {getInitials(candidate.name)}
                     </AvatarFallback>
                   </Avatar>
@@ -513,7 +513,7 @@ export function CloseVacancyModal({
         </ScrollArea>
         
         {selectedCandidateIds.length > 0 && (
-          <p className={cn(textStyles.caption, 'text-lia-text-secondary dark:text-lia-text-tertiary')} aria-live="polite" aria-atomic="true">
+          <p className={cn(textStyles.caption, 'text-lia-text-secondary')} aria-live="polite" aria-atomic="true">
             {selectedCandidateIds.length} candidato(s) selecionado(s) para receber feedback
           </p>
         )}
@@ -571,14 +571,14 @@ export function CloseVacancyModal({
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
+      <DialogContent className="max-w-lg rounded-md">
+        <DialogHeader className="border-b border-lia-border-subtle pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center">
-              <PartyPopper className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary flex items-center justify-center">
+              <PartyPopper className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+              <DialogTitle className="text-sm font-semibold text-lia-text-primary">
                 Fechar Vaga
               </DialogTitle>
               <DialogDescription className="text-xs text-lia-text-secondary">
@@ -593,8 +593,8 @@ export function CloseVacancyModal({
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
                 currentStep === 1
-                  ? 'bg-gray-900 dark:bg-lia-btn-primary-bg text-white dark:text-lia-text-disabled'
-                  : 'bg-gray-100 text-lia-text-secondary'
+                  ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-white'
+                  : 'bg-lia-bg-tertiary text-lia-text-secondary'
               )}
             >
               <span className="font-medium">1</span>
@@ -605,8 +605,8 @@ export function CloseVacancyModal({
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
                 currentStep === 2
-                  ? 'bg-gray-900 dark:bg-lia-btn-primary-bg text-white dark:text-lia-text-disabled'
-                  : 'bg-gray-100 text-lia-text-secondary'
+                  ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-white'
+                  : 'bg-lia-bg-tertiary text-lia-text-secondary'
               )}
             >
               <span className="font-medium">2</span>
@@ -619,14 +619,14 @@ export function CloseVacancyModal({
           {currentStep === 1 ? renderStep1() : renderStep2()}
         </div>
         
-        <DialogFooter className="flex gap-2 sm:gap-2 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
+        <DialogFooter className="flex gap-2 sm:gap-2 border-t border-lia-border-subtle bg-lia-bg-secondary pt-4">
           {currentStep === 2 && (
             <Button
               type="button"
               variant="outline"
               onClick={handlePreviousStep}
               disabled={isSubmitting}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-gray-50"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Voltar
@@ -640,7 +640,7 @@ export function CloseVacancyModal({
             variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover"
           >
             Cancelar
           </Button>
@@ -650,7 +650,7 @@ export function CloseVacancyModal({
               type="button"
               onClick={handleNextStep}
               disabled={!hiredTemplateId || templatesLoading}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
             >
               Próximo
               <ArrowRight className="w-3.5 h-3.5" />
@@ -660,7 +660,7 @@ export function CloseVacancyModal({
               type="button"
               onClick={handleConfirm}
               disabled={isSubmitting || (selectedCandidateIds.length > 0 && !othersTemplateId)}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
             >
               {isSubmitting ? (
                 <>

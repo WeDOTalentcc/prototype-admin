@@ -48,7 +48,7 @@ export function ApplyAllModal({
               type="number"
               value={applyAllValue}
               onChange={(e) => setApplyAllValue(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary text-sm font-['Open_Sans',sans-serif]"
+              className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-['Open_Sans',sans-serif]"
             />
           </div>
 
@@ -91,7 +91,7 @@ export function ApplyAllModal({
                   allUsers: applyAllUsers
                 })
               }}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               <Save className="w-3.5 h-3.5 mr-1.5" />
               Aplicar

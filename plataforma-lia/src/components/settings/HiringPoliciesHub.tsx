@@ -71,7 +71,7 @@ function InlineFieldEditor({
           onClick={() => { onSave(!currentValue) }}
           disabled={isSaving}
           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${
-            currentValue ? 'bg-gray-900 dark:lia-bg-100' : 'bg-gray-300 dark:lia-bg-600'
+            currentValue ? 'bg-gray-900' : 'bg-gray-300'
           }`}
         >
           <span
@@ -84,7 +84,7 @@ function InlineFieldEditor({
           onClick={onCancel}
           className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
         >
-          <X className="w-3 h-3 lia-text-400" />
+          <X className="w-3 h-3 text-lia-text-tertiary" />
         </button>
       </div>
     )
@@ -100,7 +100,7 @@ function InlineFieldEditor({
           onKeyDown={handleKeyDown}
           autoFocus
           disabled={isSaving}
-          className="text-xs font-medium lia-text-800 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
+          className="text-xs font-medium text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
           style={{fontFamily: '"Inter", sans-serif'}}
         >
           <option value="">Selecionar...</option>
@@ -119,7 +119,7 @@ function InlineFieldEditor({
           onClick={onCancel}
           className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
         >
-          <X className="w-3 h-3 lia-text-400" />
+          <X className="w-3 h-3 text-lia-text-tertiary" />
         </button>
       </div>
     )
@@ -138,11 +138,11 @@ function InlineFieldEditor({
         min={config?.min}
         max={config?.max}
         placeholder={config?.placeholder || ''}
-        className="w-24 text-xs font-medium lia-text-800 dark:text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-gray-400"
+        className="w-24 text-xs font-medium text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-gray-400"
         style={{fontFamily: '"Inter", sans-serif'}}
       />
       {config?.suffix && (
-        <span className="text-micro lia-text-500">{config.suffix}</span>
+        <span className="text-micro text-lia-text-secondary">{config.suffix}</span>
       )}
       <button
         onClick={handleSave}
@@ -150,7 +150,7 @@ function InlineFieldEditor({
         className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
       >
         {isSaving ? (
-          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none lia-text-400" />
+          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
         ) : (
           <Check className="w-3 h-3 text-status-success" />
         )}
@@ -159,7 +159,7 @@ function InlineFieldEditor({
         onClick={onCancel}
         className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
       >
-        <X className="w-3 h-3 lia-text-400" />
+        <X className="w-3 h-3 text-lia-text-tertiary" />
       </button>
     </div>
   )
@@ -190,7 +190,7 @@ export function HiringPoliciesHub() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64" role="status" aria-live="polite" aria-label="Carregando...">
-        <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none lia-text-400 dark:lia-text-500" />
+        <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
         <span className={`ml-2 ${textStyles.body}`}>
           Carregando politicas...
         </span>
@@ -216,7 +216,7 @@ export function HiringPoliciesHub() {
         </div>
         <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5">
           <div
-            className="h-1.5 rounded-full transition-[width,height] duration-500 bg-gray-900 dark:lia-bg-100"
+            className="h-1.5 rounded-full transition-[width,height] duration-500 bg-gray-900"
             style={{width: `${setupProgress}%`}}
           />
         </div>
@@ -240,13 +240,13 @@ export function HiringPoliciesHub() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3
-                    className="text-sm font-semibold leading-tight truncate lia-text-950 dark:lia-text-50"
+                    className="text-sm font-semibold leading-tight truncate text-lia-text-primary"
                    
                   >
                     Olá! Sou a Lia.
                   </h3>
                   <p
-                    className="text-xs leading-tight truncate mt-0.5 lia-text-500"
+                    className="text-xs leading-tight truncate mt-0.5 text-lia-text-secondary"
                    
                    aria-live="polite" aria-atomic="true">
                     Posso criar vagas, buscar candidatos, analisar ...
@@ -258,13 +258,13 @@ export function HiringPoliciesHub() {
                   className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex items-center justify-center"
                   aria-label="Expandir chat"
                 >
-                  <Maximize2 className="w-3.5 h-3.5 lia-text-500" />
+                  <Maximize2 className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </button>
                 <button
                   className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex items-center justify-center"
                   aria-label="Fechar chat"
                 >
-                  <X className="w-4 h-4 lia-text-500" />
+                  <X className="w-4 h-4 text-lia-text-secondary" />
                 </button>
               </div>
             </div>
@@ -323,7 +323,7 @@ export function HiringPoliciesHub() {
                   aria-label={`${block.title} - ${isCompleted ? 'Configurado' : 'Pendente'}`}
                 >
                   <div className="flex items-center gap-2">
-                    {IconComp && <IconComp className="w-4 h-4 lia-text-500 dark:text-lia-text-tertiary" />}
+                    {IconComp && <IconComp className="w-4 h-4 text-lia-text-secondary" />}
                     <span className={textStyles.h3}>
                       {block.title}
                     </span>
@@ -333,15 +333,15 @@ export function HiringPoliciesHub() {
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium border ${
                         isCompleted
                           ? 'bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30'
-                          : 'bg-gray-100 lia-text-700 border-lia-border-subtle dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:border-lia-border-default'
+                          : 'bg-gray-100 text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-elevated dark:border-lia-border-default'
                       }`}
                     >
                       {isCompleted ? 'Configurado' : 'Pendente'}
                     </span>
                     {isExpanded ? (
-                      <ChevronUp className="w-4 h-4 lia-text-400 dark:lia-text-500" />
+                      <ChevronUp className="w-4 h-4 text-lia-text-tertiary" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 lia-text-400 dark:lia-text-500" />
+                      <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
                     )}
                   </div>
                 </button>
@@ -389,7 +389,7 @@ export function HiringPoliciesHub() {
                                   className="opacity-0 group-hover:opacity-100 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-opacity motion-reduce:transition-none"
                                   aria-label={`Editar ${FIELD_LABELS[field] || field}`}
                                 >
-                                  <Pencil className="w-3 h-3 lia-text-400" />
+                                  <Pencil className="w-3 h-3 text-lia-text-tertiary" />
                                 </button>
                               </div>
                             )}

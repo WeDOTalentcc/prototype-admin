@@ -100,20 +100,20 @@ interface StageTransitionActionsModalProps {
 
 const COLOR_CLASSES = {
   cyan: {
-    bg: 'bg-gray-50 dark:bg-lia-bg-secondary',
-    border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-    text: 'text-lia-text-secondary dark:text-lia-text-secondary',
-    icon: 'text-lia-text-secondary dark:text-lia-text-tertiary',
-    selectedBg: 'bg-gray-100 dark:bg-lia-bg-secondary',
-    selectedBorder: 'border-gray-900 dark:border-lia-border-medium',
+    bg: 'bg-lia-bg-secondary',
+    border: 'border-lia-border-subtle',
+    text: 'text-lia-text-secondary',
+    icon: 'text-lia-text-secondary',
+    selectedBg: 'bg-lia-bg-tertiary',
+    selectedBorder: 'border-lia-btn-primary-bg dark:border-lia-border-medium',
   },
   blue: {
-    bg: 'bg-gray-50 dark:bg-lia-bg-secondary',
-    border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-    text: 'text-lia-text-secondary dark:text-lia-text-secondary',
-    icon: 'text-lia-text-secondary dark:text-lia-text-tertiary',
-    selectedBg: 'bg-gray-50 dark:bg-lia-bg-elevated',
-    selectedBorder: 'border-gray-900 dark:border-lia-border-default',
+    bg: 'bg-lia-bg-secondary',
+    border: 'border-lia-border-subtle',
+    text: 'text-lia-text-secondary',
+    icon: 'text-lia-text-secondary',
+    selectedBg: 'bg-lia-bg-secondary',
+    selectedBorder: 'border-lia-btn-primary-bg',
   },
   green: {
     bg: 'bg-status-success/10',
@@ -140,12 +140,12 @@ const COLOR_CLASSES = {
     selectedBorder: 'border-status-error/30',
   },
   gray: {
-    bg: 'bg-gray-50',
+    bg: 'bg-lia-bg-secondary',
     border: 'border-lia-border-subtle',
     text: 'text-lia-text-primary',
     icon: 'text-lia-text-secondary',
-    selectedBg: 'bg-gray-50',
-    selectedBorder: 'border-gray-900',
+    selectedBg: 'bg-lia-bg-secondary',
+    selectedBorder: 'border-lia-btn-primary-bg',
   },
 }
 
@@ -558,11 +558,11 @@ export function StageTransitionActionsModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-gray-50/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-lia-bg-secondary/50">
           <div className="flex items-center gap-3">
             <div className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center",
-              headerColor === 'red' ? 'bg-status-error/15' : 'bg-gray-100'
+              headerColor === 'red' ? 'bg-status-error/15' : 'bg-lia-bg-tertiary'
             )}>
               <ArrowRight className={cn(
                 "w-4 h-4",
@@ -578,7 +578,7 @@ export function StageTransitionActionsModal({
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100 transition-colors motion-reduce:transition-none">
+          <button onClick={onClose} className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -589,11 +589,11 @@ export function StageTransitionActionsModal({
           <div className="w-1/2 border-r border-lia-border-subtle overflow-y-auto">
             <div className="p-5 space-y-5">
               {/* Candidate Info */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
+              <div className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={candidate.avatar} />
-                    <AvatarFallback className="bg-gray-100 text-lia-text-secondary text-xs">
+                    <AvatarFallback className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">
                       {candidate.name?.charAt(0) || '?'}
                     </AvatarFallback>
                   </Avatar>
@@ -612,7 +612,7 @@ export function StageTransitionActionsModal({
                   <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
                   <Badge className={cn(
                     "text-white",
-                    headerColor === 'red' ? 'bg-status-error' : 'bg-gray-900'
+                    headerColor === 'red' ? 'bg-status-error' : 'bg-lia-btn-primary-bg'
                   )}>
                     {getStageDisplayName(newStage)}
                   </Badge>
@@ -656,7 +656,7 @@ export function StageTransitionActionsModal({
                         className={cn(
                           "flex items-center gap-3 p-3 rounded-md border transition-colors text-left",
                           isSelected
-                            ? cn(colors.selectedBg, colors.selectedBorder, "ring-1", action.color === 'cyan' ? "ring-gray-900/20" : action.color === 'red' ? "ring-red-300" : action.color === 'green' ? "ring-emerald-300" : "ring-gray-300")
+                            ? cn(colors.selectedBg, colors.selectedBorder, "ring-1", action.color === 'cyan' ? "ring-lia-btn-primary-bg/20" : action.color === 'red' ? "ring-red-300" : action.color === 'green' ? "ring-emerald-300" : "ring-lia-border-default")
                             : cn(colors.bg, colors.border, "hover:border-lia-border-default")
                         )}
                       >
@@ -672,7 +672,7 @@ export function StageTransitionActionsModal({
                               {action.name}
                             </span>
                             {action.recommended && (
-                              <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary text-micro px-1.5 py-0">
+                              <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-micro px-1.5 py-0">
                                 <Brain className="h-3 w-3 mr-0.5 text-wedo-cyan" />
                                 Recomendado
                               </Badge>
@@ -699,7 +699,7 @@ export function StageTransitionActionsModal({
                       className={cn(
                         "flex items-center gap-2 p-3 rounded-md border transition-colors",
                         channel === 'email'
-                          ? 'border-gray-900 bg-gray-50 text-lia-text-primary'
+                          ? 'border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary'
                           : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                       )}
                     >
@@ -729,7 +729,7 @@ export function StageTransitionActionsModal({
                       className={cn(
                         "flex items-center gap-2 p-3 rounded-md border transition-colors",
                         channel === 'both'
-                          ? 'border-gray-900 bg-gray-50 text-lia-text-primary'
+                          ? 'border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary'
                           : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
                       )}
                     >
@@ -790,15 +790,15 @@ export function StageTransitionActionsModal({
           </div>
 
           {/* Right Panel - Preview */}
-          <div className="w-1/2 bg-gray-50/50 overflow-y-auto">
+          <div className="w-1/2 bg-lia-bg-secondary/50 overflow-y-auto">
             <div className="p-5 space-y-4">
               {needsMessageComposition ? (
                 <>
                   {/* LIA Info Card */}
-                  <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default">
+                  <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary/50 rounded-md border border-lia-border-default">
                     <Brain className="w-4 h-4 text-wedo-cyan mt-0.5 shrink-0" />
                     <div>
-                      <p className="text-xs text-lia-text-primary dark:text-lia-text-primary font-medium">
+                      <p className="text-xs text-lia-text-primary font-medium">
                         LIA personalizou esta mensagem considerando:
                       </p>
                       <p className="text-micro text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
@@ -881,7 +881,7 @@ export function StageTransitionActionsModal({
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 bg-lia-bg-tertiary rounded-full flex items-center justify-center mb-3">
                     <ArrowRight className="w-6 h-6 text-lia-text-disabled" />
                   </div>
                   <p className={textStyles.subtitle} aria-live="polite" aria-atomic="true">Apenas mover candidato</p>
@@ -900,7 +900,7 @@ export function StageTransitionActionsModal({
             variant="outline" 
             onClick={onClose} 
             disabled={isLoading}
-            className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-gray-50"
+            className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover"
           >
             Cancelar
           </Button>
@@ -911,7 +911,7 @@ export function StageTransitionActionsModal({
               "gap-2 h-9 px-4 text-xs font-medium",
               selectedActionData?.color === 'red'
                 ? "bg-status-error hover:bg-status-error text-white"
-                : "bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+                : "bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
             )}
           >
             {isLoading ? (

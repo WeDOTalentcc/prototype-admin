@@ -213,10 +213,10 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
       <Card className="border-l-4 border-l-gray-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-xl font-medium">
-            <Map className="w-5 h-5 lia-text-700" />
+            <Map className="w-5 h-5 text-lia-text-primary" />
             Journey Mapping
           </CardTitle>
-          <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+          <p className="text-sm text-lia-text-primary">
             Configure o mapa da jornada de recrutamento da sua empresa através do wizard interativo.
           </p>
         </CardHeader>
@@ -232,10 +232,10 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   onClick={() => setCurrentStep(step.id)}
                   className={`flex flex-col items-center transition-colors motion-reduce:transition-none ${
                     currentStep === step.id
-                      ? 'lia-text-600 dark:text-lia-text-tertiary'
+                      ? 'text-lia-text-secondary'
                       : currentStep > step.id
                       ? 'text-status-success'
-                      : 'lia-text-500'
+                      : 'text-lia-text-secondary'
                   }`}
                 >
                   <div
@@ -275,12 +275,12 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Briefcase className="w-5 h-5 lia-text-600" />
+              <Briefcase className="w-5 h-5 text-lia-text-secondary" />
               Como as vagas são abertas?
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm lia-text-800 dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
+            <p className="text-sm text-lia-text-primary" aria-live="polite" aria-atomic="true">
               Descreva o fluxo típico de abertura de vagas na sua empresa.
             </p>
             <textarea
@@ -310,7 +310,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none text-left"
                 >
                   <div className="font-medium text-sm">{option.label}</div>
-                  <div className="text-xs lia-text-600 mt-1">{option.desc}</div>
+                  <div className="text-xs text-lia-text-secondary mt-1">{option.desc}</div>
                 </button>
               ))}
             </div>
@@ -322,18 +322,18 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Database className="w-5 h-5 lia-text-700" />
+              <Database className="w-5 h-5 text-lia-text-primary" />
               Quais sistemas vocês usam?
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+            <p className="text-sm text-lia-text-primary">
               Selecione os sistemas e plataformas que sua empresa utiliza no processo de recrutamento.
             </p>
 
             {['ATS', 'Workforce Planning', 'HRIS/Folha', 'Avaliação Técnica', 'Assessment', 'Assinatura Digital', 'Comunicação'].map((category) => (
               <div key={category}>
-                <h4 className="text-sm font-semibold lia-text-800 dark:text-lia-text-primary mb-3">
+                <h4 className="text-sm font-semibold text-lia-text-primary mb-3">
                   {category}
                 </h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -343,7 +343,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                       onClick={() => toggleSistema(sistema.id)}
                       className={`p-3 border rounded-md transition-colors motion-reduce:transition-none ${
                         wizardData.sistemasUsados.includes(sistema.id)
-                          ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary'
+                          ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
                           : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
                       }`}
                     >
@@ -366,12 +366,12 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Workflow className="w-5 h-5 lia-text-700" />
+              <Workflow className="w-5 h-5 text-lia-text-primary" />
               Etapas do processo
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+            <p className="text-sm text-lia-text-primary">
               Selecione as etapas que fazem parte do seu processo de recrutamento.
             </p>
 
@@ -389,7 +389,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   <div className="flex items-center gap-2">
                     <div className={`w-5 h-5 rounded-md border flex items-center justify-center ${
                       wizardData.etapasProcesso.includes(etapa)
-                        ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 border-gray-900 dark:lia-border-50'
+                        ? 'bg-gray-900 text-white border-gray-900 dark:lia-border-50'
                         : 'border-lia-border-default'
                     }`}>
                       {wizardData.etapasProcesso.includes(etapa) && <Check className="w-3 h-3" />}
@@ -423,12 +423,12 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Zap className="w-5 h-5 lia-text-700" />
+                <Zap className="w-5 h-5 text-lia-text-primary" />
                 Automações desejadas
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+              <p className="text-sm text-lia-text-primary">
                 Selecione as automações que você gostaria de implementar no seu processo.
               </p>
 
@@ -446,14 +446,14 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                     <div className="flex items-start gap-3">
                       <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 ${
                         wizardData.automacoesDesejadas.includes(automacao.id)
-                          ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 border-gray-900 dark:lia-border-50'
+                          ? 'bg-gray-900 text-white border-gray-900 dark:lia-border-50'
                           : 'border-lia-border-default'
                       }`}>
                         {wizardData.automacoesDesejadas.includes(automacao.id) && <Check className="w-3 h-3" />}
                       </div>
                       <div>
                         <div className="font-medium text-sm">{automacao.name}</div>
-                        <div className="text-xs lia-text-600 mt-1">{automacao.desc}</div>
+                        <div className="text-xs text-lia-text-secondary mt-1">{automacao.desc}</div>
                       </div>
                     </div>
                   </button>
@@ -465,12 +465,12 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <MessageSquare className="w-5 h-5 lia-text-700" />
+                <MessageSquare className="w-5 h-5 text-lia-text-primary" />
                 Canais de Comunicação com Candidatos
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm lia-text-800 dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
+              <p className="text-sm text-lia-text-primary" aria-live="polite" aria-atomic="true">
                 Defina como a LIA poderá se comunicar com os candidatos durante o processo seletivo.
               </p>
 
@@ -488,8 +488,8 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                     <div className="flex flex-col items-center gap-2 text-center">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         wizardData.canaisComunicacaoCandidatos.includes(canal.id)
-                          ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900'
-                          : 'bg-gray-100 lia-text-600'
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-gray-100 text-lia-text-secondary'
                       }`}>
                         {canal.id === 'whatsapp' && <MessageSquare className="w-5 h-5" />}
                         {canal.id === 'email' && <Mail className="w-5 h-5" />}
@@ -499,7 +499,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                       <div>
                         <div className="font-medium text-sm">{canal.name}</div>
                         {canal.essential && (
-                          <span className="text-micro lia-text-600 dark:text-lia-text-tertiary font-medium">Recomendado</span>
+                          <span className="text-micro text-lia-text-secondary font-medium">Recomendado</span>
                         )}
                       </div>
                     </div>
@@ -530,12 +530,12 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Globe className="w-5 h-5 lia-text-700" />
+              <Globe className="w-5 h-5 text-lia-text-primary" />
               Canais de Publicação
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm lia-text-800 dark:text-lia-text-primary" aria-live="polite" aria-atomic="true">
+            <p className="text-sm text-lia-text-primary" aria-live="polite" aria-atomic="true">
               Onde vocês publicam as vagas? Selecione os canais que sua empresa utiliza.
             </p>
 
@@ -553,14 +553,14 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   <div className="flex items-start gap-3">
                     <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 ${
                       wizardData.canaisPublicacao.includes(canal.id)
-                        ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 border-gray-900 dark:lia-border-50'
+                        ? 'bg-gray-900 text-white border-gray-900 dark:lia-border-50'
                         : 'border-lia-border-default'
                     }`}>
                       {wizardData.canaisPublicacao.includes(canal.id) && <Check className="w-3 h-3" />}
                     </div>
                     <div>
                       <div className="font-medium text-sm">{canal.name}</div>
-                      <div className="text-xs lia-text-600 mt-1">{canal.desc}</div>
+                      <div className="text-xs text-lia-text-secondary mt-1">{canal.desc}</div>
                     </div>
                   </div>
                 </button>
@@ -679,7 +679,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Eye className="w-5 h-5 lia-text-700" />
+            <Eye className="w-5 h-5 text-lia-text-primary" />
             Mapa da Jornada
           </CardTitle>
         </CardHeader>
@@ -697,16 +697,16 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                           {etapa}
                         </span>
                       </div>
-                      <span className="text-xs lia-text-600 mt-2">Etapa {index + 1}</span>
+                      <span className="text-xs text-lia-text-secondary mt-2">Etapa {index + 1}</span>
                     </div>
                     {index < wizardData.etapasProcesso.length - 1 && (
-                      <ArrowRight className="w-6 h-6 mx-2 lia-text-500 flex-shrink-0" />
+                      <ArrowRight className="w-6 h-6 mx-2 text-lia-text-secondary flex-shrink-0" />
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 lia-text-600">
+              <div className="text-center py-8 text-lia-text-secondary">
                 <Map className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p className="text-sm">
                   Selecione as etapas do processo para visualizar o mapa da jornada

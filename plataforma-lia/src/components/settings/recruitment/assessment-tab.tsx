@@ -23,7 +23,7 @@ export function AssessmentTab({ onSettingsChange }: { onSettingsChange: (changed
             ].map((item) => (
               <div key={item.categoria} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                  <h4 className="text-sm font-medium text-lia-text-primary">
                     {item.categoria}
                   </h4>
                   <div className="flex items-center gap-2">
@@ -33,12 +33,12 @@ export function AssessmentTab({ onSettingsChange }: { onSettingsChange: (changed
                       onChange={() => onSettingsChange(true)}
                       className="w-16 px-2 py-1 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm text-center"
                     />
-                    <span className="text-sm lia-text-800">%</span>
+                    <span className="text-sm text-lia-text-primary">%</span>
                   </div>
                 </div>
                 <div className="space-y-1">
                   {item.criterios.map((criterio, idx) => (
-                    <div key={idx} className="text-sm lia-text-800 dark:text-lia-text-primary">
+                    <div key={idx} className="text-sm text-lia-text-primary">
                       • {criterio}
                     </div>
                   ))}

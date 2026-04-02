@@ -293,7 +293,7 @@ export function UniversitiesFilterInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {value.length > 0 && (
-            <span className="text-xs lia-text-500">
+            <span className="text-xs text-lia-text-secondary">
               {value.length} universit{value.length !== 1 ? 'ies' : 'y'} selected
             </span>
           )}
@@ -301,7 +301,7 @@ export function UniversitiesFilterInput({
         <div className="flex items-center gap-3">
           <button 
             onClick={clearAll}
-            className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
+            className="text-xs text-lia-text-secondary hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
           >
             <RotateCcw className="w-3 h-3" />
             Limpar tudo
@@ -309,7 +309,7 @@ export function UniversitiesFilterInput({
           <button 
             onClick={() => setShowSavePresetModal(true)}
             disabled={value.length === 0}
-            className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-xs text-lia-text-secondary hover:text-lia-text-primary flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="w-3.5 h-3.5" />
             Salvar Preset
@@ -317,7 +317,7 @@ export function UniversitiesFilterInput({
           {showPresets && (
             <button 
               onClick={() => setIsPresetsModalOpen(true)}
-              className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1"
+              className="text-xs text-lia-text-secondary hover:text-lia-text-primary flex items-center gap-1"
             >
               <List className="w-3.5 h-3.5" />
               Presets
@@ -328,7 +328,7 @@ export function UniversitiesFilterInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -341,7 +341,7 @@ export function UniversitiesFilterInput({
           />
           {isLoadingAI && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
             </div>
           )}
         </div>
@@ -373,7 +373,7 @@ export function UniversitiesFilterInput({
                     <span>{item.label}</span>
                   </div>
                 ) : (
-                  <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
+                  <span className="text-lia-text-primary">{item.label}</span>
                 )}
               </button>
             ))}
@@ -387,7 +387,7 @@ export function UniversitiesFilterInput({
             {value.map(university => (
               <Badge
                 key={university}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
               >
                 <span>{university}</span>
                 <button
@@ -406,7 +406,7 @@ export function UniversitiesFilterInput({
             size="sm"
             onClick={findSimilarUniversities}
             disabled={isFindingSimilar || value.length === 0}
-            className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100 dark:bg-lia-bg-secondary"
+            className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 text-lia-text-secondary hover:bg-gray-100 dark:bg-lia-bg-secondary"
           >
             {isFindingSimilar ? (
               <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
@@ -442,7 +442,7 @@ export function UniversitiesFilterInput({
                 size="sm" 
                 onClick={handleSaveCustomPreset}
                 disabled={!savePresetName.trim()}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
               >
                 <Save className="w-3.5 h-3.5 mr-1.5" />
                 Salvar

@@ -33,7 +33,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               Tema
             </label>
             <div className="grid grid-cols-3 gap-3">
@@ -50,7 +50,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                   }}
                   className={`p-3 rounded-md border text-center transition-colors motion-reduce:transition-none ${
                     theme === themeOption.id
- ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
+ ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary'
                       : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -62,7 +62,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
           </div>
 
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               Idioma
             </label>
             <select
@@ -90,7 +90,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
         </CardHeader>
         <CardContent>
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               Fuso Horário
             </label>
             <select
@@ -133,7 +133,7 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-3 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               Estilo de Comunicação
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -156,7 +156,7 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
                   }`}
                 >
                   <div className="font-medium text-sm">{style.name}</div>
-                  <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">{style.desc}</div>
+                  <div className="text-xs text-lia-text-primary">{style.desc}</div>
                 </button>
               ))}
             </div>
@@ -180,8 +180,8 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
                   className="mt-1"
                 />
                 <div>
-                  <div className="text-sm font-medium lia-text-950 dark:lia-text-50">{setting.label}</div>
-                  <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">{setting.desc}</div>
+                  <div className="text-sm font-medium text-lia-text-primary">{setting.label}</div>
+                  <div className="text-xs text-lia-text-primary">{setting.desc}</div>
                 </div>
               </div>
             ))}

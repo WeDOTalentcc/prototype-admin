@@ -28,7 +28,7 @@ export const FilterChipsBar = React.memo(function FilterChipsBar({
   return (
     <div className="px-6 py-2 border-t border-lia-border-subtle dark:lia-border-800 bg-gray-50/50 dark:bg-lia-bg-primary/50">
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-micro lia-text-500 font-medium">Filtros ativos:</span>
+        <span className="text-micro text-lia-text-secondary font-medium">Filtros ativos:</span>
         {filters.general?.minExperience && (
           <Badge variant="outline" className="text-micro py-0 h-5 gap-1">
             Exp. mín: {filters.general.minExperience}a

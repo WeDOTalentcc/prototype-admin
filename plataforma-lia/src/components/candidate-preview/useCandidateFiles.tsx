@@ -12,21 +12,21 @@ export { formatFileSize, formatRelativeTime } from "@/lib/format-utils"
 export function getCategoryColor(fileType: string): { bg: string; text: string } {
   const colors: Record<string, { bg: string; text: string }> = {
     'cv': { bg: 'var(--status-error-bg)', text: 'var(--status-error)' },
-    'portfolio': { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
+    'portfolio': { bg: 'var(--lia-border-subtle)', text: 'var(--lia-text-secondary)' },
     'video': { bg: 'var(--status-error-bg)', text: 'var(--status-error)' },
     'certificate': { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)' },
-    'document': { bg: 'var(--gray-100)', text: 'var(--gray-400)' },
-    'transcript': { bg: 'var(--gray-100)', text: 'var(--wedo-purple)' },
+    'document': { bg: 'var(--lia-bg-tertiary)', text: 'var(--lia-text-tertiary)' },
+    'transcript': { bg: 'var(--lia-bg-tertiary)', text: 'var(--wedo-purple)' },
   }
   return colors[fileType] || colors['document']
 }
 
 export function getFileIcon(fileType: string, mimeType?: string) {
-  if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+  if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-lia-text-primary" />
   if (fileType === 'video' || mimeType?.startsWith('video/')) return <FileVideo className="w-3.5 h-3.5 text-status-error" />
   if (fileType === 'certificate') return <Award className="w-3.5 h-3.5 text-status-warning" />
   if (mimeType?.startsWith('image/')) return <Image className="w-3.5 h-3.5 text-status-success" />
-  return <File className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+  return <File className="w-3.5 h-3.5 text-lia-text-secondary" />
 }
 
 export function useCandidateFiles(candidate: Record<string, any>) {

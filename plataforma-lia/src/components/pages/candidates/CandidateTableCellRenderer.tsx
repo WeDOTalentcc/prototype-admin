@@ -165,7 +165,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   }
                   alt={candidate.name}
                 />
-                <AvatarFallback className="text-sm font-medium bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary">
+                <AvatarFallback className="text-sm font-medium bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary">
                   {candidate.name
                     .split(" ")
                     .map((n) => n[0])
@@ -185,7 +185,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
             </div>
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-medium text-lia-text-primary dark:text-lia-text-primary truncate text-xs">
+                <span className="font-medium text-lia-text-primary truncate text-xs">
                   {candidate.name}
                 </span>
               </div>
@@ -504,7 +504,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
             href={candidate.resume_url}
             target="_blank"
             rel="noopener"
-            className="text-lia-text-secondary dark:text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline text-xs flex items-center gap-1"
+            className="text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:underline text-xs flex items-center gap-1"
           >
             Currículo
           </a>
@@ -545,7 +545,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
       // Status
       case "status": {
         const statusColors: Record<string, string> = {
-          novo: "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary",
+          novo: "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary",
           triagem:
             "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning",
           entrevista:

@@ -128,13 +128,13 @@ export function VariableSelector({
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
-                <Variable className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Variable className="w-3.5 h-3.5 text-lia-text-secondary" />
               </div>
-              <h3 className="text-xs font-semibold lia-text-strong">
+              <h3 className="text-xs font-semibold text-lia-text-primary">
                 Variáveis Disponíveis
               </h3>
             </div>
-            <Badge variant="secondary" className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary lia-text-base">
+            <Badge variant="secondary" className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary">
               {totalVariables} variáveis
             </Badge>
           </div>
@@ -146,7 +146,7 @@ export function VariableSelector({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar variável..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 focus:outline-none"
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:border-gray-400 focus:outline-none"
              
             />
           </div>
@@ -158,7 +158,7 @@ export function VariableSelector({
  "px-2 py-0.5 rounded-md text-micro font-medium transition-colors",
                 !activeGroup 
                   ? "bg-gray-900 text-white" 
-                  : "bg-lia-bg-tertiary lia-text-base hover:bg-lia-interactive-active"
+                  : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active"
               )}
             >
               Todas
@@ -171,7 +171,7 @@ export function VariableSelector({
  "px-2 py-0.5 rounded-md text-micro font-medium transition-colors",
                   activeGroup === group.id 
                     ? "bg-gray-900 text-white" 
-                    : "bg-lia-bg-tertiary lia-text-base hover:bg-lia-interactive-active"
+                    : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active"
                 )}
               >
                 {group.label}
@@ -234,7 +234,7 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
           >
             <div className="flex items-start gap-2.5">
               <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 group-hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none">
-                <code className="text-micro font-mono text-lia-text-secondary dark:text-lia-text-tertiary">
+                <code className="text-micro font-mono text-lia-text-secondary">
                   {"{{}}"}
                 </code>
               </div>
@@ -243,7 +243,7 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
                   <code className="text-micro font-mono px-1.5 py-0.5 rounded-md bg-lia-bg-tertiary group-hover:bg-lia-interactive-active text-lia-text-secondary">
                     {`{{${variable.key}}}`}
                   </code>
-                  <span className="text-xs font-medium lia-text-strong truncate">
+                  <span className="text-xs font-medium text-lia-text-primary truncate">
                     {variable.label}
                   </span>
                   <ChevronRight className="w-3 h-3 lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none ml-auto flex-shrink-0" />

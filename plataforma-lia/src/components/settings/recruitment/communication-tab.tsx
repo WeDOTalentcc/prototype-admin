@@ -79,12 +79,12 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
               <div key={template.id} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 rounded-md flex items-center justify-center">
-                    <Mail className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                    <Mail className="w-5 h-5 text-lia-text-secondary" />
                   </div>
                   <div>
-                    <h4 className="font-medium lia-text-950 dark:lia-text-50">{template.name}</h4>
-                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">{template.subject}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs lia-text-800">
+                    <h4 className="font-medium text-lia-text-primary">{template.name}</h4>
+                    <p className="text-sm text-lia-text-primary">{template.subject}</p>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-primary">
                       <span>Trigger: {template.trigger}</span>
                       <span>•</span>
                       <span>Modificado em {new Date(template.lastModified).toLocaleDateString('pt-BR')}</span>
@@ -116,7 +116,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-2 block">
                 Nome do Remetente
               </label>
               <input
@@ -127,7 +127,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-2 block">
                 Email de Resposta
               </label>
               <input
@@ -139,7 +139,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
+            <label className="text-sm font-medium text-lia-text-primary mb-2 block">
               Assinatura Padrão
             </label>
             <textarea
@@ -174,21 +174,21 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           ].map((notification) => (
             <div key={notification.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
               <div>
-                <div className="text-sm font-medium lia-text-950 dark:lia-text-50">{notification.label}</div>
-                <div className="text-xs lia-text-800 dark:text-lia-text-tertiary">{notification.desc}</div>
+                <div className="text-sm font-medium text-lia-text-primary">{notification.label}</div>
+                <div className="text-xs text-lia-text-primary">{notification.desc}</div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="lia-text-600 dark:text-lia-text-tertiary" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs lia-text-800">Email</span>
+                  <input type="checkbox" defaultChecked className="text-lia-text-secondary" onChange={() => onSettingsChange(true)} />
+                  <span className="text-xs text-lia-text-primary">Email</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" className="lia-text-600 dark:text-lia-text-tertiary" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs lia-text-800">Push</span>
+                  <input type="checkbox" className="text-lia-text-secondary" onChange={() => onSettingsChange(true)} />
+                  <span className="text-xs text-lia-text-primary">Push</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" className="lia-text-600 dark:text-lia-text-tertiary" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs lia-text-800">WhatsApp</span>
+                  <input type="checkbox" className="text-lia-text-secondary" onChange={() => onSettingsChange(true)} />
+                  <span className="text-xs text-lia-text-primary">WhatsApp</span>
                 </div>
               </div>
             </div>
@@ -220,7 +220,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-2 block">
                 Mensagem de Boas-vindas
               </label>
               <textarea
@@ -231,7 +231,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
               />
             </div>
             <div>
-              <label className="text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2 block">
+              <label className="text-sm font-medium text-lia-text-primary mb-2 block">
                 Horário de Atendimento
               </label>
               <div className="space-y-2">
@@ -252,7 +252,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           </div>
 
           <div>
-            <h4 className="font-medium lia-text-950 dark:lia-text-50 mb-3">Templates de Mensagem</h4>
+            <h4 className="font-medium text-lia-text-primary mb-3">Templates de Mensagem</h4>
             <div className="space-y-2">
               {[
                 { name: "Convite para entrevista", message: "Parabéns! Você foi selecionado(a) para a próxima etapa do processo seletivo para a vaga de {vaga}. 🎉" },
@@ -264,7 +264,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                     <span className="font-medium text-sm">{template.name}</span>
                     <Button variant="outline" size="sm">Editar</Button>
                   </div>
-                  <p className="text-xs lia-text-800 dark:text-lia-text-tertiary">{template.message}</p>
+                  <p className="text-xs text-lia-text-primary">{template.message}</p>
                 </div>
               ))}
             </div>
@@ -285,9 +285,9 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <Phone className="w-12 h-12 lia-text-800 mx-auto mb-4" />
-            <h3 className="text-lg font-medium lia-text-950 dark:lia-text-50 mb-2">SMS em Desenvolvimento</h3>
-            <p className="lia-text-800 dark:text-lia-text-primary mb-4">
+            <Phone className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-lia-text-primary mb-2">SMS em Desenvolvimento</h3>
+            <p className="text-lia-text-primary mb-4">
               Funcionalidade de SMS será disponibilizada em breve
             </p>
             <Button variant="outline">
@@ -342,13 +342,13 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                     automation.status === 'ativo' ? 'bg-status-success/15 dark:bg-status-success/20' : 'bg-gray-100 dark:bg-lia-bg-secondary'
                   }`}>
                     <Zap className={`w-5 h-5 ${
-                      automation.status === 'ativo' ? 'text-status-success' : 'lia-text-800'
+                      automation.status === 'ativo' ? 'text-status-success' : 'text-lia-text-primary'
                     }`} />
                   </div>
                   <div>
-                    <h4 className="font-medium lia-text-950 dark:lia-text-50">{automation.name}</h4>
-                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">{automation.description}</p>
-                    <p className="text-xs lia-text-800">Trigger: {automation.trigger}</p>
+                    <h4 className="font-medium text-lia-text-primary">{automation.name}</h4>
+                    <p className="text-sm text-lia-text-primary">{automation.description}</p>
+                    <p className="text-xs text-lia-text-primary">Trigger: {automation.trigger}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -384,8 +384,8 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 onClick={() => setActiveSubTab(tab.id as Parameters<typeof setActiveSubTab>[0])}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors motion-reduce:transition-none font-crimson ${
                   activeSubTab === tab.id
-                    ? 'bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 lia-text-800 dark:text-lia-text-primary'
+                    ? 'bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-primary'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />

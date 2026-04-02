@@ -72,14 +72,14 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'var(--status-success)'
-    if (score >= 60) return 'var(--gray-400)'
+    if (score >= 60) return 'var(--lia-text-tertiary)'
     if (score >= 40) return 'var(--status-warning)'
     return 'var(--status-error)'
   }
 
   const getScoreBgColor = (score: number) => {
     if (score >= 80) return 'var(--status-success-bg)'
-    if (score >= 60) return 'var(--gray-bg-10)'
+    if (score >= 60) return 'var(--lia-bg-tertiary)'
     if (score >= 40) return 'var(--status-warning-bg)'
     return 'var(--status-error-bg)'
   }
@@ -99,10 +99,10 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-2xl overflow-hidden flex flex-col bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md"
+        className="w-full max-w-2xl overflow-hidden flex flex-col bg-lia-bg-primary border border-lia-border-subtle rounded-md"
       >
         <div 
-          className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle rounded-t-xl"
+          className="flex items-center justify-between px-4 py-3 bg-lia-bg-secondary border-b border-lia-border-subtle rounded-t-xl"
         >
           <div className="flex items-center gap-2">
             <div
@@ -112,7 +112,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             </div>
             <div>
               <h2 
-                className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary"
+                className="text-sm font-semibold text-lia-text-primary"
                
               >
                 Nota Geral LIA
@@ -127,13 +127,13 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-lia-text-tertiary dark:text-lia-text-tertiary"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg rounded-full text-lia-text-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="px-4 py-4 bg-white dark:bg-lia-bg-primary">
+        <div className="px-4 py-4 bg-lia-bg-primary">
           <div 
             className="flex items-center justify-between p-4 rounded-md mb-4 border border-lia-border-subtle"
           >
@@ -178,7 +178,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
 
           <div className="mb-3">
             <p 
-              className="text-xs font-semibold mb-3 text-lia-text-primary dark:text-lia-text-primary"
+              className="text-xs font-semibold mb-3 text-lia-text-primary"
              
             >
               Composição do Score (Média Ponderada)
@@ -197,15 +197,15 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Icon className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                        <Icon className="w-3.5 h-3.5 text-lia-text-secondary" />
                         <span 
-                          className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary"
+                          className="text-xs font-medium text-lia-text-primary"
                          
                         >
                           {component.label}
                         </span>
                         <span 
-                          className="text-micro px-1.5 py-0.5 rounded-full text-lia-text-secondary bg-gray-200"
+                          className="text-micro px-1.5 py-0.5 rounded-full text-lia-text-secondary bg-lia-interactive-active"
                         >
                           Peso: {component.weight}%
                         </span>
@@ -213,7 +213,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                       <span 
                         className="text-xs font-bold"
                         // @ts-ignore TODO: fix type
-                        style={{color: hasScore ? getScoreColor(score) : 'var(--gray-400)'}}
+                        style={{color: hasScore ? getScoreColor(score) : 'var(--lia-text-tertiary)'}}
                       >
                         {hasScore ? `${score}` : 'N/A'}
                       </span>
@@ -222,7 +222,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
                       // @ts-ignore TODO: fix type
                       value={hasScore ? score : 0} 
                       // @ts-ignore TODO: fix type
-                      className="h-1.5 bg-gray-200" style={{['--progress-color' as string]: hasScore ? getScoreColor(score) : 'var(--gray-200)'}}
+                      className="h-1.5 bg-lia-interactive-active" style={{['--progress-color' as string]: hasScore ? getScoreColor(score) : 'var(--lia-border-subtle)'}}
                     />
                     <p 
                       className="text-micro mt-1.5 text-lia-text-secondary"
@@ -240,7 +240,7 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
             className="p-3 rounded-md bg-wedo-cyan/8 border border-wedo-cyan/20"
           >
             <p 
-              className="text-micro font-medium mb-1 text-lia-text-secondary dark:text-lia-text-secondary"
+              className="text-micro font-medium mb-1 text-lia-text-secondary"
              
             >
               Fórmula do cálculo:
@@ -255,12 +255,12 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
         </div>
 
         <div 
-          className="px-4 py-3 flex justify-end bg-gray-50 dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle rounded-b-xl"
+          className="px-4 py-3 flex justify-end bg-lia-bg-secondary border-t border-lia-border-subtle rounded-b-xl"
         >
           <Button
             onClick={onClose}
             size="sm"
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             Entendido
           </Button>

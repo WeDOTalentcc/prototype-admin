@@ -144,11 +144,11 @@ export function EditJobModalRequirements({
                 <Badge
                   key={idx}
                   variant="outline"
-                  className="flex items-center gap-1 py-0.5 px-2 text-xs bg-white dark:bg-lia-bg-primary"
+                  className="flex items-center gap-1 py-0.5 px-2 text-xs bg-lia-bg-primary"
                 >
                   <button
                     onClick={() => removeBenefit(idx)}
-                    className="text-lia-text-secondary dark:text-lia-text-tertiary hover:text-status-error dark:hover:text-status-error mr-0.5"
+                    className="text-lia-text-secondary hover:text-status-error dark:hover:text-status-error mr-0.5"
                     type="button"
                   >
                     ×
@@ -172,8 +172,8 @@ export function EditJobModalRequirements({
                         variant="outline"
                         className={`text-xs px-2 py-0.5 cursor-pointer transition-colors motion-reduce:transition-none ${
                           isAdded 
-                            ? 'bg-gray-100 border-gray-900 text-lia-text-primary' 
-                            : 'bg-gray-50 border-lia-border-subtle text-lia-text-secondary hover:bg-gray-100 hover:border-gray-400 hover:text-lia-text-primary'
+                            ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg text-lia-text-primary' 
+                            : 'bg-lia-bg-secondary border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover hover:border-lia-border-medium hover:text-lia-text-primary'
                         }`}
                         onClick={() => {
                           if (!isAdded) {
@@ -204,7 +204,7 @@ export function EditJobModalRequirements({
               />
               <Button
                 variant="outline"
-                className="h-10 px-4 text-sm border-gray-900 text-lia-text-primary hover:bg-gray-100"
+                className="h-10 px-4 text-sm border-lia-btn-primary-bg text-lia-text-primary hover:bg-lia-interactive-hover"
                 onClick={addBenefit}
               >
                 <Plus className="w-4 h-4 mr-1.5" />
@@ -223,7 +223,7 @@ export function EditJobModalRequirements({
             <Layers className="w-4 h-4 text-lia-text-secondary" />
             <h3 className="text-base-ui font-semibold text-lia-text-primary">Etapas do Processo Seletivo</h3>
             {(formData.interviewStages || []).length > 0 && (
-              <Badge variant="outline" className="text-xs bg-gray-100 border-lia-border-default text-lia-text-secondary">
+              <Badge variant="outline" className="text-xs bg-lia-bg-tertiary border-lia-border-default text-lia-text-secondary">
                 {(formData.interviewStages || []).length} etapas
               </Badge>
             )}
@@ -266,15 +266,15 @@ export function EditJobModalRequirements({
         
         <div className="space-y-2 mb-4">
           {(formData.interviewStages || []).map((stage: InterviewStage, idx: number) => (
-            <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
-              <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-lia-text-secondary text-sm font-semibold shrink-0">
+            <div key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
+              <div className="flex items-center justify-center w-7 h-7 rounded-full bg-lia-bg-tertiary text-lia-text-secondary text-sm font-semibold shrink-0">
                 {stage.order || idx + 1}
               </div>
               <div className="flex-1 min-w-0">
                 <Input
                   value={stage.stageName || ''}
                   onChange={(e) => updateInterviewStage(idx, 'stageName', e.target.value)}
-                  className="h-8 text-sm bg-lia-bg-primary border-lia-border-subtle focus:border-gray-400"
+                  className="h-8 text-sm bg-lia-bg-primary border-lia-border-subtle focus:border-lia-border-medium"
                   placeholder="Nome da etapa"
                 />
               </div>
@@ -334,7 +334,7 @@ export function EditJobModalRequirements({
           <div className="flex items-center gap-1">
             <span className="text-xs text-lia-text-tertiary">SLA:</span>
             <Select value={newInterviewStageSLA} onValueChange={setNewInterviewStageSLA}>
-              <SelectTrigger className="h-10 w-16 text-xs bg-gray-50 border-lia-border-subtle">
+              <SelectTrigger className="h-10 w-16 text-xs bg-lia-bg-secondary border-lia-border-subtle">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -345,7 +345,7 @@ export function EditJobModalRequirements({
             </Select>
           </div>
           <Select value={newInterviewStageType} onValueChange={setNewInterviewStageType}>
-            <SelectTrigger className="h-10 w-24 text-xs bg-gray-50 border-lia-border-subtle">
+            <SelectTrigger className="h-10 w-24 text-xs bg-lia-bg-secondary border-lia-border-subtle">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -356,7 +356,7 @@ export function EditJobModalRequirements({
           </Select>
           <Button
             variant="outline"
-            className="h-10 px-4 text-sm border-gray-900 text-lia-text-primary hover:bg-gray-100"
+            className="h-10 px-4 text-sm border-lia-btn-primary-bg text-lia-text-primary hover:bg-lia-interactive-hover"
             onClick={addInterviewStage}
           >
             <Plus className="w-4 h-4 mr-1.5" />

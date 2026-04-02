@@ -34,9 +34,9 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
       {/* Seção: Criar Arquétipo com contexto de busca */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Criar Novo Arquétipo</span>
+          <span className="text-xs font-medium text-lia-text-primary">Criar Novo Arquétipo</span>
           {naturalSearchValue && (
-            <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-lia-text-secondary dark:text-lia-text-tertiary border-gray-900">
+            <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-lia-text-secondary border-gray-900">
               Busca ativa detectada
             </Badge>
           )}
@@ -47,9 +47,9 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
           <div className="p-3 rounded-md border border-wedo-cyan/30 bg-wedo-cyan/5">
             <div className="flex items-start gap-2 mb-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan mt-0.5" />
-              <span className="text-xs lia-text-base">Contexto da busca atual:</span>
+              <span className="text-xs text-lia-text-secondary">Contexto da busca atual:</span>
             </div>
-            <p className="text-sm lia-text-strong mb-2">{naturalSearchValue}</p>
+            <p className="text-sm text-lia-text-primary mb-2">{naturalSearchValue}</p>
 
             {/* Tags de entidades extraídas */}
             {Object.keys(parsedEntities).length > 0 && (
@@ -60,24 +60,24 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
                   </Badge>
                 )}
                 {parsedEntities.location && (
-                  <Badge variant="secondary" className="text-micro bg-gray-50 lia-text-base border-lia-border-subtle">
+                  <Badge variant="secondary" className="text-micro bg-gray-50 text-lia-text-secondary border-lia-border-subtle">
                     <MapPin className="w-2.5 h-2.5 mr-0.5" />
                     {parsedEntities.location}
                   </Badge>
                 )}
                 {parsedEntities.seniority && (
-                  <Badge variant="secondary" className="text-micro bg-gray-50 lia-text-base border-lia-border-subtle">
+                  <Badge variant="secondary" className="text-micro bg-gray-50 text-lia-text-secondary border-lia-border-subtle">
                     {parsedEntities.seniority}
                   </Badge>
                 )}
                 {parsedEntities.industry && (
-                  <Badge variant="secondary" className="text-micro bg-gray-50 lia-text-base border-lia-border-subtle">
+                  <Badge variant="secondary" className="text-micro bg-gray-50 text-lia-text-secondary border-lia-border-subtle">
                     <Building2 className="w-2.5 h-2.5 mr-0.5" />
                     {parsedEntities.industry}
                   </Badge>
                 )}
                 {parsedEntities.skills && parsedEntities.skills.map((skill, idx) => (
-                  <Badge key={idx} variant="secondary" className="text-micro bg-gray-50 lia-text-base border-lia-border-subtle">
+                  <Badge key={idx} variant="secondary" className="text-micro bg-gray-50 text-lia-text-secondary border-lia-border-subtle">
                     {skill}
                   </Badge>
                 ))}
@@ -108,7 +108,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
                 onClick={() => {
                   setNewArchetypeDescription(naturalSearchValue)
                 }}
-                className="mt-3 w-full px-3 py-1.5 bg-gray-100 text-lia-text-primary dark:text-lia-text-primary text-xs rounded-md hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
+                className="mt-3 w-full px-3 py-1.5 bg-gray-100 text-lia-text-primary text-xs rounded-md hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
               >
                 <Plus className="w-3 h-3" />
                 Usar como base para novo arquétipo
@@ -166,7 +166,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
       {/* Lista de Arquétipos Existentes */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">Meus Arquétipos</span>
+          <span className="text-xs font-medium text-lia-text-primary">Meus Arquétipos</span>
           <Badge variant="outline" className="text-micro">
             {filteredArchetypes.length} {filteredArchetypes.length === 1 ? 'arquétipo' : 'arquétipos'}
           </Badge>
@@ -214,7 +214,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
                     className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
                     title="Editar arquétipo"
                   >
-                    <Pencil className="w-3.5 h-3.5 lia-text-secondary hover:lia-text-base" />
+                    <Pencil className="w-3.5 h-3.5 lia-text-secondary hover:text-lia-text-secondary" />
                   </button>
                   <button
                     onClick={(e) => openDeleteArchetypeDialog(arch, e)}
@@ -235,7 +235,7 @@ export const EAPTabArquetipos = React.memo(function EAPTabArquetipos(props: EAPT
                     {arch.emoji || "🎯"}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium lia-text-strong truncate">
+                    <div className="text-sm font-medium text-lia-text-primary truncate">
                       {arch.name}
                     </div>
                     {arch.description && (

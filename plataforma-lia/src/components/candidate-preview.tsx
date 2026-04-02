@@ -235,7 +235,7 @@ const {
                 <h3 className={`${textStyles.title} truncate`}>
                   {c.name as string}
                 </h3>
-                <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-gray-100 lia-text-base border border-lia-border-default">
+                <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-gray-100 text-lia-text-secondary border border-lia-border-default">
                   {generateShortId(c.name as string, (c.id as string | undefined) || (c.candidateId as string | undefined) || (c.pearch_id as string | undefined))}
                 </Badge>
                 {(c.seniority_level || c.seniorityLevel) && (
@@ -308,7 +308,7 @@ const {
                     onClick={() => onOpenFullPage?.(candidate)}
                     className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
-                    <Expand className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+                    <Expand className="w-4 h-4 text-lia-text-tertiary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Expandir</TooltipContent>
@@ -321,7 +321,7 @@ const {
                 onClick={onClose}
                 className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                <X className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-tertiary" />
+                <X className="w-4 h-4 text-lia-text-tertiary" />
               </Button>
             </div>
           </div>
@@ -374,7 +374,7 @@ const {
                 {(lastContactedAt as any) && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary flex items-center gap-0.5 cursor-help">
+                      <span className="text-micro text-lia-text-tertiary flex items-center gap-0.5 cursor-help">
                         {/* @ts-ignore TODO: fix type */}
                         <MessageSquare className="w-2.5 h-2.5" />
                         {(formatDate(lastContactedAt as string | Date | null | undefined) as React.ReactNode)}
@@ -401,7 +401,7 @@ const {
                     onClick={() => onSendEmail ? onSendEmail(candidate) : (c.email && window.open(`mailto:${c.email}`, '_self'))}
                     disabled={!c.email && !onSendEmail}
                   >
-                    <Mail className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Email</TooltipContent>
@@ -422,7 +422,7 @@ const {
                     }}
                     disabled={!c.phone && !onSendWhatsApp}
                   >
-                    <Phone className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Phone className="w-3.5 h-3.5 text-lia-text-secondary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">WhatsApp</TooltipContent>
@@ -450,7 +450,7 @@ const {
                     className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => onWSIScreening ? onWSIScreening(candidate) : onSendTriagem?.(candidate)}
                   >
-                    <ClipboardCheck className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <ClipboardCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Triagem WSI</TooltipContent>
@@ -464,7 +464,7 @@ const {
                     className="h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                     onClick={() => onAddToVacancy?.(candidate)}
                   >
-                    <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Atribuir à Vaga</TooltipContent>
@@ -597,7 +597,7 @@ const {
                     className={`p-1 rounded-md transition-colors motion-reduce:transition-none ${(c.portfolio || c.portfolio_url) ? 'hover:bg-gray-100 dark:hover:bg-gray-700' : 'opacity-30 cursor-default'}`}
                     onClick={(e) => !(c.portfolio || c.portfolio_url) && e.preventDefault()}
                   >
-                    <ExternalLink className={`w-3.5 h-3.5 ${(c.portfolio || c.portfolio_url) ? 'text-lia-text-secondary dark:text-lia-text-tertiary' : 'text-lia-text-disabled'}`} />
+                    <ExternalLink className={`w-3.5 h-3.5 ${(c.portfolio || c.portfolio_url) ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`} />
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">Portfolio</TooltipContent>
@@ -617,8 +617,8 @@ const {
               onClick={() => setActiveTab(tab.id as 'activities' | 'profile' | 'files' | 'opinions')}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
-                  ? 'border-b-2 border-gray-800 text-lia-text-primary dark:text-lia-text-primary font-semibold'
-                  : 'text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary'
+                  ? 'border-b-2 border-gray-800 text-lia-text-primary font-semibold'
+                  : 'text-lia-text-secondary hover:text-lia-text-primary'
               }`}
             >
               <tab.icon className="w-3 h-3" />

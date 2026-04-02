@@ -98,7 +98,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
       rate: contactRate,
       avgTime: avgTimeContact,
       icon: <Phone className="w-4 h-4" />,
-      color: 'text-lia-text-secondary dark:text-lia-text-tertiary',
+      color: 'text-lia-text-secondary',
       bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary'
     },
     {
@@ -217,7 +217,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-1">
-              <Phone className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Phone className="w-4 h-4 text-lia-text-secondary" />
               <Badge className={`text-xs px-1.5 py-0.5 ${contactRate >= 80 ? 'bg-status-success' : contactRate >= 60 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
                 {contactRate.toFixed(0)}%
               </Badge>
@@ -225,7 +225,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className={`text-lg font-bold text-lia-text-primary`}>
               {contacted}/{totalCandidates}
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
+            <div className={`${textStyles.bodySmall}`}>
               Taxa de Contato
             </div>
           </CardContent>
@@ -243,7 +243,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className={`text-lg font-bold text-lia-text-primary`}>
               {triageCompleted}/{contacted}
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
+            <div className={`${textStyles.bodySmall}`}>
               Taxa de Triagem
             </div>
           </CardContent>
@@ -261,7 +261,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className={`text-lg font-bold text-lia-text-primary`}>
               {triageApproved}/{triageCompleted}
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
+            <div className={`${textStyles.bodySmall}`}>
               Taxa de Aprovação
             </div>
           </CardContent>
@@ -279,7 +279,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className={`text-lg font-bold text-lia-text-primary`}>
               {interviewScheduled}/{triageApproved}
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
+            <div className={`${textStyles.bodySmall}`}>
               Agendamentos
             </div>
           </CardContent>
@@ -295,7 +295,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className={`text-lg font-bold text-lia-text-primary`}>
               {avgTimeContact.toFixed(1)}h
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
+            <div className={`${textStyles.bodySmall}`}>
               Tempo Contato
             </div>
           </CardContent>
@@ -305,7 +305,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-1">
-              <Zap className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Zap className="w-4 h-4 text-lia-text-secondary" />
               <Badge className="text-xs px-1.5 py-0.5 bg-gray-900 text-white">
                 {avgLiaScore.toFixed(1)}
               </Badge>
@@ -313,7 +313,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className={`text-lg font-bold text-lia-text-primary`}>
               {avgSkillsMatch}%
             </div>
-            <div className={`${textStyles.bodySmall} dark:text-lia-text-primary`}>
+            <div className={`${textStyles.bodySmall}`}>
               Score/Match
             </div>
           </CardContent>
@@ -340,11 +340,11 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className={`${textStyles.label} dark:text-lia-text-primary`}>
+                        <span className={`${textStyles.label}`}>
                           {stage.stage}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs lia-text-base">
+                          <span className="text-xs text-lia-text-secondary">
                             {stage.count}/{stage.total}
                           </span>
                           <Badge className="text-xs px-1.5 py-0.5" variant="outline">
@@ -371,7 +371,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                     )}
                   </div>
                   {index < funnelStages.length - 1 && (
-                    <ArrowRight className="w-3 h-3 lia-text-base ml-4 my-1" />
+                    <ArrowRight className="w-3 h-3 text-lia-text-secondary ml-4 my-1" />
                   )}
                 </div>
               ))}
@@ -405,7 +405,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
-              <Phone className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Phone className="w-4 h-4 text-lia-text-secondary" />
               Taxa de Contato (7 dias)
             </CardTitle>
           </CardHeader>
@@ -499,11 +499,11 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             {sourceMetrics.map((source) => (
               <div key={source.source} className="flex items-center gap-2">
                 <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
-                  <Users className="w-3 h-3 lia-text-base" />
+                  <Users className="w-3 h-3 text-lia-text-secondary" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{source.source}</span>
+                    <span className="font-medium text-lia-text-primary">{source.source}</span>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-xs px-1 py-0">
                         {source.count} cand.
@@ -548,7 +548,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   {status.count}
                 </span>
               </div>
-              <div className={`${textStyles.bodySmall} dark:text-lia-text-primary truncate`}>
+              <div className={`${textStyles.bodySmall} truncate`}>
                 {status.status}
               </div>
               <div className={textStyles.bodySmall}>
@@ -576,12 +576,12 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               'bg-status-error/10'
             }`}>
               <div className="flex items-center gap-2 mb-1">
-                <Phone className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Phone className="w-3 h-3 text-lia-text-secondary" />
                 <span className="text-xs font-semibold text-lia-text-primary">
                   Taxa de Contato
                 </span>
               </div>
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+              <p className="text-xs text-lia-text-primary">
                 {contactRate >= 80 ?
                   '✅ Excelente! Continue assim.' :
                   contactRate >= 60 ?
@@ -603,7 +603,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   Taxa de Conversão
                 </span>
               </div>
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+              <p className="text-xs text-lia-text-primary">
                 {triageConversionRate >= 70 ?
                   '✅ Ótima conversão na triagem!' :
                   triageConversionRate >= 50 ?
@@ -625,7 +625,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   Velocidade
                 </span>
               </div>
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+              <p className="text-xs text-lia-text-primary">
                 {avgTimeContact <= 2 ?
                   '✅ Resposta rápida! Mantém candidatos engajados.' :
                   avgTimeContact <= 4 ?
@@ -644,7 +644,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-secondary mb-1">
+                <div className="text-xs text-lia-text-secondary mb-1">
                   Score Médio LIA
                 </div>
                 <div className="text-3xl font-bold text-lia-text-primary">
@@ -668,7 +668,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-secondary mb-1">
+                <div className="text-xs text-lia-text-secondary mb-1">
                   Match Médio de Skills
                 </div>
                 <div className="text-3xl font-bold text-lia-text-primary">
@@ -741,7 +741,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <div className="grid grid-cols-4 gap-4 mb-4">
  <div className="p-3 bg-gray-100 rounded-md">
                 <div className="flex items-center justify-between mb-2">
-                  <Timer className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Timer className="w-5 h-5 text-lia-text-secondary" />
                   <Badge className="bg-status-success text-white text-xs">
                     ✓ No Prazo
                   </Badge>
@@ -749,10 +749,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 <div className="text-2xl font-bold text-lia-text-primary">
                   {avgTimeContact.toFixed(1)}d
                 </div>
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+                <div className="text-xs text-lia-text-secondary mt-1">
                   Contato Inicial
                 </div>
-                <div className="text-xs lia-text-base mt-1">
+                <div className="text-xs text-lia-text-secondary mt-1">
                   SLA: 2 dias
                 </div>
               </div>
@@ -767,10 +767,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 <div className="text-2xl font-bold text-lia-text-primary">
                   {avgTimeTriage.toFixed(1)}d
                 </div>
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+                <div className="text-xs text-lia-text-secondary mt-1">
                   Triagem Completa
                 </div>
-                <div className="text-xs lia-text-base mt-1">
+                <div className="text-xs text-lia-text-secondary mt-1">
                   SLA: 3 dias
                 </div>
               </div>
@@ -785,10 +785,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 <div className="text-2xl font-bold text-lia-text-primary">
                   {avgTimeInterview.toFixed(1)}d
                 </div>
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+                <div className="text-xs text-lia-text-secondary mt-1">
                   Agendamento
                 </div>
-                <div className="text-xs lia-text-base mt-1">
+                <div className="text-xs text-lia-text-secondary mt-1">
                   SLA: 5 dias
                 </div>
               </div>
@@ -803,10 +803,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 <div className="text-2xl font-bold text-lia-text-primary">
                   {avgTimeTotal.toFixed(1)}d
                 </div>
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+                <div className="text-xs text-lia-text-secondary mt-1">
                   Tempo Total
                 </div>
-                <div className="text-xs lia-text-base mt-1">
+                <div className="text-xs text-lia-text-secondary mt-1">
                   Contato → Entrevista
                 </div>
               </div>
@@ -820,7 +820,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                     <Award className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
+                    <div className="text-xs text-lia-text-secondary mb-1">
                       Tempo Médio até Contratação
                     </div>
                     <div className="text-3xl font-bold text-lia-text-primary">
@@ -829,10 +829,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs text-lia-text-secondary dark:text-lia-text-secondary mb-1">
+                  <div className="text-xs text-lia-text-secondary mb-1">
                     Meta do Mercado
                   </div>
-                  <div className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                  <div className="text-2xl font-semibold text-lia-text-primary">
                     15 dias
                   </div>
                   <Badge className="mt-2 bg-status-success text-white">
@@ -844,7 +844,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
               {/* Progress bar comparativa */}
               <div className="mt-4">
-                <div className="flex items-center justify-between text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
+                <div className="flex items-center justify-between text-xs text-lia-text-secondary mb-2">
                   <span>Seu desempenho</span>
                   <span>Benchmark mercado</span>
                 </div>
@@ -864,7 +864,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             {/* Breakdown Detalhado */}
             <div className="grid grid-cols-3 gap-3">
               <div className="p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-secondary mb-2">
+                <div className="text-xs text-lia-text-secondary mb-2">
                   Mais Rápido
                 </div>
                 <div className="flex items-center gap-2">
@@ -873,7 +873,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                     <div className="text-lg font-bold text-lia-text-primary">
                       {(avgTimeTotal * 0.6).toFixed(1)}d
                     </div>
-                    <div className="text-xs lia-text-base">
+                    <div className="text-xs text-lia-text-secondary">
                       Melhor caso
                     </div>
                   </div>
@@ -881,16 +881,16 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               </div>
 
               <div className="p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-secondary mb-2">
+                <div className="text-xs text-lia-text-secondary mb-2">
                   Médio
                 </div>
                 <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Target className="w-4 h-4 text-lia-text-secondary" />
                   <div>
                     <div className="text-lg font-bold text-lia-text-primary">
                       {avgTimeTotal.toFixed(1)}d
                     </div>
-                    <div className="text-xs lia-text-base">
+                    <div className="text-xs text-lia-text-secondary">
                       Caso típico
                     </div>
                   </div>
@@ -898,7 +898,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               </div>
 
               <div className="p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
-                <div className="text-xs text-lia-text-secondary dark:text-lia-text-secondary mb-2">
+                <div className="text-xs text-lia-text-secondary mb-2">
                   Mais Lento
                 </div>
                 <div className="flex items-center gap-2">
@@ -907,7 +907,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                     <div className="text-lg font-bold text-lia-text-primary">
                       {(avgTimeTotal * 1.8).toFixed(1)}d
                     </div>
-                    <div className="text-xs lia-text-base">
+                    <div className="text-xs text-lia-text-secondary">
                       Pior caso
                     </div>
                   </div>

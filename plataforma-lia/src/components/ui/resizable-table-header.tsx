@@ -79,7 +79,7 @@ export const ResizableTableHeader = React.memo(function ResizableTableHeader({
       <div className="flex items-center gap-1 group">
         {!isFixed && onDragStart && (
           <GripVertical 
-            className="w-3 h-3 lia-text-base opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none cursor-grab active:cursor-grabbing flex-shrink-0" 
+            className="w-3 h-3 text-lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none cursor-grab active:cursor-grabbing flex-shrink-0" 
           />
         )}
         
@@ -88,7 +88,7 @@ export const ResizableTableHeader = React.memo(function ResizableTableHeader({
             onClick={sortable ? onSort : undefined}
             className={cn(
  "flex items-center gap-1 flex-1 min-w-0",
-              sortable && "cursor-pointer hover:text-lia-text-primary dark:hover:lia-text-subtle"
+              sortable && "cursor-pointer hover:text-lia-text-primary"
             )}
             title={sortable ? `Ordenar por ${label}` : undefined}
           >

@@ -26,7 +26,7 @@ const CATEGORY_CONFIG = {
   recent: {
     label: "Recentes",
     icon: Clock,
-    color: "text-lia-text-secondary dark:text-lia-text-tertiary",
+    color: "text-lia-text-secondary",
     bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
   },
   popular: {

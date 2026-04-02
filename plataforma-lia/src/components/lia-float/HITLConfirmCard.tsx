@@ -49,11 +49,11 @@ export function HITLConfirmCard({
       {/* Header */}
       <div className="flex items-start gap-2">
         <AlertCircle
-          className="w-4 h-4 text-status-warning dark:text-status-warning flex-shrink-0 mt-0.5"
+          className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5"
           strokeWidth={2}
         />
         <p
-          className="text-sm-ui font-semibold text-status-warning dark:text-status-warning leading-snug"
+          className="text-sm-ui font-semibold text-status-warning leading-snug"
           
         >
           Confirmação necessária
@@ -62,7 +62,7 @@ export function HITLConfirmCard({
 
       {/* Descrição da ação */}
       <p
-        className="text-sm-ui text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed pl-6"
+        className="text-sm-ui text-lia-text-secondary leading-relaxed pl-6"
        
       >
         {description}
@@ -78,11 +78,11 @@ export function HITLConfirmCard({
           type="checkbox"
           checked={autoConfirm}
           onChange={(e) => setAutoConfirm(e.target.checked)}
-          className="w-3.5 h-3.5 rounded-md accent-gray-900 cursor-pointer"
+          className="w-3.5 h-3.5 rounded-md accent-lia-btn-primary-bg cursor-pointer"
           aria-label="Confirmar automaticamente esta ação no futuro"
         />
         <span
-          className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary"
+          className="text-xs text-lia-text-tertiary"
          
         >
           Confirmar automaticamente esta ação no futuro
@@ -96,8 +96,8 @@ export function HITLConfirmCard({
           className={cn(
  "flex items-center gap-1.5 px-3 py-1.5",
             "rounded-md text-xs font-medium",
-            "bg-gray-900 text-white",
-            "hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none"
+            "bg-lia-btn-primary-bg text-lia-btn-primary-text",
+            "hover:bg-lia-btn-primary-bg dark:hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
           )}
           aria-label="Confirmar ação"
         >
@@ -109,9 +109,9 @@ export function HITLConfirmCard({
           className={cn(
  "flex items-center gap-1.5 px-3 py-1.5",
             "rounded-md text-xs font-medium",
-            "border border-lia-border-subtle dark:border-lia-border-subtle",
-            "text-lia-text-secondary dark:text-lia-text-tertiary",
-            "hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+            "border border-lia-border-subtle",
+            "text-lia-text-secondary",
+            "hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           )}
           aria-label="Cancelar ação"
         >

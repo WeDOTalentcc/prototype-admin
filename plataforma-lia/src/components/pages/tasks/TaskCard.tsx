@@ -37,10 +37,10 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-              <span className="text-xs font-inter font-medium text-lia-text-primary dark:text-lia-text-primary">
+              <span className="text-xs font-inter font-medium text-lia-text-primary">
                 {task.dueDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
               </span>
-              <h4 className="text-xs font-inter font-semibold text-lia-text-primary dark:text-lia-text-primary">
+              <h4 className="text-xs font-inter font-semibold text-lia-text-primary">
                 {task.title}
               </h4>
               <Badge
@@ -49,10 +49,10 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
                 {getPriorityLabel(task.priority as any) /* TODO: fix type */}
               </Badge>
             </div>
-            <p className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary mb-1 line-clamp-1">
+            <p className="text-xs font-open-sans text-lia-text-primary mb-1 line-clamp-1">
               {task.description}
             </p>
-            <div className="flex items-center gap-2 text-xs text-lia-text-primary dark:text-lia-text-tertiary">
+            <div className="flex items-center gap-2 text-xs text-lia-text-primary">
               {task.candidateName && (
                 <span className="flex items-center gap-0.5">
                   <User className="w-2.5 h-2.5" />
@@ -135,7 +135,7 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
               size="sm"
               variant="ghost"
               onClick={() => onReject(task)}
-              className="h-5 px-1.5 text-xs gap-0.5 text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse"
+              className="h-5 px-1.5 text-xs gap-0.5 text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
             >
               <XCircle className="w-2.5 h-2.5" />
               Rejeitar

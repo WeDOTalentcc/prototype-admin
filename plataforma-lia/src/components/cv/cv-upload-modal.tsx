@@ -279,12 +279,12 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
     const ext = fileName.split('.').pop()?.toLowerCase()
     switch (ext) {
       case 'pdf':
-        return <FileText className="w-8 h-8 text-lia-text-primary dark:text-lia-text-primary" />
+        return <FileText className="w-8 h-8 text-lia-text-primary" />
       case 'docx':
       case 'doc':
-        return <FileText className="w-8 h-8 text-lia-text-primary dark:text-lia-text-primary" />
+        return <FileText className="w-8 h-8 text-lia-text-primary" />
       default:
-        return <File className="w-8 h-8 text-lia-text-primary dark:text-lia-text-primary" />
+        return <File className="w-8 h-8 text-lia-text-primary" />
     }
   }
 
@@ -299,10 +299,10 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
       <DialogContent className="max-w-xl rounded-md bg-white dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
         <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
           <DialogTitle className="flex items-center gap-2 text-lia-text-primary">
-            <FileUp className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <FileUp className="w-5 h-5 text-lia-text-secondary" />
             Upload de CV
           </DialogTitle>
-          <DialogDescription className="text-lia-text-secondary dark:text-lia-text-tertiary">
+          <DialogDescription className="text-lia-text-secondary">
             Envie um currículo para extração automática de dados com IA
           </DialogDescription>
         </DialogHeader>
@@ -343,11 +343,11 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
                     : "border-lia-border-default hover:border-gray-400 hover:bg-gray-50"
                 )}
               >
-                <Upload className="w-10 h-10 mx-auto mb-3 lia-text-base" />
-                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+                <Upload className="w-10 h-10 mx-auto mb-3 text-lia-text-secondary" />
+                <p className="text-sm font-medium text-lia-text-primary">
                   {isDragging ? "Solte o arquivo aqui" : "Arraste ou clique para selecionar"}
                 </p>
-                <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">
+                <p className="text-xs text-lia-text-primary mt-1">
                   PDF, DOCX, DOC ou TXT (máx. 5MB)
                 </p>
               </div>
@@ -359,7 +359,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
                     <p className="text-sm font-medium text-lia-text-primary truncate">
                       {selectedFile.name}
                     </p>
-                    <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                    <p className="text-xs text-lia-text-primary">
                       {formatFileSize(selectedFile.size)}
                     </p>
                   </div>
@@ -377,7 +377,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
 
             {isUploading && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs lia-text-base">
+                <div className="flex items-center justify-between text-xs text-lia-text-secondary">
                   <span>Processando CV com IA...</span>
                   <span>{uploadProgress}%</span>
                 </div>
@@ -398,9 +398,9 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
                 className="resize-none"
                 disabled={isUploading}
               />
-              <div className="flex justify-between text-xs text-lia-text-primary dark:text-lia-text-primary">
+              <div className="flex justify-between text-xs text-lia-text-primary">
                 <span>Mínimo 50 caracteres</span>
-                <span className={cvText.length < 50 ? "text-lia-text-tertiary" : "text-lia-text-primary dark:text-lia-text-primary"}>
+                <span className={cvText.length < 50 ? "text-lia-text-tertiary" : "text-lia-text-primary"}>
                   {cvText.length} caracteres
                 </span>
               </div>
@@ -408,7 +408,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
 
             {isUploading && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs lia-text-base">
+                <div className="flex items-center justify-between text-xs text-lia-text-secondary">
                   <span>Extraindo dados com IA...</span>
                   <span>{uploadProgress}%</span>
                 </div>

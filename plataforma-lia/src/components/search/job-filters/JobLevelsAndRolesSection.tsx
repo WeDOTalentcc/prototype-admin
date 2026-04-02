@@ -65,7 +65,7 @@ export const JobLevelsAndRolesSection = ({
           <Label className="text-xs font-medium">Níveis de Cargo</Label>
           <Popover>
             <PopoverTrigger asChild>
-              <button className="lia-text-400 hover:lia-text-600">
+              <button className="text-lia-text-tertiary hover:text-lia-text-secondary">
                 <Info className="w-3 h-3" />
               </button>
             </PopoverTrigger>
@@ -90,8 +90,8 @@ export const JobLevelsAndRolesSection = ({
                 className={cn(
                   "px-2.5 py-1 rounded-md text-xs border transition-colors",
                   isSelected
-                    ? "border-gray-400 bg-gray-100 lia-text-800 dark:text-lia-text-primary font-medium"
-                    : "border-lia-border-subtle hover:border-lia-border-default lia-text-600"
+                    ? "border-gray-400 bg-gray-100 text-lia-text-primary font-medium"
+                    : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                 )}
               >
                 {level.label}
@@ -107,7 +107,7 @@ export const JobLevelsAndRolesSection = ({
           <Label className="text-xs font-medium">Funções/Áreas</Label>
           <Popover>
             <PopoverTrigger asChild>
-              <button className="lia-text-400 hover:lia-text-600">
+              <button className="text-lia-text-tertiary hover:text-lia-text-secondary">
                 <Info className="w-3 h-3" />
               </button>
             </PopoverTrigger>
@@ -139,7 +139,7 @@ export const JobLevelsAndRolesSection = ({
             />
             {isLoadingRoles && (
               <div className="absolute right-2 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
-                <Loader2 className="w-3 h-3 lia-text-500 animate-spin motion-reduce:animate-none" />
+                <Loader2 className="w-3 h-3 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
               </div>
             )}
           </div>
@@ -148,7 +148,7 @@ export const JobLevelsAndRolesSection = ({
           {showRoleSuggestions && roleSuggestions.length > 0 && (
             <div className="absolute z-50 mt-1 w-full bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-40 overflow-y-auto">
               <div className="p-1 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                <div className="flex items-center gap-1 text-micro lia-text-600 dark:text-lia-text-tertiary">
+                <div className="flex items-center gap-1 text-micro text-lia-text-secondary">
                   <Zap className="w-2.5 h-2.5" />
                   <span>Sugestões AI</span>
                 </div>
@@ -163,7 +163,7 @@ export const JobLevelsAndRolesSection = ({
                   className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 flex items-center justify-between gap-2"
                 >
                   <span>{suggestion.term}</span>
-                  <span className="text-micro lia-text-400">
+                  <span className="text-micro text-lia-text-tertiary">
                     {Math.round(suggestion.confidence * 100)}%
                   </span>
                 </button>
@@ -210,8 +210,8 @@ export const JobLevelsAndRolesSection = ({
                 className={cn(
                   "px-2.5 py-1 rounded-md text-xs border transition-colors",
                   isSelected
-                    ? "border-gray-400 bg-gray-100 lia-text-800 dark:text-lia-text-primary font-medium"
-                    : "border-lia-border-subtle hover:border-lia-border-default lia-text-600"
+                    ? "border-gray-400 bg-gray-100 text-lia-text-primary font-medium"
+                    : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                 )}
               >
                 {role.label}

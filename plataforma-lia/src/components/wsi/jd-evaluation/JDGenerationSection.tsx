@@ -42,19 +42,19 @@ function formatJDText(text: string): React.ReactNode {
 
     if (line.startsWith('### ')) {
       elements.push(
-        <h4 key={i} className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary mt-3 mb-1">
+        <h4 key={i} className="text-xs font-bold text-lia-text-primary mt-3 mb-1">
           {line.replace('### ', '')}
         </h4>
       )
     } else if (line.startsWith('## ')) {
       elements.push(
-        <h3 key={i} className="text-base-ui font-bold text-lia-text-primary dark:text-lia-text-primary mt-4 mb-1.5">
+        <h3 key={i} className="text-base-ui font-bold text-lia-text-primary mt-4 mb-1.5">
           {line.replace('## ', '')}
         </h3>
       )
     } else if (line.startsWith('# ')) {
       elements.push(
-        <h2 key={i} className="text-sm font-bold text-lia-text-primary dark:text-lia-text-primary mb-2">
+        <h2 key={i} className="text-sm font-bold text-lia-text-primary mb-2">
           {line.replace('# ', '')}
         </h2>
       )
@@ -62,14 +62,14 @@ function formatJDText(text: string): React.ReactNode {
       elements.push(
         <div key={i} className="flex items-start gap-2 ml-1 mb-0.5">
           <span className="text-micro lia-text-secondary mt-1">•</span>
-          <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed">
+          <span className="text-xs text-lia-text-secondary leading-relaxed">
             {line.replace('- ', '')}
           </span>
         </div>
       )
     } else {
       elements.push(
-        <p key={i} className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed mb-1">
+        <p key={i} className="text-xs text-lia-text-secondary leading-relaxed mb-1">
           {line}
         </p>
       )
@@ -96,7 +96,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
   return (
     <div className="sticky top-0 self-start">
       <div className="flex items-center justify-between mb-2">
-        <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide dark:text-lia-text-primary">
+        <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide">
           Descrição Gerada pela LIA
         </label>
         <Button
@@ -105,8 +105,8 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
           className={cn(
             "h-7 text-xs px-3 transition-colors",
             isGeneratingJD
-              ? "bg-gray-900 text-white border-gray-900"
-              : "bg-gray-900 text-white border-gray-900 hover:bg-gray-800 dark:border-lia-border-subtle"
+              ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg"
+              : "bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
           )}
           onClick={onGenerate}
           disabled={isGeneratingJD}
@@ -121,7 +121,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
       </div>
 
       <div
-        className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary overflow-hidden min-h-chart-sm"
+        className="bg-white rounded-md border border-lia-border-subtle overflow-hidden min-h-chart-sm"
         role="status"
         aria-live="polite"
         aria-label="Carregando..."
@@ -130,11 +130,11 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
         {isGeneratingJD && (
           <div className="p-4 space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
             <div className="flex items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-gray-100 dark:bg-lia-bg-secondary">
-                <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-lia-bg-tertiary">
+                <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                <p className="text-xs font-semibold text-lia-text-primary">
                   Gerando Descrição do Cargo...
                 </p>
                 <p className="text-micro lia-text-secondary mt-0.5">
@@ -144,11 +144,11 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
             </div>
             {jdTypedMessage && (
               <div className="flex items-center gap-2 pl-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-gray-900 animate-pulse motion-reduce:animate-none" />
-                <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary">
+                <div className="w-1.5 h-1.5 rounded-full bg-lia-btn-primary-bg animate-pulse motion-reduce:animate-none" />
+                <p className="text-xs text-lia-text-secondary">
                   {jdTypedMessage}
                   {jdTypedMessage.length < jdDynamicMessage.length && (
-                    <span className="inline-block w-[2px] h-[13px] bg-gray-900 ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />
+                    <span className="inline-block w-[2px] h-[13px] bg-lia-btn-primary-bg ml-0.5 align-middle animate-pulse motion-reduce:animate-none" />
                   )}
                 </p>
               </div>
@@ -162,11 +162,11 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
             {formatJDText(generatedJD.full_description)}
 
             {generatedJD.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-4 mt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="flex flex-wrap gap-1.5 pt-4 mt-3 border-t border-lia-border-subtle">
                 {generatedJD.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="text-micro px-2 py-0.5 bg-gray-100 text-lia-text-secondary rounded-full dark:bg-lia-bg-secondary dark:text-lia-text-tertiary"
+                    className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary rounded-full"
                   >
                     {tag}
                   </span>
@@ -178,7 +178,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full h-7 text-xs border-lia-border-subtle text-lia-text-secondary dark:border-lia-border-default dark:text-lia-text-secondary"
+                className="w-full h-7 text-xs border-lia-border-subtle text-lia-text-secondary"
                 onClick={onCopy}
               >
                 {copiedJD ? (
@@ -197,7 +197,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
               {showSaveAndUpdate && (
                 <Button
                   size="sm"
-                  className="w-full h-7 text-micro px-4 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="w-full h-7 text-micro px-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
                   onClick={onSaveAndUpdateJD}
                   disabled={isSavingWithJD}
                 >

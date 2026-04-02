@@ -193,25 +193,25 @@ export function AddColumnPopover({
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">Adicionar Coluna ao Pipeline</h3>
+          <h3 className="text-sm font-semibold text-lia-text-primary">Adicionar Coluna ao Pipeline</h3>
           <button onClick={onClose} className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
-            <X className="w-4 h-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
+            <X className="w-4 h-4 text-lia-text-disabled" />
           </button>
         </div>
 
         <div className="space-y-3 mb-4">
-          <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Nome da Etapa</label>
+          <label className="text-xs font-medium text-lia-text-secondary">Nome da Etapa</label>
           <input
             type="text"
             value={columnName}
             onChange={(e) => { setColumnName(e.target.value); setInferredBehavior(null) }}
             placeholder="Ex: Teste de Lógica, Entrevista Cultural..."
-            className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors motion-reduce:transition-none"
+            className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-secondary rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 transition-colors motion-reduce:transition-none"
           />
           {columnName.length >= 3 && !inferredBehavior && (
             <button
               onClick={handleInferBehavior}
-              className="text-xs px-3 py-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
+              className="text-xs px-3 py-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-secondary transition-colors motion-reduce:transition-none"
             >
               Sugerir tipo de ação
             </button>
@@ -239,7 +239,7 @@ export function AddColumnPopover({
 
         {availableCatalog.length > 0 && (
           <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-            <label className="text-xs font-medium text-lia-text-tertiary dark:text-lia-text-tertiary mb-2 block">Ou escolha do catálogo:</label>
+            <label className="text-xs font-medium text-lia-text-tertiary mb-2 block">Ou escolha do catálogo:</label>
             <div className="grid grid-cols-2 gap-2">
               {availableCatalog.map(cat => (
                 <button
@@ -249,7 +249,7 @@ export function AddColumnPopover({
                   className="flex items-center gap-2 p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="w-3 h-3 rounded-full flex-shrink-0" style={{backgroundColor: cat.color}} />
-                  <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary font-medium">{cat.name}</span>
+                  <span className="text-xs text-lia-text-secondary font-medium">{cat.name}</span>
                 </button>
               ))}
             </div>

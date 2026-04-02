@@ -33,7 +33,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Bell className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+            <Bell className="w-3.5 h-3.5 text-lia-text-primary" />
             <CardTitle className={`${textStyles.label} font-semibold wedo-text-black`}>Alertas Ativos</CardTitle>
             <Badge variant="outline" className="text-xs font-inter">
               {activeAlerts.length}
@@ -86,7 +86,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-                      <h4 className="text-xs font-inter font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                      <h4 className="text-xs font-inter font-semibold text-lia-text-primary">
                         {alert.title}
                       </h4>
                       <Badge
@@ -97,10 +97,10 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
                         {getSeverityLabel(alert.severity)}
                       </Badge>
                     </div>
-                    <p className="text-xs font-open-sans text-lia-text-primary dark:text-lia-text-tertiary mb-1 line-clamp-1">
+                    <p className="text-xs font-open-sans text-lia-text-primary mb-1 line-clamp-1">
                       {alert.description}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-lia-text-primary dark:text-lia-text-tertiary">
+                    <div className="flex items-center gap-2 text-xs text-lia-text-primary">
                       <span className="flex items-center gap-0.5">
                         <Briefcase className="w-2.5 h-2.5" />
                         {alert.jobTitle}
@@ -127,9 +127,9 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
 
           {activeAlerts.length === 0 && (
             <div className="text-center py-8">
-              <Bell className="w-12 h-12 mx-auto text-lia-text-disabled dark:text-lia-text-tertiary mb-3" />
-              <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">Nenhum alerta ativo</p>
-              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">Sem alertas no momento</p>
+              <Bell className="w-12 h-12 mx-auto text-lia-text-disabled mb-3" />
+              <p className="text-sm font-medium text-lia-text-primary mb-1">Nenhum alerta ativo</p>
+              <p className="text-xs text-lia-text-secondary">Sem alertas no momento</p>
             </div>
           )}
         </div>

@@ -33,7 +33,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
             />
           ))}
         </div>
-        <span className="text-xs font-['Open_Sans',sans-serif] text-lia-text-secondary dark:text-lia-text-tertiary">
+        <span className="text-xs font-['Open_Sans',sans-serif] text-lia-text-secondary">
           LIA está digitando...
         </span>
       </div>

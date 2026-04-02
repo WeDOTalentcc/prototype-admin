@@ -100,7 +100,7 @@ export function DataBlockingModal({
       case 'never_requested':
       default:
         return (
-          <span className="text-micro bg-gray-100 text-lia-text-tertiary px-1.5 py-0.5 rounded-full">
+          <span className="text-micro bg-lia-bg-tertiary text-lia-text-tertiary px-1.5 py-0.5 rounded-full">
             Não solicitado
           </span>
         )
@@ -127,9 +127,9 @@ export function DataBlockingModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-sm rounded-md dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+      <DialogContent className="max-w-sm rounded-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-status-warning dark:text-status-warning">
+          <DialogTitle className="flex items-center gap-2 text-status-warning">
             <AlertTriangle className="w-5 h-5" />
             Dados Pendentes
           </DialogTitle>
@@ -140,7 +140,7 @@ export function DataBlockingModal({
 
         <div className="space-y-4 py-4">
           <div className="bg-status-warning/10 dark:bg-status-warning/30 border border-status-warning/30 dark:border-status-warning/30 rounded-md p-3">
-            <p className="text-sm text-status-warning dark:text-status-warning" aria-live="polite" aria-atomic="true">
+            <p className="text-sm text-status-warning" aria-live="polite" aria-atomic="true">
               Esta etapa requer informações adicionais do candidato. 
               Você pode solicitar os dados ou avançar mesmo assim.
             </p>
@@ -148,21 +148,21 @@ export function DataBlockingModal({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-secondary">Campos Pendentes</span>
-              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">{pendingFields.length} campos</span>
+              <span className="text-sm font-medium text-lia-text-secondary">Campos Pendentes</span>
+              <span className="text-xs text-lia-text-tertiary">{pendingFields.length} campos</span>
             </div>
-            <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md divide-y divide-gray-200 dark:divide-gray-700 max-h-chart-sm overflow-y-auto">
+            <div className="border border-lia-border-subtle rounded-md divide-y divide-lia-border-subtle max-h-chart-sm overflow-y-auto">
               {pendingFields.map((field) => (
                 <div
                   key={field.id}
-                  className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="flex items-center justify-between p-3 hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-hover"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="text-lia-text-disabled dark:text-lia-text-tertiary">
+                    <div className="text-lia-text-disabled">
                       {getFieldIcon(field.id)}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{field.displayName}</p>
+                      <p className="text-sm font-medium text-lia-text-primary">{field.displayName}</p>
                       {field.lastRequestedAt && (
                         <p className="text-xs text-lia-text-tertiary">
                           Solicitado em {new Date(field.lastRequestedAt).toLocaleDateString('pt-BR')}
@@ -176,8 +176,8 @@ export function DataBlockingModal({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-            <div className="w-10 h-10 bg-gray-200 dark:bg-lia-bg-elevated rounded-full flex items-center justify-center">
+          <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md">
+            <div className="w-10 h-10 bg-lia-interactive-active rounded-full flex items-center justify-center">
               {candidate.avatar ? (
                 <NextImage src={candidate.avatar} alt="" width={40} height={40} className="w-10 h-10 rounded-full" />
               ) : (
@@ -185,19 +185,19 @@ export function DataBlockingModal({
               )}
             </div>
             <div>
-              <p className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary">{candidate.name}</p>
+              <p className="font-medium text-sm text-lia-text-primary">{candidate.name}</p>
               {candidate.email && (
-                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">{candidate.email}</p>
+                <p className="text-xs text-lia-text-tertiary">{candidate.email}</p>
               )}
             </div>
           </div>
         </div>
 
-        <DialogFooter className="flex-col gap-2 sm:flex-col border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
+        <DialogFooter className="flex-col gap-2 sm:flex-col border-t border-lia-border-subtle bg-lia-bg-secondary p-4 -mx-6 -mb-6 rounded-b-xl">
           <Button
             onClick={handleResendRequest}
             disabled={isResending || isProceeding}
-            className="w-full h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200"
+            className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             {isResending ? (
               <>
@@ -215,7 +215,7 @@ export function DataBlockingModal({
             variant="outline"
             onClick={handleProceedAnyway}
             disabled={isResending || isProceeding}
-            className="w-full bg-white border border-lia-border-default text-lia-text-secondary hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+            className="w-full bg-white border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
           >
             {isProceeding ? (
               <>
@@ -233,7 +233,7 @@ export function DataBlockingModal({
             variant="ghost"
             onClick={onClose}
             disabled={isResending || isProceeding}
-            className="w-full dark:text-lia-text-secondary dark:hover:bg-gray-800"
+            className="w-full dark:hover:bg-lia-btn-primary-hover"
           >
             <X className="w-4 h-4 mr-2" />
             Cancelar

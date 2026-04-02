@@ -73,7 +73,7 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
                   ? 'bg-gray-900 text-white'
                   : step.status === 'current'
                   ? 'bg-gray-900 text-white ring-2 ring-gray-900/20'
-                  : 'bg-gray-200 text-lia-text-tertiary dark:bg-lia-bg-elevated dark:text-lia-text-tertiary'
+                  : 'bg-gray-200 text-lia-text-tertiary dark:bg-lia-bg-elevated'
               }`}
              
             >
@@ -86,9 +86,9 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
             <span
               className={`mt-1.5 text-micro text-center max-w-[70px] ${
  step.status === 'current'
-                  ? 'text-lia-text-primary font-medium dark:text-lia-text-primary'
+                  ? 'text-lia-text-primary font-medium'
                   : step.status === 'completed'
-                  ? 'text-lia-text-secondary dark:text-lia-text-tertiary'
+                  ? 'text-lia-text-secondary'
                   : 'lia-text-secondary'
               }`}
              
@@ -118,7 +118,7 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="inline-flex items-center gap-1 text-xs lia-text-secondary hover:lia-text-strong dark:hover:lia-text-subtle transition-colors motion-reduce:transition-none">
+          <button className="inline-flex items-center gap-1 text-xs lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none">
             <Info className="w-3 h-3" />
             <span>Como funciona?</span>
           </button>
@@ -128,7 +128,7 @@ const LIARulesInfo: React.FC<{ type: 'triage' | 'interview' }> = ({ type }) => {
             <p className="font-medium text-xs text-lia-text-primary">
               {isInterview ? 'Processo de Agendamento LIA:' : 'Processo de Triagem LIA:'}
             </p>
-            <ul className="space-y-1 text-xs text-lia-text-secondary dark:text-lia-text-secondary">
+            <ul className="space-y-1 text-xs text-lia-text-secondary">
               {isInterview ? (
                 <>
                   <li className="flex items-start gap-1.5">
@@ -225,7 +225,7 @@ Equipe de Recrutamento`
       case 'approve_to_interview':
         return {
           title: 'Aprovar para Entrevista',
-          icon: <Calendar className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />,
+          icon: <Calendar className="w-5 h-5 text-lia-text-secondary" />,
           steps: [
             { id: 'approve', label: 'Aprovação', status: 'completed' as const },
             { id: 'triage', label: 'Triagem LIA', status: 'completed' as const },
@@ -264,7 +264,7 @@ Equipe de Recrutamento`
       case 'reschedule_interview':
         return {
           title: 'Alterar Horário',
-          icon: <Calendar className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />,
+          icon: <Calendar className="w-5 h-5 text-lia-text-secondary" />,
           steps: [],
           confirmLabel: 'Buscar Novos Horários',
           confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200',
@@ -273,7 +273,7 @@ Equipe de Recrutamento`
       case 'confirm_hire':
         return {
           title: 'Confirmar Contratação',
-          icon: <CheckCircle className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-secondary" />,
+          icon: <CheckCircle className="w-5 h-5 text-lia-text-secondary" />,
           steps: [
             { id: 'approve', label: 'Aprovação', status: 'completed' as const },
             { id: 'triage', label: 'Triagem', status: 'completed' as const },
@@ -324,14 +324,14 @@ Equipe de Recrutamento`
               {candidate.avatar ? (
                 <NextImage src={candidate.avatar} alt={candidate.name} fill className="object-cover" />
               ) : (
-                <span className="text-sm font-semibold text-lia-text-secondary dark:text-lia-text-secondary">
+                <span className="text-sm font-semibold text-lia-text-secondary">
                   {candidate.name.charAt(0)}
                 </span>
               )}
             </div>
             <div>
               <p className="text-base-ui font-medium text-lia-text-primary">{candidate.name}</p>
-              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+              <p className="text-xs text-lia-text-tertiary">
                 {candidate.role} {candidate.currentCompany && `• ${candidate.currentCompany}`}
               </p>
             </div>
@@ -351,7 +351,7 @@ Equipe de Recrutamento`
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
                     {flowType === 'approve_to_triage' ? 'LIA vai iniciar a triagem' : 'LIA vai agendar a entrevista'}
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mb-1.5" aria-live="polite" aria-atomic="true">
+                  <p className="text-xs text-lia-text-tertiary mb-1.5" aria-live="polite" aria-atomic="true">
                     {flowType === 'approve_to_triage' 
                       ? `Contato via ${contactChannels.join(' e ') || 'WhatsApp e Email'}`
                       : 'Candidato receberá link para escolher horário'
@@ -367,13 +367,13 @@ Equipe de Recrutamento`
             <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
-                  <CheckCircle className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <CheckCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </div>
                 <div className="flex-1">
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
                     LIA vai enviar boas-vindas
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mb-1.5">
+                  <p className="text-xs text-lia-text-tertiary mb-1.5">
                     {`Contato via ${contactChannels.join(' e ') || 'Email'} com próximos passos de onboarding`}
                   </p>
                 </div>
@@ -391,7 +391,7 @@ Equipe de Recrutamento`
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5" aria-live="polite" aria-atomic="true">
                     Candidato será reprovado
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+                  <p className="text-xs text-lia-text-tertiary">
                     Como ainda não iniciou a triagem, não é necessário enviar feedback.
                   </p>
                 </div>
@@ -409,7 +409,7 @@ Equipe de Recrutamento`
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5" aria-live="polite" aria-atomic="true">
                     Candidato participou da triagem
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+                  <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                     Recomendamos enviar feedback para manter boa experiência do candidato.
                   </p>
                 </div>
@@ -427,7 +427,7 @@ Equipe de Recrutamento`
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
                     Solicitação de Urgência
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+                  <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                     A LIA enviará uma nova mensagem de agendamento com prioridade alta para o candidato, solicitando retorno imediato.
                   </p>
                 </div>
@@ -439,13 +439,13 @@ Equipe de Recrutamento`
             <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
                 <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-secondary" />
+                  <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </div>
                 <div className="flex-1">
                   <p className="text-base-ui font-medium text-lia-text-primary mb-0.5">
                     Alterar Horário da Entrevista
                   </p>
-                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
+                  <p className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
                     A LIA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.
                   </p>
                 </div>
@@ -459,7 +459,7 @@ Equipe de Recrutamento`
             variant="outline" 
             onClick={onClose} 
             disabled={isLoading}
-            className="text-xs h-8 border border-lia-border-default text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-800"
+            className="text-xs h-8 border border-lia-border-default text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:hover:bg-gray-800"
            
           >
             Cancelar
@@ -474,7 +474,7 @@ Equipe de Recrutamento`
                   onClose()
                 }}
                 disabled={isLoading}
-                className="text-xs h-8 lia-text-base"
+                className="text-xs h-8 text-lia-text-secondary"
                
               >
                 Apenas reprovar

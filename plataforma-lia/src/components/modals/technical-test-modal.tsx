@@ -16,9 +16,9 @@ const STATUS_CONFIG = {
   pending: {
     label: 'Pendente',
     icon: AlertCircle,
-    color: 'var(--gray-400)',
-    bgColor: 'var(--gray-bg-10)',
-    borderColor: 'var(--gray-border)'
+    color: 'var(--lia-text-tertiary)',
+    bgColor: 'var(--lia-bg-tertiary)',
+    borderColor: 'var(--lia-border-default)'
   },
   in_progress: {
     label: 'Em andamento',
@@ -62,7 +62,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'var(--status-success)'
-    if (score >= 60) return 'var(--gray-400)'
+    if (score >= 60) return 'var(--lia-text-tertiary)'
     if (score >= 40) return 'var(--status-warning)'
     return 'var(--status-error)'
   }
@@ -87,20 +87,20 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col border border-lia-border-subtle bg-gray-50 rounded-md"
+        className="w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col border border-lia-border-subtle bg-lia-bg-secondary rounded-md"
       >
         <div 
-          className="flex items-center justify-between px-4 py-3 border-b border-b-gray-100"
+          className="flex items-center justify-between px-4 py-3 border-b border-b-lia-border-subtle"
         >
           <div className="flex items-center gap-2">
             <div
               className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0 bg-wedo-cyan/12"
             >
-              <Code className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Code className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
               <h2 
-                className="text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary"
+                className="text-base-ui font-semibold text-lia-text-primary"
                
               >
                 Teste Técnico
@@ -116,13 +116,13 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
           </div>
           <button 
             onClick={onClose}
-            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-gray-100 rounded-full text-lia-text-tertiary"
+            className="h-7 w-7 p-0 flex items-center justify-center transition-colors motion-reduce:transition-none hover:bg-lia-interactive-hover rounded-full text-lia-text-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4 bg-[var(--gray-50)]">
+        <div className="flex-1 overflow-y-auto px-4 py-4 bg-[var(--lia-bg-secondary)]">
           <div 
             className="flex items-center justify-between p-3 rounded-md mb-4"
             style={{backgroundColor: statusConfig.bgColor, border: `1px solid ${statusConfig.borderColor}`}}
@@ -158,7 +158,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   className="p-3 rounded-md border border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Trophy className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Trophy className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span 
                       className="text-micro text-lia-text-secondary"
                      
@@ -186,7 +186,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                   className="p-3 rounded-md border border-lia-border-subtle"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <span 
                       className="text-micro text-lia-text-secondary"
                      
@@ -195,7 +195,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                     </span>
                   </div>
                   <span 
-                    className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary"
+                    className="text-2xl font-bold text-lia-text-primary"
                    
                   // @ts-ignore TODO: fix type
                   >
@@ -212,9 +212,9 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               </div>
 
               <div className="flex items-center gap-2 p-3 rounded-md mb-4 bg-wedo-cyan/[.08] border border-wedo-cyan/20">
-                <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Users className="w-4 h-4 text-lia-text-secondary" />
                 <span 
-                  className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary"
+                  className="text-xs text-lia-text-secondary"
                  
                  aria-live="polite" aria-atomic="true">
                   Comparação com outros candidatos:
@@ -231,7 +231,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
 
               <div className="mb-4">
                 <p 
-                  className="text-xs font-semibold mb-3 text-lia-text-primary dark:text-lia-text-primary"
+                  className="text-xs font-semibold mb-3 text-lia-text-primary"
                  
                 >
                   Breakdown por Categoria
@@ -247,7 +247,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span 
-                          className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary"
+                          className="text-xs font-medium text-lia-text-primary"
                          
                         >
                           {(category.name as React.ReactNode)}
@@ -269,10 +269,10 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                         <Progress 
                           // @ts-ignore TODO: fix type
                           value={category.score} 
-                          className="h-1.5 bg-gray-200"
+                          className="h-1.5 bg-lia-interactive-active"
                         />
                         <div 
-                          className="absolute top-0 h-1.5 rounded-full opacity-30 bg-gray-400" style={{width: `${category.avgScore}%`}}
+                          className="absolute top-0 h-1.5 rounded-full opacity-30 bg-lia-border-medium" style={{width: `${category.avgScore}%`}}
                         />
                       </div>
                       <div className="flex items-center justify-between mt-1">
@@ -341,12 +341,12 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
         </div>
 
         <div 
-          className="px-4 py-3 flex justify-end border-t border-t-gray-100"
+          className="px-4 py-3 flex justify-end border-t border-t-lia-border-subtle"
         >
           <Button
             onClick={onClose}
             size="sm"
-            className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 text-white"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
            
           >
             Fechar

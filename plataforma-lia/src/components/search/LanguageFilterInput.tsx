@@ -226,7 +226,7 @@ export function LanguageFilterInput({
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
+            className="text-xs text-lia-text-secondary hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
           >
             <RotateCcw className="w-3 h-3" />
             Limpar tudo
@@ -237,14 +237,14 @@ export function LanguageFilterInput({
             <button
               onClick={() => {}}
               disabled={value.length === 0}
-              className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-xs text-lia-text-secondary hover:text-lia-text-primary flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-3.5 h-3.5" />
               Salvar Preset
             </button>
             <button
               onClick={() => {}}
-              className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1"
+              className="text-xs text-lia-text-secondary hover:text-lia-text-primary flex items-center gap-1"
             >
               <List className="w-3.5 h-3.5" />
               Presets
@@ -255,7 +255,7 @@ export function LanguageFilterInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -281,11 +281,11 @@ export function LanguageFilterInput({
                   focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50"
                 )}
               >
-                <span className="font-medium lia-text-950 dark:lia-text-50">{language}</span>
+                <span className="font-medium text-lia-text-primary">{language}</span>
               </button>
             ))}
             {filteredLanguages.length > 20 && (
-              <div className="px-3 py-2 text-xs lia-text-500 border-t border-lia-border-subtle">
+              <div className="px-3 py-2 text-xs text-lia-text-secondary border-t border-lia-border-subtle">
                 +{filteredLanguages.length - 20} mais resultados...
               </div>
             )}
@@ -303,7 +303,7 @@ export function LanguageFilterInput({
             >
               <div className="flex items-center gap-2">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
-                <span className="lia-text-800 dark:text-lia-text-primary">Adicionar "{inputValue.trim()}"</span>
+                <span className="text-lia-text-primary">Adicionar "{inputValue.trim()}"</span>
               </div>
             </button>
           </div>
@@ -317,10 +317,10 @@ export function LanguageFilterInput({
               key={language}
               className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 rounded-md text-sm"
             >
-              <span className="lia-text-800 dark:text-lia-text-primary">{language}</span>
+              <span className="text-lia-text-primary">{language}</span>
               <button
                 onClick={() => onRemove(language)}
-                className="lia-text-400 hover:lia-text-600 transition-colors motion-reduce:transition-none"
+                className="text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

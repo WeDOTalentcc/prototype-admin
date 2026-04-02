@@ -109,8 +109,8 @@ function DemographicBar({ label, count, percentage }: DemographicDistribution) {
     <div className="flex items-center justify-between">
       <span className="text-xs text-lia-text-secondary">{label}</span>
       <div className="flex items-center gap-2">
-        <div className="w-16 h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
-          <div className="h-full bg-gray-900 dark:bg-lia-btn-primary-bg" style={{ width: `${percentage}%` }} />
+        <div className="w-16 h-2 bg-lia-interactive-active rounded-full overflow-hidden">
+          <div className="h-full bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg" style={{ width: `${percentage}%` }} />
         </div>
         <span className="text-micro text-lia-text-secondary w-8 text-right">{count}</span>
       </div>
@@ -136,7 +136,7 @@ export function InsightsOverviewSection({
   return (
     <div className="space-y-4">
       {/* ── Resumo Agregado ─────────────────────────────────────────────── */}
-      <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <Target className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Resumo Agregado
@@ -162,9 +162,9 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── Análise LIA Textual ─────────────────────────────────────────── */}
-      <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-default">
+      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-default">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
           <div>
@@ -183,7 +183,7 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── Taxa de Conversão por Etapa ─────────────────────────────────── */}
-      <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <ArrowDownRight className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Taxa de Conversão por Etapa
@@ -221,7 +221,7 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── Tendência Temporal ──────────────────────────────────────────── */}
-      <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <TrendingUp className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Tendência Temporal
@@ -234,7 +234,7 @@ export function InsightsOverviewSection({
               {trendData.candidatesTrend.map((val, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center">
                   <div
-                    className="w-full bg-gray-900 dark:bg-lia-btn-primary-bg rounded-t transition-colors motion-reduce:transition-none"
+                    className="w-full bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg rounded-t transition-colors motion-reduce:transition-none"
                     style={{ height: `${(val / trendData.maxCandidates) * 100}%` }}
                   />
                   <span className="text-xs text-lia-text-tertiary mt-1">{trendData.weeks[i]}</span>
@@ -262,7 +262,7 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── Funil de Recrutamento ───────────────────────────────────────── */}
-      <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <BarChart3 className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Funil de Recrutamento
@@ -271,7 +271,7 @@ export function InsightsOverviewSection({
           {funnelData.map((stage, index) => (
             <div key={stage.name} className="flex items-center gap-3">
               <div className="w-24 text-xs font-medium text-lia-text-secondary text-right">{stage.name}</div>
-              <div className="flex-1 h-7 bg-gray-100 dark:bg-lia-bg-elevated rounded-md overflow-hidden relative">
+              <div className="flex-1 h-7 bg-lia-bg-tertiary rounded-md overflow-hidden relative">
                 <div
                   className={`h-full ${stage.color} transition-[width] duration-500`}
                   style={{ width: `${stage.percentage}%` }}
@@ -289,7 +289,7 @@ export function InsightsOverviewSection({
 
       {/* ── Salary + Quality ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <DollarSign className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Análise Salarial
@@ -308,7 +308,7 @@ export function InsightsOverviewSection({
           </div>
         </div>
 
-        <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Star className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Indicadores de Qualidade
@@ -329,7 +329,7 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── WSI Metrics ─────────────────────────────────────────────────── */}
-      <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide flex items-center gap-1.5">
             <Target className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -348,13 +348,13 @@ export function InsightsOverviewSection({
                 <span className="text-xs font-medium text-lia-text-secondary">{dim.dimension}</span>
                 <span className="text-xs text-lia-text-tertiary block">{dim.label}</span>
               </div>
-              <div className="flex-1 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+              <div className="flex-1 h-4 bg-lia-interactive-active rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-[width] ${dim.score >= 80 ? "bg-gray-900 dark:bg-lia-btn-primary-bg" : dim.score >= 60 ? "bg-status-warning" : "bg-status-error"}`}
+                  className={`h-full rounded-full transition-[width] ${dim.score >= 80 ? "bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg" : dim.score >= 60 ? "bg-status-warning" : "bg-status-error"}`}
                   style={{ width: `${dim.score}%` }}
                 />
               </div>
-              <span className={`text-xs font-semibold w-10 text-right ${dim.score >= 80 ? "text-lia-text-secondary dark:text-lia-text-tertiary" : dim.score >= 60 ? "text-status-warning" : "text-status-error"}`}>
+              <span className={`text-xs font-semibold w-10 text-right ${dim.score >= 80 ? "text-lia-text-secondary" : dim.score >= 60 ? "text-status-warning" : "text-status-error"}`}>
                 {dim.score}%
               </span>
             </div>
@@ -363,7 +363,7 @@ export function InsightsOverviewSection({
       </div>
 
       {/* ── Insights Categorizados ──────────────────────────────────────── */}
-      <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+      <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
           <Lightbulb className="w-3.5 h-3.5 text-lia-text-tertiary" />
           Insights Categorizados
@@ -470,7 +470,7 @@ export function InsightsOverviewSection({
 
       {/* ── Detalhamento por Vaga ───────────────────────────────────────── */}
       {jobs.length > 0 && (
-        <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle">
           <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-lia-text-tertiary" />
             Detalhamento por Vaga
@@ -484,7 +484,7 @@ export function InsightsOverviewSection({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         {job.code && (
-                          <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
+                          <span className="text-xs font-medium text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full">
                             {job.code}
                           </span>
                         )}

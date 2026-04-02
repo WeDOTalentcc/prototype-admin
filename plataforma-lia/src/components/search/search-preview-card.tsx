@@ -49,22 +49,22 @@ export function SearchPreviewCard({
           style={{backgroundColor: 'var(--lia-bg-secondary)',
             borderColor: 'var(--lia-border-subtle)'}}
         >
-          <Search className="w-4 h-4 lia-text-700" />
+          <Search className="w-4 h-4 text-lia-text-primary" />
           <span 
-            className="text-sm font-medium lia-text-800 dark:text-lia-text-primary"
+            className="text-sm font-medium text-lia-text-primary"
           >
             Preview da Busca
           </span>
           {isStillSearching && (
-            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none ml-auto lia-text-700" />
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none ml-auto text-lia-text-primary" />
           )}
         </div>
 
         <div className="p-4 space-y-4">
           <p 
-            className="text-sm lia-text-500 dark:text-lia-text-tertiary"
+            className="text-sm text-lia-text-secondary"
           >
-            Busca: <span className="font-medium lia-text-800 dark:text-lia-text-primary">"{data.query}"</span>
+            Busca: <span className="font-medium text-lia-text-primary">"{data.query}"</span>
           </p>
 
           <div className="grid gap-3">
@@ -88,17 +88,17 @@ export function SearchPreviewCard({
                 className="p-2 rounded-md shrink-0"
                 style={{backgroundColor: "var(--wedo-green-light, #f0fdf4)"}}
               >
-                <Database className="w-4 h-4 lia-text-700" />
+                <Database className="w-4 h-4 text-lia-text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <span 
-                    className="text-sm font-medium lia-text-800 dark:text-lia-text-primary"
+                    className="text-sm font-medium text-lia-text-primary"
                   >
                     Banco Proprietário
                   </span>
                   {data.isSearchingLocal ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none lia-text-700" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-primary" />
                   ) : (
                     <span 
                       className="text-xs font-medium px-2 py-0.5 rounded-full"
@@ -110,7 +110,7 @@ export function SearchPreviewCard({
                   )}
                 </div>
                 <p 
-                  className="text-xs mt-1 lia-text-400 dark:lia-text-500"
+                  className="text-xs mt-1 text-lia-text-tertiary"
                  aria-live="polite" aria-atomic="true">
                   Candidatos já cadastrados na sua base - sem custo
                 </p>
@@ -134,27 +134,27 @@ export function SearchPreviewCard({
                 className="p-2 rounded-md shrink-0"
                 style={{backgroundColor: 'var(--lia-bg-secondary)'}}
               >
-                <Globe className="w-4 h-4 lia-text-700" />
+                <Globe className="w-4 h-4 text-lia-text-primary" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <span 
-                    className="text-sm font-medium lia-text-800 dark:text-lia-text-primary"
+                    className="text-sm font-medium text-lia-text-primary"
                   >
                     Busca Híbrida (Local + Global)
                   </span>
                   {data.isEstimatingPearch ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none lia-text-700" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-primary" />
                   ) : (
                     <span 
-                      className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 lia-text-700"
+                      className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-lia-text-primary"
                     >
                       ~{data.pearchEstimate} estimados
                     </span>
                   )}
                 </div>
                 <p 
-                  className="text-xs mt-1 lia-text-400 dark:lia-text-500"
+                  className="text-xs mt-1 text-lia-text-tertiary"
                 >
                   Inclui acesso a 800M+ perfis do banco global
                 </p>
@@ -182,11 +182,11 @@ export function SearchPreviewCard({
             >
               <div className="flex items-center justify-between mb-2">
                 <span>Custo estimado:</span>
-                <span className="font-semibold lia-text-700">
+                <span className="font-semibold text-lia-text-primary">
                   {data.pearchCredits} créditos
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs lia-text-500 dark:text-lia-text-tertiary">
+              <div className="flex items-center justify-between text-xs text-lia-text-secondary">
                 <span>Saldo após busca:</span>
                 <span>{Math.max(0, availableCredits - data.pearchCredits)} créditos</span>
               </div>

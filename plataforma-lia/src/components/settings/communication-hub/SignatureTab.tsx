@@ -39,7 +39,7 @@ export function SignatureTab({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
-              <PenTool className="w-3.5 h-3.5 lia-text-600 dark:text-lia-text-tertiary" />
+              <PenTool className="w-3.5 h-3.5 text-lia-text-secondary" />
               Assinatura Padrão de Email
             </CardTitle>
             {!isEditingSignature ? (
@@ -66,7 +66,7 @@ export function SignatureTab({
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
-            <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
+            <label className="block text-micro font-medium text-lia-text-secondary mb-1">
               Template de Assinatura
             </label>
             <textarea
@@ -74,26 +74,26 @@ export function SignatureTab({
               onChange={(e) => setSignature(e.target.value)}
               rows={5}
               disabled={!isEditingSignature}
-              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-primary focus:ring-2 focus:outline-none font-mono disabled:bg-gray-50 disabled:lia-text-500"
+              className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none font-mono disabled:bg-gray-50 disabled:text-lia-text-secondary"
             />
           </div>
           <div>
-            <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1">
+            <label className="block text-micro font-medium text-lia-text-secondary mb-1">
               Variáveis Disponíveis
             </label>
             <div className="flex flex-wrap gap-1">
               {['recrutador_nome', 'cargo', 'empresa_nome', 'email', 'telefone', 'website', 'linkedin'].map((v) => (
-                <Badge key={v} variant="outline" className="text-micro font-mono cursor-pointer hover:bg-gray-100 rounded-full border-lia-border-default lia-text-700 dark:border-lia-border-default dark:text-lia-text-secondary">
+                <Badge key={v} variant="outline" className="text-micro font-mono cursor-pointer hover:bg-gray-100 rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
                   {`{{${v}}}`}
                 </Badge>
               ))}
             </div>
           </div>
           <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3">
-            <label className="block text-micro font-medium lia-text-600 dark:text-lia-text-tertiary mb-1.5">
+            <label className="block text-micro font-medium text-lia-text-secondary mb-1.5">
               Prévia
             </label>
-            <div className="text-xs lia-text-800 dark:text-lia-text-primary whitespace-pre-wrap">
+            <div className="text-xs text-lia-text-primary whitespace-pre-wrap">
               {signature
                 .replace('{{recrutador_nome}}', 'Ana Silva')
                 .replace('{{cargo}}', 'Recrutadora Sênior')

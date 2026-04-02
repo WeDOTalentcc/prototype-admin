@@ -43,7 +43,7 @@ export function WorkOSAdminPortal({
             {triggerText}
           </Button>
         ) : (
-          <button className="text-lia-text-secondary dark:text-lia-text-tertiary hover:underline flex items-center gap-1 text-sm">
+          <button className="text-lia-text-secondary hover:underline flex items-center gap-1 text-sm">
             <Settings className="h-3 w-3" />
             {triggerText}
           </button>

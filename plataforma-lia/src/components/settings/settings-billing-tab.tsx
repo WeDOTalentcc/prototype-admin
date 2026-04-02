@@ -103,9 +103,9 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
     switch (status) {
       case "ativo": return "bg-status-success/15 text-status-success dark:bg-status-success/20 dark:text-status-success"
       case "setup": return "bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/20 dark:text-wedo-orange"
- case "trial": return "bg-gray-50 lia-text-700 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary"
+ case "trial": return "bg-gray-50 text-lia-text-primary dark:bg-lia-bg-secondary"
       case "suspenso": return "bg-status-error/15 text-status-error dark:bg-status-error/20 dark:text-status-error"
-      default: return "bg-gray-100 lia-text-800 dark:bg-lia-bg-elevated dark:lia-text-500"
+      default: return "bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated"
     }
   }
 
@@ -114,7 +114,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-800" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-primary" />
             <input
               type="text"
               placeholder="Buscar clientes..."
@@ -139,17 +139,17 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
-                    <Building className="w-6 h-6 lia-text-800 dark:text-lia-text-primary" />
+                    <Building className="w-6 h-6 text-lia-text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-medium lia-text-950 dark:lia-text-50">{client.name}</h3>
-                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">CNPJ: {client.cnpj}</p>
+                    <h3 className="font-medium text-lia-text-primary">{client.name}</h3>
+                    <p className="text-sm text-lia-text-primary">CNPJ: {client.cnpj}</p>
                     <div className="flex items-center gap-3 mt-1">
                       <Badge className={getStatusColor(client.status)}>
                         {client.status.toUpperCase()}
                       </Badge>
-                      <span className="text-xs lia-text-800">Plano {client.plan}</span>
-                      <span className="text-xs lia-text-800">{client.users} usuários</span>
+                      <span className="text-xs text-lia-text-primary">Plano {client.plan}</span>
+                      <span className="text-xs text-lia-text-primary">{client.users} usuários</span>
                     </div>
                   </div>
                 </div>
@@ -179,16 +179,16 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
               <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
-                    <span className="lia-text-800 dark:text-lia-text-primary">Contato:</span>
+                    <span className="text-lia-text-primary">Contato:</span>
                     <div className="font-medium">{client.contact.name}</div>
-                    <div className="lia-text-800 dark:text-lia-text-primary">{client.contact.email}</div>
+                    <div className="text-lia-text-primary">{client.contact.email}</div>
                   </div>
                   <div>
-                    <span className="lia-text-800 dark:text-lia-text-primary">Tenant:</span>
+                    <span className="text-lia-text-primary">Tenant:</span>
                     <div className="font-medium font-mono text-xs">{client.tenant}</div>
                   </div>
                   <div>
-                    <span className="lia-text-800 dark:text-lia-text-primary">Último acesso:</span>
+                    <span className="text-lia-text-primary">Último acesso:</span>
                     <div className="font-medium">{client.lastAccess}</div>
                   </div>
                 </div>
@@ -218,8 +218,8 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 <div className="text-sm text-wedo-orange dark:text-wedo-orange">Em Setup</div>
               </div>
               <div className="text-center p-4 bg-wedo-cyan/10 dark:bg-wedo-cyan/20 rounded-md">
-                <div className="text-2xl font-bold lia-text-700 dark:text-lia-text-tertiary">2</div>
- <div className="text-sm lia-text-600">Trial</div>
+                <div className="text-2xl font-bold text-lia-text-primary">2</div>
+ <div className="text-sm text-lia-text-secondary">Trial</div>
               </div>
             </div>
           </div>
@@ -290,8 +290,8 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
                 onClick={() => setActiveSection(section.id)}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none font-crimson ${
                   activeSection === section.id
- ? 'bg-gray-50 dark:bg-lia-bg-secondary lia-text-900 dark:text-lia-text-secondary'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 lia-text-800 dark:text-lia-text-primary'
+ ? 'bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-primary'
                 }`}
               >
                 <section.icon className="w-4 h-4" />

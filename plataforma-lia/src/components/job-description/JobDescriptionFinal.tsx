@@ -148,7 +148,7 @@ export function JobDescriptionFinal({
             <ul className="space-y-2">
               {data.responsibilities.map((resp, index) => (
                 <li key={`resp-${index}`} className="flex items-start gap-2">
-                  <span className="text-lia-text-secondary dark:text-lia-text-secondary mt-1">•</span>
+                  <span className="text-lia-text-secondary mt-1">•</span>
                   <span>{resp}</span>
                 </li>
               ))}
@@ -169,13 +169,13 @@ export function JobDescriptionFinal({
               <ul className="space-y-1">
                 {data.required_technical.map((skill, index) => (
                   <li key={`tech-${index}`} className="flex items-center gap-2">
-                    <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
+                    <span className="text-lia-text-secondary">•</span>
                     <span>{skill}</span>
                   </li>
                 ))}
                 {data.required_behavioral.map((skill, index) => (
                   <li key={`beh-${index}`} className="flex items-center gap-2">
-                    <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
+                    <span className="text-lia-text-secondary">•</span>
                     <span>{skill}</span>
                   </li>
                 ))}
@@ -191,7 +191,7 @@ export function JobDescriptionFinal({
               <ul className="space-y-1">
                 {data.nice_to_have.map((skill, index) => (
                   <li key={skill} className="flex items-center gap-2">
-                    <span className="text-lia-text-secondary dark:text-lia-text-secondary">•</span>
+                    <span className="text-lia-text-secondary">•</span>
                     <span>{skill}</span>
                   </li>
                 ))}
@@ -296,7 +296,7 @@ export function JobDescriptionFinal({
             </ol>
             {data.total_timeline && (
               <div className="mt-4 flex items-center gap-2 text-sm">
-                <Clock className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-secondary" />
+                <Clock className="w-4 h-4 text-lia-text-secondary" />
                 <strong>Timeline total:</strong> {data.total_timeline}
               </div>
             )}

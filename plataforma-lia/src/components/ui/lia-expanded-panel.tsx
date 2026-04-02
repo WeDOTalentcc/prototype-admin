@@ -89,7 +89,7 @@ export function LiaExpandedPanel({
               {onNewChat && (
                 <button
                   onClick={onNewChat}
-                  className="p-1.5 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-lg lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                   title="Novo chat"
                   aria-label="Iniciar novo chat"
                 >
@@ -99,7 +99,7 @@ export function LiaExpandedPanel({
               {onClearChat && (
                 <button
                   onClick={onClearChat}
-                  className="p-1.5 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-lg lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                   title="Limpar mensagens"
                   aria-label="Limpar mensagens"
                 >
@@ -109,7 +109,7 @@ export function LiaExpandedPanel({
               {onToggleHistory && (
                 <button
                   onClick={onToggleHistory}
-                  className="p-1.5 rounded-lg lia-text-secondary hover:lia-text-base hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-lg lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                   title="Histórico"
                   aria-label="Ver histórico de conversas"
                 >
@@ -212,7 +212,7 @@ export function LiaTabButton({
       <button
         onClick={onClick}
         className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] ${
- active ? 'text-white' : 'lia-text-base hover:bg-lia-interactive-hover'
+ active ? 'text-white' : 'text-lia-text-secondary hover:bg-lia-interactive-hover'
         }`}
         style={{...(active ? { backgroundColor: 'var(--lia-text-secondary)' } : {})}}
       >
@@ -230,7 +230,7 @@ export function LiaTabButton({
       className="pb-2.5 text-xs font-medium transition-colors motion-reduce:transition-none relative"
      
     >
-      <div className={`flex items-center gap-1.5 ${active ? 'lia-text-strong' : 'lia-text-secondary hover:lia-text-base'}`}>
+      <div className={`flex items-center gap-1.5 ${active ? 'text-lia-text-primary' : 'lia-text-secondary hover:text-lia-text-secondary'}`}>
         {icon}
         <span>{label}</span>
       </div>
@@ -254,7 +254,7 @@ export function LiaQuickActionChip({ icon, label, onClick }: LiaQuickActionChipP
       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:border-lia-text-primary hover:bg-lia-bg-secondary transition-[width,height]"
      
     >
-      <span className="flex-shrink-0 lia-text-base">{icon}</span>
+      <span className="flex-shrink-0 text-lia-text-secondary">{icon}</span>
       {label}
     </button>
   )
@@ -323,7 +323,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           data-testid="chat-input"
-          className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary"
+          className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-gray-50/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary"
           style={{border: '1px solid var(--lia-border-subtle)',
             backgroundColor: 'var(--lia-bg-secondary)'}}
         />
@@ -430,7 +430,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
             className="max-w-[85%] px-3.5 py-2.5 bg-lia-bg-tertiary rounded-[14px] rounded-br-[4px] ml-auto"
           >
             <div 
-              className="text-base-ui leading-relaxed text-lia-text-secondary dark:text-lia-text-primary" 
+              className="text-base-ui leading-relaxed text-lia-text-secondary" 
              
               dangerouslySetInnerHTML={{ __html: userHtml }}
             />
@@ -466,7 +466,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
           className="max-w-[85%] px-3.5 py-2.5 bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px]"
         >
           <div 
-            className="text-base-ui leading-relaxed text-lia-text-secondary dark:text-lia-text-primary" 
+            className="text-base-ui leading-relaxed text-lia-text-secondary" 
            
             dangerouslySetInnerHTML={{ __html: liaHtml }}
           />

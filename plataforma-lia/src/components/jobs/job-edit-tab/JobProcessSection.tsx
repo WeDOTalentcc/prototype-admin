@@ -49,7 +49,7 @@ export function JobProcessSection({
     <div className="space-y-5">
       <div>
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-4 text-micro lia-text-500 dark:text-lia-text-tertiary p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-lg font-['Open_Sans',sans-serif] flex-1">
+          <div className="flex items-center gap-4 text-micro text-lia-text-secondary p-2.5 bg-lia-bg-secondary/50 rounded-lg font-['Open_Sans',sans-serif] flex-1">
             <div className="flex items-center gap-1"><Lock className="w-3 h-3" /><span><strong>Sistema:</strong> Fixas</span></div>
             <div className="flex items-center gap-1"><Target className="w-3 h-3" /><span><strong>Padrão:</strong> Nome editável</span></div>
             <div className="flex items-center gap-1"><Settings className="w-3 h-3" /><span><strong>Custom:</strong> Editável</span></div>
@@ -58,18 +58,18 @@ export function JobProcessSection({
         </div>
         <h3 className={groupHeaderClass}>Etapas do Processo</h3>
         {loadingCompanyPipeline && rawStages.length === 0 ? (
-          <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+          <Card className="border border-lia-border-subtle">
             <CardContent className="p-4">
               <div className="flex items-center justify-center gap-2 py-6">
-                <Loader2 className="w-3.5 h-3.5 animate-spin lia-text-400 dark:lia-text-500" />
-                <span className="text-xs lia-text-400 dark:lia-text-500 font-['Open_Sans',sans-serif]">Carregando etapas da empresa...</span>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-lia-text-tertiary" />
+                <span className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">Carregando etapas da empresa...</span>
               </div>
             </CardContent>
           </Card>
         ) : stages.length === 0 ? (
-          <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+          <Card className="border border-lia-border-subtle">
             <CardContent className="p-4">
-              <p className="text-xs lia-text-400 dark:lia-text-500 text-center py-6 font-['Open_Sans',sans-serif]">
+              <p className="text-xs text-lia-text-tertiary text-center py-6 font-['Open_Sans',sans-serif]">
                 Nenhuma etapa configurada. As etapas padrão da empresa serão utilizadas.
               </p>
             </CardContent>
@@ -96,13 +96,13 @@ export function JobProcessSection({
                   key={stage.name || index}
                   className={`border transition-colors ${!stageIsActive ? "opacity-40" : ""} ${
                     isSystem
-                      ? "border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/30"
-                      : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-gray-600"
+                      ? "border-lia-border-subtle bg-lia-bg-secondary/50/30"
+                      : "border-lia-border-subtle hover:border-lia-border-default"
                   }`}
                 >
                   <CardContent className="p-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gray-900 dark:lia-bg-50 flex items-center justify-center text-xs font-bold text-white dark:lia-text-900 font-['Open_Sans',sans-serif] shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-lia-btn-primary-bg flex items-center justify-center text-xs font-bold text-white font-['Open_Sans',sans-serif] shrink-0">
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -118,7 +118,7 @@ export function JobProcessSection({
                           ) : (
                             <span
                               className={`text-base-ui font-semibold font-['Open_Sans',sans-serif] ${
-                                isSystem ? "lia-text-500 dark:text-lia-text-tertiary" : "lia-text-900 dark:lia-text-50"
+                                isSystem ? "text-lia-text-secondary" : "text-lia-text-primary"
                               }`}
                             >
                               {stage.stageName || "Sem nome"}
@@ -138,18 +138,18 @@ export function JobProcessSection({
                             </span>
                           )}
                           <div className="flex items-center gap-1 ml-auto">
-                            <Clock className="w-3 h-3 lia-text-400 dark:lia-text-500" />
+                            <Clock className="w-3 h-3 text-lia-text-tertiary" />
                             {isEditing ? (
                               <div className="flex items-center gap-1">
                                 <input
                                   type="number"
                                   min={1}
                                   max={90}
-                                  className="w-12 text-xs text-center px-1 py-0.5 border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-white dark:bg-lia-bg-primary lia-text-700 dark:text-lia-text-secondary font-['Open_Sans',sans-serif]"
+                                  className="w-12 text-xs text-center px-1 py-0.5 border border-lia-border-subtle rounded-full bg-lia-bg-primary text-lia-text-primary font-['Open_Sans',sans-serif]"
                                   value={currentSla}
                                   onChange={(e) => updateStage(index, "slaDays", parseInt(e.target.value) || 1)}
                                 />
-                                <span className="text-micro lia-text-400 dark:lia-text-500 font-['Open_Sans',sans-serif]">dias</span>
+                                <span className="text-micro text-lia-text-tertiary font-['Open_Sans',sans-serif]">dias</span>
                                 {slaModified && (
                                   <span className="text-micro text-status-warning font-['Open_Sans',sans-serif]">
                                     (padrão: {defaultSla}d)
@@ -160,8 +160,8 @@ export function JobProcessSection({
                               <span
                                 className={`text-micro font-['Open_Sans',sans-serif] ${
                                   slaModified
-                                    ? "text-status-warning dark:text-status-warning font-medium"
-                                    : "lia-text-400 dark:lia-text-500"
+                                    ? "text-status-warning font-medium"
+                                    : "text-lia-text-tertiary"
                                 }`}
                               >
                                 {currentSla} {currentSla === 1 ? "dia" : "dias"}
@@ -178,7 +178,7 @@ export function JobProcessSection({
                               type="button"
                               onClick={() => moveStage(index, "up")}
                               disabled={index === 0}
-                              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 lia-text-400 hover:lia-text-600 disabled:opacity-30"
+                              className="p-1 rounded-md hover:bg-lia-interactive-hover text-lia-text-tertiary hover:text-lia-text-secondary disabled:opacity-30"
                             >
                               <ChevronUp className="w-3.5 h-3.5" />
                             </button>
@@ -186,18 +186,18 @@ export function JobProcessSection({
                               type="button"
                               onClick={() => moveStage(index, "down")}
                               disabled={index === stages.length - 1}
-                              className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 lia-text-400 hover:lia-text-600 disabled:opacity-30"
+                              className="p-1 rounded-md hover:bg-lia-interactive-hover text-lia-text-tertiary hover:text-lia-text-secondary disabled:opacity-30"
                             >
                               <ChevronDown className="w-3.5 h-3.5" />
                             </button>
                           </>
                         )}
-                        {isEditing && isSystem && <Lock className="w-3.5 h-3.5 lia-text-300 dark:lia-text-600" />}
+                        {isEditing && isSystem && <Lock className="w-3.5 h-3.5 text-lia-text-disabled" />}
                         {isEditing && canRemove && (
                           <button
                             type="button"
                             onClick={() => removeStage(index)}
-                            className="p-1 rounded-md hover:bg-status-error/10 dark:hover:bg-status-error/10/30 lia-text-400 hover:text-status-error"
+                            className="p-1 rounded-md hover:bg-status-error/10 dark:hover:bg-status-error/10/30 text-lia-text-tertiary hover:text-status-error"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -214,7 +214,7 @@ export function JobProcessSection({
           <button
             type="button"
             onClick={addStage}
-            className="flex items-center gap-2 text-xs lia-text-500 hover:lia-text-700 dark:hover:lia-text-300 py-2.5 px-3 rounded-md border border-dashed border-lia-border-default dark:border-lia-border-default hover:border-gray-400 w-full justify-center mt-3"
+            className="flex items-center gap-2 text-xs text-lia-text-secondary hover:text-lia-text-primary py-2.5 px-3 rounded-md border border-dashed border-lia-border-default hover:border-lia-border-medium w-full justify-center mt-3"
           >
             <Plus className="w-4 h-4" />Adicionar Etapa Customizada
           </button>

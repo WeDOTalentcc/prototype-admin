@@ -67,8 +67,8 @@ export function LiaInstructionPopover({
           className={cn(
             "inline-flex items-center justify-center w-5 h-5 rounded-full transition-colors",
             hasInstruction
- ? "lia-text-700 dark:text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated"
-              : "bg-gray-100 lia-text-500 hover:bg-gray-200 hover:lia-text-700",
+ ? "text-lia-text-primary hover:bg-gray-200 dark:bg-lia-bg-elevated"
+              : "bg-gray-100 text-lia-text-secondary hover:bg-gray-200 hover:text-lia-text-primary",
             className
           )}
           title={hasInstruction ? "Editar instrução para LIA" : "Adicionar instrução para LIA"}
@@ -85,18 +85,18 @@ export function LiaInstructionPopover({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-chat-cyan" />
-              <span className="text-sm font-semibold lia-text-950 dark:lia-text-50">Instrução para LIA</span>
+              <span className="text-sm font-semibold text-lia-text-primary">Instrução para LIA</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="lia-text-500 hover:lia-text-700 transition-colors motion-reduce:transition-none"
+              className="text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="text-xs lia-text-600 dark:text-lia-text-tertiary">
-            Campo: <span className="lia-text-800 dark:text-lia-text-primary font-medium">{fieldLabel}</span>
+          <div className="text-xs text-lia-text-secondary">
+            Campo: <span className="text-lia-text-primary font-medium">{fieldLabel}</span>
           </div>
 
           <Textarea
@@ -108,7 +108,7 @@ export function LiaInstructionPopover({
 
           {examples.length > 0 && (
             <div className="space-y-2 p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
-              <div className="flex items-center gap-1 text-xs font-medium uppercase lia-text-600">
+              <div className="flex items-center gap-1 text-xs font-medium uppercase text-lia-text-secondary">
                 <Info className="w-3 h-3" />
                 <span>Exemplos de instruções</span>
               </div>
@@ -117,7 +117,7 @@ export function LiaInstructionPopover({
                   <button
                     key={idx}
                     onClick={() => setInstruction(example)}
-                    className="block w-full text-left text-xs lia-text-600 hover:lia-text-700 dark:hover:lia-text-300 p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
+                    className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-md hover:bg-lia-bg-primary transition-colors motion-reduce:transition-none"
                   >
                     "{example}"
                   </button>
@@ -131,7 +131,7 @@ export function LiaInstructionPopover({
               variant="outline"
               size="sm"
               onClick={() => setIsOpen(false)}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle lia-text-700 hover:bg-gray-50"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-primary hover:bg-gray-50"
             >
               Cancelar
             </Button>
@@ -139,7 +139,7 @@ export function LiaInstructionPopover({
               size="sm"
               onClick={handleSave}
               disabled={isSaving}
-              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+              className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
             >
               {isSaving ? (
                 <span className="flex items-center gap-1.5">

@@ -106,7 +106,7 @@ export function TechnicalRequirementsPanel({
           <TabsContent key={category} value={category} className="mt-4">
             <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
               <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                <CardTitle className="text-sm flex items-center gap-2 font-sans dark:text-lia-text-primary">
+                <CardTitle className="text-sm flex items-center gap-2 font-sans">
                   {CATEGORY_LABELS[category].icon} {CATEGORY_LABELS[category].label}
                 </CardTitle>
               </CardHeader>
@@ -118,7 +118,7 @@ export function TechnicalRequirementsPanel({
                 />
 
                 {getRequirementsByCategory(category).length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground dark:text-lia-text-tertiary text-sm">
+                  <div className="text-center py-8 text-muted-foreground text-sm">
                     Nenhuma tecnologia adicionada.
                     <br />
                     Use o campo acima para adicionar.
@@ -128,13 +128,13 @@ export function TechnicalRequirementsPanel({
                     <table className="w-full">
                       <thead className="bg-muted/50 dark:bg-lia-bg-primary/50">
                         <tr>
-                          <th className="text-left px-3 py-2 text-xs font-medium dark:text-lia-text-tertiary">
+                          <th className="text-left px-3 py-2 text-xs font-medium">
                             Tecnologia
                           </th>
-                          <th className="text-left px-3 py-2 text-xs font-medium w-36 dark:text-lia-text-tertiary">
+                          <th className="text-left px-3 py-2 text-xs font-medium w-36">
                             Nível
                           </th>
-                          <th className="text-center px-3 py-2 text-xs font-medium w-24 dark:text-lia-text-tertiary">
+                          <th className="text-center px-3 py-2 text-xs font-medium w-24">
                             Obrigatória?
                           </th>
                           <th className="w-10"></th>
@@ -145,7 +145,7 @@ export function TechnicalRequirementsPanel({
                           <tr key={req.id} className="hover:bg-muted/30 dark:hover:bg-gray-700/30">
                             <td className="px-3 py-2">
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium dark:text-lia-text-primary">{req.name}</span>
+                                <span className="text-sm font-medium">{req.name}</span>
                                 {req.required && (
                                   <Badge variant="secondary" className="text-xs">
                                     Obrigatória
@@ -182,7 +182,7 @@ export function TechnicalRequirementsPanel({
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 dark:text-lia-text-tertiary dark:hover:bg-gray-700"
+                                className="h-7 w-7 dark:hover:bg-gray-700"
                                 onClick={() => handleRemoveRequirement(req.id)}
                               >
                                 <X className="h-4 w-4" />
@@ -202,12 +202,12 @@ export function TechnicalRequirementsPanel({
 
       <Card className="rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-          <CardTitle className="text-sm font-sans dark:text-lia-text-primary">📊 Resumo</CardTitle>
+          <CardTitle className="text-sm font-sans">📊 Resumo</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {requirements.length === 0 ? (
-              <span className="text-sm text-muted-foreground dark:text-lia-text-tertiary">
+              <span className="text-sm text-muted-foreground">
                 Nenhum requisito técnico adicionado ainda.
               </span>
             ) : (
@@ -215,14 +215,14 @@ export function TechnicalRequirementsPanel({
                 <Badge
                   key={req.id}
                   variant={req.required ? "secondary" : "outline"}
-                  className="text-xs dark:border-lia-border-default dark:text-lia-text-secondary"
+                  className="text-xs dark:border-lia-border-default"
                 >
                   {req.name} ({req.level.charAt(0)})
                 </Badge>
               ))
             )}
           </div>
-          <div className="mt-3 text-xs text-muted-foreground dark:text-lia-text-tertiary">
+          <div className="mt-3 text-xs text-muted-foreground">
             {requirements.filter((r) => r.required).length} obrigatórias,{" "}
             {requirements.filter((r) => !r.required).length} desejáveis
           </div>
@@ -318,7 +318,7 @@ function TechAutocomplete({
     <div className="relative">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-lia-text-tertiary" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             ref={inputRef}
             value={search}
@@ -330,14 +330,14 @@ function TechAutocomplete({
             onFocus={() => setShowSuggestions(true)}
             onKeyDown={handleKeyDown}
             placeholder={`Buscar ou adicionar ${CATEGORY_LABELS[category].label.toLowerCase()}...`}
-            className="pl-9 dark:bg-lia-bg-primary dark:border-lia-border-subtle dark:text-lia-text-primary"
+            className="pl-9 dark:bg-lia-bg-primary dark:border-lia-border-subtle"
           />
         </div>
         <Button
           type="button"
           variant="outline"
           size="icon"
-          className="dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
+          className="dark:border-lia-border-default dark:hover:bg-gray-700"
           onClick={() => {
             if (search.trim()) {
               handleAdd(search.trim())
@@ -359,7 +359,7 @@ function TechAutocomplete({
               <button
                 key={tech}
                 type="button"
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-muted/50 dark:hover:bg-gray-700 dark:text-lia-text-primary ${
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-muted/50 dark:hover:bg-gray-700 ${
  index === selectedIndex ? "bg-muted dark:bg-lia-bg-elevated" : ""
                 }`}
                 onClick={() => handleAdd(tech)}
@@ -371,7 +371,7 @@ function TechAutocomplete({
           ) : search.trim() ? (
             <button
               type="button"
-              className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 bg-muted dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:text-lia-text-primary"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 bg-muted dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
               onClick={() => handleAdd(search.trim())}
             >
               Adicionar "{search.trim()}"

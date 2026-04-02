@@ -96,7 +96,7 @@ const getUrgencyStyles = (urgency: string) => {
         bg: "bg-lia-bg-secondary",
         border: "border-lia-border-subtle",
         badge: "bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary",
-        icon: "text-lia-text-primary dark:text-lia-text-primary"
+        icon: "text-lia-text-primary"
       }
   }
 }
@@ -119,12 +119,12 @@ const CandidateCard = ({
               {candidate.name}
             </h4>
             {candidate.lia_score && (
-              <Badge variant="outline" className="text-xs shrink-0 border-lia-text-primary text-lia-text-secondary dark:text-lia-text-tertiary">
+              <Badge variant="outline" className="text-xs shrink-0 border-lia-text-primary text-lia-text-secondary">
                 LIA {candidate.lia_score}%
               </Badge>
             )}
           </div>
-          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary truncate">
+          <p className="text-sm text-lia-text-secondary truncate">
             {candidate.current_title || "Cargo não informado"}
             {candidate.current_company && ` • ${candidate.current_company}`}
           </p>
@@ -136,7 +136,7 @@ const CandidateCard = ({
       
       <div className="flex items-center gap-2 mb-3">
         <Clock className={`w-4 h-4 ${styles.icon}`} />
-        <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+        <span className="text-sm text-lia-text-secondary">
           {candidate.stale_message}
         </span>
         {candidate.urgency === "critical" && (
@@ -190,7 +190,7 @@ const JobGroup = ({
         className="w-full flex items-center justify-between p-4 hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
       >
         <div className="flex items-center gap-3">
-          <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <Briefcase className="w-5 h-5 text-lia-text-secondary" />
           <div className="text-left">
             <h3 className="font-medium text-lia-text-primary">
               {group.job_title}
@@ -205,9 +205,9 @@ const JobGroup = ({
             {group.candidates.filter(c => c.urgency === "critical").length} críticos
           </Badge>
           {isExpanded ? (
-            <ChevronUp className="w-5 h-5 lia-text-base" />
+            <ChevronUp className="w-5 h-5 text-lia-text-secondary" />
           ) : (
-            <ChevronDown className="w-5 h-5 lia-text-base" />
+            <ChevronDown className="w-5 h-5 text-lia-text-secondary" />
           )}
         </div>
       </button>
@@ -243,7 +243,7 @@ export function PipelineReport({ data, onAction, onClose }: PipelineReportProps)
     <div className="space-y-4 font-open-sans">
       <div className={`p-4 rounded-md border ${getSummaryStyles()}`}>
         <div className="flex items-center gap-3 mb-2">
-          <Users className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <Users className="w-5 h-5 text-lia-text-secondary" />
           <span className="font-medium text-lia-text-primary">
             Relatório de Pipeline
           </span>
@@ -253,13 +253,13 @@ export function PipelineReport({ data, onAction, onClose }: PipelineReportProps)
         </p>
         <div className="flex gap-4 mt-3 text-sm">
           <div className="flex items-center gap-1">
-            <span className="text-lia-text-primary dark:text-lia-text-primary">Total:</span>
+            <span className="text-lia-text-primary">Total:</span>
             <span className="font-semibold text-lia-text-primary">{data.total_stale}</span>
           </div>
           {data.critical_count > 0 && (
             <div className="flex items-center gap-1">
               <AlertTriangle className="w-4 h-4 text-status-error" />
-              <span className="text-lia-text-primary dark:text-lia-text-primary">Críticos:</span>
+              <span className="text-lia-text-primary">Críticos:</span>
               <span className="font-semibold text-status-error dark:text-status-error">{data.critical_count}</span>
             </div>
           )}

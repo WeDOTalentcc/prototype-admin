@@ -82,13 +82,13 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
                 onCheckedChange={onSelectAll}
                 className={cn(
                   isFixed
-                    ? "border-gray-600 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
-                    : "data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900 dark:data-[state=checked]:bg-lia-bg-tertiary dark:data-[state=checked]:border-lia-border-subtle"
+                    ? "border-gray-600 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
+                    : "data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-bg-tertiary dark:data-[state=checked]:border-lia-border-subtle"
                 )}
               />
               <span className={cn(
                 "text-xs",
-                isFixed ? "text-gray-400" : "text-lia-text-secondary dark:text-lia-text-tertiary"
+                isFixed ? "text-gray-400" : "text-lia-text-secondary"
               )}>
                 Selecionar todos
               </span>
@@ -99,13 +99,13 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
 
           <div className="flex items-center gap-2">
             {isFixed ? (
-              <Badge className="bg-lia-interactive-active text-lia-text-secondary border-lia-border-default hover:bg-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:border-lia-border-default">
+              <Badge className="bg-lia-interactive-active text-lia-text-secondary border-lia-border-default hover:bg-lia-border-default dark:bg-lia-bg-elevated dark:border-lia-border-default">
                 {entityIcon || <Users className="w-3 h-3 mr-1" />}
                 {selectedCount}
               </Badge>
             ) : (
               <div className="w-6 h-6 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
-                {entityIcon || <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />}
+                {entityIcon || <Users className="w-3.5 h-3.5 text-lia-text-secondary" />}
               </div>
             )}
             <span className={cn(
@@ -161,7 +161,7 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
               "h-8 px-2 text-xs",
               isFixed
                 ? "text-gray-400 hover:text-gray-200 hover:bg-gray-800"
-                : "text-lia-text-primary hover:text-lia-text-primary dark:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                : "text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
             )}
             title="Limpar seleção"
           >

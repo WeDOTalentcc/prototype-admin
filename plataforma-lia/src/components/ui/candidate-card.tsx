@@ -39,7 +39,7 @@ const getStatusIcon = (status: string) => {
     case 'read':
       return <Check className="w-3 h-3 text-status-success" />
     case 'sent':
-      return <Send className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+      return <Send className="w-3 h-3 text-lia-text-secondary" />
     case 'failed':
       return <AlertCircle className="w-3 h-3 text-status-error" />
     case 'pending':
@@ -70,7 +70,7 @@ const getChannelIcon = (channel: string) => {
       return <MessageSquare className="w-3.5 h-3.5 text-status-success" />
     case 'email':
     default:
-      return <Mail className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+      return <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />
   }
 }
 
@@ -192,8 +192,8 @@ export function CandidateCard({
             
             {match_score !== null && match_score !== undefined && (
               <div className="flex items-center gap-1.5 mb-3">
-                <Award className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
+                <Award className="w-3.5 h-3.5 text-lia-text-secondary" />
+                <span className="text-sm font-medium text-lia-text-secondary">
                   {match_score}% match
                 </span>
               </div>
@@ -215,7 +215,7 @@ export function CandidateCard({
                 <Button 
                   variant="ghost" 
                   size="sm" 
- className="h-7 text-xs px-2 lia-text-base hover:lia-text-base"
+ className="h-7 text-xs px-2 text-lia-text-secondary hover:text-lia-text-secondary"
                   onClick={onScheduleInterview}
                 >
                   <Calendar className="w-3 h-3 mr-1" />

@@ -226,7 +226,7 @@ const EditCriteriaPopup: React.FC<{
        
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
+          <h3 className="text-lg font-semibold text-lia-text-primary">
             Edit Criteria
           </h3>
           <button
@@ -259,7 +259,7 @@ const EditCriteriaPopup: React.FC<{
                   newCriteria[index].text = e.target.value
                   setLocalCriteria(newCriteria)
                 }}
-                className="flex-1 bg-transparent border-none outline-none text-sm text-lia-text-primary dark:text-lia-text-primary"
+                className="flex-1 bg-transparent border-none outline-none text-sm text-lia-text-primary"
               />
               <button
                 onClick={() => handleRemove(criterion.id)}
@@ -275,7 +275,7 @@ const EditCriteriaPopup: React.FC<{
           <div className="flex items-center gap-4 relative">
             <button 
               onClick={() => setShowPresets(!showPresets)}
-              className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:underline hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+              className="text-sm font-medium text-lia-text-secondary hover:underline hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
             >
               Select Preset
             </button>
@@ -294,7 +294,7 @@ const EditCriteriaPopup: React.FC<{
                   <button
                     key={preset.id}
                     onClick={() => handleSelectPreset(preset)}
-                    className="w-full px-3 py-2 text-left text-sm text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 flex items-center justify-between"
+                    className="w-full px-3 py-2 text-left text-sm text-lia-text-primary hover:bg-gray-50 flex items-center justify-between"
                   >
                     <span>{preset.name}</span>
                     <span className="text-xs text-lia-text-secondary">{preset.criteria.length} criteria</span>
@@ -305,13 +305,13 @@ const EditCriteriaPopup: React.FC<{
 
             {showSavePreset && (
               <div className="absolute left-0 bottom-full mb-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle p-3 min-w-[250px] z-20">
-                <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">Save as preset</p>
+                <p className="text-xs font-medium text-lia-text-primary mb-2">Save as preset</p>
                 <input
                   type="text"
                   value={presetName}
                   onChange={(e) => setPresetName(e.target.value)}
                   placeholder="Preset name..."
-                  className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 mb-2 bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary"
+                  className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 mb-2 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
                 />
                 <div className="flex gap-2">
                   <Button
@@ -326,7 +326,7 @@ const EditCriteriaPopup: React.FC<{
                     size="sm"
                     onClick={handleSavePreset}
                     disabled={!presetName.trim()}
-                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
+                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
                   >
                     Save
                   </Button>
@@ -345,7 +345,7 @@ const EditCriteriaPopup: React.FC<{
             </Button>
             <Button
               onClick={handleUpdate}
-              className="text-sm bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:text-lia-text-disabled dark:hover:bg-lia-btn-primary-hover"
+              className="text-sm bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
             >
               Update
               <ChevronRight className="w-4 h-4 ml-1" />
@@ -444,7 +444,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
               <div className="p-6 border-b border-lia-border-subtle">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                    <h2 className="text-xl font-semibold text-lia-text-primary">
                       {currentCandidate.name}
                     </h2>
                     {currentCandidate.linkedinUrl && (
@@ -476,7 +476,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   {currentCandidate.location}
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <div className="flex items-center gap-2 text-sm text-lia-text-primary mb-2">
                   {currentCandidate.companyLogo ? (
                     <NextImage src={currentCandidate.companyLogo} alt="" width={20} height={20} className="w-5 h-5 rounded-md" />
                   ) : (
@@ -502,7 +502,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       onClick={() => setActiveProfileTab(tab.toLowerCase().replace(' ', '-'))}
                       className={`px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none border-b-2 ${
                         activeProfileTab === tab.toLowerCase().replace(' ', '-')
-                          ? 'text-lia-text-primary dark:text-lia-text-primary border-gray-950 dark:border-lia-border-medium'
+                          ? 'text-lia-text-primary border-gray-950 dark:border-lia-border-medium'
                           : 'text-lia-text-secondary border-transparent hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
                       }`}
                     >
@@ -519,7 +519,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     {/* Highlights */}
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">Highlights</h4>
+                        <h4 className="text-sm font-semibold text-lia-text-primary">Highlights</h4>
                         <button className="text-xs text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse">
                           Show more ({currentCandidate.highlights.length})
                         </button>
@@ -532,7 +532,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-lg">{highlight.icon}</span>
-                              <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">{highlight.title}</span>
+                              <span className="text-xs font-semibold text-lia-text-primary">{highlight.title}</span>
                             </div>
                             <p className="text-xs text-lia-text-secondary line-clamp-2">
                               {highlight.description}
@@ -546,15 +546,15 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     <div className="grid grid-cols-3 gap-4 py-4 border-t border-lia-border-subtle">
                       <div>
                         <p className="text-xs text-lia-text-secondary uppercase tracking-wide mb-1">Average Tenure</p>
-                        <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">{currentCandidate.experienceStats.averageTenure}</p>
+                        <p className="text-sm font-semibold text-lia-text-primary">{currentCandidate.experienceStats.averageTenure}</p>
                       </div>
                       <div>
                         <p className="text-xs text-lia-text-secondary uppercase tracking-wide mb-1">Current Tenure</p>
-                        <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">{currentCandidate.experienceStats.currentTenure}</p>
+                        <p className="text-sm font-semibold text-lia-text-primary">{currentCandidate.experienceStats.currentTenure}</p>
                       </div>
                       <div>
                         <p className="text-xs text-lia-text-secondary uppercase tracking-wide mb-1">Total Experience</p>
-                        <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">{currentCandidate.experienceStats.totalExperience}</p>
+                        <p className="text-sm font-semibold text-lia-text-primary">{currentCandidate.experienceStats.totalExperience}</p>
                       </div>
                     </div>
 
@@ -574,11 +574,11 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                             )}
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
-                                <h5 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">{exp.company}</h5>
+                                <h5 className="text-sm font-semibold text-lia-text-primary">{exp.company}</h5>
                                 <span className="text-xs text-lia-text-secondary">{exp.duration}</span>
                               </div>
                               <div className="flex items-center gap-2 mt-1">
-                                <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">{exp.title}</p>
+                                <p className="text-sm text-lia-text-primary">{exp.title}</p>
                                 {exp.isPromotion && (
                                   <Badge className="text-xs px-1.5 py-0.5 bg-status-success/10 text-status-success border-status-success/30">
                                     Promotion
@@ -605,7 +605,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       <div className="pt-4 border-t border-lia-border-subtle">
                         <p className="text-sm text-lia-text-secondary leading-relaxed">
                           {currentCandidate.summary}
-                          <button className="text-lia-text-secondary dark:text-lia-text-tertiary hover:underline ml-1">Read More</button>
+                          <button className="text-lia-text-secondary hover:underline ml-1">Read More</button>
                         </p>
                       </div>
                     )}
@@ -616,7 +616,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   <div className="space-y-4">
                     {currentCandidate.education_list?.map((edu, idx) => (
                       <div key={`edu-${idx}`} className="p-4 bg-gray-50 rounded-md">
-                        <h5 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">{edu.institution}</h5>
+                        <h5 className="text-sm font-semibold text-lia-text-primary">{edu.institution}</h5>
                         <p className="text-sm text-lia-text-secondary">{edu.degree}</p>
                         <p className="text-xs text-lia-text-secondary mt-1">{edu.period}</p>
                       </div>
@@ -629,7 +629,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                 {activeProfileTab === 'skill-map' && (
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">Skills</h4>
+                      <h4 className="text-sm font-semibold text-lia-text-primary mb-2">Skills</h4>
                       <div className="flex flex-wrap gap-2">
                         {currentCandidate.skills?.map((skill, idx) => (
                           <Badge key={skill} variant="outline" className="text-xs">
@@ -642,7 +642,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     </div>
                     {currentCandidate.languages && currentCandidate.languages.length > 0 && (
                       <div className="pt-4 border-t border-lia-border-subtle">
-                        <h4 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">Languages</h4>
+                        <h4 className="text-sm font-semibold text-lia-text-primary mb-2">Languages</h4>
                         <div className="flex flex-wrap gap-2">
                           {currentCandidate.languages.map((lang, idx) => (
                             <Badge key={`lang-${idx}`} variant="outline" className="text-xs">
@@ -661,12 +661,12 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
             <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-lia-bg-secondary">
               <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                  <h3 className="text-lg font-semibold text-lia-text-primary">
                     Why we matched this profile
                   </h3>
                   <button
                     onClick={() => setShowEditCriteria(true)}
-                    className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
+                    className="text-sm font-medium text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
                   >
                     Edit Criteria
                   </button>
@@ -706,7 +706,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                         )}
                       </div>
 
-                      <h4 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary mt-3 mb-2">
+                      <h4 className="text-sm font-semibold text-lia-text-primary mt-3 mb-2">
                         {reason.criterion}
                       </h4>
 
@@ -731,7 +731,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   >
                     <ChevronLeft className="w-5 h-5 text-lia-text-secondary" />
                   </button>
-                  <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+                  <span className="text-sm font-medium text-lia-text-primary">
                     Profile {currentIndex + 1}/{candidates.length}
                   </span>
                   <button
@@ -739,7 +739,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     disabled={currentIndex === candidates.length - 1}
                     className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <ChevronRight className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <ChevronRight className="w-5 h-5 text-lia-text-secondary" />
                   </button>
                 </div>
               </div>
@@ -784,7 +784,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                 <p className="text-xs text-lia-text-secondary leading-relaxed">
  You can <button className="hover:underline">pin criteria</button> if it is a mandatory requirement or <button className="text-lia-text-secondary hover:underline">re-order</button> by importance using{' '}
                   <button 
-                    className="text-lia-text-secondary dark:text-lia-text-tertiary hover:underline font-medium"
+                    className="text-lia-text-secondary hover:underline font-medium"
                     onClick={() => setShowEditCriteria(true)}
                   >
                     Edit Criteria

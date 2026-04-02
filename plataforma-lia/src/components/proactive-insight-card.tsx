@@ -65,7 +65,7 @@ const getAlertIcon = (type: 'warning' | 'info' | 'success') => {
     case 'warning':
       return <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
     case 'info':
-      return <Info className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+      return <Info className="w-3.5 h-3.5 text-lia-text-secondary" />
     case 'success':
       return <CheckCircle className="w-3.5 h-3.5 text-status-success" />
   }
@@ -102,13 +102,13 @@ export function ProactiveInsightCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
+              <h3 className={`${textStyles.title}`}>
                 Análise da Busca
               </h3>
-              <p className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>
+              <p className={`${textStyles.bodySmall}`}>
                 Insights proativos da LIA
               </p>
             </div>
@@ -120,9 +120,9 @@ export function ProactiveInsightCard({
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? (
-              <ChevronUp className="w-4 h-4 lia-text-base" />
+              <ChevronUp className="w-4 h-4 text-lia-text-secondary" />
             ) : (
-              <ChevronDown className="w-4 h-4 lia-text-base" />
+              <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
             )}
           </Button>
         </div>
@@ -132,37 +132,37 @@ export function ProactiveInsightCard({
         <div className="grid grid-cols-4 gap-2">
           <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Users className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Users className="w-3 h-3 text-lia-text-secondary" />
               <span className="text-lg font-bold text-lia-text-primary">{summary.total_candidates}</span>
             </div>
-            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>Total</span>
+            <span className={`${textStyles.bodySmall}`}>Total</span>
           </div>
           <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Building className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Building className="w-3 h-3 text-lia-text-secondary" />
               <span className="text-lg font-bold text-lia-text-primary">{summary.local_count}</span>
             </div>
-            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>Base Local</span>
+            <span className={`${textStyles.bodySmall}`}>Base Local</span>
           </div>
           <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Globe className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Globe className="w-3 h-3 text-lia-text-secondary" />
               <span className="text-lg font-bold text-lia-text-primary">{summary.global_count}</span>
             </div>
-            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>Base Global</span>
+            <span className={`${textStyles.bodySmall}`}>Base Global</span>
           </div>
           <div className={`${cardStyles.compact} dark:bg-lia-bg-secondary text-center`}>
             <div className="flex items-center justify-center gap-1 mb-0.5">
-              <Star className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Star className="w-3 h-3 text-lia-text-secondary" />
               <span className="text-lg font-bold text-lia-text-primary">{summary.average_lia_score.toFixed(0)}</span>
             </div>
-            <span className={`${textStyles.bodySmall} dark:text-lia-text-secondary`}>Score Médio</span>
+            <span className={`${textStyles.bodySmall}`}>Score Médio</span>
           </div>
         </div>
 
         {narrative && (
           <div className={`${cardStyles.flat} p-2.5`}>
-            <p className={`${textStyles.body} dark:text-lia-text-secondary leading-relaxed`}>
+            <p className={`${textStyles.body} leading-relaxed`}>
               {narrative}
             </p>
           </div>
@@ -179,7 +179,7 @@ export function ProactiveInsightCard({
                 )}
               >
                 {getAlertIcon(alert.type)}
-                <span className="text-lia-text-primary dark:text-lia-text-primary flex-1">
+                <span className="text-lia-text-primary flex-1">
                   {alert.message}
                 </span>
               </div>
@@ -192,7 +192,7 @@ export function ProactiveInsightCard({
           <>
             {contact_quality && (
               <div className="space-y-2">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider`}>
                   Qualidade dos Contatos
                 </h4>
                 <div className="grid grid-cols-3 gap-2">
@@ -200,7 +200,7 @@ export function ProactiveInsightCard({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
                         <Phone className="w-3 h-3 text-status-success" />
-                        <span className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Telefone</span>
+                        <span className={`${textStyles.bodySmall}`}>Telefone</span>
                       </div>
                       <span className={`${textStyles.label} text-lia-text-primary`}>{contact_quality.phone_percentage}%</span>
                     </div>
@@ -209,8 +209,8 @@ export function ProactiveInsightCard({
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <Mail className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                        <span className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>Email</span>
+                        <Mail className="w-3 h-3 text-lia-text-secondary" />
+                        <span className={`${textStyles.bodySmall}`}>Email</span>
                       </div>
                       <span className={`${textStyles.label} text-lia-text-primary`}>{contact_quality.email_percentage}%</span>
                     </div>
@@ -219,8 +219,8 @@ export function ProactiveInsightCard({
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
-                        <Linkedin className="w-3 h-3 lia-text-base" />
-                        <span className={`${textStyles.bodySmall} dark:text-lia-text-tertiary`}>LinkedIn</span>
+                        <Linkedin className="w-3 h-3 text-lia-text-secondary" />
+                        <span className={`${textStyles.bodySmall}`}>LinkedIn</span>
                       </div>
                       <span className={`${textStyles.label} text-lia-text-primary`}>
                         {contact_quality.with_linkedin}
@@ -237,7 +237,7 @@ export function ProactiveInsightCard({
 
             {seniorityEntries.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider`}>
                   Senioridade
                 </h4>
                 <div className="flex flex-wrap gap-1">
@@ -256,7 +256,7 @@ export function ProactiveInsightCard({
 
             {locationEntries.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary flex items-center gap-1`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider flex items-center gap-1`}>
                   <MapPin className="w-3 h-3" />
                   Localização
                 </h4>
@@ -276,7 +276,7 @@ export function ProactiveInsightCard({
 
             {workModelEntries.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary flex items-center gap-1`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider flex items-center gap-1`}>
                   <Briefcase className="w-3 h-3" />
                   Modelo de Trabalho
                 </h4>
@@ -301,7 +301,7 @@ export function ProactiveInsightCard({
 
             {top_skills && top_skills.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary flex items-center gap-1`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider flex items-center gap-1`}>
                   <GraduationCap className="w-3 h-3" />
                   Top Skills
                 </h4>
@@ -309,7 +309,7 @@ export function ProactiveInsightCard({
                   {top_skills.slice(0, 8).map((skill) => (
                     <Badge 
                       key={skill.skill} 
-                      className="text-xs py-0.5 px-1.5 bg-gray-100 lia-text-strong border-lia-border-subtle hover:bg-gray-200"
+                      className="text-xs py-0.5 px-1.5 bg-gray-100 text-lia-text-primary border-lia-border-subtle hover:bg-gray-200"
                     >
                       {skill.skill} ({skill.count})
                     </Badge>
@@ -320,7 +320,7 @@ export function ProactiveInsightCard({
 
             {top_companies && top_companies.length > 0 && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary flex items-center gap-1`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider flex items-center gap-1`}>
                   <Building className="w-3 h-3" />
                   Principais Empresas
                 </h4>
@@ -340,7 +340,7 @@ export function ProactiveInsightCard({
 
             {experience_range && (
               <div className="space-y-1.5">
-                <h4 className={`${textStyles.label} uppercase tracking-wider dark:text-lia-text-secondary`}>
+                <h4 className={`${textStyles.label} uppercase tracking-wider`}>
                   Experiência
                 </h4>
                 <div className={`flex items-center gap-3 ${textStyles.bodySmall}`}>

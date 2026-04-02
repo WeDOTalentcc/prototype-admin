@@ -126,7 +126,7 @@ const MetricCard = memo(function MetricCard({
   return (
     <Card className="relative overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary">
+        <CardTitle className="text-sm font-medium text-lia-text-secondary">
           {title}
         </CardTitle>
         <div
@@ -137,7 +137,7 @@ const MetricCard = memo(function MetricCard({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold lia-text-800 dark:text-lia-text-primary">
+        <div className="text-2xl font-bold text-lia-text-primary">
           {value}
         </div>
         <TrendIndicator trend={trend} trendLabel={trendLabel} trendDirection={trendDirection} subtitle={subtitle} />

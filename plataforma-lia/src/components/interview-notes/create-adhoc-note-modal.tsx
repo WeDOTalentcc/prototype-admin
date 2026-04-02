@@ -90,7 +90,7 @@ export function CreateAdhocNoteModal({
       <DialogContent className="max-w-lg rounded-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
-            <Plus className="w-5 h-5 lia-text-base" />
+            <Plus className="w-5 h-5 text-lia-text-secondary" />
             Nova Nota de Entrevista
           </DialogTitle>
           <DialogDescription className="dark:text-lia-text-tertiary">
@@ -101,7 +101,7 @@ export function CreateAdhocNoteModal({
         <div className="space-y-5 py-4">
           {/* Candidate Selection */}
           <div className="space-y-2">
-            <Label htmlFor="candidate" className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+            <Label htmlFor="candidate" className="text-sm font-medium text-lia-text-primary">
               Candidato *
             </Label>
             <div className="relative">
@@ -125,7 +125,7 @@ export function CreateAdhocNoteModal({
 
           {/* Interview Date */}
           <div className="space-y-2">
-            <Label htmlFor="interview-date" className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+            <Label htmlFor="interview-date" className="text-sm font-medium text-lia-text-primary">
               Data da Entrevista *
             </Label>
             <div className="relative">
@@ -144,7 +144,7 @@ export function CreateAdhocNoteModal({
 
           {/* Job Link (Optional) */}
           <div className="space-y-2">
-            <Label htmlFor="job" className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+            <Label htmlFor="job" className="text-sm font-medium text-lia-text-primary">
               Vincular a uma vaga
             </Label>
             <div className="relative">
@@ -173,9 +173,9 @@ export function CreateAdhocNoteModal({
               className="flex gap-3 rounded-md p-3 text-sm bg-gray-200/30 border border-wedo-cyan/30"
             >
               <AlertCircle
-                className="w-4 h-4 mt-0.5 flex-shrink-0 lia-text-base"
+                className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary"
               />
-              <p className="lia-text-strong">
+              <p className="text-lia-text-primary">
                 Ao vincular a uma vaga, perguntas sugeridas serão geradas automaticamente.
               </p>
             </div>
@@ -183,7 +183,7 @@ export function CreateAdhocNoteModal({
 
           {/* Initial Notes */}
           <div className="space-y-2">
-            <Label htmlFor="initial-notes" className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+            <Label htmlFor="initial-notes" className="text-sm font-medium text-lia-text-primary">
               Observações iniciais
             </Label>
             <Textarea
@@ -198,7 +198,7 @@ export function CreateAdhocNoteModal({
         </div>
 
         <DialogFooter className="gap-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
-          <Button variant="outline" onClick={onClose} className="dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700">
+          <Button variant="outline" onClick={onClose} className="dark:border-lia-border-default dark:hover:bg-gray-700">
             Cancelar
           </Button>
           <Button

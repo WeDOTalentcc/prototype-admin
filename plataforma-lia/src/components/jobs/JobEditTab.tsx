@@ -93,15 +93,15 @@ export function JobEditTab({
       {isCreationMode && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-md px-4 py-3">
-            <Info className="w-4 h-4 text-status-warning dark:text-status-warning flex-shrink-0" />
-            <p className="text-sm text-status-warning dark:text-status-warning font-['Open_Sans',sans-serif]">
+            <Info className="w-4 h-4 text-status-warning flex-shrink-0" />
+            <p className="text-sm text-status-warning font-['Open_Sans',sans-serif]">
               Vaga em rascunho — preencha os dados e publique quando estiver pronta
             </p>
           </div>
           <Button
             onClick={onPublish}
             disabled={isPublishing}
-            className="ml-3 gap-2 px-5 py-2.5 text-sm font-medium rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 flex-shrink-0"
+            className="ml-3 gap-2 px-5 py-2.5 text-sm font-medium rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active flex-shrink-0"
           >
             {isPublishing ? (
               <>
@@ -120,10 +120,10 @@ export function JobEditTab({
 
       <div className="flex gap-6">
         <div className="flex-shrink-0" style={{ width: "220px" }}>
-          <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary rounded-md overflow-hidden">
+          <Card className="border border-lia-border-subtle bg-lia-bg-primary rounded-md overflow-hidden">
             <nav className="p-3 h-full overflow-y-auto">
               <div className="mb-2">
-                <span className="text-micro font-semibold lia-text-400 dark:lia-text-500 uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">
+                <span className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">
                   Configurações da Vaga
                 </span>
               </div>
@@ -136,8 +136,8 @@ export function JobEditTab({
                       onClick={() => setActiveSection(section.id)}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans ${
                         activeSection === section.id
-                          ? "bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle text-wedo-cyan-dark dark:text-lia-text-secondary"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-800 lia-text-800 dark:text-lia-text-primary border border-transparent"
+                          ? "bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-dark"
+                          : "hover:bg-lia-interactive-hover text-lia-text-primary border border-transparent"
                       }`}
                       style={{ fontSize: "0.6875rem", lineHeight: "1.125rem", fontWeight: "500" }}
                     >
@@ -147,19 +147,19 @@ export function JobEditTab({
                         <div className={`${textStyles.description} 2xl:text-xs`}>{section.description}</div>
                       </div>
                       {isDone ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-status-success dark:text-status-success" />
+                        <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-status-success" />
                       ) : (
-                        <Circle className="w-3.5 h-3.5 flex-shrink-0 lia-text-300 dark:lia-text-600" />
+                        <Circle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-disabled" />
                       )}
                     </button>
                   )
                 })}
               </div>
 
-              <div className="my-3 border-t border-lia-border-subtle dark:border-lia-border-subtle" />
+              <div className="my-3 border-t border-lia-border-subtle" />
 
               <div className="mb-2">
-                <span className="text-micro font-semibold lia-text-400 dark:lia-text-500 uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">
+                <span className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wider px-3 font-['Open_Sans',sans-serif]">
                   Configurações de Triagem
                 </span>
               </div>
@@ -172,8 +172,8 @@ export function JobEditTab({
                       onClick={() => setActiveSection(section.id)}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors font-open-sans ${
                         activeSection === section.id
-                          ? "bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle text-wedo-cyan-dark dark:text-lia-text-secondary"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-800 lia-text-800 dark:text-lia-text-primary border border-transparent"
+                          ? "bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-dark"
+                          : "hover:bg-lia-interactive-hover text-lia-text-primary border border-transparent"
                       }`}
                       style={{ fontSize: "0.6875rem", lineHeight: "1.125rem", fontWeight: "500" }}
                     >
@@ -183,9 +183,9 @@ export function JobEditTab({
                         <div className={`${textStyles.description} 2xl:text-xs`}>{section.description}</div>
                       </div>
                       {isDone ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-status-success dark:text-status-success" />
+                        <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 text-status-success" />
                       ) : (
-                        <Circle className="w-3.5 h-3.5 flex-shrink-0 lia-text-300 dark:lia-text-600" />
+                        <Circle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-disabled" />
                       )}
                     </button>
                   )
@@ -236,7 +236,7 @@ export function JobEditTab({
                   {/* Gestão */}
                   <div>
                     <h3 className={groupHeaderClass}>Gestão</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="grid grid-cols-4 gap-4">
                           <div>
@@ -297,14 +297,14 @@ export function JobEditTab({
                           <div>
                             <label className={labelClass}>Triagem</label>
                             <div
-                              className={`w-full px-3 py-2 text-xs rounded-md border cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                              className={`w-full px-3 py-2 text-xs rounded-md border cursor-pointer transition-colors hover:bg-lia-interactive-hover ${
                                 (job?.screeningStatus || "not_configured") === "active"
-                                  ? "border-status-success/30 bg-status-success/10/50 text-status-success dark:border-status-success/30 dark:bg-status-success/20 dark:text-status-success"
+                                  ? "border-status-success/30 bg-status-success/10/50 text-status-success dark:border-status-success/30 dark:bg-status-success/20"
                                   : (job?.screeningStatus || "not_configured") === "paused"
-                                  ? "border-status-warning/30 bg-status-warning/10/50 text-status-warning dark:border-status-warning/30 dark:bg-status-warning/20 dark:text-status-warning"
+                                  ? "border-status-warning/30 bg-status-warning/10/50 text-status-warning dark:border-status-warning/30 dark:bg-status-warning/20"
                                   : (job?.screeningStatus || "not_configured") === "completed"
-                                  ? "border-wedo-cyan/30 bg-wedo-cyan/10/50 text-wedo-cyan-dark dark:border-wedo-cyan/30 dark:text-wedo-cyan-dark"
-                                  : "border-lia-border-subtle bg-gray-50 lia-text-500 dark:border-lia-border-subtle dark:bg-lia-bg-secondary dark:lia-text-500"
+                                  ? "border-wedo-cyan/30 bg-wedo-cyan/10/50 text-wedo-cyan-dark dark:border-wedo-cyan/30"
+                                  : "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary"
                               }`}
                               onClick={() => setActiveSection("configuracoes")}
                               title="Clique para ir às Configurações de Triagem"
@@ -326,7 +326,7 @@ export function JobEditTab({
                   {/* Identificação */}
                   <div>
                     <h3 className={groupHeaderClass}>Identificação</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div className="col-span-2">
@@ -349,14 +349,14 @@ export function JobEditTab({
                   {/* Classificação */}
                   <div>
                     <h3 className={groupHeaderClass}>Classificação</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className={labelClass}>
                               Modelo de Trabalho<ScreeningBadge />
                               {companyDefaults?.workModel && !jobEditForm.workModel && (
-                                <span className="ml-1.5 text-micro text-wedo-cyan-dark dark:text-wedo-cyan font-normal">(padrão: {companyDefaults.workModel})</span>
+                                <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">(padrão: {companyDefaults.workModel})</span>
                               )}
                             </label>
                             <select value={(jobEditForm.workModel as string) || ""} onChange={(e) => updateField("workModel", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
@@ -370,7 +370,7 @@ export function JobEditTab({
                             <label className={labelClass}>
                               Tipo de Contrato<ScreeningBadge />
                               {companyDefaults?.employmentTypes && companyDefaults.employmentTypes.length > 0 && !jobEditForm.type && (
-                                <span className="ml-1.5 text-micro text-wedo-cyan-dark dark:text-wedo-cyan font-normal">(padrão: {companyDefaults.employmentTypes[0]})</span>
+                                <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">(padrão: {companyDefaults.employmentTypes[0]})</span>
                               )}
                             </label>
                             {(() => {
@@ -408,7 +408,7 @@ export function JobEditTab({
                   {/* Prazos */}
                   <div>
                     <h3 className={groupHeaderClass}>Prazos & Timeline</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
@@ -439,7 +439,7 @@ export function JobEditTab({
                   {/* Descrição */}
                   <div>
                     <h3 className={groupHeaderClass}>Descrição da Vaga</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div>
                           <label className={labelClass}>Descrição da Vaga<ScreeningBadge /></label>
@@ -454,12 +454,12 @@ export function JobEditTab({
                     <h3 className={groupHeaderClass}>
                       Idiomas<ScreeningBadge />
                       {companyDefaults?.defaultLanguages && companyDefaults.defaultLanguages.length > 0 && (
-                        <span className="ml-1.5 text-micro text-wedo-cyan-dark dark:text-wedo-cyan font-normal normal-case tracking-normal">
+                        <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal normal-case tracking-normal">
                           (padrão empresa: {companyDefaults.defaultLanguages.join(", ")})
                         </span>
                       )}
                     </h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         {(() => {
                           const langs = (jobEditForm.languages || []) as Array<{ language: string; level: string; required?: boolean }>
@@ -470,35 +470,35 @@ export function JobEditTab({
                           return (
                             <div className="space-y-3">
                               {langs.length === 0 && !isEditing && (
-                                <p className="text-xs lia-text-400 dark:lia-text-500 font-['Open_Sans',sans-serif] italic">Nenhum idioma adicionado</p>
+                                <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] italic">Nenhum idioma adicionado</p>
                               )}
                               {langs.map((lang, idx) => (
-                                <div key={idx} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
-                                  <Languages className="w-4 h-4 lia-text-400 flex-shrink-0" />
+                                <div key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-secondary/50 rounded-md">
+                                  <Languages className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" />
                                   <div className="flex-1 grid grid-cols-3 gap-3">
                                     <div>
-                                      <label className="text-micro lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif] mb-1 block">Idioma</label>
+                                      <label className="text-micro text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1 block">Idioma</label>
                                       <select className={selectClass(!isEditing)} value={lang.language || ""} onChange={(e) => updateLanguage(idx, "language", e.target.value)} disabled={!isEditing}>
                                         <option value="">Selecione...</option>
                                         {LANGUAGE_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
                                       </select>
                                     </div>
                                     <div>
-                                      <label className="text-micro lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif] mb-1 block">Nível</label>
+                                      <label className="text-micro text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1 block">Nível</label>
                                       <select className={selectClass(!isEditing)} value={lang.level || "intermediario"} onChange={(e) => updateLanguage(idx, "level", e.target.value)} disabled={!isEditing}>
                                         {LEVEL_OPTIONS.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                       </select>
                                     </div>
                                     <div className="flex items-end gap-2">
                                       <div className="flex-1">
-                                        <label className="text-micro lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif] mb-1 block">Obrigatório</label>
+                                        <label className="text-micro text-lia-text-secondary font-['Open_Sans',sans-serif] mb-1 block">Obrigatório</label>
                                         <div className="flex items-center gap-2 h-[38px]">
-                                          <Switch checked={!!lang.required} onCheckedChange={(val: boolean) => updateLanguage(idx, "required", val)} disabled={!isEditing} className="data-[state=checked]:bg-gray-900 dark:data-[state=checked]:bg-gray-200" />
-                                          <span className="text-xs lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">{lang.required ? "Sim" : "Não"}</span>
+                                          <Switch checked={!!lang.required} onCheckedChange={(val: boolean) => updateLanguage(idx, "required", val)} disabled={!isEditing} className="data-[state=checked]:bg-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-interactive-active" />
+                                          <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">{lang.required ? "Sim" : "Não"}</span>
                                         </div>
                                       </div>
                                       {isEditing && (
-                                        <button onClick={() => removeLanguage(idx)} className="p-1.5 mb-1 rounded-lg hover:bg-status-error/10 dark:hover:bg-status-error/10/30 lia-text-400 hover:text-status-error transition-colors">
+                                        <button onClick={() => removeLanguage(idx)} className="p-1.5 mb-1 rounded-lg hover:bg-status-error/10 dark:hover:bg-status-error/10/30 text-lia-text-tertiary hover:text-status-error transition-colors">
                                           <X className="w-4 h-4" />
                                         </button>
                                       )}
@@ -521,7 +521,7 @@ export function JobEditTab({
                   {/* Ações Afirmativas */}
                   <div>
                     <h3 className={groupHeaderClass}>Ações Afirmativas<ScreeningBadge /></h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="space-y-4">
                           <div className="grid grid-cols-2 gap-4">
@@ -588,7 +588,7 @@ export function JobEditTab({
                   {/* Mercado-Alvo */}
                   <div>
                     <h3 className={groupHeaderClass}>Mercado-Alvo</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
@@ -611,15 +611,15 @@ export function JobEditTab({
                   {/* Canais de Publicação */}
                   <div>
                     <h3 className={groupHeaderClass}>Canais de Publicação</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="space-y-0">
                           <div className="flex items-center justify-between py-2.5 border-b border-lia-border-subtle dark:lia-border-800">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-lg bg-wedo-cyan/10 flex items-center justify-center"><Linkedin className="w-4 h-4 text-wedo-cyan-dark" /></div>
                               <div>
-                                <span className="text-xs font-medium lia-text-900 dark:lia-text-50">LinkedIn</span>
-                                <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">Publicar vaga no LinkedIn</p>
+                                <span className="text-xs font-medium text-lia-text-primary">LinkedIn</span>
+                                <p className="text-xs text-lia-text-secondary">Publicar vaga no LinkedIn</p>
                               </div>
                             </div>
                             <Switch checked={!!jobEditForm.publishedLinkedIn} onCheckedChange={(val: boolean) => updateField("publishedLinkedIn", val)} disabled={!isEditing} />
@@ -628,8 +628,8 @@ export function JobEditTab({
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-lg bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center"><Globe className="w-4 h-4 text-status-success" /></div>
                               <div>
-                                <span className="text-xs font-medium lia-text-900 dark:lia-text-50">Website</span>
-                                <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">Publicar no site da empresa</p>
+                                <span className="text-xs font-medium text-lia-text-primary">Website</span>
+                                <p className="text-xs text-lia-text-secondary">Publicar no site da empresa</p>
                               </div>
                             </div>
                             <Switch checked={!!jobEditForm.publishedWebsite} onCheckedChange={(val: boolean) => updateField("publishedWebsite", val)} disabled={!isEditing} />
@@ -638,8 +638,8 @@ export function JobEditTab({
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-lg bg-wedo-purple/10 dark:bg-wedo-purple/20 flex items-center justify-center"><Search className="w-4 h-4 text-wedo-purple" /></div>
                               <div>
-                                <span className="text-xs font-medium lia-text-900 dark:lia-text-50">Indeed</span>
-                                <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">Publicar vaga no Indeed</p>
+                                <span className="text-xs font-medium text-lia-text-primary">Indeed</span>
+                                <p className="text-xs text-lia-text-secondary">Publicar vaga no Indeed</p>
                               </div>
                             </div>
                             <Switch checked={!!jobEditForm.publishedIndeed} onCheckedChange={(val: boolean) => updateField("publishedIndeed", val)} disabled={!isEditing} />
@@ -652,7 +652,7 @@ export function JobEditTab({
                   {/* Visibilidade */}
                   <div>
                     <h3 className={groupHeaderClass}>Visibilidade & Confidencialidade</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="space-y-4">
                           <div className="grid grid-cols-2 gap-4">
@@ -682,23 +682,23 @@ export function JobEditTab({
                   {/* Link de Candidatura */}
                   <div>
                     <h3 className={groupHeaderClass}>Link de Candidatura</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         {(jobEditForm.status === "Ativa" || jobEditForm.status === "Paralisada" || jobEditForm.status === "Concluída") && (publicLink || jobEditForm.public_url) ? (
                           <div className="space-y-2">
-                            <p className="text-xs lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">Link público para candidatos se candidatarem:</p>
+                            <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">Link público para candidatos se candidatarem:</p>
                             <div className="flex items-center gap-2">
-                              <input type="text" readOnly value={publicLink || (jobEditForm.public_url as string) || ""} className="flex-1 px-3 py-2 text-xs lia-text-700 dark:text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md font-['Open_Sans',sans-serif]" onClick={(e) => (e.target as HTMLInputElement).select()} />
-                              <button onClick={() => { navigator.clipboard.writeText(publicLink || (jobEditForm.public_url as string) || ""); toast.success("Link copiado!") }} className="p-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200 transition-colors flex-shrink-0" title="Copiar link">
+                              <input type="text" readOnly value={publicLink || (jobEditForm.public_url as string) || ""} className="flex-1 px-3 py-2 text-xs text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle rounded-md font-['Open_Sans',sans-serif]" onClick={(e) => (e.target as HTMLInputElement).select()} />
+                              <button onClick={() => { navigator.clipboard.writeText(publicLink || (jobEditForm.public_url as string) || ""); toast.success("Link copiado!") }} className="p-2 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active transition-colors flex-shrink-0" title="Copiar link">
                                 <Copy className="w-3.5 h-3.5" />
                               </button>
-                              <a href={publicLink || (jobEditForm.public_url as string) || "#"} target="_blank" rel="noopener noreferrer" className="p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex-shrink-0" title="Abrir link">
+                              <a href={publicLink || (jobEditForm.public_url as string) || "#"} target="_blank" rel="noopener noreferrer" className="p-2 rounded-md border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors flex-shrink-0" title="Abrir link">
                                 <ExternalLink className="w-3.5 h-3.5" />
                               </a>
                             </div>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2 text-xs lia-text-400 dark:lia-text-500 font-['Open_Sans',sans-serif]">
+                          <div className="flex items-center gap-2 text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
                             <Link className="w-3.5 h-3.5" />
                             <span>Publique a vaga para gerar o link de candidatura</span>
                           </div>
@@ -714,7 +714,7 @@ export function JobEditTab({
                 <div className="space-y-5">
                   <div>
                     <h3 className={groupHeaderClass}>Recrutador</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
@@ -731,7 +731,7 @@ export function JobEditTab({
                   </div>
                   <div>
                     <h3 className={groupHeaderClass}>Gestor da Vaga</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
@@ -770,20 +770,20 @@ export function JobEditTab({
                 <div className="space-y-5">
                   <div>
                     <h3 className={groupHeaderClass}>Faixa Salarial<ScreeningBadge /></h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className={labelClass}>Mínimo</label>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-400">R$</span>
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">R$</span>
                               <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.salaryMin as string) || ""} onChange={(e) => updateField("salaryMin", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
                           <div>
                             <label className={labelClass}>Máximo</label>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-400">R$</span>
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">R$</span>
                               <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.salaryMax as string) || ""} onChange={(e) => updateField("salaryMax", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
@@ -793,20 +793,20 @@ export function JobEditTab({
                   </div>
                   <div>
                     <h3 className={groupHeaderClass}>Bônus / Variável</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className={labelClass}>Mínimo</label>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-400">R$</span>
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">R$</span>
                               <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.bonusMin as string) || ""} onChange={(e) => updateField("bonusMin", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
                           <div>
                             <label className={labelClass}>Máximo</label>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs lia-text-400">R$</span>
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">R$</span>
                               <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.bonusMax as string) || ""} onChange={(e) => updateField("bonusMax", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
@@ -816,7 +816,7 @@ export function JobEditTab({
                   </div>
                   <div>
                     <h3 className={groupHeaderClass}>Benefícios</h3>
-                    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         {(() => {
                           const selectedBenefits: string[] = Array.isArray(jobEditForm.benefits)
@@ -837,7 +837,7 @@ export function JobEditTab({
                               <label className={labelClass}>
                                 Benefícios da Vaga
                                 {companyBenefitNames.length > 0 && (
-                                  <span className="ml-1.5 text-micro text-wedo-cyan-dark dark:text-wedo-cyan font-normal">({companyBenefitNames.length} cadastrados na empresa)</span>
+                                  <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">({companyBenefitNames.length} cadastrados na empresa)</span>
                                 )}
                               </label>
                               {companyBenefitNames.length > 0 ? (
@@ -846,7 +846,7 @@ export function JobEditTab({
                                     const isSelected = selectedBenefits.includes(name)
                                     const isFromCompany = companyBenefitNames.includes(name)
                                     return (
-                                      <button key={name} type="button" onClick={() => isEditing && toggleBenefit(name)} disabled={!isEditing} className={`px-3 py-1.5 rounded-md text-xs font-['Open_Sans',sans-serif] font-medium border transition-colors ${isSelected ? "bg-gray-900 text-white border-gray-900 dark:lia-bg-100 dark:lia-text-900 dark:border-lia-border-subtle" : "bg-white lia-text-600 border-lia-border-subtle hover:border-gray-400 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary dark:border-lia-border-subtle"} ${!isEditing ? "cursor-default opacity-75" : "cursor-pointer"}`}>
+                                      <button key={name} type="button" onClick={() => isEditing && toggleBenefit(name)} disabled={!isEditing} className={`px-3 py-1.5 rounded-md text-xs font-['Open_Sans',sans-serif] font-medium border transition-colors ${isSelected ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg" : "bg-white text-lia-text-secondary border-lia-border-subtle hover:border-lia-border-medium"} ${!isEditing ? "cursor-default opacity-75" : "cursor-pointer"}`}>
                                         {isSelected ? "✓ " : ""}{name}
                                         {!isFromCompany && <span className="ml-1 text-micro opacity-60">(custom)</span>}
                                       </button>
@@ -856,7 +856,7 @@ export function JobEditTab({
                               ) : (
                                 <div className="flex flex-wrap gap-2">
                                   {selectedBenefits.map((name) => (
-                                    <span key={name} className="px-3 py-1.5 rounded-full text-xs font-['Open_Sans',sans-serif] font-medium bg-gray-900 text-white dark:lia-bg-100 dark:lia-text-900 flex items-center gap-1.5">
+                                    <span key={name} className="px-3 py-1.5 rounded-full text-xs font-['Open_Sans',sans-serif] font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text flex items-center gap-1.5">
                                       {name}
                                       {isEditing && <button onClick={() => toggleBenefit(name)} className="hover:text-status-error"><X className="w-3 h-3" /></button>}
                                     </span>
@@ -878,7 +878,7 @@ export function JobEditTab({
                                 </div>
                               )}
                               {selectedBenefits.length === 0 && !isEditing && (
-                                <p className="text-xs lia-text-400 dark:lia-text-500 font-['Open_Sans',sans-serif] italic">Nenhum benefício selecionado</p>
+                                <p className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] italic">Nenhum benefício selecionado</p>
                               )}
                             </div>
                           )

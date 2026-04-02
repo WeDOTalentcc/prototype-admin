@@ -82,17 +82,17 @@ export function ScreeningSchedulingModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-md bg-white border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-        <DialogHeader className="pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+      <DialogContent className="max-w-md rounded-md bg-white border border-lia-border-subtle">
+        <DialogHeader className="pb-4 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-              <CalendarCheck className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
+              <CalendarCheck className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
               <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Agendamento Automático
               </DialogTitle>
-              <p className="text-xs lia-text-base mt-0.5">
+              <p className="text-xs text-lia-text-secondary mt-0.5">
                 Configure o agendamento automático de entrevistas
               </p>
             </div>
@@ -100,9 +100,9 @@ export function ScreeningSchedulingModal({
         </DialogHeader>
 
         <div className="space-y-5 py-4">
-          <div className="flex items-center justify-between p-3 rounded-md bg-gray-50 border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+          <div className="flex items-center justify-between p-3 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
             <div className="flex items-center gap-3">
-              <CalendarCheck className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <CalendarCheck className="w-4 h-4 text-lia-text-secondary" />
               <div>
                 <Label className="text-xs font-medium text-lia-text-primary">Agendamento Automático</Label>
                 <p className="text-micro lia-text-secondary">Agendar entrevistas automaticamente</p>
@@ -118,10 +118,10 @@ export function ScreeningSchedulingModal({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Target className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Target className="w-4 h-4 text-lia-text-secondary" />
                   <Label className="text-xs font-medium text-lia-text-primary">Score Mínimo para Auto-agendar</Label>
                 </div>
-                <span className="text-xs font-semibold text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full">
+                <span className="text-xs font-semibold text-lia-text-primary bg-lia-bg-tertiary px-2 py-0.5 rounded-full">
                   {minScoreForAuto}%
                 </span>
               </div>
@@ -137,11 +137,11 @@ export function ScreeningSchedulingModal({
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Calendar className="w-4 h-4 text-lia-text-secondary" />
                 <Label className="text-xs font-medium text-lia-text-primary">Provedor de Calendário</Label>
               </div>
               <Select value={calendarProvider} onValueChange={setCalendarProvider}>
-                <SelectTrigger className="h-9 text-xs border-lia-border-subtle dark:border-lia-border-default">
+                <SelectTrigger className="h-9 text-xs border-lia-border-subtle">
                   <SelectValue placeholder="Selecione o provedor" />
                 </SelectTrigger>
                 <SelectContent>
@@ -153,14 +153,14 @@ export function ScreeningSchedulingModal({
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Clock className="w-4 h-4 text-lia-text-secondary" />
                 <Label className="text-xs font-medium text-lia-text-primary">Horários Disponíveis</Label>
               </div>
               <Input
                 value={availableHours}
                 onChange={(e) => setAvailableHours(e.target.value)}
                 placeholder="Ex: 9h-18h"
-                className="h-9 text-xs border-lia-border-subtle dark:border-lia-border-default"
+                className="h-9 text-xs border-lia-border-subtle"
               />
               <p className="text-micro lia-text-secondary">
                 Janela de horários para agendamento (ex: 9h-12h, 14h-18h)
@@ -169,11 +169,11 @@ export function ScreeningSchedulingModal({
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Timer className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <Timer className="w-4 h-4 text-lia-text-secondary" />
                 <Label className="text-xs font-medium text-lia-text-primary">Duração da Entrevista</Label>
               </div>
               <Select value={String(interviewDuration)} onValueChange={(v) => setInterviewDuration(Number(v))}>
-                <SelectTrigger className="h-9 text-xs border-lia-border-subtle dark:border-lia-border-default">
+                <SelectTrigger className="h-9 text-xs border-lia-border-subtle">
                   <SelectValue placeholder="Selecione a duração" />
                 </SelectTrigger>
                 <SelectContent>
@@ -187,19 +187,19 @@ export function ScreeningSchedulingModal({
           </div>
         </div>
 
-        <DialogFooter className="pt-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle gap-2">
+        <DialogFooter className="pt-4 border-t border-lia-border-subtle bg-lia-bg-secondary gap-2">
           <Button
             variant="outline"
             onClick={onClose}
             disabled={isSaving}
-            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 lia-text-base dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 dark:text-lia-text-primary"
+            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-lia-interactive-hover text-lia-text-secondary dark:hover:bg-lia-btn-primary-bg"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
           >
             {isSaving ? (
               <>

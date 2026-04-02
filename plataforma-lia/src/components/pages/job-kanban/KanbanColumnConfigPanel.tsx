@@ -79,7 +79,7 @@ export function KanbanColumnConfigPanel({
         <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Columns className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Columns className="w-4 h-4 text-lia-text-secondary" />
               <h3 className={textStyles.title}>Configurar Colunas</h3>
             </div>
             <Button
@@ -100,7 +100,7 @@ export function KanbanColumnConfigPanel({
                 placeholder="Buscar coluna..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-gray-50 dark:bg-lia-bg-secondary placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 text-lia-text-primary dark:text-lia-text-primary"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-gray-50 dark:bg-lia-bg-secondary placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 text-lia-text-primary"
               />
             </div>
             <div className="flex gap-2">

@@ -2,10 +2,10 @@ import type { InsightCategory } from "./job-insights.types"
 
 /** Funnel stage bar colors following lia design tokens */
 export const FUNNEL_STAGE_COLORS = [
-  "bg-gray-200 dark:bg-lia-bg-elevated",
-  "bg-gray-200 dark:bg-lia-bg-elevated",
-  "bg-gray-200 dark:bg-lia-bg-elevated",
-  "bg-gray-900 dark:bg-gray-50",
+  "bg-lia-interactive-active",
+  "bg-lia-interactive-active",
+  "bg-lia-interactive-active",
+  "bg-lia-btn-primary-bg",
 ] as const
 
 /** Status → Tailwind token map for conversion rate cards */

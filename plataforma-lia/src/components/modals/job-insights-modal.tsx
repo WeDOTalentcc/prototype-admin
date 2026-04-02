@@ -71,8 +71,8 @@ export function JobInsightsModal({
         {/* ── Header ──────────────────────────────────────────────────── */}
         <DialogHeader className="pb-3 border-b border-lia-border-subtle flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+              <BarChart3 className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
               <DialogTitle className="text-sm font-semibold text-lia-text-primary">
@@ -122,7 +122,7 @@ export function JobInsightsModal({
                 variant="outline"
                 size="sm"
                 onClick={handleExportReport}
-                className="h-8 px-3 text-xs gap-1.5 border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-lia-bg-secondary"
+                className="h-8 px-3 text-xs gap-1.5 border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-bg-secondary"
               >
                 <Download className="w-3.5 h-3.5" />
                 Exportar PDF
@@ -132,7 +132,7 @@ export function JobInsightsModal({
                 size="sm"
                 onClick={handleSendEmail}
                 disabled={!onSendEmail}
-                className="h-8 px-3 text-xs gap-1.5 border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-lia-bg-secondary disabled:opacity-50"
+                className="h-8 px-3 text-xs gap-1.5 border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-bg-secondary disabled:opacity-50"
               >
                 <Mail className="w-3.5 h-3.5" />
                 Enviar por Email
@@ -140,7 +140,7 @@ export function JobInsightsModal({
             </div>
             <Button
               onClick={onClose}
-              className="h-9 px-4 text-xs font-medium bg-gray-800 hover:bg-gray-900 dark:bg-lia-bg-tertiary dark:hover:bg-lia-bg-secondary dark:text-lia-text-primary text-white"
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-bg-tertiary dark:hover:bg-lia-bg-secondary text-white"
             >
               Fechar
             </Button>

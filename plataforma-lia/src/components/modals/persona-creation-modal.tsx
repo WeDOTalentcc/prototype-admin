@@ -94,16 +94,16 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-lia-bg-primary rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-lia-bg-primary rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="p-6 border-b border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-2">
+              <h2 className="text-xl font-bold text-lia-text-primary flex items-center gap-2">
                 <Star className="w-5 h-5 text-wedo-purple" />
                 Criar Nova Persona
               </h2>
-              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary mt-1">
+              <p className="text-sm text-lia-text-primary mt-1">
                 {baseJob ? `Baseada na vaga: ${baseJob.title}` : 'Configuração manual completa'}
               </p>
             </div>
@@ -118,17 +118,17 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
               <div key={stepNum} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   step >= stepNum
-                    ? 'bg-gray-900 dark:bg-gray-50 text-white dark:text-lia-text-disabled'
-                    : 'bg-gray-200 text-lia-text-primary dark:text-lia-text-primary'
+                    ? 'bg-lia-btn-primary-bg text-white'
+                    : 'bg-lia-interactive-active text-lia-text-primary'
                 }`}>
                   {step > stepNum ? <CheckCircle className="w-4 h-4" /> : stepNum}
                 </div>
-                <div className="ml-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
+                <div className="ml-2 text-sm font-medium text-lia-text-primary">
                   {stepNum === 1 && 'Informações Básicas'}
                   {stepNum === 2 && 'Critérios & Skills'}
                   {stepNum === 3 && 'Preview & Criação'}
                 </div>
-                {stepNum < 3 && <div className="w-8 h-0.5 bg-gray-300 ml-4" />}
+                {stepNum < 3 && <div className="w-8 h-0.5 bg-lia-border-default ml-4" />}
               </div>
             ))}
           </div>
@@ -141,7 +141,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
             {step === 1 && (
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-2">
                     Nome da Persona *
                   </label>
                   <Input
@@ -153,7 +153,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-2">
                     Descrição
                   </label>
                   <Textarea
@@ -166,7 +166,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-2">
                     Avatar
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -174,7 +174,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                       <button
                         key={avatar}
                         onClick={() => setPersonaData(prev => ({ ...prev, avatar }))}
-                        className={`text-2xl p-2 rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none ${
+                        className={`text-2xl p-2 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                           personaData.avatar === avatar ? 'bg-wedo-cyan/10' : 'bg-lia-bg-primary'
                         }`}
                       >
@@ -185,14 +185,14 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                 </div>
 
                 {baseJob && (
- <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4">
- <h4 className="font-medium text-lia-text-secondary dark:text-lia-text-secondary mb-2">
+ <div className="bg-lia-bg-secondary rounded-md p-4">
+ <h4 className="font-medium text-lia-text-secondary mb-2">
                       📋 Baseada na Vaga
                     </h4>
- <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
+ <p className="text-sm text-lia-text-secondary mb-2">
                       <strong>{baseJob.title}</strong> na {baseJob.company}
                     </p>
- <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary">
+ <p className="text-xs text-lia-text-secondary">
                       {baseJob.description}
                     </p>
                   </div>
@@ -205,16 +205,16 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
               <div className="space-y-6">
                 {/* Skills Obrigatórias */}
                 <div>
-                  <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-2">
                     Skills Obrigatórias *
                   </label>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {personaData.requiredSkills.map((skill, index) => (
-                      <Badge key={`req-${index}`} className="bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-secondary flex items-center gap-1">
+                      <Badge key={`req-${index}`} className="bg-lia-bg-secondary text-lia-text-secondary flex items-center gap-1">
                         {skill}
                         <button
                           onClick={() => handleSkillRemove('required', index)}
-                          className="ml-1 hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full p-0.5"
+                          className="ml-1 hover:bg-lia-interactive-hover rounded-full p-0.5"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -237,7 +237,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
 
                 {/* Skills Preferenciais */}
                 <div>
-                  <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-2">
                     Skills Preferenciais
                   </label>
                   <div className="flex flex-wrap gap-2 mb-2">
@@ -246,7 +246,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                         {skill}
                         <button
                           onClick={() => handleSkillRemove('preferred', index)}
-                          className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
+                          className="ml-1 hover:bg-lia-interactive-active rounded-full p-0.5"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -267,7 +267,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                 {/* Experiência */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                    <label className="block text-sm font-medium text-lia-text-primary mb-2">
                       Experiência Mínima (anos)
                     </label>
                     <Input
@@ -279,7 +279,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                    <label className="block text-sm font-medium text-lia-text-primary mb-2">
                       Experiência Máxima (anos)
                     </label>
                     <Input
@@ -295,7 +295,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                 {/* Salário */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                    <label className="block text-sm font-medium text-lia-text-primary mb-2">
                       Salário Mínimo (R$)
                     </label>
                     <Input
@@ -307,7 +307,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                    <label className="block text-sm font-medium text-lia-text-primary mb-2">
                       Salário Máximo (R$)
                     </label>
                     <Input
@@ -332,7 +332,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                       <div className="text-3xl">{personaData.avatar}</div>
                       <div>
                         <CardTitle>{personaData.name}</CardTitle>
-                        <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+                        <p className="text-sm text-lia-text-secondary">
                           {personaData.description || 'Persona criada automaticamente'}
                         </p>
                       </div>
@@ -341,7 +341,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">{preview.estimatedCandidates}</p>
+                        <p className="text-lg font-semibold text-lia-text-primary">{preview.estimatedCandidates}</p>
                         <p className="text-xs text-lia-text-secondary">Candidatos Estimados</p>
                       </div>
                       <div className="text-center">
@@ -360,17 +360,17 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
 
                     <div className="space-y-3">
                       <div>
-                        <p className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">Skills Obrigatórias:</p>
+                        <p className="text-xs font-medium text-lia-text-primary mb-1">Skills Obrigatórias:</p>
                         <div className="flex flex-wrap gap-1">
                           {personaData.requiredSkills.map((skill, index) => (
-                            <Badge key={`req-preview-${index}`} className="text-xs bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary">
+                            <Badge key={`req-preview-${index}`} className="text-xs bg-lia-bg-secondary text-lia-text-secondary">
                               {skill}
                             </Badge>
                           ))}
                         </div>
                       </div>
 
-                      <div className="flex justify-between text-xs text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="flex justify-between text-xs text-lia-text-primary">
                         <span>Experiência: {personaData.experienceMin}-{personaData.experienceMax} anos</span>
                         <span>Salário: R$ {personaData.salaryMin.toLocaleString()}-{personaData.salaryMax.toLocaleString()}</span>
                       </div>
@@ -434,20 +434,20 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
           </div>
 
           {/* Sidebar - LIA Suggestions */}
-          <div className="w-80 border-l border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary p-4">
+          <div className="w-80 border-l border-lia-border-subtle bg-lia-bg-secondary p-4">
             <div className="sticky top-0">
-              <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-3 flex items-center gap-2">
+              <h3 className="font-medium text-lia-text-primary mb-3 flex items-center gap-2">
                 <Brain className="w-4 h-4 text-wedo-purple" />
                 Sugestões da LIA
               </h3>
 
               <div className="space-y-3">
-                <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3">
+                <div className="bg-lia-bg-primary rounded-md p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="w-4 h-4 text-status-success" />
                     <span className="text-sm font-medium">Mercado Aquecido</span>
                   </div>
-                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
+                  <p className="text-xs text-lia-text-secondary mb-2">
                     Detectei alta demanda por {personaData.name.toLowerCase()} no mercado
                   </p>
                   <Badge className="bg-status-success/15 text-status-success text-xs">
@@ -455,25 +455,25 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                   </Badge>
                 </div>
 
-                <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3">
+                <div className="bg-lia-bg-primary rounded-md p-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <Users className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Users className="w-4 h-4 text-lia-text-secondary" />
                     <span className="text-sm font-medium">Base Estimada</span>
                   </div>
-                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
+                  <p className="text-xs text-lia-text-secondary mb-2">
                     {preview.estimatedCandidates} candidatos correspondem aos critérios
                   </p>
-                  <Badge className="bg-gray-50 dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary text-xs">
+                  <Badge className="bg-lia-bg-secondary text-lia-text-secondary text-xs">
                     Base sólida para início
                   </Badge>
                 </div>
 
-                <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3">
+                <div className="bg-lia-bg-primary rounded-md p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <Target className="w-4 h-4 text-wedo-orange" />
                     <span className="text-sm font-medium">Otimização</span>
                   </div>
-                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
+                  <p className="text-xs text-lia-text-secondary mb-2">
                     Sugiro incluir Vue.js como skill preferencial
                   </p>
                   <Button
@@ -499,7 +499,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="p-6 border-t border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex justify-between">
             <div className="flex gap-2">
               {step > 1 && (
@@ -517,7 +517,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                   Próximo
                 </Button>
               ) : (
-                <Button onClick={handleCreate} className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200">
+                <Button onClick={handleCreate} className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active">
                   <Star className="w-4 h-4 mr-2" />
                   Criar Persona
                 </Button>

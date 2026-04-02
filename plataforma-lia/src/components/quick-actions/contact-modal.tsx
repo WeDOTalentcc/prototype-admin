@@ -356,7 +356,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               <AvatarFallback>{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
+              <h3 className={`${textStyles.title}`}>
                 Contatar {candidate.name}
               </h3>
               <p className={textStyles.bodySmall}>
@@ -364,7 +364,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
+          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -380,8 +380,8 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 onClick={() => setActiveTab('email')}
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'email'
-                    ? 'bg-gray-100 lia-text-strong border border-lia-border-subtle'
-                    : 'hover:bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
+                    ? 'bg-gray-100 text-lia-text-primary border border-lia-border-subtle'
+                    : 'hover:bg-gray-50 text-lia-text-primary border border-transparent'
                 }`}
               >
                 <Mail className="w-4 h-4" />
@@ -396,7 +396,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'whatsapp'
                     ? 'bg-status-success/10 text-status-success border border-status-success/30'
-                    : 'hover:bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
+                    : 'hover:bg-gray-50 text-lia-text-primary border border-transparent'
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -411,7 +411,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'phone'
                     ? 'bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30'
-                    : 'hover:bg-gray-50 text-lia-text-primary dark:text-lia-text-primary border border-transparent'
+                    : 'hover:bg-gray-50 text-lia-text-primary border border-transparent'
                 }`}
               >
                 <Phone className="w-4 h-4" />
@@ -431,7 +431,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 <h4 className={textStyles.label}>
                   Templates Rápidos
                 </h4>
-                <div className="flex items-center gap-1 text-micro text-lia-text-secondary dark:text-lia-text-tertiary">
+                <div className="flex items-center gap-1 text-micro text-lia-text-secondary">
                   <Brain className="w-3 h-3 text-wedo-cyan" />
                   <span>LIA disponível abaixo</span>
                 </div>
@@ -478,7 +478,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 <button
                   onClick={() => generateLiaSuggestions(liaContext)}
                   disabled={isLiaGenerating}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none disabled:opacity-50"
                 >
                   {isLiaGenerating ? (
                     <>
@@ -507,8 +507,8 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                   {isLiaGenerating ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-center">
-                        <RefreshCw className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-2" />
-                        <p className="text-xs lia-text-base">LIA analisando perfil e gerando sugestões...</p>
+                        <RefreshCw className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary mx-auto mb-2" />
+                        <p className="text-xs text-lia-text-secondary">LIA analisando perfil e gerando sugestões...</p>
                       </div>
                     </div>
                   ) : (
@@ -517,13 +517,13 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Brain className="w-4 h-4 text-wedo-cyan" />
-                            <h5 className="text-xs font-medium lia-text-strong">
+                            <h5 className="text-xs font-medium text-lia-text-primary">
                               {suggestion.title}
                             </h5>
                           </div>
                           <button
                             onClick={() => applyLiaSuggestion(suggestion)}
-                            className="text-micro h-6 px-2 rounded-full border border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-[width,height]"
+                            className="text-micro h-6 px-2 rounded-full border border-lia-border-subtle text-lia-text-primary hover:bg-gray-50 transition-[width,height]"
                           >
                             Usar Esta
                           </button>
@@ -531,26 +531,26 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
 
                         {activeTab === 'email' && suggestion.content.subject && (
                           <div className="mb-2">
-                            <span className="text-micro font-medium lia-text-base">Assunto:</span>
-                            <p className="text-micro text-lia-text-primary dark:text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1">
+                            <span className="text-micro font-medium text-lia-text-secondary">Assunto:</span>
+                            <p className="text-micro text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1">
                               {suggestion.content.subject}
                             </p>
                           </div>
                         )}
 
                         <div className="mb-3">
-                          <span className="text-micro font-medium lia-text-base">Mensagem:</span>
-                          <p className="text-micro text-lia-text-primary dark:text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1 whitespace-pre-line">
+                          <span className="text-micro font-medium text-lia-text-secondary">Mensagem:</span>
+                          <p className="text-micro text-lia-text-primary bg-lia-bg-primary p-2 rounded-md border border-lia-border-subtle mt-1 whitespace-pre-line">
                             {suggestion.content.message}
                           </p>
                         </div>
 
                         <div className="border-t border-lia-border-subtle pt-2">
-                          <span className="text-micro font-medium lia-text-base">Por que a LIA sugere:</span>
-                          <ul className="text-micro lia-text-base mt-1 space-y-1">
+                          <span className="text-micro font-medium text-lia-text-secondary">Por que a LIA sugere:</span>
+                          <ul className="text-micro text-lia-text-secondary mt-1 space-y-1">
                             {suggestion.reasons.map((reason: string, idx: number) => (
                               <li key={idx} className="flex items-start gap-1">
-                                <span className="text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5">•</span>
+                                <span className="text-lia-text-secondary mt-0.5">•</span>
                                 {reason}
                               </li>
                             ))}
@@ -567,21 +567,21 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
             <div className="space-y-4">
               {activeTab === 'email' && (
                 <div>
-                  <label className="block text-xs font-medium lia-text-strong mb-1.5">
+                  <label className="block text-xs font-medium text-lia-text-primary mb-1.5">
                     Assunto
                   </label>
                   <input
                     type="text"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary"
+                    className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-lia-bg-secondary dark:border-lia-border-default"
                     placeholder="Assunto do email"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-medium lia-text-strong mb-1.5">
+                <label className="block text-xs font-medium text-lia-text-primary mb-1.5">
                   Mensagem
                 </label>
                 <textarea
@@ -596,12 +596,12 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               {activeTab === 'phone' && (
                 <div className="bg-gray-50 p-4 rounded-md border border-lia-border-subtle">
                   <div className="flex items-center gap-2 mb-2">
-                    <Phone className="w-4 h-4 lia-text-base" />
-                    <span className="text-xs font-medium lia-text-strong">
+                    <Phone className="w-4 h-4 text-lia-text-secondary" />
+                    <span className="text-xs font-medium text-lia-text-primary">
                       Ligação Telefônica
                     </span>
                   </div>
-                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                  <p className="text-xs text-lia-text-primary">
                     Ligue para {candidate.phone} e registre as informações da conversa no campo de mensagem acima.
                   </p>
                 </div>
@@ -611,7 +611,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
             <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-lia-border-subtle">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
               >
                 Cancelar
               </button>

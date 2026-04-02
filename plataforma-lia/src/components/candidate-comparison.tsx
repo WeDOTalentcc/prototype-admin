@@ -261,16 +261,16 @@ export function CandidateComparison({
   const getVerdictIcon = (verdict: 'winner' | 'close' | 'lower') => {
     switch (verdict) {
       case 'winner': return <Trophy className="w-4 h-4 text-status-warning" />
-      case 'close': return <Star className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
-      case 'lower': return <Flame className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+      case 'close': return <Star className="w-4 h-4 text-lia-text-secondary" />
+      case 'lower': return <Flame className="w-4 h-4 text-lia-text-primary" />
     }
   }
 
   const getVerdictColor = (verdict: 'winner' | 'close' | 'lower') => {
     switch (verdict) {
       case 'winner': return 'bg-status-warning/10 border-status-warning/30 text-status-warning'
-      case 'close': return 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-tertiary'
-      case 'lower': return 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-tertiary'
+      case 'close': return 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary'
+      case 'lower': return 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary'
     }
   }
 
@@ -283,10 +283,10 @@ export function CandidateComparison({
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div>
             <h3 className="text-xl font-semibold text-lia-text-primary flex items-center gap-2">
-              <Users className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Users className="w-5 h-5 text-lia-text-secondary" />
               Comparação Inteligente de Candidatos
             </h3>
-            <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+            <p className="text-sm text-lia-text-secondary">
               Análise comparativa com insights da LIA • {candidates.length} candidatos
             </p>
           </div>
@@ -363,7 +363,7 @@ export function CandidateComparison({
                         className={`px-3 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
  selectedScenario === key
                             ? 'bg-status-success/15 text-status-success border border-status-success/30'
-                            : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-600'
+                            : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-600'
                         }`}
                       >
                         {key === 'shortTerm' ? 'Curto Prazo' :
@@ -438,11 +438,11 @@ export function CandidateComparison({
                       <h4 className="font-semibold text-lia-text-primary mb-1">
                         {candidate.name}
                       </h4>
-                      <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-2">
+                      <p className="text-sm text-lia-text-secondary mb-2">
                         {candidate.role} • {candidate.seniority}
                       </p>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+                        <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
                           {candidate.matchPercentage}% Match
                         </Badge>
                         <Badge variant="outline" className={
@@ -460,15 +460,15 @@ export function CandidateComparison({
                 <CardContent className="space-y-4">
                   {/* Quick Info */}
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-lia-text-secondary dark:text-lia-text-tertiary">
+                    <div className="flex items-center gap-2 text-lia-text-secondary">
                       <MapPin className="w-3 h-3" />
                       {candidate.location}
                     </div>
-                    <div className="flex items-center gap-2 text-lia-text-secondary dark:text-lia-text-tertiary">
+                    <div className="flex items-center gap-2 text-lia-text-secondary">
                       <Briefcase className="w-3 h-3" />
                       {candidate.experience}
                     </div>
-                    <div className="flex items-center gap-2 text-lia-text-secondary dark:text-lia-text-tertiary">
+                    <div className="flex items-center gap-2 text-lia-text-secondary">
                       <Clock className="w-3 h-3" />
                       {candidate.availability}
                     </div>
@@ -476,7 +476,7 @@ export function CandidateComparison({
 
                   {/* Skills */}
                   <div>
-                    <h6 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                    <h6 className="text-xs font-medium text-lia-text-primary mb-2">
                       Principais Skills
                     </h6>
                     <div className="flex flex-wrap gap-1">

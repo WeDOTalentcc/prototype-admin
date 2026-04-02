@@ -139,12 +139,12 @@ export function InterviewSchedulingModal({
       <DialogContent className="max-w-2xl bg-white dark:bg-lia-bg-secondary rounded-md dark:border-lia-border-subtle">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+            <Calendar className="w-4 h-4 text-lia-text-secondary" />
             <DialogTitle className="text-sm font-semibold text-lia-text-primary">
               Agendar Entrevista
             </DialogTitle>
           </div>
-          <DialogDescription className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+          <DialogDescription className="text-xs text-lia-text-secondary">
             {candidateName} • {jobTitle}
           </DialogDescription>
         </DialogHeader>
@@ -158,7 +158,7 @@ export function InterviewSchedulingModal({
                   Entrevista agendada com sucesso!
                 </span>
               </div>
-              <p className="text-xs lia-text-base">
+              <p className="text-xs text-lia-text-secondary">
                 {scheduledInterview.interviewer} receberá a confirmação por email.
               </p>
               {scheduledInterview.meeting_url && (
@@ -166,7 +166,7 @@ export function InterviewSchedulingModal({
                   href={scheduledInterview.meeting_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:underline inline-flex items-center gap-1 mt-2"
+                  className="text-xs text-lia-text-secondary hover:underline inline-flex items-center gap-1 mt-2"
                 >
                   Abrir Teams Meeting
                 </a>
@@ -179,7 +179,7 @@ export function InterviewSchedulingModal({
                   <Label className="text-xs font-medium text-lia-text-primary">
                     Email de Convite
                   </Label>
-                  <Badge className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-0">
+                  <Badge className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
                     <Brain className="w-3 h-3 mr-1 text-wedo-cyan" />
                     Gerado por LIA
                   </Badge>
@@ -187,7 +187,7 @@ export function InterviewSchedulingModal({
 
                 {isGeneratingEmail ? (
                   <div className="flex items-center justify-center p-8" role="status" aria-live="polite" aria-label="Carregando...">
-                    <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                   </div>
                 ) : emailTemplate ? (
                   <div className="space-y-2">
@@ -196,10 +196,10 @@ export function InterviewSchedulingModal({
                       onChange={(e) =>
                         setEmailTemplate({ ...emailTemplate, subject: e.target.value })
                       }
-                      className="h-9 text-xs font-medium border-lia-border-subtle focus:ring-gray-400 focus:border-gray-400 bg-gray-50 lia-text-strong"
+                      className="h-9 text-xs font-medium border-lia-border-subtle focus:ring-gray-400 focus:border-gray-400 bg-gray-50 text-lia-text-primary"
                     />
                     <div
-                      className="p-3 rounded-md border border-lia-border-subtle text-xs overflow-y-auto max-h-chart-sm bg-lia-bg-secondary lia-text-base"
+                      className="p-3 rounded-md border border-lia-border-subtle text-xs overflow-y-auto max-h-chart-sm bg-lia-bg-secondary text-lia-text-secondary"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(emailTemplate.body) }}
                     />
                   </div>
@@ -223,7 +223,7 @@ export function InterviewSchedulingModal({
                     }
                   }}
                   disabled={isScheduling}
-                  className="h-9 text-xs border-lia-border-subtle focus:ring-gray-400 focus:border-gray-400 bg-gray-50 lia-text-strong"
+                  className="h-9 text-xs border-lia-border-subtle focus:ring-gray-400 focus:border-gray-400 bg-gray-50 text-lia-text-primary"
                 />
                 <p className="text-xs lia-text-secondary">
                   Use linguagem natural: "amanhã às 14h comigo" ou "próxima segunda 10h"
@@ -251,7 +251,7 @@ export function InterviewSchedulingModal({
                   variant="outline"
                   onClick={() => onOpenChange(false)}
                   disabled={isScheduling}
-                  className="h-9 px-4 text-xs font-medium border-lia-border-subtle lia-text-base hover:bg-lia-interactive-hover"
+                  className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover"
                 >
                   Cancelar
                 </Button>

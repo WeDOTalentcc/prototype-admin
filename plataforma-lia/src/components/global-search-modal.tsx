@@ -259,22 +259,22 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
   }
 
   const getStatusColor = (status?: string, type?: string) => {
-    if (!status) return "bg-gray-100 lia-text-strong"
+    if (!status) return "bg-gray-100 text-lia-text-primary"
 
     if (type === "candidate") {
       switch (status) {
         case "Entrevista agendada": return "bg-wedo-cyan/15 text-wedo-cyan-dark"
         case "Triagem aprovada": return "bg-status-success/15 text-status-success"
-        case "Processo finalizado": return "bg-gray-100 lia-text-strong"
+        case "Processo finalizado": return "bg-gray-100 text-lia-text-primary"
         default: return "bg-status-warning/15 text-status-warning"
       }
     }
 
     if (type === "job") {
-      return status === "Ativa" ? "bg-status-success/15 text-status-success" : "bg-gray-100 lia-text-strong"
+      return status === "Ativa" ? "bg-status-success/15 text-status-success" : "bg-gray-100 text-lia-text-primary"
     }
 
-    return "bg-gray-100 lia-text-strong"
+    return "bg-gray-100 text-lia-text-primary"
   }
 
   if (!isOpen) return null
@@ -289,14 +289,14 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
         <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-base" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-secondary" />
               <input
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Buscar candidatos, vagas, conversas..."
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-600 focus:border-lia-border-default dark:focus:border-gray-600 placeholder:lia-text-base"
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-gray-300 dark:focus:ring-gray-600 focus:border-lia-border-default dark:focus:border-gray-600 placeholder:text-lia-text-secondary"
                
               />
               {isLoading && (
@@ -305,7 +305,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                 </div>
               )}
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0 lia-text-base hover:lia-text-base">
+            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0 text-lia-text-secondary hover:text-lia-text-secondary">
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -319,13 +319,13 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs whitespace-nowrap transition-colors motion-reduce:transition-none ${
  selectedType === type.id
                     ? 'bg-gray-900 text-white'
-                    : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-tertiary'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-lia-text-secondary'
                 }`}
               >
                 <type.icon className="w-3.5 h-3.5" />
                 {type.label}
                 {type.count > 0 && (
-                  <span className="text-xs px-1 py-0.5 rounded-full bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-tertiary">
+                  <span className="text-xs px-1 py-0.5 rounded-full bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary">
                     {type.count}
                   </span>
                 )}
@@ -341,7 +341,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
             <div className="p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
+                <span className="text-xs font-medium text-lia-text-primary">
                   Sugestões da LIA {selectedType !== "all" && `para ${searchTypes.find(t => t.id === selectedType)?.label}`}
                 </span>
               </div>
@@ -350,7 +350,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                   <button
                     key={suggestion}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="flex items-center gap-2 p-2 text-left text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-lia-bg-primary dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none border border-transparent hover:border-lia-border-subtle dark:hover:border-gray-700"
+                    className="flex items-center gap-2 p-2 text-left text-xs text-lia-text-secondary hover:bg-lia-bg-primary dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none border border-transparent hover:border-lia-border-subtle dark:hover:border-gray-700"
                   >
                     <ArrowRight className="w-3 h-3 opacity-40" />
                     {suggestion}
@@ -374,7 +374,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center flex-shrink-0">
-                          <IconComponent className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                          <IconComponent className="w-4 h-4 text-lia-text-secondary" />
                         </div>
 
                         <div className="flex-1 min-w-0">
@@ -389,11 +389,11 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                             )}
                           </div>
 
-                          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-1">
+                          <p className="text-sm text-lia-text-secondary mb-1">
                             {result.subtitle}
                           </p>
 
-                          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mb-2">
+                          <p className="text-xs text-lia-text-primary mb-2">
                             {result.description}
                           </p>
 
@@ -408,14 +408,14 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                             )}
 
                             {result.metadata?.location && (
-                              <div className="flex items-center gap-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
+                              <div className="flex items-center gap-1 text-xs text-lia-text-primary">
                                 <MapPin className="w-3 h-3" />
                                 {result.metadata.location}
                               </div>
                             )}
 
                             {result.metadata?.date && (
-                              <div className="flex items-center gap-1 text-xs text-lia-text-primary dark:text-lia-text-primary">
+                              <div className="flex items-center gap-1 text-xs text-lia-text-primary">
                                 <Clock className="w-3 h-3" />
                                 {result.metadata.date}
                               </div>
@@ -423,7 +423,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                           </div>
                         </div>
 
-                        <ChevronRight className="w-4 h-4 lia-text-base flex-shrink-0" />
+                        <ChevronRight className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />
                       </div>
                     </CardContent>
                   </Card>
@@ -435,11 +435,11 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
           {/* No Results */}
           {query && !isLoading && results.length === 0 && (
             <div className="p-8 text-center">
-              <Search className="w-12 h-12 lia-text-base mx-auto mb-4" />
+              <Search className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
               <h3 className="text-lg font-medium text-lia-text-primary mb-2">
                 Nenhum resultado encontrado
               </h3>
-              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-4">
+              <p className="text-sm text-lia-text-secondary mb-4">
                 Tente ajustar sua busca ou usar termos diferentes
               </p>
               <Button variant="outline" size="sm" onClick={() => setQuery("")}>
@@ -451,11 +451,11 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
           {/* Empty State */}
           {!query && !showAISuggestions && (
             <div className="p-8 text-center">
-              <Search className="w-12 h-12 lia-text-base mx-auto mb-4" />
+              <Search className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
               <h3 className="text-lg font-medium text-lia-text-primary mb-2">
                 Busca Global
               </h3>
-              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+              <p className="text-sm text-lia-text-secondary">
                 Digite para buscar em candidatos, vagas, conversas e muito mais
               </p>
             </div>
@@ -472,7 +472,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
             </div>
             <div className="flex items-center gap-1">
               <Brain className="w-3 h-3 text-wedo-cyan" />
-              <span className="lia-text-base">LIA</span>
+              <span className="text-lia-text-secondary">LIA</span>
             </div>
           </div>
         </div>

@@ -181,7 +181,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
       className={cn(
  "flex flex-col flex-shrink-0",
         "w-[360px] h-full",
-        "bg-white dark:bg-lia-bg-primary",
+        "bg-lia-bg-primary",
         "border-l border-lia-border-subtle",
         "overflow-hidden"
       )}
@@ -204,7 +204,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           </div>
           {isConnected && (
             <span
-              className="w-1.5 h-1.5 rounded-full bg-gray-400 ml-1"
+              className="w-1.5 h-1.5 rounded-full bg-lia-border-medium ml-1"
               title="Conectado"
               aria-label="WebSocket conectado"
             />
@@ -214,7 +214,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           {splitView.page && onNavigate && (
             <button
               onClick={handleNavigatePage}
-              className="p-1.5 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+              className="p-1.5 rounded-md lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
               title={`Ir para ${splitView.page}`}
               aria-label={`Navegar para ${splitView.page}`}
             >
@@ -223,7 +223,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
           )}
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-md lia-text-secondary hover:lia-text-base dark:hover:lia-text-muted hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+            className="p-1.5 rounded-md lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
             title="Fechar painel lateral"
             aria-label="Fechar painel lateral"
           >
@@ -234,10 +234,10 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
 
       {/* Page hint banner */}
       {splitView.page && (
-        <div className="px-4 py-2 bg-gray-50 dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle flex-shrink-0">
-          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary">
+        <div className="px-4 py-2 bg-lia-bg-secondary border-b border-lia-border-subtle flex-shrink-0">
+          <p className="text-xs text-lia-text-tertiary">
             Contexto atual:{" "}
-            <span className="font-medium text-lia-text-secondary dark:text-lia-text-secondary">
+            <span className="font-medium text-lia-text-secondary">
               {splitView.page}
             </span>
           </p>
@@ -267,7 +267,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
 
       {/* Input */}
       <div className="px-4 pb-4 pt-2 flex-shrink-0 border-t border-lia-border-subtle">
-        <div className="flex items-end gap-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary p-2">
+        <div className="flex items-end gap-2 rounded-md border border-lia-border-subtle bg-lia-bg-primary p-2">
           <textarea
             ref={textareaRef}
             value={inputText}
@@ -292,8 +292,8 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
             className={cn(
  "flex-shrink-0 p-2 rounded-md transition-colors",
               canSend
-                ? "bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
-                : "bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-disabled cursor-not-allowed"
+                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+                : "bg-lia-bg-tertiary text-lia-text-disabled cursor-not-allowed"
             )}
           >
             {isCreating || isStreaming ? (
@@ -318,11 +318,11 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
 function SplitEmptyState({ page }: { page: string | null }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
-      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary flex items-center justify-center">
         <Brain className="w-5 h-5 text-wedo-cyan" />
       </div>
       <div>
-        <p className="text-base-ui font-medium text-lia-text-secondary dark:text-lia-text-secondary">
+        <p className="text-base-ui font-medium text-lia-text-secondary">
           {page ? `Explorando ${page}` : "Como posso ajudar?"}
         </p>
         <p className="text-sm-ui text-lia-text-disabled mt-1">
@@ -338,7 +338,7 @@ function SplitMessageBubble({ msg }: { msg: FloatMessage }) {
   return (
     <div className={cn("flex gap-2", isUser ? "flex-row-reverse" : "flex-row")}>
       {!isUser && (
-        <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
+        <div className="w-6 h-6 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 mt-0.5">
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
         </div>
       )}
@@ -346,8 +346,8 @@ function SplitMessageBubble({ msg }: { msg: FloatMessage }) {
         className={cn(
  "max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed",
           isUser
-            ? "bg-gray-900 text-white"
-            : "bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary"
+            ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+            : "bg-lia-bg-secondary text-lia-text-primary"
         )}
       >
         <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -360,13 +360,13 @@ function SplitMessageBubble({ msg }: { msg: FloatMessage }) {
 function SplitStreamingBubble({ content }: { content: string }) {
   return (
     <div className="flex gap-2">
-      <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
+      <div className="w-6 h-6 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 mt-0.5">
         <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
       </div>
-      <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary">
+      <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-lia-bg-secondary text-lia-text-primary">
         {content === "..." ? (
           <span className="flex gap-1 items-center h-5">
-            <ThinkingDots dotClassName="bg-gray-400" size="md" />
+            <ThinkingDots dotClassName="bg-lia-border-medium" size="md" />
           </span>
         ) : (
           <p className="whitespace-pre-wrap">{content}</p>

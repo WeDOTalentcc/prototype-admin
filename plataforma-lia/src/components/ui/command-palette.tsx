@@ -107,13 +107,13 @@ export function CommandPalette({
         className="max-w-2xl p-0 gap-0 overflow-hidden bg-lia-bg-secondary"
       >
         <div className="flex items-center px-4 py-3 border-b border-lia-border-default">
-          <Search className="w-4 h-4 mr-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <Search className="w-4 h-4 mr-3 text-lia-text-secondary" />
           <Input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={placeholder}
-            className="border-0 focus-visible:ring-0 text-base bg-transparent lia-text-strong"
+            className="border-0 focus-visible:ring-0 text-base bg-transparent text-lia-text-primary"
             autoFocus
           />
           <kbd className="ml-2 px-2 py-1 text-xs rounded-md bg-lia-bg-primary lia-text-secondary border border-lia-border-default">
@@ -139,9 +139,9 @@ export function CommandPalette({
                       onClose()
                     }}
                     onMouseEnter={() => setSelectedIndex(globalIndex)}
-                    className={`w-full px-4 py-3 flex items-center gap-3 transition-colors motion-reduce:transition-none text-left lia-text-strong ${isSelected ? 'bg-lia-interactive-hover' : 'bg-transparent'}`}
+                    className={`w-full px-4 py-3 flex items-center gap-3 transition-colors motion-reduce:transition-none text-left text-lia-text-primary ${isSelected ? 'bg-lia-interactive-hover' : 'bg-transparent'}`}
                   >
-                    <span className="text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0">
+                    <span className="text-lia-text-secondary flex-shrink-0">
                       {cmd.icon}
                     </span>
                     <div className="flex-1 min-w-0">

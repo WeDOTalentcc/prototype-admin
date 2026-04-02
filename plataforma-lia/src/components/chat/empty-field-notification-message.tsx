@@ -70,7 +70,7 @@ export function EmptyFieldNotificationMessage({
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-full bg-status-warning/15 dark:bg-status-warning/50">
-              <AlertTriangle className="w-5 h-5 text-status-warning dark:text-status-warning" />
+              <AlertTriangle className="w-5 h-5 text-status-warning" />
             </div>
             
             <div className="flex-1 space-y-3">
@@ -108,7 +108,7 @@ export function EmptyFieldNotificationMessage({
                       size="sm"
                       onClick={() => handleActionClick('fill_now')}
                       disabled={isProcessing !== null}
-                      className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                      className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                     >
                       {isProcessing === 'fill_now' ? (
                         <Loader2 className="w-4 h-4 mr-1 animate-spin motion-reduce:animate-none" />
@@ -157,7 +157,7 @@ export function EmptyFieldNotificationMessage({
                         <span>Buscando sugestão...</span>
                       </div>
                     ) : suggestion ? (
-                      <Card className="border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-primary">
+                      <Card className="border-lia-border-default bg-lia-bg-secondary">
                         <CardContent className="p-3 space-y-2">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{getSourceIcon(suggestion.source)}</span>
@@ -179,7 +179,7 @@ export function EmptyFieldNotificationMessage({
                             <Button
                               size="sm"
                               onClick={handleAcceptSuggestion}
-                              className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                             >
                               <CheckCircle className="w-4 h-4 mr-1" />
                               Usar Sugestão

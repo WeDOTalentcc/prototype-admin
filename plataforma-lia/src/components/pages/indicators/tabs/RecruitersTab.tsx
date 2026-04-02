@@ -52,7 +52,7 @@ function getRankingIcon(ranking: number) {
       return <Medal className="w-5 h-5 text-status-warning" />
     default:
       return (
-        <div className="w-5 h-5 flex items-center justify-center text-sm font-bold text-lia-text-primary dark:text-lia-text-primary">
+        <div className="w-5 h-5 flex items-center justify-center text-sm font-bold text-lia-text-primary">
           {ranking}
         </div>
       )
@@ -95,7 +95,7 @@ export function RecruitersTab({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Filter className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Filter className="w-5 h-5 text-lia-text-secondary" />
               Filtros Avançados
             </CardTitle>
             <Button
@@ -118,13 +118,13 @@ export function RecruitersTab({
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Período */}
               <div>
-                <label className="text-sm font-medium mb-2 block text-lia-text-primary dark:text-lia-text-primary">
+                <label className="text-sm font-medium mb-2 block text-lia-text-primary">
                   Período
                 </label>
                 <select
                   value={selectedPeriod}
                   onChange={(e) => setSelectedPeriod(e.target.value)}
-                  className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary dark:text-lia-text-primary"
+                  className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary"
                 >
                   <option value="current_month">Este Mês</option>
                   <option value="last_month">Mês Passado</option>
@@ -135,7 +135,7 @@ export function RecruitersTab({
 
               {/* Departamentos */}
               <div>
-                <label className="text-sm font-medium mb-2 block text-lia-text-primary dark:text-lia-text-primary">
+                <label className="text-sm font-medium mb-2 block text-lia-text-primary">
                   Departamentos
                 </label>
                 <div className="space-y-2">
@@ -161,13 +161,13 @@ export function RecruitersTab({
 
               {/* Ordenação */}
               <div>
-                <label className="text-sm font-medium mb-2 block text-lia-text-primary dark:text-lia-text-primary">
+                <label className="text-sm font-medium mb-2 block text-lia-text-primary">
                   Ordenar por
                 </label>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full p-2 rounded-md text-sm mb-2 bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary dark:text-lia-text-primary"
+                  className="w-full p-2 rounded-md text-sm mb-2 bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary"
                 >
                   <option value="totalScore">Score Total</option>
                   <option value="npsScore">NPS</option>
@@ -178,7 +178,7 @@ export function RecruitersTab({
                 <select
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-                  className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary dark:text-lia-text-primary"
+                  className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary"
                 >
                   <option value="desc">Maior para Menor</option>
                   <option value="asc">Menor para Maior</option>
@@ -187,7 +187,7 @@ export function RecruitersTab({
 
               {/* Ações Rápidas */}
               <div>
-                <label className="text-sm font-medium mb-2 block text-lia-text-primary dark:text-lia-text-primary">
+                <label className="text-sm font-medium mb-2 block text-lia-text-primary">
                   Ações Rápidas
                 </label>
                 <div className="space-y-2">
@@ -244,14 +244,14 @@ export function RecruitersTab({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary font-medium">
+                <p className="text-sm text-lia-text-secondary font-medium">
                   Total Recrutadores
                 </p>
-                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+                <p className="text-2xl font-bold text-lia-text-primary">
                   {teamMetrics.totalRecruiters}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Users className="w-8 h-8 text-lia-text-secondary" />
             </div>
             <div className="mt-2 flex items-center gap-1 text-xs">
               <TrendingUp className="w-3 h-3 text-status-success" />
@@ -354,13 +354,13 @@ export function RecruitersTab({
               <div className="text-xs text-status-warning mt-1">NPS abaixo da meta</div>
             </div>
             <div className="text-center p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-              <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+              <div className="text-2xl font-bold text-lia-text-primary">
                 12
               </div>
-              <div className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+              <div className="text-sm text-lia-text-secondary">
                 Monitoramentos
               </div>
-              <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
+              <div className="text-xs text-lia-text-secondary mt-1">
                 KPIs em observação
               </div>
             </div>
@@ -399,7 +399,7 @@ export function RecruitersTab({
                   <div className="flex items-center gap-3">
                     <Avatar className="w-12 h-12">
                       <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                      <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary font-medium">
+                      <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary font-medium">
                         {recruiter.name
                           .split(" ")
                           .map((n) => n[0])
@@ -408,12 +408,12 @@ export function RecruitersTab({
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                        <h3 className="font-semibold text-lia-text-primary">
                           {recruiter.name}
                         </h3>
                         {getRankingIcon(recruiter.ranking)}
                       </div>
-                      <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <p className="text-sm text-lia-text-secondary">
                         {recruiter.role}
                       </p>
                       <Badge variant="outline" className="mt-1 text-xs">
@@ -422,10 +422,10 @@ export function RecruitersTab({
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="text-2xl font-bold text-lia-text-primary">
                       {recruiter.totalScore}
                     </div>
-                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="text-xs text-lia-text-primary">
                       Score Total
                     </div>
                   </div>
@@ -435,34 +435,34 @@ export function RecruitersTab({
                 {/* KPIs Principais */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                    <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="text-lg font-bold text-lia-text-primary">
                       {recruiter.totalHires}
                     </div>
-                    <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                    <div className="text-xs text-lia-text-secondary">
                       Contratações
                     </div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                    <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="text-lg font-bold text-lia-text-primary">
                       {recruiter.avgTimeToFill}d
                     </div>
-                    <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                    <div className="text-xs text-lia-text-secondary">
                       Time to Fill
                     </div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                    <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="text-lg font-bold text-lia-text-primary">
                       {recruiter.npsScore}%
                     </div>
-                    <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                    <div className="text-xs text-lia-text-secondary">
                       NPS Score
                     </div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
-                    <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="text-lg font-bold text-lia-text-primary">
                       {recruiter.conversionRate}%
                     </div>
-                    <div className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
+                    <div className="text-xs text-lia-text-secondary">
                       Conversão
                     </div>
                   </div>
@@ -470,13 +470,13 @@ export function RecruitersTab({
 
                 {/* Metas Mensais */}
                 <div>
-                  <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                  <h4 className="text-sm font-medium text-lia-text-primary mb-2">
                     Metas Mensais
                   </h4>
                   <div className="space-y-2">
                     {Object.entries(recruiter.goals.monthly).map(([key, goal]) => (
                       <div key={key} className="flex items-center justify-between text-sm">
-                        <span className="text-lia-text-secondary dark:text-lia-text-tertiary capitalize">
+                        <span className="text-lia-text-secondary capitalize">
                           {key === "hires"
                             ? "Contratações"
                             : key === "timeToFill"
@@ -487,7 +487,7 @@ export function RecruitersTab({
                           :
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="text-lia-text-primary dark:text-lia-text-primary">
+                          <span className="text-lia-text-primary">
                             {goal.current}/{goal.target}
                           </span>
                           <Badge className={`text-xs ${getStatusColor(goal.status)}`}>
@@ -507,33 +507,33 @@ export function RecruitersTab({
 
                 {/* Distribuição de Sourcing */}
                 <div>
-                  <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                  <h4 className="text-sm font-medium text-lia-text-primary mb-2">
                     Fontes de Candidatos
                   </h4>
                   <div className="grid grid-cols-4 gap-2 text-xs">
                     <div className="text-center">
-                      <div className="font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <div className="font-medium text-lia-text-secondary">
                         {recruiter.sourcing.linkedin}%
                       </div>
-                      <div className="text-lia-text-primary dark:text-lia-text-primary">LinkedIn</div>
+                      <div className="text-lia-text-primary">LinkedIn</div>
                     </div>
                     <div className="text-center">
                       <div className="font-medium text-status-success">
                         {recruiter.sourcing.referrals}%
                       </div>
-                      <div className="text-lia-text-primary dark:text-lia-text-primary">Indicações</div>
+                      <div className="text-lia-text-primary">Indicações</div>
                     </div>
                     <div className="text-center">
                       <div className="font-medium text-wedo-orange">
                         {recruiter.sourcing.jobBoards}%
                       </div>
-                      <div className="text-lia-text-primary dark:text-lia-text-primary">Job Boards</div>
+                      <div className="text-lia-text-primary">Job Boards</div>
                     </div>
                     <div className="text-center">
                       <div className="font-medium text-wedo-purple">
                         {recruiter.sourcing.headhunting}%
                       </div>
-                      <div className="text-lia-text-primary dark:text-lia-text-primary">Headhunt</div>
+                      <div className="text-lia-text-primary">Headhunt</div>
                     </div>
                   </div>
                 </div>
@@ -583,7 +583,7 @@ export function RecruitersTab({
                     {getRankingIcon(recruiter.ranking)}
                     <Avatar className="w-10 h-10">
                       <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                      <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary font-medium">
+                      <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary font-medium">
                         {recruiter.name
                           .split(" ")
                           .map((n) => n[0])
@@ -591,7 +591,7 @@ export function RecruitersTab({
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="font-semibold text-lia-text-primary">
                         {recruiter.name}
                       </div>
                       <div className="text-sm text-lia-text-secondary">
@@ -602,10 +602,10 @@ export function RecruitersTab({
 
                   <div className="flex-1 grid grid-cols-5 gap-4 text-center">
                     <div>
-                      <div className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="text-lg font-bold text-lia-text-primary">
                         {recruiter.totalScore}
                       </div>
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="text-xs text-lia-text-primary">
                         Score Total
                       </div>
                     </div>
@@ -613,7 +613,7 @@ export function RecruitersTab({
                       <div className="text-lg font-bold text-status-success">
                         {recruiter.totalHires}
                       </div>
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="text-xs text-lia-text-primary">
                         Contratações
                       </div>
                     </div>
@@ -621,19 +621,19 @@ export function RecruitersTab({
                       <div className="text-lg font-bold text-wedo-purple">
                         {recruiter.avgTimeToFill}d
                       </div>
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="text-xs text-lia-text-primary">
                         Time to Fill
                       </div>
                     </div>
                     <div>
                       <div className="text-lg font-bold text-wedo-orange">{recruiter.npsScore}%</div>
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">NPS</div>
+                      <div className="text-xs text-lia-text-primary">NPS</div>
                     </div>
                     <div>
                       <div className="text-lg font-bold text-status-error">
                         {recruiter.conversionRate}%
                       </div>
-                      <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                      <div className="text-xs text-lia-text-primary">
                         Conversão
                       </div>
                     </div>
@@ -670,7 +670,7 @@ export function RecruitersTab({
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                    <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary font-medium">
+                    <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary font-medium">
                       {recruiter.name
                         .split(" ")
                         .map((n) => n[0])
@@ -689,8 +689,8 @@ export function RecruitersTab({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Metas Mensais */}
                   <div>
-                    <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-4 flex items-center gap-2">
-                      <CalendarIcon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                    <h4 className="font-medium text-lia-text-primary mb-4 flex items-center gap-2">
+                      <CalendarIcon className="w-4 h-4 text-lia-text-secondary" />
                       Metas Mensais
                     </h4>
                     <div className="space-y-4">
@@ -707,7 +707,7 @@ export function RecruitersTab({
                                 : "Entrevistas"}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-lia-text-primary dark:text-lia-text-primary">
+                              <span className="text-lia-text-primary">
                                 {goal.current}/{goal.target}
                               </span>
                               <Badge className={`text-xs ${getStatusColor(goal.status)}`}>
@@ -744,7 +744,7 @@ export function RecruitersTab({
 
                   {/* Metas Trimestrais */}
                   <div>
-                    <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-4 flex items-center gap-2">
+                    <h4 className="font-medium text-lia-text-primary mb-4 flex items-center gap-2">
                       <Target className="w-4 h-4 text-wedo-purple" />
                       Metas Trimestrais
                     </h4>
@@ -758,7 +758,7 @@ export function RecruitersTab({
                                 : "Taxa de Conversão (%)"}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-lia-text-primary dark:text-lia-text-primary">
+                              <span className="text-lia-text-primary">
                                 {goal.current}/{goal.target}
                               </span>
                               <Badge className={`text-xs ${getStatusColor(goal.status)}`}>
@@ -828,7 +828,7 @@ export function RecruitersTab({
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">
+                  <h4 className="font-medium text-lia-text-primary mb-4">
                     Contratações por Recrutador
                   </h4>
                   <div className="space-y-3">
@@ -836,7 +836,7 @@ export function RecruitersTab({
                       <div key={recruiter.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Avatar className="w-6 h-6">
-                            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary text-xs">
+                            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">
                               {recruiter.name
                                 .split(" ")
                                 .map((n) => n[0])
@@ -868,7 +868,7 @@ export function RecruitersTab({
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">
+                  <h4 className="font-medium text-lia-text-primary mb-4">
                     NPS Score por Recrutador
                   </h4>
                   <div className="space-y-3">
@@ -876,7 +876,7 @@ export function RecruitersTab({
                       <div key={recruiter.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Avatar className="w-6 h-6">
-                            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary text-xs">
+                            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">
                               {recruiter.name
                                 .split(" ")
                                 .map((n) => n[0])
@@ -904,7 +904,7 @@ export function RecruitersTab({
 
               {/* Gráfico de Tendências */}
               <div>
-                <h4 className="font-medium text-lia-text-primary dark:text-lia-text-primary mb-4">
+                <h4 className="font-medium text-lia-text-primary mb-4">
                   Tendências de Performance (Últimos 6 Meses)
                 </h4>
                 <div className="bg-gray-50 p-6 rounded-md text-center">
@@ -912,7 +912,7 @@ export function RecruitersTab({
                   <p className="text-lia-text-secondary text-sm">
                     Gráfico interativo de tendências seria exibido aqui
                   </p>
-                  <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">
+                  <p className="text-xs text-lia-text-primary mt-1">
                     Mostrando evolução de KPIs, sazonalidades e comparações
                   </p>
                 </div>

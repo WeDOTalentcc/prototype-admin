@@ -59,7 +59,7 @@ function ProgressBar({ value, label, maxValue = 100 }: ScoreDimension) {
   return (
     <div className="space-y-0.5">
       <div className="flex items-center justify-between">
-        <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary">{label}</span>
+        <span className="text-micro text-lia-text-secondary">{label}</span>
         <span className={cn("text-micro font-semibold", getScoreColor(percentage))}>{percentage}%</span>
       </div>
       <div className={cn("h-1.5 rounded-full w-full", getBarBgColor(percentage))}>
@@ -129,7 +129,7 @@ export function ScoreBreakdownBadgeLazy({
         <div className="space-y-2">
           <div className="flex items-center gap-1.5 pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <Brain className="h-3.5 w-3.5 text-wedo-cyan-dark" />
-            <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
+            <span className="text-xs font-semibold text-lia-text-primary">
               Score LIA: {Math.round(score)}
             </span>
           </div>
@@ -152,12 +152,12 @@ export function ScoreBreakdownBadgeLazy({
             <>
               {data.strengths.length > 0 && (
                 <div>
-                  <p className="text-micro font-semibold text-lia-text-secondary dark:text-lia-text-secondary mb-1">
+                  <p className="text-micro font-semibold text-lia-text-secondary mb-1">
                     Pontos fortes
                   </p>
                   <ul className="space-y-0.5">
                     {data.strengths.slice(0, 3).map((s, i) => (
-                      <li key={i} className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex gap-1">
+                      <li key={i} className="text-micro text-lia-text-secondary flex gap-1">
                         <span className="text-status-success mt-0.5">•</span>
                         <span>{s}</span>
                       </li>
@@ -168,12 +168,12 @@ export function ScoreBreakdownBadgeLazy({
 
               {data.concerns.length > 0 && (
                 <div>
-                  <p className="text-micro font-semibold text-lia-text-secondary dark:text-lia-text-secondary mb-1">
+                  <p className="text-micro font-semibold text-lia-text-secondary mb-1">
                     Pontos de atenção
                   </p>
                   <ul className="space-y-0.5">
                     {data.concerns.slice(0, 3).map((c, i) => (
-                      <li key={i} className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary flex gap-1">
+                      <li key={i} className="text-micro text-lia-text-secondary flex gap-1">
                         <span className="text-status-warning mt-0.5">•</span>
                         <span>{c}</span>
                       </li>
@@ -184,7 +184,7 @@ export function ScoreBreakdownBadgeLazy({
 
               {data.reasoning && (
                 <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                  <p className="text-micro text-lia-text-tertiary dark:text-lia-text-tertiary leading-relaxed line-clamp-3">
+                  <p className="text-micro text-lia-text-tertiary leading-relaxed line-clamp-3">
                     {data.reasoning}
                   </p>
                 </div>
@@ -257,7 +257,7 @@ export function ScoreBreakdownBadge({
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 mb-2">
                 <Brain className="h-3.5 w-3.5 text-wedo-cyan-dark" />
-                <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                <span className="text-xs font-semibold text-lia-text-primary">
                   Score LIA: {Math.round(score)}
                 </span>
               </div>
@@ -280,7 +280,7 @@ export function ScoreBreakdownBadge({
             <div className="pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-start gap-1.5">
                 <Brain className="h-3.5 w-3.5 text-wedo-cyan-dark mt-0.5 flex-shrink-0" />
-                <p className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary leading-relaxed">
+                <p className="text-micro text-lia-text-secondary leading-relaxed">
                   {explanation}
                 </p>
               </div>

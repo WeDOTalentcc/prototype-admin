@@ -106,13 +106,13 @@ export const TabSimilar = React.memo(function TabSimilar({
           value={similarProfileUrl}
           onChange={(e) => setSimilarProfileUrl(e.target.value)}
           placeholder="Cole o link do LinkedIn ou nome do candidato..."
-          className="w-full p-3 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle"
+          className="w-full p-3 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
         />
       </div>
       <div className="p-3 rounded-md bg-wedo-cyan/[0.06]">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
-          <p className="text-xs text-lia-text-primary dark:text-lia-text-tertiary">
+          <p className="text-xs text-lia-text-primary">
             <strong>Dica:</strong> Cole o link do LinkedIn de um candidato que voc\u00ea considera ideal para encontrar perfis similares.
           </p>
         </div>

@@ -137,7 +137,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
               <Timer className="w-5 h-5" />
               Agendamento de Relatórios
             </h2>
-            <p className="text-sm lia-text-base">Configure envios automáticos de relatórios</p>
+            <p className="text-sm text-lia-text-secondary">Configure envios automáticos de relatórios</p>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -161,7 +161,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
               <Card>
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-lia-text-primary">{scheduledReports.length}</div>
-                  <div className="text-sm lia-text-base">Total de Agendamentos</div>
+                  <div className="text-sm text-lia-text-secondary">Total de Agendamentos</div>
                 </CardContent>
               </Card>
               <Card>
@@ -169,7 +169,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                   <div className="text-2xl font-bold text-status-success">
                     {scheduledReports.filter(r => r.isActive).length}
                   </div>
-                  <div className="text-sm lia-text-base">Ativos</div>
+                  <div className="text-sm text-lia-text-secondary">Ativos</div>
                 </CardContent>
               </Card>
               <Card>
@@ -177,7 +177,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                   <div className="text-2xl font-bold text-wedo-orange">
                     {scheduledReports.filter(r => r.frequency === 'daily').length}
                   </div>
-                  <div className="text-sm lia-text-base">Diários</div>
+                  <div className="text-sm text-lia-text-secondary">Diários</div>
                 </CardContent>
               </Card>
               <Card>
@@ -189,7 +189,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                       return nextSend.toDateString() === today.toDateString()
                     }).length}
                   </div>
-                  <div className="text-sm lia-text-base">Hoje</div>
+                  <div className="text-sm text-lia-text-secondary">Hoje</div>
                 </CardContent>
               </Card>
             </div>
@@ -216,37 +216,37 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                           </Badge>
                         </div>
 
-                        <p className="lia-text-base mb-3">{report.description}</p>
+                        <p className="text-lia-text-secondary mb-3">{report.description}</p>
 
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                           <div>
-                            <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">Próximo Envio:</span>
+                            <span className="font-medium text-lia-text-primary">Próximo Envio:</span>
                             <div className="flex items-center gap-1 mt-1">
-                              <Calendar className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                              <Calendar className="w-4 h-4 text-lia-text-primary" />
                               <span>{getNextSendLabel(report.nextSend)}</span>
                             </div>
                           </div>
 
                           <div>
-                            <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">Horário:</span>
+                            <span className="font-medium text-lia-text-primary">Horário:</span>
                             <div className="flex items-center gap-1 mt-1">
-                              <Clock className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                              <Clock className="w-4 h-4 text-lia-text-primary" />
                               <span>{report.time}</span>
                             </div>
                           </div>
 
                           <div>
-                            <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">Destinatários:</span>
+                            <span className="font-medium text-lia-text-primary">Destinatários:</span>
                             <div className="flex items-center gap-1 mt-1">
-                              <Users className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                              <Users className="w-4 h-4 text-lia-text-primary" />
                               <span>{report.recipients.length} pessoa(s)</span>
                             </div>
                           </div>
 
                           <div>
-                            <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">Tipo:</span>
+                            <span className="font-medium text-lia-text-primary">Tipo:</span>
                             <div className="flex items-center gap-1 mt-1">
-                              <FileText className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                              <FileText className="w-4 h-4 text-lia-text-primary" />
                               <span className="capitalize">{report.reportType}</span>
                             </div>
                           </div>
@@ -254,7 +254,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
 
                         {report.jobIds.length > 0 && (
                           <div className="mt-3">
-                            <span className="font-medium text-lia-text-primary dark:text-lia-text-primary text-sm">Vagas Específicas:</span>
+                            <span className="font-medium text-lia-text-primary text-sm">Vagas Específicas:</span>
                             <div className="flex flex-wrap gap-1 mt-1">
                               {report.jobIds.map(jobId => (
                                 <Badge key={jobId} variant="outline" className="text-xs">
@@ -266,7 +266,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
                         )}
 
                         {report.lastSent && (
-                          <div className="mt-3 text-sm text-lia-text-primary dark:text-lia-text-primary">
+                          <div className="mt-3 text-sm text-lia-text-primary">
                             Último envio: {new Date(report.lastSent).toLocaleDateString('pt-BR')} às {new Date(report.lastSent).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         )}
@@ -319,7 +319,7 @@ export function ReportScheduler({ isOpen, onClose }: ReportSchedulerProps) {
 
               {scheduledReports.length === 0 && (
                 <Card className="p-8 text-center">
-                  <div className="text-lia-text-primary dark:text-lia-text-primary">
+                  <div className="text-lia-text-primary">
                     <Timer className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <h3 className="text-lg font-medium mb-2">Nenhum relatório agendado</h3>
                     <p className="text-sm">Crie seu primeiro agendamento automático</p>
@@ -456,7 +456,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
           <h3 className="text-lg font-medium text-lia-text-primary">
             {report ? 'Editar Agendamento' : 'Novo Agendamento'}
           </h3>
-          <p className="text-sm lia-text-base">Configure os detalhes do envio automático</p>
+          <p className="text-sm text-lia-text-secondary">Configure os detalhes do envio automático</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -464,7 +464,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
             {/* Left Column */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary mb-2">
                   Nome do Agendamento
                 </label>
                 <input
@@ -478,7 +478,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary mb-2">
                   Descrição
                 </label>
                 <textarea
@@ -491,7 +491,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary mb-2">
                   Frequência
                 </label>
                 <select
@@ -508,7 +508,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
 
               {formData.frequency === 'weekly' && (
                 <div>
-                  <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-2">
                     Dia da Semana
                   </label>
                   <select
@@ -529,7 +529,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
 
               {formData.frequency === 'monthly' && (
                 <div>
-                  <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                  <label className="block text-sm font-medium text-lia-text-primary mb-2">
                     Dia do Mês
                   </label>
                   <input
@@ -544,7 +544,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
               )}
 
               <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary mb-2">
                   Horário
                 </label>
                 <input
@@ -559,7 +559,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
             {/* Right Column */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary mb-2">
                   Destinatários (separados por vírgula)
                 </label>
                 <textarea
@@ -573,7 +573,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary mb-2">
                   Tipo de Relatório
                 </label>
                 <select
@@ -589,7 +589,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary mb-2">
                   IDs das Vagas (opcional - deixe vazio para todas)
                 </label>
                 <input
@@ -602,7 +602,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
+                <label className="block text-sm font-medium text-lia-text-primary mb-2">
                   Template de Email
                 </label>
                 <select

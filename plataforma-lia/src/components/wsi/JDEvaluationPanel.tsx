@@ -525,7 +525,7 @@ export function JDEvaluationPanel({
   if (!isExpanded) {
     return (
       <div className={cn("mx-5 mt-4", className)}>
-        <div className="border border-lia-border-subtle rounded-md overflow-hidden dark:border-lia-border-subtle">
+        <div className="border border-lia-border-subtle rounded-md overflow-hidden">
           <JDEvaluationHeader
             jobTitle={jobTitle}
             hasQuestions={hasQuestions}
@@ -544,21 +544,21 @@ export function JDEvaluationPanel({
             behavioralCompetencies={behavioralCompetencies}
             description={description}
           />
-          <div className="px-4 py-2.5 border-t border-lia-border-subtle bg-white dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+          <div className="px-4 py-2.5 border-t border-lia-border-subtle bg-lia-bg-primary">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-gray-50 text-micro text-lia-text-secondary dark:border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-lia-bg-secondary text-micro text-lia-text-secondary">
                 <ListChecks className="w-3 h-3 text-lia-text-disabled" />
                 Responsabilidades: {responsibilities.length}
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-gray-50 text-micro text-lia-text-secondary dark:border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-lia-bg-secondary text-micro text-lia-text-secondary">
                 <Code className="w-3 h-3 text-lia-text-disabled" />
                 Comp. Técnicas: {technicalSkills.length}
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-gray-50 text-micro text-lia-text-secondary dark:border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-lia-bg-secondary text-micro text-lia-text-secondary">
                 <Users className="w-3 h-3 text-lia-text-disabled" />
                 Comp. Comportamentais: {behavioralCompetencies.length}
               </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-gray-50 text-micro text-lia-text-secondary dark:border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-lia-border-subtle bg-lia-bg-secondary text-micro text-lia-text-secondary">
                 <FileText className="w-3 h-3 text-lia-text-disabled" />
                 JD: {description ? 'Sim' : 'Não'}
               </span>
@@ -571,7 +571,7 @@ export function JDEvaluationPanel({
 
   return (
     <div className={cn("mx-5 mt-4", className)}>
-      <div className="border border-lia-border-subtle rounded-md overflow-hidden dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+      <div className="border border-lia-border-subtle rounded-md overflow-hidden">
         <JDEvaluationHeader
           jobTitle={jobTitle}
           hasQuestions={hasQuestions}
@@ -610,9 +610,9 @@ export function JDEvaluationPanel({
                   critico: 'bg-status-error/10 text-status-error border-status-error/30',
                 }
                 return (
-                  <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+                  <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">{evaluation.score}</span>
+                      <span className="text-xs font-semibold text-lia-text-primary">{evaluation.score}</span>
                       <span className="text-micro lia-text-secondary">/100</span>
                     </div>
                     <span className={cn("text-micro font-semibold px-2 py-0.5 rounded-full border", bandColors[band] || bandColors.adequado)}>
@@ -630,7 +630,7 @@ export function JDEvaluationPanel({
 
               {/* 9-DIMENSION GRID */}
               {evaluation.indicators.some(i => i.dimension) && (
-                <div className="grid grid-cols-3 gap-1.5 pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="grid grid-cols-3 gap-1.5 pb-2 border-b border-lia-border-subtle">
                   {evaluation.indicators.map((indicator) => (
                     <div key={indicator.label} className={cn(
                       "flex items-center gap-1.5 px-2 py-1.5 rounded-md border text-micro",
@@ -649,12 +649,12 @@ export function JDEvaluationPanel({
                         <span className="text-micro font-semibold lia-text-secondary uppercase tracking-wide block">{indicator.dimension}</span>
                         <span className={cn(
                           "truncate block font-medium",
-                          indicator.status === 'sufficient' ? 'text-status-success dark:text-status-success' :
-                          indicator.status === 'partial' ? 'text-status-warning dark:text-status-warning' :
+                          indicator.status === 'sufficient' ? 'text-status-success' :
+                          indicator.status === 'partial' ? 'text-status-warning' :
                           'text-status-error dark:text-status-error'
                         )}>{indicator.label}</span>
                       </div>
-                      <span className="text-micro font-semibold lia-text-base shrink-0">
+                      <span className="text-micro font-semibold text-lia-text-secondary shrink-0">
                         {indicator.earned ?? 0}/{indicator.weight ?? 0}
                       </span>
                     </div>
@@ -664,12 +664,12 @@ export function JDEvaluationPanel({
 
               {/* COMPACT ROW (fallback) */}
               {!evaluation.indicators.some(i => i.dimension) && (
-                <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle dark:border-lia-border-subtle flex-wrap">
+                <div className="flex items-center gap-3 pb-2 border-b border-lia-border-subtle flex-wrap">
                   {evaluation.indicators.map((indicator) => (
                     <div key={indicator.label} className="flex items-center gap-1.5">
                       <FileText className="h-3 w-3 lia-text-secondary" />
-                      <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary">{indicator.label}:</span>
-                      <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary">{indicator.count ?? 0}</span>
+                      <span className="text-micro text-lia-text-secondary">{indicator.label}:</span>
+                      <span className="text-xs font-semibold text-lia-text-primary">{indicator.count ?? 0}</span>
                       <span className={cn("w-1.5 h-1.5 rounded-full",
                         indicator.status === 'sufficient' ? 'bg-status-success' :
                         indicator.status === 'partial' ? 'bg-status-warning' : 'bg-status-error'
@@ -684,7 +684,7 @@ export function JDEvaluationPanel({
                 <div className={cn(
                   "text-micro px-2.5 py-2 rounded-md border leading-relaxed",
                   evaluation.can_generate
-                    ? "bg-gray-50 border-lia-border-subtle text-lia-text-secondary dark:bg-lia-bg-secondary/50 dark:border-lia-border-subtle dark:text-lia-text-tertiary"
+                    ? "bg-lia-bg-secondary border-lia-border-subtle text-lia-text-secondary/50"
                     : "bg-status-error/10 border-status-error/30 text-status-error dark:bg-status-error/10 dark:border-status-error/30 dark:text-status-error"
                 )}>
                   {evaluation.lia_suggestion}
@@ -695,14 +695,14 @@ export function JDEvaluationPanel({
               {!isEditing && (
                 <div className="grid grid-cols-2 gap-4 pt-2">
                   <div className="space-y-3">
-                    <span className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary uppercase tracking-wide block">DESCRIÇÃO DO CLIENTE</span>
-                    <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3 bg-gray-50/30 dark:bg-lia-bg-secondary/30 space-y-3">
+                    <span className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide block">DESCRIÇÃO DO CLIENTE</span>
+                    <div className="border border-lia-border-subtle rounded-md p-3 bg-lia-bg-secondary/30/30 space-y-3">
 
                     {description && (
                       <div>
                         <p
                           className={cn(
-                            "text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed",
+                            "text-xs text-lia-text-secondary leading-relaxed",
                             !showFullDescription && "line-clamp-4"
                           )}
                         >
@@ -711,7 +711,7 @@ export function JDEvaluationPanel({
                         {description.length > 200 && (
                           <button
                             onClick={() => setShowFullDescription(!showFullDescription)}
-                            className="text-micro text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse mt-1 underline"
+                            className="text-micro text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-inverse mt-1 underline"
                           >
                             {showFullDescription ? "ver menos" : "ver mais"}
                           </button>
@@ -726,7 +726,7 @@ export function JDEvaluationPanel({
                           {responsibilities.map((item, idx) => (
                             <li key={`resp-${idx}`} className="flex items-start gap-1.5">
                               <span className="text-xs lia-text-secondary mt-0.5 shrink-0">•</span>
-                              <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed">{item}</span>
+                              <span className="text-xs text-lia-text-secondary leading-relaxed">{item}</span>
                             </li>
                           ))}
                         </ul>
@@ -738,7 +738,7 @@ export function JDEvaluationPanel({
                         <span className="text-micro font-semibold text-lia-text-primary uppercase tracking-wide block mb-1">Competências Técnicas</span>
                         <div className="flex flex-wrap gap-1.5">
                           {technicalSkills.map((skill) => (
-                            <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+                            <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary">
                               {skill}
                             </span>
                           ))}
@@ -751,7 +751,7 @@ export function JDEvaluationPanel({
                         <span className="text-micro font-semibold text-lia-text-primary uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                         <div className="flex flex-wrap gap-1.5">
                           {behavioralCompetencies.map((comp) => (
-                            <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated dark:text-lia-text-secondary">
+                            <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary">
                               {comp}
                             </span>
                           ))}
@@ -766,8 +766,8 @@ export function JDEvaluationPanel({
                     <span className="text-xs font-semibold uppercase tracking-wide block">DESCRIÇÃO ENRIQUECIDA (LIA)</span>
 
                     {enrichedJd && (enrichedJd.generated_jd_text || enrichedJd.description) ? (
-                      <div className="border rounded-md p-3 space-y-3 dark:bg-lia-bg-secondary/30 border-wedo-cyan/20 bg-wedo-cyan/[.02]">
-                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed whitespace-pre-wrap">
+                      <div className="border rounded-md p-3 space-y-3/30 border-wedo-cyan/20 bg-wedo-cyan/[.02]">
+                        <p className="text-xs text-lia-text-secondary leading-relaxed whitespace-pre-wrap">
                           {enrichedJd.generated_jd_text || enrichedJd.description}
                         </p>
 
@@ -783,8 +783,8 @@ export function JDEvaluationPanel({
                             <ul className="space-y-0.5">
                               {enrichedJd.responsibilities.map((item, idx) => (
                                 <li key={`resp-${idx}`} className="flex items-start gap-1.5">
-                                  <span className="text-xs mt-0.5 shrink-0 lia-text-base">•</span>
-                                  <span className="text-xs text-lia-text-secondary dark:text-lia-text-secondary leading-relaxed">{item}</span>
+                                  <span className="text-xs mt-0.5 shrink-0 text-lia-text-secondary">•</span>
+                                  <span className="text-xs text-lia-text-secondary leading-relaxed">{item}</span>
                                 </li>
                               ))}
                             </ul>
@@ -796,7 +796,7 @@ export function JDEvaluationPanel({
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Técnicas</span>
                             <div className="flex flex-wrap gap-1.5">
                               {enrichedJd.technical_skills.map((skill) => (
-                                <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full dark:text-lia-text-secondary bg-wedo-cyan/10">
+                                <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full bg-wedo-cyan/10">
                                   {skill}
                                 </span>
                               ))}
@@ -809,7 +809,7 @@ export function JDEvaluationPanel({
                             <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                             <div className="flex flex-wrap gap-1.5">
                               {enrichedJd.behavioral_competencies.map((comp) => (
-                                <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full dark:text-lia-text-secondary bg-wedo-cyan/10">
+                                <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full bg-wedo-cyan/10">
                                   {comp}
                                 </span>
                               ))}
@@ -818,7 +818,7 @@ export function JDEvaluationPanel({
                         )}
                       </div>
                     ) : (
-                      <div className="border rounded-md p-3 dark:bg-lia-bg-secondary/30 border-wedo-cyan/15 bg-wedo-cyan/[.02]">
+                      <div className="border rounded-md p-3/30 border-wedo-cyan/15 bg-wedo-cyan/[.02]">
                         <div className="flex flex-col items-center justify-center py-6">
                           <Brain className="h-8 w-8 mb-2 text-wedo-cyan opacity-40" />
                           <p className="text-xs text-lia-text-disabled text-center leading-relaxed">
@@ -840,12 +840,12 @@ export function JDEvaluationPanel({
                     <div className="space-y-4">
                       {/* Description textarea */}
                       <div>
-                        <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide mb-2 block dark:text-lia-text-primary">Descrição / Sumário</label>
-                        <div className="bg-white rounded-md border border-lia-border-subtle dark:border-lia-border-subtle dark:bg-lia-bg-primary p-3">
+                        <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide mb-2 block">Descrição / Sumário</label>
+                        <div className="bg-white rounded-md border border-lia-border-subtle p-3">
                           <textarea
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value)}
-                            className="w-full h-40 text-xs text-lia-text-primary dark:text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 resize-none focus:outline-none focus:ring-1 focus:ring-gray-900/20 focus:border-gray-400 bg-gray-50 dark:bg-lia-bg-secondary"
+                            className="w-full h-40 text-xs text-lia-text-primary border border-lia-border-subtle rounded-md p-2.5 resize-none focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium bg-lia-bg-secondary"
                             placeholder="Forneça uma visão geral da vaga, incluindo propósito e como contribui para a organização..."
                           />
                         </div>
@@ -933,11 +933,11 @@ export function JDEvaluationPanel({
                   </div>
 
                   {/* BOTTOM ACTION BAR */}
-                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-lia-border-subtle">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7 text-micro px-3 border-lia-border-subtle text-lia-text-secondary dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700"
+                      className="h-7 text-micro px-3 border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover"
                       onClick={handleCancel}
                     >
                       Cancelar
@@ -946,7 +946,7 @@ export function JDEvaluationPanel({
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-7 text-micro px-3 border-lia-border-subtle text-lia-text-secondary dark:border-lia-border-default dark:text-lia-text-secondary"
+                        className="h-7 text-micro px-3 border-lia-border-subtle text-lia-text-secondary"
                         onClick={handleSaveRascunho}
                         disabled={isSavingInline}
                       >
@@ -955,7 +955,7 @@ export function JDEvaluationPanel({
                       </Button>
                       <Button
                         size="sm"
-                        className="h-7 text-micro px-4 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                        className="h-7 text-micro px-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
                         onClick={handleSaveDefinitiva}
                         disabled={isSavingDefinitive}
                       >

@@ -412,10 +412,10 @@ export default function SettingsPageEnhanced() {
             <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center mx-auto mb-4">
               <Settings className="w-8 h-8 text-lia-text-primary" />
             </div>
-            <h3 className={`${textStyles.subtitle} dark:text-lia-text-primary mb-2`}>
+            <h3 className={`${textStyles.subtitle} mb-2`}>
               Selecione uma seção
             </h3>
-            <p className={`${textStyles.description} dark:text-lia-text-tertiary`}>
+            <p className={`${textStyles.description}`}>
               Escolha uma das opções no menu lateral
             </p>
           </div>
@@ -440,7 +440,7 @@ export default function SettingsPageEnhanced() {
         <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary backdrop-blur-sm rounded-md overflow-hidden flex flex-col">
           <div className={`p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle ${isCollapsed && !isLocked ? 'px-2' : ''}`}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary rounded-md flex items-center justify-center flex-shrink-0">
                 <Settings className="w-5 h-5" />
               </div>
               {shouldShowContent && (
@@ -517,8 +517,8 @@ export default function SettingsPageEnhanced() {
                       }}
                       className={`w-full flex items-center gap-2 p-2.5 rounded-md text-left transition-colors motion-reduce:transition-none ${
                         isActive && !activeSubsection
-                          ? 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-lia-text-secondary dark:text-lia-text-secondary'
+                          ? 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-lia-text-secondary'
                       } ${isCollapsed && !isLocked ? 'justify-center' : ''}`}
                       title={isCollapsed && !isLocked ? section.title : ''}
                     >
@@ -590,7 +590,7 @@ export default function SettingsPageEnhanced() {
                 <h2 className={`${textStyles.h3} mb-1`}>
                   {settingsSections.find(s => s.id === activeSection)?.title}
                   {activeSubsection && settingsSections.find(s => s.id === activeSection)?.subsections?.find(sub => sub.id === activeSubsection) && (
-                    <span className="text-lia-text-secondary dark:text-lia-text-tertiary font-normal"> / {settingsSections.find(s => s.id === activeSection)?.subsections?.find(sub => sub.id === activeSubsection)?.title}</span>
+                    <span className="text-lia-text-secondary font-normal"> / {settingsSections.find(s => s.id === activeSection)?.subsections?.find(sub => sub.id === activeSubsection)?.title}</span>
                   )}
                 </h2>
                 <p className={textStyles.description}>

@@ -221,7 +221,7 @@ export function CandidateQueriesGuide({
                   border: '1px solid var(--lia-bg-tertiary)'}}
               >
                 <div className="p-2 rounded-md flex-shrink-0 bg-gray-900/[0.08]">
-                  <query.icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <query.icon className="w-4 h-4 text-lia-text-secondary" />
                 </div>
                 <span
                   className="text-sm leading-relaxed pt-1"

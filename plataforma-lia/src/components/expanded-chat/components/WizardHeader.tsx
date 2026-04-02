@@ -44,7 +44,7 @@ export function WizardHeader({
     <div className="px-3 py-2 rounded-t-xl bg-lia-bg-primary">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-md flex items-center justify-center bg-gray-900">
+          <div className="w-5 h-5 rounded-md flex items-center justify-center bg-lia-btn-primary-bg">
             <FileText className="w-3 h-3 text-white" />
           </div>
           <span className="text-xs font-semibold text-lia-text-primary">
@@ -58,7 +58,7 @@ export function WizardHeader({
                   ? "bg-status-success/10 text-status-success"
                   : catalogStatus.maturity_level === 'partial'
                   ? "bg-status-warning/10 text-status-warning"
-                  : "bg-gray-100 lia-text-secondary"
+                  : "bg-lia-bg-tertiary lia-text-secondary"
               )}
              
             >
@@ -85,7 +85,7 @@ export function WizardHeader({
           <div className="flex items-center gap-1 text-micro" role="status" aria-live="polite" aria-label="Carregando...">
             {isAutoSaving ? (
               <>
-                <Loader2 className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+                <Loader2 className="w-3 h-3 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
                 <span className="lia-text-secondary">Salvando...</span>
               </>
             ) : autoSaveLastSaved ? (
@@ -103,7 +103,7 @@ export function WizardHeader({
           {(autoSaveLastSaved || hasRestoredDraft) && (
             <button
               onClick={onClearDraft}
-              className="p-1 rounded-md hover:bg-status-error/10 transition-colors motion-reduce:transition-none group focus-visible:ring-2 focus-visible:ring-gray-400"
+              className="p-1 rounded-md hover:bg-status-error/10 transition-colors motion-reduce:transition-none group focus-visible:ring-2 focus-visible:ring-lia-border-default"
               title="Começar do zero"
               aria-label="Limpar rascunho e começar do zero"
             >
@@ -112,18 +112,18 @@ export function WizardHeader({
           )}
           <button
             onClick={() => onFullscreenChange(!isFullscreen)}
-            className="p-1 rounded-md hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none group focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="p-1 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none group focus-visible:ring-2 focus-visible:ring-lia-border-default"
             title={isFullscreen ? "Reduzir chat" : "Expandir tela cheia"}
             aria-label={isFullscreen ? "Reduzir chat" : "Expandir para tela cheia"}
           >
             {isFullscreen 
-              ? <Minimize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors motion-reduce:transition-none" />
-              : <Maximize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:lia-text-strong dark:group-hover:lia-text-subtle transition-colors motion-reduce:transition-none" />
+              ? <Minimize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none" />
+              : <Maximize2 className="w-3.5 h-3.5 lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none" />
             }
           </button>
           <button 
             onClick={onPanelClose}
-            className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-gray-400"
+            className="p-1 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-lia-border-default"
             title="Fechar painel"
             aria-label="Fechar painel de etapas"
           >

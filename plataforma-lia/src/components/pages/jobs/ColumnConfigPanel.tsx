@@ -76,17 +76,17 @@ export function ColumnConfigPanel({
       <Card className="h-full flex flex-col overflow-hidden bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm text-lia-text-primary dark:text-lia-text-primary">Configurar Colunas</h3>
+            <h3 className="font-semibold text-sm text-lia-text-primary">Configurar Colunas</h3>
             <Button
               variant="ghost"
               size="sm"
               onClick={onClose}
               className="h-7 w-7 p-0 hover:bg-gray-900/10 dark:hover:bg-gray-100/10 rounded-full"
             >
-              <X className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+              <X className="w-4 h-4 text-lia-text-primary" />
             </Button>
           </div>
-          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-1">
+          <p className="text-xs text-lia-text-primary mt-1">
             Selecione as colunas visíveis na tabela ({visibleColumnIds.length} ativas)
           </p>
         </div>
@@ -94,7 +94,7 @@ export function ColumnConfigPanel({
         <div className="flex-1 overflow-y-auto p-4">
           {savedColumnViews.length > 0 && (
             <div className="mb-4 pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
-              <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
+              <h4 className="text-xs font-semibold text-lia-text-primary mb-2">
                 Visualizações Salvas
               </h4>
               <div className="space-y-1">
@@ -126,7 +126,7 @@ export function ColumnConfigPanel({
               if (categoryColumns.length === 0) return null
               return (
                 <div key={categoryKey}>
-                  <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
+                  <h4 className="text-xs font-semibold text-lia-text-primary mb-2">
                     {categoryLabel}
                   </h4>
                   <div className="space-y-1">

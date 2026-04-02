@@ -23,7 +23,7 @@ const wsiToPercent = (score: number) => Math.round((score / 5) * 100)
 
 export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details }: TriagemScoresPanelProps) {
   return (
-    <div className="p-3 border border-lia-border-subtle bg-gray-50 rounded-lg">
+    <div className="p-3 border border-lia-border-subtle bg-lia-bg-secondary rounded-lg">
       <h3 className="text-xs font-semibold flex items-center gap-2 mb-3 text-lia-text-primary">
         <Brain className="w-4 h-4 text-wedo-cyan" />
         Scores por Dimensão
@@ -46,7 +46,7 @@ export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details }: 
         </div>
       </div>
       <div className="flex items-center gap-3 mt-3 flex-wrap">
-        <span className="flex items-center gap-1 text-xs lia-text-secondary bg-gray-100 px-2 py-1 rounded-full">
+        <span className="flex items-center gap-1 text-xs lia-text-secondary bg-lia-bg-tertiary px-2 py-1 rounded-full">
           {sessionInfo.screening_type === 'voice' ? <Mic className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
           {sessionInfo.screening_type === 'voice' ? 'Triagem por Voz' : 'Triagem por Texto'}
         </span>
@@ -63,19 +63,19 @@ export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details }: 
         )}
       </div>
       {f11Report?.seniority_weights && (
-        <div className="flex items-center gap-1.5 text-xs lia-text-secondary bg-gray-50 border border-lia-border-subtle rounded-lg px-3 py-2 mt-2">
+        <div className="flex items-center gap-1.5 text-xs lia-text-secondary bg-lia-bg-secondary border border-lia-border-subtle rounded-lg px-3 py-2 mt-2">
           <BarChart3 className="w-3 h-3 lia-text-secondary shrink-0" />
           <span>
-            Para <span className="font-medium lia-text-base">{f11Report.seniority || details?.session?.seniority_label || 'N/A'}</span>: Competências Técnicas valem{' '}
-            <span className="font-semibold lia-text-base">{Math.round(f11Report.seniority_weights.technical * 100)}%</span> e Comportamentais valem{' '}
-            <span className="font-semibold lia-text-base">{Math.round(f11Report.seniority_weights.behavioral * 100)}%</span> do score final
+            Para <span className="font-medium text-lia-text-secondary">{f11Report.seniority || details?.session?.seniority_label || 'N/A'}</span>: Competências Técnicas valem{' '}
+            <span className="font-semibold text-lia-text-secondary">{Math.round(f11Report.seniority_weights.technical * 100)}%</span> e Comportamentais valem{' '}
+            <span className="font-semibold text-lia-text-secondary">{Math.round(f11Report.seniority_weights.behavioral * 100)}%</span> do score final
           </span>
         </div>
       )}
       {f11Report?.mode && (
         <div className="flex items-center gap-2 mt-2">
           <span className="text-micro lia-text-secondary">Modo de triagem:</span>
-          <span className="text-micro font-medium lia-text-base flex items-center gap-1">
+          <span className="text-micro font-medium text-lia-text-secondary flex items-center gap-1">
             <Layers className="w-3 h-3 lia-text-secondary" />
             {f11Report.mode === 'compact' ? 'Compact' : f11Report.mode === 'full' ? 'Full' : f11Report.mode}
             {f11Report.question_count ? ` · ${f11Report.question_count} perguntas` : ''}

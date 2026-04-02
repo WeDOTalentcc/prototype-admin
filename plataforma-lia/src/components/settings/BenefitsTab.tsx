@@ -43,12 +43,12 @@ import { BenefitTemplateModal } from "./benefits/BenefitTemplateModal"
 const BENEFIT_CATEGORIES = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
   { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/20" },
-  { id: "transport", name: "Transporte", icon: Car, color: "lia-text-700 dark:text-lia-text-secondary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary" },
+  { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-primary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary" },
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
-  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "lia-text-600 dark:text-lia-text-tertiary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary" },
+  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-secondary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary" },
   { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-  { id: "security", name: "Segurança", icon: Shield, color: "lia-text-800 dark:text-lia-text-primary", bgColor: "bg-gray-50 dark:bg-lia-bg-secondary/50" },
+  { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-primary", bgColor: "bg-gray-50 dark:bg-lia-bg-secondary/50" },
 ]
 
 const SENIORITY_LEVELS = [
@@ -490,7 +490,7 @@ export function BenefitsTab() {
       <div className="space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
           <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2 lia-text-600 dark:text-lia-text-tertiary" />
+            <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2 text-lia-text-secondary" />
             <p className={`${textStyles.description}`}>Carregando benefícios...</p>
           </div>
         </div>
@@ -516,7 +516,7 @@ export function BenefitsTab() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h2 className={`${textStyles.titleLarge} dark:text-lia-text-primary`}>
+          <h2 className={`${textStyles.titleLarge}`}>
             Benefícios da Empresa
           </h2>
           <p className={`${textStyles.body} mt-1`}>
@@ -534,7 +534,7 @@ export function BenefitsTab() {
               onInstructionSave={handleLiaInstructionSave}
               compact
             />
-            <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">Consumido pela LIA</span>
+            <span className="text-xs text-lia-text-secondary">Consumido pela LIA</span>
           </div>
           {!isEditingBenefits ? (
             <button
@@ -574,7 +574,7 @@ export function BenefitsTab() {
             size="sm"
             onClick={() => setShowTemplateModal(true)}
             disabled={!isEditingBenefits}
-            className="gap-1.5 rounded-md text-xs border-lia-border-default lia-text-700 dark:border-lia-border-default dark:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="gap-1.5 rounded-md text-xs border-lia-border-default text-lia-text-primary dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             <Library className="w-3.5 h-3.5" />
             Adicionar da Lista
@@ -586,7 +586,7 @@ export function BenefitsTab() {
               setShowBenefitModal(true)
             }}
             disabled={!isEditingBenefits}
-            className="gap-1.5 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+            className="gap-1.5 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
           >
             <Plus className="w-3.5 h-3.5" />
             Novo Benefício
@@ -621,7 +621,7 @@ export function BenefitsTab() {
                     <CategoryIcon className={`w-4 h-4 ${category.color}`} />
                   </div>
                   <div>
-                    <h3 className={`${textStyles.title} dark:text-lia-text-primary`}>
+                    <h3 className={`${textStyles.title}`}>
                       {category.name}
                     </h3>
                     <p className={textStyles.caption}>
@@ -634,9 +634,9 @@ export function BenefitsTab() {
                     {categoryBenefits.filter(b => b.is_active).length} ativos
                   </Badge>
                   {isExpanded ? (
-                    <ChevronDown className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                    <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                    <ChevronRight className="w-4 h-4 text-lia-text-secondary" />
                   )}
                 </div>
               </div>
@@ -645,14 +645,14 @@ export function BenefitsTab() {
                 <CardContent className="p-0">
                   {categoryBenefits.length === 0 ? (
                     <div className="p-3 text-center">
-                      <Gift className="w-4 h-4 mx-auto lia-text-300 dark:lia-text-600 mb-2" />
+                      <Gift className="w-4 h-4 mx-auto text-lia-text-disabled mb-2" />
                       <p className={textStyles.bodySmall}>
                         Nenhum benefício nesta categoria
                       </p>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="mt-2 text-xs lia-text-700 hover:lia-text-900 dark:text-lia-text-secondary dark:hover:lia-text-50"
+                        className="mt-2 text-xs text-lia-text-primary hover:text-lia-text-primary"
                         onClick={() => {
                           setEditingBenefit({ ...defaultBenefit, category: category.id })
                           setShowBenefitModal(true)

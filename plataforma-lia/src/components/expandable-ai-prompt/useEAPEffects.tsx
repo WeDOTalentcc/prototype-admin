@@ -396,7 +396,7 @@ export function useEAPEffects(params: UseEAPEffectsParams) {
     if (selectedCount > 0) {
       return {
         text: `${selectedCount} selecionado${selectedCount > 1 ? 's' : ''}`,
-        color: 'lia-text-base',
+        color: 'text-lia-text-secondary',
         bgColor: 'bg-gray-50 border-lia-border-subtle'
       }
     }
@@ -411,7 +411,7 @@ export function useEAPEffects(params: UseEAPEffectsParams) {
 
     return {
       text: `${totalCount} candidatos`,
-      color: 'lia-text-base',
+      color: 'text-lia-text-secondary',
       bgColor: 'bg-lia-bg-primary border-lia-border-subtle'
     }
   }

@@ -192,7 +192,7 @@ export function ExpertiseAreasInput({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {value.length > 0 && (
-            <span className="text-xs lia-text-500">
+            <span className="text-xs text-lia-text-secondary">
               {value.length} área{value.length !== 1 ? 's' : ''} selecionada{value.length !== 1 ? 's' : ''}
             </span>
           )}
@@ -200,7 +200,7 @@ export function ExpertiseAreasInput({
         {value.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-xs lia-text-900 dark:lia-text-50 hover:lia-text-700 dark:hover:lia-text-300 font-medium"
+            className="text-xs text-lia-text-primary hover:text-lia-text-primary font-medium"
           >
             Clear all
           </button>
@@ -209,7 +209,7 @@ export function ExpertiseAreasInput({
 
       <div className="relative">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
           <Input
             ref={inputRef}
             value={inputValue}
@@ -222,7 +222,7 @@ export function ExpertiseAreasInput({
           />
           {isLoadingAI && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-600" />
+              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
             </div>
           )}
         </div>
@@ -254,7 +254,7 @@ export function ExpertiseAreasInput({
                     <span>{item.label}</span>
                   </div>
                 ) : (
-                  <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
+                  <span className="text-lia-text-primary">{item.label}</span>
                 )}
               </button>
             ))}
@@ -268,7 +268,7 @@ export function ExpertiseAreasInput({
             {value.map(expertise => (
               <Badge
                 key={expertise}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
               >
                 <Brain className="w-3 h-3 text-wedo-cyan" />
                 <span>{expertise}</span>
@@ -288,7 +288,7 @@ export function ExpertiseAreasInput({
             size="sm"
             onClick={findSimilarExpertise}
             disabled={isFindingSimilar || value.length === 0}
-            className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 lia-text-900 dark:lia-text-50 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             {isFindingSimilar ? (
               <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
@@ -300,7 +300,7 @@ export function ExpertiseAreasInput({
         </div>
       )}
 
-      <p className="text-xs lia-text-500">
+      <p className="text-xs text-lia-text-secondary">
         Campos de expertise do LinkedIn (complementa skills)
       </p>
     </div>

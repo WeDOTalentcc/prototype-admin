@@ -20,7 +20,7 @@ interface OpinionCardProps {
 
 export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId, onCopyOpinion }: OpinionCardProps) {
   const getScoreColor = (score: number | null, isWsi: boolean = false) => {
-    if (score === null || score === undefined) return 'lia-text-base'
+    if (score === null || score === undefined) return 'text-lia-text-secondary'
     if (isWsi) {
       if (score >= 4.0) return 'text-status-success'
       if (score >= 3.0) return 'text-status-warning'
@@ -71,17 +71,17 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
   }
 
   return (
-    <div className={`${cardStyles.default} p-3 overflow-hidden dark:border-lia-border-subtle`}>
+    <div className={`${cardStyles.default} p-3 overflow-hidden`}>
       <div
         onClick={onToggle}
-        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer"
+        className="w-full p-3 flex items-center justify-between hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer"
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && onToggle()}
       >
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
- isWsiOpinion ? 'bg-wedo-purple/15' : 'bg-gray-100 dark:bg-lia-bg-secondary'
+ isWsiOpinion ? 'bg-wedo-purple/15' : 'bg-lia-bg-tertiary'
           }`}>
             {isWsiOpinion ? (
               <Target className="w-4 h-4 text-wedo-purple" />
@@ -95,17 +95,17 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                 {isWsiOpinion ? 'Parecer WSI' : (opinion.job_vacancy_id ? 'Parecer de Vaga' : 'Parecer Geral')}
               </span>
               {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle flex items-center gap-1">
+                <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
                   <Briefcase className="w-2.5 h-2.5" />
                   #{String(opinion.job_vacancy_id).slice(0, 6)} - {String(opinion.job_vacancy_title)}
                 </Badge>
               ) : opinion.job_vacancy_title ? (
-                <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 lia-text-base dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle flex items-center gap-1">
+                <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
                   <Briefcase className="w-2.5 h-2.5" />
                   {String(opinion.job_vacancy_title)}
                 </Badge>
               ) : !opinion.job_vacancy_id ? (
-                <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle">
+                <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
                   Sem vaga vinculada
                 </Badge>
               ) : null}
@@ -138,12 +138,12 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                   e.stopPropagation()
                   onCopyOpinion(opinion, type)
                 }}
-                className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
+                className="p-1 hover:bg-lia-interactive-hover rounded-md transition-colors motion-reduce:transition-none"
               >
                 {copiedItemId === `opinion-${opinion.id}` ? (
                   <Check className="w-3.5 h-3.5 text-status-success" />
                 ) : (
-                  <Copy className="w-3.5 h-3.5 text-lia-text-disabled hover:text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  <Copy className="w-3.5 h-3.5 text-lia-text-disabled hover:text-lia-text-secondary" />
                 )}
               </button>
             </TooltipTrigger>
@@ -159,10 +159,10 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
 
       {isExpanded && (
         // @ts-ignore TODO: fix type
-        <div className="px-3 pb-3 pt-0 border-t border-lia-border-subtle dark:border-lia-border-subtle space-y-3">
+        <div className="px-3 pb-3 pt-0 border-t border-lia-border-subtle space-y-3">
           {(opinion.summary as any) && (
             <div className="pt-3">
-              <p className="text-xs text-lia-text-primary dark:text-lia-text-primary leading-relaxed">
+              <p className="text-xs text-lia-text-primary leading-relaxed">
                 {String(opinion.summary)}
               </p>
             </div>
@@ -177,9 +177,9 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               <div className="grid grid-cols-2 gap-1.5">
                 {Object.entries(opinion.score_breakdown as Record<string, unknown>).map(([key, value]) => (
                   value !== null && value !== undefined && (
-                    <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-lia-bg-secondary rounded-full px-2 py-1">
-                      <span className="text-lia-text-secondary dark:text-lia-text-tertiary capitalize">{key.replace(/_/g, ' ')}</span>
-                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{typeof value === 'number' ? `${Math.round(value)}%` : String(value)}</span>
+                    <div key={key} className="flex items-center justify-between text-micro bg-lia-bg-secondary rounded-full px-2 py-1">
+                      <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, ' ')}</span>
+                      <span className="font-medium text-lia-text-primary">{typeof value === 'number' ? `${Math.round(value)}%` : String(value)}</span>
                     </div>
                   )
                 ))}
@@ -195,7 +195,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               </h5>
               <ul className="space-y-0.5">
                 {(opinion.strengths as string[]).map((s: string, i: number) => (
-                  <li key={`str-${i}`} className={`${textStyles.caption} text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1`}>
+                  <li key={`str-${i}`} className={`${textStyles.caption} text-lia-text-secondary flex items-start gap-1`}>
                     <span className="text-status-success mt-0.5">•</span>
                     {s}
                   </li>
@@ -212,7 +212,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               </h5>
               <ul className="space-y-0.5">
                 {(opinion.concerns as string[]).map((c: string, i: number) => (
-                  <li key={`con-${i}`} className={`${textStyles.caption} text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1`}>
+                  <li key={`con-${i}`} className={`${textStyles.caption} text-lia-text-secondary flex items-start gap-1`}>
                     <span className="text-status-warning mt-0.5">•</span>
                     {c}
                   </li>
@@ -229,7 +229,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
               </h5>
               <ul className="space-y-0.5">
                 {(opinion.gaps as string[]).map((g: string, i: number) => (
-                  <li key={`gap-${i}`} className={`${textStyles.caption} text-lia-text-secondary dark:text-lia-text-tertiary flex items-start gap-1`}>
+                  <li key={`gap-${i}`} className={`${textStyles.caption} text-lia-text-secondary flex items-start gap-1`}>
                     <span className="text-status-error mt-0.5">•</span>
                     {g}
                   </li>
@@ -273,7 +273,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                 <TrendingUp className="w-3 h-3" />
                 Próximos Passos
               </h5>
-              <p className={`${textStyles.caption} lia-text-base`}>{String(opinion.next_steps)}</p>
+              <p className={`${textStyles.caption} text-lia-text-secondary`}>{String(opinion.next_steps)}</p>
             </div>
           )}
 

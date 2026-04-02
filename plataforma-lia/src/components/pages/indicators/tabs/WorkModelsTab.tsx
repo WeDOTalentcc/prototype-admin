@@ -25,10 +25,10 @@ export function WorkModelsTab() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary font-medium">Remoto</p>
-                <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">42%</p>
+                <p className="text-sm text-lia-text-secondary font-medium">Remoto</p>
+                <p className="text-2xl font-bold text-lia-text-primary">42%</p>
               </div>
-              <Home className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <Home className="w-8 h-8 text-lia-text-secondary" />
             </div>
             <div className="mt-2 flex items-center gap-1 text-xs">
               <TrendingUp className="w-3 h-3 text-status-success" />
@@ -91,7 +91,7 @@ export function WorkModelsTab() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+              <BarChart3 className="w-5 h-5 text-lia-text-secondary" />
               Modelos por Departamento
             </CardTitle>
           </CardHeader>
@@ -106,11 +106,11 @@ export function WorkModelsTab() {
               ].map((item, index) => (
                 <div key={item.dept} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">
+                    <span className="font-medium text-lia-text-primary">
                       {item.dept}
                     </span>
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="text-lia-text-secondary dark:text-lia-text-tertiary">
+                      <span className="text-lia-text-secondary">
                         {item.remote}% Remoto
                       </span>
                       <span className="text-wedo-purple">{item.hybrid}% Híbrido</span>
@@ -153,7 +153,7 @@ export function WorkModelsTab() {
                   </div>
                   <div className="text-right">
                     <div className="text-sm font-bold">{item.count}</div>
-                    <div className="text-xs text-lia-text-primary dark:text-lia-text-primary">
+                    <div className="text-xs text-lia-text-primary">
                       {item.percentage}%
                     </div>
                   </div>
@@ -175,10 +175,10 @@ export function WorkModelsTab() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-              <h4 className="font-medium text-lia-text-secondary dark:text-lia-text-secondary mb-2">
+              <h4 className="font-medium text-lia-text-secondary mb-2">
                 🚀 Tendência Crescente
               </h4>
-              <p className="text-sm text-lia-text-secondary dark:text-lia-text-secondary">
+              <p className="text-sm text-lia-text-secondary">
                 Modelo remoto cresceu 8% no trimestre, especialmente em Tech e Design.
                 Considere expandir políticas de trabalho remoto.
               </p>

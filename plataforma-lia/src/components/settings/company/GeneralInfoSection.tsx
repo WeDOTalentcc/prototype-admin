@@ -32,7 +32,7 @@ export function GeneralInfoSection({
 }: GeneralInfoSectionProps) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-semibold lia-text-500 dark:text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
+      <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif]">
         Informações Gerais
       </h3>
       <div className="grid grid-cols-1 gap-3">
@@ -43,14 +43,14 @@ export function GeneralInfoSection({
               <NextImage src={companyData.logo} alt="Logo" fill className="object-cover rounded-md" />
             ) : (
               <div className="text-center">
-                <Image className="w-5 h-5 mx-auto lia-text-400 dark:lia-text-500 mb-0.5" />
-                <span className="text-micro lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">Upload</span>
+                <Image className="w-5 h-5 mx-auto text-lia-text-tertiary mb-0.5" />
+                <span className="text-micro text-lia-text-secondary font-['Open_Sans',sans-serif]">Upload</span>
               </div>
             )}
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium lia-text-700 dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">Logo da Empresa</span>
-            <span className="text-micro lia-text-500 bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full font-['Open_Sans',sans-serif]">Identidade Visual</span>
+            <span className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif]">Logo da Empresa</span>
+            <span className="text-micro text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full font-['Open_Sans',sans-serif]">Identidade Visual</span>
           </div>
         </div>
 

@@ -175,7 +175,7 @@ export function LocationFilterInput({
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold lia-text-600">Localização</span>
+          <span className="text-xs font-semibold text-lia-text-secondary">Localização</span>
           {showRadius && onRadiusChange && (
             <RadiusDropdown value={radius} onChange={onRadiusChange} />
           )}
@@ -184,7 +184,7 @@ export function LocationFilterInput({
           {value.length > 0 && (
             <button
               onClick={clearAll}
-              className="text-xs lia-text-500 hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
+              className="text-xs text-lia-text-secondary hover:text-status-error flex items-center gap-1 transition-colors motion-reduce:transition-none"
             >
               <RotateCcw className="w-3 h-3" />
               Limpar tudo
@@ -195,14 +195,14 @@ export function LocationFilterInput({
               <button
                 onClick={() => {}}
                 disabled={value.length === 0}
-                className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-xs text-lia-text-secondary hover:text-lia-text-primary flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-3.5 h-3.5" />
                 Salvar Preset
               </button>
               <button
                 onClick={() => setIsPresetsModalOpen(true)}
-                className="text-xs lia-text-600 hover:lia-text-800 flex items-center gap-1"
+                className="text-xs text-lia-text-secondary hover:text-lia-text-primary flex items-center gap-1"
               >
                 <List className="w-3.5 h-3.5" />
                 Presets
@@ -226,7 +226,7 @@ export function LocationFilterInput({
       <div className="flex gap-4">
         <div className="flex-1 relative">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
             <Input
               ref={inputRef}
               value={inputValue}
@@ -248,7 +248,7 @@ export function LocationFilterInput({
                   return (
                     <div 
                       key={`header-${item.label}`}
-                      className="px-3 py-1.5 text-xs font-semibold lia-text-600 bg-gray-50 border-t border-lia-border-subtle first:border-t-0"
+                      className="px-3 py-1.5 text-xs font-semibold text-lia-text-secondary bg-gray-50 border-t border-lia-border-subtle first:border-t-0"
                     >
                       {item.label}
                     </div>
@@ -267,7 +267,7 @@ export function LocationFilterInput({
                       focusedIndex === currentSelectableIndex ? "bg-gray-100" : "hover:bg-gray-50"
                     )}
                   >
-                    <span className="lia-text-800 dark:text-lia-text-primary">{item.label}</span>
+                    <span className="text-lia-text-primary">{item.label}</span>
                   </button>
                 )
               })}
@@ -279,9 +279,9 @@ export function LocationFilterInput({
               {value.map(location => (
                 <Badge
                   key={location.value}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 lia-text-800 dark:text-lia-text-primary border border-lia-border-subtle"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
                 >
-                  <span className="text-micro font-semibold lia-text-500 uppercase">
+                  <span className="text-micro font-semibold text-lia-text-secondary uppercase">
                     {getTypeLabel(location.type)}
                   </span>
                   <span>{location.value.split(',')[0]}</span>

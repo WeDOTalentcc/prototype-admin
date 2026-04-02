@@ -27,7 +27,7 @@ export function SkipCompetenciesWarningModal({
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-overlay flex items-center justify-center bg-lia-overlay">
       <div className="bg-lia-bg-primary rounded-xl w-panel-lg p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 bg-status-warning/10 rounded-full flex items-center justify-center">
@@ -35,7 +35,7 @@ export function SkipCompetenciesWarningModal({
           </div>
           <div>
             <h3
-              className="text-lg font-semibold lia-text-strong"
+              className="text-lg font-semibold text-lia-text-primary"
              
             >
               Competências incompletas
@@ -58,7 +58,7 @@ export function SkipCompetenciesWarningModal({
           <Button
             variant="outline"
             onClick={onClose}
-            className="flex-1 h-10 rounded-md border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary"
+            className="flex-1 h-10 rounded-md border-lia-btn-primary-bg text-lia-text-secondary"
           >
             Voltar e completar
           </Button>
