@@ -4,12 +4,17 @@
 
 | Meta | Valor |
 |------|-------|
-| Última validação | Março 2026 |
-| Metodologia | Extração automatizada de arquivos-fonte (`components/ui/`, `components/modals/`, `components/pages/`, `design-tokens.css`, `tailwind.config.ts`) + revisão manual |
-| Componentes UI cobertos | 70 de 70 (excluindo `.stories.tsx`) |
-| Modais cobertos | 35 |
-| Telas operacionais | Dashboard, Vagas (lista + kanban), Funil de Talentos, Candidato Full, Configurações, Sidebar, TopBar |
-| Gaps conhecidos | Telas de Onboarding, Analytics Avançado, ATS Integrations e Real-Time Dashboard não detalhadas neste inventário (escopo: área operacional core) |
+| Última validação | Abril 2026 |
+| Metodologia | Extração automatizada de arquivos-fonte (`components/ui/`, `components/modals/`, `components/pages/`, `design-tokens.css`, `tailwind.config.ts`) + revisão manual + auditoria de diretório completa |
+| Componentes UI base (`ui/`) | 68 arquivos `.tsx` (stories removidos) |
+| Modais (`modals/`) | 33 arquivos principais + sub-diretórios (edit-job, edit-job-sections, new-candidate, job-compare, job-insights, job-status) |
+| Modais dispersos (fora de `modals/`) | ~20 (batch-approval, big-five, candidate-decision-flow, column-configuration, cv-upload, disc-assessment, expanded-chat, global-search, job-report, lia-tips, quick-actions-modals, quick-view, reveal-credits, save-command, task-modal, triagem-details, alert-settings, etc.) |
+| Componentes especializados (fora de `ui/`) | ~150+ arquivos em 40+ diretórios |
+| Hooks | 90+ hooks em `hooks/` |
+| Telas operacionais | Dashboard/Tasks, Vagas (lista + kanban + configurações), Funil de Talentos, Candidato Full (review + preview + page), Chat LIA, Settings, Sidebar, TopBar, Admin Panel |
+| Telas adicionais | Dashboards (12 sub-dashboards), Indicadores, Executive/Real-Time/Big Five Dashboards, LIA Library, Templates, Integrations/ATS, AI Credits, Workflow Automation, Job Templates, Work Model Analytics, Onboarding, Login |
+| Gaps conhecidos | Detalhamento interno de: Onboarding wizard steps, Real-Time Dashboard widgets, Work Model Analytics charts |
+| Unificações T001-T007 (Abril 2026) | `format-utils.ts` centralizado; `useTagInputState` compartilhado; `SearchPresetsModal<T>` genérico; `MetricCard` com `variant="compact"` + `CompactDelta` export; CandidateIdentity sub-components extraídos |
 
 **Manutenção:** Ao adicionar novo componente UI, modal, ou tela, atualizar a seção correspondente deste documento com: arquivo, export, layout, campos/props, estados e tokens.
 
@@ -752,6 +757,26 @@
 - **Cor:** Cyan accent background sutil
 - **States:** visible (sempre quando conteúdo IA presente)
 
+#### CookieConsent (`cookie-consent.tsx`)
+- **Export:** `CookieConsent`
+- **Função:** Banner de consentimento de cookies (LGPD/GDPR)
+- **States:** visible (primeiro acesso), hidden (após aceitar/recusar)
+
+#### MaskedInput (`masked-input.tsx`)
+- **Export:** `MaskedInput`
+- **Função:** Input com máscara para CPF, telefone, CEP, etc.
+- **Elementos:** Input com formatação automática baseada em padrão
+
+#### ThinkingDots (`thinking-dots.tsx`)
+- **Export:** `ThinkingDots`
+- **Função:** Animação de "pensando" (3 dots pulsantes)
+- **States:** animating (visível enquanto LIA processa)
+
+#### LiaPromptHeader (`lia-prompt-header.tsx`)
+- **Export:** `LiaPromptHeader`
+- **Função:** Header contextual para prompts da LIA
+- **Elementos:** Ícone LIA + título + contexto
+
 ---
 
 ## 3. SIDEBAR (Navegação Principal)
@@ -818,11 +843,29 @@
 
 ---
 
-## 5. PAINEL DE CONTROLE (Dashboard)
+## 5. PAINEL DE CONTROLE (Dashboard / Tasks)
 
-- **Arquivo:** `plataforma-lia/src/components/pages/tasks-page-mvp.tsx`
+- **Arquivo principal:** `plataforma-lia/src/components/pages/tasks-page-mvp.tsx`
 - **Componente:** `TasksPageMVP`
 - **Descrição:** Tarefas e atividades pendentes do recrutador
+- **Arquivo alternativo:** `plataforma-lia/src/components/pages/tasks-page.tsx` (`TasksPage`)
+
+### Sub-componentes de Tasks
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `ActiveAlertsCard` | `pages/tasks/ActiveAlertsCard.tsx` | Card de alertas ativos |
+| `TaskCard` | `pages/tasks/TaskCard.tsx` | Card individual de tarefa |
+| `DailyBriefingCard` | `daily-briefing-card.tsx` | Card de briefing diário |
+| `TasksSection` | `tasks-section.tsx` | Seção de tarefas agrupadas |
+| `EventsSection` | `events-section.tsx` | Seção de eventos/agenda |
+| `TaskModal` | `task-modal.tsx` | Modal de detalhes/edição de tarefa |
+
+### Dashboard Estratégico
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `StrategicDashboard` | `dashboard/strategic-dashboard.tsx` | Dashboard estratégico |
+| `PredictiveAnalyticsTab` | `dashboard/predictive-analytics-tab.tsx` | Tab de analytics preditivos |
+| `DashboardApp` | `dashboard-app.tsx` | Container do dashboard |
 
 ---
 
@@ -924,6 +967,31 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 - **Botões:** Cancelar + Confirmar
 - **States:** open (confirmação), confirming, confirmed
 
+#### Kanban Sub-componentes (`kanban/components/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `KanbanBoard` | Board principal (em `kanban/components/`) |
+| `CandidateBadges` | Badges do candidato no kanban |
+| `CandidateCard` | Card do candidato (kanban) |
+| `CandidateTableRow` | Row do candidato (visão tabela) |
+| `ColumnContextMenu` | Menu de contexto da coluna |
+| `OverrideApproveButton` | Botão de override/aprovação |
+| `SaturationBadge` | Badge de saturação |
+| `TransitionChatPanel` | Painel de chat de transição |
+| `UniversalTransitionModal` | Modal universal de transição entre etapas |
+
+#### Kanban Hooks (`kanban/hooks/`)
+
+| Hook | Descrição |
+|------|-----------|
+| `useDragDrop` | Hook de drag & drop |
+| `useCandidateSelection` | Hook de seleção de candidatos |
+| `useColumnConfig` | Hook de configuração de colunas |
+| `useFiltersPersistence` | Hook de persistência de filtros |
+| `useKanbanFilters` | Hook de filtros do kanban |
+| `useUniversalTransition` | Hook de transição universal |
+
 ### Modo Tabela
 - Mesmos dados em formato tabular com `Table` + `TableHeader` + `TableRow`
 - Toggle: `Grid3X3` icon (Kanban) / `List` icon (Tabela)
@@ -987,6 +1055,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ### Painel JD Enriquecida (JDEvaluationPanel)
 - **Arquivo:** `plataforma-lia/src/components/wsi/JDEvaluationPanel.tsx`
+- **Sub-diretório:** `plataforma-lia/src/components/wsi/jd-evaluation/`
 - **Componente:** `JDEvaluationPanel`
 - **Título:** "DESCRIÇÃO ENRIQUECIDA (LIA)"
 - **Dimensões avaliadas:** D1-D9 com scores individuais
@@ -1623,6 +1692,52 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 - **Botões:** `Button outline` (Cancelar) + `Button default` (Enviar Convite)
 - **States:** configuring, sending, sent
 
+#### WSIScorecard (`wsi/wsi-scorecard.tsx`)
+- **Função:** Scorecard visual dos resultados WSI
+
+#### WSIVoiceScreeningStatus (`wsi/wsi-voice-screening-status.tsx`)
+- **Função:** Status de triagem por voz WSI
+
+### 10.34B Screening Config Sub-componentes (`screening-config/`)
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `ScreeningConfigManager` | `screening-config/ScreeningConfigManager.tsx` | Manager principal de configuração |
+| `ScreeningScriptTab` | `screening-config/ScreeningScriptTab.tsx` | Tab de script de triagem |
+| `CompanyBankQuestions` | `screening-config/CompanyBankQuestions.tsx` | Banco de perguntas da empresa |
+| `CompanyDefaultQuestions` | `screening-config/CompanyDefaultQuestions.tsx` | Perguntas default da empresa |
+| `CustomQuestions` | `screening-config/CustomQuestions.tsx` | Perguntas customizadas |
+| `SCMQuestionDetail` | `screening-config/SCMQuestionDetail.tsx` | Detalhe de pergunta |
+| `SCMScreeningTypes` | `screening-config/SCMScreeningTypes.ts` | Tipos de screening |
+| `SCMSectionConfiguracoes` | `screening-config/SCMSectionConfiguracoes.tsx` | Seção de configurações |
+| `SCMSectionContent` | `screening-config/SCMSectionContent.tsx` | Seção de conteúdo |
+| `SCMSectionPerguntasEdit` | `screening-config/SCMSectionPerguntasEdit.tsx` | Edição de perguntas |
+| `SCMWSIStepDetails` | `screening-config/SCMWSIStepDetails.tsx` | Detalhes de step WSI |
+| `ScreeningChannelsModal` | `screening-config/ScreeningChannelsModal.tsx` | Modal de canais |
+| `ScreeningSchedulingModal` | `screening-config/ScreeningSchedulingModal.tsx` | Modal de agendamento |
+| `ScreeningSettingsModal` | `screening-config/ScreeningSettingsModal.tsx` | Modal de configurações |
+| `ScreeningStatusModal` | `screening-config/ScreeningStatusModal.tsx` | Modal de status |
+
+### 10.34C Screening Notifications (`screening/`)
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `ScreeningNotificationCard` | `screening/screening-notification-card.tsx` | Card de notificação de triagem |
+
+### 10.34D WSI Sub-componentes (`wsi/`)
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `QuestionAdjustmentChat` | `wsi/QuestionAdjustmentChat.tsx` | Chat de ajuste de perguntas |
+| `QuestionDiffView` | `wsi/QuestionDiffView.tsx` | Diff view de perguntas |
+| `AdjustmentCounter` | `wsi/AdjustmentCounter.tsx` | Contador de ajustes |
+| `JDEvaluationPanel` | `wsi/JDEvaluationPanel.tsx` | Painel de avaliação JD |
+| `WSIScorecard` | `wsi/wsi-scorecard.tsx` | Scorecard visual WSI |
+| `WSITextScreeningModal` | `wsi/wsi-text-screening-modal.tsx` | Modal triagem por texto |
+| `WSITriagemInviteModal` | `wsi/wsi-triagem-invite-modal.tsx` | Modal convite triagem |
+| `WSIVoiceScreeningStatus` | `wsi/wsi-voice-screening-status.tsx` | Status triagem por voz |
+| `jd-evaluation/` | `wsi/jd-evaluation/` | Sub-diretório de avaliação JD |
+
 ### 10.35 RubricEvaluationModal
 - **Arquivo:** `plataforma-lia/src/components/rubric-evaluation-modal.tsx`
 - **Export:** `RubricEvaluationModal` (named + default)
@@ -1782,6 +1897,28 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | StageCard | `settings/StageCard.tsx` | Card de etapa do pipeline |
 | UserManagement | `settings/user-management.tsx` | Gestão de usuários |
 | ValidationSystem | `settings/validation-system.tsx` | Sistema de validações |
+| ApproverSection | `settings/ApproverSection.tsx` | Seção de aprovadores |
+| DepartmentsTab | `settings/DepartmentsTab.tsx` | Tab de departamentos |
+| TechStackTab | `settings/TechStackTab.tsx` | Tab de tech stack |
+| SettingsApiKeysTab | `settings/settings-api-keys-tab.tsx` | Tab de API keys |
+| SettingsBillingTab | `settings/settings-billing-tab.tsx` | Tab de billing |
+| SettingsCompanyTabs | `settings/settings-company-tabs.tsx` | Tabs de empresa |
+| SettingsGeneralTab | `settings/settings-general-tab.tsx` | Tab geral |
+| SettingsIntegrationsTab | `settings/settings-integrations-tab.tsx` | Tab de integrações |
+| SettingsJourneyTab | `settings/settings-journey-tab.tsx` | Tab de jornada |
+| SettingsNotificationsTab | `settings/settings-notifications-tab.tsx` | Tab de notificações |
+| SettingsRecruitmentTabs | `settings/settings-recruitment-tabs.tsx` | Tabs de recrutamento |
+| SettingsSecurityTab | `settings/settings-security-tab.tsx` | Tab de segurança |
+
+### Sub-diretórios de Settings
+
+| Diretório | Descrição |
+|-----------|-----------|
+| `settings/benefits/` | Componentes de benefícios |
+| `settings/communication-hub/` | Sub-componentes do hub de comunicação |
+| `settings/company/` | Sub-componentes de dados da empresa |
+| `settings/goals/` | Sub-componentes de gestão de metas |
+| `settings/recruitment/` | Sub-componentes de recrutamento |
 
 ---
 
@@ -1815,6 +1952,655 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 - **Posição:** Na sidebar, rodapé
 - **Ação:** Alterna entre light/dark mode (class strategy)
 
+### 13.6 Error Boundary
+- **Componente:** `ErrorBoundary` (`components/error-boundary.tsx`)
+- **Função:** Captura erros React e exibe fallback amigável
+
+### 13.7 Page Transition
+- **Componente:** `PageTransition` (`components/page-transition.tsx`)
+- **Função:** Animação de transição entre páginas
+
+### 13.8 Presentation Mode
+- **Componente:** `PresentationMode` (`components/presentation-mode.tsx`)
+- **Função:** Modo de apresentação com interface simplificada
+
+### 13.9 WeDO Logo
+- **Componente:** `WedoLogo` (`components/wedo-logo.tsx`)
+- **Função:** Logo SVG da WeDOTalent
+
+### 13.10 Auth Context
+- **Componente:** `AuthContext` (`components/auth-context.tsx`)
+- **Função:** Contexto React de autenticação (WorkOS)
+
+### 13.11 Theme Provider
+- **Componente:** `ThemeProvider` (`components/theme-provider.tsx`)
+- **Função:** Provider do tema (light/dark mode)
+
+---
+
+## 13A. SISTEMA DE BUSCA (Search)
+
+- **Diretório:** `plataforma-lia/src/components/search/`
+- **Barrel:** `search/index.ts`
+
+### Componentes Principais
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `SmartSearchInput` | `smart-search-input.tsx` | Input principal de busca semântica com modos |
+| `AdvancedSearch` | `advanced-search.tsx` | Interface de busca avançada |
+| `AdvancedFiltersModal` | `advanced-filters-modal.tsx` | Modal de filtros avançados (1125+ linhas) |
+| `SearchPresetsModal` | `SearchPresetsModal.tsx` | Modal genérico de presets reutilizável (T004 — 433 linhas) |
+| `CompanyPresetsModal` | `CompanyPresetsModal.tsx` | Presets de empresas (wrapper de SearchPresetsModal) |
+| `LocationPresetsModal` | `LocationPresetsModal.tsx` | Presets de localização (wrapper de SearchPresetsModal) |
+| `UniversityPresetsModal` | `UniversityPresetsModal.tsx` | Presets de universidades (wrapper de SearchPresetsModal) |
+| `SearchQualityPanel` | `SearchQualityPanel.tsx` | Painel de qualidade da busca |
+| `SearchFeedbackButtons` | `SearchFeedbackButtons.tsx` | Botões like/dislike por resultado |
+| `SearchSourceSelector` | `SearchSourceSelector.tsx` | Seletor de fonte (interno/externo) |
+| `CreditConfirmationDialog` | `credit-confirmation-dialog.tsx` | Diálogo de confirmação de créditos |
+| `CreditCostDisplay` | `credit-cost-display.tsx` | Exibição de custo em créditos |
+| `QualificationBadge` | `QualificationBadge.tsx` | Badge de qualificação do candidato |
+| `FilterAutocomplete` | `filter-autocomplete.tsx` | Autocomplete para filtros |
+| `SearchPreviewCard` | `search-preview-card.tsx` | Card de preview do resultado |
+| `SearchResultsCard` | `search-results-card.tsx` | Card de resultado de busca |
+
+### Filter Sections (`search/filter-sections/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `FilterChipsBar` | Barra de chips de filtros ativos |
+| `FilterSectionEmpresa` | Filtros de empresa |
+| `FilterSectionFormacao` | Filtros de formação |
+| `FilterSectionGeral` | Filtros gerais |
+| `FilterSectionHabilidades` | Filtros de habilidades |
+| `FilterSectionIdiomas` | Filtros de idiomas |
+| `FilterSectionOpcoes` | Filtros de opções |
+| `FilterSectionOrigem` | Filtros de origem |
+| `FilterSectionPerfil` | Filtros de perfil |
+| `ModalFooterActions` | Botões de ação do modal de filtros |
+
+### Filter Inputs (inputs especializados de filtro)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `CompanyFilterInput` | Input de filtro por empresa |
+| `CompanyHQLocationsInput` | Input de localização da sede |
+| `CompanyTagsInput` | Input de tags de empresa |
+| `DegreeRequirementsInput` | Input de requisitos de grau |
+| `ExcludedCompaniesInput` | Input de empresas excluídas |
+| `ExcludedUniversitiesInput` | Input de universidades excluídas |
+| `ExpertiseAreasInput` | Input de áreas de expertise |
+| `FieldsOfStudyInput` | Input de campos de estudo |
+| `FundingStagesInput` | Input de estágios de funding |
+| `GraduationYearInput` | Input de ano de graduação |
+| `IndustryFilterInput` / `IndustrySingleSelect` | Filtros de indústria |
+| `LanguageFilterInput` | Input de filtro de idioma |
+| `LocationFilterInput` | Input de filtro de localização |
+| `RadiusDropdown` | Dropdown de raio geográfico |
+| `SimilarProfilesInput` | Input de perfis similares |
+| `SkillsFilterInput` | Input de filtro de skills |
+| `TimezoneDropdown` | Dropdown de timezone |
+| `UniversitiesFilterInput` / `UniversityLocationsInput` | Filtros de universidades |
+
+### SSI Modes (`search/ssi-modes/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `SSIModeBoolean` | Modo de busca booleana |
+| `SSIModeJobDescription` | Modo de busca por JD |
+| `SSIModeNatural` | Modo de busca em linguagem natural |
+| `SSIModeContent` | `SSIModeContent.tsx` — Container de conteúdo SSI |
+| `SSIJDMode` | `SSIJDMode.tsx` — Modo JD integrado |
+| `SSISimilarMode` | `SSISimilarMode.tsx` — Modo de perfis similares |
+
+### Job Filters (`search/job-filters/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `JobLevelsAndRolesSection` | Filtro de níveis e roles |
+| `JobTitlesSection` | Filtro de títulos |
+| `PastTitlesSection` | Filtro de títulos anteriores |
+| `TenureSection` | Filtro de tenure |
+
+### Archetypes
+
+| Componente | Descrição |
+|-----------|-----------|
+| `ArchetypesList` | Lista de arquétipos de busca |
+| `SearchModeArchetypes` | Modo de busca por arquétipo |
+| `EditArchetypeModal` | Modal de edição de arquétipo |
+| `SaveArchetypeModal` | `save-archetype-modal.tsx` — Salvar novo arquétipo |
+
+### Search Hooks (`search/hooks/`)
+
+| Hook | Descrição |
+|------|-----------|
+| `useSmartSearchCore` | Core da busca inteligente |
+| `useSmartSearchCallbacks` | Callbacks da busca |
+| `useSmartSearchArchetypes` | Gestão de arquétipos |
+| `useSmartSearchSimilar` | Busca de perfis similares |
+| `useAdvancedFiltersCore` | Core de filtros avançados |
+
+---
+
+## 13B. AGENT CONTROL CENTER
+
+- **Diretório:** `plataforma-lia/src/components/agent-control-center/`
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `AgentControlCenter` | `index.tsx` | Painel principal de controle de agentes IA — usa `MetricCard variant="compact"` + `CompactDelta` (T006) |
+| `Sparkline` | `sparkline.tsx` | Gráfico sparkline para métricas inline |
+| `AgentDetailPanel` | `agent-detail-panel.tsx` | Painel de detalhes do agente selecionado |
+
+---
+
+## 13C. EXPANDED CHAT / JOB WIZARD
+
+- **Diretório:** `plataforma-lia/src/components/expanded-chat/`
+- **Modal wrapper:** `plataforma-lia/src/components/expanded-chat-modal.tsx`
+- **Descrição:** Sistema wizard conversacional para criação de vagas com LIA
+
+### Componentes (`expanded-chat/components/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `ChatMessageList` | Lista de mensagens do wizard |
+| `ExpandedChatInput` | Input do chat expandido |
+| `WizardHeader` | Header do wizard |
+| `WizardSidebar` | Sidebar de navegação de etapas |
+| `WizardRightPanel` | Painel direito com preview |
+| `WSIQualityBar` | Barra de qualidade WSI |
+| `ToolConfirmationMessage` | Mensagem de confirmação de tool call |
+| `ToolExecutionFeedback` | Feedback visual de execução de tool |
+
+### Stages (`expanded-chat/stages/`)
+
+| Stage | Descrição |
+|-------|-----------|
+| `CompetenciesStage` | Configuração de competências |
+| `EnrichedJDStage` | JD enriquecida pela LIA |
+| `InputEvaluationStage` | Avaliação de inputs |
+| `ReviewPublishStage` | Revisão e publicação |
+| `SalaryStage` | Configuração salarial |
+| `SearchCalibrationStage` | Calibração de busca |
+| `WSIQuestionsStage` | Configuração de perguntas WSI |
+
+### Modals (`expanded-chat/modals/`)
+
+| Modal | Descrição |
+|-------|-----------|
+| `AddBenefitModal` | Adicionar benefício |
+| `AddCompetencyModal` | Adicionar competência |
+| `AddSkillModal` | Adicionar skill |
+| `AddTechnicalSkillModal` | Adicionar skill técnica |
+| `CalibrationProfileModal` | Modal de perfil de calibração |
+| `ClearDraftConfirmModal` | Confirmar limpeza de rascunho |
+| `EditCriteriaModal` | Editar critérios |
+| `SkipCompetenciesWarningModal` | Aviso ao pular competências |
+
+### Hooks Principais (`expanded-chat/hooks/` — 40+ hooks)
+- `useExpandedChatModalCore`, `useWizardFlow`, `useWizardOrchestrator`, `useWizardNavigation`, `useWizardState`, `useSendMessageHandlers`, `useToolCalling`, `useConversationMemory`, `useCriteriaDetection`, `useWSIState`, `useWSIQuestionHandlers`, `useCalibrationState`, `useFastTrackState`, `useContextSwitching`, `useFieldHighlight`, `useWizardPublishHandlers`, etc.
+
+---
+
+## 13D. JOB WIZARD (Alternativo)
+
+- **Diretório:** `plataforma-lia/src/components/job-wizard/`
+- **Descrição:** Wizard simplificado de criação de vaga (alternativa ao Expanded Chat)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `WizardContainer` | Container principal do wizard |
+| `WizardContext` | Context React do wizard |
+| `FastTrackReviewPanel` | Painel de revisão fast-track |
+| `FastTrackSuggestions` | Sugestões fast-track da LIA |
+| `VacancySummaryCard` | Card de resumo da vaga |
+
+### Stages (`job-wizard/stages/`)
+- Etapas do wizard com formulários guiados
+
+---
+
+## 13E. LIA FLOAT SYSTEM
+
+- **Diretório:** `plataforma-lia/src/components/lia-float/`
+- **Descrição:** Sistema de chat flutuante da LIA (acessível globalmente)
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `LiaChatButton` | `LiaChatButton.tsx` | Botão flutuante para abrir chat LIA |
+| `LiaChatPanel` | `LiaChatPanel.tsx` | Painel de chat flutuante |
+| `LiaSplitPanel` | `LiaSplitPanel.tsx` | Painel dividido (chat + preview) |
+| `LiaSuperPrompt` | `LiaSuperPrompt.tsx` | Super prompt com ações rápidas |
+| `HITLConfirmCard` | `HITLConfirmCard.tsx` | Card de confirmação Human-in-the-Loop |
+| `LiaFloatConditional` | `LiaFloatConditional.tsx` | Renderização condicional do float |
+
+---
+
+## 13F. TRIAGEM (Candidato-Facing)
+
+- **Diretório:** `plataforma-lia/src/components/triagem/`
+- **Descrição:** Componentes do fluxo de triagem visto pelo candidato
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `ChatContainer` | `ChatContainer.tsx` | Container principal do chat de triagem |
+| `MessageBubble` | `MessageBubble.tsx` | Bolha de mensagem |
+| `InputBar` | `InputBar.tsx` | Barra de input do candidato |
+| `WelcomeCard` | `WelcomeCard.tsx` | Card de boas-vindas |
+| `CompletionCard` | `CompletionCard.tsx` | Card de conclusão |
+| `ConfirmationCard` | `ConfirmationCard.tsx` | Card de confirmação |
+| `ProgressBar` | `ProgressBar.tsx` | Barra de progresso |
+| `TypingIndicator` | `TypingIndicator.tsx` | Indicador de digitação |
+| `LikertScaleCard` | `LikertScaleCard.tsx` | Card de escala Likert |
+| `MultipleChoiceCard` | `MultipleChoiceCard.tsx` | Card de múltipla escolha |
+
+---
+
+## 13G. TRIAGEM DETAILS (Recrutador)
+
+- **Diretório:** `plataforma-lia/src/components/triagem-details/`
+- **Modal wrapper:** `plataforma-lia/src/components/triagem-details-modal.tsx`
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `TriagemComparativoTab` | `triagem-comparativo-tab.tsx` | Tab comparativa de triagens |
+| `TriagemScoresPanel` | `triagem-scores-panel.tsx` | Painel de scores da triagem |
+| `TriagemSummaryBar` | `triagem-summary-bar.tsx` | Barra de resumo da triagem |
+
+---
+
+## 13H. CALIBRATION
+
+- **Diretório:** `plataforma-lia/src/components/calibration/`
+- **Card avulso:** `plataforma-lia/src/components/calibration-card.tsx`
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `CalibrationDashboard` | `calibration-dashboard.tsx` | Dashboard de calibração de busca |
+| `CalibrationIndex` | `index.tsx` | Componente principal de calibração |
+| `LiaFeedbackWidget` | `lia-feedback-widget.tsx` | Widget de feedback para calibração da LIA |
+| `CalibrationCard` | `calibration-card.tsx` (root) | Card de calibração |
+
+---
+
+## 13I. ADMIN PANEL
+
+- **Diretório:** `plataforma-lia/src/components/admin/`
+- **Barrel:** `admin/index.ts`
+
+### Dashboard Admin (`admin/dashboard/`)
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `MetricCard` | `MetricCard.tsx` | Card de métrica canônico — `variant="default"\|"compact"`, exporta `CompactDelta`, `ACCENT_BG_MAP` (T006) |
+| `ActivityFeed` | `ActivityFeed.tsx` | Feed de atividades do admin |
+| `PeriodFilter` | `PeriodFilter.tsx` | Filtro de período |
+| `QuickActions` | `QuickActions.tsx` | Ações rápidas do admin |
+| `ServiceConsumption` | `ServiceConsumption.tsx` | Consumo de serviços |
+
+### AI Consumption (`admin/ai-consumption/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `AgentBreakdown` | Breakdown por agente |
+| `ConsumptionChart` | Gráfico de consumo |
+| `ConsumptionGrid` | Grid de consumo |
+| `ConsumptionSummaryCard` | Card de resumo de consumo |
+
+### Clients (`admin/clients/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `ClientCard` | Card de cliente |
+| `ClientFilters` | Filtros de clientes |
+| `ClientTable` | Tabela de clientes |
+| `CreateClientDialog` | Diálogo de criação de cliente |
+
+### Outros Admin
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `AdminTemplateHub` | `AdminTemplateHub.tsx` | Hub de templates admin |
+| `Breadcrumbs` | `Breadcrumbs.tsx` | Breadcrumbs de navegação admin |
+| `ClientSelector` | `ClientSelector.tsx` | Seletor de cliente ativo |
+| `WorkOSAdminPortal` | `workos-admin-portal.tsx` | Portal admin WorkOS |
+| `WorkOSLinkCard` | `workos-link-card.tsx` | Card de link WorkOS |
+
+---
+
+## 13J. CANDIDATE PROFILE / PREVIEW / PAGE
+
+### Candidate Profile (`components/candidate-profile/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `CandidateAvatar` | Avatar com fallback e status (T002) |
+| `CandidateContactActions` | Botões de contato (email, phone, linkedin) (T002) |
+| `CandidateScoreBadge` | Badge de score com cor dinâmica (T002) |
+| `CandidateSkillsList` | Lista de skills com badges (T002) |
+| `ProfileEducationSection` | Seção de educação do perfil |
+| `ProfileExperienceSection` | Seção de experiência do perfil |
+
+### Candidate Preview (`components/candidate-preview/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `CandidatePreviewProfileTab` | Tab de perfil no preview |
+| `CandidateActivitiesTab` | Tab de atividades |
+| `CandidateFilesTab` | Tab de arquivos |
+| `CandidateOpinionsTab` | Tab de opiniões |
+| `FilePreviewModal` | Modal de preview de arquivo |
+| `LiaChatModal` | Modal de chat com LIA |
+| `OpinionCard` | Card de opinião |
+| `useCandidateFiles` | Hook de arquivos |
+| `useCandidatePreviewCore` | Hook core do preview |
+
+### Candidate Page (`components/candidate-page/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `CandidatePageHeader` | Header da página do candidato |
+| `CandidatePageProfileTab` | Tab de perfil |
+| `CandidatePageActivitiesTab` | Tab de atividades |
+| `CandidatePageFilesTab` | Tab de arquivos |
+| `CandidatePageOpinionsTab` | Tab de opiniões |
+| `useCandidatePageCore` | Hook core da página |
+
+---
+
+## 13K. CHAT SYSTEM
+
+- **Diretório:** `plataforma-lia/src/components/chat/`
+- **Barrel:** `chat/index.ts`
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `ChatMessageList` | `ChatMessageList.tsx` | Lista de mensagens |
+| `ChatInputBar` | `chat-input-bar.tsx` | Barra de input com ações |
+| `MessageBubble` | `message-bubble.tsx` | Bolha de mensagem |
+| `MessageFeedback` | `message-feedback.tsx` | Feedback (like/dislike) por mensagem |
+| `ChatContextPanel` | `ChatContextPanel.tsx` + `Part1/Part2/Part3` | Painel de contexto (3 partes) |
+| `ActionResultCard` | `action-result-card.tsx` | Card de resultado de ação |
+| `AgentMemoryIndicator` | `agent-memory-indicator.tsx` | Indicador de memória do agente |
+| `DetectedFieldsCard` | `detected-fields-card.tsx` | Card de campos detectados |
+| `EmptyFieldNotificationMessage` | `empty-field-notification-message.tsx` | Notificação de campo vazio |
+| `ParecerLIACard` | `parecer-lia-card.tsx` | Card de parecer da LIA |
+| `ResumeAnalysisResult` | `resume-analysis-result.tsx` | Resultado de análise de CV |
+| `MultimodalUpload` | `multimodal-upload.tsx` | Upload multimodal (arquivo + áudio) |
+| `TypingIndicator` | `typing-indicator.tsx` | Indicador de digitação |
+| `VoiceChatButton` | `voice-chat-button.tsx` | Botão de chat por voz |
+
+---
+
+## 13L. CHARTS
+
+- **Diretório:** `plataforma-lia/src/components/charts/`
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `AdvancedInteractiveCharts` | `advanced-interactive-charts.tsx` | Gráficos interativos avançados |
+| `ChartComponents` | `chart-components.tsx` | Componentes base de gráficos (MetricCard removido — T006) |
+| `InteractiveCharts` | `interactive-charts.tsx` | Gráficos interativos |
+
+---
+
+## 13M. TABLES SYSTEM
+
+- **Diretório:** `plataforma-lia/src/components/tables/`
+- **Barrel:** `tables/index.ts`
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `UnifiedCandidateTable` | `unified-candidate-table.tsx` | Tabela unificada de candidatos |
+| `CandidateTableRow` | `candidate-table-row.tsx` | Row de candidato |
+| `CellRenderers` | `cell-renderers.tsx` | Renderizadores de célula |
+| `ColumnDefinitions` | `column-definitions.ts` | Definições de colunas |
+
+---
+
+## 13N. AUTONOMOUS AGENTS
+
+- **Diretório:** `plataforma-lia/src/components/autonomous/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `JobsDashboard` | Dashboard de vagas do agente autônomo |
+| `CreateJobModal` | Modal de criação de vaga autônoma |
+| `ProactiveActions` | Ações proativas do agente |
+| `ProactiveActionsBell` | Bell de notificação de ações proativas |
+
+---
+
+## 13O. MODAIS DISPERSOS (fora de `modals/`)
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `BatchApprovalModal` | `batch-approval-modal.tsx` | Aprovação em lote |
+| `BigFiveModal` | `big-five-modal.tsx` | Modal de perfil Big Five |
+| `CandidateDecisionFlowModal` | `candidate-decision-flow-modal.tsx` | Fluxo de decisão sobre candidato |
+| `CandidateModal` | `candidate-modal.tsx` | Modal genérico de candidato |
+| `ColumnConfigurationModal` | `column-configuration-modal.tsx` | Configuração de colunas de tabela |
+| `DiscAssessmentModal` | `disc-assessment-modal.tsx` | Modal de avaliação DISC |
+| `ExpandedChatModal` | `expanded-chat-modal.tsx` | Modal wrapper do expanded chat |
+| `GlobalSearchModal` | `global-search-modal.tsx` | Modal de busca global |
+| `JobReportModal` | `job-report-modal.tsx` | Modal de relatório da vaga |
+| `LiaTipsModal` | `lia-tips-modal.tsx` | Modal de dicas da LIA |
+| `QuickActionsModals` | `quick-actions-modals.tsx` | Modais de ações rápidas |
+| `QuickViewModal` | `quick-view-modal.tsx` | Modal de quick view |
+| `RevealCreditsModal` | `reveal-credits-modal.tsx` | Modal de reveal de créditos |
+| `SaveCommandModal` | `save-command-modal.tsx` | Modal de salvar comando |
+| `TriagemDetailsModal` | `triagem-details-modal.tsx` | Modal de detalhes da triagem |
+| `CVUploadModal` | `cv/cv-upload-modal.tsx` | Modal de upload de CV |
+| `AdvancedFiltersModal` | `search/advanced-filters-modal.tsx` | Modal de filtros avançados |
+| `AlertSettingsModal` | `alerts/alert-settings-modal.tsx` | Modal de configuração de alertas |
+
+---
+
+## 13P. COMPONENTES LIA ESPECIALIZADOS
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `LiaExpandedPrompt` | `lia-expanded-prompt.tsx` | Prompt expandido da LIA |
+| `LiaMetricsChart` | `lia-metrics-chart.tsx` | Gráfico de métricas da LIA |
+| `LiaMetricsDashboard` | `lia-metrics-dashboard.tsx` | Dashboard de métricas |
+| `LiaPerformanceIndicators` | `lia-performance-indicators.tsx` | Indicadores de performance |
+| `LiaProcessingCard` | `lia-processing-card.tsx` | Card de processamento |
+| `LiaScoreCard` | `lia-score-card.tsx` | Card de score LIA |
+| `LiaSuggestionCards` | `lia-suggestion-cards.tsx` | Cards de sugestões |
+| `LiaScreeningDialogue` | `lia-screening-dialogue.tsx` | Diálogo de triagem |
+| `LiaScreeningGuide` | `lia-screening-guide.tsx` | Guia de triagem |
+| `ScreeningFeedbackSection` | `lia-screening/ScreeningFeedbackSection.tsx` | Seção de feedback de triagem |
+
+---
+
+## 13Q. COMPONENTES DIVERSOS
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `ActivityFeed` | `activity-feed.tsx` | Feed de atividades |
+| `AISearchToggle` | `ai-search-toggle.tsx` | Toggle de busca por IA |
+| `AsyncJobProgress` | `async/AsyncJobProgress.tsx` | Progresso de job assíncrono |
+| `BulkActionsBar` | `bulk-actions-bar.tsx` | Barra de ações em lote |
+| `CandidateComparison` | `candidate-comparison.tsx` | Comparação de candidatos |
+| `ClientOnly` | `client-only.tsx` | Wrapper para renderização client-side |
+| `CloudsBackground` | `clouds-background.tsx` | Background decorativo |
+| `CompanyScreeningSettings` | `company-screening-settings.tsx` | Settings de screening da empresa |
+| `ContextualActionsBanner` | `contextual-actions-banner.tsx` | Banner de ações contextuais |
+| `CVPreview` | `cv/cv-preview.tsx` | Preview de CV |
+| `ExperienceHighlightCard` | `experience-highlight-card.tsx` | Card de destaque de experiência |
+| `ExportTools` | `export-tools.tsx` | Ferramentas de exportação |
+| `FairnessWarningBanner` | `fairness-warning-banner.tsx` | Banner de aviso de fairness/bias |
+| `IntelligenceNotifications` | `intelligence-notifications.tsx` | Notificações inteligentes |
+| `JobActionsBar` | `job-actions-bar.tsx` | Barra de ações da vaga |
+| `MLRecruitmentEngine` | `ml/recruitment-ml-engine.tsx` | Engine de ML para recrutamento |
+| `SuccessPrediction` | `ml-analytics/success-prediction.tsx` | Predição de sucesso |
+| `ModuleUpsell` | `module-access/module-upsell.tsx` | Upsell de módulos premium |
+| `ProactiveInsightCard` | `proactive-insight-card.tsx` | Card de insight proativo |
+| `ProactiveChatMessage` | `automation/ProactiveChatMessage.tsx` | Mensagem proativa no chat |
+| `PromptContextViewer` | `PromptContextViewer.tsx` | Viewer de contexto do prompt |
+| `PromptSuggestionsPanel` | `PromptSuggestionsPanel.tsx` | Painel de sugestões de prompts |
+| `ReactThinkingStream` | `react-thinking-stream.tsx` | Stream de pensamento |
+| `RegionalAnalysis` | `regional-analysis.tsx` | Análise regional |
+| `ReportScheduler` | `report-scheduler/report-scheduler.tsx` | Agendador de relatórios |
+| `AdvancedReportExporter` | `reports/advanced-report-exporter.tsx` | Exportador avançado de relatórios |
+| `RubricEvaluationCard` | `rubric-evaluation-card.tsx` | Card de avaliação por rubrica |
+| `ScoreBreakdownBadge` | `score/ScoreBreakdownBadge.tsx` | Badge de breakdown de score |
+| `TemplateSuggestionToast` | `template-suggestion-toast.tsx` | Toast de sugestão de template |
+| `TestStatusIndicators` | `test-status-indicators.tsx` | Indicadores de status de teste |
+| `TimelineSection` | `timeline-section.tsx` | Seção de timeline |
+| `UserCommandsSection` | `user-commands-section.tsx` | Seção de comandos do usuário |
+| `WarRoom` | `war-room.tsx` | Sala de guerra (monitoramento) |
+| `WorkModelCharts` | `work-model-charts.tsx` | Gráficos de modelo de trabalho |
+
+---
+
+## 13R. EMAIL TEMPLATES
+
+- **Diretório:** `plataforma-lia/src/components/email-templates/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `EmailTemplatesManager` | Gerenciador de templates de email |
+| `EmailTemplateFormModal` | Modal de formulário de template |
+| `SendEmailModal` | Modal de envio de email |
+| `ReportEmailTemplates` | Templates de email de relatório |
+
+---
+
+## 13S. COMMUNICATION
+
+- **Diretório:** `plataforma-lia/src/components/communication/`
+- **Componente:** `MessageComposer` (`message-composer.tsx`) — Compositor de mensagens unificado
+
+---
+
+## 13T. INTERVIEW NOTES
+
+- **Diretório:** `plataforma-lia/src/components/interview-notes/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `InterviewNoteCard` | Card de nota de entrevista |
+| `CreateAdhocNoteModal` | Modal para criar nota ad-hoc |
+| `NextStepModal` | Modal de próximo passo |
+| `ScheduledInterviewActivityCard` | Card de atividade de entrevista agendada |
+| `ScoreCardWSI` | Scorecard WSI |
+| `TeamsAnalysisPanel` | Painel de análise de times |
+
+---
+
+## 13U. JOB CREATION (Wizard Inputs)
+
+- **Diretório:** `plataforma-lia/src/components/job-creation/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `CompensationAnalysisPanel` | Painel de análise de remuneração |
+| `CompensationChatMessage` | Mensagem de chat de remuneração |
+| `CompetenciesChatMessage` | Mensagem de chat de competências |
+| `ConfidenceIndicator` | Indicador de confiança |
+| `FieldOriginBadge` | Badge de origem do campo |
+| `FinalReviewPanel` | Painel de revisão final |
+| `ScreeningQuestionsPanel` | Painel de perguntas de triagem |
+| `VacancyFullSummary` | Resumo completo da vaga |
+| `VacancySearchResults` | Resultados de busca de vagas |
+
+---
+
+## 13V. JOB DESCRIPTION
+
+- **Diretório:** `plataforma-lia/src/components/job-description/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `JobDescriptionFinal` | Descrição final da vaga |
+| `JobDescriptionPreview` | Preview da descrição |
+
+---
+
+## 13W. BENEFITS
+
+- **Diretório:** `plataforma-lia/src/components/benefits/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `BenefitBadgeList` | Lista de badges de benefícios |
+| `BenefitDetailsSheet` | Sheet de detalhes do benefício |
+
+---
+
+## 13X. AI COMPONENTS
+
+- **Diretório:** `plataforma-lia/src/components/ai/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `AgentExplainabilityPanel` | Painel de explicabilidade do agente |
+| `AISuggestionBadge` | Badge de sugestão da IA |
+
+---
+
+## 13Y. QUICK ACTIONS
+
+- **Diretório:** `plataforma-lia/src/components/quick-actions/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `BatchActionModal` | Modal de ação em lote |
+| `ContactModal` | Modal de contato |
+| `QuickViewModal` | Modal de quick view |
+| `ScheduleModal` | Modal de agendamento |
+
+---
+
+## 13Z. UI ACTIONS / SIDE PANELS
+
+- **Diretório:** `plataforma-lia/src/components/ui-actions/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `SidePanelContainer` | Container de side panel |
+| `CompanyBenefitsSummaryCard` | Card de resumo de benefícios da empresa |
+| + `cards/` e `panels/` | Sub-diretórios com cards e panels adicionais |
+
+---
+
+## 13AA. TALENT FUNNEL TABS
+
+- **Diretório:** `plataforma-lia/src/components/talent-funnel-tabs/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `FavoritesTab` | Tab de favoritos |
+| `HistoryTab` | Tab de histórico |
+| `ListsTab` | Tab de listas |
+| `SavedSearchesTab` | Tab de buscas salvas |
+
+---
+
+## 13AB. ALERTS
+
+- **Diretório:** `plataforma-lia/src/components/alerts/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `AlertSettingsModal` | Modal de configuração de alertas |
+| `KPIAlertSystem` | Sistema de alertas KPI |
+
+---
+
+## 13AC. ONBOARDING
+
+- **Diretório:** `plataforma-lia/src/components/onboarding/`
+
+| Componente | Descrição |
+|-----------|-----------|
+| `FirstAccessManager` | Gerenciador de primeiro acesso |
+| `OnboardingController` | Controlador do onboarding |
+| `OnboardingReplayButton` | Botão para replay do onboarding |
+
 ---
 
 ## 14. PÁGINAS ADICIONAIS
@@ -1837,6 +2623,106 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Onboarding | `pages/onboarding-page.tsx` | `OnboardingPage` |
 | Onboarding Premium | `pages/onboarding-premium-page.tsx` | `OnboardingPremiumPage` |
 | Login | `pages/login-page.tsx` | `LoginPage` |
+| Chat LIA | `pages/chat-page.tsx` + `pages/chat-page/` | `ChatPage` |
+| Tasks MVP | `pages/tasks-page-mvp.tsx` | `TasksPageMVP` |
+| Tasks | `pages/tasks-page.tsx` | `TasksPage` |
+
+### 14.1 Sub-dashboards (`pages/dashboards-page/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `AgentActivityDashboard` | Dashboard de atividade de agentes |
+| `AnaliseCompetenciasPlaceholder` | Placeholder de análise de competências |
+| `BigFiveAnalyticsDashboard` | Dashboard de analytics Big Five |
+| `DiversidadeInclusaoDashboard` | Dashboard de diversidade e inclusão |
+| `FunilPerformancePlaceholder` | Placeholder de performance do funil |
+| `IndicadoresEstrategicosPlaceholder` | Placeholder de indicadores estratégicos |
+| `ModelosTrabalhoPlaceholder` | Placeholder de modelos de trabalho |
+| `NPSDashboard` | Dashboard de NPS |
+| `PeopleAnalyticsPlaceholder` | Placeholder de People Analytics |
+| `PrevisoesIAPlaceholder` | Placeholder de previsões IA |
+| `VoiceScreeningDashboard` | Dashboard de voice screening |
+| `WarRoomOperacionalPlaceholder` | Placeholder de war room operacional |
+
+### 14.2 Indicadores (`pages/indicators/`)
+- **Tabs:** Sub-tabs de indicadores com `useIndicatorsPage` hook
+- **Constantes:** `indicators.constants.ts`, `indicators.types.ts`
+
+### 14.3 ATS Integrations (`pages/ats-integrations/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `SystemConfigurationModal` | Modal de configuração do sistema ATS |
+| `useAtsIntegrations` | Hook de gestão de integrações |
+
+### 14.4 Jobs Page Sub-componentes (`pages/jobs/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `JobsHeader` | Header da página de vagas |
+| `JobsTable` | Tabela de vagas |
+| `JobsCompactTableView` | Visão compacta da tabela |
+| `JobsDashboardView` | Visão dashboard das vagas |
+| `JobPreviewPanel` | Painel de preview da vaga |
+| `InlineChatPanel` | Painel de chat inline |
+| `ColumnConfigPanel` | Painel de configuração de colunas |
+| `TableFiltersPanel` | Painel de filtros da tabela |
+| `JobsModalsSection` | Seção de modais de vagas |
+| `WSITutorialModal` | Modal de tutorial WSI |
+
+### 14.5 Kanban Page Sub-componentes (`pages/job-kanban/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `KanbanJobHeader` | Header da vaga no kanban |
+| `KanbanToolbar` | Toolbar com filtros e ações |
+| `KanbanFiltersPanel` | Painel de filtros |
+| `KanbanCandidatePreviewPanel` | Preview lateral do candidato |
+| `KanbanCardActions` | Ações no card do kanban |
+| `KanbanCardScores` | Scores no card |
+| `KanbanCardStatusBadges` | Badges de status no card |
+| `KanbanCardInterviewButtons` | Botões de entrevista no card |
+| `KanbanColumnConfigPanel` | Configuração de colunas |
+| `KanbanColumnRenderer` | Renderizador de coluna |
+| `KanbanTableView` | Visão tabela do kanban |
+| `KanbanTableCellRenderer` | Renderizador de célula |
+| `KanbanTableFiltersPanel` | Filtros da visão tabela |
+| `KanbanTablePagination` | Paginação da tabela |
+| `KanbanLIASidebar` | Sidebar LIA no kanban |
+| `LIAQuestionsPanel` | Painel de perguntas LIA |
+| `LIASuggestionsPanel` | Painel de sugestões LIA |
+| `AddColumnPopover` | Popover para adicionar coluna |
+| `KanbanPageModals` | Container de modais do kanban |
+| `TestHistoryModal` | Modal de histórico de testes |
+| `TestLibraryModal` | Modal de biblioteca de testes |
+| `TestPreviewModal` | Modal de preview de teste |
+
+### 14.6 Candidates Page Sub-componentes (`pages/candidates/`)
+
+| Componente | Descrição |
+|-----------|-----------|
+| `CandidatesPageHeader` | Header da página |
+| `CandidatePreviewPanel` / `CandidatePreviewSidePanel` | Painel de preview |
+| `CandidateSearchResultsView` | View de resultados de busca |
+| `CandidatesTableArea` | Área da tabela |
+| `CandidateTableCellRenderer` | Renderizador de célula |
+| `SearchControlsBar` | Barra de controles de busca |
+| `ColumnConfigSidebar` | Sidebar de configuração de colunas |
+| `CompactLIAPrompt` | Prompt LIA compacto |
+| `LIASearchSidebar` | Sidebar de busca LIA |
+| `CandidatesPageModals` | Container de modais |
+| `CandidatesLoadMoreFooter` | Footer de "carregar mais" |
+| `ActiveFiltersBadge` | Badge de filtros ativos |
+| `CrossTabFilterBanner` | Banner de filtro cross-tab |
+| `ViewingListBanner` | Banner de "visualizando lista" |
+| `CreditConfirmationModal` | Modal de confirmação de créditos |
+| `DeleteArchetypeModal` | Modal de exclusão de arquétipo |
+| `EditQueryModal` | Modal de edição de query |
+| `GlobalExpansionConfirmModal` | Modal de confirmação de expansão global |
+| `PreviewSuggestionModal` | Modal de preview de sugestão |
+| `SaveAsArchetypeModal` | Modal de salvar como arquétipo |
+| `SourceChangeConfirmModal` | Modal de confirmação de mudança de fonte |
+| `ContactFilterConfirmModal` | Modal de confirmação de filtro de contato |
 
 ---
 
@@ -2192,18 +3078,37 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Design tokens | `plataforma-lia/src/styles/design-tokens.css` | 1 | CSS custom properties (cores, sombras, radius, transições) |
 | CSS global | `plataforma-lia/src/app/globals.css` | 1 | Imports, resets, classes utilitárias `.wedo-*` |
 | Tailwind config | `plataforma-lia/tailwind.config.ts` | 1 | Theme extensions, custom colors, animations |
-| Componentes UI | `plataforma-lia/src/components/ui/*.tsx` | 70 | Biblioteca base (shadcn + customizados) |
-| Stories (Storybook) | `plataforma-lia/src/components/ui/*.stories.tsx` | 6 | Badge, Button, Card, Dialog, Input, Select |
-| Modais | `plataforma-lia/src/components/modals/*.tsx` | 34 | Todos os modais da aplicação |
-| Páginas | `plataforma-lia/src/components/pages/*.tsx` | ~15 | Telas principais |
-| Kanban | `plataforma-lia/src/components/pages/job-kanban/*.tsx` | 3 | KanbanColumn, KanbanCard, MoveConfirmationModal |
-| Candidatos | `plataforma-lia/src/components/pages/candidates/*.tsx` | 5+ | Header, Tabs, SearchBar, FilterPanel, Table |
-| Settings | `plataforma-lia/src/components/settings/*.tsx` | ~10 | Sub-componentes de configuração |
-| Screening | `plataforma-lia/src/components/screening-config/*.tsx` | 5 | Modais de triagem/screening |
-| WSI | `plataforma-lia/src/components/wsi/*.tsx` | 2 | Modais de triagem WSI |
-| Rubric Evaluation | `plataforma-lia/src/components/rubric-evaluation-modal.tsx` | 1 | Modal de avaliação por rubrica (872 linhas) |
-| Hooks | `plataforma-lia/src/hooks/*.ts` | ~8 | use-toast, use-mobile, etc. |
-| Lib/Utils | `plataforma-lia/src/lib/utils.ts` | 1 | `cn()` helper (clsx + twMerge) |
+| Componentes UI | `plataforma-lia/src/components/ui/*.tsx` | 68 | Biblioteca base (shadcn + customizados) |
+| Stories (Storybook) | `plataforma-lia/src/components/ui/*.stories.tsx` | 0 | Removidos (badge, button, card, dialog, input, select existiam anteriormente) |
+| Modais (central) | `plataforma-lia/src/components/modals/*.tsx` | 33+ | Modais centrais + sub-diretórios |
+| Modais (dispersos) | Vários diretórios | ~20 | Modais em components root, search, cv, alerts, quick-actions, etc. |
+| Páginas | `plataforma-lia/src/components/pages/*.tsx` | ~20 | Telas principais |
+| Kanban | `plataforma-lia/src/components/pages/job-kanban/` | 20+ | Kanban completo com toolbar, filtros, modais, sidebar LIA |
+| Candidatos | `plataforma-lia/src/components/pages/candidates/` | 30+ | Header, Tabs, SearchBar, FilterPanel, Table, modais, sidebars |
+| Jobs | `plataforma-lia/src/components/pages/jobs/` | 12+ | Header, Table, Preview, Filters, Dashboard view |
+| Dashboards | `plataforma-lia/src/components/pages/dashboards-page/` | 12 | Sub-dashboards especializados |
+| Settings | `plataforma-lia/src/components/settings/*.tsx` | 30+ | Tabs de configuração + sub-diretórios |
+| Screening Config | `plataforma-lia/src/components/screening-config/` | 12+ | Manager, modais, hooks, JD evaluation |
+| WSI | `plataforma-lia/src/components/wsi/` | 4 | Triagem WSI + scorecard + voice status |
+| Search System | `plataforma-lia/src/components/search/` | 50+ | SmartSearch, filtros, presets, modes, hooks |
+| Expanded Chat | `plataforma-lia/src/components/expanded-chat/` | 60+ | Wizard conversacional completo |
+| LIA Float | `plataforma-lia/src/components/lia-float/` | 6 | Sistema de chat flutuante |
+| Agent Control Center | `plataforma-lia/src/components/agent-control-center/` | 3 | Controle de agentes IA |
+| Admin Panel | `plataforma-lia/src/components/admin/` | 15+ | Dashboard admin, clients, AI consumption |
+| Candidate Profile | `plataforma-lia/src/components/candidate-profile/` | 6 | Sub-componentes do perfil (T002) |
+| Candidate Preview | `plataforma-lia/src/components/candidate-preview/` | 10+ | Tabs de preview lateral |
+| Candidate Page | `plataforma-lia/src/components/candidate-page/` | 6 | Página full do candidato |
+| Chat System | `plataforma-lia/src/components/chat/` | 15+ | Mensagens, input, contexto, cards |
+| Triagem | `plataforma-lia/src/components/triagem/` | 10 | UI de triagem candidato-facing |
+| Triagem Details | `plataforma-lia/src/components/triagem-details/` | 4 | Detalhes de triagem recrutador-facing |
+| Calibration | `plataforma-lia/src/components/calibration/` | 3 | Dashboard e feedback de calibração |
+| Job Wizard | `plataforma-lia/src/components/job-wizard/` | 8+ | Wizard alternativo + stages |
+| Job Creation | `plataforma-lia/src/components/job-creation/` | 9 | Componentes de criação de vaga |
+| Rubric Evaluation | `plataforma-lia/src/components/rubric-evaluation-modal.tsx` | 1 | Modal de avaliação por rubrica |
+| Hooks | `plataforma-lia/src/hooks/*.ts` | 90+ | Hooks de estado, dados, UI, integração |
+| Lib/Utils | `plataforma-lia/src/lib/` | 20+ | `utils.ts` (cn), `format-utils.ts` (T001), `fetch-client.ts`, `masks.ts`, `sanitize.ts`, `safe-data.ts`, `template-variables.ts`, `workos.ts`, `vue-bridge.ts`, etc. |
+| Shared Hooks (T001-T003) | `plataforma-lia/src/hooks/useTagInputState.ts` | 1 | Hook compartilhado de tag input (T003) |
+| Format Utils (T001) | `plataforma-lia/src/lib/format-utils.ts` | 1 | `formatRelativeTime` + `formatFileSize` centralizados |
 
 ### 19.2 Documentação de Design System
 
