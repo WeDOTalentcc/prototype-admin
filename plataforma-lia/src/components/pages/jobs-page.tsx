@@ -15,7 +15,7 @@ import { tabStyles } from"@/lib/design-tokens"
 import { IntelligenceNotifications } from"@/components/intelligence-notifications"
 import { Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clock, Layout, Layers3, Layers, ChevronDown, ChevronUp, ChevronLeft, BarChart3, TrendingUp, TrendingDown, FileText, ExternalLink, Briefcase, Building, Building2, Target, CheckCircle, CheckCircle2, XCircle, Linkedin, Globe, Shield, Hash, UserCheck, Heart, MoreHorizontal, Grid3X3, List, Maximize2, Minimize2, Star, Brain, Expand, Copy, MessageSquare, MoreVertical, Settings, Settings2, X, ChevronsLeftRight, Bell, Pin, Github, Mail, Lock, LockOpen, MessageCircle, AlertCircle, AlertTriangle, ShieldAlert, Lightbulb, ChevronRight, Home, Zap, ClipboardList, ListChecks, CalendarCheck, ThumbsUp, Phone, Send, Bookmark, Paperclip, Mic, GripVertical, ArrowUp, ArrowDown, ArrowUpDown, Filter, Award, Trash2, RefreshCw, ArrowRight, ArrowLeft, HelpCircle, Timer, GraduationCap, BookOpen, Scale, Loader2, History, Languages, UserCircle, CalendarDays, Link, Save, Check, RotateCcw, CalendarClock, Info, Archive, Gauge } from"lucide-react"
 import { JobKanbanPage } from"./job-kanban-page"
-import { JobActionsBar } from"@/components/job-actions-bar"
+import { BulkActionsBar } from"@/components/ui/bulk-actions-bar"
 import { JobCompareModal } from"@/components/modals/job-compare-modal"
 import { JobPublishModal } from"@/components/modals/job-publish-modal"
 import { ActionResultCard } from"@/components/chat/action-result-card"
@@ -541,15 +541,46 @@ export function JobsPage(props: JobsPageProps) {
           </div>
 
           {/* Barra de Ações em Massa para Vagas - No topo do layout */}
-          <JobActionsBar
+          <BulkActionsBar
             selectedCount={selectedJobsForBatch.size}
+            entityLabel="vaga"
+            entityIcon={<Briefcase className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />}
             onDeselectAll={deselectAllJobs}
-            onPublish={handleJobPublish}
-            onInsights={handleJobInsights}
-            onDuplicate={handleJobDuplicate}
-            onToggleStatus={handleJobToggleStatus}
-            onAssignRecruiter={handleJobAssignRecruiter}
-            hasActiveJobs={getSelectedJobsHaveActiveStatus()}
+            className="flex-shrink-0 mb-3"
+            actions={[
+              {
+                id: 'publish',
+                label: 'Publicar',
+                icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                onClick: handleJobPublish,
+              },
+              {
+                id: 'insights',
+                label: 'Insights',
+                icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
+                onClick: handleJobInsights,
+              },
+              {
+                id: 'duplicate',
+                label: 'Duplicar',
+                icon: <Copy className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                onClick: handleJobDuplicate,
+              },
+              {
+                id: 'toggle_status',
+                label: getSelectedJobsHaveActiveStatus() ? 'Pausar' : 'Ativar',
+                icon: getSelectedJobsHaveActiveStatus()
+                  ? <X className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                  : <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                onClick: handleJobToggleStatus,
+              },
+              {
+                id: 'assign_recruiter',
+                label: 'Recrutador',
+                icon: <UserCheck className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                onClick: handleJobAssignRecruiter,
+              },
+            ]}
           />
 
           {/* Results Layout with Sidebars - Layout flex responsivo */}

@@ -24,9 +24,11 @@ import {
   Plus, Users, Star, Heart, MoreVertical, MoreHorizontal, Eye, Calendar, CalendarCheck, Archive, Mail, Phone, Video,
   Trophy, XCircle, ThumbsUp, Target, MessageSquareText, MessageSquare, Building, BarChart3, DollarSign, Activity,
   ArrowUp, ArrowDown, TrendingDown, Award, Pin, Edit, Pencil, Trash2, RefreshCw, Wand2, Library, BookOpen, Folder,
-  History, Gauge, UserCheck, Timer, RotateCcw, SortAsc, SortDesc, Columns, Table as TableIcon, Bell, Maximize2, ThumbsDown, ArrowUpDown, EyeOff, GripVertical, Lightbulb, Bookmark, Paperclip, ChevronsLeftRight, Copy, Fingerprint, Loader2, Save, Link2, PauseCircle, PlayCircle
+  History, Gauge, UserCheck, Timer, RotateCcw, SortAsc, SortDesc, Columns, Table as TableIcon, Bell, Maximize2, ThumbsDown, ArrowUpDown, EyeOff, GripVertical, Lightbulb, Bookmark, Paperclip, ChevronsLeftRight, Copy, Fingerprint, Loader2, Save, Link2, PauseCircle, PlayCircle,
+  List, ArrowRight, FileText
 } from "lucide-react"
 import { type BulkActionType } from "@/components/ui/bulk-selection-bar"
+import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -102,7 +104,6 @@ const JobStatusModal = dynamic(() => import("@/components/modals/job-status-moda
 const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => null })
 import { Checkbox } from "@/components/ui/checkbox"
 import { BulkActionModal } from "@/components/modals/bulk-action-modal"
-import { UnifiedBulkActionsBar, type BulkActionId } from "@/components/ui/unified-bulk-actions-bar"
 import { PipelineStagesCarousel } from "@/components/ui/pipeline-stages-carousel"
 import { 
   generateWorkHistory, 
@@ -521,8 +522,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
           {/* Bulk Actions Banner - Componente Unificado */}
           {selectedCandidates.size > 0 && (
             <div className="flex-shrink-0 px-4 py-2">
-              <UnifiedBulkActionsBar
-                context="vacancy"
+              <BulkActionsBar
                 selectedCount={selectedCandidates.size}
                 totalCount={allTableCandidates.length}
                 showSelectAll={true}
@@ -535,7 +535,57 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   }
                 }}
                 onDeselectAll={() => setSelectedCandidates(new Set())}
-                onAction={(actionId) => handleBulkAction(actionId as BulkActionType | string)}
+                actions={[
+                  {
+                    id: 'move_stage',
+                    label: 'Mover Etapa',
+                    icon: <ArrowRight className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                    onClick: () => handleBulkAction('move_stage' as BulkActionType | string),
+                  },
+                  {
+                    id: 'add_to_list',
+                    label: 'Lista',
+                    icon: <List className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                    onClick: () => handleBulkAction('add_to_list' as BulkActionType | string),
+                  },
+                  {
+                    id: 'share_search',
+                    label: 'Compartilhar',
+                    icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                    onClick: () => handleBulkAction('share_search' as BulkActionType | string),
+                  },
+                  {
+                    id: 'wsi_screening',
+                    label: 'Triagem WSI',
+                    icon: <Fingerprint className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                    onClick: () => handleBulkAction('wsi_screening' as BulkActionType | string),
+                  },
+                  {
+                    id: 'request_data',
+                    label: 'Solicitar Dados',
+                    icon: <FileText className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                    onClick: () => handleBulkAction('request_data' as BulkActionType | string),
+                  },
+                  {
+                    id: 'send_message',
+                    label: 'Mensagem',
+                    icon: <Mail className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+                    onClick: () => handleBulkAction('send_message' as BulkActionType | string),
+                  },
+                  {
+                    id: 'favorites',
+                    label: 'Favoritos',
+                    icon: <Star className="w-3.5 h-3.5 text-status-warning" />,
+                    onClick: () => handleBulkAction('favorites' as BulkActionType | string),
+                  },
+                  {
+                    id: 'reject',
+                    label: 'Reprovar',
+                    icon: <XCircle className="w-3.5 h-3.5" />,
+                    onClick: () => handleBulkAction('reject' as BulkActionType | string),
+                    variant: 'destructive' as const,
+                  },
+                ]}
               />
             </div>
           )}

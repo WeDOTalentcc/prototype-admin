@@ -5,7 +5,8 @@ import { SearchResultsHeader } from "./SearchResultsHeader"
 import { CrossTabFilterBanner } from "./CrossTabFilterBanner"
 import { ViewingListBanner } from "./ViewingListBanner"
 import { ColumnConfigSidebar } from "./ColumnConfigSidebar"
-import { ContextualActionsBanner } from "@/components/contextual-actions-banner"
+import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
+import { Briefcase, List, Share2, Mail, ClipboardCheck, Star, EyeOff, Database, Loader2 } from "lucide-react"
 import { LIASearchSidebar } from "./LIASearchSidebar"
 import { CandidatesFilterPanel } from "./CandidatesFilterPanel"
 import { CompactLIAPrompt } from "./CompactLIAPrompt"
@@ -381,41 +382,87 @@ export function CandidateSearchResultsView({
         onOpenAdvancedSearch={onOpenAdvancedSearch}
       />
 
-      {/* Contextual Actions Banner - Ações para candidatos selecionados */}
-      <ContextualActionsBanner
+      {/* Bulk Actions Bar - Ações para candidatos selecionados */}
+      <BulkActionsBar
         selectedCount={selectedCandidatesForBatch.size}
-        pearchCount={selectedPearchCount}
         onDeselectAll={deselectAllCandidates}
-        onAddToVacancy={() => setShowAddToVacancyModal(true)}
-        onAddToList={onAddToList}
-        isAddingToList={isAddingToList}
-        onShareSearch={() => {
-          const selectedList = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
-          const searchTitle = lastSearchQuery || `Busca - ${new Date().toLocaleDateString('pt-BR')}`
-          setShareSearchCandidates(selectedList.map(c => ({
-            id: c.id,
-            name: c.name,
-            email: c.email,
-            avatar_url: c.avatar,
-            current_title: c.position,
-            linkedin_url: c.linkedin
-          })))
-          setShareSearchTitle(searchTitle)
-          setShowShareSearchModal(true)
-        }}
-        onSendMessage={onBulkEmail}
-        onWSIScreening={onBulkWSIScreening}
-        onToggleFavorite={() => {
-          selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
-          toast.success("Favoritos atualizados", { description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos` })
-        }}
-        onHide={() => {
-          selectedCandidatesForBatch.forEach(id => talentFunnel.hideCandidate(id))
-          toast.success("Candidatos ocultos", { description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa` })
-          deselectAllCandidates()
-        }}
-        onSaveToLocalBase={onSaveToLocalBase}
-        isSavingToBase={isSavingToBase}
+        className="mb-4"
+        actions={[
+          {
+            id: 'add_to_vacancy',
+            label: 'Vaga',
+            icon: <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            onClick: () => setShowAddToVacancyModal(true),
+          },
+          {
+            id: 'add_to_list',
+            label: isAddingToList ? 'Importando...' : 'Lista',
+            icon: <List className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            onClick: onAddToList,
+            disabled: isAddingToList,
+            loading: isAddingToList,
+            loadingLabel: 'Importando...',
+          },
+          {
+            id: 'share_search',
+            label: 'Compartilhar',
+            icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            onClick: () => {
+              const selectedList = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
+              const searchTitle = lastSearchQuery || `Busca - ${new Date().toLocaleDateString('pt-BR')}`
+              setShareSearchCandidates(selectedList.map(c => ({
+                id: c.id,
+                name: c.name,
+                email: c.email,
+                avatar_url: c.avatar,
+                current_title: c.position,
+                linkedin_url: c.linkedin
+              })))
+              setShareSearchTitle(searchTitle)
+              setShowShareSearchModal(true)
+            },
+          },
+          {
+            id: 'send_message',
+            label: 'Mensagem',
+            icon: <Mail className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            onClick: onBulkEmail,
+          },
+          {
+            id: 'wsi_screening',
+            label: 'Triagem WSI',
+            icon: <ClipboardCheck className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            onClick: onBulkWSIScreening,
+          },
+          {
+            id: 'favorites',
+            label: 'Favoritos',
+            icon: <Star className="w-3.5 h-3.5 text-status-warning" />,
+            onClick: () => {
+              selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
+              toast.success("Favoritos atualizados", { description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos` })
+            },
+          },
+          {
+            id: 'hide',
+            label: 'Ocultar',
+            icon: <EyeOff className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            onClick: () => {
+              selectedCandidatesForBatch.forEach(id => talentFunnel.hideCandidate(id))
+              toast.success("Candidatos ocultos", { description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa` })
+              deselectAllCandidates()
+            },
+          },
+          {
+            id: 'save_to_base',
+            label: `Salvar na Base (${selectedPearchCount})`,
+            icon: <Database className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />,
+            onClick: onSaveToLocalBase,
+            disabled: isSavingToBase,
+            loading: isSavingToBase,
+            hidden: !(selectedPearchCount > 0),
+          },
+        ]}
       />
 
       {/* Banner Cross-Tab Filter */}
