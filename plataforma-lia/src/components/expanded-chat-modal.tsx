@@ -1,4 +1,5 @@
 "use client"
+import { ThinkingDots } from "@/components/ui/thinking-dots"
 
   import React from "react"
   import { X, Search, Minimize2, Maximize2, Brain, FileText, ChevronLeft, Upload } from "lucide-react"
@@ -237,9 +238,7 @@
                     </div>
                     <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                       <div className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
-                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
-                        <span className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
+                        <ThinkingDots dotClassName="bg-chat-cyan" size="md" />
                       </div>
                     </div>
                   </div>

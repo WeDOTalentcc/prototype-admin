@@ -13,6 +13,7 @@ import { textStyles } from '@/lib/design-tokens'
 import type { EmailTemplate, AiResultModal } from './CommunicationHub.types'
 import { TEMPLATE_GROUPS, TRIGGER_TYPE_LABELS, PRIORITY_COLORS, CATEGORY_LABELS } from './CommunicationHub.constants'
 import { stripHtmlTags } from './CommunicationHub.utils'
+import { ThinkingDots } from "@/components/ui/thinking-dots"
 
 interface TemplatesTabProps {
   successMessage: string | null
@@ -375,9 +376,7 @@ export function TemplatesTab({
                       {isGenerating && (
                         <div className="flex items-center gap-2 p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
                           <div className="flex gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900 dark:lia-bg-50" style={{animationDelay: '0ms'}}></span>
-                            <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900 dark:lia-bg-50" style={{animationDelay: '150ms'}}></span>
-                            <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900 dark:lia-bg-50" style={{animationDelay: '300ms'}}></span>
+                            <ThinkingDots dotClassName="bg-gray-900 dark:lia-bg-50" size="md" />
                           </div>
                           <span className="text-xs lia-text-700 dark:text-lia-text-secondary">A LIA está analisando e ajustando o template...</span>
                         </div>

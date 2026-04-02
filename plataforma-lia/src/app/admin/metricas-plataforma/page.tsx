@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from "react"
 import {
   DollarSign,
-  TrendingUp,
-  TrendingDown,
   Users,
   Building,
   Zap,
@@ -17,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { usePlatformMetrics } from "@/hooks/admin/usePlatformMetrics"
+import { MetricCard } from "@/components/admin/dashboard/MetricCard"
 
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("pt-BR", {
@@ -35,103 +34,6 @@ function formatNumber(value: number): string {
     return `${(value / 1000).toFixed(1)}k`
   }
   return value.toString()
-}
-
-interface MetricCardProps {
-  title: string
-  value: React.ReactNode
-  icon: React.ElementType
-  trend?: number
-  trendLabel?: string
-  subtitle?: string
-  accentColor?: string
-}
-
-const accentBgMap: Record<string, string> = {
-  'var(--gray-400)': 'var(--gray-bg-10)',
-  'var(--status-success)': 'var(--status-success-bg)',
-  'var(--status-error)': 'var(--status-error-bg)',
-  'var(--wedo-orange)': 'var(--wedo-orange-bg-15)',
-  'var(--wedo-purple)': 'var(--wedo-purple-bg-10)',
-  'var(--wedo-cyan)': 'var(--wedo-cyan-bg-10)',
-}
-
-function MetricCard({
-  title,
-  value,
-  icon: Icon,
-  trend,
-  trendLabel,
-  subtitle,
-  accentColor,
-}: MetricCardProps) {
-  const isPositiveTrend = trend !== undefined && trend >= 0
-  const bgColor = accentColor ? (accentBgMap[accentColor] || 'var(--gray-bg-10)') : 'var(--gray-bg-10)'
-
-  return (
-    <Card className="relative overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle
-          className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary"
-          
-        >
-          {title}
-        </CardTitle>
-        <div
-          className="p-2 rounded-md"
-          style={{backgroundColor: bgColor}}
-        >
-          <Icon
-            className="w-4 h-4"
-            style={{color: accentColor || "var(--gray-400)"}}
-          />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div
-          className="text-2xl font-bold lia-text-800 dark:text-lia-text-primary"
-          
-        >
-          {value}
-        </div>
-        {(trend !== undefined || subtitle) && (
-          <div className="flex items-center gap-2 mt-1">
-            {trend !== undefined && (
-              <span
-                className={`flex items-center text-xs font-medium ${
-                  isPositiveTrend ? "text-status-success" : "text-status-error"
-                }`}
-              >
-                {isPositiveTrend ? (
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                ) : (
-                  <TrendingDown className="w-3 h-3 mr-1" />
-                )}
-                {isPositiveTrend ? "+" : ""}
-                {trend.toFixed(1)}%
-              </span>
-            )}
-            {trendLabel && (
-              <span
-                className="text-xs lia-text-400 dark:lia-text-500"
-                
-              >
-                {trendLabel}
-              </span>
-            )}
-            {subtitle && !trend && (
-              <span
-                className="text-xs lia-text-400 dark:lia-text-500"
-                
-              >
-                {subtitle}
-              </span>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
 }
 
 function LoadingSkeleton() {
@@ -247,14 +149,14 @@ export default function MetricasPlataformaPage() {
                 <MetricCard
                   title="ARR (Receita Recorrente Anual)"
                   value={formatCurrency(metrics.revenue.arr)}
-                  icon={TrendingUp}
+                  icon={}
                   subtitle="MRR × 12"
                   accentColor="var(--gray-400)"
                 />
                 <MetricCard
                   title="Crescimento MRR"
                   value={`+${formatCurrency(metrics.revenue.mrrChange)}`}
-                  icon={TrendingUp}
+                  icon={}
                   trend={metrics.revenue.growthRate}
                   trendLabel="taxa de crescimento"
                   accentColor="var(--status-success)"
@@ -292,7 +194,7 @@ export default function MetricasPlataformaPage() {
                 <MetricCard
                   title="Clientes Churned"
                   value={metrics.clients.churnedClients}
-                  icon={TrendingDown}
+                  icon={}
                   subtitle="últimos 30 dias"
                   accentColor="var(--status-error)"
                 />

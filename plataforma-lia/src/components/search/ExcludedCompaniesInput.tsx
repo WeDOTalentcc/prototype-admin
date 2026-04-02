@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { X, Brain, Loader2, Search, ChevronDown, Info, RotateCcw, Save, List } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { CompanyPresetsModal } from "./CompanyPresetsModal"
+import { useTagInputState } from "@/hooks/useTagInputState"
 
 export interface ExcludedCompanyItem {
   name: string
@@ -73,15 +74,17 @@ export function ExcludedCompaniesInput({
   placeholder = "Type company to exclude...",
   showPresets = true
 }: ExcludedCompaniesInputProps) {
-  const [inputValue, setInputValue] = useState("")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [focusedIndex, setFocusedIndex] = useState(-1)
+  const {
+    inputValue, setInputValue,
+    isDropdownOpen, setIsDropdownOpen,
+    focusedIndex, setFocusedIndex,
+    inputRef, dropdownRef,
+    handleKeyNavigation, closeDropdown
+  } = useTagInputState()
   const [isPresetsModalOpen, setIsPresetsModalOpen] = useState(false)
   const [isTimeFilterOpen, setIsTimeFilterOpen] = useState(false)
   const [showSavePresetModal, setShowSavePresetModal] = useState(false)
   const [savePresetName, setSavePresetName] = useState("")
-  const inputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const existingCompanyNames = value.map(c => c.name.toLowerCase())
 
@@ -92,25 +95,15 @@ export function ExcludedCompaniesInput({
       ).slice(0, 6)
     : []
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          inputRef.current && !inputRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+
 
   const addCompany = useCallback((company: ExcludedCompanyItem) => {
     if (!company.name.trim()) return
     if (existingCompanyNames.includes(company.name.toLowerCase())) return
     onChange([...value, company])
     setInputValue("")
-    setIsDropdownOpen(false)
-    setFocusedIndex(-1)
-  }, [value, onChange, existingCompanyNames])
+    closeDropdown()
+  }, [value, onChange, existingCompanyNames, closeDropdown])
 
   const removeCompany = useCallback((name: string) => {
     onChange(value.filter(c => c.name !== name))
@@ -136,23 +129,12 @@ export function ExcludedCompaniesInput({
   }, [savePresetName, value])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      if (focusedIndex >= 0 && filteredSuggestions[focusedIndex]) {
-        addCompany(filteredSuggestions[focusedIndex])
-      } else if (inputValue.trim()) {
-        addCompany({ name: inputValue.trim() })
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setFocusedIndex(prev => Math.min(prev + 1, filteredSuggestions.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setFocusedIndex(prev => Math.max(prev - 1, -1))
-    } else if (e.key === 'Escape') {
-      setIsDropdownOpen(false)
-      setFocusedIndex(-1)
-    }
+    handleKeyNavigation(
+      e,
+      filteredSuggestions.length,
+      (index) => addCompany(filteredSuggestions[index]),
+      () => inputValue.trim() && addCompany({ name: inputValue.trim() })
+    )
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

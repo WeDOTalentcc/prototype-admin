@@ -10,6 +10,7 @@ import { RadiusDropdown, RadiusValue } from "./RadiusDropdown"
 import { TimezoneDropdown } from "./TimezoneDropdown"
 import { LocationPresetsModal, LocationItem } from "./LocationPresetsModal"
 export type { LocationItem }
+import { LOCATION_CITIES as CITIES, LOCATION_COUNTRIES as COUNTRIES, LOCATION_REGIONS as REGIONS, LocationData } from "@/data/location-data"
 
 interface LocationFilterInputProps {
   value: LocationItem[]
@@ -24,106 +25,6 @@ interface LocationFilterInputProps {
   showPresets?: boolean
 }
 
-interface LocationData {
-  name: string
-  type: 'city' | 'country' | 'region'
-}
-
-const CITIES: LocationData[] = [
-  { name: "New York, New York, United States", type: 'city' },
-  { name: "San Francisco, California, United States", type: 'city' },
-  { name: "Los Angeles, California, United States", type: 'city' },
-  { name: "Chicago, Illinois, United States", type: 'city' },
-  { name: "Houston, Texas, United States", type: 'city' },
-  { name: "Seattle, Washington, United States", type: 'city' },
-  { name: "Austin, Texas, United States", type: 'city' },
-  { name: "Boston, Massachusetts, United States", type: 'city' },
-  { name: "Denver, Colorado, United States", type: 'city' },
-  { name: "Atlanta, Georgia, United States", type: 'city' },
-  { name: "Miami, Florida, United States", type: 'city' },
-  { name: "Dallas, Texas, United States", type: 'city' },
-  { name: "São Paulo, São Paulo, Brazil", type: 'city' },
-  { name: "Sao Paulo, São Paulo, Brazil", type: 'city' },
-  { name: "Rio de Janeiro, Rio de Janeiro, Brazil", type: 'city' },
-  { name: "Belo Horizonte, Minas Gerais, Brazil", type: 'city' },
-  { name: "Campinas, São Paulo, Brazil", type: 'city' },
-  { name: "Guarulhos, São Paulo, Brazil", type: 'city' },
-  { name: "São Bernardo do Campo, São Paulo, Brazil", type: 'city' },
-  { name: "Sorocaba, São Paulo, Brazil", type: 'city' },
-  { name: "Curitiba, Paraná, Brazil", type: 'city' },
-  { name: "Porto Alegre, Rio Grande do Sul, Brazil", type: 'city' },
-  { name: "London, England, United Kingdom", type: 'city' },
-  { name: "Manchester, England, United Kingdom", type: 'city' },
-  { name: "Paris, Île-de-France, France", type: 'city' },
-  { name: "Berlin, Berlin, Germany", type: 'city' },
-  { name: "Munich, Bavaria, Germany", type: 'city' },
-  { name: "Amsterdam, North Holland, Netherlands", type: 'city' },
-  { name: "Tokyo, Tokyo, Japan", type: 'city' },
-  { name: "Osaka, Osaka, Japan", type: 'city' },
-  { name: "Singapore, Singapore", type: 'city' },
-  { name: "Hong Kong, Hong Kong", type: 'city' },
-  { name: "Sydney, New South Wales, Australia", type: 'city' },
-  { name: "Melbourne, Victoria, Australia", type: 'city' },
-  { name: "Toronto, Ontario, Canada", type: 'city' },
-  { name: "Vancouver, British Columbia, Canada", type: 'city' },
-  { name: "Mumbai, Maharashtra, India", type: 'city' },
-  { name: "Delhi, Delhi, India", type: 'city' },
-  { name: "Bangalore, Karnataka, India", type: 'city' },
-  { name: "Shanghai, Shanghai, China", type: 'city' },
-  { name: "Beijing, Beijing, China", type: 'city' },
-  { name: "Mexico City, Ciudad de México, Mexico", type: 'city' },
-  { name: "Buenos Aires, Buenos Aires, Argentina", type: 'city' },
-]
-
-const COUNTRIES: LocationData[] = [
-  { name: "United States", type: 'country' },
-  { name: "Brazil", type: 'country' },
-  { name: "United Kingdom", type: 'country' },
-  { name: "Germany", type: 'country' },
-  { name: "France", type: 'country' },
-  { name: "Canada", type: 'country' },
-  { name: "Australia", type: 'country' },
-  { name: "India", type: 'country' },
-  { name: "China", type: 'country' },
-  { name: "Japan", type: 'country' },
-  { name: "Singapore", type: 'country' },
-  { name: "Mexico", type: 'country' },
-  { name: "Argentina", type: 'country' },
-  { name: "Portugal", type: 'country' },
-  { name: "Spain", type: 'country' },
-  { name: "Italy", type: 'country' },
-  { name: "Netherlands", type: 'country' },
-  { name: "Switzerland", type: 'country' },
-  { name: "Sweden", type: 'country' },
-  { name: "Ireland", type: 'country' },
-  { name: "São Tomé and Príncipe", type: 'country' },
-]
-
-const REGIONS: LocationData[] = [
-  { name: "California", type: 'region' },
-  { name: "Texas", type: 'region' },
-  { name: "Florida", type: 'region' },
-  { name: "New York (state)", type: 'region' },
-  { name: "Washington", type: 'region' },
-  { name: "Massachusetts", type: 'region' },
-  { name: "Colorado", type: 'region' },
-  { name: "Illinois", type: 'region' },
-  { name: "Georgia", type: 'region' },
-  { name: "São Paulo (state)", type: 'region' },
-  { name: "Rio de Janeiro (state)", type: 'region' },
-  { name: "Minas Gerais", type: 'region' },
-  { name: "Paraná", type: 'region' },
-  { name: "Rio Grande do Sul", type: 'region' },
-  { name: "Ontario", type: 'region' },
-  { name: "Quebec", type: 'region' },
-  { name: "British Columbia", type: 'region' },
-  { name: "Bavaria", type: 'region' },
-  { name: "England", type: 'region' },
-  { name: "Scotland", type: 'region' },
-  { name: "Wales", type: 'region' },
-  { name: "New South Wales", type: 'region' },
-  { name: "Victoria", type: 'region' },
-]
 
 export function LocationFilterInput({
   value,

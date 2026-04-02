@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { X, Brain, Loader2, Search, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useSemanticSearch } from "@/hooks/useSemanticSearch"
+import { useTagInputState } from "@/hooks/useTagInputState"
 
 interface ExpertiseAreasInputProps {
   value: string[]
@@ -40,13 +41,15 @@ export function ExpertiseAreasInput({
   onChange,
   placeholder = "Digite expertise e pressione Enter (ex: Machine Learning, DevOps, Data Science)"
 }: ExpertiseAreasInputProps) {
-  const [inputValue, setInputValue] = useState("")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const {
+    inputValue, setInputValue,
+    isDropdownOpen, setIsDropdownOpen,
+    focusedIndex, setFocusedIndex,
+    inputRef, dropdownRef,
+    handleKeyNavigation, closeDropdown
+  } = useTagInputState()
   const [isLoadingAI, setIsLoadingAI] = useState(false)
   const [isFindingSimilar, setIsFindingSimilar] = useState(false)
-  const [focusedIndex, setFocusedIndex] = useState(-1)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const { 
     suggestions: semanticSuggestions, 
@@ -75,16 +78,7 @@ export function ExpertiseAreasInput({
     ...filteredSuggestions.map(s => ({ type: 'expertise' as const, label: s, confidence: 0 }))
   ]
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          inputRef.current && !inputRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+
 
   const addExpertise = useCallback((name: string) => {
     const trimmed = name.trim()
@@ -92,9 +86,8 @@ export function ExpertiseAreasInput({
     if (existingExpertise.includes(trimmed.toLowerCase())) return
     onChange([...value, trimmed])
     setInputValue("")
-    setIsDropdownOpen(false)
-    setFocusedIndex(-1)
-  }, [value, onChange, existingExpertise])
+    closeDropdown()
+  }, [value, onChange, existingExpertise, closeDropdown])
 
   const removeExpertise = useCallback((name: string) => {
     onChange(value.filter(e => e !== name))
@@ -169,28 +162,16 @@ export function ExpertiseAreasInput({
   }, [value, onChange, existingExpertise])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      if (focusedIndex >= 0 && dropdownItems[focusedIndex]) {
-        const item = dropdownItems[focusedIndex]
-        if (item.type === 'ai') {
-          askAIForSimilar(inputValue)
-        } else {
-          addExpertise(item.label)
-        }
-      } else if (inputValue.trim()) {
-        addExpertise(inputValue)
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setFocusedIndex(prev => Math.min(prev + 1, dropdownItems.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setFocusedIndex(prev => Math.max(prev - 1, -1))
-    } else if (e.key === 'Escape') {
-      setIsDropdownOpen(false)
-      setFocusedIndex(-1)
-    }
+    handleKeyNavigation(
+      e,
+      dropdownItems.length,
+      (index) => {
+        const item = dropdownItems[index]
+        if (item.type === 'ai') askAIForSimilar(inputValue)
+        else addExpertise(item.label)
+      },
+      () => inputValue.trim() && addExpertise(inputValue)
+    )
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -7,6 +7,7 @@ import { ActionResultCard } from "@/components/chat/action-result-card"
 import { ProactiveInsightCard, type SearchAnalytics } from "@/components/proactive-insight-card"
 import { CalibrationCard, type CalibrationCandidate } from "@/components/calibration-card"
 import {
+import { ThinkingDots } from "@/components/ui/thinking-dots"
   Brain, X, Globe, TrendingUp, Bookmark, Search, Home
 } from "lucide-react"
 
@@ -329,9 +330,7 @@ export function LIASearchSidebarChat({
               {/* Typing indicator */}
               <div className="flex items-center gap-1.5 px-3 py-2">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-900 dark:bg-lia-btn-primary-bg rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
-                  <div className="w-2 h-2 bg-gray-900 dark:bg-lia-btn-primary-bg rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
-                  <div className="w-2 h-2 bg-gray-900 dark:bg-lia-btn-primary-bg rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
+                  <ThinkingDots dotClassName="bg-gray-900 dark:bg-lia-btn-primary-bg" size="lg" />
                 </div>
               </div>
             </div>

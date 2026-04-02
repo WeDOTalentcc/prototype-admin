@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { textStyles, formatScorePercent } from "@/lib/design-tokens"
+import { ThinkingDots } from "@/components/ui/thinking-dots"
 
 interface LiaAction {
   id: string
@@ -224,9 +225,7 @@ export function LiaChatModal({
                     </Avatar>
                     <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md px-3 py-2">
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
+                        <ThinkingDots dotClassName="bg-gray-400" size="lg" />
                       </div>
                     </div>
                   </div>

@@ -5,6 +5,7 @@ import { X, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { UNIVERSITY_CITIES as CITIES, UNIVERSITY_COUNTRIES as COUNTRIES } from "@/data/location-data"
 
 interface UniversityLocationsInputProps {
   value: string[]
@@ -12,66 +13,6 @@ interface UniversityLocationsInputProps {
   placeholder?: string
 }
 
-interface LocationItem {
-  name: string
-  type: 'city' | 'country'
-}
-
-const CITIES: LocationItem[] = [
-  { name: "New York, New York, United States", type: 'city' },
-  { name: "London, England, United Kingdom", type: 'city' },
-  { name: "Los Angeles, California, United States", type: 'city' },
-  { name: "Houston, Texas, United States", type: 'city' },
-  { name: "Chicago, Illinois, United States", type: 'city' },
-  { name: "Philadelphia, Pennsylvania, United States", type: 'city' },
-  { name: "São Paulo, São Paulo, Brazil", type: 'city' },
-  { name: "Rio de Janeiro, Rio de Janeiro, Brazil", type: 'city' },
-  { name: "Boston, Massachusetts, United States", type: 'city' },
-  { name: "San Francisco, California, United States", type: 'city' },
-  { name: "Seattle, Washington, United States", type: 'city' },
-  { name: "Austin, Texas, United States", type: 'city' },
-  { name: "Atlanta, Georgia, United States", type: 'city' },
-  { name: "Toronto, Ontario, Canada", type: 'city' },
-  { name: "Montreal, Quebec, Canada", type: 'city' },
-  { name: "Vancouver, British Columbia, Canada", type: 'city' },
-  { name: "Paris, Île-de-France, France", type: 'city' },
-  { name: "Berlin, Berlin, Germany", type: 'city' },
-  { name: "Munich, Bavaria, Germany", type: 'city' },
-  { name: "Singapore, Singapore", type: 'city' },
-  { name: "Hong Kong, Hong Kong", type: 'city' },
-  { name: "Tokyo, Tokyo, Japan", type: 'city' },
-  { name: "Sydney, New South Wales, Australia", type: 'city' },
-  { name: "Melbourne, Victoria, Australia", type: 'city' },
-  { name: "Beijing, Beijing, China", type: 'city' },
-  { name: "Shanghai, Shanghai, China", type: 'city' },
-  { name: "Seoul, Seoul, South Korea", type: 'city' },
-  { name: "Mumbai, Maharashtra, India", type: 'city' },
-  { name: "New Delhi, Delhi, India", type: 'city' },
-  { name: "Bangalore, Karnataka, India", type: 'city' },
-]
-
-const COUNTRIES: LocationItem[] = [
-  { name: "United States", type: 'country' },
-  { name: "United Kingdom", type: 'country' },
-  { name: "Brazil", type: 'country' },
-  { name: "Germany", type: 'country' },
-  { name: "France", type: 'country' },
-  { name: "Canada", type: 'country' },
-  { name: "Australia", type: 'country' },
-  { name: "India", type: 'country' },
-  { name: "China", type: 'country' },
-  { name: "Japan", type: 'country' },
-  { name: "South Korea", type: 'country' },
-  { name: "Singapore", type: 'country' },
-  { name: "Switzerland", type: 'country' },
-  { name: "Netherlands", type: 'country' },
-  { name: "Sweden", type: 'country' },
-  { name: "Spain", type: 'country' },
-  { name: "Italy", type: 'country' },
-  { name: "Mexico", type: 'country' },
-  { name: "Argentina", type: 'country' },
-  { name: "Chile", type: 'country' },
-]
 
 export function UniversityLocationsInput({
   value,

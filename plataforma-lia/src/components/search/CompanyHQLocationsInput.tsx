@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
+import { COMPANY_HQ_CITIES, COMPANY_HQ_REGIONS } from "@/data/location-data"
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -22,46 +23,7 @@ interface CompanyHQLocationsInputProps {
   disabled?: boolean
 }
 
-interface LocationItem {
-  name: string
-  type: 'city' | 'region'
-}
-
-const CITIES: LocationItem[] = [
-  { name: "São Paulo, São Paulo, Brazil", type: 'city' },
-  { name: "Campinas, São Paulo, Brazil", type: 'city' },
-  { name: "Rio de Janeiro, Rio de Janeiro, Brazil", type: 'city' },
-  { name: "Belo Horizonte, Minas Gerais, Brazil", type: 'city' },
-  { name: "Curitiba, Paraná, Brazil", type: 'city' },
-  { name: "Porto Alegre, Rio Grande do Sul, Brazil", type: 'city' },
-  { name: "Brasília, Distrito Federal, Brazil", type: 'city' },
-  { name: "Guarulhos, São Paulo, Brazil", type: 'city' },
-  { name: "São Bernardo do Campo, São Paulo, Brazil", type: 'city' },
-  { name: "Sorocaba, São Paulo, Brazil", type: 'city' },
-  { name: "Salvador, Bahia, Brazil", type: 'city' },
-  { name: "Fortaleza, Ceará, Brazil", type: 'city' },
-  { name: "Recife, Pernambuco, Brazil", type: 'city' },
-  { name: "San Francisco, California, United States", type: 'city' },
-  { name: "New York, New York, United States", type: 'city' },
-  { name: "London, United Kingdom", type: 'city' },
-  { name: "Berlin, Germany", type: 'city' },
-  { name: "Paris, France", type: 'city' },
-  { name: "Singapore, Singapore", type: 'city' },
-  { name: "Tokyo, Japan", type: 'city' },
-]
-
-const REGIONS: LocationItem[] = [
-  { name: "São Paulo, Brazil", type: 'region' },
-  { name: "Rio de Janeiro, Brazil", type: 'region' },
-  { name: "California, United States", type: 'region' },
-  { name: "New York, United States", type: 'region' },
-  { name: "Texas, United States", type: 'region' },
-  { name: "United Kingdom", type: 'region' },
-  { name: "Germany", type: 'region' },
-  { name: "France", type: 'region' },
-]
-
-const ALL_LOCATIONS = [...CITIES, ...REGIONS]
+const ALL_LOCATIONS = [...COMPANY_HQ_CITIES, ...COMPANY_HQ_REGIONS]
 
 const TIME_FILTER_OPTIONS: { 
   value: CompanyHQTimeFilter
@@ -98,14 +60,14 @@ export function CompanyHQLocationsInput({
   const existingLocations = value.map(l => l.toLowerCase())
 
   const filteredCities = inputValue.trim()
-    ? CITIES.filter(loc => 
+    ? COMPANY_HQ_CITIES.filter(loc => 
         loc.name.toLowerCase().includes(inputValue.toLowerCase()) &&
         !existingLocations.includes(loc.name.toLowerCase())
       ).slice(0, 5)
     : []
 
   const filteredRegions = inputValue.trim()
-    ? REGIONS.filter(loc => 
+    ? COMPANY_HQ_REGIONS.filter(loc => 
         loc.name.toLowerCase().includes(inputValue.toLowerCase()) &&
         !existingLocations.includes(loc.name.toLowerCase())
       ).slice(0, 5)

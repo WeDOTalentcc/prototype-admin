@@ -34,6 +34,7 @@ import {
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { sanitizeHtml } from "@/lib/sanitize"
+import { ThinkingDots } from "@/components/ui/thinking-dots"
 
 const MAX_INPUT_CHARS = 2000
 
@@ -519,9 +520,7 @@ function ThinkingIndicator() {
           <span className="text-xs font-bold text-lia-text-primary dark:text-lia-text-primary" >LIA</span>
         </div>
         <span className="flex gap-1 items-center h-5">
-          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "0ms"}} />
-          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "150ms"}} />
-          <span className="w-1.5 h-1.5 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "300ms"}} />
+          <ThinkingDots dotClassName="bg-chat-cyan" size="md" />
         </span>
       </div>
     </div>

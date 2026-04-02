@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { VariableSelector } from "@/components/ui/variable-selector"
 import {
+import { ThinkingDots } from "@/components/ui/thinking-dots"
   Mail, Clock, Edit, Save, X, Eye, Brain, Send, FileText,
   Check, AlertCircle, MessageSquare, PenTool, RefreshCw, Copy,
   Bell, Shield, Calendar, Timer, Wand2, Zap, Loader2, CheckCircle,
@@ -709,9 +710,7 @@ export function AdminTemplateHub() {
                       {isGenerating && (
                         <div className="flex items-center gap-2 p-2 rounded-md bg-wedo-cyan/[.08]">
                           <div className="flex gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900" style={{animationDelay: '0ms'}}></span>
-                            <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900" style={{animationDelay: '150ms'}}></span>
-                            <span className="w-1.5 h-1.5 rounded-full animate-bounce motion-reduce:animate-none bg-gray-900" style={{animationDelay: '300ms'}}></span>
+                            <ThinkingDots dotClassName="bg-gray-900" size="md" />
                           </div>
                           <span className="text-xs" style={{color: 'var(--wedo-cyan-dark)'}}>
                             A LIA está analisando e ajustando o template...

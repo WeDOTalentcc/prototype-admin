@@ -1,17 +1,31 @@
 "use client"
 
 import React, { memo } from "react"
-import { LucideIcon } from "lucide-react"
+import { TrendingUp, TrendingDown } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+const ACCENT_BG_MAP: Record<string, string> = {
+  "var(--gray-400)": "var(--gray-bg-10)",
+  "var(--status-success)": "var(--status-success-bg)",
+  "var(--status-error)": "var(--status-error-bg)",
+  "var(--wedo-orange)": "var(--wedo-orange-bg-15)",
+  "var(--wedo-purple)": "var(--wedo-purple-bg-10)",
+  "var(--wedo-cyan)": "var(--wedo-cyan-bg-10)",
+}
 
 export interface MetricCardProps {
   title: string
   value: React.ReactNode
-  icon: LucideIcon
-  trend?: string
+  /** Accept both LucideIcon and any React element type */
+  icon: React.ElementType
+  /** Numeric trend value (positive = up, negative = down). Shows TrendingUp/Down icon. */
+  trend?: number | string
   trendLabel?: string
+  /** Used when trend is a string direction */
   trendDirection?: "up" | "down" | "neutral"
   subtitle?: string
+  /** CSS variable string (e.g. "var(--wedo-cyan)"). Colors the icon and its background. */
+  accentColor?: string
 }
 
 const MetricCard = memo(function MetricCard({
@@ -20,38 +34,61 @@ const MetricCard = memo(function MetricCard({
   icon: Icon,
   trend,
   trendLabel,
-  trendDirection = "neutral",
+  trendDirection,
   subtitle,
+  accentColor,
 }: MetricCardProps) {
-  const getTrendColor = () => {
-    switch (trendDirection) {
-      case "up":
-        return "text-status-success"
-      case "down":
-        return "text-status-error"
-      default:
-        return "lia-text-secondary"
-    }
-  }
+  const bgColor = accentColor
+    ? (ACCENT_BG_MAP[accentColor] ?? "var(--gray-bg-10)")
+    : undefined
+
+  // Determine trend display
+  const isNumericTrend = typeof trend === "number"
+  const isPositive = isNumericTrend ? trend >= 0 : trendDirection === "up"
+  const trendColorClass = isNumericTrend || trendDirection
+    ? isPositive ? "text-status-success" : "text-status-error"
+    : "lia-text-secondary"
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-lia-text-tertiary dark:text-lia-text-tertiary">
+        <CardTitle className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary">
           {title}
         </CardTitle>
-        <Icon className="w-4 h-4 text-lia-text-disabled" />
+        <div
+          className="p-2 rounded-md"
+          style={bgColor ? { backgroundColor: bgColor } : undefined}
+        >
+          <Icon
+            className="w-4 h-4"
+            style={accentColor ? { color: accentColor } : undefined}
+          />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
+        <div className="text-2xl font-bold lia-text-800 dark:text-lia-text-primary">
           {value}
         </div>
-        {(trend || subtitle) && (
-          <p className="text-xs mt-1 text-lia-text-disabled">
-            {trend && <span className={getTrendColor()}>{trend}</span>}
-            {trend && trendLabel && " "}
-            {trendLabel || subtitle}
-          </p>
+        {(trend !== undefined || subtitle || trendLabel) && (
+          <div className="flex items-center gap-2 mt-1">
+            {isNumericTrend ? (
+              <span className={}>
+                {isPositive
+                  ? <TrendingUp className="w-3 h-3 mr-1" />
+                  : <TrendingDown className="w-3 h-3 mr-1" />
+                }
+                {isPositive ? "+" : ""}{trend}%
+              </span>
+            ) : typeof trend === "string" ? (
+              <span className={}>{trend}</span>
+            ) : null}
+            {trendLabel && (
+              <span className="text-xs text-lia-text-disabled">{trendLabel}</span>
+            )}
+            {!trend && subtitle && (
+              <span className="text-xs text-lia-text-disabled">{subtitle}</span>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>
@@ -60,3 +97,4 @@ const MetricCard = memo(function MetricCard({
 MetricCard.displayName = "MetricCard"
 
 export { MetricCard }
+export { ACCENT_BG_MAP }

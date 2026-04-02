@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useAgentStreaming } from "@/hooks/use-agent-streaming"
 import {
+import { ThinkingDots } from "@/components/ui/thinking-dots"
   useFloatConversation,
   formatMessageTime,
   type FloatMessage,
@@ -365,9 +366,7 @@ function SplitStreamingBubble({ content }: { content: string }) {
       <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary">
         {content === "..." ? (
           <span className="flex gap-1 items-center h-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce motion-reduce:animate-none" style={{animationDelay: "0ms"}} />
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce motion-reduce:animate-none" style={{animationDelay: "150ms"}} />
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 animate-bounce motion-reduce:animate-none" style={{animationDelay: "300ms"}} />
+            <ThinkingDots dotClassName="bg-gray-400" size="md" />
           </span>
         ) : (
           <p className="whitespace-pre-wrap">{content}</p>

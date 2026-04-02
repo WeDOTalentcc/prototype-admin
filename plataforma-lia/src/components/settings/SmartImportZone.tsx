@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
+import { ThinkingDots } from "@/components/ui/thinking-dots"
   FileSpreadsheet,
   Upload,
   Brain,
@@ -356,9 +357,7 @@ export function SmartImportZone({
             Identificando campos e validando dados
           </p>
           <div className="flex items-center gap-2 mt-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:lia-bg-50 animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:lia-bg-50 animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
-            <div className="w-1.5 h-1.5 rounded-full bg-gray-900 dark:lia-bg-50 animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
+            <ThinkingDots dotClassName="bg-gray-900 dark:lia-bg-50" size="md" />
           </div>
         </div>
       </CardContent>

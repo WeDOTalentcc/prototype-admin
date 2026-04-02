@@ -2,6 +2,7 @@
 
 import React from "react"
 import { Brain, Maximize2, Send } from "lucide-react"
+import { ThinkingDots } from "@/components/ui/thinking-dots"
 
 export interface CompactLIAPromptProps {
   isLIAThinking: boolean
@@ -94,9 +95,7 @@ export function CompactLIAPrompt({
           <Brain className="w-3 h-3 animate-pulse motion-reduce:animate-none text-wedo-cyan" />
           <span className="font-medium text-lia-text-primary">LIA está pensando</span>
           <div className="flex gap-0.5">
-            <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce motion-reduce:animate-none" style={{ animationDelay: '0ms' }}></span>
-            <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce motion-reduce:animate-none" style={{ animationDelay: '150ms' }}></span>
-            <span className="w-1 h-1 bg-gray-600 rounded-full animate-bounce motion-reduce:animate-none" style={{ animationDelay: '300ms' }}></span>
+            <ThinkingDots dotClassName="bg-gray-600" size="sm" />
           </div>
         </div>
       )}

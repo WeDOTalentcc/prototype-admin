@@ -27,6 +27,7 @@ import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from '@/lib/chat-fo
 import { MessageFeedback } from '@/components/chat/message-feedback'
 import type { ChatMessage, TaskItem, LearnedSuggestion } from '@/hooks/use-interpret-context'
 import { sanitizeHtml } from "@/lib/sanitize"
+import { ThinkingDots } from "@/components/ui/thinking-dots"
 
 interface TransitionChatPanelProps {
   messages: ChatMessage[]
@@ -401,9 +402,7 @@ export function TransitionChatPanel({
                 </div>
                 <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                   <div className="flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '0ms'}} />
-                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '150ms'}} />
-                    <div className="w-1.5 h-1.5 bg-chat-cyan rounded-full animate-bounce motion-reduce:animate-none" style={{animationDelay: '300ms'}} />
+                    <ThinkingDots dotClassName="bg-chat-cyan" size="md" />
                   </div>
                 </div>
               </div>

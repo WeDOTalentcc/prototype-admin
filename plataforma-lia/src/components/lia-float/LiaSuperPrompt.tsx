@@ -21,6 +21,7 @@ import { sanitizeHtml } from "@/lib/sanitize"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { useRouter } from "next/navigation"
+import { ThinkingDots } from "@/components/ui/thinking-dots"
 
 // [OPT-043] TODO: revisar inline styles dinâmicos (23 ocorrências)
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
@@ -451,9 +452,7 @@ export function LiaSuperPrompt() {
                               </div>
                               <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-4">
                                 <div className="flex items-center gap-1.5">
-                                  <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "0ms"}} />
-                                  <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "150ms"}} />
-                                  <div className="w-2 h-2 rounded-full bg-chat-cyan animate-bounce motion-reduce:animate-none" style={{animationDelay: "300ms"}} />
+                                  <ThinkingDots dotClassName="bg-chat-cyan" size="lg" />
                                 </div>
                               </div>
                             </div>

@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { X, Pin, Brain, Loader2, Search, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useSemanticSearch, type SemanticSuggestion } from "@/hooks/useSemanticSearch"
+import { useTagInputState } from "@/hooks/useTagInputState"
 
 export interface SkillItem {
   name: string
@@ -34,13 +35,15 @@ export function SkillsFilterInput({
   onChange,
   placeholder = "Digite skill e pressione Enter (ex: Python, React, AWS)"
 }: SkillsFilterInputProps) {
-  const [inputValue, setInputValue] = useState("")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const {
+    inputValue, setInputValue,
+    isDropdownOpen, setIsDropdownOpen,
+    focusedIndex, setFocusedIndex,
+    inputRef, dropdownRef,
+    handleKeyNavigation, closeDropdown
+  } = useTagInputState()
   const [isLoadingAI, setIsLoadingAI] = useState(false)
   const [isFindingSimilar, setIsFindingSimilar] = useState(false)
-  const [focusedIndex, setFocusedIndex] = useState(-1)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const { 
     suggestions: semanticSuggestions, 
@@ -76,16 +79,7 @@ export function SkillsFilterInput({
     ...filteredSuggestions.map(s => ({ type: 'skill' as const, label: s, confidence: 0, is_synonym: false, is_related: false }))
   ]
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          inputRef.current && !inputRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+
 
   const addSkill = useCallback((name: string, isPinned: boolean = false) => {
     const trimmed = name.trim()
@@ -93,9 +87,8 @@ export function SkillsFilterInput({
     if (existingSkillNames.includes(trimmed.toLowerCase())) return
     onChange([...value, { name: trimmed, isPinned }])
     setInputValue("")
-    setIsDropdownOpen(false)
-    setFocusedIndex(-1)
-  }, [value, onChange, existingSkillNames])
+    closeDropdown()
+  }, [value, onChange, existingSkillNames, closeDropdown])
 
   const removeSkill = useCallback((name: string) => {
     onChange(value.filter(s => s.name !== name))
@@ -180,28 +173,16 @@ export function SkillsFilterInput({
   }, [value, onChange, existingSkillNames])
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      if (focusedIndex >= 0 && dropdownItems[focusedIndex]) {
-        const item = dropdownItems[focusedIndex]
-        if (item.type === 'ai') {
-          askAIForSimilar(inputValue)
-        } else {
-          addSkill(item.label)
-        }
-      } else if (inputValue.trim()) {
-        addSkill(inputValue)
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setFocusedIndex(prev => Math.min(prev + 1, dropdownItems.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setFocusedIndex(prev => Math.max(prev - 1, -1))
-    } else if (e.key === 'Escape') {
-      setIsDropdownOpen(false)
-      setFocusedIndex(-1)
-    }
+    handleKeyNavigation(
+      e,
+      dropdownItems.length,
+      (index) => {
+        const item = dropdownItems[index]
+        if (item.type === 'ai') askAIForSimilar(inputValue)
+        else addSkill(item.label)
+      },
+      () => inputValue.trim() && addSkill(inputValue)
+    )
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
