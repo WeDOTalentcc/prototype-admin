@@ -376,7 +376,7 @@ export function JobFiltersPanel({
               Métricas
             </h4>
             <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover hover:bg-lia-interactive-hover rounded-md bg-lia-bg-secondary">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-md bg-lia-bg-secondary">
                 <input
                   type="checkbox"
                   className="w-3 h-3"
@@ -385,7 +385,7 @@ export function JobFiltersPanel({
                 />
                 <span className="text-lia-text-primary">Pipeline vazio (sem candidatos)</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover hover:bg-lia-interactive-hover rounded-md bg-lia-bg-secondary">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-md bg-lia-bg-secondary">
                 <input
                   type="checkbox"
                   className="w-3 h-3"
@@ -423,7 +423,7 @@ export function JobFiltersPanel({
                 {savedSearches.map((search) => (
                   <div
                     key={search.id}
-                    className="group flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md hover:bg-lia-interactive-hover hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer"
+                    className="group flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer"
                     onClick={() => handleApplySavedSearch(search.id)}
                   >
                     <div className="flex-1 min-w-0">

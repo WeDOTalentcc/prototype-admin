@@ -116,7 +116,7 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
             <Button
               variant="outline"
               size="sm"
-              className="h-7 text-xs px-3 border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover hover:bg-lia-interactive-hover"
+              className="h-7 text-xs px-3 border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover"
               style={{minWidth: '160px'}}
               onClick={(e) => {
                 e.stopPropagation()
@@ -150,7 +150,7 @@ export const JDEvaluationHeader = React.memo(function JDEvaluationHeader({
             <Button
               variant="outline"
               size="sm"
-              className="h-7 text-xs px-3 border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover hover:bg-lia-interactive-hover"
+              className="h-7 text-xs px-3 border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover"
               style={{minWidth: '160px'}}
               onClick={(e) => {
                 e.stopPropagation()

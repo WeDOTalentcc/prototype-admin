@@ -481,7 +481,7 @@ export function SCMSectionPerguntasEdit({
                                       )}
                                     </div>
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
-                                      <button className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${isDeactivated ? 'hover:bg-status-success/10' : 'hover:bg-lia-interactive-hover hover:bg-lia-interactive-hover'}`}
+                                      <button className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${isDeactivated ? 'hover:bg-status-success/10' : 'hover:bg-lia-interactive-hover'}`}
                                         onClick={() => {
                                           setDeactivatedQuestions(prev => {
                                             const next = new Set(prev)

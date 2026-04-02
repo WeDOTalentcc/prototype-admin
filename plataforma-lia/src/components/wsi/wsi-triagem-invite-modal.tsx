@@ -739,7 +739,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
             <Button
               onClick={onClose}
               variant="outline"
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover hover:bg-lia-interactive-hover"
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover"
             >
               Cancelar
             </Button>
