@@ -144,7 +144,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-lia-text-primary truncate">
+                    <div className="text-xs font-medium text-lia-text-primary truncate">
                       {currentUser.name}
                     </div>
                     <div className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
@@ -160,24 +160,24 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
               {/* Menu Items */}
               <div className="p-1">
                 <DropdownMenuItem 
-                  className="cursor-pointer"
+                  className="cursor-pointer text-xs"
                   onClick={() => onNavigate?.("Meu Perfil")}
                 >
-                  <User className="w-4 h-4 mr-2" />
+                  <User className="w-3.5 h-3.5 mr-2" />
                   Meu Perfil
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  className="cursor-pointer"
+                  className="cursor-pointer text-xs"
                   onClick={handleOpenPasswordModal}
                 >
-                  <KeyRound className="w-4 h-4 mr-2" />
+                  <KeyRound className="w-3.5 h-3.5 mr-2" />
                   Alterar Senha
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  className="cursor-pointer"
+                  className="cursor-pointer text-xs"
                   onClick={() => onNavigate?.("Preferências de Notificação")}
                 >
-                  <Bell className="w-4 h-4 mr-2" />
+                  <Bell className="w-3.5 h-3.5 mr-2" />
                   Preferências de Notificação
                 </DropdownMenuItem>
               </div>
@@ -186,10 +186,10 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
 
               <div className="p-1">
                 <DropdownMenuItem 
-                  className="cursor-pointer text-status-error dark:text-status-error"
+                  className="cursor-pointer text-xs text-status-error dark:text-status-error"
                   onClick={() => onNavigate?.("Sair")}
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
+                  <LogOut className="w-3.5 h-3.5 mr-2" />
                   Sair
                 </DropdownMenuItem>
               </div>
