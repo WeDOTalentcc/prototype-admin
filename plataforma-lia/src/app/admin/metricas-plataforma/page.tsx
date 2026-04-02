@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from "react"
 import {
   DollarSign,
+  TrendingUp,
   Users,
+  UserMinus,
   Building,
   Zap,
   Server,
@@ -149,14 +151,14 @@ export default function MetricasPlataformaPage() {
                 <MetricCard
                   title="ARR (Receita Recorrente Anual)"
                   value={formatCurrency(metrics.revenue.arr)}
-                  icon={}
+                  icon={DollarSign}
                   subtitle="MRR × 12"
                   accentColor="var(--gray-400)"
                 />
                 <MetricCard
                   title="Crescimento MRR"
                   value={`+${formatCurrency(metrics.revenue.mrrChange)}`}
-                  icon={}
+                  icon={TrendingUp}
                   trend={metrics.revenue.growthRate}
                   trendLabel="taxa de crescimento"
                   accentColor="var(--status-success)"
@@ -194,7 +196,7 @@ export default function MetricasPlataformaPage() {
                 <MetricCard
                   title="Clientes Churned"
                   value={metrics.clients.churnedClients}
-                  icon={}
+                  icon={UserMinus}
                   subtitle="últimos 30 dias"
                   accentColor="var(--status-error)"
                 />

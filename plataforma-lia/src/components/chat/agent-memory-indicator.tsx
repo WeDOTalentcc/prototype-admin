@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { Brain, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useAgentMemory } from "@/hooks/useAgentMemory";
+import { formatRelativeTime } from "@/lib/format-utils";
 import { cn } from "@/lib/utils";
 
 const stageLabels: Record<string, string> = {
@@ -25,22 +26,6 @@ const stageLabels: Record<string, string> = {
   "outreach": "Abordagem",
 };
 
-function formatRelativeTime(dateStr: string | null): string {
-  if (!dateStr) return "";
-  try {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const seconds = Math.floor(diff / 1000);
-    if (seconds < 60) return "agora";
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `há ${minutes} min`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `há ${hours}h`;
-    const days = Math.floor(hours / 24);
-    return `há ${days}d`;
-  } catch {
-    return "";
-  }
-}
 
 interface AgentMemoryIndicatorProps {
   sessionId: string;

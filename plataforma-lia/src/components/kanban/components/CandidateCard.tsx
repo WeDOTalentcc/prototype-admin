@@ -1,7 +1,7 @@
 'use client'
 
 import React, { memo } from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { CandidateAvatar } from '@/components/candidate-profile/CandidateAvatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -292,12 +292,11 @@ const CandidateCard = memo(function CandidateCard({
           />
 
           <div className="relative flex-shrink-0">
-            <Avatar className="w-7 h-7">
-              <AvatarImage src={avatarUrl} alt={candidate.name} />
-              <AvatarFallback className="text-micro font-medium lia-text-600">
-                {candidate.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
-              </AvatarFallback>
-            </Avatar>
+            <CandidateAvatar
+              name={candidate.name}
+              avatarUrl={avatarUrl}
+              size="sm"
+            />
             {isViewed && (
               <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-gray-300 rounded-full flex items-center justify-center border border-white" title="Perfil visualizado">
                 <Eye className="w-2 h-2 text-white" />

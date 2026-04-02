@@ -2,7 +2,6 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { LiaAnalysisModal } from "@/components/modals/lia-analysis-modal"
 import {
@@ -10,6 +9,8 @@ import {
   ClipboardCheck, Briefcase, Users, MessageSquare, Brain, Globe,
 } from "lucide-react"
 import { Github } from "lucide-react"
+import { CandidateAvatar } from "@/components/candidate-profile/CandidateAvatar"
+import { CandidateScoreBadge } from "@/components/candidate-profile/CandidateScoreBadge"
 
 type CandidateRecord = {
   name: string
@@ -70,22 +71,18 @@ export function CandidatePageHeader({
       <div className="bg-white dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Avatar className="w-10 h-10">
-              <AvatarImage src={(_candidate.avatar_url as string | undefined) || (_candidate.avatar as string | undefined)} alt={_candidate.name as string} />
-              {/* @ts-ignore TODO: fix type */}
-              <AvatarFallback className="text-sm font-medium bg-gray-200 lia-text-base">
-                {(_candidate.name as string).split(' ').map((n: string) => n[0]).join().slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <CandidateAvatar
+              name={_candidate.name as string}
+              avatarUrl={(_candidate.avatar_url as string | undefined) || (_candidate.avatar as string | undefined)}
+              size="md"
+            />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base font-semibold text-lia-text-primary">{_candidate.name as string}</h1>
                 <Badge variant="outline" className="text-xs px-1.5 py-0">
                   {_candidate.candidateId || _candidate.id}
                 </Badge>
-                <Badge className={`text-xs px-1.5 py-0 ${liaScore >= 80 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : liaScore >= 60 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'}`}>
-                  {liaScore}% Match
-                </Badge>
+                <CandidateScoreBadge score={liaScore} format="percent" />
               </div>
               <div className="flex items-center gap-2 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                 <span>{_candidate.position as string | undefined}</span>

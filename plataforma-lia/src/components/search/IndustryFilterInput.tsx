@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { X, Search, ChevronDown, Brain, Loader2, AlertCircle, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTagInputState } from "@/hooks/useTagInputState"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
@@ -54,15 +55,17 @@ export function IndustryFilterInput({
   onTimeFilterChange,
   placeholder = "Type industry name and press Enter"
 }: IndustryFilterInputProps) {
-  const [inputValue, setInputValue] = useState("")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const {
+    inputValue, setInputValue,
+    isDropdownOpen, setIsDropdownOpen,
+    focusedIndex, setFocusedIndex,
+    inputRef, dropdownRef,
+    closeDropdown,
+  } = useTagInputState()
   const [isLoadingAI, setIsLoadingAI] = useState(false)
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
   const [aiError, setAiError] = useState<string | null>(null)
-  const [focusedIndex, setFocusedIndex] = useState(-1)
   const [isTimeFilterOpen, setIsTimeFilterOpen] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const requestIdRef = useRef(0)
   const abortControllerRef = useRef<AbortController | null>(null)
 
@@ -109,18 +112,12 @@ export function IndustryFilterInput({
   ]
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          inputRef.current && !inputRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false)
-        setAiSuggestions([])
-        setAiError(null)
-      }
+    if (!isDropdownOpen) {
+      setAiSuggestions([])
+      setAiError(null)
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-  
+  }, [isDropdownOpen])
+
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {

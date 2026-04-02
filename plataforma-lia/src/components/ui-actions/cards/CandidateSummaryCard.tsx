@@ -4,21 +4,20 @@ import React from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   MapPin,
   Briefcase,
   GraduationCap,
   DollarSign,
-  Mail,
-  Phone,
-  Linkedin,
   ExternalLink,
   Star,
   ThumbsUp,
   ThumbsDown,
   Calendar
 } from "lucide-react"
+import { CandidateAvatar } from "@/components/candidate-profile/CandidateAvatar"
+import { CandidateScoreBadge } from "@/components/candidate-profile/CandidateScoreBadge"
+import { CandidateSkillsList } from "@/components/candidate-profile/CandidateSkillsList"
 
 interface CandidateSummaryData {
   id: string
@@ -56,21 +55,6 @@ export function CandidateSummaryCard({
   onViewProfile,
   compact = false
 }: CandidateSummaryCardProps) {
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
-  const getScoreLevel = (score: number) => {
-    if (score >= 80) return "high"
-    if (score >= 60) return "medium"
-    return "low"
-  }
-
   return (
     <Card
       className="w-full max-w-md border-l-4 overflow-hidden bg-lia-bg-secondary"
@@ -78,14 +62,12 @@ export function CandidateSummaryCard({
     >
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
-          <Avatar className="h-12 w-12 border-2 border-lia-bg-primary">
-            <AvatarImage src={data.avatar_url} alt={data.name} />
-            <AvatarFallback
-              className="font-medium bg-lia-bg-tertiary text-lia-text-primary"
-            >
-              {getInitials(data.name)}
-            </AvatarFallback>
-          </Avatar>
+          <CandidateAvatar
+            name={data.name}
+            avatarUrl={data.avatar_url}
+            size="lg"
+            className="border-2 border-lia-bg-primary"
+          />
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
@@ -98,13 +80,7 @@ export function CandidateSummaryCard({
                 </p>
               </div>
               {data.match_score !== undefined && (
-                <Badge
-                  variant="outline"
-                  className="shrink-0 border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
-                >
-                  <Star className="h-3 w-3 mr-1 text-lia-text-secondary dark:text-lia-text-tertiary" />
-                  {data.match_score}%
-                </Badge>
+                <CandidateScoreBadge score={data.match_score} format="percent" />
               )}
             </div>
 
@@ -138,25 +114,11 @@ export function CandidateSummaryCard({
             )}
 
             {data.skills && data.skills.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {data.skills.slice(0, compact ? 3 : 5).map((skill, index) => (
-                  <Badge
-                    key={skill}
-                    variant="secondary"
-                    className="text-xs bg-lia-bg-tertiary text-lia-text-secondary"
-                  >
-                    {skill}
-                  </Badge>
-                ))}
-                {data.skills.length > (compact ? 3 : 5) && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs border-lia-border-subtle text-lia-text-tertiary"
-                  >
-                    +{data.skills.length - (compact ? 3 : 5)}
-                  </Badge>
-                )}
-              </div>
+              <CandidateSkillsList
+                skills={data.skills}
+                maxVisible={compact ? 3 : 5}
+                className="mt-3"
+              />
             )}
 
             {!compact && data.highlights && data.highlights.length > 0 && (

@@ -6,7 +6,7 @@ import { OpinionCard } from "@/components/candidate-preview/OpinionCard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { CandidateAvatar } from "@/components/candidate-profile/CandidateAvatar"
 
 import {
   X, Maximize2, Minimize2, Star, MapPin, Calendar, Phone, Mail,
@@ -222,12 +222,12 @@ export function CandidatePreview({
           {/* Top Row: Avatar + Name/Title + Header Action Buttons (LIA, Expand, Close) */}
           <div className="flex items-start gap-3 mb-1.5">
             {/* Avatar */}
-            <Avatar className="w-12 h-12 flex-shrink-0 ring-2 ring-white">
-              <AvatarImage src={(c.avatar_url as string | undefined) || (c.avatar as string | undefined) || (c.photo_url as string | undefined) || (c.photoUrl as string | undefined)} alt={c.name as string} />
-              <AvatarFallback className="font-semibold text-sm bg-gray-200 lia-text-base">
-                {(c.name as string).split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <CandidateAvatar
+              name={c.name as string}
+              avatarUrl={(c.avatar_url as string | undefined) || (c.avatar as string | undefined) || (c.photo_url as string | undefined) || (c.photoUrl as string | undefined)}
+              size="lg"
+              showRing
+            />
 
             {/* Info Section */}
             <div className="flex-1 min-w-0">

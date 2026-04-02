@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { X, Brain, Loader2, Search, ChevronDown, Info, Save, List, RotateCcw, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTagInputState } from "@/hooks/useTagInputState"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -147,15 +148,17 @@ export function CompanyFilterInput({
   showTimeFilter = true,
   showPresets = true
 }: CompanyFilterInputProps) {
-  const [inputValue, setInputValue] = useState("")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const {
+    inputValue, setInputValue,
+    isDropdownOpen, setIsDropdownOpen,
+    focusedIndex, setFocusedIndex,
+    inputRef, dropdownRef,
+    closeDropdown,
+  } = useTagInputState()
   const [isLoadingAI, setIsLoadingAI] = useState(false)
   const [isFindingSimilar, setIsFindingSimilar] = useState(false)
-  const [focusedIndex, setFocusedIndex] = useState(-1)
   const [isPresetsModalOpen, setIsPresetsModalOpen] = useState(false)
   const [isTimeFilterOpen, setIsTimeFilterOpen] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const { 
     suggestions: semanticSuggestions, 
@@ -183,17 +186,6 @@ export function CompanyFilterInput({
     ...(showAskAI && semanticItems.length === 0 ? [{ type: 'ai' as const, label: `Buscar concorrentes de "${inputValue}"`, company: null, confidence: 0 }] : []),
     ...filteredSuggestions.map(c => ({ type: 'company' as const, label: c.name, company: c, confidence: 0 }))
   ]
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          inputRef.current && !inputRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
 
   const addCompany = useCallback((company: CompanyItem) => {
     if (!company.name.trim()) return

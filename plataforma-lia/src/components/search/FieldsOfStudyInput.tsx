@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { X, Brain, Loader2, Search, ChevronDown, Info, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTagInputState } from "@/hooks/useTagInputState"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -244,13 +245,15 @@ export function FieldsOfStudyInput({
   onChange,
   placeholder = "All Engineering Majors, Natural Sciences, CS, etc."
 }: FieldsOfStudyInputProps) {
-  const [inputValue, setInputValue] = useState("")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const {
+    inputValue, setInputValue,
+    isDropdownOpen, setIsDropdownOpen,
+    focusedIndex, setFocusedIndex,
+    inputRef, dropdownRef,
+    closeDropdown,
+  } = useTagInputState()
   const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false)
   const [isLoadingAI, setIsLoadingAI] = useState(false)
-  const [focusedIndex, setFocusedIndex] = useState(-1)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const modeDropdownRef = useRef<HTMLDivElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const requestIdRef = useRef(0)
@@ -283,17 +286,13 @@ export function FieldsOfStudyInput({
   ]
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
-          inputRef.current && !inputRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false)
-      }
+    const handleModeClickOutside = (event: MouseEvent) => {
       if (modeDropdownRef.current && !modeDropdownRef.current.contains(event.target as Node)) {
         setIsModeDropdownOpen(false)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleModeClickOutside)
+    return () => document.removeEventListener("mousedown", handleModeClickOutside)
   }, [])
 
   useEffect(() => {

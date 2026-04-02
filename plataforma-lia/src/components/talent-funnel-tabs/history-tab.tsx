@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { formatRelativeTime } from "@/lib/format-utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -77,28 +78,6 @@ const getSourceLabel = (source: SearchSource) => {
     case 'hybrid': return 'Híbrido'
     default: return 'Busca'
   }
-}
-
-const formatRelativeTime = (timestamp: string) => {
-  const date = new Date(timestamp)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return 'Agora'
-  if (diffMins < 60) return `Há ${diffMins} min`
-  if (diffHours < 24) return `Há ${diffHours}h`
-  if (diffDays === 1) return 'Ontem'
-  if (diffDays < 7) return `Há ${diffDays} dias`
-  
-  return date.toLocaleDateString('pt-BR', { 
-    day: '2-digit', 
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
 }
 
 const groupByDate = (items: SearchHistoryItem[]) => {
@@ -250,7 +229,7 @@ export function HistoryTab({
                       <div className="flex items-center gap-3 text-xs text-lia-text-primary dark:text-lia-text-primary">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {formatRelativeTime(item.timestamp)}
+                          {formatRelativeTime(item.timestamp, { includeTime: true })}
                         </span>
                         <Badge variant="outline" className="h-5 text-xs px-1.5">
                           {getModeLabel(item.mode)}

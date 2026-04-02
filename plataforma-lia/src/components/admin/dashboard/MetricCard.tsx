@@ -72,7 +72,7 @@ const MetricCard = memo(function MetricCard({
         {(trend !== undefined || subtitle || trendLabel) && (
           <div className="flex items-center gap-2 mt-1">
             {isNumericTrend ? (
-              <span className={}>
+              <span className={`flex items-center text-xs font-medium ${trendColorClass}`}>
                 {isPositive
                   ? <TrendingUp className="w-3 h-3 mr-1" />
                   : <TrendingDown className="w-3 h-3 mr-1" />
@@ -80,7 +80,7 @@ const MetricCard = memo(function MetricCard({
                 {isPositive ? "+" : ""}{trend}%
               </span>
             ) : typeof trend === "string" ? (
-              <span className={}>{trend}</span>
+              <span className={`text-xs font-medium ${trendColorClass}`}>{trend}</span>
             ) : null}
             {trendLabel && (
               <span className="text-xs text-lia-text-disabled">{trendLabel}</span>

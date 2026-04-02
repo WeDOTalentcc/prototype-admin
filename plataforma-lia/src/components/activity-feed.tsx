@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { formatRelativeTime } from "@/lib/format-utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -229,22 +230,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       default:
         return evaluation
     }
-  }
-
-  const formatRelativeTime = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInMs = now.getTime() - date.getTime()
-    const diffInMins = Math.floor(diffInMs / 60000)
-    const diffInHours = Math.floor(diffInMs / 3600000)
-    const diffInDays = Math.floor(diffInMs / 86400000)
-
-    if (diffInMins < 1) return 'agora'
-    if (diffInMins < 60) return `há ${diffInMins} ${diffInMins === 1 ? 'minuto' : 'minutos'}`
-    if (diffInHours < 24) return `há ${diffInHours} ${diffInHours === 1 ? 'hora' : 'horas'}`
-    if (diffInDays < 7) return `há ${diffInDays} ${diffInDays === 1 ? 'dia' : 'dias'}`
-    
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
   }
 
   if (loading) {

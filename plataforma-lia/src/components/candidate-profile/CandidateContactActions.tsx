@@ -1,0 +1,148 @@
+"use client"
+
+import React, { memo, useCallback } from "react"
+import { Mail, Phone, Linkedin } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
+
+interface CandidateContactActionsProps {
+  email?: string | null
+  phone?: string | null
+  linkedinUrl?: string | null
+  size?: "sm" | "md"
+  className?: string
+  onSendEmail?: () => void
+  onSendWhatsApp?: () => void
+  onOpenLinkedIn?: () => void
+}
+
+const CandidateContactActions = memo(function CandidateContactActions({
+  email,
+  phone,
+  linkedinUrl,
+  size = "sm",
+  className,
+  onSendEmail,
+  onSendWhatsApp,
+  onOpenLinkedIn,
+}: CandidateContactActionsProps) {
+  const iconSize = size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4"
+  const buttonSize = size === "sm" ? "h-6 w-6 p-0" : "h-7 w-7 p-0"
+
+  const handleEmail = useCallback(() => {
+    if (onSendEmail) {
+      onSendEmail()
+    } else if (email) {
+      window.open(`mailto:${email}`, "_self")
+    }
+  }, [onSendEmail, email])
+
+  const handleWhatsApp = useCallback(() => {
+    if (onSendWhatsApp) {
+      onSendWhatsApp()
+    } else if (phone) {
+      window.open(
+        `https://wa.me/${phone.replace(/\D/g, "")}`,
+        "_blank"
+      )
+    }
+  }, [onSendWhatsApp, phone])
+
+  const handleLinkedIn = useCallback(() => {
+    if (onOpenLinkedIn) {
+      onOpenLinkedIn()
+    } else if (linkedinUrl) {
+      window.open(linkedinUrl, "_blank", "noopener,noreferrer")
+    }
+  }, [onOpenLinkedIn, linkedinUrl])
+
+  return (
+    <div className={cn("flex items-center gap-1.5", className)}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              buttonSize,
+              "hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-secondary"
+            )}
+            onClick={handleEmail}
+            disabled={!email && !onSendEmail}
+          >
+            <Mail
+              className={cn(
+                iconSize,
+                "text-lia-text-secondary dark:text-lia-text-tertiary"
+              )}
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="text-xs">
+          Email
+        </TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              buttonSize,
+              "hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-secondary"
+            )}
+            onClick={handleWhatsApp}
+            disabled={!phone && !onSendWhatsApp}
+          >
+            <Phone
+              className={cn(
+                iconSize,
+                "text-lia-text-secondary dark:text-lia-text-tertiary"
+              )}
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="text-xs">
+          WhatsApp
+        </TooltipContent>
+      </Tooltip>
+
+      {(linkedinUrl || onOpenLinkedIn) && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                buttonSize,
+                "hover:bg-gray-100 dark:hover:bg-gray-700"
+              )}
+              onClick={handleLinkedIn}
+            >
+              <Linkedin
+                className={cn(
+                  iconSize,
+                  "text-lia-text-secondary dark:text-lia-text-tertiary"
+                )}
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="text-xs">
+            LinkedIn
+          </TooltipContent>
+        </Tooltip>
+      )}
+    </div>
+  )
+})
+
+CandidateContactActions.displayName = "CandidateContactActions"
+
+export { CandidateContactActions }
+export type { CandidateContactActionsProps }

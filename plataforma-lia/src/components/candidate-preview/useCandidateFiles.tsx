@@ -3,33 +3,11 @@
 import React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { FileText, FileVideo, Award, File, Image } from "lucide-react"
+import { formatRelativeTime } from "@/lib/format-utils"
 import { useToast } from "@/hooks/use-toast"
 import type { FileItem } from "@/components/candidate-preview/FilePreviewModal"
 
-export function formatFileSize(bytes: number): string {
-  if (!bytes) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-}
-
-export function formatRelativeTime(dateStr: string): string {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / (1000 * 60))
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diffMins < 1) return 'Agora'
-  if (diffMins < 60) return `Há ${diffMins} min`
-  if (diffHours < 24) return `Há ${diffHours}h`
-  if (diffDays === 1) return 'Ontem'
-  if (diffDays < 7) return `Há ${diffDays} dias`
-  return date.toLocaleDateString('pt-BR')
-}
+export { formatFileSize, formatRelativeTime } from "@/lib/format-utils"
 
 export function getCategoryColor(fileType: string): { bg: string; text: string } {
   const colors: Record<string, { bg: string; text: string }> = {

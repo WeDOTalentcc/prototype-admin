@@ -4,6 +4,7 @@
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { FileText, Image, FileVideo, Award, File } from "lucide-react"
+import { formatRelativeTime, formatFileSize } from "@/lib/format-utils"
 import { liaApi, type CandidateLocal } from "@/services/lia-api"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { useToast } from "@/hooks/use-toast"
@@ -365,30 +366,6 @@ export function useCandidatePageCore() {
     }
   }
 
-  const formatFileSize = (bytes: number): string => {
-    if (!bytes) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-  }
-
-  const formatRelativeTime = (dateStr: string): string => {
-    if (!dateStr) return ''
-    const date = new Date(dateStr)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMins = Math.floor(diffMs / (1000 * 60))
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-    
-    if (diffMins < 1) return 'Agora'
-    if (diffMins < 60) return `Há ${diffMins} min`
-    if (diffHours < 24) return `Há ${diffHours}h`
-    if (diffDays === 1) return 'Ontem'
-    if (diffDays < 7) return `Há ${diffDays} dias`
-    return date.toLocaleDateString('pt-BR')
-  }
 
   const cleanMarkdown = (text: string): string => {
     if (!text) return ''

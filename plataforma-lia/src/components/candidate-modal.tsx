@@ -5,7 +5,8 @@ import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { CandidateAvatar } from "@/components/candidate-profile/CandidateAvatar"
+import { CandidateSkillsList } from "@/components/candidate-profile/CandidateSkillsList"
 import {
   X, MessageCircle, Calendar, Clock, User, Phone, Mail, MapPin,
   Star, TrendingUp, Eye, Share2, Download, FileText, Edit,
@@ -207,12 +208,12 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-elevated">
           <div className="flex items-center gap-4">
 
-            <Avatar className="w-16 h-16">
-              <AvatarImage src={candidate.avatar as string | undefined} alt={candidateData.fullName} />
-              <AvatarFallback className="text-lg">
-                {candidateData.fullName.split(' ').map((n: string) => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
+            <CandidateAvatar
+              name={candidateData.fullName}
+              avatarUrl={candidate.avatar as string | undefined}
+              size="lg"
+              className="w-16 h-16"
+            />
 
             <div>
               <h2 className="text-2xl font-semibold text-lia-text-primary">
@@ -362,13 +363,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 <CardContent className="space-y-4">
                   <div>
                     <label className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2 block">Habilidades Técnicas</label>
-                    <div className="flex flex-wrap gap-2">
-                      {candidateData.skills.map((skill: string, index: number) => (
-                        <Badge key={skill} variant="secondary" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
+                    <CandidateSkillsList skills={candidateData.skills} />
                   </div>
 
                   <div>
@@ -579,11 +574,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                   <div key={note.id} className={`p-4 rounded-md border-l-4 ${getNoteColor(note.type ?? '')}`}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <Avatar className="w-6 h-6">
-                          <AvatarFallback className="text-xs">
-                            {note.author.split(' ').map((n: string) => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
+                        <CandidateAvatar name={note.author} size="sm" className="w-6 h-6" />
                         <span className="font-medium text-sm text-lia-text-primary">
                           {note.author}
                         </span>
