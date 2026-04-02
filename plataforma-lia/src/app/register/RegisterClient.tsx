@@ -233,11 +233,11 @@ export default function RegisterPage() {
                   />
                   <span className="text-sm text-lia-text-secondary">
                     Li e aceito os{" "}
-                    <a href="#" className="lia-text-950 dark:text-lia-text-primary font-medium hover:underline">
+                    <a href="#" className="text-lia-text-primary dark:text-lia-text-primary font-medium hover:underline">
                       Termos de Uso
                     </a>{" "}
                     e a{" "}
-                    <a href="#" className="lia-text-950 dark:text-lia-text-primary font-medium hover:underline">
+                    <a href="#" className="text-lia-text-primary dark:text-lia-text-primary font-medium hover:underline">
                       Política de Privacidade
                     </a>
                   </span>
@@ -270,7 +270,7 @@ export default function RegisterPage() {
 
               <p className="text-center text-lia-text-secondary text-sm">
                 Já tem uma conta?{" "}
-                <Link href="/login" className="lia-text-950 dark:text-lia-text-primary font-medium hover:underline">
+                <Link href="/login" className="text-lia-text-primary dark:text-lia-text-primary font-medium hover:underline">
                   Faça login
                 </Link>
               </p>
