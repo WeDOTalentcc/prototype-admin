@@ -109,37 +109,37 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
           <thead>
             <tr className="">
               <th className="py-3 px-3 text-center w-12">
-                <div className="w-4 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                <div className="w-4 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
               <th className="py-3 px-3 text-left w-[80px]">
-                <div className="w-8 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-8 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[200px]">
-                <div className="w-16 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-16 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-center w-[100px]">
-                <div className="w-20 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                <div className="w-20 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
               <th className="py-3 px-3 text-left w-[180px]">
-                <div className="w-32 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-32 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[100px]">
-                <div className="w-14 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-14 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[60px]">
-                <div className="w-10 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-10 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[120px]">
-                <div className="w-20 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-20 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-left w-[100px]">
-                <div className="w-14 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-14 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
               </th>
               <th className="py-3 px-3 text-center w-[100px]">
-                <div className="w-16 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                <div className="w-16 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
               <th className="py-3 px-3 text-center w-[80px]">
-                <div className="w-12 h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                <div className="w-12 h-4 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
               </th>
             </tr>
           </thead>
@@ -147,57 +147,57 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
             {[1, 2, 3, 4, 5, 6, 7, 8].map((row) => (
               <tr key={row} className="">
                 <td className="py-3 px-3 text-center">
-                  <div className="w-4 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                  <div className="w-4 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-16 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                  <div className="w-16 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="space-y-1">
-                    <div className="w-40 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
-                    <div className="w-24 h-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-40 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-24 h-3 bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
                   </div>
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-8 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                  <div className="w-8 h-6 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex gap-1">
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
-                    <div className="w-6 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
                   </div>
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-16 h-5 bg-gray-100 dark:bg-lia-bg-secondary rounded-full animate-pulse motion-reduce:animate-none" />
+                  <div className="w-16 h-5 bg-lia-bg-tertiary rounded-full animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-8 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                  <div className="w-8 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full animate-pulse motion-reduce:animate-none" />
-                    <div className="w-20 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                    <div className="w-6 h-6 bg-lia-bg-tertiary rounded-full animate-pulse motion-reduce:animate-none" />
+                    <div className="w-20 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
                   </div>
                 </td>
                 <td className="py-3 px-3">
-                  <div className="w-20 h-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                  <div className="w-20 h-4 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-16 h-5 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                  <div className="w-16 h-5 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
                 <td className="py-3 px-3 text-center">
-                  <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
+                  <div className="w-6 h-6 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none mx-auto" />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        <div className="flex items-center justify-center py-6 text-sm text-lia-text-primary dark:text-lia-text-tertiary">
+        <div className="flex items-center justify-center py-6 text-sm text-lia-text-primary">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full animate-spin motion-reduce:animate-none bg-gray-600" />
+            <div className="w-5 h-5 rounded-full animate-spin motion-reduce:animate-none bg-lia-border-medium" />
             <span>Carregando vagas...</span>
           </div>
         </div>
@@ -206,9 +206,9 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
   }
 
   return (
-    <div className="overflow-auto max-h-full border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+    <div className="overflow-auto max-h-full border border-lia-border-subtle rounded-md">
       <table className="w-full table-fixed">
-        <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 #e5e7eb' }}>
+        <thead className="sticky top-0 z-10 bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 #e5e7eb' }}>
           <tr className="">
             {jobsColumnOrder.filter((columnId) => {
               if (columnId === 'checkbox' || columnId === 'acoes') return true
@@ -247,11 +247,11 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                 return (
                   <th 
                     key={columnId} 
-                    className="text-center py-3 px-3 text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary"
+                    className="text-center py-3 px-3 text-xs font-semibold text-lia-text-primary"
                     style={{width: jobsColumnWidths.acoes}} /* dynamic */
                   >
                     <span className="sr-only">Ações</span>
-                    <MoreVertical className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary mx-auto" aria-hidden="true" />
+                    <MoreVertical className="w-4 h-4 text-lia-text-primary mx-auto" aria-hidden="true" />
                   </th>
                 )
               }
@@ -264,11 +264,11 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                 <th
                   key={columnId}
                   className={`
-                    text-${config.align} py-3 px-3 text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary 
+                    text-${config.align} py-3 px-3 text-xs font-semibold text-lia-text-primary 
                     relative group select-none
                     ${isDragging ? 'opacity-50' : ''}
                     ${isDragOver ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/20' : ''}
-                    ${config.sortable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50' : ''}
+                    ${config.sortable ? 'cursor-pointer hover:bg-lia-interactive-hover' : ''}
                   `}
                   style={{width: `${width}px`, minWidth: '50px'}} /* dynamic */
                   draggable={columnId !== 'checkbox' && columnId !== 'acoes'}
@@ -292,7 +292,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                   </div>
                   
                   <div
-                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize opacity-0 group-hover:opacity-100 bg-gray-300 dark:bg-lia-bg-elevated hover:bg-gray-500 dark:hover:bg-gray-500 transition-colors motion-reduce:transition-none"
+                    className="absolute right-0 top-0 h-full w-1 cursor-col-resize opacity-0 group-hover:opacity-100 bg-lia-border-default hover:bg-lia-border-medium transition-colors motion-reduce:transition-none"
                     onMouseDown={(e) => onColumnResize(columnId, e)}
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -312,7 +312,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                 {statusJobs.map((job) => (
                   <React.Fragment key={job.id}>
                     <tr
-                      className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800/50 text-xs cursor-pointer transition-colors motion-reduce:transition-none"
+                      className="border-b border-lia-border-subtle hover:bg-lia-interactive-hover text-xs cursor-pointer transition-colors motion-reduce:transition-none"
                       onClick={() => onJobPreview(job)}
                     >
                       {jobsColumnOrder.filter((columnId) => {
@@ -343,7 +343,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                         if (columnId === 'id') {
                           return (
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
-                              <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
+                              <span className="text-xs font-normal text-lia-text-primary">
                                 V{job.id.toString().padStart(4, '0')}
                               </span>
                             </td>
@@ -354,9 +354,9 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                           return (
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <div>
-                                <div className="font-semibold text-xs text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1">
+                                <div className="font-semibold text-xs text-lia-text-primary flex items-center gap-1">
                                   {pinnedJobs.has(job.id) && (
-                                    <Pin className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary fill-current" />
+                                    <Pin className="w-3 h-3 text-lia-text-primary fill-current" />
                                   )}
                                   <button
                                     type="button"
@@ -376,7 +376,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   )}
                                   {job.visibility === 'internal' && (
                                     <span title="Vaga Interna" className="flex items-center">
-                                      <Building className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                                      <Building className="w-3.5 h-3.5 text-lia-text-secondary" />
                                     </span>
                                   )}
                                   {job.visibility === 'hidden' && (
@@ -401,12 +401,12 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                         <Users 
                                           className="w-3.5 h-3.5"
                                           style={{color: job.funnel.total >= 50
-                                              ? 'var(--gray-600)'
+                                              ? 'var(--lia-text-secondary)'
                                               : job.funnel.total >= 20
                                               ? 'var(--status-error)'
                                               : 'var(--status-warning)'}} /* dynamic */
                                         />
-                                        <span className="text-sm font-normal text-lia-text-primary dark:text-lia-text-primary">
+                                        <span className="text-sm font-normal text-lia-text-primary">
                                           {job.funnel.total}
                                         </span>
                                       </div>
@@ -495,10 +495,10 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                 <div className="flex items-center gap-0.5">
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-gray-200" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-lia-interactive-active" 
                                       style={{width: `${getCardWidth(liaTriages.pipeline)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
+                                      <span className="text-xs font-normal text-lia-text-primary">
                                         {liaTriages.pipeline}
                                       </span>
                                     </div>
@@ -516,10 +516,10 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <ChevronRight className="w-2 h-2 text-lia-text-primary flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-gray-300" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-lia-border-default" 
                                       style={{width: `${getCardWidth(liaTriages.agendadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
+                                      <span className="text-xs font-normal text-lia-text-primary">
                                         {liaTriages.agendadas}
                                       </span>
                                     </div>
@@ -537,7 +537,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-wedo-green-pastel" 
                                       style={{width: `${getCardWidth(liaTriages.realizadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
+                                      <span className="text-xs font-normal text-lia-text-primary">
                                         {liaTriages.realizadas}
                                       </span>
                                     </div>
@@ -552,10 +552,10 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <ChevronRight className="w-2 h-2 text-lia-text-primary flex-shrink-0" />
                                   <div className="flex flex-col items-center group relative cursor-help">
                                     <div 
-                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-gray-200" 
+                                      className="h-6 rounded-md flex items-center justify-center transition-[color,background-color,border-color,transform] hover:ring-2 hover:scale-105 bg-lia-interactive-active" 
                                       style={{width: `${getCardWidth(liaTriages.entrevistasAgendadas)}px`,
                                         minWidth: '24px'}} /* dynamic */>
-                                      <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
+                                      <span className="text-xs font-normal text-lia-text-primary">
                                         {liaTriages.entrevistasAgendadas}
                                       </span>
                                     </div>
@@ -579,7 +579,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                               <div className="space-y-1">
                                 <Badge
                                   variant="outline"
-                                  className="border-0 text-xs font-normal px-2 py-0.5 text-lia-text-primary dark:text-lia-text-primary"
+                                  className="border-0 text-xs font-normal px-2 py-0.5 text-lia-text-primary"
                                   style={{backgroundColor: getStatusColor(job.status)}} /* dynamic */
                                 >
                                   {job.status}
@@ -593,18 +593,18 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                           const status = job.screeningStatus || 'not_configured'
                           const statusLabels = SCREENING_STATUS_LABELS
                           const screeningColors: Record<string, string> = {
-                            not_configured: 'var(--gray-200)',
-                            not_started: 'var(--gray-100)',
+                            not_configured: 'var(--lia-border-subtle)',
+                            not_started: 'var(--lia-bg-tertiary)',
                             active: 'var(--status-success)',
-                            paused: 'var(--gray-300)',
-                            completed: 'var(--gray-400)',
+                            paused: 'var(--lia-border-default)',
+                            completed: 'var(--lia-border-medium)',
                           }
                           return (
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <Badge
                                 variant="outline"
-                                className="border-0 text-micro font-normal px-2 py-0.5 text-lia-text-primary dark:text-lia-text-primary cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none"
-                                style={{backgroundColor: screeningColors[status] || 'var(--gray-200)'}} /* dynamic */
+                                className="border-0 text-micro font-normal px-2 py-0.5 text-lia-text-primary cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none"
+                                style={{backgroundColor: screeningColors[status] || 'var(--lia-border-subtle)'}} /* dynamic */
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   onJobPreview(job)
@@ -622,11 +622,11 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-8 h-8">
                                   <AvatarImage src={`https://i.pravatar.cc/100?u=${job.recruiterEmail}`} />
-                                  <AvatarFallback className="text-xs bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated dark:text-lia-text-primary">
+                                  <AvatarFallback className="text-xs bg-lia-interactive-active text-lia-text-primary">
                                     {job.recruiter.split(' ').map(n => n[0]).join('')}
                                   </AvatarFallback>
                                 </Avatar>
-                                <div className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
+                                <div className="text-xs font-normal text-lia-text-primary">
                                   {job.recruiter}
                                 </div>
                               </div>
@@ -637,7 +637,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                         if (columnId === 'gestor') {
                           return (
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
-                              <div className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
+                              <div className="text-xs font-normal text-lia-text-primary">
                                 {job.manager}
                               </div>
                             </td>
@@ -647,7 +647,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                         if (columnId === 'prazoTriagem') {
                           return (
                             <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}} /* dynamic */>
-                              <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
+                              <span className="text-xs font-normal text-lia-text-primary">
                                 {job.openDate 
                                   ? new Date(job.openDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                                   : '—'}
@@ -659,7 +659,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                         if (columnId === 'prazoShortlist' || columnId === 'prazoEncerramento') {
                           return (
                             <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}} /* dynamic */>
-                              <span className="text-xs font-normal text-lia-text-primary dark:text-lia-text-primary">
+                              <span className="text-xs font-normal text-lia-text-primary">
                                 {job.deadline 
                                   ? new Date(job.deadline).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
                                   : '—'}
@@ -682,7 +682,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   className={`h-7 w-7 p-0 transition-colors motion-reduce:transition-none ${
                                     isUrgent 
                                       ? 'bg-status-error/10 hover:bg-status-error/15 dark:bg-status-error/20 dark:hover:bg-status-error/30' 
-                                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                                      : 'hover:bg-lia-interactive-hover'
                                   }`}
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -693,7 +693,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <AlertTriangle className={`w-3.5 h-3.5 transition-colors motion-reduce:transition-none ${
                                     isUrgent 
                                       ? 'text-status-error fill-red-100' 
-                                      : 'text-lia-text-primary dark:text-lia-text-primary'
+                                      : 'text-lia-text-primary'
                                   }`} />
                                 </Button>
                                 <Button
@@ -701,8 +701,8 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   size="sm"
                                   className={`h-7 w-7 p-0 transition-colors motion-reduce:transition-none ${
                                     isPinned 
-                                      ? 'bg-gray-100 hover:bg-gray-200 dark:bg-lia-bg-secondary dark:hover:bg-gray-700' 
-                                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                                      ? 'bg-lia-bg-tertiary hover:bg-lia-interactive-active' 
+                                      : 'hover:bg-lia-interactive-hover'
                                   }`}
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -712,8 +712,8 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                 >
                                   <Pin className={`w-3 h-3 transition-colors motion-reduce:transition-none ${
                                     isPinned 
-                                      ? 'text-lia-text-primary dark:text-lia-text-primary fill-current' 
-                                      : 'text-lia-text-primary dark:text-lia-text-primary'
+                                      ? 'text-lia-text-primary fill-current' 
+                                      : 'text-lia-text-primary'
                                   }`} />
                                 </Button>
                                 <Button
@@ -722,7 +722,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   className={`h-7 w-7 p-0 transition-colors motion-reduce:transition-none ${
                                     isFavorite 
                                       ? 'bg-status-warning/10 hover:bg-status-warning/15 dark:bg-status-warning/20 dark:hover:bg-status-warning/30' 
-                                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                                      : 'hover:bg-lia-interactive-hover'
                                   }`}
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -733,13 +733,13 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   <Star className={`w-3 h-3 transition-colors motion-reduce:transition-none ${
                                     isFavorite 
                                       ? 'text-status-warning fill-yellow-400' 
-                                      : 'text-lia-text-primary dark:text-lia-text-primary'
+                                      : 'text-lia-text-primary'
                                   }`} />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                  className="h-7 w-7 p-0 hover:bg-lia-interactive-hover"
                                   onClick={async (e) => {
                                     e.stopPropagation()
                                     e.preventDefault()
@@ -760,12 +760,12 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }}
                                   title="Compartilhar vaga (copiar link público)"
                                 >
-                                  <Share2 className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
+                                  <Share2 className="w-3.5 h-3.5 text-lia-text-primary" />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                  className="h-7 w-7 p-0 hover:bg-lia-interactive-hover"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     e.preventDefault()
@@ -773,7 +773,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   }}
                                   title="Abrir Kanban da vaga"
                                 >
-                                  <ChevronRight className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+                                  <ChevronRight className="w-4 h-4 text-lia-text-primary" />
                                 </Button>
                               </div>
                             </td>

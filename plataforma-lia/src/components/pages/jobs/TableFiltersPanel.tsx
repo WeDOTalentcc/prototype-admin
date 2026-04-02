@@ -71,14 +71,14 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
   return (
     <div className="w-80 flex-shrink-0 transition-colors motion-reduce:transition-none duration-300">
-      <Card className="h-full max-h-[calc(100vh-180px)] flex flex-col overflow-hidden bg-white dark:bg-lia-bg-primary border border-lia-border-subtle">
+      <Card className="h-full max-h-[calc(100vh-180px)] flex flex-col overflow-hidden bg-lia-bg-primary border border-lia-border-subtle">
         {/* Header */}
-        <div className="flex-shrink-0 p-4 border-b border-b-gray-100 bg-gray-50 dark:bg-lia-bg-secondary/50">
+        <div className="flex-shrink-0 p-4 border-b border-b-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Target className="w-4 h-4 text-lia-text-secondary" />
               <div>
-                <h3 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
+                <h3 className="text-sm font-semibold text-lia-text-primary">
                   Filtros Avançados
                 </h3>
                 <p className={textStyles.bodySmall}>
@@ -94,13 +94,13 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
               onClick={onClose}
               className="h-7 w-7 p-0 rounded-full hover:opacity-70 transition-opacity motion-reduce:transition-none"
             >
-              <X className="w-4 h-4 text-lia-text-primary dark:text-lia-text-primary" />
+              <X className="w-4 h-4 text-lia-text-primary" />
             </Button>
           </div>
         </div>
 
         {/* Search */}
-        <div className="flex-shrink-0 px-4 py-3 border-b border-b-gray-100">
+        <div className="flex-shrink-0 px-4 py-3 border-b border-b-lia-border-subtle">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-primary" />
             <input
@@ -108,7 +108,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
               placeholder="Buscar por título, ID, departamento..."
               value={searchTerm}
               onChange={(e) => onSearchTermChange(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 text-xs rounded-md border focus:outline-none focus:border-gray-900 transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-white dark:bg-lia-bg-secondary"
+              className="w-full pl-9 pr-8 py-2 text-xs rounded-md border focus:outline-none focus:border-lia-text-primary transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-secondary"
             />
             {searchTerm && (
               <button
@@ -126,7 +126,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
           {/* Filtros Rápidos */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
               Filtros Rápidos
             </h4>
@@ -135,7 +135,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => onToggleFilter('status', 'statuses', 'Ativa')}
-                className={`h-8 text-xs justify-start ${jobFilters.status?.statuses?.includes('Ativa') ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-semibold dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary' : ''}`}
+                className={`h-8 text-xs justify-start ${jobFilters.status?.statuses?.includes('Ativa') ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-semibold dark:bg-lia-bg-secondary' : ''}`}
               >
                 <CheckCircle className="w-3 h-3 mr-1.5" />
                 Ativas
@@ -153,7 +153,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => onToggleFilter('position', 'workModels', 'remoto')}
-                className={`h-8 text-xs justify-start ${jobFilters.position?.workModels?.includes('remoto') ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-semibold' : ''}`}
+                className={`h-8 text-xs justify-start ${jobFilters.position?.workModels?.includes('remoto') ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-semibold' : ''}`}
               >
                 <Globe className="w-3 h-3 mr-1.5" />
                 Remotas
@@ -162,7 +162,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 variant="outline"
                 size="sm"
                 onClick={() => onToggleFilter('funnel', 'emptyPipeline', true)}
-                className={`h-8 text-xs justify-start ${jobFilters.funnel?.emptyPipeline ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-secondary font-semibold' : ''}`}
+                className={`h-8 text-xs justify-start ${jobFilters.funnel?.emptyPipeline ? 'bg-lia-bg-tertiary border-lia-border-subtle text-lia-text-secondary font-semibold' : ''}`}
               >
                 <Users className="w-3 h-3 mr-1.5" />
                 Sem Candidatos
@@ -172,7 +172,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
           {/* Status */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Target className="w-3.5 h-3.5" />
               Status da Vaga
             </h4>
@@ -181,9 +181,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 <Badge
                   key={status}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
+                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.statuses?.includes(status)
-                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('status', 'statuses', status)}
@@ -196,7 +196,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
           {/* Etapa do Processo */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Layers3 className="w-3.5 h-3.5" />
               Etapa do Processo
             </h4>
@@ -205,9 +205,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 <Badge
                   key={stage}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
+                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.stages?.includes(stage)
-                      ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-secondary font-medium'
+                      ? 'bg-lia-bg-tertiary border-lia-border-subtle text-lia-text-secondary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('status', 'stages', stage)}
@@ -220,7 +220,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
           {/* Prioridade */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5" />
               Prioridade
             </h4>
@@ -248,7 +248,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
           {/* Modelo de Trabalho */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Building className="w-3.5 h-3.5" />
               Modelo de Trabalho
             </h4>
@@ -257,9 +257,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 <Badge
                   key={model}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none capitalize ${
+                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none capitalize ${
                     jobFilters.position?.workModels?.includes(model)
-                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('position', 'workModels', model)}
@@ -272,7 +272,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
           {/* Senioridade */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <UserCheck className="w-3.5 h-3.5" />
               Senioridade
             </h4>
@@ -281,9 +281,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 <Badge
                   key={level}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
+                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.levels?.includes(level)
-                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('position', 'levels', level)}
@@ -296,7 +296,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
           {/* Localização */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" />
               Localização
             </h4>
@@ -305,9 +305,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 <Badge
                   key={loc}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
+                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.locations?.includes(loc)
-                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('position', 'locations', loc)}
@@ -320,7 +320,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
           {/* Departamento */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Briefcase className="w-3.5 h-3.5" />
               Departamento
             </h4>
@@ -329,9 +329,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 <Badge
                   key={dept}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
+                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.team?.departments?.includes(dept)
-                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('team', 'departments', dept)}
@@ -344,7 +344,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
           {/* Publicação */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <Share2 className="w-3.5 h-3.5" />
               Publicação
             </h4>
@@ -357,9 +357,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 <Badge
                   key={channel.value}
                   variant="outline"
-                  className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none flex items-center gap-1 ${
+                  className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                     jobFilters.publishing?.channels?.includes(channel.value)
-                      ? 'bg-gray-100 border-gray-900 text-lia-text-primary font-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-primary'
+                      ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => onToggleFilter('publishing', 'channels', channel.value)}
@@ -370,9 +370,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
               ))}
               <Badge
                 variant="outline"
-                className={`text-xs cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none ${
+                className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                   jobFilters.publishing?.unpublished
-                    ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary dark:text-lia-text-secondary font-medium'
+                    ? 'bg-lia-bg-tertiary border-lia-border-subtle text-lia-text-secondary font-medium'
                     : 'bg-lia-bg-primary text-lia-text-primary'
                 }`}
                 onClick={() => onToggleFilter('publishing', 'unpublished', !jobFilters.publishing?.unpublished)}
@@ -384,12 +384,12 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
 
           {/* Métricas */}
           <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
               <BarChart3 className="w-3.5 h-3.5" />
               Métricas
             </h4>
             <div className="space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md bg-gray-50">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-md bg-lia-bg-secondary">
                 <input
                   type="checkbox"
                   className="w-3 h-3"
@@ -398,7 +398,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 />
                 <span className="text-lia-text-secondary">Pipeline vazio (sem candidatos)</span>
               </label>
-              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md bg-gray-50">
+              <label className="flex items-center gap-2 cursor-pointer text-xs p-2 hover:bg-lia-interactive-hover rounded-md bg-lia-bg-secondary">
                 <input
                   type="checkbox"
                   className="w-3 h-3"
@@ -413,7 +413,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
           {/* Buscas Salvas */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary flex items-center gap-1.5">
+              <h4 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                 <Bookmark className="w-3.5 h-3.5" />
                 Buscas Salvas
               </h4>
@@ -425,7 +425,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                     const name = prompt("Nome da busca:")
                     if (name) onSaveSearch(name)
                   }}
-                  className="h-6 text-xs px-2 text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse"
+                  className="h-6 text-xs px-2 text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
                 >
                   <Plus className="w-3 h-3 mr-1" />
                   Salvar Busca
@@ -437,13 +437,13 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 {savedSearches.map((search) => (
                   <div
                     key={search.id}
-                    className="group flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none cursor-pointer"
+                    className="group flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none cursor-pointer"
                     onClick={() => onApplySavedSearch(search.id)}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <Search className="w-3 h-3 text-lia-text-secondary flex-shrink-0" />
-                        <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary truncate">
+                        <span className="text-xs font-medium text-lia-text-primary truncate">
                           {search.name}
                         </span>
                       </div>
@@ -483,7 +483,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <div className="text-center py-3 bg-lia-bg-secondary rounded-md">
                 <Bookmark className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
                 <p className="text-xs text-lia-text-tertiary">Nenhuma busca salva</p>
                 <p className="text-micro text-lia-text-secondary mt-0.5">Aplique filtros e clique em "Salvar Busca"</p>
@@ -493,7 +493,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 p-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="flex-shrink-0 p-3 border-t border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>
               {activeCount > 0 ? `${activeCount} filtro${activeCount > 1 ? 's' : ''}` : 'Nenhum filtro'}

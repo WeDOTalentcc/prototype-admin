@@ -48,7 +48,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
   } = props
 
   return (
-      <div className="bg-white dark:bg-lia-bg-primary">
+      <div className="bg-lia-bg-primary">
         <div className="w-full px-4">
           <div className="flex flex-col lg:flex-row items-start justify-between gap-4 mb-4">
             {/* Left: Título e Informações Principais */}
@@ -57,20 +57,20 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                 <ArrowLeft className="w-4 h-4" />
                 Voltar
               </Button>
-              <div className="h-8 w-px bg-gray-300 dark:bg-lia-bg-elevated mt-1 flex-shrink-0"></div>
+              <div className="h-8 w-px bg-lia-border-default mt-1 flex-shrink-0"></div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary whitespace-nowrap">
+                  <h1 className="text-lg font-semibold text-lia-text-primary whitespace-nowrap">
                     {currentJob.title as string}
                   </h1>
                   {!!(currentJob.jobId) && (
-                    <span className="text-micro font-mono text-lia-text-secondary dark:text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle px-1.5 py-0.5 rounded-md whitespace-nowrap">
+                    <span className="text-micro font-mono text-lia-text-secondary bg-lia-bg-tertiary border border-lia-border-subtle px-1.5 py-0.5 rounded-md whitespace-nowrap">
                       {currentJob.jobId as string}
                     </span>
                   )}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 transition-colors motion-reduce:transition-none select-none">
+                      <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none select-none">
                         {(((jobEditForm.status || currentJob.status) as string) as string) as string}
                       </Badge>
                     </PopoverTrigger>
@@ -78,7 +78,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       {(() => { const st = ((jobEditForm.status || currentJob.status) as string) as string; return st === 'Ativa' || st === 'active' })() ? (
                         <>
                           <button
-                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                             onClick={() => { setJobStatusModalMode('pause'); setShowJobStatusModal(true) }}
                           >
                             <PauseCircle className="w-3.5 h-3.5 text-status-warning" />
@@ -118,7 +118,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       Object.entries(SCREENING_STATUS_LABELS).map(([k, v]) => [k, `Triagem: ${v}`])
                     ) as Record<string, string>
                     const scrStyles: Record<string, string> = {
-                      not_configured: 'bg-gray-100 text-lia-text-secondary border border-lia-border-default',
+                      not_configured: 'bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default',
                       not_started: 'bg-status-warning/10 text-status-warning border border-status-warning/30',
                       active: 'bg-status-success/10 text-status-success border border-status-success/30',
                       paused: 'bg-wedo-orange/10 text-wedo-orange border border-wedo-orange/30',
@@ -147,7 +147,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                         <PopoverContent className="w-48 p-1" align="start">
                           {scrStatus === 'not_configured' && (
                             <button
-                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                               onClick={() => setActiveTab('edit')}
                             >
                               <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -164,7 +164,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                                 Iniciar Triagem
                               </button>
                               <button
-                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                                 onClick={() => setActiveTab('edit')}
                               >
                                 <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -191,7 +191,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                                 Retomar Triagem
                               </button>
                               <button
-                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
                                 onClick={() => setActiveTab('edit')}
                               >
                                 <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
@@ -210,34 +210,34 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       Rascunho
                     </Badge>
                   )}
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-semibold whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.level as string}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
                     {(currentJob.workModel as string | undefined) || '—'}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {(currentJob.type as string | undefined) || '—'}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.department as string}
                   </Badge>
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.location as string}
                   </Badge>
                   {!!(currentJob.salary) && (currentJob.salary as string) !== 'A combinar' && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       {currentJob.salary as string}
                     </Badge>
                   )}
                   {!!(currentJob.publishedLinkedIn) && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       Publicada
                     </Badge>
                   )}
-                  <span className="text-micro text-lia-text-disabled dark:text-lia-text-tertiary mx-0.5">|</span>
+                  <span className="text-micro text-lia-text-disabled mx-0.5">|</span>
                   {!!(currentJob.openDate) && (
-                    <span className="text-micro text-lia-text-secondary dark:text-lia-text-secondary whitespace-nowrap">
+                    <span className="text-micro text-lia-text-secondary whitespace-nowrap">
                       <Calendar className="w-3 h-3 inline mr-0.5 -mt-0.5" />
                       {new Date(currentJob.openDate as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
@@ -247,30 +247,30 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                     if (days <= 0) return null
                     const isLate = days > 30
                     return (
-                      <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-status-error' : 'text-lia-text-secondary dark:text-lia-text-secondary'}`}>
+                      <span className={`text-micro font-semibold whitespace-nowrap ${isLate ? 'text-status-error' : 'text-lia-text-secondary'}`}>
                         {days}d {isLate ? 'de atraso' : 'aberta'}
                       </span>
                     )
                   })()}
                   {!!(currentJob.updatedAt) && (
-                    <span className="text-micro text-lia-text-secondary dark:text-lia-text-tertiary whitespace-nowrap">
+                    <span className="text-micro text-lia-text-secondary whitespace-nowrap">
                       Atualizada: {new Date(currentJob.updatedAt as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </span>
                   )}
                   {!!(currentJob.deadlineScreening) && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Prazo triagem: {new Date(currentJob.deadlineScreening as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {!!(currentJob.deadlineShortlist) && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Prazo short: {new Date(currentJob.deadlineShortlist as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
                   )}
                   {!!(currentJob.deadlineClosing) && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       Encerramento: {new Date(currentJob.deadlineClosing as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                     </Badge>
@@ -324,16 +324,16 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
               onClick={() => { setActiveTab('management'); setShowJobEditor(false); }}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
                 activeTab === 'management'
-                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-lia-text-primary'
-                  : 'text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800'
+                  ? 'bg-lia-bg-tertiary text-lia-text-primary'
+                  : 'text-lia-text-secondary hover:bg-lia-interactive-hover'
               }`}
             >
               <Layers3 className="w-3.5 h-3.5" />
               Gestão da Vaga
               <Badge className={`text-micro px-1.5 py-0 ml-1 ${
                 activeTab === 'management'
-                  ? 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-lia-text-secondary'
-                  : 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary'
+                  ? 'bg-lia-interactive-active text-lia-text-secondary'
+                  : 'bg-lia-interactive-active text-lia-text-secondary'
               }`}>
                 {allTableCandidates?.length || 0}
               </Badge>
@@ -342,8 +342,8 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
               onClick={() => { setActiveTab('edit'); setShowJobEditor(true); }}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
                 activeTab === 'edit'
-                  ? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-lia-text-primary'
-                  : 'text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800'
+                  ? 'bg-lia-bg-tertiary text-lia-text-primary'
+                  : 'text-lia-text-secondary hover:bg-lia-interactive-hover'
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
@@ -365,7 +365,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       }
                     }}
                     disabled={pipelineInheritance.isLoading}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-disabled bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md transition-colors motion-reduce:transition-none"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-micro font-medium text-lia-text-tertiary hover:text-lia-text-secondary dark:hover:text-lia-text-disabled bg-lia-bg-tertiary hover:bg-lia-interactive-active rounded-md transition-colors motion-reduce:transition-none"
                    
                   >
                     <RotateCcw className="w-3 h-3" />
@@ -373,7 +373,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                   </button>
                 </>
               ) : (
-                <span className="inline-flex items-center gap-1 text-micro text-lia-text-disabled dark:text-lia-text-tertiary">
+                <span className="inline-flex items-center gap-1 text-micro text-lia-text-disabled">
                   <Link2 className="w-3 h-3" />
                   Herdado da empresa
                 </span>

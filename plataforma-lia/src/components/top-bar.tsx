@@ -117,7 +117,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="h-7 w-7 p-0 rounded-full hover:bg-lia-interactive-hover"
                 title={currentUser.name}
               >
                 <Avatar className="h-7 w-7">
@@ -135,7 +135,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
               className="w-64"
             >
               {/* User Info Header */}
-              <div className="p-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="p-3 border-b border-lia-border-subtle">
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
@@ -147,10 +147,10 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                     <div className="text-xs font-medium text-lia-text-primary truncate">
                       {currentUser.name}
                     </div>
-                    <div className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary truncate">
+                    <div className="text-xs text-lia-text-tertiary truncate">
                       {currentUser.email}
                     </div>
-                    <div className="text-xs text-lia-text-tertiary dark:text-lia-text-tertiary mt-0.5">
+                    <div className="text-xs text-lia-text-tertiary mt-0.5">
                       {currentUser.role}
                     </div>
                   </div>
@@ -316,7 +316,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                 </Button>
                 <Button 
                   onClick={handlePasswordChange}
-                  className="text-white hover:opacity-90 bg-gray-800"
+                  className="text-white hover:opacity-90 bg-lia-btn-primary-bg"
                 >
                   Alterar Senha
                 </Button>

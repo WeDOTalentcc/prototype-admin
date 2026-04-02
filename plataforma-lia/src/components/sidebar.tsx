@@ -100,12 +100,12 @@ const MenuItem = React.memo(({
  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
           isLocked
             ? "text-lia-text-primary cursor-default opacity-60"
-            : "hover:bg-gray-50 dark:hover:bg-gray-800",
+            : "hover:bg-lia-interactive-hover",
           isActive && canAccess
-            ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary font-semibold"
+            ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
             : canAccess
-            ? "text-lia-text-primary dark:text-lia-text-primary font-normal"
-            : "text-lia-text-primary dark:text-lia-text-primary font-normal",
+            ? "text-lia-text-primary font-normal"
+            : "text-lia-text-primary font-normal",
           isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
         )}
         title={isCollapsed && !shouldShowContent ? item.label : undefined}
@@ -120,10 +120,10 @@ const MenuItem = React.memo(({
             <span className="text-base-ui">{item.label}</span>
             <div className="flex items-center gap-1">
               {item.isPremium && !isLocked && (
-                <Crown className="w-2 h-2 text-lia-text-primary dark:text-lia-text-primary" />
+                <Crown className="w-2 h-2 text-lia-text-primary" />
               )}
               {isLocked && (
-                <span className="text-xs bg-gray-200 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full">
+                <span className="text-xs bg-lia-interactive-active px-1.5 py-0.5 rounded-full">
                   Premium
                 </span>
               )}
@@ -156,12 +156,12 @@ const MenuItem = React.memo(({
  "w-full flex items-center gap-2 px-2 py-2 rounded-md text-left transition-colors duration-200 text-base-ui leading-tight min-h-10",
                   subIsLocked
                     ? "text-lia-text-primary cursor-default opacity-60"
-                    : "hover:bg-gray-50 dark:hover:bg-gray-800",
+                    : "hover:bg-lia-interactive-hover",
                   currentPage === subItem.label && subCanAccess
-                    ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary font-semibold"
+                    ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
                     : subCanAccess
-                    ? "text-lia-text-primary dark:text-lia-text-primary font-normal"
-                    : "text-lia-text-primary dark:text-lia-text-primary font-normal"
+                    ? "text-lia-text-primary font-normal"
+                    : "text-lia-text-primary font-normal"
                 )}
                 disabled={subIsLocked || false}
               >
@@ -172,10 +172,10 @@ const MenuItem = React.memo(({
                 <div className="flex items-center justify-between flex-1">
                   <span className="text-base-ui">{subItem.label}</span>
                   {subItem.isPremium && !subIsLocked && (
-                    <Crown className="w-2 h-2 text-lia-text-primary dark:text-lia-text-primary" />
+                    <Crown className="w-2 h-2 text-lia-text-primary" />
                   )}
                   {subIsLocked && (
-                    <span className="text-xs bg-gray-200 dark:bg-lia-bg-elevated px-1 py-0.5 rounded-full">
+                    <span className="text-xs bg-lia-interactive-active px-1 py-0.5 rounded-full">
                       Premium
                     </span>
                   )}
@@ -214,10 +214,10 @@ const JobFilterItem = React.memo(({
       onClick={handleClick}
       className={cn(
  "w-full flex items-center gap-2 px-2 py-1.5 rounded-full text-left transition-colors duration-200 text-xs leading-tight min-h-[36px]",
-        "hover:bg-gray-50 dark:hover:bg-gray-800",
+        "hover:bg-lia-interactive-hover",
         isActive
-          ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary font-semibold"
-          : "text-lia-text-primary dark:text-lia-text-primary font-normal",
+          ? "bg-lia-bg-tertiary text-lia-text-primary font-semibold"
+          : "text-lia-text-primary font-normal",
         isCollapsed && !shouldShowContent ? "justify-center px-1.5" : ""
       )}
       title={isCollapsed && !shouldShowContent ? item.label : undefined}
@@ -229,7 +229,7 @@ const JobFilterItem = React.memo(({
         <div className="flex items-center justify-between flex-1">
           <span className="text-base-ui">{item.label}</span>
           {item.count !== undefined && item.count > 0 && (
-            <span className="text-xs bg-gray-200 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full h-5 flex items-center">
+            <span className="text-xs bg-lia-interactive-active px-1.5 py-0.5 rounded-full h-5 flex items-center">
               {item.count}
             </span>
           )}
@@ -242,9 +242,9 @@ const JobFilterItem = React.memo(({
 JobFilterItem.displayName = 'JobFilterItem'
 
 const RECENT_TYPE_CONFIG = {
-  vaga: { icon: Briefcase, color: 'text-lia-text-secondary dark:text-lia-text-tertiary' },
+  vaga: { icon: Briefcase, color: 'text-lia-text-secondary' },
   chat: { icon: Brain, color: 'text-wedo-cyan' },
-  candidato: { icon: User, color: 'text-lia-text-secondary dark:text-lia-text-tertiary' },
+  candidato: { icon: User, color: 'text-lia-text-secondary' },
 } as const
 
 const RecentItemRow = React.memo(({
@@ -263,7 +263,7 @@ const RecentItemRow = React.memo(({
     <div className="group relative flex items-center">
       <button
         onClick={() => onClick(item)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors motion-reduce:transition-none duration-200 text-sm-ui leading-tight min-h-8 hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-secondary dark:text-lia-text-secondary"
+        className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors motion-reduce:transition-none duration-200 text-sm-ui leading-tight min-h-8 hover:bg-lia-interactive-hover text-lia-text-secondary"
         title={item.title}
       >
         <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", config.color)} />
@@ -274,7 +274,7 @@ const RecentItemRow = React.memo(({
           e.stopPropagation()
           onRemove(item.id, item.type)
         }}
-        className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-150 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+        className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-150 p-0.5 rounded-md hover:bg-lia-interactive-active"
         title="Remover dos recentes"
       >
         <X className="w-3 h-3 text-lia-text-disabled" />
@@ -315,7 +315,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
     <div
       data-sidebar="true"
       className={cn(
- "bg-white dark:bg-lia-bg-primary min-h-screen flex flex-col border-r border-lia-border-subtle relative font-sans",
+ "bg-lia-bg-primary min-h-screen flex flex-col border-r border-lia-border-subtle relative font-sans",
         isTemporaryExpanded && "z-50"
       )}
       style={{width: dynamicWidth}}
@@ -354,7 +354,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           variant="ghost"
           size="sm"
           onClick={toggleCollapse}
-          className="h-7 w-7 p-0 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="h-7 w-7 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
           title={`${isCollapsed ? "Expandir" : "Retrair"} menu (Ctrl+B)`}
         >
           {isCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
@@ -414,7 +414,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
       </div>
 
       {/* Tools Section - Fixed at Bottom */}
-      <div className="px-3 py-2 border-t border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
+      <div className="px-3 py-2 border-t border-lia-border-subtle bg-lia-bg-primary">
         <div className={cn(
  "flex items-center gap-1",
           isCollapsed && !isTemporaryExpanded ? "flex-col gap-0.5" : "justify-center"
@@ -423,7 +423,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             variant="ghost"
             size="sm"
             onClick={() => onShowSearch?.()}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
             title="Busca Global"
           >
             <Search className="w-3 h-3" />
@@ -433,7 +433,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             variant="ghost"
             size="sm"
             onClick={() => onNavigate("Configurações")}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
             title="Configurações"
           >
             <Settings className="w-3 h-3" />
@@ -447,7 +447,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             variant="ghost"
             size="sm"
             onClick={handleShowTipsModal}
-            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="h-6 w-6 p-0 text-lia-text-primary hover:bg-lia-interactive-hover"
             title="Ajuda e Dicas LIA"
           >
             <HelpCircle className="w-3 h-3" />
@@ -461,13 +461,13 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
           className={cn(
  "absolute top-0 right-0 w-1 h-full cursor-col-resize group z-10",
             "hover:w-1.5 transition-colors motion-reduce:transition-none duration-200",
-            isResizing ? "bg-gray-700 w-1.5" : "bg-transparent hover:bg-gray-600 dark:hover:bg-gray-400"
+            isResizing ? "bg-lia-border-medium w-1.5" : "bg-transparent hover:bg-lia-border-medium"
           )}
           onMouseDown={startResize}
           title="Arrastar para redimensionar sidebar"
         >
           {/* Indicador visual mais sutil */}
-          <div className="absolute inset-y-0 right-0 w-px bg-gray-200 dark:bg-lia-bg-elevated group-hover:bg-gray-500 dark:group-hover:bg-gray-400 transition-colors motion-reduce:transition-none duration-200" />
+          <div className="absolute inset-y-0 right-0 w-px bg-lia-interactive-active group-hover:bg-lia-border-medium transition-colors motion-reduce:transition-none duration-200" />
 
           {/* Área de hover expandida para facilitar o clique */}
           <div className="absolute top-0 -right-2 w-4 h-full" />

@@ -193,15 +193,15 @@ function AdminSidebar({
   return (
     <aside
       className={cn(
-        "flex flex-col border-r transition-colors duration-300 border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:lia-bg-950",
+        "flex flex-col border-r transition-colors duration-300 border-lia-border-subtle bg-lia-bg-primary",
         sidebarCollapsed ? "w-16" : "w-64"
       )}
     >
-      <div className="flex items-center justify-between h-16 px-4 border-b border-lia-border-subtle dark:border-lia-border-subtle" >
+      <div className="flex items-center justify-between h-16 px-4 border-b border-lia-border-subtle" >
         {!sidebarCollapsed && (
           <div className="flex items-center gap-2">
             <Shield className="w-6 h-6 lia-text-900 dark:lia-text-50" />
-            <span className="font-semibold text-lg lia-text-800 dark:text-lia-text-primary" >
+            <span className="font-semibold text-lg lia-text-800" >
               WedoTalent Admin
             </span>
           </div>
@@ -211,7 +211,7 @@ function AdminSidebar({
 
       {activeClient && !sidebarCollapsed && (
         <div 
-          className="mx-2 mt-3 p-3 rounded-md border bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle"
+          className="mx-2 mt-3 p-3 rounded-md border bg-lia-bg-tertiary border-lia-border-subtle"
           
         >
           <div className="flex items-center justify-between">
@@ -219,7 +219,7 @@ function AdminSidebar({
               <p className="text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
                 Cliente Ativo
               </p>
-              <p className="text-sm font-semibold truncate mt-0.5 lia-text-800 dark:text-lia-text-primary" >
+              <p className="text-sm font-semibold truncate mt-0.5 lia-text-800" >
                 {activeClient.name}
               </p>
             </div>
@@ -241,7 +241,7 @@ function AdminSidebar({
           <div key={group.label}>
             {group.label === "Compliance & Segurança" && (
               <div 
-                className="my-3 mx-3 border-t border-lia-border-subtle dark:border-lia-border-subtle" 
+                className="my-3 mx-3 border-t border-lia-border-subtle" 
                 
               />
             )}
@@ -265,15 +265,15 @@ function AdminSidebar({
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                       isActive
-                        ? "bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50 font-semibold"
-                        : "hover:bg-gray-100 dark:hover:bg-gray-800 lia-text-500 dark:text-lia-text-tertiary"
+                        ? "bg-lia-bg-tertiary lia-text-900 dark:lia-text-50 font-semibold"
+                        : "hover:bg-lia-interactive-hover lia-text-500"
                     )}
                     title={sidebarCollapsed ? item.name : undefined}
                   >
                     <Icon 
                       className={cn(
                         "w-5 h-5 shrink-0",
-                        isComplianceItem && item.name === "Dashboard Compliance" && !isActive && "lia-text-600 dark:text-lia-text-tertiary"
+                        isComplianceItem && item.name === "Dashboard Compliance" && !isActive && "lia-text-600"
                       )}
                     />
                     {!sidebarCollapsed && (
@@ -287,7 +287,7 @@ function AdminSidebar({
         ))}
       </nav>
 
-      <div className="p-2 border-t border-lia-border-subtle dark:border-lia-border-subtle" >
+      <div className="p-2 border-t border-lia-border-subtle" >
         <Button
           variant="ghost"
           size="sm"
@@ -305,7 +305,7 @@ function AdminSidebar({
         </Button>
       </div>
 
-      <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle" >
+      <div className="p-4 border-t border-lia-border-subtle" >
         {!sidebarCollapsed ? (
           <div className="flex items-center gap-3">
             <Avatar className="w-8 h-8">
@@ -313,7 +313,7 @@ function AdminSidebar({
               <AvatarFallback className="bg-gray-900 dark:lia-bg-50 text-white dark:lia-text-900 text-xs">AD</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate lia-text-800 dark:text-lia-text-primary" >
+              <p className="text-sm font-medium truncate lia-text-800" >
                 Admin WedoTalent
               </p>
               <p className="text-xs truncate lia-text-400 dark:lia-text-500" >
@@ -352,7 +352,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-white dark:bg-lia-bg-primary" >
+    <div className="flex h-screen bg-lia-bg-primary" >
       <AdminSidebar 
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
@@ -361,7 +361,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
       <main id="main-content" className="flex-1 flex flex-col overflow-hidden">
         <header 
-          className="flex items-center justify-between h-16 px-6 border-b shrink-0 border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:lia-bg-950"
+          className="flex items-center justify-between h-16 px-6 border-b shrink-0 border-lia-border-subtle bg-lia-bg-primary"
           
         >
           <div className="flex items-center gap-4">
