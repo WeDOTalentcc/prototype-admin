@@ -56,58 +56,6 @@ export function BarChart({ data, maxValue }: BarChartProps) {
   )
 }
 
-interface MetricCardProps {
-  title: string
-  value: string | number
-  trend?: 'up' | 'down' | 'neutral'
-  trendValue?: string
-  icon?: ReactNode
-  description?: string
-}
-
-export function MetricCard({ title, value, trend, trendValue, icon, description }: MetricCardProps) {
-  const getTrendColor = () => {
-    switch (trend) {
-      case 'up': return 'text-status-success'
-      case 'down': return 'text-status-error'
-      default: return 'lia-text-base'
-    }
-  }
-
-  return (
-    <div className="bg-white dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-6 transition-colors motion-reduce:transition-none duration-200">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <p className="text-xs text-lia-text-primary dark:text-lia-text-primary font-medium uppercase tracking-wide">
-            {title}
-          </p>
-          <p className="text-2xl font-semibold text-lia-text-primary mt-1">
-            {value}
-          </p>
-        </div>
-        {icon && (
-          <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
-            {icon}
-          </div>
-        )}
-      </div>
-
-      {(trend && trendValue) && (
-        <div className={`flex items-center gap-1 text-xs ${getTrendColor()}`}>
-          <span>{trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→'}</span>
-          <span className="font-medium">{trendValue}</span>
-          <span className="text-lia-text-primary dark:text-lia-text-primary">vs período anterior</span>
-        </div>
-      )}
-
-      {description && (
-        <p className="text-xs text-lia-text-primary dark:text-lia-text-primary mt-2">
-          {description}
-        </p>
-      )}
-    </div>
-  )
-}
 
 interface DonutChartProps {
   data: { label: string; value: number; color: string }[]

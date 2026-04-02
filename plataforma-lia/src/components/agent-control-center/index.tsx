@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
   Activity, RefreshCcw, CheckCircle, Clock, XCircle, 
-  TrendingUp, TrendingDown, Minus, AlertTriangle, ChevronRight,
+  AlertTriangle, ChevronRight,
   Filter, X, Brain, Zap, Target, Users
 } from 'lucide-react'
+import { MetricCard, CompactDelta } from '@/components/admin/dashboard/MetricCard'
 import { 
   agentMonitoringService, 
   AgentSummary, 
@@ -167,35 +168,40 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
         {/* Global Metrics Bar */}
         <div className="grid grid-cols-5 gap-3 mb-6">
           <MetricCard
+            variant="compact"
             icon={<Zap className="w-4 h-4" />}
-            label="Ações Hoje"
+            title="Ações Hoje"
             value={globalMetrics.actions_today}
-            delta={globalMetrics.actions_delta}
-            color="var(--gray-600)"
+            trend={globalMetrics.actions_delta}
+            accentColor="var(--gray-600)"
           />
           <MetricCard
+            variant="compact"
             icon={<Users className="w-4 h-4" />}
-            label="Agentes Ativos"
+            title="Agentes Ativos"
             value={`${globalMetrics.active_agents}/${globalMetrics.total_agents}`}
-            color="var(--gray-600)"
+            accentColor="var(--gray-600)"
           />
           <MetricCard
+            variant="compact"
             icon={<Target className="w-4 h-4" />}
-            label="Taxa de Sucesso"
+            title="Taxa de Sucesso"
             value={`${globalMetrics.success_rate.toFixed(1)}%`}
-            color="var(--wedo-green-bright)"
+            accentColor="var(--wedo-green-bright)"
           />
           <MetricCard
+            variant="compact"
             icon={<Clock className="w-4 h-4" />}
-            label="Tempo Médio"
+            title="Tempo Médio"
             value={`${globalMetrics.avg_response_time}s`}
-            color="var(--gray-600)"
+            accentColor="var(--gray-600)"
           />
           <MetricCard
+            variant="compact"
             icon={<AlertTriangle className="w-4 h-4" />}
-            label="Alertas"
+            title="Alertas"
             value={globalMetrics.proactive_alerts}
-            color={globalMetrics.proactive_alerts > 0 ? 'var(--status-warning)' : 'var(--wedo-green-bright)'}
+            accentColor={globalMetrics.proactive_alerts > 0 ? 'var(--status-warning)' : 'var(--wedo-green-bright)'}
           />
         </div>
 
@@ -285,7 +291,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       <span className="text-xs text-lia-text-disabled">
                         Ações 24h
                       </span>
-                      <DeltaIndicator value={agent.delta} />
+                      <CompactDelta value={agent.delta} />
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-lg font-bold text-lia-text-primary">{agent.actions_today}</span>
@@ -504,60 +510,3 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
   )
 }
 
-function DeltaIndicator({ value }: { value: number }) {
-  if (value === 0) {
-    return (
-      <div className="flex items-center gap-0.5 text-xs text-lia-text-disabled">
-        <Minus className="w-2.5 h-2.5" />
-        <span>0%</span>
-      </div>
-    )
-  }
-  
-  if (value > 0) {
-    return (
-      <div className="flex items-center gap-0.5 text-xs text-wedo-green-bright">
-        <TrendingUp className="w-2.5 h-2.5" />
-        <span>+{value}%</span>
-      </div>
-    )
-  }
-  
-  return (
-    <div className="flex items-center gap-0.5 text-xs" style={{color: 'var(--status-error)'}}>
-      <TrendingDown className="w-2.5 h-2.5" />
-      <span>{value}%</span>
-    </div>
-  )
-}
-
-function MetricCard({ 
-  icon, 
-  label, 
-  value, 
-  delta, 
-  color 
-}: { 
-  icon: React.ReactNode
-  label: string
-  value: number | string
-  delta?: number
-  color: string
-}) {
-  return (
-    <div
-      className="p-3 rounded-md border bg-white border-lia-border-subtle dark:border-lia-border-subtle"
-    >
-      <div className="flex items-center gap-2 mb-1.5">
-        <div style={{color}}>{icon}</div>
-        <span className="text-xs text-lia-text-disabled">{label}</span>
-      </div>
-      <div className="flex items-baseline gap-2">
-        <span className="text-xl font-bold" style={{color}}>{value}</span>
-        {delta !== undefined && (
-          <DeltaIndicator value={delta} />
-        )}
-      </div>
-    </div>
-  )
-}

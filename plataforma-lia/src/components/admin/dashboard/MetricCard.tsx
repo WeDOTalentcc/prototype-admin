@@ -1,7 +1,7 @@
 "use client"
 
 import React, { memo } from "react"
-import { TrendingUp, TrendingDown } from "lucide-react"
+import { TrendingUp, TrendingDown, Minus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const ACCENT_BG_MAP: Record<string, string> = {
@@ -16,38 +16,112 @@ const ACCENT_BG_MAP: Record<string, string> = {
 export interface MetricCardProps {
   title: string
   value: React.ReactNode
-  /** Accept both LucideIcon and any React element type */
-  icon: React.ElementType
-  /** Numeric trend value (positive = up, negative = down). Shows TrendingUp/Down icon. */
+  icon: React.ElementType | React.ReactNode
   trend?: number | string
   trendLabel?: string
-  /** Used when trend is a string direction */
   trendDirection?: "up" | "down" | "neutral"
   subtitle?: string
-  /** CSS variable string (e.g. "var(--wedo-cyan)"). Colors the icon and its background. */
   accentColor?: string
+  variant?: "default" | "compact"
 }
 
-const MetricCard = memo(function MetricCard({
-  title,
-  value,
-  icon: Icon,
-  trend,
-  trendLabel,
-  trendDirection,
-  subtitle,
-  accentColor,
-}: MetricCardProps) {
-  const bgColor = accentColor
-    ? (ACCENT_BG_MAP[accentColor] ?? "var(--gray-bg-10)")
-    : undefined
+function TrendIndicator({ trend, trendLabel, trendDirection, subtitle }: Pick<MetricCardProps, "trend" | "trendLabel" | "trendDirection" | "subtitle">) {
+  if (trend === undefined && !subtitle && !trendLabel) return null
 
-  // Determine trend display
   const isNumericTrend = typeof trend === "number"
   const isPositive = isNumericTrend ? trend >= 0 : trendDirection === "up"
   const trendColorClass = isNumericTrend || trendDirection
     ? isPositive ? "text-status-success" : "text-status-error"
     : "lia-text-secondary"
+
+  return (
+    <div className="flex items-center gap-2 mt-1">
+      {isNumericTrend ? (
+        <span className={`flex items-center text-xs font-medium ${trendColorClass}`}>
+          {isPositive
+            ? <TrendingUp className="w-3 h-3 mr-1" />
+            : <TrendingDown className="w-3 h-3 mr-1" />
+          }
+          {isPositive ? "+" : ""}{trend}%
+        </span>
+      ) : typeof trend === "string" ? (
+        <span className={`text-xs font-medium ${trendColorClass}`}>{trend}</span>
+      ) : null}
+      {trendLabel && (
+        <span className="text-xs text-lia-text-disabled">{trendLabel}</span>
+      )}
+      {!trend && subtitle && (
+        <span className="text-xs text-lia-text-disabled">{subtitle}</span>
+      )}
+    </div>
+  )
+}
+
+function CompactDelta({ value }: { value: number }) {
+  if (value === 0) {
+    return (
+      <div className="flex items-center gap-0.5 text-xs text-lia-text-disabled">
+        <Minus className="w-2.5 h-2.5" />
+        <span>0%</span>
+      </div>
+    )
+  }
+  if (value > 0) {
+    return (
+      <div className="flex items-center gap-0.5 text-xs text-wedo-green-bright">
+        <TrendingUp className="w-2.5 h-2.5" />
+        <span>+{value}%</span>
+      </div>
+    )
+  }
+  return (
+    <div className="flex items-center gap-0.5 text-xs" style={{ color: 'var(--status-error)' }}>
+      <TrendingDown className="w-2.5 h-2.5" />
+      <span>{value}%</span>
+    </div>
+  )
+}
+
+const MetricCard = memo(function MetricCard({
+  title,
+  value,
+  icon,
+  trend,
+  trendLabel,
+  trendDirection,
+  subtitle,
+  accentColor,
+  variant = "default",
+}: MetricCardProps) {
+  if (variant === "compact") {
+    const numericTrend = typeof trend === "number" ? trend : undefined
+    return (
+      <div className="p-3 rounded-md border bg-white border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="flex items-center gap-2 mb-1.5">
+          <div style={accentColor ? { color: accentColor } : undefined}>
+            {typeof icon === "function" ? React.createElement(icon, { className: "w-4 h-4" }) : icon}
+          </div>
+          <span className="text-xs text-lia-text-disabled">{title}</span>
+        </div>
+        <div className="flex items-baseline gap-2">
+          <span className="text-xl font-bold" style={accentColor ? { color: accentColor } : undefined}>{value}</span>
+          {numericTrend !== undefined && <CompactDelta value={numericTrend} />}
+        </div>
+      </div>
+    )
+  }
+
+  const bgColor = accentColor
+    ? (ACCENT_BG_MAP[accentColor] ?? "var(--gray-bg-10)")
+    : undefined
+
+  const renderIcon = () => {
+    if (typeof icon === "function") {
+      const Icon = icon as React.ElementType
+      return <Icon className="w-4 h-4" style={accentColor ? { color: accentColor } : undefined} />
+    }
+    return icon
+  }
 
   return (
     <Card className="relative overflow-hidden">
@@ -59,42 +133,19 @@ const MetricCard = memo(function MetricCard({
           className="p-2 rounded-md"
           style={bgColor ? { backgroundColor: bgColor } : undefined}
         >
-          <Icon
-            className="w-4 h-4"
-            style={accentColor ? { color: accentColor } : undefined}
-          />
+          {renderIcon()}
         </div>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold lia-text-800 dark:text-lia-text-primary">
           {value}
         </div>
-        {(trend !== undefined || subtitle || trendLabel) && (
-          <div className="flex items-center gap-2 mt-1">
-            {isNumericTrend ? (
-              <span className={`flex items-center text-xs font-medium ${trendColorClass}`}>
-                {isPositive
-                  ? <TrendingUp className="w-3 h-3 mr-1" />
-                  : <TrendingDown className="w-3 h-3 mr-1" />
-                }
-                {isPositive ? "+" : ""}{trend}%
-              </span>
-            ) : typeof trend === "string" ? (
-              <span className={`text-xs font-medium ${trendColorClass}`}>{trend}</span>
-            ) : null}
-            {trendLabel && (
-              <span className="text-xs text-lia-text-disabled">{trendLabel}</span>
-            )}
-            {!trend && subtitle && (
-              <span className="text-xs text-lia-text-disabled">{subtitle}</span>
-            )}
-          </div>
-        )}
+        <TrendIndicator trend={trend} trendLabel={trendLabel} trendDirection={trendDirection} subtitle={subtitle} />
       </CardContent>
     </Card>
   )
 })
 MetricCard.displayName = "MetricCard"
 
-export { MetricCard }
+export { MetricCard, CompactDelta }
 export { ACCENT_BG_MAP }
