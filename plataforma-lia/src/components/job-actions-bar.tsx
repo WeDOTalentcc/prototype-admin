@@ -27,7 +27,7 @@ export function JobActionsBar({
   if (selectedCount === 0) return null
 
   return (
-    <div className="flex-shrink-0 mb-3 p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+    <div className="flex-shrink-0 mb-3 p-3 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
