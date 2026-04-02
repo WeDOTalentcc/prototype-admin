@@ -337,18 +337,16 @@ export function UnifiedCandidateTable({
         style={enableVirtualScroll ? { overflowY: "auto", maxHeight: "600px" } : undefined}
       >
         <table className="w-full" style={{tableLayout: enableColumnResize ? 'fixed' : 'auto'}}>
-          <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
+          <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 #e5e7eb' }}>
             <tr>
               {showCheckboxes && (
-                <th className="px-3 py-2.5 w-[50px]">
-                  <div
-                    onClick={handleSelectAll}
-                    className="cursor-pointer w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors motion-reduce:transition-none border-lia-border-default dark:border-lia-border-default hover:border-gray-500"
-                  >
-                    {paginatedCandidates.length > 0 && paginatedCandidates.every(c => selectedIds.has(c.id)) && (
-                      <div className="w-2.5 h-2.5 bg-gray-900 rounded-sm" />
-                    )}
-                  </div>
+                <th className="py-3 px-3 w-[50px] text-center">
+                  <input
+                    type="checkbox"
+                    checked={paginatedCandidates.length > 0 && paginatedCandidates.every(c => selectedIds.has(c.id))}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 rounded-md"
+                  />
                 </th>
               )}
               {visibleColumns.map((column) => {
@@ -360,7 +358,7 @@ export function UnifiedCandidateTable({
                   <th
                     key={column.id}
                     className={`
- px-3 py-3 relative group select-none text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary
+ py-3 px-3 relative group select-none text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary
                       ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
                       ${isDragging ? 'opacity-50' : ''}
                       ${isDropTarget ? 'bg-wedo-cyan/10' : ''}

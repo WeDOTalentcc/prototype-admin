@@ -347,17 +347,14 @@ export function SelectionCheckbox({
         e.stopPropagation()
         onToggle()
       }}
-      className="cursor-pointer"
+      className="cursor-pointer flex items-center justify-center"
     >
-      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors motion-reduce:transition-none ${
- isSelected
-          ? 'bg-gray-900 border-gray-900 dark:border-lia-border-subtle'
-          : 'bg-white dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default hover:border-gray-500'
-      }`}>
-        {isSelected && (
-          <CheckCircle className="w-3.5 h-3.5 text-white" fill="currentColor" />
-        )}
-      </div>
+      <input
+        type="checkbox"
+        checked={isSelected}
+        onChange={() => {}}
+        className="w-4 h-4 rounded-md"
+      />
     </div>
   )
 }

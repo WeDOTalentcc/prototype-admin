@@ -191,10 +191,10 @@ export function CandidateTableRow({
 
   return (
     <tr
-      className={`group cursor-pointer transition-colors motion-reduce:transition-none relative ${
+      className={`group cursor-pointer transition-colors motion-reduce:transition-none relative border-b border-lia-border-subtle dark:border-lia-border-subtle ${
  isSelected 
           ? 'bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200/70 dark:hover:bg-gray-700/70' 
-          : 'hover:bg-gray-100 dark:hover:bg-gray-800/50'
+          : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
       }`}
       style={rowStyle}
       onClick={onRowClick}
@@ -202,7 +202,7 @@ export function CandidateTableRow({
       {columns.map((column, index) => (
         <td 
           key={column.id}
-          className={`px-3 py-2.5 relative ${
+          className={`py-3 px-3 relative ${
  column.align === 'center' ? 'text-center' : 
             column.align === 'right' ? 'text-right' : 'text-left'
           }`}
