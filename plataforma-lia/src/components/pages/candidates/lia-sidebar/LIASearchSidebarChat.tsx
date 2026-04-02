@@ -6,8 +6,8 @@ import { LIAIcon } from "@/components/ui/lia-icon"
 import { ActionResultCard } from "@/components/chat/action-result-card"
 import { ProactiveInsightCard, type SearchAnalytics } from "@/components/proactive-insight-card"
 import { CalibrationCard, type CalibrationCandidate } from "@/components/calibration-card"
-import {
 import { ThinkingDots } from "@/components/ui/thinking-dots"
+import {
   Brain, X, Globe, TrendingUp, Bookmark, Search, Home
 } from "lucide-react"
 
