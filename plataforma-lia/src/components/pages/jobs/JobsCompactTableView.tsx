@@ -5,6 +5,7 @@ import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   Users, Share2, ChevronRight, Pin, Star, AlertTriangle,
   Brain, GripVertical, ArrowUp, ArrowDown, ArrowUpDown,
@@ -392,69 +393,74 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                         if (columnId === 'candidatos') {
                           return (
                             <td key={columnId} className="py-2 px-2" style={{width: `${width}px`}} /* dynamic */>
-                              <div className="flex items-center justify-center group relative cursor-help">
-                                <div className="flex items-center gap-1">
-                                  <Users 
-                                    className="w-3.5 h-3.5"
-                                    style={{color: job.funnel.total >= 50
-                                        ? 'var(--gray-600)'
-                                        : job.funnel.total >= 20
-                                        ? 'var(--status-error)'
-                                        : 'var(--status-warning)'}} /* dynamic */
-                                  />
-                                  <span className="text-sm font-normal text-lia-text-primary dark:text-lia-text-primary">
-                                    {job.funnel.total}
-                                  </span>
-                                </div>
-                                <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                  <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md text-xs min-w-sidebar-content">
-                                    <div className="font-semibold mb-2">Funil de Candidatos</div>
-                                    <div className="space-y-1.5 mb-2">
-                                      <div className="flex items-center justify-between">
-                                        <span className="text-xs text-lia-text-disabled">Total</span>
-                                        <span className="text-xs font-semibold text-white">{job.funnel.total}</span>
-                                      </div>
-                                      <div className="flex items-center justify-between">
-                                        <span className="text-xs text-lia-text-disabled">Triagem</span>
-                                        <span className="text-xs font-semibold text-lia-text-inverse">
-                                          {job.funnel.screening} ({job.funnel.total > 0 ? Math.round((job.funnel.screening / job.funnel.total) * 100) : 0}%)
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center justify-between">
-                                        <span className="text-xs text-lia-text-disabled">Entrevistas</span>
-                                        <span className="text-xs font-semibold text-lia-text-inverse">
-                                          {job.funnel.interview} ({job.funnel.total > 0 ? Math.round((job.funnel.interview / job.funnel.total) * 100) : 0}%)
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center justify-between">
-                                        <span className="text-xs text-lia-text-disabled">Finalistas</span>
-                                        <span className="text-xs font-semibold text-lia-text-inverse">
-                                          {job.funnel.final} ({job.funnel.total > 0 ? Math.round((job.funnel.final / job.funnel.total) * 100) : 0}%)
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center justify-between pt-1">
-                                        <span className="text-xs text-lia-text-disabled">✓ Contratados</span>
-                                        <span className="text-xs font-bold text-white">
-                                          {job.funnel.hired} ({job.funnel.total > 0 ? Math.round((job.funnel.hired / job.funnel.total) * 100) : 0}%)
+                              <TooltipProvider delayDuration={200}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center justify-center cursor-help">
+                                      <div className="flex items-center gap-1">
+                                        <Users 
+                                          className="w-3.5 h-3.5"
+                                          style={{color: job.funnel.total >= 50
+                                              ? 'var(--gray-600)'
+                                              : job.funnel.total >= 20
+                                              ? 'var(--status-error)'
+                                              : 'var(--status-warning)'}} /* dynamic */
+                                        />
+                                        <span className="text-sm font-normal text-lia-text-primary dark:text-lia-text-primary">
+                                          {job.funnel.total}
                                         </span>
                                       </div>
                                     </div>
-                                    <div className="pt-2">
-                                      <div className="flex items-center justify-between">
-                                        <span className="text-xs text-lia-text-disabled">Taxa conversão final</span>
-                                        <span className={`text-xs ${
-                                          job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 10 ? 'font-bold text-white' :
-                                          job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 5 ? 'font-semibold text-lia-text-inverse' :
-                                          'font-medium text-lia-text-disabled'
-                                        }`}>
-                                          {job.funnel.total > 0 ? ((job.funnel.hired / job.funnel.total) * 100).toFixed(1) : 0}%
-                                        </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="min-w-[180px] p-0">
+                                    <div className="px-3 py-2 text-xs">
+                                      <div className="font-semibold mb-2">Funil de Candidatos</div>
+                                      <div className="space-y-1.5 mb-2">
+                                        <div className="flex items-center justify-between gap-4">
+                                          <span className="text-popover-foreground/60">Total</span>
+                                          <span className="font-semibold">{job.funnel.total}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-4">
+                                          <span className="text-popover-foreground/60">Triagem</span>
+                                          <span className="font-semibold">
+                                            {job.funnel.screening} ({job.funnel.total > 0 ? Math.round((job.funnel.screening / job.funnel.total) * 100) : 0}%)
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-4">
+                                          <span className="text-popover-foreground/60">Entrevistas</span>
+                                          <span className="font-semibold">
+                                            {job.funnel.interview} ({job.funnel.total > 0 ? Math.round((job.funnel.interview / job.funnel.total) * 100) : 0}%)
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-4">
+                                          <span className="text-popover-foreground/60">Finalistas</span>
+                                          <span className="font-semibold">
+                                            {job.funnel.final} ({job.funnel.total > 0 ? Math.round((job.funnel.final / job.funnel.total) * 100) : 0}%)
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-4 pt-1 border-t border-border">
+                                          <span className="text-popover-foreground/60">✓ Contratados</span>
+                                          <span className="font-bold">
+                                            {job.funnel.hired} ({job.funnel.total > 0 ? Math.round((job.funnel.hired / job.funnel.total) * 100) : 0}%)
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <div className="pt-1.5 border-t border-border">
+                                        <div className="flex items-center justify-between gap-4">
+                                          <span className="text-popover-foreground/60">Taxa conversão</span>
+                                          <span className={`${
+                                            job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 10 ? 'font-bold' :
+                                            job.funnel.total > 0 && (job.funnel.hired / job.funnel.total) * 100 >= 5 ? 'font-semibold' :
+                                            'font-medium text-popover-foreground/60'
+                                          }`}>
+                                            {job.funnel.total > 0 ? ((job.funnel.hired / job.funnel.total) * 100).toFixed(1) : 0}%
+                                          </span>
+                                        </div>
                                       </div>
                                     </div>
-                                    <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
-                                  </div>
-                                </div>
-                              </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </td>
                           )
                         }
