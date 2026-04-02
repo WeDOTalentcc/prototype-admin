@@ -47,10 +47,10 @@ function formatRelativeDate(dateStr?: string): string {
 function SkeletonRow() {
   return (
     <tr className="animate-pulse motion-reduce:animate-none">
-      <td className="w-12 p-4">
+      <td className="w-12 py-3 px-3">
         <div className="h-4 w-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
       </td>
-      <td className="p-4">
+      <td className="py-3 px-3">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
           <div className="space-y-2">
@@ -59,29 +59,29 @@ function SkeletonRow() {
           </div>
         </div>
       </td>
-      <td className="p-4">
+      <td className="py-3 px-3">
         <div className="space-y-2">
           <div className="h-4 w-28 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
           <div className="h-3 w-20 bg-gray-100 dark:bg-lia-bg-secondary rounded-md" />
         </div>
       </td>
-      <td className="p-4">
+      <td className="py-3 px-3">
         <div className="h-4 w-24 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
       </td>
-      <td className="p-4 text-center">
+      <td className="py-3 px-3 text-center">
         <div className="h-6 w-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-md mx-auto" />
       </td>
-      <td className="p-4">
+      <td className="py-3 px-3">
         <div className="flex gap-1">
           <div className="h-5 w-14 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
           <div className="h-5 w-12 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
           <div className="h-5 w-16 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
         </div>
       </td>
-      <td className="p-4">
+      <td className="py-3 px-3">
         <div className="h-4 w-16 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
       </td>
-      <td className="p-4">
+      <td className="py-3 px-3">
         <div className="flex justify-end gap-1">
           <div className="h-8 w-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
           <div className="h-8 w-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
@@ -127,18 +127,18 @@ const CandidatesTableComponent = memo(function CandidatesTable({
 
   if (isLoading) {
     return (
-      <div className="overflow-x-auto bg-white dark:bg-lia-bg-primary">
+      <div className="overflow-auto max-h-full border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary">
         <table className="w-full">
-          <thead>
+          <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 #e5e7eb' }}>
             <tr>
-              <th className="w-12 p-4"><div className="h-4 w-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" /></th>
-              <th className="text-left p-4"><span className="text-sm font-medium text-lia-text-disabled">Candidato</span></th>
-              <th className="text-left p-4"><span className="text-sm font-medium text-lia-text-disabled">Cargo Atual</span></th>
-              <th className="text-left p-4"><span className="text-sm font-medium text-lia-text-disabled">Localização</span></th>
-              <th className="text-center p-4"><span className="text-sm font-medium text-lia-text-disabled">Score LIA</span></th>
-              <th className="text-left p-4"><span className="text-sm font-medium text-lia-text-disabled">Skills</span></th>
-              <th className="text-center p-4"><span className="text-sm font-medium text-lia-text-disabled">Atividade</span></th>
-              <th className="text-right p-4"><span className="text-sm font-medium text-lia-text-disabled">Ações</span></th>
+              <th className="w-12 py-3 px-3"><div className="h-4 w-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" /></th>
+              <th className="text-left py-3 px-3"><span className="text-sm font-medium text-lia-text-disabled">Candidato</span></th>
+              <th className="text-left py-3 px-3"><span className="text-sm font-medium text-lia-text-disabled">Cargo Atual</span></th>
+              <th className="text-left py-3 px-3"><span className="text-sm font-medium text-lia-text-disabled">Localização</span></th>
+              <th className="text-center py-3 px-3"><span className="text-sm font-medium text-lia-text-disabled">Score LIA</span></th>
+              <th className="text-left py-3 px-3"><span className="text-sm font-medium text-lia-text-disabled">Skills</span></th>
+              <th className="text-center py-3 px-3"><span className="text-sm font-medium text-lia-text-disabled">Atividade</span></th>
+              <th className="text-right py-3 px-3"><span className="text-sm font-medium text-lia-text-disabled">Ações</span></th>
             </tr>
           </thead>
           <tbody>
@@ -161,18 +161,19 @@ const CandidatesTableComponent = memo(function CandidatesTable({
   }
 
   return (
-    <div className="overflow-x-auto bg-white dark:bg-lia-bg-primary">
+    <div className="overflow-auto max-h-full border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary">
       <table className="w-full">
-        <thead>
+        <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 #e5e7eb' }}>
           <tr>
-            <th className="w-12 p-4">
-              <Checkbox
+            <th className="w-12 py-3 px-3 text-center">
+              <input
+                type="checkbox"
                 checked={allSelected}
-                onCheckedChange={onSelectAll}
-                className="border-lia-border-default dark:border-lia-border-default"
+                onChange={() => onSelectAll()}
+                className="w-4 h-4 rounded-md"
               />
             </th>
-            <th className="text-left p-4">
+            <th className="text-left py-3 px-3">
               <button 
                 onClick={() => onSort("name")}
                 className="flex items-center gap-2 text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
@@ -181,7 +182,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                 {getSortIcon("name")}
               </button>
             </th>
-            <th className="text-left p-4">
+            <th className="text-left py-3 px-3">
               <button 
                 onClick={() => onSort("current_title")}
                 className="flex items-center gap-2 text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
@@ -190,7 +191,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                 {getSortIcon("current_title")}
               </button>
             </th>
-            <th className="text-left p-4">
+            <th className="text-left py-3 px-3">
               <button 
                 onClick={() => onSort("location")}
                 className="flex items-center gap-2 text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
@@ -199,7 +200,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                 {getSortIcon("location")}
               </button>
             </th>
-            <th className="text-center p-4">
+            <th className="text-center py-3 px-3">
               <button 
                 onClick={() => onSort("lia_score")}
                 className="flex items-center gap-2 text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
@@ -208,10 +209,10 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                 {getSortIcon("lia_score")}
               </button>
             </th>
-            <th className="text-left p-4">
+            <th className="text-left py-3 px-3">
               <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Skills</span>
             </th>
-            <th className="text-center p-4">
+            <th className="text-center py-3 px-3">
               <button 
                 onClick={() => onSort("last_activity_at")}
                 className="flex items-center gap-2 text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
@@ -220,7 +221,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                 {getSortIcon("last_activity_at")}
               </button>
             </th>
-            <th className="text-right p-4">
+            <th className="text-right py-3 px-3">
               <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Ações</span>
             </th>
           </tr>
@@ -232,14 +233,15 @@ const CandidatesTableComponent = memo(function CandidatesTable({
               className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors motion-reduce:transition-none"
               onClick={() => onCandidateClick(candidate)}
             >
-              <td className="w-12 p-4" onClick={(e) => e.stopPropagation()}>
-                <Checkbox
+              <td className="w-12 py-3 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
                   checked={selectedIds.has(candidate.id)}
-                  onCheckedChange={() => onToggleSelect(candidate.id)}
-                  className="border-lia-border-default dark:border-lia-border-default"
+                  onChange={() => onToggleSelect(candidate.id)}
+                  className="w-4 h-4 rounded-md"
                 />
               </td>
-              <td className="p-4">
+              <td className="py-3 px-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
@@ -253,7 +255,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                   </div>
                 </div>
               </td>
-              <td className="p-4">
+              <td className="py-3 px-3">
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-4 w-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
                   <span className="text-lia-text-primary dark:text-lia-text-primary">{candidate.current_title || "Não informado"}</span>
@@ -265,7 +267,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                   </div>
                 )}
               </td>
-              <td className="p-4">
+              <td className="py-3 px-3">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-lia-text-disabled dark:text-lia-text-tertiary" />
                   <span className="text-lia-text-primary dark:text-lia-text-primary">{candidate.location || "Não informado"}</span>
@@ -276,7 +278,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                   </Badge>
                 )}
               </td>
-              <td className="p-4 text-center">
+              <td className="py-3 px-3 text-center">
                 {candidate.lia_score ? (
                   <div className={`text-lg font-bold ${getScoreColor(candidate.lia_score)}`}>
                     {formatScore(candidate.lia_score)}
@@ -285,7 +287,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                   <span className="text-lia-text-disabled dark:text-lia-text-tertiary">-</span>
                 )}
               </td>
-              <td className="p-4">
+              <td className="py-3 px-3">
                 <div className="flex flex-wrap gap-1 max-w-sidebar-content">
                   {candidate.technical_skills?.slice(0, 3).map((skill) => (
                     <Badge 
@@ -303,7 +305,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                   )}
                 </div>
               </td>
-              <td className="p-4 text-center">
+              <td className="py-3 px-3 text-center">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -320,7 +322,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
                   </Tooltip>
                 </TooltipProvider>
               </td>
-              <td className="p-4" onClick={(e) => e.stopPropagation()}>
+              <td className="py-3 px-3" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-end gap-1">
                   <SearchFeedbackButtons
                     candidateId={candidate.id}
