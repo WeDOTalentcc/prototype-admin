@@ -5,8 +5,8 @@ import { X, Search, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import {
 import { COMPANY_HQ_CITIES, COMPANY_HQ_REGIONS } from "@/data/location-data"
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,

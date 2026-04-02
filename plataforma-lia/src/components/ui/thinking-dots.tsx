@@ -23,7 +23,7 @@ export function ThinkingDots({ dotClassName = "bg-gray-400", size = "md", classN
         <span
           key={i}
           className={cn("rounded-full animate-bounce motion-reduce:animate-none", sizeClass, dotClassName)}
-          style={{ animationDelay:  }}
+          style={{ animationDelay: `${delay}ms` }}
         />
       ))}
     </div>
