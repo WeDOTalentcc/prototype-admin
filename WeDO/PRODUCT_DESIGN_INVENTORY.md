@@ -7,10 +7,15 @@
 | Última validação | Abril 2026 |
 | Metodologia | Extração automatizada de arquivos-fonte (`components/ui/`, `components/modals/`, `components/pages/`, `design-tokens.css`, `tailwind.config.ts`) + revisão manual + auditoria de diretório completa |
 | Componentes UI base (`ui/`) | 68 arquivos `.tsx` (stories removidos) |
-| Modais (`modals/`) | 33 arquivos principais + sub-diretórios (edit-job, edit-job-sections, new-candidate, job-compare, job-insights, job-status) |
+| Modais (`modals/`) | 34 arquivos principais + sub-diretórios (edit-job, edit-job-sections, new-candidate, job-compare, job-insights, job-status) |
 | Modais dispersos (fora de `modals/`) | ~20 (batch-approval, big-five, candidate-decision-flow, column-configuration, cv-upload, disc-assessment, expanded-chat, global-search, job-report, lia-tips, quick-actions-modals, quick-view, reveal-credits, save-command, task-modal, triagem-details, alert-settings, etc.) |
-| Componentes especializados (fora de `ui/`) | ~150+ arquivos em 40+ diretórios |
-| Hooks | 90+ hooks em `hooks/` |
+| Componentes root (`components/*.tsx`) | 71 arquivos `.tsx` diretamente em `components/` |
+| Componentes especializados (fora de `ui/`) | 53 subdiretórios em `components/` |
+| Hooks (`hooks/`) | 102 hook files root + subdiretórios (admin/, settings/, __tests__/) |
+| Lib/Utils (`lib/`) | 28 arquivos + subdiretórios (api/, schemas/, sidebar/, transforms/, utils/) |
+| Pages root (`pages/*.tsx`) | 25 arquivos de página |
+| Pages sub-componentes | 8 subdiretórios: candidates/ (81), job-kanban/ (56), jobs/ (30), chat-page/ (18), dashboards-page/ (12), indicators/ (10), ats-integrations/ (5), tasks/ (2) |
+| Settings | 40 arquivos root + 5 subdiretórios (benefits/, communication-hub/, company/, goals/, recruitment/) |
 | Telas operacionais | Dashboard/Tasks, Vagas (lista + kanban + configurações), Funil de Talentos, Candidato Full (review + preview + page), Chat LIA, Settings, Sidebar, TopBar, Admin Panel |
 | Telas adicionais | Dashboards (12 sub-dashboards), Indicadores, Executive/Real-Time/Big Five Dashboards, LIA Library, Templates, Integrations/ATS, AI Credits, Workflow Automation, Job Templates, Work Model Analytics, Onboarding, Login |
 | Gaps conhecidos | Detalhamento interno de: Onboarding wizard steps, Real-Time Dashboard widgets, Work Model Analytics charts |
@@ -1909,6 +1914,12 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | SettingsNotificationsTab | `settings/settings-notifications-tab.tsx` | Tab de notificações |
 | SettingsRecruitmentTabs | `settings/settings-recruitment-tabs.tsx` | Tabs de recrutamento |
 | SettingsSecurityTab | `settings/settings-security-tab.tsx` | Tab de segurança |
+| CommunicationHub | `settings/CommunicationHub.tsx` | Hub de comunicação unificado |
+| GoalsManagement (hook) | `settings/use-goals-management.ts` | Hook de gestão de metas |
+| GoalsPlanningConstants | `settings/goalsPlanningConstants.ts` | Constantes de planejamento de metas |
+| CompanyTeamHubTypes | `settings/companyTeamHub.types.ts` | Tipos do hub de equipe |
+| EligibilityQuestionsBank | `settings/eligibility-questions-bank.ts` | Banco de perguntas de elegibilidade |
+| RecruitmentJourneyTypes | `settings/recruitment-journey.types.ts` | Tipos da jornada de recrutamento |
 
 ### Sub-diretórios de Settings
 
@@ -2453,10 +2464,44 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | `UserCommandsSection` | `user-commands-section.tsx` | Seção de comandos do usuário |
 | `WarRoom` | `war-room.tsx` | Sala de guerra (monitoramento) |
 | `WorkModelCharts` | `work-model-charts.tsx` | Gráficos de modelo de trabalho |
+| `CandidatePage` | `candidate-page.tsx` | Página completa do candidato (wrapper) |
+| `CandidatePreview` | `candidate-preview.tsx` | Preview lateral do candidato |
+| `ExpandableAIPrompt` | `expandable-ai-prompt.tsx` | Prompt expansível IA (wrapper root) |
+| `InterviewsSection` | `interviews-section.tsx` | Seção de entrevistas |
+| `MLInsightsCard` | `ml-insights-card.tsx` | Card de insights de Machine Learning |
 
 ---
 
-## 13R. EMAIL TEMPLATES
+## 13R. EXPANDABLE AI PROMPT (`components/expandable-ai-prompt/`)
+
+- **Diretório:** `plataforma-lia/src/components/expandable-ai-prompt/`
+- **Arquivos:** 8 root + 7 em `tabs/`
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `EAPModals.tsx` | Modais do prompt expansível |
+| `EAPTabContent.tsx` | Conteúdo de tabs do prompt |
+| `useArchetypeHandlers.ts` | Handlers de arquétipos |
+| `useEAPCallbacks.tsx` | Callbacks do EAP |
+| `useEAPCallbacksTypes.ts` | Types dos callbacks |
+| `useEAPEffects.tsx` | Effects do EAP |
+| `useExpandableAIPromptCore.tsx` | Core hook do prompt expansível |
+
+**Sub-diretório `tabs/`:**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `EAPTabArquetipos.tsx` | Tab de arquétipos |
+| `EAPTabBoolean.tsx` | Tab de busca booleana |
+| `EAPTabFiltros.tsx` | Tab de filtros |
+| `EAPTabJobDescription.tsx` | Tab de job description |
+| `EAPTabNatural.tsx` | Tab de busca em linguagem natural |
+| `EAPTabSimilar.tsx` | Tab de perfis similares |
+| `index.ts` | Re-exports |
+
+---
+
+## 13S. EMAIL TEMPLATES
 
 - **Diretório:** `plataforma-lia/src/components/email-templates/`
 
@@ -2469,14 +2514,14 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 13S. COMMUNICATION
+## 13T. COMMUNICATION
 
 - **Diretório:** `plataforma-lia/src/components/communication/`
 - **Componente:** `MessageComposer` (`message-composer.tsx`) — Compositor de mensagens unificado
 
 ---
 
-## 13T. INTERVIEW NOTES
+## 13U. INTERVIEW NOTES
 
 - **Diretório:** `plataforma-lia/src/components/interview-notes/`
 
@@ -2491,7 +2536,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 13U. JOB CREATION (Wizard Inputs)
+## 13V. JOB CREATION (Wizard Inputs)
 
 - **Diretório:** `plataforma-lia/src/components/job-creation/`
 
@@ -2509,7 +2554,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 13V. JOB DESCRIPTION
+## 13W. JOB DESCRIPTION
 
 - **Diretório:** `plataforma-lia/src/components/job-description/`
 
@@ -2520,7 +2565,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 13W. BENEFITS
+## 13X. BENEFITS
 
 - **Diretório:** `plataforma-lia/src/components/benefits/`
 
@@ -2531,7 +2576,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 13X. AI COMPONENTS
+## 13Y. AI COMPONENTS
 
 - **Diretório:** `plataforma-lia/src/components/ai/`
 
@@ -2542,7 +2587,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 13Y. QUICK ACTIONS
+## 13Z. QUICK ACTIONS
 
 - **Diretório:** `plataforma-lia/src/components/quick-actions/`
 
@@ -2555,7 +2600,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 13Z. UI ACTIONS / SIDE PANELS
+## 13AA. UI ACTIONS / SIDE PANELS
 
 - **Diretório:** `plataforma-lia/src/components/ui-actions/`
 
@@ -2567,7 +2612,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 13AA. TALENT FUNNEL TABS
+## 13AB. TALENT FUNNEL TABS
 
 - **Diretório:** `plataforma-lia/src/components/talent-funnel-tabs/`
 
@@ -2580,7 +2625,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 13AB. ALERTS
+## 13AC. ALERTS
 
 - **Diretório:** `plataforma-lia/src/components/alerts/`
 
@@ -2591,7 +2636,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 
 ---
 
-## 13AC. ONBOARDING
+## 13AD. ONBOARDING
 
 - **Diretório:** `plataforma-lia/src/components/onboarding/`
 
@@ -2644,85 +2689,399 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | `VoiceScreeningDashboard` | Dashboard de voice screening |
 | `WarRoomOperacionalPlaceholder` | Placeholder de war room operacional |
 
-### 14.2 Indicadores (`pages/indicators/`)
-- **Tabs:** Sub-tabs de indicadores com `useIndicatorsPage` hook
-- **Constantes:** `indicators.constants.ts`, `indicators.types.ts`
+### 14.2 Indicadores (`pages/indicators/`) — 10 arquivos
 
-### 14.3 ATS Integrations (`pages/ats-integrations/`)
+| Arquivo | Descrição |
+|---------|-----------|
+| `indicators.constants.ts` | Constantes de indicadores |
+| `indicators.types.ts` | Tipos de indicadores |
+| `useIndicatorsPage.ts` | Hook principal da página |
 
-| Componente | Descrição |
-|-----------|-----------|
-| `SystemConfigurationModal` | Modal de configuração do sistema ATS |
-| `useAtsIntegrations` | Hook de gestão de integrações |
+**Sub-diretório `tabs/`:**
 
-### 14.4 Jobs Page Sub-componentes (`pages/jobs/`)
+| Arquivo | Descrição |
+|---------|-----------|
+| `AgentControlTab.tsx` | Tab de controle de agentes |
+| `AlertsTab.tsx` | Tab de alertas |
+| `PredictionsTab.tsx` | Tab de predições |
+| `RecruitersTab.tsx` | Tab de recrutadores |
+| `StrategicTab.tsx` | Tab estratégica |
+| `WorkModelsTab.tsx` | Tab de modelos de trabalho |
 
-| Componente | Descrição |
-|-----------|-----------|
-| `JobsHeader` | Header da página de vagas |
-| `JobsTable` | Tabela de vagas |
-| `JobsCompactTableView` | Visão compacta da tabela |
-| `JobsDashboardView` | Visão dashboard das vagas |
-| `JobPreviewPanel` | Painel de preview da vaga |
-| `InlineChatPanel` | Painel de chat inline |
-| `ColumnConfigPanel` | Painel de configuração de colunas |
-| `TableFiltersPanel` | Painel de filtros da tabela |
-| `JobsModalsSection` | Seção de modais de vagas |
-| `WSITutorialModal` | Modal de tutorial WSI |
+### 14.3 ATS Integrations (`pages/ats-integrations/`) — 5 arquivos
 
-### 14.5 Kanban Page Sub-componentes (`pages/job-kanban/`)
+| Arquivo | Descrição |
+|---------|-----------|
+| `ats-integrations.constants.ts` | Constantes de integrações ATS |
+| `ats-integrations.types.ts` | Tipos de integrações ATS |
+| `index.ts` | Re-exports |
+| `SystemConfigurationModal.tsx` | Modal de configuração do sistema ATS |
+| `useAtsIntegrations.ts` | Hook de gestão de integrações |
 
-| Componente | Descrição |
-|-----------|-----------|
-| `KanbanJobHeader` | Header da vaga no kanban |
-| `KanbanToolbar` | Toolbar com filtros e ações |
-| `KanbanFiltersPanel` | Painel de filtros |
-| `KanbanCandidatePreviewPanel` | Preview lateral do candidato |
-| `KanbanCardActions` | Ações no card do kanban |
-| `KanbanCardScores` | Scores no card |
-| `KanbanCardStatusBadges` | Badges de status no card |
-| `KanbanCardInterviewButtons` | Botões de entrevista no card |
-| `KanbanColumnConfigPanel` | Configuração de colunas |
-| `KanbanColumnRenderer` | Renderizador de coluna |
-| `KanbanTableView` | Visão tabela do kanban |
-| `KanbanTableCellRenderer` | Renderizador de célula |
-| `KanbanTableFiltersPanel` | Filtros da visão tabela |
-| `KanbanTablePagination` | Paginação da tabela |
-| `KanbanLIASidebar` | Sidebar LIA no kanban |
-| `LIAQuestionsPanel` | Painel de perguntas LIA |
-| `LIASuggestionsPanel` | Painel de sugestões LIA |
-| `AddColumnPopover` | Popover para adicionar coluna |
-| `KanbanPageModals` | Container de modais do kanban |
-| `TestHistoryModal` | Modal de histórico de testes |
-| `TestLibraryModal` | Modal de biblioteca de testes |
-| `TestPreviewModal` | Modal de preview de teste |
+### 14.4 Jobs Page Sub-componentes (`pages/jobs/`) — 30 arquivos
 
-### 14.6 Candidates Page Sub-componentes (`pages/candidates/`)
+**Root (12 arquivos):**
 
-| Componente | Descrição |
-|-----------|-----------|
-| `CandidatesPageHeader` | Header da página |
-| `CandidatePreviewPanel` / `CandidatePreviewSidePanel` | Painel de preview |
-| `CandidateSearchResultsView` | View de resultados de busca |
-| `CandidatesTableArea` | Área da tabela |
-| `CandidateTableCellRenderer` | Renderizador de célula |
-| `SearchControlsBar` | Barra de controles de busca |
-| `ColumnConfigSidebar` | Sidebar de configuração de colunas |
-| `CompactLIAPrompt` | Prompt LIA compacto |
-| `LIASearchSidebar` | Sidebar de busca LIA |
-| `CandidatesPageModals` | Container de modais |
-| `CandidatesLoadMoreFooter` | Footer de "carregar mais" |
-| `ActiveFiltersBadge` | Badge de filtros ativos |
-| `CrossTabFilterBanner` | Banner de filtro cross-tab |
-| `ViewingListBanner` | Banner de "visualizando lista" |
-| `CreditConfirmationModal` | Modal de confirmação de créditos |
-| `DeleteArchetypeModal` | Modal de exclusão de arquétipo |
-| `EditQueryModal` | Modal de edição de query |
-| `GlobalExpansionConfirmModal` | Modal de confirmação de expansão global |
-| `PreviewSuggestionModal` | Modal de preview de sugestão |
-| `SaveAsArchetypeModal` | Modal de salvar como arquétipo |
-| `SourceChangeConfirmModal` | Modal de confirmação de mudança de fonte |
-| `ContactFilterConfirmModal` | Modal de confirmação de filtro de contato |
+| Arquivo | Descrição |
+|---------|-----------|
+| `ColumnConfigPanel.tsx` | Painel de configuração de colunas |
+| `index.ts` | Re-exports |
+| `InlineChatPanel.tsx` | Painel de chat inline |
+| `JobPreviewPanel.tsx` | Painel de preview da vaga |
+| `JobsCompactTableView.tsx` | Visão compacta da tabela |
+| `JobsDashboardView.tsx` | Visão dashboard das vagas |
+| `JobsHeader.tsx` | Header da página de vagas |
+| `JobsModalsSection.tsx` | Seção de modais de vagas |
+| `JobsTable.tsx` | Tabela de vagas |
+| `TableFiltersPanel.tsx` | Painel de filtros da tabela |
+| `types.ts` | Tipos da página de vagas |
+| `WSITutorialModal.tsx` | Modal de tutorial WSI |
+
+**Sub-diretório `hooks/` (10 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `useJobsBulkActions.ts` | Ações em lote de vagas |
+| `useJobsChat.ts` | Chat inline de vagas |
+| `useJobsData.ts` | Dados de vagas |
+| `useJobSelection.ts` | Seleção de vagas |
+| `useJobsFilters.ts` | Filtros de vagas |
+| `useJobsPageCore.ts` | Core hook da página |
+| `useJobsPreview.ts` | Preview de vagas |
+| `useJobsQuery.ts` | Queries de vagas |
+| `useJobsTableColumns.ts` | Colunas da tabela |
+| `useJobsTableConfig.ts` | Configuração da tabela |
+
+### 14.5 Kanban Page Sub-componentes (`pages/job-kanban/`) — 56 arquivos
+
+**Root (27 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `AddColumnPopover.tsx` | Popover para adicionar coluna |
+| `index.ts` | Re-exports |
+| `KanbanCandidatePreviewPanel.tsx` | Preview lateral do candidato |
+| `KanbanCard.tsx` | Card do candidato no kanban |
+| `KanbanCardActions.tsx` | Ações no card |
+| `KanbanCardInterviewButtons.tsx` | Botões de entrevista |
+| `KanbanCardScores.tsx` | Scores no card |
+| `KanbanCardStatusBadges.tsx` | Badges de status |
+| `KanbanColumn.tsx` | Coluna do kanban |
+| `KanbanColumnConfigPanel.tsx` | Configuração de colunas |
+| `KanbanColumnRenderer.tsx` | Renderizador de coluna |
+| `KanbanFiltersPanel.tsx` | Painel de filtros |
+| `KanbanJobHeader.tsx` | Header da vaga |
+| `KanbanLIASidebar.tsx` | Sidebar LIA |
+| `KanbanPageModals.tsx` | Container de modais |
+| `KanbanTableCellRenderer.tsx` | Renderizador de célula |
+| `KanbanTableFiltersPanel.tsx` | Filtros da visão tabela |
+| `KanbanTablePagination.tsx` | Paginação da tabela |
+| `KanbanTableView.tsx` | Visão tabela do kanban |
+| `KanbanToolbar.tsx` | Toolbar com filtros e ações |
+| `LIAQuestionsPanel.tsx` | Painel de perguntas LIA |
+| `LIASuggestionsPanel.tsx` | Painel de sugestões LIA |
+| `MoveConfirmationModal.tsx` | Modal de confirmação de movimentação |
+| `TestHistoryModal.tsx` | Modal de histórico de testes |
+| `TestLibraryModal.tsx` | Modal de biblioteca de testes |
+| `TestPreviewModal.tsx` | Modal de preview de teste |
+| `types.ts` | Tipos do kanban |
+
+**Sub-diretório `hooks/` (19 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `useKanbanBulkActions.ts` | Ações em lote |
+| `useKanbanCandidateDecisions.ts` | Decisões de candidatos |
+| `useKanbanCandidateHandlers.ts` | Handlers de candidatos |
+| `useKanbanCandidateLoader.ts` | Loader de candidatos |
+| `useKanbanColumnConfig.ts` | Configuração de colunas |
+| `useKanbanDragDrop.ts` | Drag and drop |
+| `useKanbanFilters.ts` | Filtros do kanban |
+| `useKanbanFilters.test.ts` | Testes de filtros |
+| `useKanbanJobEditing.ts` | Edição de vaga |
+| `useKanbanLIAHandlers.ts` | Handlers LIA |
+| `useKanbanLIASuggestions.ts` | Sugestões LIA |
+| `useKanbanNavigation.ts` | Navegação do kanban |
+| `useKanbanPageCore.ts` | Core hook da página |
+| `useKanbanPublishing.ts` | Publicação de vaga |
+| `useKanbanState.ts` | Estado do kanban |
+| `useKanbanTableView.ts` | Visão tabela |
+| `useKanbanTransitionHandlers.ts` | Handlers de transição |
+| `useKanbanTransitions.ts` | Transições de etapa |
+| `useKanbanUIModals.ts` | Modais de UI |
+
+**Sub-diretório `sections/` (3 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `index.ts` | Re-exports |
+| `KanbanEmptyState.tsx` | Estado vazio do kanban |
+| `KanbanLoadingState.tsx` | Estado de loading |
+
+**Sub-diretório `utils/` (3 arquivos + __tests__):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `kanbanHelpers.ts` | Helpers do kanban |
+| `kanbanStageUtils.ts` | Utilitários de stages |
+
+### 14.6 Candidates Page Sub-componentes (`pages/candidates/`) — 81 arquivos
+
+**Root (37 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `ActiveFiltersBadge.tsx` | Badge de filtros ativos |
+| `CandidatePreviewPanel.tsx` | Painel de preview |
+| `CandidatePreviewSidePanel.tsx` | Side panel de preview |
+| `CandidateSearchBar.tsx` | Barra de busca de candidatos |
+| `CandidateSearchResultsView.tsx` | View de resultados de busca |
+| `CandidateSearchResultsView.types.ts` | Tipos da view de resultados |
+| `CandidatesFilterPanel.tsx` | Painel de filtros |
+| `CandidatesHeader.tsx` | Header da página |
+| `CandidatesLoadMoreFooter.tsx` | Footer de "carregar mais" |
+| `CandidatesPageHeader.tsx` | Header da página (alternativo) |
+| `CandidatesPageModals.tsx` | Container de modais |
+| `CandidatesPageModals.types.ts` | Tipos dos modais |
+| `CandidatesTableArea.tsx` | Área da tabela |
+| `CandidatesTable.tsx` | Tabela de candidatos |
+| `CandidateTableCellRenderer.tsx` | Renderizador de célula |
+| `CandidateTabs.tsx` | Tabs de candidatos |
+| `ColumnConfigSidebar.tsx` | Sidebar de configuração de colunas |
+| `CompactLIAPrompt.tsx` | Prompt LIA compacto |
+| `ContactFilterConfirmModal.tsx` | Modal de confirmação de filtro de contato |
+| `CreditConfirmationModal.tsx` | Modal de confirmação de créditos |
+| `CrossTabFilterBanner.tsx` | Banner de filtro cross-tab |
+| `DeleteArchetypeModal.tsx` | Modal de exclusão de arquétipo |
+| `EditQueryModal.tsx` | Modal de edição de query |
+| `GlobalExpansionConfirmModal.tsx` | Modal de expansão global |
+| `index.ts` | Re-exports |
+| `LIASearchSidebar.tsx` | Sidebar de busca LIA |
+| `PreviewSuggestionModal.tsx` | Modal de preview de sugestão |
+| `SaveAsArchetypeModal.tsx` | Modal de salvar como arquétipo |
+| `SearchControlsBar.tsx` | Barra de controles de busca |
+| `SearchResultsHeader.tsx` | Header de resultados de busca |
+| `SourceChangeConfirmModal.tsx` | Modal de mudança de fonte |
+| `types.ts` | Tipos gerais |
+| `useCandidatesExecuteSearch.ts` | Hook de execução de busca |
+| `ViewingListBanner.tsx` | Banner de "visualizando lista" |
+
+**Sub-diretório `cells/` (4 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `ContactCells.tsx` | Células de contato |
+| `PearchCells.tsx` | Células de Pearch |
+| `ScoreCells.tsx` | Células de score |
+| `SourceCell.tsx` | Célula de fonte |
+
+**Sub-diretório `filters/` (4 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `CheckableItem.tsx` | Item selecionável |
+| `TagInput.tsx` | Input de tags |
+| `TriStateButtons.tsx` | Botões tri-state |
+| `types.ts` | Tipos de filtros |
+
+**Sub-diretório `hooks/` (18 + 5 em candidates-core):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `liaMessageUtils.ts` | Utilitários de mensagens LIA |
+| `useCandidatesActions.ts` | Ações de candidatos |
+| `useCandidatesArchetypes.ts` | Arquétipos de candidatos |
+| `useCandidatesColumnConfig.ts` | Configuração de colunas |
+| `useCandidatesCVHandlers.ts` | Handlers de CV |
+| `useCandidatesExecuteSearch.ts` | Execução de busca |
+| `useCandidatesFilterSort.ts` | Filtros e ordenação |
+| `useCandidatesInteractions.ts` | Interações com candidatos |
+| `useCandidatesLIAHandlers.ts` | Handlers LIA |
+| `useCandidatesNavigation.ts` | Navegação |
+| `useCandidatesPageCore.tsx` | Core hook da página |
+| `useCandidatesQuery.ts` | Queries de candidatos |
+| `useCandidatesSearch.ts` | Busca de candidatos |
+| `useCandidatesSelection.ts` | Seleção de candidatos |
+| `useCandidatesTableConfig.ts` | Configuração da tabela |
+| `useCandidatesUIState.ts` | Estado de UI |
+| `useRevealContact.tsx` | Reveal de contato |
+| `candidates-core/` | `useCandidatesData.ts`, `useCandidatesFilters.ts`, types, constants, index |
+
+**Sub-diretório `lia-sidebar/` (9 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `index.ts` | Re-exports |
+| `LIASearchSidebarChat.tsx` | Chat da sidebar LIA |
+| `LIASearchSidebarInput.tsx` | Input da sidebar LIA |
+| `lia-sidebar-types.ts` | Tipos da sidebar |
+| `mapCandidates.ts` | Mapeamento de candidatos |
+| `TabBoolean.tsx` | Tab de busca booleana |
+| `TabFiltros.tsx` | Tab de filtros |
+| `TabJobDescription.tsx` | Tab de job description |
+| `TabSimilar.tsx` | Tab de perfis similares |
+
+**Sub-diretório `__tests__/` (2 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `CandidatesPageHeader.test.tsx` | Testes do header |
+| `CandidatesTable.test.tsx` | Testes da tabela |
+
+### 14.7 Chat Page Sub-componentes (`pages/chat-page/`) — 18 arquivos
+
+**Root (4 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `constants.ts` | Constantes da página de chat |
+| `types.ts` | Tipos da página de chat |
+| `useChatPageCore.tsx` | Core hook da página |
+| `useChatPageHandlers.tsx` | Handlers da página |
+
+**Sub-diretório `chat-core/` (5 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `chat-core.constants.ts` | Constantes do core de chat |
+| `chat-core.types.ts` | Tipos do core |
+| `index.ts` | Re-exports |
+| `useChatMessages.ts` | Hook de mensagens |
+| `useChatSession.ts` | Hook de sessão de chat |
+
+**Sub-diretório `constants/` (7 arquivos):**
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `conversations.test.ts` | Testes de conversas |
+| `empty-conversations.ts` | Conversas vazias (defaults) |
+| `index.ts` | Re-exports |
+| `modern-conversations-part2.ts` | Conversas modernas parte 2 |
+| `modern-conversations.ts` | Conversas modernas |
+| `prompts.ts` | Prompts de chat |
+| `ui.ts` | Constantes de UI |
+
+### 14.8 Tasks Page Sub-componentes (`pages/tasks/`) — 2 arquivos
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `ActiveAlertsCard.tsx` | Card de alertas ativos |
+| `TaskCard.tsx` | Card de tarefa |
+
+---
+
+### 14.9 Hooks Completos (`hooks/`) — 102 arquivos root
+
+| Grupo | Arquivo | Descrição |
+|-------|---------|-----------|
+| **Candidatos** | `use-candidate-compare.ts` | Comparação de candidatos |
+| | `use-candidate-data-requests.ts` | Solicitação de dados |
+| | `use-candidate-filters.ts` | Filtros de candidatos |
+| | `use-candidate-selection.ts` | Seleção de candidato |
+| | `use-candidates-list.ts` | Lista de candidatos |
+| | `use-candidates-list-mapped.ts` | Lista mapeada |
+| | `use-candidates-search-state.ts` | Estado de busca |
+| | `useCandidateSuggestions.ts` | Sugestões de candidatos |
+| | `use-candidates-view-state.ts` | Estado da view |
+| | `use-similar-profiles.ts` | Perfis similares |
+| | `use-short-list.ts` | Short list |
+| **Chat/LIA** | `use-chat-file-handling.ts` | Upload de arquivos no chat |
+| | `useChatLayout.ts` | Layout do chat |
+| | `use-chat-page-state.ts` | Estado da página de chat |
+| | `use-chat-search.ts` | Busca no chat |
+| | `use-float-conversation.ts` | Conversa flutuante LIA |
+| | `use-float-streaming.ts` | Streaming flutuante |
+| | `use-lia-suggestions.ts` | Sugestões LIA |
+| | `use-interpret-context.ts` | Interpretação de contexto |
+| | `use-action-intent.ts` | Intenção de ação |
+| | `use-agent-streaming.ts` | Streaming de agente |
+| | `useAgentMemory.ts` | Memória do agente |
+| **Empresa** | `use-company-culture.ts` | Cultura da empresa |
+| | `use-company-defaults.ts` | Defaults da empresa |
+| | `use-company-eligibility-questions.ts` | Perguntas de elegibilidade |
+| | `use-company-lia-instructions.ts` | Instruções LIA da empresa |
+| | `use-company-managers.ts` | Gestores da empresa |
+| | `use-company-pipeline.ts` | Pipeline da empresa |
+| | `useCompanyBenefits.ts` | Benefícios da empresa |
+| | `useCompanySkillsCatalog.ts` | Catálogo de skills |
+| | `use-company-tech-stack.ts` | Tech stack |
+| | `use-current-company.ts` | Empresa atual |
+| | `use-current-scope.ts` | Escopo atual |
+| | `use-clients.ts` | Clientes |
+| **Vagas** | `use-job-analytics.ts` | Analytics de vagas |
+| | `useJobColumnConfig.ts` | Config de colunas de vagas |
+| | `use-job-draft.ts` | Rascunho de vaga |
+| | `useJobFiltersPersistence.ts` | Persistência de filtros |
+| | `use-job-report.ts` | Relatório de vaga |
+| | `use-job-wizard-backend.ts` | Backend do wizard |
+| | `use-wizard-auto-save.ts` | Auto-save do wizard |
+| | `use-wizard-suggestions.ts` | Sugestões do wizard |
+| **Recrutamento** | `use-recruitment-stages.ts` | Etapas de recrutamento |
+| | `use-pipeline-inheritance.ts` | Herança de pipeline |
+| | `use-hiring-policies.ts` | Políticas de contratação |
+| | `use-screening-questions.ts` | Perguntas de screening |
+| | `useScreeningConfig.ts` | Configuração de screening |
+| | `use-override-approve.ts` | Override de aprovação |
+| | `use-sub-status-panel.ts` | Painel de sub-status |
+| | `use-transition-context.ts` | Contexto de transição |
+| **Busca/ML** | `use-search-autocomplete.ts` | Autocomplete de busca |
+| | `use-search-entities.ts` | Entidades de busca |
+| | `useSearchFlow.ts` | Fluxo de busca |
+| | `use-search-source.ts` | Fonte de busca |
+| | `useSemanticSearch.ts` | Busca semântica |
+| | `use-ml-predictions.ts` | Predições ML |
+| | `use-archetypes.ts` | Arquétipos |
+| **IA/Créditos** | `use-ai-consumption.ts` | Consumo de IA |
+| | `use-ai-credits.ts` | Créditos de IA |
+| | `useCreditEstimator.ts` | Estimador de créditos |
+| | `useFastTrack.ts` | Fast track |
+| | `use-bias-audit-report.ts` | Relatório de auditoria de bias |
+| **UI/Navegação** | `use-bulk-selection.ts` | Seleção em lote |
+| | `use-keyboard-shortcuts.ts` | Atalhos de teclado |
+| | `use-navigation-intent.ts` | Intenção de navegação |
+| | `use-navigation-persistence.ts` | Persistência de navegação |
+| | `use-recent-items.ts` | Itens recentes |
+| | `use-toast.ts` | Toast notifications |
+| | `useTableFeatures.ts` | Features da tabela |
+| | `useUIActions.ts` | Ações de UI |
+| | `useUnifiedSearch.ts` | Busca unificada |
+| | `useUnsavedChanges.ts` | Alterações não salvas |
+| | `useHideViewedCandidates.ts` | Ocultar candidatos vistos |
+| **Dados/Métricas** | `use-daily-briefing.ts` | Briefing diário |
+| | `use-data-request-config.ts` | Config de solicitação de dados |
+| | `use-data-request-modals.ts` | Modais de solicitação |
+| | `use-saas-metrics.ts` | Métricas SaaS |
+| | `use-score-breakdown.ts` | Breakdown de score |
+| | `use-talent-funnel.ts` | Funil de talentos |
+| | `use-workforce-planning.ts` | Planejamento de workforce |
+| | `use-workos-metrics.ts` | Métricas WorkOS |
+| | `use-job-analytics.ts` | Analytics de vagas |
+| **Comunicação** | `use-communication-templates.ts` | Templates de comunicação |
+| | `use-template-suggestions.ts` | Sugestões de templates |
+| | `use-triagem-chat.ts` | Chat de triagem |
+| | `use-return-events.ts` | Eventos de retorno |
+| **Settings/Config** | `useSettingsForm.ts` | Formulário de settings |
+| | `useSettingsNavigation.ts` | Navegação de settings |
+| | `use-scim-config.ts` | Configuração SCIM |
+| | `useGlobalSearchSettings.ts` | Settings de busca global |
+| | `use-edit-lock.tsx` | Lock de edição |
+| | `use-empty-field-notifications.ts` | Notificações de campo vazio |
+| **Sessão/Auth** | `useSessionRefresh.ts` | Refresh de sessão |
+| | `useSessionTimeout.ts` | Timeout de sessão |
+| | `use-wsi-async.ts` | WSI assíncrono |
+| **Alerts/Insights** | `use-proactive-alerts.ts` | Alertas proativos |
+| | `use-proactive-insights.ts` | Insights proativos |
+| | `use-notifications.ts` | Notificações |
+| **Prompt/Estado** | `usePromptState.ts` | Estado do prompt |
+| | `useDynamicSuggestions.ts` | Sugestões dinâmicas |
+| | `promptStateCriteriaUtils.ts` | Utilitários de critérios |
+| | `useTagInputState.ts` | Estado de tag input (T003) |
+| **Extras** | `index.ts` | Re-exports |
+
+**Sub-diretórios de hooks:**
+- `hooks/admin/` — hooks administrativos
+- `hooks/settings/` — hooks de settings
+- `hooks/__tests__/` — testes de hooks
 
 ---
 
@@ -3080,14 +3439,19 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Tailwind config | `plataforma-lia/tailwind.config.ts` | 1 | Theme extensions, custom colors, animations |
 | Componentes UI | `plataforma-lia/src/components/ui/*.tsx` | 68 | Biblioteca base (shadcn + customizados) |
 | Stories (Storybook) | `plataforma-lia/src/components/ui/*.stories.tsx` | 0 | Removidos (badge, button, card, dialog, input, select existiam anteriormente) |
-| Modais (central) | `plataforma-lia/src/components/modals/*.tsx` | 33+ | Modais centrais + sub-diretórios |
+| Modais (central) | `plataforma-lia/src/components/modals/*.tsx` | 34 | Modais centrais + sub-diretórios |
 | Modais (dispersos) | Vários diretórios | ~20 | Modais em components root, search, cv, alerts, quick-actions, etc. |
-| Páginas | `plataforma-lia/src/components/pages/*.tsx` | ~20 | Telas principais |
-| Kanban | `plataforma-lia/src/components/pages/job-kanban/` | 20+ | Kanban completo com toolbar, filtros, modais, sidebar LIA |
-| Candidatos | `plataforma-lia/src/components/pages/candidates/` | 30+ | Header, Tabs, SearchBar, FilterPanel, Table, modais, sidebars |
-| Jobs | `plataforma-lia/src/components/pages/jobs/` | 12+ | Header, Table, Preview, Filters, Dashboard view |
+| Components root | `plataforma-lia/src/components/*.tsx` | 71 | Componentes raiz diretamente em components/ |
+| Páginas | `plataforma-lia/src/components/pages/*.tsx` | 25 | Telas principais |
+| Kanban | `plataforma-lia/src/components/pages/job-kanban/` | 56 | Kanban completo com toolbar, filtros, modais, sidebar LIA, hooks, sections, utils |
+| Candidatos | `plataforma-lia/src/components/pages/candidates/` | 81 | Header, Tabs, SearchBar, FilterPanel, Table, modais, sidebars, hooks, cells, lia-sidebar |
+| Jobs | `plataforma-lia/src/components/pages/jobs/` | 30 | Header, Table, Preview, Filters, Dashboard view, hooks |
+| Chat Page | `plataforma-lia/src/components/pages/chat-page/` | 18 | Core hooks, constants, chat session management |
 | Dashboards | `plataforma-lia/src/components/pages/dashboards-page/` | 12 | Sub-dashboards especializados |
-| Settings | `plataforma-lia/src/components/settings/*.tsx` | 30+ | Tabs de configuração + sub-diretórios |
+| Indicadores | `plataforma-lia/src/components/pages/indicators/` | 10 | Tabs de indicadores + constants/types |
+| ATS Integrations | `plataforma-lia/src/components/pages/ats-integrations/` | 5 | Modal de configuração + hook + constants |
+| Tasks | `plataforma-lia/src/components/pages/tasks/` | 2 | ActiveAlertsCard + TaskCard |
+| Settings | `plataforma-lia/src/components/settings/` | 40 | Tabs de configuração + 5 sub-diretórios |
 | Screening Config | `plataforma-lia/src/components/screening-config/` | 12+ | Manager, modais, hooks, JD evaluation |
 | WSI | `plataforma-lia/src/components/wsi/` | 4 | Triagem WSI + scorecard + voice status |
 | Search System | `plataforma-lia/src/components/search/` | 50+ | SmartSearch, filtros, presets, modes, hooks |
@@ -3105,8 +3469,9 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Job Wizard | `plataforma-lia/src/components/job-wizard/` | 8+ | Wizard alternativo + stages |
 | Job Creation | `plataforma-lia/src/components/job-creation/` | 9 | Componentes de criação de vaga |
 | Rubric Evaluation | `plataforma-lia/src/components/rubric-evaluation-modal.tsx` | 1 | Modal de avaliação por rubrica |
-| Hooks | `plataforma-lia/src/hooks/*.ts` | 90+ | Hooks de estado, dados, UI, integração |
-| Lib/Utils | `plataforma-lia/src/lib/` | 20+ | `utils.ts` (cn), `format-utils.ts` (T001), `fetch-client.ts`, `masks.ts`, `sanitize.ts`, `safe-data.ts`, `template-variables.ts`, `workos.ts`, `vue-bridge.ts`, etc. |
+| Expandable AI Prompt | `plataforma-lia/src/components/expandable-ai-prompt/` | 15 | Prompt expansível IA com tabs, hooks, modais |
+| Hooks | `plataforma-lia/src/hooks/*.ts` | 102 | Hooks de estado, dados, UI, integração + subdiretórios admin/settings/__tests__ |
+| Lib/Utils | `plataforma-lia/src/lib/` | 28 | `utils.ts` (cn), `format-utils.ts` (T001), `fetch-client.ts`, `masks.ts`, `sanitize.ts`, `safe-data.ts`, `template-variables.ts`, `workos.ts`, `vue-bridge.ts`, etc. + subdiretórios api/schemas/sidebar/transforms/utils |
 | Shared Hooks (T001-T003) | `plataforma-lia/src/hooks/useTagInputState.ts` | 1 | Hook compartilhado de tag input (T003) |
 | Format Utils (T001) | `plataforma-lia/src/lib/format-utils.ts` | 1 | `formatRelativeTime` + `formatFileSize` centralizados |
 

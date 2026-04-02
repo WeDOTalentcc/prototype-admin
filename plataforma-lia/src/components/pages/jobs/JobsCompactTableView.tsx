@@ -357,7 +357,17 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   {pinnedJobs.has(job.id) && (
                                     <Pin className="w-3 h-3 text-lia-text-primary dark:text-lia-text-primary fill-current" />
                                   )}
-                                  {job.title}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      onJobClick(job)
+                                    }}
+                                    className="text-left hover:underline hover:text-wedo-cyan dark:hover:text-wedo-cyan cursor-pointer transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan focus-visible:ring-offset-1 rounded-sm"
+                                    title={`Abrir vaga: ${job.title}`}
+                                  >
+                                    {job.title}
+                                  </button>
                                   {(job.visibility === 'confidential' || job.isConfidential) && (
                                     <span title="Vaga Confidencial" className="flex items-center">
                                       <Shield className="w-3.5 h-3.5 text-wedo-orange" />
