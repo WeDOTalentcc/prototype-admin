@@ -310,7 +310,7 @@ function AdminSidebar({
           <div className="flex items-center gap-3">
             <Avatar className="w-8 h-8">
               <AvatarImage src="https://randomuser.me/api/portraits/men/32.jpg" />
-              <AvatarFallback className="bg-gray-900 dark:lia-bg-50 text-white dark:lia-text-900 text-xs">AD</AvatarFallback>
+              <AvatarFallback className="bg-lia-btn-primary-bg text-white text-xs">AD</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate lia-text-800" >
@@ -333,7 +333,7 @@ function AdminSidebar({
         ) : (
           <Avatar className="w-8 h-8 mx-auto">
             <AvatarImage src="https://randomuser.me/api/portraits/men/32.jpg" />
-            <AvatarFallback className="bg-gray-900 dark:lia-bg-50 text-white dark:lia-text-900 text-xs">AD</AvatarFallback>
+            <AvatarFallback className="bg-lia-btn-primary-bg text-white text-xs">AD</AvatarFallback>
           </Avatar>
         )}
       </div>

@@ -36,6 +36,12 @@
   --lia-interactive-active: #E5E7EB;   /* Estado ativo/pressionado */
   --lia-interactive-focus: #111827;    /* Focus ring */
   
+  /* Overlay & Inverse */
+  --lia-overlay: rgba(0, 0, 0, 0.6);     /* Modal backdrop */
+  --lia-overlay-light: rgba(0, 0, 0, 0.3); /* Light overlay */
+  --lia-bg-inverse: #1F2937;              /* Dark bg for tooltips, toasts */
+  --lia-text-on-inverse: #FFFFFF;         /* Text on inverse bg */
+
   /* Shadows - Elevação sutil */
   --lia-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.02);
   --lia-shadow-default: 0 1px 3px 0 rgb(0 0 0 / 0.05);
@@ -228,6 +234,12 @@
     --lia-interactive-active: #2D3748;
     --lia-interactive-focus: #F9FAFB;
     
+    /* Overlay & Inverse - Dark mode */
+    --lia-overlay: rgba(0, 0, 0, 0.7);
+    --lia-overlay-light: rgba(0, 0, 0, 0.4);
+    --lia-bg-inverse: #F9FAFB;
+    --lia-text-on-inverse: #111827;
+
     /* Shadows - Mais pronunciadas no escuro */
     --lia-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
     --lia-shadow-default: 0 1px 3px 0 rgb(0 0 0 / 0.4);

@@ -39,7 +39,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay backdrop-blur-sm">
       <div className="bg-lia-bg-primary rounded-md w-full max-w-6xl max-h-[90vh] overflow-hidden animate-fadeIn">
         {/* Header */}
         <div className="bg-wedo-purple p-5 text-white">

@@ -476,14 +476,14 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
       {/* Indicador visual de atalho */}
       {isCollapsed && !isTemporaryExpanded && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-md opacity-0 hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200 pointer-events-none">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-lia-bg-inverse text-lia-text-inverse text-xs px-2 py-1 rounded-md opacity-0 hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200 pointer-events-none">
           Ctrl+B
         </div>
       )}
 
       {/* Indicador de largura durante redimensionamento */}
       {isResizing && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black dark:bg-white text-white dark:text-black text-sm px-3 py-2 rounded-md z-50 pointer-events-none">
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-lia-text-primary text-white dark:text-black text-sm px-3 py-2 rounded-md z-50 pointer-events-none">
           {sidebarWidth}px
         </div>
       )}

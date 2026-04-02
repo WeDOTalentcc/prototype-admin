@@ -122,7 +122,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
               >
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                  <AvatarFallback className="text-xs bg-gray-900 text-white">
+                  <AvatarFallback className="text-xs bg-lia-btn-primary-bg text-white">
                     {currentUser.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
@@ -139,7 +139,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                    <AvatarFallback className="text-sm bg-gray-900 text-white">
+                    <AvatarFallback className="text-sm bg-lia-btn-primary-bg text-white">
                       {currentUser.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>

@@ -208,7 +208,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
   return (
     <div className="overflow-auto max-h-full border border-lia-border-subtle rounded-md">
       <table className="w-full table-fixed">
-        <thead className="sticky top-0 z-10 bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 #e5e7eb' }}>
+        <thead className="sticky top-0 z-10 bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 var(--lia-border-subtle)' }}>
           <tr className="">
             {jobsColumnOrder.filter((columnId) => {
               if (columnId === 'checkbox' || columnId === 'acoes') return true
@@ -503,13 +503,13 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1 flex items-center gap-1">
                                           <Brain className="w-3 h-3 text-wedo-cyan" />
                                           Pipeline LIA
                                         </div>
                                         <div className="text-xs text-lia-text-tertiary">{liaTriages.pipeline} candidatos contatados</div>
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
                                   </div>
@@ -524,10 +524,10 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Triagens Agendadas</div>
                                         <div className="text-xs text-lia-text-tertiary">{liaTriages.agendadas} triagens marcadas</div>
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
                                   </div>
@@ -542,10 +542,10 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Triagens Completas</div>
                                         <div className="text-xs text-lia-text-tertiary">{liaTriages.realizadas} triagens finalizadas</div>
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
                                   </div>
@@ -560,10 +560,10 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                       </span>
                                     </div>
                                     <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
-                                      <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md whitespace-nowrap text-xs">
+                                      <div className="bg-lia-bg-inverse text-lia-text-on-inverse px-3 py-2 rounded-md whitespace-nowrap text-xs">
                                         <div className="font-semibold mb-1">Entrevistas Agendadas</div>
                                         <div className="text-xs text-lia-text-tertiary">{liaTriages.entrevistasAgendadas} entrevistas marcadas</div>
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-lia-bg-elevated"></div>
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 bg-lia-bg-inverse"></div>
                                       </div>
                                     </div>
                                   </div>

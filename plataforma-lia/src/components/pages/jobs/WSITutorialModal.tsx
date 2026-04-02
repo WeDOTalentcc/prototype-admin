@@ -26,7 +26,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-lia-overlay-light backdrop-blur-[1px] z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
