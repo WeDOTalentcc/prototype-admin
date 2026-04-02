@@ -16,14 +16,11 @@ import {
   MessageSquare,
   Workflow,
   Plug,
-  Zap,
-  Brain,
   CreditCard,
   BarChart3,
   AlertCircle,
   RefreshCw,
-  Shield,
-  CalendarRange
+  Shield
 } from "lucide-react"
 
 interface ClientData {
@@ -51,10 +48,8 @@ const navigationTabs = [
   { name: 'Comunicações', href: '/comunicacoes', icon: MessageSquare },
   { name: 'Jornada', href: '/jornada', icon: Workflow },
   { name: 'Integrações', href: '/integracoes', icon: Plug },
-  { name: 'Automações', href: '/automacoes', icon: Zap },
-  { name: 'Workforce', href: '/workforce', icon: CalendarRange },
-  { name: 'Big Five', href: '/big-five', icon: Brain },
   { name: 'Faturamento', href: '/faturamento', icon: CreditCard },
+  { name: 'Consumo IA', href: '/consumo-ia', icon: BarChart3 },
   { name: 'Métricas', href: '/metricas', icon: BarChart3 },
   { name: 'Conformidade', href: '/conformidade', icon: Shield },
 ]

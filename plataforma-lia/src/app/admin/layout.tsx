@@ -18,30 +18,20 @@ import {
   ChevronRight,
   Shield,
   Home,
-  Zap,
   LogOut,
   Building2,
   Plug,
   Brain,
-  FileCode,
   FileText,
-  CalendarDays,
   Workflow,
   Mail,
-  Eye,
   Cpu,
   LayoutDashboard,
   TrendingUp,
-  ScrollText,
   X,
-  Award,
   FileCheck,
   Lock,
-  AlertTriangle,
-  Activity,
   ClipboardList,
-  ClipboardCheck,
-  Globe,
   UserCheck
 } from "lucide-react"
 
@@ -81,11 +71,7 @@ const getClientNavigation = (clientId: string): NavGroup[] => [
       { name: "Usuários", href: `/admin/clientes/${clientId}/usuarios`, icon: Users },
       { name: "Setup Empresa", href: `/admin/clientes/${clientId}/setup`, icon: Building2 },
       { name: "Jornada de Recrutamento", href: `/admin/clientes/${clientId}/jornada`, icon: Workflow },
-      { name: "Planejamento de Contratações", href: `/admin/clientes/${clientId}/workforce`, icon: CalendarDays },
       { name: "Integrações", href: `/admin/clientes/${clientId}/integracoes`, icon: Plug },
-      { name: "Automações", href: `/admin/clientes/${clientId}/automacoes`, icon: Zap },
-      { name: "Big Five", href: `/admin/clientes/${clientId}/big-five`, icon: Brain },
-      { name: "Testes Técnicos", href: `/admin/clientes/${clientId}/testes`, icon: FileCode },
       { name: "Comunicações", href: `/admin/clientes/${clientId}/comunicacoes`, icon: Mail },
     ]
   },
@@ -95,12 +81,6 @@ const getClientNavigation = (clientId: string): NavGroup[] => [
       { name: "Faturamento", href: `/admin/clientes/${clientId}/faturamento`, icon: CreditCard },
       { name: "Consumo de IA", href: `/admin/clientes/${clientId}/consumo-ia`, icon: Cpu },
       { name: "Métricas SaaS", href: `/admin/clientes/${clientId}/metricas`, icon: BarChart3 },
-    ]
-  },
-  {
-    label: "Operações & Suporte",
-    items: [
-      { name: "Observabilidade", href: `/admin/clientes/${clientId}/observabilidade`, icon: Eye },
     ]
   }
 ]
@@ -113,7 +93,6 @@ const globalNavigation: NavGroup[] = [
       { name: "Comunicações", href: "/admin/configuracoes/comunicacoes", icon: Mail },
       { name: "Templates de Sistema", href: "/admin/templates", icon: FileText },
       { name: "Configurações do Sistema", href: "/admin/configuracoes", icon: Settings },
-      { name: "Auditoria & Logs", href: "/admin/configuracoes/auditoria", icon: ScrollText },
       { name: "SSO Empresarial", href: "/admin/sso", icon: Lock },
     ]
   }
@@ -124,13 +103,10 @@ const complianceNavigation: NavGroup[] = [
     label: "Compliance & Segurança",
     items: [
       { name: "Dashboard Compliance", href: "/admin/compliance", icon: Shield },
-      { name: "Trust Center", href: "/admin/compliance/trust-center", icon: Award },
       { name: "Controles", href: "/admin/compliance/controles", icon: FileCheck },
       { name: "LGPD & Privacidade", href: "/admin/compliance/lgpd", icon: Lock },
-      { name: "Gestão de Riscos", href: "/admin/compliance/riscos", icon: AlertTriangle },
-      { name: "Monitoramento", href: "/admin/compliance/monitoramento", icon: Activity },
       { name: "Sala de Auditoria", href: "/admin/compliance/auditoria", icon: ClipboardList },
-      { name: "Health Check", href: "/admin/compliance/health-check", icon: ClipboardCheck },
+      { name: "Guardrails IA", href: "/admin/compliance/guardrails", icon: Shield },
       { name: "Saúde dos Agentes", href: "/admin/monitoring/agents", icon: Brain },
     ]
   }
