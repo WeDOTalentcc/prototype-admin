@@ -66,10 +66,31 @@ function getClientInitials(client: Client): string {
 export function ClientSelector() {
   const { clients, selectedClient, setSelectedClient, isLoading } = useClient()
   const [open, setOpen] = React.useState(false)
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSelect = (client: Client | null) => {
     setSelectedClient(client)
     setOpen(false)
+  }
+
+  if (!mounted) {
+    return (
+      <Button
+        variant="outline"
+        className="w-[280px] justify-between bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
+        disabled
+      >
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4" />
+          <span>Todos os Clientes</span>
+        </div>
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    )
   }
 
   return (
