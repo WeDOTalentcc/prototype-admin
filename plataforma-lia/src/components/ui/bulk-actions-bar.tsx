@@ -182,7 +182,16 @@ export type BulkActionType =
   | 'reject'
   | 'export'
   | 'add_to_list'
+  | 'add_to_vacancy'
   | 'share_search'
   | 'favorites'
+  | 'wsi_screening'
+  | 'hide'
+  | 'save_to_base'
+  | 'publish'
+  | 'insights'
+  | 'duplicate'
+  | 'toggle_status'
+  | 'assign_recruiter'
 
 export type { BulkActionItem, BulkActionsBarProps }
