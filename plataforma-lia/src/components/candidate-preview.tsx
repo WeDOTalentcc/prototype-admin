@@ -34,7 +34,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { InsufficientDataModal } from "@/components/modals/insufficient-data-modal"
-import { useToast } from "@/hooks/use-toast"
 import { ExperienceHighlightCard } from "@/components/experience-highlight-card"
 import dynamic from "next/dynamic"
 import type { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
@@ -48,6 +47,7 @@ import { CandidateFilesTab } from "@/components/candidate-preview/CandidateFiles
 import { CandidateActivitiesTab } from "@/components/candidate-preview/CandidateActivitiesTab"
 import { CandidatePreviewProfileTab } from "@/components/candidate-preview/CandidatePreviewProfileTab"
 import { CandidateOpinionsTab } from "@/components/candidate-preview/CandidateOpinionsTab"
+import { toast } from "sonner"
 
 interface CandidatePreviewProps {
   candidate: Record<string, unknown>
@@ -103,8 +103,7 @@ export function CandidatePreview({
   jobId,
 }: CandidatePreviewProps) {
   const core = useCandidatePreviewCore(candidate)
-  const { toast } = useToast()
-  const {
+const {
     activeTab, setActiveTab,
     showLiaModal, setShowLiaModal,
     liaConversation, setLiaConversation,
@@ -479,10 +478,7 @@ export function CandidatePreview({
                     className={`h-6 w-6 p-0 ${isFavorite ? 'bg-status-warning/15' : 'hover:bg-status-warning/10'}`}
                     onClick={() => {
                       onToggleFavorite?.(c.id as string)
-                      toast({ 
-                        title: isFavorite ? "Removido dos favoritos" : "Adicionado aos favoritos",
-                        description: isFavorite ? "Candidato removido da lista de favoritos" : "Candidato adicionado à lista de favoritos"
-                      })
+                      toast.success(isFavorite ? "Removido dos favoritos" : "Adicionado aos favoritos", { description: isFavorite ? "Candidato removido da lista de favoritos" : "Candidato adicionado à lista de favoritos" })
                     }}
                   >
                     <Star className={`w-3.5 h-3.5 ${isFavorite ? 'text-status-warning fill-amber-500' : 'text-status-warning'}`} />
@@ -676,7 +672,6 @@ export function CandidatePreview({
             onSetShowPreview={setShowPreview}
           />
         )}
-
 
         {activeTab === 'files' && (
           <CandidateFilesTab

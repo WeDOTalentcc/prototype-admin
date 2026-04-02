@@ -8,8 +8,8 @@ import { FileUploadButton, FileAnalysisResult } from "@/components/ui/file-uploa
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
-import { useToast } from "@/hooks/use-toast"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
+import { toast } from "sonner"
 
 interface LiaExpandedPanelProps {
   title?: string
@@ -283,9 +283,7 @@ export function LiaChatInput({
   showFileUpload = true,
   showAudioRecord = true
 }: LiaChatInputProps) {
-  const { toast } = useToast()
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && value.trim() && !isLoading) {
       e.preventDefault()
       onSubmit()
@@ -293,43 +291,27 @@ export function LiaChatInput({
   }
 
   const handleFilesSelected = (files: File[]) => {
-    toast({
-      title: "Arquivo recebido",
-      description: `Analisando ${files.length} arquivo(s)...`,
-    })
+    toast.info("Arquivo recebido", { description: `Analisando ${files.length} arquivo(s)...` })
   }
 
   const handleFileAnalyzed = (file: File, analysis: FileAnalysisResult) => {
     if (analysis.success) {
-      toast({
-        title: "Análise concluída",
-        description: `${file.name} foi analisado com sucesso.`,
-      })
+      toast.success("Análise concluída", { description: `${file.name} foi analisado com sucesso.` })
       if (onFileAnalyzed) {
         onFileAnalyzed(analysis)
       }
     } else {
-      toast({
-        title: "Erro na análise",
-        description: analysis.error || "Não foi possível analisar o arquivo.",
-        variant: "destructive",
-      })
+      toast.error("Erro na análise", { description: analysis.error || "Não foi possível analisar o arquivo." })
     }
   }
 
   const handleTranscription = (text: string) => {
     onChange(value ? `${value} ${text}` : text)
-    toast({
-      title: "Transcrição concluída",
-      description: "O texto foi adicionado ao campo de mensagem.",
-    })
+    toast.info("Transcrição concluída", { description: "O texto foi adicionado ao campo de mensagem." })
   }
 
   const handleRecordingStart = () => {
-    toast({
-      title: "Gravando...",
-      description: "Fale sua mensagem. Clique novamente para parar.",
-    })
+    toast.success("Gravando...", { description: "Fale sua mensagem. Clique novamente para parar." })
   }
 
   if (variant === 'textarea') {

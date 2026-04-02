@@ -29,7 +29,6 @@ import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
 import { FileUploadButton, type FileAnalysisResult } from "@/components/ui/file-upload-button"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { PremiumAutocomplete } from "@/components/ui/premium-autocomplete"
-import { useToast } from "@/hooks/use-toast"
 import type { SearchSpec } from "@/lib/api/candidate-search"
 
 interface SearchAnalysis {
@@ -150,6 +149,7 @@ interface ExpandableAIPromptProps {
 import { useExpandableAIPromptCore } from './expandable-ai-prompt/useExpandableAIPromptCore'
 import { EAPTabContent } from './expandable-ai-prompt/EAPTabContent'
 import { EAPModals } from './expandable-ai-prompt/EAPModals'
+import { toast } from "sonner"
 
 export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
   // @ts-ignore TODO: fix type — Argument of type 'ExpandableAIPromptProps' is not assignable to parameter of typ
@@ -701,7 +701,6 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                   </Tooltip>
                 </TooltipProvider>
               </div>
-
 
               {/* Conteúdo da Aba Ativa */}
               <div className="mb-3">

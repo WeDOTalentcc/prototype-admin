@@ -40,6 +40,7 @@ const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m
 const AdvancedFiltersModal = dynamic(() => import("@/components/search/advanced-filters-modal").then(m => ({ default: m.AdvancedFiltersModal })), { ssr: false })
 
 import type { CandidatesPageModalsProps } from "./CandidatesPageModals.types"
+import { toast } from "sonner"
 export function CandidatesPageModals({
   selectedCandidateForAction,
   contactModalCandidate,
@@ -100,7 +101,6 @@ export function CandidatesPageModals({
   setRubricCandidate,
   rubricEvaluationData,
   setRubricEvaluationData,
-  toast,
   showSendEmailModal,
   setShowSendEmailModal,
   emailCandidateSelected,
@@ -518,19 +518,13 @@ export function CandidatesPageModals({
         candidateName={rubricCandidate?.name}
         jobId=""
         onApprove={async () => {
-          toast({
-            title: "Candidato aprovado",
-            description: `${rubricCandidate?.name} foi aprovado com sucesso`
-          })
+          toast.success("Candidato aprovado", { description: `${rubricCandidate?.name} foi aprovado com sucesso` })
           setShowRubricModal(false)
           setRubricCandidate(null)
           setRubricEvaluationData(null)
         }}
         onReject={async () => {
-          toast({
-            title: "Candidato reprovado",
-            description: `${rubricCandidate?.name} foi reprovado`
-          })
+          toast.success("Candidato reprovado", { description: `${rubricCandidate?.name} foi reprovado` })
           setShowRubricModal(false)
           setRubricCandidate(null)
           setRubricEvaluationData(null)
@@ -706,10 +700,7 @@ export function CandidatesPageModals({
         candidateIds={addToListCandidateIds}
         candidateNames={addToListCandidateNames}
         onSuccess={() => {
-          toast({
-            title: "Sucesso",
-            description: "Candidatos adicionados à lista"
-          })
+          toast.success("Sucesso", { description: "Candidatos adicionados à lista" })
         }}
       />
 
@@ -740,10 +731,7 @@ export function CandidatesPageModals({
           listName={selectedListForVacancies.name}
           candidateCount={selectedListForVacancies.candidateCount}
           onSuccess={() => {
-            toast({
-              title: "Sucesso",
-              description: "Candidatos adicionados às vagas selecionadas"
-            })
+            toast.success("Sucesso", { description: "Candidatos adicionados às vagas selecionadas" })
           }}
         />
       )}
@@ -757,10 +745,7 @@ export function CandidatesPageModals({
         currentRecruiterEmail={user?.email}
         onSuccess={() => {
           setSelectedCandidatesForBatch(new Set())
-          toast({
-            title: "Sucesso",
-            description: "Candidatos adicionados à vaga"
-          })
+          toast.success("Sucesso", { description: "Candidatos adicionados à vaga" })
         }}
       />
 

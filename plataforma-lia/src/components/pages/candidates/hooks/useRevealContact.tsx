@@ -2,18 +2,12 @@
 
 import { useState } from "react"
 import type { Candidate } from "@/components/pages/candidates/types"
+import { toast } from "sonner"
 
 export function useRevealContact({
   setCreditsRemaining,
-  toast,
 }: {
   setCreditsRemaining: (fn: (prev: number) => number) => void
-  toast: (opts: {
-    title: string
-    description?: React.ReactNode
-    variant?: string
-    duration?: number
-  }) => void
 }) {
   const [showRevealModal, setShowRevealModal] = useState(false)
   const [revealCandidate, setRevealCandidate] = useState<Candidate | null>(null)
@@ -59,21 +53,7 @@ export function useRevealContact({
         }
 
         const revealedValue = revealType === 'email' ? data.email : data.phone
-        toast({
-          title: revealType === 'email' ? "Email revelado" : "Telefone revelado",
-          description: (
-            <div className="flex flex-col gap-1">
-              <span className="font-medium">{revealedValue}</span>
-              {data.credits_used > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  -{data.credits_used} créditos
-                  {data.credits_remaining !== undefined && ` (saldo: ${data.credits_remaining})`}
-                </span>
-              )}
-            </div>
-          ),
-          duration: 5000
-        })
+        toast.success(revealType === 'email' ? "Email revelado" : "Telefone revelado", { description: revealedValue || "Contato revelado com sucesso", duration: 5000 })
 
         // Persistir contatos revelados automaticamente para candidatos Pearch
         if (revealCandidate.source === 'pearch') {
@@ -95,23 +75,19 @@ export function useRevealContact({
             })
             const persistData = await persistResponse.json()
             if (persistData.success) {
-              toast({
-                title: "LIA salvou o contato",
-                description: persistData.is_new ? "Candidato adicionado à sua base local" : "Dados atualizados no cadastro existente",
-                duration: 3000
-              })
+              toast.success("LIA salvou o contato", { description: persistData.is_new ? "Candidato adicionado à sua base local" : "Dados atualizados no cadastro existente", duration: 3000 })
             } else {
-              toast({ title: "Aviso", description: "Contato revelado mas não foi salvo na base. Use 'Salvar na Base' para persistir.", duration: 4000 })
+              toast.warning("Aviso", { description: "Contato revelado mas não foi salvo na base. Use 'Salvar na Base' para persistir.", duration: 4000 })
             }
           } catch {
-            toast({ title: "Aviso", description: "Contato revelado mas não foi salvo automaticamente. Use 'Salvar na Base' para persistir.", duration: 4000 })
+            toast.warning("Aviso", { description: "Contato revelado mas não foi salvo automaticamente. Use 'Salvar na Base' para persistir.", duration: 4000 })
           }
         }
       } else {
-        toast({ variant: "destructive", title: "Contato não disponível", description: data.message || 'Não foi possível revelar o contato', duration: 5000 })
+        toast.error("Contato não disponível", { description: data.message || 'Não foi possível revelar o contato', duration: 5000 })
       }
     } catch {
-      toast({ variant: "destructive", title: "Erro ao revelar contato", description: "Ocorreu um erro. Tente novamente.", duration: 5000 })
+      toast.error("Erro ao revelar contato", { description: "Ocorreu um erro. Tente novamente.", duration: 5000 })
     } finally {
       setIsRevealing(false)
     }

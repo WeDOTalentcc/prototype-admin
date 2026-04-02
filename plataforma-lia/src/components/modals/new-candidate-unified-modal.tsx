@@ -25,8 +25,8 @@ import {
 } from "lucide-react"
 import { duplicateDetectionService, type DuplicateCheckResult, type CandidateBasicInfo } from '@/services/duplicate-detection-service'
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
-import { useToast } from "@/hooks/use-toast"
 import { InputStep } from "@/components/modals/new-candidate/InputStep"
+import { toast } from "sonner"
 
 const ACCEPTED_FILE_TYPES = {
   'application/pdf': ['.pdf'],
@@ -126,8 +126,7 @@ export function NewCandidateUnifiedModal({
   onOpenFullProfile
 }: NewCandidateUnifiedModalProps) {
   const router = useRouter()
-  const { toast } = useToast()
-  const [currentStep, setCurrentStep] = useState<Step>('input')
+const [currentStep, setCurrentStep] = useState<Step>('input')
   const [activeTab, setActiveTab] = useState<InputTab>('cv')
   
   const [isDragging, setIsDragging] = useState(false)
@@ -401,11 +400,7 @@ export function NewCandidateUnifiedModal({
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erro ao processar CV"
       setError(errorMessage)
-      toast({
-        title: "Erro no processamento",
-        description: errorMessage,
-        variant: "destructive"
-      })
+      toast.error("Erro no processamento", { description: errorMessage })
       setCurrentStep('input')
     } finally {
       setIsProcessing(false)
@@ -451,21 +446,14 @@ export function NewCandidateUnifiedModal({
       
       onCandidateAdded({ id: candidateId, ...candidateData })
 
-      toast({
-        title: "Candidato cadastrado com sucesso!",
-        description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil...",
-      })
+      toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
 
       openFullProfile(candidateId)
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erro ao cadastrar via LinkedIn"
       setError(errorMessage)
-      toast({
-        title: "Erro no cadastro",
-        description: errorMessage,
-        variant: "destructive"
-      })
+      toast.error("Erro no cadastro", { description: errorMessage })
       setCurrentStep('input')
     } finally {
       setIsProcessing(false)
@@ -517,15 +505,9 @@ export function NewCandidateUnifiedModal({
       onCandidateAdded({ id: candidateId, ...candidateData })
 
       if (hasLinkedin) {
-        toast({
-          title: "Candidato cadastrado com sucesso!",
-          description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil...",
-        })
+        toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
       } else {
-        toast({
-          title: "Candidato cadastrado com sucesso!",
-          description: "Abrindo perfil completo...",
-        })
+        toast.success("Candidato cadastrado com sucesso!", { description: "Abrindo perfil completo..." })
       }
 
       openFullProfile(candidateId)
@@ -533,11 +515,7 @@ export function NewCandidateUnifiedModal({
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erro ao cadastrar candidato"
       setError(errorMessage)
-      toast({
-        title: "Erro no cadastro",
-        description: errorMessage,
-        variant: "destructive"
-      })
+      toast.error("Erro no cadastro", { description: errorMessage })
       setCurrentStep('input')
     } finally {
       setIsProcessing(false)
@@ -577,15 +555,9 @@ export function NewCandidateUnifiedModal({
     onCandidateAdded({ id: candidateId, ...candidateData })
 
     if (shouldEnrich && parsed.linkedin) {
-      toast({
-        title: "Candidato cadastrado com sucesso!",
-        description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil...",
-      })
+      toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
     } else {
-      toast({
-        title: "Candidato cadastrado com sucesso!",
-        description: "Abrindo perfil completo...",
-      })
+      toast.success("Candidato cadastrado com sucesso!", { description: "Abrindo perfil completo..." })
     }
 
     openFullProfile(candidateId)
@@ -632,10 +604,7 @@ export function NewCandidateUnifiedModal({
         const candidateId = await createCandidate(candidateData)
         onCandidateAdded({ id: candidateId, ...candidateData })
         
-        toast({
-          title: "Candidato cadastrado com sucesso!",
-          description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil...",
-        })
+        toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
         
         openFullProfile(candidateId)
       } else if (activeTab === 'manual') {
@@ -652,15 +621,9 @@ export function NewCandidateUnifiedModal({
         onCandidateAdded({ id: candidateId, ...candidateData })
         
         if (hasLinkedin) {
-          toast({
-            title: "Candidato cadastrado com sucesso!",
-            description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil...",
-          })
+          toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
         } else {
-          toast({
-            title: "Candidato cadastrado com sucesso!",
-            description: "Abrindo perfil completo...",
-          })
+          toast.success("Candidato cadastrado com sucesso!", { description: "Abrindo perfil completo..." })
         }
         
         openFullProfile(candidateId)
@@ -668,11 +631,7 @@ export function NewCandidateUnifiedModal({
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erro ao cadastrar candidato"
       setError(errorMessage)
-      toast({
-        title: "Erro no cadastro",
-        description: errorMessage,
-        variant: "destructive"
-      })
+      toast.error("Erro no cadastro", { description: errorMessage })
       setCurrentStep('input')
     } finally {
       setIsProcessing(false)
@@ -682,7 +641,6 @@ export function NewCandidateUnifiedModal({
   const canSubmitCV = selectedFile || cvText.trim().length >= 50
   const canSubmitLinkedin = linkedinUrl.trim().includes('linkedin.com/in/')
   const canSubmitManual = manualData.name.trim() && (manualData.email.trim() || manualData.phone.trim())
-
 
   const renderInputStep = () => (
     <InputStep

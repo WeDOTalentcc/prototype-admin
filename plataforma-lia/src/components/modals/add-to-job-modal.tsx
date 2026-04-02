@@ -6,7 +6,6 @@ import { liaApi, JobVacancy } from "@/services/lia-api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -44,6 +43,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { toast } from "sonner"
 
 const MAX_BULK_CANDIDATES = 100
 
@@ -97,8 +97,7 @@ export function AddToJobModal({
   onSuccess,
   onNavigateToJob
 }: AddToJobModalProps) {
-  const { toast } = useToast()
-  const [jobs, setJobs] = useState<JobDisplay[]>([])
+const [jobs, setJobs] = useState<JobDisplay[]>([])
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -246,12 +245,12 @@ export function AddToJobModal({
 
   const handleSubmit = async () => {
     if (!selectedJobId) {
-      toast({ title: "Selecione uma vaga", variant: "destructive" })
+      toast.error("Selecione uma vaga")
       return
     }
 
     if (finalCandidateIds.length === 0) {
-      toast({ title: "Todos os candidatos já estão nesta vaga", variant: "destructive" })
+      toast.error("Todos os candidatos já estão nesta vaga")
       return
     }
 
@@ -289,32 +288,12 @@ export function AddToJobModal({
         ? ` (${skippedCount} duplicado${skippedCount > 1 ? 's' : ''} ignorado${skippedCount > 1 ? 's' : ''})`
         : ''
 
-      toast({
-        title: "Candidatos adicionados!",
-        description: (
-          <div className="flex flex-col gap-1">
-            <span aria-live="polite" aria-atomic="true">{addedCount} candidato{addedCount !== 1 ? 's' : ''} adicionado{addedCount !== 1 ? 's' : ''} à vaga &quot;{jobTitle}&quot;{skippedMsg}</span>
-            {onNavigateToJob && (
-              <button
-                onClick={() => onNavigateToJob(selectedJobId)}
-                className="flex items-center gap-1 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary hover:underline mt-1"
-              >
-                <ExternalLink className="w-3 h-3" />
-                Ver vaga
-              </button>
-            )}
-          </div>
-        )
-      })
+      toast.success("Candidatos adicionados!", { description: `${addedCount} candidato(s) adicionado(s) à "${jobTitle}"${skippedMsg}` })
 
       onSuccess?.()
       onClose()
     } catch (error) {
-      toast({
-        title: "Erro ao adicionar candidatos",
-        description: "Tente novamente",
-        variant: "destructive"
-      })
+      toast.error("Erro ao adicionar candidatos", { description: "Tente novamente" })
     } finally {
       setIsSubmitting(false)
     }

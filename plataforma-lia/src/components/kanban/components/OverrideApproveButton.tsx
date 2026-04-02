@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { UserCheck, Loader2 } from 'lucide-react'
 import { useOverrideApprove } from '@/hooks/use-override-approve'
-import { useToast } from '@/hooks/use-toast'
-
+import { toast } from "sonner"
 interface OverrideApproveButtonProps {
   candidateId: string
   candidateName: string
@@ -22,15 +21,9 @@ export function OverrideApproveButton({
 }: OverrideApproveButtonProps) {
   const { isLoading, error, approveOverride } = useOverrideApprove()
   const [showConfirm, setShowConfirm] = useState(false)
-  const { toast } = useToast()
-
-  useEffect(() => {
+useEffect(() => {
     if (error) {
-      toast({
-        title: 'Erro ao aprovar candidato',
-        description: error,
-        variant: 'destructive',
-      })
+      toast.error('Erro ao aprovar candidato', { description: error })
     }
   }, [error, toast])
 

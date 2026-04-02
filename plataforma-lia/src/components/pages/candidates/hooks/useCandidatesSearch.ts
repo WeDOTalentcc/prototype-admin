@@ -9,6 +9,7 @@ import type { Candidate } from "../types"
 import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { SearchAnalytics } from "@/components/proactive-insight-card"
+import { toast } from "sonner"
 
 export interface CandidatesSearchContext {
   candidates: Candidate[]
@@ -104,7 +105,6 @@ export interface CandidatesSearchContext {
     metadata?: SearchMetadata,
     usePearch?: boolean
   ) => Promise<void>
-  toast: (opts: { title: string; description?: string; variant?: "destructive" | "default" }) => void
   user: { id?: string; email?: string; name?: string; [key: string]: unknown } | null
 }
 
@@ -151,7 +151,6 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
     setSelectedTemplate,
     pearchSearchOptions,
     executeSearch,
-    toast,
   } = ctx
 
   // Handler para confirmar busca com Pearch (após modal de créditos)
@@ -204,10 +203,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
         )
       }
 
-      toast({
-        title: newSource === 'hybrid' ? 'Busca Híbrida ativada' : 'Busca Global ativada',
-        description: 'Atualizando resultados com a nova configuração...',
-      })
+      toast.success(newSource === 'hybrid' ? 'Busca Híbrida ativada' : 'Busca Global ativada', { description: 'Atualizando resultados com a nova configuração...' })
     } else {
       setShowSourceChangeModal(false)
     }
@@ -257,10 +253,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
       )
     }
 
-    toast({
-      title: filterType === 'email' ? 'Filtro de Email ativado' : 'Filtro de Telefone ativado',
-      description: 'Atualizando resultados com o novo filtro...',
-    })
+    toast.success(filterType === 'email' ? 'Filtro de Email ativado' : 'Filtro de Telefone ativado', { description: 'Atualizando resultados com o novo filtro...' })
   }
 
   const handleSearchFeedbackChange = (candidateId: string, feedback: 'like' | 'dislike' | null) => {
@@ -292,11 +285,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
       const queryToUse = lastSuccessfulQuery || lastSearchQuery
 
       if (!queryToUse) {
-        toast({
-          title: "Nenhuma busca ativa",
-          description: "Execute uma busca local primeiro para poder expandir para busca global.",
-          variant: "destructive"
-        })
+        toast.error("Nenhuma busca ativa", { description: "Execute uma busca local primeiro para poder expandir para busca global." })
         return
       }
 
@@ -454,10 +443,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
         }))
 
         // Notificar usuário
-        toast({
-          title: "Busca expandida com sucesso!",
-          description: `Encontrados ${globalCandidates.length} candidatos adicionais na base global.`
-        })
+        toast.success("Busca expandida com sucesso!", { description: `Encontrados ${globalCandidates.length} candidatos adicionais na base global.` })
 
         // Adicionar mensagem no chat
         const liaMessage = {
@@ -518,11 +504,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
       setShowExpandGlobalOption(false)
 
     } catch (error) {
-      toast({
-        title: "Erro ao expandir busca",
-        description: "Não foi possível expandir para busca global. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao expandir busca", { description: "Não foi possível expandir para busca global. Tente novamente." })
     } finally {
       setIsExpandingToGlobal(false)
     }

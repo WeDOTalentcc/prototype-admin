@@ -2,10 +2,10 @@
 
 import { useCallback } from "react"
 import type React from "react"
-import { useToast } from "@/hooks/use-toast"
 import { liaApi } from "@/services/lia-api"
 import type { DynamicStage } from "../utils/kanbanStageUtils"
 import type { InterviewStageFromJob } from "../utils/kanbanStageUtils"
+import { toast } from "sonner"
 
 interface KanbanJobRef {
   id?: string | number
@@ -16,7 +16,6 @@ interface KanbanJobRef {
 }
 
 export interface KanbanJobEditingContext {
-  toast: ReturnType<typeof useToast>["toast"]
   currentJob: KanbanJobRef
   jobEditForm: Record<string, unknown>
   setSavingJobSection: (section: string | null) => void
@@ -29,7 +28,6 @@ export interface KanbanJobEditingContext {
 
 export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
   const {
-    toast,
     currentJob,
     jobEditForm,
     setSavingJobSection,
@@ -113,10 +111,10 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
           return newData
         })
       }
-      toast({ title: 'Seção salva com sucesso!' })
+      toast.success('Seção salva com sucesso!')
       setEditingSection(null)
     } catch (error) {
-      toast({ title: 'Erro ao salvar. Tente novamente.', variant: 'destructive' })
+      toast.error('Erro ao salvar. Tente novamente.')
     } finally {
       setSavingJobSection(null)
     }
@@ -131,9 +129,9 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
         body: JSON.stringify({ display_name: newName }),
       })
       setDynamicStages(prev => prev.map(s => s.id === stageId ? { ...s, displayName: newName } : s))
-      toast({ title: 'Etapa renomeada', description: `Nome atualizado para "${newName}".` })
+      toast.success('Etapa renomeada', { description: `Nome atualizado para "${newName}".` })
     } catch {
-      toast({ title: 'Erro ao renomear', description: 'Nao foi possivel renomear a etapa.', variant: 'destructive' })
+      toast.error('Erro ao renomear', { description: 'Nao foi possivel renomear a etapa.' })
     }
   }, [toast, setDynamicStages])
 
@@ -150,9 +148,9 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
       } else {
         setDynamicStages(prev => prev.map(s => s.id === stageId ? { ...s, isActive } : s))
       }
-      toast({ title: isActive ? 'Etapa ativada' : 'Etapa desativada' })
+      toast.success(isActive ? 'Etapa ativada' : 'Etapa desativada')
     } catch {
-      toast({ title: 'Erro', description: 'Nao foi possivel alterar o status da etapa.', variant: 'destructive' })
+      toast.error('Erro', { description: 'Nao foi possivel alterar o status da etapa.' })
     }
   }, [toast, setDynamicStages])
 
@@ -163,9 +161,9 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
         method: 'DELETE',
       })
       setDynamicStages(prev => prev.filter(s => s.id !== stageId))
-      toast({ title: 'Coluna removida' })
+      toast.success('Coluna removida')
     } catch {
-      toast({ title: 'Erro ao remover', description: 'Nao foi possivel remover a coluna.', variant: 'destructive' })
+      toast.error('Erro ao remover', { description: 'Nao foi possivel remover a coluna.' })
     }
   }, [toast, setDynamicStages])
 
@@ -200,9 +198,9 @@ export function useKanbanJobEditing(ctx: KanbanJobEditingContext) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sla_hours: slaHours }),
       })
-      toast({ title: 'SLA atualizado', description: `SLA definido para ${slaHours} horas.` })
+      toast.success('SLA atualizado', { description: `SLA definido para ${slaHours} horas.` })
     } catch {
-      toast({ title: 'Erro ao atualizar SLA', variant: 'destructive' })
+      toast.error('Erro ao atualizar SLA')
     }
   }, [toast])
 

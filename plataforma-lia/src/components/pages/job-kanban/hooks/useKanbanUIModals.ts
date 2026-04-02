@@ -3,10 +3,10 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { type BulkActionType } from "@/components/ui/bulk-selection-bar"
+import { toast } from "sonner"
 
-export function useKanbanUIModals({ job, toast }: {
+export function useKanbanUIModals({ job }: {
   job?: Record<string, unknown>
-  toast: (opts: { title: string; description?: string; variant?: string }) => void
 }) {
   // Preview
   const [previewCandidate, setPreviewCandidate] = useState<Record<string, unknown> | null>(null)
@@ -240,17 +240,14 @@ export function useKanbanUIModals({ job, toast }: {
           setUnifiedModalType(channelType as CommunicationType)
           setUnifiedModalOpen(true)
           if (candidateCount > 0) {
-            toast({
-              title: 'Modal de comunicação aberto',
-              description: `${candidateCount} candidato(s) prontos para notificação via ${channelType === 'whatsapp' ? 'WhatsApp' : 'E-mail'}.`
-            })
+            toast.success('Modal de comunicação aberto', { description: `${candidateCount} candidato(s) prontos para notificação via ${channelType === 'whatsapp' ? 'WhatsApp' : 'E-mail'}.` })
           }
         }, 500)
       }
     } catch {
       localStorage.removeItem('pendingCommunicationAction')
     }
-  }, [job?.id, toast])
+  }, [job?.id])
 
   return {
     state: {

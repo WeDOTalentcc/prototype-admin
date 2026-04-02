@@ -7,8 +7,8 @@ import {
   Mail, Phone, MessageSquare, Send, X, Clock, Brain, Eye, RefreshCw
 } from "lucide-react"
 import { liaApi } from "@/services/lia-api"
-import { useToast } from "@/hooks/use-toast"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
+import { toast } from "sonner"
 
 interface Candidate {
   id: string
@@ -58,9 +58,7 @@ export function ContactModal({ isOpen, onClose, candidate, onSend, initialAction
   const [initialized, setInitialized] = useState(false)
   const [apiTemplates, setApiTemplates] = useState<any[]>([])
   const [loadingTemplates, setLoadingTemplates] = useState(true)
-  const { toast } = useToast()
-
-  const roleOrJob = jobTitle || candidate?.role || 'a vaga'
+const roleOrJob = jobTitle || candidate?.role || 'a vaga'
 
   const replaceTemplateVariables = (text: string) => {
     if (!text || !candidate) return text

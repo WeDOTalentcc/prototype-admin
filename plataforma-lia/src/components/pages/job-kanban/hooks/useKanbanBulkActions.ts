@@ -1,18 +1,17 @@
 "use client"
 
 import { useCallback } from "react"
-import { useToast } from "@/hooks/use-toast"
 import { liaApi } from "@/services/lia-api"
 import { type BulkActionType } from "@/components/ui/bulk-selection-bar"
 import { type BulkActionResult, type BulkActionExecuteData } from "@/components/modals/bulk-action-modal"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { type KanbanCandidate } from "@/components/kanban"
+import { toast } from "sonner"
 
 export interface KanbanBulkActionsContext {
   selectedCandidates: Set<string>
   setSelectedCandidates: (value: Set<string>) => void
   allTableCandidates: KanbanCandidate[]
-  toast: ReturnType<typeof useToast>["toast"]
   setBulkActionType: (type: BulkActionType) => void
   setShowBulkActionModal: (open: boolean) => void
   setDataRequestModalCandidate: (candidate: KanbanCandidate) => void
@@ -31,7 +30,6 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
     selectedCandidates,
     setSelectedCandidates,
     allTableCandidates,
-    toast,
     setBulkActionType,
     setShowBulkActionModal,
     setDataRequestModalCandidate,
@@ -79,10 +77,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
         setShowShareGestorModal(true)
         break
       default:
-        toast({
-          title: "Ação em Lote",
-          description: `Ação "${actionId}" para ${selectedCandidates.size} candidato(s)`,
-        })
+        toast.success("Ação em Lote", { description: `Ação "${actionId}" para ${selectedCandidates.size} candidato(s)` })
     }
   }, [
     selectedCandidates,
@@ -228,11 +223,7 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro ao processar ação em lote'
-      toast({
-        title: "Erro",
-        description: errorMessage,
-        variant: "destructive"
-      })
+      toast.error("Erro", { description: errorMessage })
 
       for (const candidateId of data.candidateIds) {
         results.push({ candidateId, success: false, error: errorMessage })
@@ -245,16 +236,13 @@ export function useKanbanBulkActions(ctx: KanbanBulkActionsContext) {
     const failCount = results.filter(r => !r.success).length
 
     if (successCount > 0) {
-      toast({
-        title: "Ação Concluída",
-        description: failCount > 0
-          ? `${successCount} de ${results.length} candidatos processados com sucesso. ${failCount} falharam.`
-          : `${successCount} candidato(s) processados com sucesso`,
-      })
+      toast.success("Ação Concluída", { description: failCount > 0
+          ? `${successCount} sucesso, ${failCount} falha(s)`
+          : `${successCount} candidato(s) processado(s)` })
     }
 
     return results
-  }, [toast, setSelectedCandidates, setCandidatesData])
+  }, [setSelectedCandidates, setCandidatesData])
 
   return { handleBulkAction, handleBulkActionExecute }
 }

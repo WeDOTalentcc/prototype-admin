@@ -11,6 +11,7 @@ import { TabsContent } from "@/components/ui/tabs"
 import { NOTE_CATEGORY_OPTIONS, NOTE_CATEGORY_LABELS, ACTIVITY_FILTER_LABELS, PERIOD_FILTER_OPTIONS } from "../candidato-page.constants"
 import type { ActivityFilter, PeriodFilter, ActivityView, NoteCategory, ActivityItem } from "../candidato-page.types"
 import type { CandidateLocal } from "@/services/lia-api"
+import { toast } from "sonner"
 
 interface CandidatoActivitiesTabProps {
   activities: Record<string, unknown>[]
@@ -28,7 +29,6 @@ interface CandidatoActivitiesTabProps {
   setNewNoteCategory: (v: NoteCategory) => void
   setActivities: React.Dispatch<React.SetStateAction<Record<string, unknown>[]>>
   formatRelativeTime: (dateStr: string) => string
-  toast: (opts: { title: string; description: string }) => void
 }
 
 function getCategoryLabelLocal(cat: unknown): string {
@@ -74,7 +74,6 @@ export function CandidatoActivitiesTab({
   setNewNoteCategory,
   setActivities,
   formatRelativeTime,
-  toast,
 }: CandidatoActivitiesTabProps) {
   const candidateNotes = parseNotes(candidate)
 
@@ -110,7 +109,7 @@ export function CandidatoActivitiesTab({
       author: "Recrutador",
     }
     setActivities(prev => [newNote, ...prev])
-    toast({ title: "Nota adicionada", description: "A nota foi registrada no histórico do candidato" })
+    toast.success("Nota adicionada", { description: "A nota foi registrada no histórico do candidato" })
     setNewNoteContent("")
     setNewNoteCategory("general")
   }

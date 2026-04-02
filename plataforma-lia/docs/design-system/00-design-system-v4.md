@@ -2129,59 +2129,52 @@ Formatação padronizada para dados na plataforma. Locale: PT-BR. Todas as datas
 
 ## 3.8 Toasts & Alerts
 
-### 3.8.1 Toast Variants
+> **Implementação oficial: Sonner** (`sonner` npm package) com `richColors` habilitado.
+> Posição padrão: `top-right`. O sistema Radix/shadcn toast foi removido.
 
-| Tipo | Border | Icon BG | Icon | Uso |
-|------|--------|---------|------|-----|
-| **Success** | `border-green-200` | `bg-green-100` | CheckCircle green-600 | Confirmações |
-| **Warning** | `border-amber-200` | `bg-amber-100` | AlertTriangle amber-600 | Avisos |
-| **Error** | `border-red-200` | `bg-red-100` | XCircle red-600 | Erros |
-| **Info** | `border-blue-200` | `bg-blue-100` | Info blue-600 | Informações |
+### 3.8.1 Toast Variants (Sonner richColors)
 
-```html
-<!-- Tailwind -->
-<div class="flex items-start gap-3 bg-white border border-green-200 rounded-md shadow-lg p-4 max-w-sm">
-  <div class="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-    <svg class="w-3 h-3 text-green-600">...</svg>
-  </div>
-  <div class="flex-1 min-w-0">
-    <p class="text-sm font-semibold text-gray-900">Sucesso!</p>
-    <p class="text-xs text-gray-600 mt-0.5">Candidato salvo com sucesso</p>
-  </div>
-  <button class="flex-shrink-0 text-gray-400 hover:text-gray-600">
-    <svg class="w-4 h-4">...</svg>
-  </button>
-</div>
+| Tipo | Método | Cor automática (richColors) | Uso |
+|------|--------|----------------------------|-----|
+| **Success** | `toast.success()` | Verde | Confirmações de ações bem-sucedidas |
+| **Warning** | `toast.warning()` | Amarelo | Avisos e alertas não-críticos |
+| **Error** | `toast.error()` | Vermelho | Erros e falhas |
+| **Info** | `toast.info()` | Azul | Informações gerais |
 
-<!-- Vuetify -->
-<v-snackbar v-model="snackbar" color="green">
-  Candidato salvo com sucesso
-  <template #actions>
-    <v-btn icon="mdi-close" size="small" @click="snackbar = false"></v-btn>
-  </template>
-</v-snackbar>
+```tsx
+import { toast } from "sonner"
+
+toast.success("Candidato salvo!", { description: "Dados atualizados com sucesso" })
+toast.error("Erro ao salvar", { description: "Tente novamente" })
+toast.warning("Atenção", { description: "Campos obrigatórios não preenchidos" })
+toast.info("Dica", { description: "Use filtros para refinar a busca" })
 ```
 
-### 3.8.2 Props API
+```tsx
+// layout.tsx — configuração global
+import { Toaster as SonnerToaster } from "sonner"
 
-| Prop | Type | Default | Descrição |
-|------|------|---------|-----------|
-| `variant` | `'default' \| 'success' \| 'error' \| 'warning' \| 'info'` | `'default'` | Estilo visual do toast |
-| `title` | `string` | — | Título do toast (negrito) |
-| `description` | `string` | — | Texto descritivo |
+<SonnerToaster position="top-right" richColors />
+```
+
+### 3.8.2 API Sonner
+
+| Parâmetro | Type | Default | Descrição |
+|-----------|------|---------|-----------|
+| `message` | `string` | — | Primeiro argumento: título do toast |
+| `description` | `string` | — | Texto descritivo (segundo arg, dentro de options) |
 | `duration` | `number` | `4000` | Tempo em ms antes de auto-dismiss |
 | `action` | `{ label: string, onClick: () => void }` | — | Botão de ação opcional |
-| `dismissible` | `boolean` | `true` | Mostra botão X para fechar |
-| `position` | `'top-right' \| 'bottom-right'` | `'bottom-right'` | Posição na tela |
 
 ### 3.8.3 Do's & Don'ts
 
 | ✅ Do | ❌ Don't |
 |-------|----------|
+| Usar `toast.success/error/warning/info()` direto | Usar `useToast()` hook (removido) |
+| `import { toast } from "sonner"` | `import { useToast } from "@/components/ui/use-toast"` |
 | Auto-dismiss após 4s para sucesso/info | Auto-dismiss para erros (devem exigir ação) |
-| Posição consistente `bottom-right` | Alternar posição entre páginas |
+| Posição consistente `top-right` | Alternar posição entre páginas |
 | Máximo 3 toasts simultâneos (stack) | Exibir 5+ toasts empilhados |
-| Ação única por toast ("Desfazer", "Ver detalhes") | Múltiplos botões dentro de um toast |
 | Toast para confirmações rápidas, Alert inline para validações | Toast para erros de formulário |
 
 ---

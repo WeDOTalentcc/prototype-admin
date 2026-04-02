@@ -1,15 +1,14 @@
 "use client"
 
 import { useCallback } from "react"
-import { useToast } from "@/hooks/use-toast"
 import { type UniversalTransitionConfirmData } from "@/components/kanban"
+import { toast } from "sonner"
 
 interface UseKanbanTransitionsParams {
   candidatesData: Record<string, Record<string, unknown>[]>
   setCandidatesData: (fn: (prev: Record<string, Record<string, unknown>[]>) => Record<string, Record<string, unknown>[]>) => void
   universalModalState: { candidates: Array<Record<string, unknown>>; actionBehavior?: string }
   closeTransition: () => void
-  toast: ReturnType<typeof useToast>['toast']
 }
 
 export function useKanbanTransitions({
@@ -17,7 +16,6 @@ export function useKanbanTransitions({
   setCandidatesData,
   universalModalState,
   closeTransition,
-  toast,
 }: UseKanbanTransitionsParams) {
   const handleUniversalTransitionConfirm = useCallback(async (data: UniversalTransitionConfirmData) => {
     try {
@@ -79,14 +77,14 @@ export function useKanbanTransitions({
         const channelLabel = dispatchSummary.channel === 'whatsapp' ? 'WhatsApp' : 'e-mail'
         const mockNote = dispatchSummary.mock ? ' (modo simulação)' : ''
         const aiNote = dispatchSummary.aiPersonalized ? ' (personalizada por IA)' : ''
-        toast({ title: 'Transição realizada com envio automático', description: `${data.candidateIds.length} candidato(s) movido(s). ${dispatchSummary.sent} ${channelLabel}(s) enviado(s)${aiNote}${mockNote}.${dispatchSummary.failed > 0 ? ` ${dispatchSummary.failed} falha(s).` : ''}` })
+        toast.success('Transição realizada com envio automático', { description: `${data.candidateIds.length} candidato(s) movido(s). ${dispatchSummary.sent} ${channelLabel}(s) enviado(s)${aiNote}${mockNote}.${dispatchSummary.failed > 0 ? ` ${dispatchSummary.failed} falha(s).` : ''}` })
       } else {
-        toast({ title: 'Transição realizada', description: `${data.candidateIds.length} candidato(s) movido(s) com sucesso.` })
+        toast.success('Transição realizada', { description: `${data.candidateIds.length} candidato(s) movido(s) com sucesso.` })
       }
     } catch {
-      toast({ title: 'Erro na transição', description: 'Não foi possível completar a transição.', variant: 'destructive' })
+      toast.error('Erro na transição', { description: 'Não foi possível completar a transição.' })
     }
-  }, [closeTransition, toast, universalModalState.candidates, candidatesData, setCandidatesData, universalModalState.actionBehavior])
+  }, [closeTransition, universalModalState.candidates, candidatesData, setCandidatesData, universalModalState.actionBehavior])
 
   return { handleUniversalTransitionConfirm }
 }

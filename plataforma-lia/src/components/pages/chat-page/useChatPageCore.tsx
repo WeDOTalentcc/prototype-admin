@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import { useChatLayout } from "@/hooks/useChatLayout"
 import { useUIActions } from "@/hooks/useUIActions"
-import { useToast } from "@/hooks/use-toast"
 import { promoteCandidateToBase } from "@/lib/api/candidate-search"
 import { useChatPageHandlers } from "./useChatPageHandlers"
 import {
@@ -26,6 +25,7 @@ import { emptyConversation, modernConversation } from "./constants"
 import { useChatMessages } from "./chat-core/useChatMessages"
 import { useChatSession } from "./chat-core/useChatSession"
 import { MAX_FILE_SIZE_MB } from "./chat-core/chat-core.constants"
+import { toast } from "sonner"
 
 export function useChatPageCore() {
   const searchParams = useSearchParams()

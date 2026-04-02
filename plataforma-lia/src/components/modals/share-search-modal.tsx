@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -44,6 +43,7 @@ import {
 import { cn } from "@/lib/utils"
 import { textStyles, cardStyles } from '@/lib/design-tokens'
 import { useCommunicationTemplates, type CommunicationTemplate } from '@/hooks/use-communication-templates'
+import { toast } from "sonner"
 
 interface Recipient {
   id: string
@@ -85,8 +85,7 @@ export function ShareSearchModal({
   sourceListId,
   onSuccess
 }: ShareSearchModalProps) {
-  const { toast } = useToast()
-  const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shareType)
+const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shareType)
   const [recipients, setRecipients] = useState<Recipient[]>([])
   const [newEmail, setNewEmail] = useState('')
   const [newPhone, setNewPhone] = useState('')
@@ -154,20 +153,12 @@ export function ShareSearchModal({
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      toast({
-        title: "Email inválido",
-        description: "Por favor, insira um email válido.",
-        variant: "destructive"
-      })
+      toast.error("Email inválido", { description: "Por favor, insira um email válido." })
       return
     }
 
     if (recipients.some(r => r.email.toLowerCase() === email.toLowerCase())) {
-      toast({
-        title: "Email já adicionado",
-        description: "Este email já está na lista de destinatários.",
-        variant: "destructive"
-      })
+      toast.error("Email já adicionado", { description: "Este email já está na lista de destinatários." })
       return
     }
 
@@ -235,11 +226,7 @@ export function ShareSearchModal({
 
   const handleSubmit = async () => {
     if (recipients.length === 0) {
-      toast({
-        title: "Adicione destinatários",
-        description: "Adicione pelo menos um email para compartilhar.",
-        variant: "destructive"
-      })
+      toast.error("Adicione destinatários", { description: "Adicione pelo menos um email para compartilhar." })
       return
     }
 
@@ -284,19 +271,12 @@ export function ShareSearchModal({
       const sharedSearch = await response.json()
 
       const channelLabel = effectiveChannel === 'whatsapp' ? 'WhatsApp' : effectiveChannel === 'both' ? 'email e WhatsApp' : 'email'
-      toast({
-        title: "Compartilhado com sucesso",
-        description: `Enviado por ${channelLabel} para ${recipients.length} destinatário${recipients.length > 1 ? 's' : ''}.`
-      })
+      toast.success("Compartilhado com sucesso", { description: `Enviado por ${channelLabel} para ${recipients.length} destinatário${recipients.length > 1 ? 's' : ''}.` })
 
       onSuccess?.(sharedSearch)
       onClose()
     } catch (error) {
-      toast({
-        title: "Erro ao compartilhar",
-        description: error instanceof Error ? error.message : "Não foi possível compartilhar. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao compartilhar", { description: error instanceof Error ? error.message : "Não foi possível compartilhar. Tente novamente." })
     } finally {
       setIsSubmitting(false)
     }

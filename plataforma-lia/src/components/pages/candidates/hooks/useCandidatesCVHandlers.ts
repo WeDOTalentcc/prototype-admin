@@ -2,6 +2,7 @@
 
 import type React from "react"
 import type { Candidate } from "../types"
+import { toast } from "sonner"
 
 export interface CandidatesCVHandlersContext {
   setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>
@@ -12,7 +13,6 @@ export interface CandidatesCVHandlersContext {
   setShowSearchResults: React.Dispatch<React.SetStateAction<boolean>>
   setDisplayedResultsCount: React.Dispatch<React.SetStateAction<number>>
   setChatMessages: React.Dispatch<React.SetStateAction<any[]>>
-  toast: (opts: { title: string; description?: string; variant?: "destructive" | "default" }) => void
 }
 
 export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
@@ -25,7 +25,6 @@ export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
     setShowSearchResults,
     setDisplayedResultsCount,
     setChatMessages,
-    toast,
   } = ctx
 
   const handleCVDrop = async (e: DragEvent) => {
@@ -41,11 +40,7 @@ export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
     const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain']
 
     if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|txt)$/i)) {
-      toast({
-        title: "Formato inválido",
-        description: "Por favor, envie um arquivo PDF, DOC, DOCX ou TXT",
-        variant: "destructive"
-      })
+      toast.error("Formato inválido", { description: "Por favor, envie um arquivo PDF, DOC, DOCX ou TXT" })
       return
     }
 
@@ -119,17 +114,10 @@ export function useCandidatesCVHandlers(ctx: CandidatesCVHandlersContext) {
         setShowSearchResults(true)
         setDisplayedResultsCount(10)
 
-        toast({
-          title: "CV analisado",
-          description: `Encontrados ${mappedCandidates.length} candidatos similares`,
-        })
+        toast.info("CV analisado", { description: `Encontrados ${mappedCandidates.length} candidatos similares` })
       }
     } catch (error) {
-      toast({
-        title: "Erro ao processar CV",
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
-        variant: "destructive"
-      })
+      toast.error("Erro ao processar CV", { description: error instanceof Error ? error.message : 'Erro desconhecido' })
     } finally {
       setCvUploadLoading(false)
     }

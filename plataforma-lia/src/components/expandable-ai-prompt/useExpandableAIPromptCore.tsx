@@ -1,15 +1,14 @@
 "use client"
 
-
 import React, { useState, useMemo, useRef } from "react"
 import {
   MapPin, Briefcase, Clock, Building2, Code
 } from "lucide-react"
 import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
-import { useToast } from "@/hooks/use-toast"
 import { useEAPCallbacks } from "./useEAPCallbacks"
 import { useEAPEffects } from "./useEAPEffects"
+import { toast } from "sonner"
 
 interface BackendEntities {
   location?: string
@@ -111,7 +110,6 @@ export const CONTEXT_COLORS: Record<string, {
   }
 }
 
-
 export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
   const {
 
@@ -129,9 +127,7 @@ export function useExpandableAIPromptCore(props: ExpandableAIPromptProps) {
 
   } = props
   const { settings: globalSettings, loading: globalSettingsLoading } = useGlobalSearchSettings()
-  const { toast } = useToast()
-  
-  const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
+const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
   const [isExpanded, setIsExpanded] = useState(forceExpanded)
   const [showPremiumAutocomplete, setShowPremiumAutocomplete] = useState(false)
   const [inputValue, setInputValue] = useState("")

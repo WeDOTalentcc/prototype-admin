@@ -156,7 +156,6 @@ export const PINIA_READY_HOOKS = [
   'use-similar-profiles',
   'use-sub-status-panel',
   'use-talent-funnel',
-  'use-toast',
   'use-transition-context',
   'use-triagem-chat',
   'use-wizard-auto-save',

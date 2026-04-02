@@ -13,12 +13,12 @@ import {
   CheckCircle, Info, Download
 } from "lucide-react"
 import { liaApi } from "@/services/lia-api"
-import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { CommunicationTemplate, TemplateSituation } from '@/hooks/use-communication-templates'
 import { MessageComposer } from '@/components/communication'
 import { sanitizeHtml } from "@/lib/sanitize"
+import { toast } from "sonner"
 
 // Types
 export type CommunicationType = 'email' | 'whatsapp' | 'triagem' | 'agendamento' | 'feedback'
@@ -159,9 +159,7 @@ export function UnifiedCommunicationModal({
   const [isLoadingVacancies, setIsLoadingVacancies] = useState(false)
   // For WSI screening: link to vacancy only after candidate completes screening
   const [linkOnCompletionOnly, setLinkOnCompletionOnly] = useState(type === 'triagem')
-  
-  const { toast } = useToast()
-  const roleOrJob = jobTitle || candidate?.role || 'a vaga'
+const roleOrJob = jobTitle || candidate?.role || 'a vaga'
 
   // Map CommunicationType to TemplateSituation for MessageComposer
   const getSituationForType = useCallback((communicationType: CommunicationType): TemplateSituation | undefined => {
@@ -266,11 +264,7 @@ export function UnifiedCommunicationModal({
   const handleSend = async () => {
     // Validação: se toggle ativo, exigir seleção de vaga
     if (linkToVacancy && !selectedVacancyId) {
-      toast({
-        title: "Selecione uma vaga",
-        description: "Para vincular o(s) candidato(s), você precisa selecionar uma vaga.",
-        variant: "destructive"
-      })
+      toast.error("Selecione uma vaga", { description: "Para vincular o(s) candidato(s), você precisa selecionar uma vaga." })
       return
     }
     
@@ -300,10 +294,7 @@ export function UnifiedCommunicationModal({
           if (response.ok) {
             const selectedVacancy = vacancies.find(v => v.id === selectedVacancyId)
             const candidateCount = isBulkMode ? selectedCandidates.length : 1
-            toast({
-              title: "Candidato(s) vinculado(s) à vaga",
-              description: `${candidateCount} candidato(s) adicionado(s) à vaga "${selectedVacancy?.title || 'selecionada'}"`,
-            })
+            toast.success("Candidato(s) vinculado(s) à vaga", { description: `${candidateCount} candidato(s) adicionado(s) à vaga "${selectedVacancy?.title || 'selecionada'}"` })
           } else {
           }
         } catch (error) {
@@ -375,30 +366,21 @@ export function UnifiedCommunicationModal({
 
       if (channel === 'email') {
         const result = await sendEmail()
-        toast({
-          title: result.mock ? "Email simulado!" : "Email enviado!",
-          description: result.mock 
-            ? `Modo desenvolvimento: email para ${safeCandidate.email} foi simulado com sucesso`
-            : `Mensagem enviada para ${safeCandidate.email}`,
-        })
+        toast.success(result.mock ? "Email simulado!" : "Email enviado!", { description: result.mock 
+            ? `Modo desenvolvimento: email para ${safeCandidate.email}` 
+            : `Email enviado para ${safeCandidate.email}` })
       } else if (channel === 'whatsapp') {
         const result = await sendWhatsApp()
-        toast({
-          title: result.mock ? "WhatsApp simulado!" : "WhatsApp enviado!",
-          description: result.mock 
-            ? `Modo desenvolvimento: mensagem para ${safeCandidate.name} foi simulada com sucesso`
-            : `Mensagem enviada para ${safeCandidate.name}`,
-        })
+        toast.success(result.mock ? "WhatsApp simulado!" : "WhatsApp enviado!", { description: result.mock 
+            ? `Modo desenvolvimento: mensagem para ${safeCandidate.name}` 
+            : `WhatsApp enviado para ${safeCandidate.name}` })
       } else if (channel === 'both') {
         const emailResult = await sendEmail()
         const waResult = await sendWhatsApp()
         const isMock = emailResult.mock || waResult.mock
-        toast({
-          title: isMock ? "Mensagens simuladas!" : "Mensagens enviadas!",
-          description: isMock 
-            ? `Modo desenvolvimento: email e WhatsApp para ${safeCandidate.name} foram simulados com sucesso`
-            : `Mensagem enviada por email e WhatsApp para ${safeCandidate.name}`,
-        })
+        toast.success(isMock ? "Mensagens simuladas!" : "Mensagens enviadas!", { description: isMock 
+            ? `Modo desenvolvimento: email e WhatsApp para ${safeCandidate.name}` 
+            : `Mensagens enviadas para ${safeCandidate.name}` })
       }
 
       try {
@@ -439,11 +421,7 @@ export function UnifiedCommunicationModal({
           }
         })
       } catch (logError) {
-        toast({
-          title: "Aviso",
-          description: "Mensagem enviada, mas o registro do histórico falhou.",
-          variant: "default"
-        })
+        toast.warning("Aviso", { description: "Mensagem enviada, mas o registro do histórico falhou." })
       }
 
       onSend?.({
@@ -466,11 +444,7 @@ export function UnifiedCommunicationModal({
 
       onClose()
     } catch (error) {
-      toast({
-        title: "Erro ao enviar",
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
-        variant: "destructive"
-      })
+      toast.error("Erro ao enviar", { description: error instanceof Error ? error.message : 'Erro desconhecido' })
     } finally {
       setIsSending(false)
     }

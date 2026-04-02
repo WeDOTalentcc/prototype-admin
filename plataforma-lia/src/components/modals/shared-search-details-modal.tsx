@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
-import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -32,6 +31,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { liaApi, SharedSearchDetail, CandidateSnapshot, CandidateFeedback } from "@/services/lia-api"
+import { toast } from "sonner"
 
 interface SharedSearchDetailsModalProps {
   open: boolean
@@ -52,8 +52,7 @@ export function SharedSearchDetailsModal({
   onAddToJob,
   onCreateJob
 }: SharedSearchDetailsModalProps) {
-  const { toast } = useToast()
-  const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null)
+const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -79,11 +78,7 @@ export function SharedSearchDetailsModal({
       const data = await liaApi.getSharedSearchDetail(sharedSearchId)
       setSharedSearch(data)
     } catch (error) {
-      toast({
-        title: "Erro ao carregar detalhes",
-        description: "Não foi possível carregar os detalhes do compartilhamento.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao carregar detalhes", { description: "Não foi possível carregar os detalhes do compartilhamento." })
     } finally {
       setLoading(false)
     }
@@ -170,11 +165,7 @@ export function SharedSearchDetailsModal({
 
   const handleCreateList = () => {
     if (selectedIds.size === 0) {
-      toast({
-        title: "Selecione candidatos",
-        description: "Selecione pelo menos um candidato para criar a lista.",
-        variant: "destructive"
-      })
+      toast.error("Selecione candidatos", { description: "Selecione pelo menos um candidato para criar a lista." })
       return
     }
     onCreateList?.(Array.from(selectedIds))
@@ -182,11 +173,7 @@ export function SharedSearchDetailsModal({
 
   const handleAddToJob = () => {
     if (selectedIds.size === 0) {
-      toast({
-        title: "Selecione candidatos",
-        description: "Selecione pelo menos um candidato para adicionar à vaga.",
-        variant: "destructive"
-      })
+      toast.error("Selecione candidatos", { description: "Selecione pelo menos um candidato para adicionar à vaga." })
       return
     }
     onAddToJob?.(Array.from(selectedIds))
@@ -194,11 +181,7 @@ export function SharedSearchDetailsModal({
 
   const handleCreateJob = () => {
     if (selectedIds.size === 0) {
-      toast({
-        title: "Selecione candidatos",
-        description: "Selecione pelo menos um candidato para criar a vaga.",
-        variant: "destructive"
-      })
+      toast.error("Selecione candidatos", { description: "Selecione pelo menos um candidato para criar a vaga." })
       return
     }
     onCreateJob?.(Array.from(selectedIds))

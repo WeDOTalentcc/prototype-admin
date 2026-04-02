@@ -20,6 +20,7 @@ import { useState, useRef, useCallback, useEffect } from "react"
 import type { SearchTab, BackendEntities, SearchAnalysis, SearchCriterion } from "@/components/search/expandable-ai-prompt.types"
 import { ENTITY_LABELS, CRITERIA_TYPE_MAP } from "@/components/search/expandable-ai-prompt.types"
 import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
+import { toast } from "sonner"
 
 export interface PromptEnhancement {
   enhanced_query: string
@@ -56,7 +57,6 @@ interface UseSearchEntitiesOptions {
   activeSearchTab: SearchTab
   onNaturalSearchValueChange: (v: string | ((prev: string) => string)) => void
   onCommand: (command: string, action: string) => void
-  toast: (opts: { title: string; description?: string; variant?: string }) => void
 }
 
 export function useSearchEntities({
@@ -64,7 +64,6 @@ export function useSearchEntities({
   activeSearchTab,
   onNaturalSearchValueChange,
   onCommand,
-  toast,
 }: UseSearchEntitiesOptions): UseSearchEntitiesResult {
   const [parsedEntities, setParsedEntities] = useState<BackendEntities>({})
   const [searchAnalysis, setSearchAnalysis] = useState<SearchAnalysis | null>(null)
@@ -382,14 +381,14 @@ export function useSearchEntities({
         const searchText = uniqueKeywords.join(', ')
         onNaturalSearchValueChange(prev => (typeof prev === 'string' && prev) ? `${prev}, ${searchText}` : searchText)
         parseEntitiesFromQuery(searchText)
-        toast({ title: "Arquivo analisado", description: `Extraídos ${uniqueKeywords.length} critérios de ${file.name}` })
+        toast.info("Arquivo analisado", { description: `Extraídos ${uniqueKeywords.length} critérios de ${file.name}` })
       } else {
-        toast({ title: "Arquivo processado", description: `${file.name} foi analisado mas não foram encontrados critérios de busca` })
+        toast.info("Arquivo processado", { description: `${file.name} foi analisado mas não foram encontrados critérios de busca` })
       }
     } else {
-      toast({ title: "Erro na análise", description: analysis.error || "Não foi possível analisar o arquivo", variant: "destructive" })
+      toast.error("Erro na análise", { description: analysis.error || "Não foi possível analisar o arquivo" })
     }
-  }, [toast, parseEntitiesFromQuery, onNaturalSearchValueChange])
+  }, [parseEntitiesFromQuery, onNaturalSearchValueChange])
 
   const handleAudioTranscription = useCallback((text: string) => {
     if (text && text.trim()) {
@@ -399,9 +398,9 @@ export function useSearchEntities({
         return newValue
       })
       setShowPremiumAutocomplete(true)
-      toast({ title: "Transcrição concluída", description: "Texto adicionado à busca" })
+      toast.info("Transcrição concluída", { description: "Texto adicionado à busca" })
     }
-  }, [toast, parseEntitiesFromQuery, onNaturalSearchValueChange])
+  }, [parseEntitiesFromQuery, onNaturalSearchValueChange])
 
   const handlePremiumAutocompleteSelect = useCallback((suggestion: string) => {
     onNaturalSearchValueChange(suggestion)

@@ -12,11 +12,11 @@ import {
   Info, Loader2,
   ClipboardList, ListChecks, Briefcase
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { MessageComposer } from "@/components/communication"
 import { sanitizeHtml } from "@/lib/sanitize"
+import { toast } from "sonner"
 
 type ContactChannel = 'email' | 'whatsapp' | 'telefone' | 'both'
 
@@ -95,10 +95,7 @@ export function WSITriagemInviteModal({
   const [selectedStage, setSelectedStage] = useState('triagem')
   const [vacancies, setVacancies] = useState<JobVacancy[]>([])
   const [isLoadingVacancies, setIsLoadingVacancies] = useState(false)
-  
-  const { toast } = useToast()
-
-  useEffect(() => {
+useEffect(() => {
     setMounted(true)
     return () => setMounted(false)
   }, [])
@@ -182,29 +179,17 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
     if (!candidate) return
     
     if (linkToVacancy && !selectedVacancyId) {
-      toast({
-        title: "Selecione uma vaga",
-        description: "Para vincular o candidato, você precisa selecionar uma vaga.",
-        variant: "destructive"
-      })
+      toast.error("Selecione uma vaga", { description: "Para vincular o candidato, você precisa selecionar uma vaga." })
       return
     }
     
     if ((channel === 'email' || channel === 'both') && !candidate.email) {
-      toast({
-        title: "Email não informado",
-        description: "O candidato não possui email cadastrado.",
-        variant: "destructive"
-      })
+      toast.error("Email não informado", { description: "O candidato não possui email cadastrado." })
       return
     }
     
     if ((channel === 'whatsapp' || channel === 'both') && !candidate.phone) {
-      toast({
-        title: "Telefone não informado",
-        description: "O candidato não possui telefone cadastrado.",
-        variant: "destructive"
-      })
+      toast.error("Telefone não informado", { description: "O candidato não possui telefone cadastrado." })
       return
     }
     
@@ -225,10 +210,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
           if (!response.ok) {
           } else {
             const selectedVacancy = vacancies.find(v => v.id === selectedVacancyId)
-            toast({
-              title: "Candidato vinculado à vaga",
-              description: `${candidate.name} foi adicionado à vaga "${selectedVacancy?.title || 'selecionada'}"`,
-            })
+            toast.success("Candidato vinculado à vaga", { description: `${candidate.name} foi adicionado à vaga "${selectedVacancy?.title || 'selecionada'}"` })
           }
         } catch (error) {
         }
@@ -259,11 +241,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
       const inviteData = await inviteResponse.json()
       
       if (!inviteResponse.ok || !inviteData.success) {
-        toast({
-          title: "Erro ao enviar convite",
-          description: inviteData.error || "Não foi possível enviar o convite. Tente novamente.",
-          variant: "destructive"
-        })
+        toast.error("Erro ao enviar convite", { description: inviteData.error || "Não foi possível enviar o convite. Tente novamente." })
         return
       }
       
@@ -292,10 +270,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
       }
       
       const successMsg = successMessages[channel] || successMessages.email
-      toast({
-        title: successMsg.title,
-        description: successMsg.description,
-      })
+      toast.success(successMsg.title, { description: successMsg.description })
       
       onSend?.({
         channel,
@@ -311,11 +286,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
       
       onClose()
     } catch (error) {
-      toast({
-        title: "Erro ao enviar",
-        description: "Erro de conexão. Verifique sua internet e tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao enviar", { description: "Erro de conexão. Verifique sua internet e tente novamente." })
     } finally {
       setIsSending(false)
     }

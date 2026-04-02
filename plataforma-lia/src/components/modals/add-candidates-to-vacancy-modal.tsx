@@ -5,12 +5,12 @@ import { createPortal } from "react-dom"
 import { liaApi, JobVacancy } from "@/services/lia-api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
 import { Briefcase, Search, Loader2, Users, Check, Building2, MapPin, Star, X, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { toast } from "sonner"
 
 interface AddCandidatesToVacancyModalProps {
   isOpen: boolean
@@ -126,8 +126,7 @@ export function AddCandidatesToVacancyModal({
   onSuccess,
   currentRecruiterEmail
 }: AddCandidatesToVacancyModalProps) {
-  const { toast } = useToast()
-  const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
+const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
   const [selectedVacancyId, setSelectedVacancyId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -245,7 +244,7 @@ export function AddCandidatesToVacancyModal({
 
   const handleSubmit = async () => {
     if (!selectedVacancyId) {
-      toast({ title: "Selecione uma vaga", variant: "destructive" })
+      toast.error("Selecione uma vaga")
       return
     }
     
@@ -266,19 +265,12 @@ export function AddCandidatesToVacancyModal({
         throw new Error('Falha ao adicionar candidatos')
       }
       
-      toast({
-        title: "Candidatos adicionados!",
-        description: `${candidateIds.length} candidato(s) adicionado(s) à vaga "${selectedVacancy?.title}"`,
-      })
+      toast.success("Candidatos adicionados!", { description: `${candidateIds.length} candidato(s) adicionado(s) à vaga "${selectedVacancy?.title}"` })
       
       onSuccess?.()
       onClose()
     } catch (error) {
-      toast({
-        title: "Erro ao adicionar candidatos",
-        description: "Tente novamente",
-        variant: "destructive"
-      })
+      toast.error("Erro ao adicionar candidatos", { description: "Tente novamente" })
     } finally {
       setIsSubmitting(false)
     }

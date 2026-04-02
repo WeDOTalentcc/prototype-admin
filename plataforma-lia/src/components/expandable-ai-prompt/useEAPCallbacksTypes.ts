@@ -91,7 +91,6 @@ export type PromptEnhancement = {
 } | null
 
 export interface UseEAPCallbacksParams {
-  toast: (opts: Record<string, unknown>) => void
   parseEntitiesFromQuery: (query: string) => Promise<void>
   parsedEntities: BackendEntities
   advancedFilters: SearchFilters

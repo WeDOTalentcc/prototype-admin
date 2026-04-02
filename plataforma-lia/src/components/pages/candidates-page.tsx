@@ -12,6 +12,7 @@ import { CandidateSearchBar } from "@/components/pages/candidates/CandidateSearc
 import { useCandidatesPageCore } from "./candidates/hooks/useCandidatesPageCore"
 import { CandidatesPageHeader } from "@/components/pages/candidates/CandidatesPageHeader"
 import { CandidatesPageModals } from "@/components/pages/candidates/CandidatesPageModals"
+import { toast } from "sonner"
 
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false })
 
@@ -50,7 +51,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
     showContactFilterModal, showContactModal, showCreditConfirmation, showRevealModal, showRubricModal, showScheduleModal,
     showSendEmailModal, showShareSearchModal, showSourceChangeModal, showTableFiltersPanel, showUnsavedWarningModal, showWSIInviteModal,
     showWSITextModal, showWSIVoiceModal, sortedCandidates, tableColumns, tableContainerRef, tableFilters,
-    talentFunnel, toast, toggleTableFilter, unifiedModalCandidate, unifiedModalOpen, unifiedModalType,
+    talentFunnel, toggleTableFilter, unifiedModalCandidate, unifiedModalOpen, unifiedModalType,
     unsavedPearchCandidates, user, visibleCandidates, visibleTableColumns, wsiCandidateForScreening, wsiInviteCandidate,
     tabs: tabsRaw,
     archetypeCreationStep, archetypeToDelete, buildFiltersFromTags, crossTabFilter, currentPage, currentSearchSource,
@@ -158,17 +159,11 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             onBulkWSIScreening={handleBulkWSIScreening}
             onToggleFavoriteBatch={() => {
               selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
-              toast({
-                title: "Favoritos atualizados",
-                description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos`
-              })
+              toast.success("Favoritos atualizados", { description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos` })
             }}
             onHideBatch={() => {
               selectedCandidatesForBatch.forEach(id => (talentFunnel as unknown as Record<string, (id: string) => void>).hideCandidate?.(id))
-              toast({
-                title: "Candidatos ocultos",
-                description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa`
-              })
+              toast.success("Candidatos ocultos", { description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa` })
               deselectAllCandidates()
             }}
             onSaveToLocalBase={handleSaveToLocalBase}
@@ -295,7 +290,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             setShareSearchCandidates={setShareSearchCandidates}
             setShareSearchTitle={setShareSearchTitle}
             setShowShareSearchModal={setShowShareSearchModal}
-            toast={toast as unknown as Parameters<typeof CandidateSearchResultsView>[0]["toast"]}
             talentFunnel={talentFunnel as unknown as Parameters<typeof CandidateSearchResultsView>[0]["talentFunnel"]}
             setEditQueryValue={setEditQueryValue}
             setShowEditQueryModal={setShowEditQueryModal}
@@ -447,16 +441,9 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 setDisplayedResultsCount(10)
                 setLastSearchQuery(`Lista: ${listDetails.name}`)
                 
-                toast({
-                  title: "Lista carregada",
-                  description: `Exibindo ${mappedCandidates.length} candidatos da lista "${listDetails.name}"`,
-                })
+                toast.success("Lista carregada", { description: `Exibindo ${mappedCandidates.length} candidatos da lista "${listDetails.name}"` })
               } catch (error) {
-                toast({
-                  title: "Erro ao carregar lista",
-                  description: error instanceof Error ? error.message : "Não foi possível carregar os candidatos da lista.",
-                  variant: "destructive"
-                })
+                toast.error("Erro ao carregar lista", { description: error instanceof Error ? error.message : "Não foi possível carregar os candidatos da lista." })
               } finally {
                 setIsLoading(false)
               }
@@ -470,11 +457,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 })
                 setShowAddListToVacanciesModal(true)
               }).catch(err => {
-                toast({
-                  title: "Erro ao carregar lista",
-                  description: err.message,
-                  variant: "destructive"
-                })
+                toast.error("Erro ao carregar lista", { description: err.message })
               })
             }}
             onAddCandidateToList={(listId, listName) => {
@@ -609,7 +592,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setRubricCandidate={setRubricCandidate}
         rubricEvaluationData={rubricEvaluationData}
         setRubricEvaluationData={setRubricEvaluationData}
-        toast={toast as unknown as Parameters<typeof CandidatesPageModals>[0]["toast"]}
         showSendEmailModal={showSendEmailModal}
         setShowSendEmailModal={setShowSendEmailModal}
         emailCandidateSelected={emailCandidateSelected}

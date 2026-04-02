@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useCallback } from "react"
 import { type KanbanCandidate, type DynamicStage } from "@/components/kanban"
+import { toast } from "sonner"
 
 interface UseKanbanNavigationProps {
   jobId: string | undefined
@@ -15,7 +16,6 @@ interface UseKanbanNavigationProps {
   setPreviewCandidate: (c: Record<string, unknown> | null) => void
   setIsPreviewOpen: (v: boolean) => void
   // pendingCommunicationAction useEffect props
-  toast: (opts: { title: string; description?: string }) => void
   setUnifiedModalCandidate: (c: unknown) => void
   setUnifiedModalType: (t: string) => void
   setUnifiedModalOpen: (v: boolean) => void
@@ -32,7 +32,6 @@ export function useKanbanNavigation({
   setShowExpandedLIA,
   setPreviewCandidate,
   setIsPreviewOpen,
-  toast,
   setUnifiedModalCandidate,
   setUnifiedModalType,
   setUnifiedModalOpen,
@@ -179,10 +178,7 @@ export function useKanbanNavigation({
             setUnifiedModalType(channelType)
             setUnifiedModalOpen(true)
             if (candidateCount > 0) {
-              toast({
-                title: "Modal de comunicação aberto",
-                description: `${candidateCount} candidato(s) prontos para notificação via ${channelType === "whatsapp" ? "WhatsApp" : "E-mail"}.`,
-              })
+              toast.success("Modal de comunicação aberto", { description: `${candidateCount} candidato(s) prontos para notificação via ${channelType === "whatsapp" ? "WhatsApp" : "E-mail"}.` })
             }
           }, 500)
         }
@@ -190,7 +186,7 @@ export function useKanbanNavigation({
         localStorage.removeItem("pendingCommunicationAction")
       }
     }
-  }, [jobId, toast, setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalOpen])
+  }, [jobId, setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalOpen])
 
   return {
     pendingNavigationRef,

@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
 import {
   List, Plus, Search, MoreHorizontal, Edit2, Trash2, Users,
   Calendar, FolderOpen, Briefcase, X, Check, Loader2, ChevronRight, UserPlus,
@@ -61,6 +60,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { toast } from "sonner"
 
 const LIST_COLORS = [
   { value: 'var(--gray-600)', name: 'Cyan' },
@@ -82,8 +82,7 @@ interface ListsTabProps {
 }
 
 export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandidateToList, onViewSharedDetails }: ListsTabProps) {
-  const { toast } = useToast()
-  const [lists, setLists] = useState<CandidateList[]>([])
+const [lists, setLists] = useState<CandidateList[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   
@@ -117,11 +116,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
       const response = await liaApi.getCandidateLists({ limit: 100 })
       setLists(response.items || [])
     } catch (error) {
-      toast({
-        title: "Erro ao carregar listas",
-        description: "Não foi possível carregar as listas de candidatos.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao carregar listas", { description: "Não foi possível carregar as listas de candidatos." })
     } finally {
       setLoading(false)
     }
@@ -181,11 +176,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
 
   const handleSave = async () => {
     if (!formName.trim()) {
-      toast({
-        title: "Nome obrigatório",
-        description: "Por favor, informe um nome para a lista.",
-        variant: "destructive",
-      })
+      toast.error("Nome obrigatório", { description: "Por favor, informe um nome para a lista." })
       return
     }
 
@@ -197,29 +188,19 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
           description: formDescription.trim() || undefined,
           color: formColor,
         })
-        toast({
-          title: "Lista atualizada",
-          description: `A lista "${formName}" foi atualizada com sucesso.`,
-        })
+        toast.success("Lista atualizada", { description: `A lista "${formName}" foi atualizada com sucesso.` })
       } else {
         await liaApi.createCandidateList({
           name: formName.trim(),
           description: formDescription.trim() || undefined,
           color: formColor,
         })
-        toast({
-          title: "Lista criada",
-          description: `A lista "${formName}" foi criada com sucesso.`,
-        })
+        toast.success("Lista criada", { description: `A lista "${formName}" foi criada com sucesso.` })
       }
       closeModal()
       loadLists()
     } catch (error) {
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar a lista. Tente novamente.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao salvar", { description: "Não foi possível salvar a lista. Tente novamente." })
     } finally {
       setSaving(false)
     }
@@ -231,18 +212,11 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
     setDeleting(true)
     try {
       await liaApi.deleteCandidateList(listToDelete.id)
-      toast({
-        title: "Lista excluída",
-        description: `A lista "${listToDelete.name}" foi excluída.`,
-      })
+      toast.success("Lista excluída", { description: `A lista "${listToDelete.name}" foi excluída.` })
       setListToDelete(null)
       loadLists()
     } catch (error) {
-      toast({
-        title: "Erro ao excluir",
-        description: "Não foi possível excluir a lista. Tente novamente.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao excluir", { description: "Não foi possível excluir a lista. Tente novamente." })
     } finally {
       setDeleting(false)
     }
@@ -288,16 +262,9 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
   const handleCopyLink = async (shareUrl: string) => {
     try {
       await navigator.clipboard.writeText(shareUrl)
-      toast({
-        title: "Link copiado",
-        description: "O link foi copiado para a área de transferência.",
-      })
+      toast.success("Link copiado", { description: "O link foi copiado para a área de transferência." })
     } catch (error) {
-      toast({
-        title: "Erro ao copiar",
-        description: "Não foi possível copiar o link.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao copiar", { description: "Não foi possível copiar o link." })
     }
   }
 
@@ -307,19 +274,12 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
         method: 'POST',
       })
       if (response.ok) {
-        toast({
-          title: "Convite reenviado",
-          description: "O convite foi reenviado com sucesso.",
-        })
+        toast.success("Convite reenviado", { description: "O convite foi reenviado com sucesso." })
       } else {
         throw new Error('Failed to resend')
       }
     } catch (error) {
-      toast({
-        title: "Erro ao reenviar",
-        description: "Não foi possível reenviar o convite.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao reenviar", { description: "Não foi possível reenviar o convite." })
     }
   }
 
@@ -329,20 +289,13 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
         method: 'DELETE',
       })
       if (response.ok) {
-        toast({
-          title: "Compartilhamento encerrado",
-          description: "O acesso foi revogado com sucesso.",
-        })
+        toast.success("Compartilhamento encerrado", { description: "O acesso foi revogado com sucesso." })
         loadSharedSearches()
       } else {
         throw new Error('Failed to revoke')
       }
     } catch (error) {
-      toast({
-        title: "Erro ao encerrar",
-        description: "Não foi possível encerrar o compartilhamento.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao encerrar", { description: "Não foi possível encerrar o compartilhamento." })
     }
   }
 
@@ -359,19 +312,12 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
       })
       if (response?.id) {
         await liaApi.addCandidatesToList(response.id, candidateIds)
-        toast({
-          title: "Lista criada",
-          description: `Lista criada com ${candidateIds.length} candidato(s).`,
-        })
+        toast.success("Lista criada", { description: `Lista criada com ${candidateIds.length} candidato(s).` })
         loadLists()
         setShowDetailsModal(false)
       }
     } catch (error) {
-      toast({
-        title: "Erro ao criar lista",
-        description: "Não foi possível criar a lista. Tente novamente.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao criar lista", { description: "Não foi possível criar a lista. Tente novamente." })
     }
   }
 
@@ -382,10 +328,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
 
   const handleCreateJobFromShared = (candidateIds: string[]) => {
     setSelectedCandidateIds(candidateIds)
-    toast({
-      title: "Criar nova vaga",
-      description: `Redirecionando para criar vaga com ${candidateIds.length} candidato(s)...`,
-    })
+    toast.success("Criar nova vaga", { description: `Redirecionando para criar vaga com ${candidateIds.length} candidato(s)...` })
     window.location.href = `/jobs/new?candidates=${candidateIds.join(',')}`
   }
 
@@ -890,7 +833,7 @@ export function ListsTab({ onListSelect, onAddToJobs, onGoToSearch, onAddCandida
         onSuccess={() => {
           setShowAddToJobModal(false)
           loadSharedSearches()
-          toast({ title: "Candidatos adicionados com sucesso!" })
+          toast.success("Candidatos adicionados com sucesso!")
         }}
       />
 

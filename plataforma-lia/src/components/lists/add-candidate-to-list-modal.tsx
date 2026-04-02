@@ -1,11 +1,11 @@
 "use client"
 
+import { toast } from "sonner"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { liaApi, CandidateProfile } from "@/services/lia-api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -33,8 +33,7 @@ export function AddCandidateToListModal({
   onCandidatesAdded,
   onGoToSearch,
 }: AddCandidateToListModalProps) {
-  const { toast } = useToast()
-  const fileInputRef = useRef<HTMLInputElement>(null)
+const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<CandidateProfile[]>([])
@@ -110,19 +109,12 @@ export function AddCandidateToListModal({
       const candidateIds = Array.from(selectedCandidates)
       await liaApi.addCandidatesToList(listId, candidateIds)
       
-      toast({
-        title: "Candidatos adicionados",
-        description: `${candidateIds.length} candidato(s) adicionado(s) à lista "${listName}".`,
-      })
+      toast.success("Candidatos adicionados", { description: `${candidateIds.length} candidato(s) adicionado(s) à lista "${listName}".` })
       
       onCandidatesAdded(candidateIds)
       onOpenChange(false)
     } catch (error) {
-      toast({
-        title: "Erro ao adicionar",
-        description: "Não foi possível adicionar os candidatos. Tente novamente.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao adicionar", { description: "Não foi possível adicionar os candidatos. Tente novamente." })
     } finally {
       setAdding(false)
     }
@@ -133,11 +125,7 @@ export function AddCandidateToListModal({
 
     const urlPattern = /^https?:\/\/(www\.)?linkedin\.com\/(in|pub)\/[a-zA-Z0-9_-]+\/?/
     if (!urlPattern.test(linkedinUrl.trim())) {
-      toast({
-        title: "URL inválida",
-        description: "Por favor, insira uma URL válida do LinkedIn.",
-        variant: "destructive",
-      })
+      toast.error("URL inválida", { description: "Por favor, insira uma URL válida do LinkedIn." })
       return
     }
 
@@ -172,30 +160,16 @@ export function AddCandidateToListModal({
       
       if (localIds.length > 0) {
         await liaApi.addCandidatesToList(listId, localIds)
-        toast({
-          title: "Candidato importado",
-          description: `${localIds.length} candidato(s) do LinkedIn adicionado(s) à lista "${listName}".`,
-        })
+        toast.success("Candidato importado", { description: `${localIds.length} candidato(s) do LinkedIn adicionado(s) à lista "${listName}".` })
         onCandidatesAdded(localIds)
         onOpenChange(false)
       } else if (data.imported_count > 0 || data.updated_count > 0) {
-        toast({
-          title: "Candidato importado",
-          description: "Candidato salvo na base, mas sem ID para adicionar à lista.",
-        })
+        toast.success("Candidato importado", { description: "Candidato salvo na base, mas sem ID para adicionar à lista." })
       } else {
-        toast({
-          title: "Nenhum candidato",
-          description: "Não foi possível importar candidatos do LinkedIn.",
-          variant: "destructive",
-        })
+        toast.error("Nenhum candidato", { description: "Não foi possível importar candidatos do LinkedIn." })
       }
     } catch (error) {
-      toast({
-        title: "Erro na importação",
-        description: "Não foi possível importar o candidato do LinkedIn.",
-        variant: "destructive",
-      })
+      toast.error("Erro na importação", { description: "Não foi possível importar o candidato do LinkedIn." })
     } finally {
       setImportingLinkedin(false)
       setLinkedinUrl("")
@@ -213,11 +187,7 @@ export function AddCandidateToListModal({
     ]
     
     if (!validTypes.includes(file.type)) {
-      toast({
-        title: "Formato inválido",
-        description: "Por favor, envie um arquivo PDF, DOC ou DOCX.",
-        variant: "destructive",
-      })
+      toast.error("Formato inválido", { description: "Por favor, envie um arquivo PDF, DOC ou DOCX." })
       return
     }
 
@@ -254,29 +224,16 @@ export function AddCandidateToListModal({
       
       if (localIds.length > 0) {
         await liaApi.addCandidatesToList(listId, localIds)
-        toast({
-          title: "CV importado",
-          description: `Candidato do CV adicionado à lista "${listName}".`,
-        })
+        toast.success("CV importado", { description: `Candidato do CV adicionado à lista "${listName}".` })
         onCandidatesAdded(localIds)
         onOpenChange(false)
       } else if (data.success || data.parsed) {
-        toast({
-          title: "CV processado",
-          description: "CV importado com sucesso. Busque o candidato para adicionar à lista.",
-        })
+        toast.info("CV processado", { description: "CV importado com sucesso. Busque o candidato para adicionar à lista." })
       } else {
-        toast({
-          title: "CV processado",
-          description: "CV importado, mas precisa ser adicionado manualmente.",
-        })
+        toast.info("CV processado", { description: "CV importado, mas precisa ser adicionado manualmente." })
       }
     } catch (error) {
-      toast({
-        title: "Erro no upload",
-        description: "Não foi possível processar o CV.",
-        variant: "destructive",
-      })
+      toast.error("Erro no upload", { description: "Não foi possível processar o CV." })
     } finally {
       setUploadingCV(false)
       if (fileInputRef.current) {

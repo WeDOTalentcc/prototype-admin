@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
-import { useToast } from "@/hooks/use-toast"
 import { useShortList } from "@/hooks/use-short-list"
 import { useProactiveInsights } from "@/hooks/use-proactive-insights"
 import { useNavigationPersistence } from "@/hooks/use-navigation-persistence"
@@ -49,13 +48,13 @@ import { useKanbanColumnConfig } from "@/components/pages/job-kanban/hooks/useKa
 import { useKanbanCandidateHandlers } from "@/components/pages/job-kanban/hooks/useKanbanCandidateHandlers"
 import { useKanbanTransitionHandlers } from "@/components/pages/job-kanban/hooks/useKanbanTransitionHandlers"
 import { useKanbanNavigation } from "@/components/pages/job-kanban/hooks/useKanbanNavigation"
+import { toast } from "sonner"
 
 const jobData = mockJobData
 
 export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknown>; onBack?: () => void }) {
   const router = useRouter()
-  const { toast } = useToast()
-  const { saveJobsState } = useNavigationPersistence()
+const { saveJobsState } = useNavigationPersistence()
   const { user } = useAuth()
   const talentFunnel = useTalentFunnel()
   const _companyIdForSL = ((user as Record<string, unknown>)?.company as string) || 'demo'
@@ -109,7 +108,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     publicLink, setPublicLink,
     showPublishSuccess, setShowPublishSuccess,
     handlePublishJob,
-  } = useKanbanPublishing({ job, jobEditForm, setJobEditForm, setActiveTab, toast: toast as unknown as Parameters<typeof useKanbanPublishing>[0]["toast"] })
+  } = useKanbanPublishing({ job, jobEditForm, setJobEditForm, setActiveTab })
 
   // Persistência de navegação - salva estado quando muda
   useEffect(() => {
@@ -162,7 +161,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setCandidatesData,
     universalModalState: universalModalState as unknown as Parameters<typeof useKanbanTransitions>[0]["universalModalState"],
     closeTransition,
-    toast,
   })
 
   // handleOpenSpecializedModal — extracted to useKanbanTransitionHandlers
@@ -191,7 +189,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     enabled: allCandidateIds.length > 0,
   })
 
-
   // ── Carregamento de candidatos — extraído para useKanbanCandidateLoader ──
   const candidateLoader = useKanbanCandidateLoader({ job, dynamicStages, setCandidatesData })
   const { isLoadingCandidates, hasMounted, isClient } = candidateLoader.state
@@ -219,7 +216,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   } = kanbanFilters
 
   // ── Modais e UI — extraído para useKanbanUIModals ──
-  const uiModals = useKanbanUIModals({ job, toast: toast as unknown as Parameters<typeof useKanbanUIModals>[0]["toast"] })
+  const uiModals = useKanbanUIModals({ job })
   const {
     previewCandidate, isPreviewOpen, showCandidatePage, isPreviewMaximized,
     triagemCandidate, showReport, isTriagemOpen, showTestPreview, editingQuestion,
@@ -299,10 +296,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   })
 
   const handleDataRequestSubmit = useCallback(async (_data: DataRequestSubmitData) => {
-    toast({
-      title: "Solicitação Enviada",
-      description: `Solicitação de dados enviada para ${(dataRequestModalCandidate as Record<string,unknown>|null)?.name as string || 'candidato'}`,
-    })
+    toast.success("Solicitação Enviada", { description: `Solicitação de dados enviada para ${(dataRequestModalCandidate as Record<string,unknown>|null)?.name as string || 'candidato'}` })
     setShowDataRequestModal(false)
     setDataRequestModalCandidate(null)
   }, [dataRequestModalCandidate, toast, setShowDataRequestModal, setDataRequestModalCandidate])
@@ -311,7 +305,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     selectedCandidates,
     setSelectedCandidates,
     allTableCandidates: allTableCandidates as unknown as Parameters<typeof useKanbanBulkActions>[0]["allTableCandidates"],
-    toast,
     setBulkActionType,
     setShowBulkActionModal,
     setDataRequestModalCandidate: setDataRequestModalCandidate as unknown as Parameters<typeof useKanbanBulkActions>[0]["setDataRequestModalCandidate"],
@@ -325,7 +318,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setCandidatesData: setCandidatesData as unknown as Parameters<typeof useKanbanBulkActions>[0]["setCandidatesData"],
   })
 
-
   // Navigation — extracted to useKanbanNavigation
   const { pendingNavigationRef, processPendingNavigation } = useKanbanNavigation({
     jobId: job?.id?.toString(),
@@ -338,7 +330,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setShowExpandedLIA,
     setPreviewCandidate,
     setIsPreviewOpen,
-    toast: toast as unknown as Parameters<typeof useKanbanNavigation>[0]["toast"],
     setUnifiedModalCandidate: setUnifiedModalCandidate as unknown as Parameters<typeof useKanbanNavigation>[0]["setUnifiedModalCandidate"],
     setUnifiedModalType: setUnifiedModalType as unknown as Parameters<typeof useKanbanNavigation>[0]["setUnifiedModalType"],
     setUnifiedModalOpen,
@@ -690,7 +681,6 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   }
 
   const { handleSaveJobSection, handleInlineRename, handleInlineToggleActive, handleInlineRemove, handleInlineMoveLeft, handleInlineMoveRight, handleInlineUpdateSLA } = useKanbanJobEditing({
-    toast: toast as unknown as Parameters<typeof useKanbanJobEditing>[0]["toast"],
     currentJob: currentJob as unknown as Parameters<typeof useKanbanJobEditing>[0]["currentJob"],
     jobEditForm,
     setSavingJobSection,

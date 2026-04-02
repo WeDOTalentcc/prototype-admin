@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { useToast } from '@/hooks/use-toast'
-
+import { toast } from "sonner"
 interface ReturnEvent {
   id: string
   event_type: string
@@ -66,18 +65,12 @@ export function useReturnEvents({
   const [isPolling, setIsPolling] = useState(false)
   const [useSSE, setUseSSE] = useState(true)
   const lastPollTimestamp = useRef<string>(new Date().toISOString())
-  const { toast } = useToast()
-
-  const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaConfig }), [customSlaConfig])
+const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaConfig }), [customSlaConfig])
 
   const processEvent = useCallback((event: ReturnEvent) => {
     const toastVariant = event.notification_type === 'warning' ? 'destructive' as const : 'default' as const
 
-    toast({
-      title: event.title,
-      description: event.description,
-      variant: toastVariant,
-    })
+    toast.success(event.title, { description: event.description })
   }, [toast])
 
   const computeAlerts = useCallback((candidates: Array<{

@@ -13,8 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
-
+import { toast } from "sonner"
 interface AISuggestion {
   name: string
   description: string
@@ -72,8 +71,7 @@ export function PreviewSuggestionModal({
   onSetLiaPromptValue,
   onSetActiveSearchTab,
 }: PreviewSuggestionModalProps) {
-  const { toast } = useToast()
-  const [previewTags, setPreviewTags] = useState<string[]>([])
+const [previewTags, setPreviewTags] = useState<string[]>([])
   const [newPreviewTag, setNewPreviewTag] = useState("")
   const [isSavingPreviewArchetype, setIsSavingPreviewArchetype] = useState(false)
 
@@ -171,11 +169,7 @@ export function PreviewSuggestionModal({
             onClick={async () => {
               if (!previewSuggestion) return
               if (previewTags.length === 0) {
-                toast({
-                  title: "Nenhum critério",
-                  description: "Adicione pelo menos um critério de busca para salvar o arquétipo.",
-                  variant: "destructive"
-                })
+                toast.error("Nenhum critério", { description: "Adicione pelo menos um critério de busca para salvar o arquétipo." })
                 return
               }
               setIsSavingPreviewArchetype(true)
@@ -211,10 +205,7 @@ export function PreviewSuggestionModal({
                     filters: editedFilters,
                     tags: previewTags,
                   })
-                  toast({
-                    title: "Arquétipo atualizado",
-                    description: `"${previewSuggestion.name}" foi atualizado com sucesso.`,
-                  })
+                  toast.success("Arquétipo atualizado", { description: `"${previewSuggestion.name}" foi atualizado com sucesso.` })
                 } else {
                   const response = await fetch('/api/backend-proxy/search/archetypes/', {
                     method: 'POST',
@@ -249,18 +240,11 @@ export function PreviewSuggestionModal({
                     createdAt: new Date()
                   }
                   onSaveArchetype(newArchetype)
-                  toast({
-                    title: "Arquétipo salvo",
-                    description: `"${previewSuggestion.name}" foi adicionado aos seus arquétipos.`,
-                  })
+                  toast.success("Arquétipo salvo", { description: `"${previewSuggestion.name}" foi adicionado aos seus arquétipos.` })
                 }
                 onClose()
               } catch {
-                toast({
-                  title: "Erro ao salvar",
-                  description: "Não foi possível salvar o arquétipo. Tente novamente.",
-                  variant: "destructive"
-                })
+                toast.error("Erro ao salvar", { description: "Não foi possível salvar o arquétipo. Tente novamente." })
               } finally {
                 setIsSavingPreviewArchetype(false)
               }
@@ -289,11 +273,7 @@ export function PreviewSuggestionModal({
             onClick={async () => {
               if (!previewSuggestion) return
               if (previewTags.length === 0) {
-                toast({
-                  title: "Nenhum critério",
-                  description: "Adicione pelo menos um critério de busca para executar.",
-                  variant: "destructive"
-                })
+                toast.error("Nenhum critério", { description: "Adicione pelo menos um critério de busca para executar." })
                 return
               }
               const editedFilters = buildFiltersFromTags(previewTags)

@@ -53,7 +53,7 @@ export default function CandidateProfilePage() {
     setOpinionsSubTab, setPeriodFilter, setSelectedCategory, setShowAddToListModal,
     setShowAddToVacancyModal, setShowCommunicationModal, setShowLiaAnalysisModal,
     showAddToListModal, showAddToVacancyModal, showCommunicationModal,
-    showLiaAnalysisModal, skillCategories, toast, uploadProgress,
+    showLiaAnalysisModal, skillCategories, uploadProgress,
   } = useCandidatePageCore()
 
   // ── Loading ──────────────────────────────────────────────────────────────
@@ -369,7 +369,6 @@ export default function CandidateProfilePage() {
               setNewNoteCategory={setNewNoteCategory}
               setActivities={setActivities}
               formatRelativeTime={formatRelativeTime}
-              toast={toast}
             />
 
             <CandidatoFilesTab

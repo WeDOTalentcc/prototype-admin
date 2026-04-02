@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { liaApi } from "@/services/lia-api"
+import { toast } from "sonner"
 
 interface UseKanbanPublishingProps {
   job?: Record<string, unknown>
   jobEditForm: Record<string, unknown>
   setJobEditForm: React.Dispatch<React.SetStateAction<Record<string, unknown>>>
   setActiveTab: React.Dispatch<React.SetStateAction<"management" | "edit">>
-  toast: (opts: { title: string; description?: string; variant?: string }) => void
 }
 
 export function useKanbanPublishing({
@@ -16,7 +16,6 @@ export function useKanbanPublishing({
   jobEditForm,
   setJobEditForm,
   setActiveTab,
-  toast,
 }: UseKanbanPublishingProps) {
   const [isCreationMode, setIsCreationMode] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
@@ -86,21 +85,14 @@ export function useKanbanPublishing({
         public_url: linkResult.public_url,
       }))
 
-      toast({
-        title: "Vaga publicada!",
-        description: "A vaga está ativa e o link de candidatura foi gerado.",
-      })
+      toast.success("Vaga publicada!", { description: "A vaga está ativa e o link de candidatura foi gerado." })
     } catch (error: unknown) {
       const detail = error instanceof Error ? error.message : "Erro desconhecido"
-      toast({
-        title: "Erro ao publicar",
-        description: `Não foi possível publicar a vaga: ${detail}`,
-        variant: "destructive",
-      })
+      toast.error("Erro ao publicar", { description: `Não foi possível publicar a vaga: ${detail}` })
     } finally {
       setIsPublishing(false)
     }
-  }, [job?.backendId, jobEditForm, toast])
+  }, [job?.backendId, jobEditForm])
 
   return {
     isCreationMode, setIsCreationMode,

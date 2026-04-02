@@ -4,8 +4,8 @@ import React from "react"
 import { useState, useEffect, useCallback } from "react"
 import { FileText, FileVideo, Award, File, Image } from "lucide-react"
 import { formatRelativeTime } from "@/lib/format-utils"
-import { useToast } from "@/hooks/use-toast"
 import type { FileItem } from "@/components/candidate-preview/FilePreviewModal"
+import { toast } from "sonner"
 
 export { formatFileSize, formatRelativeTime } from "@/lib/format-utils"
 
@@ -20,7 +20,6 @@ export function getCategoryColor(fileType: string): { bg: string; text: string }
   }
   return colors[fileType] || colors['document']
 }
-
 
 export function getFileIcon(fileType: string, mimeType?: string) {
   if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
@@ -42,9 +41,7 @@ export function useCandidateFiles(candidate: Record<string, any>) {
   const [showPreview, setShowPreview] = useState(false)
   const [previewType, setPreviewType] = useState<'pdf' | 'image' | 'video' | 'audio' | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
-
-  const { toast } = useToast()
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
 
   const fetchCandidateFiles = useCallback(async () => {
     if (!candidate?.id) return
@@ -55,11 +52,7 @@ export function useCandidateFiles(candidate: Record<string, any>) {
       const response = await fetch(url)
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({})) as { error?: string }
-        toast({
-          title: "Erro ao carregar arquivos",
-          description: errorData.error || "Não foi possível carregar os arquivos",
-          variant: "destructive"
-        })
+        toast.error("Erro ao carregar arquivos", { description: errorData.error || "Não foi possível carregar os arquivos" })
         return
       }
       const data = await response.json()
@@ -67,11 +60,7 @@ export function useCandidateFiles(candidate: Record<string, any>) {
       setFileCategories(data.categories || [])
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro desconhecido'
-      toast({
-        title: "Erro ao carregar arquivos",
-        description: message,
-        variant: "destructive"
-      })
+      toast.error("Erro ao carregar arquivos", { description: message })
     } finally {
       setIsLoadingFiles(false)
     }
@@ -96,11 +85,7 @@ export function useCandidateFiles(candidate: Record<string, any>) {
       const file = files[i]
 
       if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: "Arquivo muito grande",
-          description: `${file.name} excede o limite de 10MB`,
-          variant: "destructive"
-        })
+        toast.error("Arquivo muito grande", { description: `${file.name} excede o limite de 10MB` })
         errorCount++
         continue
       }
@@ -122,11 +107,7 @@ export function useCandidateFiles(candidate: Record<string, any>) {
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({})) as { error?: string }
           errorCount++
-          toast({
-            title: "Erro no upload",
-            description: errorData.error || `Erro ao enviar ${file.name}`,
-            variant: "destructive"
-          })
+          toast.error("Erro no upload", { description: errorData.error || `Erro ao enviar ${file.name}` })
           setUploadProgress(Math.round(((i + 1) / files.length) * 100))
           continue
         }
@@ -137,20 +118,12 @@ export function useCandidateFiles(candidate: Record<string, any>) {
           successCount++
         } else {
           errorCount++
-          toast({
-            title: "Erro no upload",
-            description: data.error || `Erro ao enviar ${file.name}`,
-            variant: "destructive"
-          })
+          toast.error("Erro no upload", { description: data.error || `Erro ao enviar ${file.name}` })
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Erro desconhecido'
         errorCount++
-        toast({
-          title: "Erro no upload",
-          description: message || `Erro ao enviar ${file.name}`,
-          variant: "destructive"
-        })
+        toast.error("Erro no upload", { description: message || `Erro ao enviar ${file.name}` })
       }
 
       setUploadProgress(Math.round(((i + 1) / files.length) * 100))
@@ -160,10 +133,7 @@ export function useCandidateFiles(candidate: Record<string, any>) {
     setUploadProgress(0)
 
     if (successCount > 0) {
-      toast({
-        title: "Upload concluído",
-        description: `${successCount} arquivo(s) enviado(s) com sucesso`
-      })
+      toast.success("Upload concluído", { description: `${successCount} arquivo(s) enviado(s) com sucesso` })
       fetchCandidateFiles()
     }
   }
@@ -178,35 +148,20 @@ export function useCandidateFiles(candidate: Record<string, any>) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({})) as { error?: string }
-        toast({
-          title: "Erro",
-          description: errorData.error || "Não foi possível excluir o arquivo",
-          variant: "destructive"
-        })
+        toast.error("Erro", { description: errorData.error || "Não foi possível excluir o arquivo" })
         return
       }
 
       const data = await response.json()
 
       if (data.success) {
-        toast({
-          title: "Arquivo excluído",
-          description: "O arquivo foi removido com sucesso"
-        })
+        toast.info("Arquivo excluído", { description: "O arquivo foi removido com sucesso" })
         fetchCandidateFiles()
       } else {
-        toast({
-          title: "Erro",
-          description: "Não foi possível excluir o arquivo",
-          variant: "destructive"
-        })
+        toast.error("Erro", { description: "Não foi possível excluir o arquivo" })
       }
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao excluir arquivo",
-        variant: "destructive"
-      })
+      toast.error("Erro", { description: "Erro ao excluir arquivo" })
     }
   }
 

@@ -20,6 +20,7 @@ import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/se
 import type { SearchAnalytics } from "@/components/proactive-insight-card"
 import type { CalibrationCandidate } from "@/components/calibration-card"
 import type { SearchTab, ChatMessage, TableColumn } from "./CandidateSearchResultsView.types"
+import { toast } from "sonner"
 
 export interface CandidateSearchResultsViewProps {
   // Search query state
@@ -205,7 +206,6 @@ export interface CandidateSearchResultsViewProps {
   setShareSearchTitle: (value: string) => void
   setShowShareSearchModal: (value: boolean) => void
   // Toast
-  toast: (opts: { title: string; description?: string; variant?: string }) => void
   // Talent funnel
   talentFunnel: {
     toggleFavoriteCandidate: (id: string) => void
@@ -360,7 +360,6 @@ export function CandidateSearchResultsView({
   setShareSearchCandidates,
   setShareSearchTitle,
   setShowShareSearchModal,
-  toast,
   talentFunnel,
   setEditQueryValue,
   setShowEditQueryModal,
@@ -408,17 +407,11 @@ export function CandidateSearchResultsView({
         onWSIScreening={onBulkWSIScreening}
         onToggleFavorite={() => {
           selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
-          toast({
-            title: "Favoritos atualizados",
-            description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos`
-          })
+          toast.success("Favoritos atualizados", { description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos` })
         }}
         onHide={() => {
           selectedCandidatesForBatch.forEach(id => talentFunnel.hideCandidate(id))
-          toast({
-            title: "Candidatos ocultos",
-            description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa`
-          })
+          toast.success("Candidatos ocultos", { description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa` })
           deselectAllCandidates()
         }}
         onSaveToLocalBase={onSaveToLocalBase}

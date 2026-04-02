@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { useToast } from "@/hooks/use-toast"
 import { DataRequirement, validateCandidateDataForOpinion } from "@/components/modals/insufficient-data-modal"
 import type { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
+import { toast } from "sonner"
 
 interface LiaChatMessage {
   role: 'user' | 'lia'
@@ -68,10 +68,7 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const [isDeletingAnalysis, setIsDeletingAnalysis] = useState(false)
 
   const lastFetchedHistoryCandidateRef = useRef<string | null>(null)
-
-  const { toast } = useToast()
-
-  const candidateId = candidate?.id as string | undefined
+const candidateId = candidate?.id as string | undefined
 
   const fetchOpinionsSummary = useCallback(async () => {
     if (!candidateId) return
@@ -129,16 +126,9 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
   const handleAnalysisTransport = async (analysis: { type: string; content: string; candidate_id: string }) => {
     const success = await saveAnalysisToBackend(analysis)
     if (success) {
-      toast({
-        title: "Análise salva",
-        description: "A análise foi adicionada à aba Pareceres e Análises"
-      })
+      toast.success("Análise salva", { description: "A análise foi adicionada à aba Pareceres e Análises" })
     } else {
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar a análise. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao salvar", { description: "Não foi possível salvar a análise. Tente novamente." })
     }
   }
 
@@ -228,11 +218,7 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
         throw new Error(data.error || 'Erro desconhecido')
       }
     } catch (error) {
-      toast({
-        title: "Erro ao enviar mensagem",
-        description: error instanceof Error ? error.message : "Não foi possível conectar com a LIA. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao enviar mensagem", { description: error instanceof Error ? error.message : "Não foi possível conectar com a LIA. Tente novamente." })
     } finally {
       setIsLiaChatLoading(false)
     }
@@ -324,16 +310,9 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
 
       await fetchOpinionsSummary()
 
-      toast({
-        title: "Parecer gerado",
-        description: "A LIA gerou um novo parecer para o candidato."
-      })
+      toast.success("Parecer gerado", { description: "A LIA gerou um novo parecer para o candidato." })
     } catch {
-      toast({
-        title: "Erro ao gerar parecer",
-        description: "Não foi possível gerar o parecer. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao gerar parecer", { description: "Não foi possível gerar o parecer. Tente novamente." })
     } finally {
       setIsAnalyzingWithLia(false)
     }
@@ -529,16 +508,9 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
       setAnalysisToDelete(null)
       setExpandedAnalysisId(null)
 
-      toast({
-        title: "Análise removida",
-        description: "A análise foi removida com sucesso.",
-      })
+      toast.success("Análise removida", { description: "A análise foi removida com sucesso." })
     } catch {
-      toast({
-        title: "Erro ao remover",
-        description: "Não foi possível remover a análise.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao remover", { description: "Não foi possível remover a análise." })
     } finally {
       setIsDeletingAnalysis(false)
     }

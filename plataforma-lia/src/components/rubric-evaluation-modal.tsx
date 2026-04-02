@@ -2,8 +2,7 @@
 
 import React from "react"
 import { Brain, Target, Check, AlertTriangle, X, FileText, TrendingUp, AlertCircle, User, Briefcase, Loader2, ThumbsUp, ThumbsDown, Shield, Clock, CheckCircle, XCircle, Lightbulb, BarChart3, ChevronDown, ChevronRight, ArrowRight } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
-
+import { toast } from "sonner"
 interface RubricRequirement {
   requirement: string
   name?: string
@@ -300,17 +299,10 @@ export function RubricEvaluationModal({
     setIsApproving(true)
     try {
       await onApprove(candidateId, jobId)
-      toast({
-        title: "Candidato aprovado",
-        description: `${displayName} foi aprovado para triagem.`,
-      })
+      toast.success("Candidato aprovado", { description: `${displayName} foi aprovado para triagem.` })
       onClose()
     } catch (error) {
-      toast({
-        title: "Erro ao aprovar",
-        description: "Não foi possível aprovar o candidato. Tente novamente.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao aprovar", { description: "Não foi possível aprovar o candidato. Tente novamente." })
     } finally {
       setIsApproving(false)
     }
@@ -321,17 +313,10 @@ export function RubricEvaluationModal({
     setIsRejecting(true)
     try {
       await onReject(candidateId, jobId)
-      toast({
-        title: "Candidato reprovado",
-        description: `${displayName} foi reprovado para esta vaga.`,
-      })
+      toast.success("Candidato reprovado", { description: `${displayName} foi reprovado para esta vaga.` })
       onClose()
     } catch (error) {
-      toast({
-        title: "Erro ao reprovar",
-        description: "Não foi possível reprovar o candidato. Tente novamente.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao reprovar", { description: "Não foi possível reprovar o candidato. Tente novamente." })
     } finally {
       setIsRejecting(false)
     }

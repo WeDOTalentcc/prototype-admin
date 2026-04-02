@@ -1,5 +1,6 @@
 "use client"
 
+import { toast } from "sonner"
 import { useState } from "react"
 import { AlertCircle, Loader2 } from "lucide-react"
 import {
@@ -12,8 +13,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { useToast } from "@/hooks/use-toast"
-
 interface Archetype {
   id: string
   name: string
@@ -27,9 +26,7 @@ interface DeleteArchetypeModalProps {
 
 export function DeleteArchetypeModal({ archetypeToDelete, onClose, onDeleted }: DeleteArchetypeModalProps) {
   const [isDeletingArchetype, setIsDeletingArchetype] = useState(false)
-  const { toast } = useToast()
-
-  const handleDelete = async () => {
+const handleDelete = async () => {
     if (!archetypeToDelete) return
     setIsDeletingArchetype(true)
     try {
@@ -42,16 +39,10 @@ export function DeleteArchetypeModal({ archetypeToDelete, onClose, onDeleted }: 
       }
 
       onDeleted(archetypeToDelete.id)
-      toast({
-        title: "Arquétipo excluído",
-        description: `"${archetypeToDelete.name}" foi removido dos seus arquétipos.`,
-      })
+      toast.success("Arquétipo excluído", { description: `"${archetypeToDelete.name}" foi removido dos seus arquétipos.` })
     } catch (error) {
       onDeleted(archetypeToDelete.id)
-      toast({
-        title: "Arquétipo excluído",
-        description: `"${archetypeToDelete.name}" foi removido dos seus arquétipos.`,
-      })
+      toast.success("Arquétipo excluído", { description: `"${archetypeToDelete.name}" foi removido dos seus arquétipos.` })
     } finally {
       setIsDeletingArchetype(false)
       onClose()

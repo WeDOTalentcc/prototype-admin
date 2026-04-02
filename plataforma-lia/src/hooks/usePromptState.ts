@@ -3,13 +3,13 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useCreditEstimator } from "@/hooks/useCreditEstimator"
 import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
-import { useToast } from "@/hooks/use-toast"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import {
   MapPin, Briefcase, Clock, Building2, Code
 } from "lucide-react"
 import { extractCriteriaFromText, getTagColors, mapEntitiesToCriteria, extractTagsFromArchetypeCriteria, extractKeywordsFromFileAnalysis, buildSearchSpecFromParsed, generateArchetypeNameFromEntities, hasParsedEntitiesData } from "./promptStateCriteriaUtils"
+import { toast } from "sonner"
 
 export interface SearchAnalysis {
   completeness_score: number
@@ -121,8 +121,7 @@ export interface UsePromptStateParams {
 
 export function usePromptState({ forceExpanded = false, onCommand }: UsePromptStateParams) {
   const { settings: globalSettings, loading: globalSettingsLoading } = useGlobalSearchSettings()
-  const { toast } = useToast()
-  const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
+const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
 
   const [isExpanded, setIsExpanded] = useState(forceExpanded)
   const [showPremiumAutocomplete, setShowPremiumAutocomplete] = useState(false)
@@ -378,12 +377,12 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
         const searchText = uniqueKeywords.join(', ')
         setNaturalSearchValue(prev => prev ? `${prev}, ${searchText}` : searchText)
         parseEntitiesFromQuery(searchText)
-        toast({ title: "Arquivo analisado", description: `Extraídos ${uniqueKeywords.length} critérios de ${file.name}` })
+        toast.info("Arquivo analisado", { description: `Extraídos ${uniqueKeywords.length} critérios de ${file.name}` })
       } else {
-        toast({ title: "Arquivo processado", description: `${file.name} foi analisado mas não foram encontrados critérios de busca`, variant: "default" })
+        toast.info("Arquivo processado", { description: `${file.name} foi analisado mas não foram encontrados critérios de busca` })
       }
     } else {
-      toast({ title: "Erro na análise", description: analysis.error || "Não foi possível analisar o arquivo", variant: "destructive" })
+      toast.error("Erro na análise", { description: analysis.error || "Não foi possível analisar o arquivo" })
     }
   }, [toast, parseEntitiesFromQuery])
 
@@ -395,7 +394,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
         return newValue
       })
       setShowPremiumAutocomplete(true)
-      toast({ title: "Transcrição concluída", description: "Texto adicionado à busca" })
+      toast.info("Transcrição concluída", { description: "Texto adicionado à busca" })
     }
   }, [toast, parseEntitiesFromQuery])
 
@@ -521,7 +520,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
 
   const createArchetypeFromActiveSearch = useCallback(async () => {
     if (!hasParsedEntities()) {
-      toast({ title: "Busca incompleta", description: "Faça uma busca com critérios definidos antes de salvar como arquétipo.", variant: "destructive" })
+      toast.error("Busca incompleta", { description: "Faça uma busca com critérios definidos antes de salvar como arquétipo." })
       return
     }
     setIsCreatingFromSearch(true)
@@ -536,13 +535,13 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
         const data = await res.json()
         const newArchetype = data.archetype || data
         setArchetypes(prev => [...prev, newArchetype])
-        toast({ title: "Arquétipo salvo!", description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado a partir da sua busca.` })
+        toast.success("Arquétipo salvo!", { description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado a partir da sua busca.` })
       } else {
         const error = await res.json()
-        toast({ title: "Erro ao salvar arquétipo", description: error.detail || error.error || "Não foi possível salvar o arquétipo.", variant: "destructive" })
+        toast.error("Erro ao salvar arquétipo", { description: error.detail || error.error || "Não foi possível salvar o arquétipo." })
       }
     } catch (error) {
-      toast({ title: "Erro ao salvar arquétipo", description: "Ocorreu um erro de conexão. Tente novamente.", variant: "destructive" })
+      toast.error("Erro ao salvar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
     } finally {
       setIsCreatingFromSearch(false)
     }
@@ -567,13 +566,13 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
         const newArchetype = data.archetype || data
         setArchetypes(prev => [...prev, newArchetype])
         setNewArchetypeDescription("")
-        toast({ title: "Arquétipo criado", description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.` })
+        toast.success("Arquétipo criado", { description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.` })
       } else {
         const error = await res.json()
-        toast({ title: "Erro ao criar arquétipo", description: error.detail || error.error || "Não foi possível criar o arquétipo.", variant: "destructive" })
+        toast.error("Erro ao criar arquétipo", { description: error.detail || error.error || "Não foi possível criar o arquétipo." })
       }
     } catch (error) {
-      toast({ title: "Erro ao criar arquétipo", description: "Ocorreu um erro de conexão. Tente novamente.", variant: "destructive" })
+      toast.error("Erro ao criar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
     } finally {
       setIsCreatingArchetype(false)
     }
@@ -613,13 +612,13 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
         const updated = await res.json()
         setArchetypes(prev => prev.map(a => a.id === editingArchetype.id ? { ...a, ...updated } : a))
         closeEditArchetype()
-        toast({ title: "Arquétipo atualizado", description: `"${editArchetypeName}" foi salvo com sucesso.` })
+        toast.success("Arquétipo atualizado", { description: `"${editArchetypeName}" foi salvo com sucesso.` })
       } else {
         const error = await res.json()
-        toast({ title: "Erro ao atualizar arquétipo", description: error.detail || error.error || "Não foi possível salvar as alterações.", variant: "destructive" })
+        toast.error("Erro ao atualizar arquétipo", { description: error.detail || error.error || "Não foi possível salvar as alterações." })
       }
     } catch (error) {
-      toast({ title: "Erro ao atualizar arquétipo", description: "Ocorreu um erro de conexão. Tente novamente.", variant: "destructive" })
+      toast.error("Erro ao atualizar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
     } finally {
       setIsSavingArchetype(false)
     }
@@ -641,13 +640,13 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
       const res = await fetch(`/api/backend-proxy/search/archetypes/${archId}/`, { method: 'DELETE' })
       if (res.ok) {
         setArchetypes(prev => prev.filter(a => a.id !== archId))
-        toast({ title: "Arquétipo excluído", description: `"${archName}" foi removido com sucesso.` })
+        toast.success("Arquétipo excluído", { description: `"${archName}" foi removido com sucesso.` })
       } else {
         const error = await res.json()
-        toast({ title: "Erro ao excluir arquétipo", description: error.detail || error.error || "Não foi possível excluir o arquétipo.", variant: "destructive" })
+        toast.error("Erro ao excluir arquétipo", { description: error.detail || error.error || "Não foi possível excluir o arquétipo." })
       }
     } catch (error) {
-      toast({ title: "Erro ao excluir arquétipo", description: "Ocorreu um erro de conexão. Tente novamente.", variant: "destructive" })
+      toast.error("Erro ao excluir arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
     } finally {
       setIsDeletingArchetype(null)
       setArchetypeToDelete(null)
@@ -862,7 +861,7 @@ export function usePromptState({ forceExpanded = false, onCommand }: UsePromptSt
 
   const handleArchetypeSaved = (newArchetype: ArchetypeData) => {
     setArchetypes(prev => [...prev, newArchetype])
-    toast({ title: "Arquétipo salvo", description: `"${newArchetype.name}" foi adicionado aos seus arquétipos.` })
+    toast.success("Arquétipo salvo", { description: `"${newArchetype.name}" foi adicionado aos seus arquétipos.` })
   }
 
   return {

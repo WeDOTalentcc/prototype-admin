@@ -429,7 +429,6 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         setShowJobEditor={setShowJobEditor}
         pipelineInheritance={pipelineInheritance}
         setJobLocalOverrides={setJobLocalOverrides}
-        toast={toast}
       />
 
       {/* D8 — Insights Proativos (dismiss por sessão via localStorage) */}

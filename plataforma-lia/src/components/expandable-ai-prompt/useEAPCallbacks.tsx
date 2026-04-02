@@ -3,6 +3,7 @@
 import React, { useCallback, useMemo } from "react"
 import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import type { SearchSpec } from "@/lib/api/candidate-search"
+import { toast } from "sonner"
 import { useArchetypeHandlers } from './useArchetypeHandlers'
 import {
   type BackendEntities,
@@ -17,10 +18,8 @@ import {
   CRITERIA_TYPE_MAP,
 } from './useEAPCallbacksTypes'
 
-
 export function useEAPCallbacks(params: UseEAPCallbacksParams) {
   const {
-    toast,
     parseEntitiesFromQuery,
     parsedEntities,
     advancedFilters,
@@ -300,25 +299,14 @@ export function useEAPCallbacks(params: UseEAPCallbacksParams) {
         const searchText = uniqueKeywords.join(', ')
         setNaturalSearchValue(prev => prev ? `${prev}, ${searchText}` : searchText)
         parseEntitiesFromQuery(searchText)
-        toast({
-          title: "Arquivo analisado",
-          description: `Extraídos ${uniqueKeywords.length} critérios de ${file.name}`,
-        })
+        toast.info("Arquivo analisado", { description: `Extraídos ${uniqueKeywords.length} critérios de ${file.name}` })
       } else {
-        toast({
-          title: "Arquivo processado",
-          description: `${file.name} foi analisado mas não foram encontrados critérios de busca`,
-          variant: "default"
-        })
+        toast.info("Arquivo processado", { description: `${file.name} foi analisado mas não foram encontrados critérios de busca` })
       }
     } else {
-      toast({
-        title: "Erro na análise",
-        description: analysis.error || "Não foi possível analisar o arquivo",
-        variant: "destructive"
-      })
+      toast.error("Erro na análise", { description: analysis.error || "Não foi possível analisar o arquivo" })
     }
-  }, [toast, parseEntitiesFromQuery, setNaturalSearchValue])
+  }, [parseEntitiesFromQuery, setNaturalSearchValue])
 
   const handleAudioTranscription = useCallback((text: string) => {
     if (text && text.trim()) {
@@ -328,12 +316,9 @@ export function useEAPCallbacks(params: UseEAPCallbacksParams) {
         return newValue
       })
       setShowPremiumAutocomplete(true)
-      toast({
-        title: "Transcrição concluída",
-        description: "Texto adicionado à busca",
-      })
+      toast.info("Transcrição concluída", { description: "Texto adicionado à busca" })
     }
-  }, [toast, parseEntitiesFromQuery, setNaturalSearchValue, setShowPremiumAutocomplete])
+  }, [parseEntitiesFromQuery, setNaturalSearchValue, setShowPremiumAutocomplete])
 
   const handlePremiumAutocompleteSelect = useCallback((suggestion: string) => {
     setNaturalSearchValue(suggestion)
@@ -403,7 +388,6 @@ export function useEAPCallbacks(params: UseEAPCallbacksParams) {
     }
   }, [similarProfiles, setIsAnalyzingProfiles, setCombinedProfileKeywords])
 
-
   // ── Archetype CRUD handlers (extracted to useArchetypeHandlers) ──────────────
   const {
     hasParsedEntities,
@@ -418,7 +402,6 @@ export function useEAPCallbacks(params: UseEAPCallbacksParams) {
     openDeleteArchetypeDialog,
     confirmDeleteArchetype,
   } = useArchetypeHandlers({
-    toast,
     parsedEntities,
     advancedFilters,
     naturalSearchValue,
@@ -724,10 +707,7 @@ export function useEAPCallbacks(params: UseEAPCallbacksParams) {
 
   const handleArchetypeSaved = (newArchetype: ArchetypeData) => {
     setArchetypes(prev => [...prev, newArchetype])
-    toast({
-      title: "Arquétipo salvo",
-      description: `"${newArchetype.name}" foi adicionado aos seus arquétipos.`
-    })
+    toast.success("Arquétipo salvo", { description: `"${newArchetype.name}" foi adicionado aos seus arquétipos.` })
   }
 
   const handleHistoryCommand = (command: string) => {

@@ -6,6 +6,7 @@
 // Business logic lives in domain hooks — this file is pure composition.
 
 import React, { useState, useEffect, useRef } from "react"
+import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
 
@@ -18,7 +19,6 @@ import { type ParsedEntities } from "@/components/search/smart-search-input"
 
 // ── Global hooks ──────────────────────────────────────────────────────────────
 import { useJWTAuth } from "@/contexts/auth-context"
-import { useToast } from "@/hooks/use-toast"
 import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
 import { useHideViewedCandidates } from "@/hooks/useHideViewedCandidates"
 import { useCandidateFilters, type TableFilters, getDefaultTableFilters } from "@/hooks/use-candidate-filters"
@@ -100,9 +100,7 @@ export function useCandidatesPageCore({
   const router = useRouter()
   const { settings: globalSettings, loading: globalSettingsLoading } = useGlobalSearchSettings()
   const { user } = useJWTAuth()
-  const { toast } = useToast()
-
-  const hideViewedCandidates = useHideViewedCandidates({
+const hideViewedCandidates = useHideViewedCandidates({
     userId: user?.id,
     // @ts-ignore TODO: fix type
     companyId: user?.company_id,
@@ -378,7 +376,7 @@ export function useCandidatesPageCore({
   // ── Archetypes ────────────────────────────────────────────────────────────
   const archetypesHook = useCandidatesArchetypes({
     // @ts-ignore TODO: fix type
-    searchSource, pearchSearchOptions, toast,
+    searchSource, pearchSearchOptions,
     setCandidates, setHasSearchResults, setSearchResultsCount,
     setLocalResultsCount, setPearchResultsCount,
     setLastSearchQuery, setLastSearchMode,
@@ -411,8 +409,6 @@ export function useCandidatesPageCore({
     setCreditsRemaining: (fn) =>
       // @ts-ignore TODO: fix type
       setCreditsRemaining(typeof fn === 'function' ? fn(creditsRemaining) : fn),
-    // @ts-ignore TODO: fix type
-    toast,
   })
   const { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing } = revealContactHook.state
   const { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact } = revealContactHook.actions
@@ -443,7 +439,7 @@ export function useCandidatesPageCore({
     // @ts-ignore TODO: fix type
     setHasSearchResults, setSearchResultsCount, setShowSearchResults,
     // @ts-ignore TODO: fix type
-    setDisplayedResultsCount, setChatMessages, toast,
+    setDisplayedResultsCount, setChatMessages,
   })
   const handleCVDrop = cvHandlers.handleCVDrop
   const handleCVDragOver = cvHandlers.handleCVDragOver
@@ -498,7 +494,7 @@ export function useCandidatesPageCore({
     // @ts-ignore TODO: fix type
     executeSearch,
     // @ts-ignore TODO: fix type
-    toast, user,
+user,
   })
   const handleConfirmPearchSearch = searchHandlers.handleConfirmPearchSearch
   const handleSourceChange = searchHandlers.handleSourceChange
@@ -582,7 +578,7 @@ export function useCandidatesPageCore({
     showSearchResults, setShowSearchResults,
     lastSearchQuery, deselectAllCandidates: () => setSelectedCandidatesForBatch(new Set()),
     // @ts-ignore TODO: fix type
-    toast, user,
+user,
   })
   const handleSaveToLocalBase = candidatesActions.handleSaveToLocalBase
   const handleAddToList = candidatesActions.handleAddToList
@@ -646,7 +642,6 @@ export function useCandidatesPageCore({
     setParsedCVData,
     setShowCVPreviewModal,
     // @ts-ignore TODO: fix type
-    toast,
     onAddRecentItem,
     markCandidateAsViewed,
     handleBulkActionComplete,
@@ -739,7 +734,7 @@ export function useCandidatesPageCore({
     handleStartWSITextScreening, handleOpenWSIModal,
     openUnifiedModal, handleCandidateClick,
     executeSearch, talentFunnel,
-    toast, user, router,
+user, router,
   })
   liaHandlersRef.current = liaHandlers
   const handleQuickAction = liaHandlers.handleQuickAction
@@ -789,7 +784,7 @@ export function useCandidatesPageCore({
       JSON.stringify({ name: `Busca ${new Date().toLocaleDateString()}`, searchTerm, quickFilters: Array.from(quickFilters), timestamp: new Date().toISOString() })
     )
     setActiveTab('saved-searches')
-    toast({ title: 'Busca salva', description: `${sortedCandidates.length} candidatos encontrados`, duration: 4000 })
+    toast.success('Busca salva', { description: `${sortedCandidates.length} candidatos encontrados` })
   }
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30'
@@ -835,7 +830,7 @@ export function useCandidatesPageCore({
     showContactFilterModal, showContactModal, showCreditConfirmation, showRevealModal, showRubricModal, showScheduleModal,
     showSendEmailModal, showShareSearchModal, showSourceChangeModal, showTableFiltersPanel, showUnsavedWarningModal, showWSIInviteModal,
     showWSITextModal, showWSIVoiceModal, sortedCandidates, tableColumns, tableContainerRef, tableFilters,
-    talentFunnel, toast, toggleTableFilter, unifiedModalCandidate, unifiedModalOpen, unifiedModalType,
+    talentFunneltoggleTableFilter, unifiedModalCandidate, unifiedModalOpen, unifiedModalType,
     unsavedPearchCandidates, user, visibleCandidates, visibleTableColumns, wsiCandidateForScreening, wsiInviteCandidate,
     tabs,
     archetypeCreationStep, archetypeToDelete, buildFiltersFromTags, crossTabFilter, currentPage, currentSearchSource,

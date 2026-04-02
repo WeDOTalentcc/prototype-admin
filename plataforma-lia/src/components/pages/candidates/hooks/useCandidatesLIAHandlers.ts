@@ -10,6 +10,7 @@ import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import type { SearchAnalytics } from "@/components/proactive-insight-card"
 import type { CalibrationCandidate } from "@/components/calibration-card"
+import { toast } from "sonner"
 
 type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
@@ -121,7 +122,6 @@ export interface CandidatesLIAHandlersContext {
   talentFunnel: {
     toggleFavoriteCandidate: (id: string, note?: string) => void
   }
-  toast: (opts: { title: string; description?: string; variant?: "destructive" | "default" }) => void
   user: AuthUser | null
   router: AppRouter
 }
@@ -148,7 +148,6 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
     setIsLIAThinking,
     executeSearch,
     talentFunnel,
-    toast,
     user,
   } = ctx
 
@@ -165,10 +164,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
       case 'screening':
         liaMessage.content = '🎯 **Iniciando triagem em lote**\n\nPreparando triagem WSI para os candidatos selecionados...'
         setChatMessages(prev => [...prev, liaMessage])
-        toast({
-          title: "Triagem WSI",
-          description: "Funcionalidade de triagem em lote será implementada em breve."
-        })
+        toast.success("Triagem WSI", { description: "Funcionalidade de triagem em lote será implementada em breve." })
         break
 
       case 'assign':
@@ -184,10 +180,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
         candidateIds.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
         liaMessage.content = `⭐ **${candidateIds.length} candidatos adicionados aos favoritos**\n\nVocê pode acessá-los na aba "Favoritos".`
         setChatMessages(prev => [...prev, liaMessage])
-        toast({
-          title: "Favoritos atualizados",
-          description: `${candidateIds.length} candidatos adicionados aos favoritos`,
-        })
+        toast.success("Favoritos atualizados", { description: `${candidateIds.length} candidatos adicionados aos favoritos` })
         break
 
       case 'whatsapp':
@@ -307,10 +300,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
       }
 
       if (response.action_executed && response.action_result) {
-        toast({
-          title: "Ação executada",
-          description: response.action_type ? `${response.action_type} concluída com sucesso` : "Ação concluída com sucesso"
-        })
+        toast.success("Ação executada", { description: response.action_type ? `${response.action_type}` : undefined })
       }
 
       return response
@@ -333,10 +323,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
   const handleTalentUIAction = (action: string, params?: Record<string, unknown>) => {
     switch (action) {
       case 'start_job_wizard':
-        toast({
-          title: "Criar Nova Vaga",
-          description: "Abrindo wizard de criação de vaga..."
-        })
+        toast.success("Criar Nova Vaga", { description: "Abrindo wizard de criação de vaga..." })
         break
       case 'switch_search_mode':
         if (params?.mode && typeof params.mode === 'string') {
@@ -392,10 +379,7 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
         })
       })
 
-      toast({
-        title: "Feedback registrado",
-        description: "Candidato marcado como interessante",
-      })
+      toast.success("Feedback registrado", { description: "Candidato marcado como interessante" })
     } catch (error) {
     }
   }
@@ -413,14 +397,10 @@ export function useCandidatesLIAHandlers(ctx: CandidatesLIAHandlersContext) {
         })
       })
 
-      toast({
-        title: "Feedback registrado",
-        description: "Preferência salva para calibração",
-      })
+      toast.success("Feedback registrado", { description: "Preferência salva para calibração" })
     } catch (error) {
     }
   }
-
 
   // Handler para mensagens no chat da LIA (perguntas ou buscas)
   // Loading State Ownership:

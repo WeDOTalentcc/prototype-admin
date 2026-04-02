@@ -1,6 +1,7 @@
 import { useState } from "react"
 import type { Candidate } from "../types"
 import type { ParsedEntities, SearchMode } from "@/components/search/smart-search-input"
+import { toast } from "sonner"
 
 export type Archetype = {
   id: string
@@ -53,7 +54,6 @@ export type AISuggestion = {
 export interface UseCandidatesArchetypesParams {
   searchSource: string
   pearchSearchOptions: { searchType: string; limit: number }
-  toast: (opts: { title?: string; description?: string; variant?: string }) => void
   setCandidates: (candidates: Candidate[] | ((prev: Candidate[]) => Candidate[])) => void
   setHasSearchResults: (v: boolean) => void
   setSearchResultsCount: (v: number) => void
@@ -68,7 +68,7 @@ export interface UseCandidatesArchetypesParams {
 
 export function useCandidatesArchetypes(params: UseCandidatesArchetypesParams) {
   const {
-    searchSource, pearchSearchOptions, toast,
+    searchSource, pearchSearchOptions,
     setCandidates, setHasSearchResults, setSearchResultsCount,
     setLocalResultsCount, setPearchResultsCount,
     setLastSearchQuery, setLastSearchMode, setActiveSearchTab,
@@ -218,23 +218,12 @@ export function useCandidatesArchetypes(params: UseCandidatesArchetypesParams) {
         }
         setChatMessages(prev => [...prev, liaMessage])
         
-        toast({
-          title: "Busca por arquétipo concluída",
-          description: `${mappedCandidates.length} candidato(s) encontrado(s) para "${archetype.name}"`,
-        })
+        toast.success("Busca por arquétipo concluída", { description: `${mappedCandidates.length} candidato(s) encontrado(s) para "${archetype.name}"` })
       } else {
-        toast({
-          title: "Nenhum candidato encontrado",
-          description: `A busca por "${archetype.name}" não retornou resultados`,
-          variant: "destructive"
-        })
+        toast.error("Nenhum candidato encontrado", { description: `A busca por "${archetype.name}" não retornou resultados` })
       }
     } catch (error) {
-      toast({
-        title: "Erro na busca",
-        description: error instanceof Error ? error.message : 'Erro ao buscar por arquétipo',
-        variant: "destructive"
-      })
+      toast.error("Erro na busca", { description: error instanceof Error ? error.message : 'Erro ao buscar por arquétipo' })
     } finally {
       setIsSearchingByArchetype(false)
     }

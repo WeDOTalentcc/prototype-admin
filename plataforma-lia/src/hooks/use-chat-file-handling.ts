@@ -3,8 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react"
 import { Message } from "@/types/chat"
 import { FileAnalysisResult } from "@/components/ui/file-upload-button"
-import { useToast } from "@/hooks/use-toast"
-
+import { toast } from "sonner"
 // ──────────────────────────────────────────────────────────────────────────────
 // Constants
 // ──────────────────────────────────────────────────────────────────────────────
@@ -82,9 +81,7 @@ export function useChatFileHandling({
   setInput,
   inputRef,
 }: UseChatFileHandlingParams): UseChatFileHandlingReturn {
-  const { toast } = useToast()
-
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([])
+const [attachedFiles, setAttachedFiles] = useState<File[]>([])
   const [fileValidationError, setFileValidationError] = useState<string | null>(null)
   const [fileAnalysisContext, setFileAnalysisContext] = useState<FileAnalysisResult | null>(null)
   const [isRecording, setIsRecording] = useState(false)
@@ -190,16 +187,9 @@ export function useChatFileHandling({
     (file: File, analysis: FileAnalysisResult) => {
       if (analysis.success) {
         setFileAnalysisContext(analysis)
-        toast({
-          title: "Arquivo analisado",
-          description: `${file.name} foi processado. A análise será enviada junto com sua próxima mensagem.`,
-        })
+        toast.info("Arquivo analisado", { description: `${file.name} foi processado. A análise será enviada junto com sua próxima mensagem.` })
       } else {
-        toast({
-          title: "Erro na análise",
-          description: analysis.error || `Não foi possível analisar ${file.name}`,
-          variant: "destructive",
-        })
+        toast.error("Erro na análise", { description: analysis.error || `Não foi possível analisar ${file.name}` })
       }
     },
     [toast]
@@ -210,27 +200,18 @@ export function useChatFileHandling({
   const handleAudioTranscription = useCallback(
     (text: string) => {
       setInput((prev) => (prev ? `${prev} ${text}` : text))
-      toast({
-        title: "Áudio transcrito",
-        description: "O texto foi adicionado ao campo de mensagem.",
-      })
+      toast.success("Áudio transcrito", { description: "O texto foi adicionado ao campo de mensagem." })
       inputRef.current?.focus()
     },
     [toast, setInput, inputRef]
   )
 
   const handleAudioRecordingStart = useCallback(() => {
-    toast({
-      title: "Gravando...",
-      description: "Fale sua mensagem. Clique novamente para parar.",
-    })
+    toast.success("Gravando...", { description: "Fale sua mensagem. Clique novamente para parar." })
   }, [toast])
 
   const handleAudioRecordingEnd = useCallback(() => {
-    toast({
-      title: "Processando áudio",
-      description: "Aguarde enquanto transcrevemos sua mensagem.",
-    })
+    toast.success("Processando áudio", { description: "Aguarde enquanto transcrevemos sua mensagem." })
   }, [toast])
 
   const startRecording = useCallback(async () => {

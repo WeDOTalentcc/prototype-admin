@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Copy, Check, ArrowRight, Brain, X } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-
+import { toast } from "sonner"
 type AnalysisType = 'bullet_points' | 'short_paragraph' | 'detailed_bullets'
 
 interface LiaAnalysis {
@@ -47,9 +46,7 @@ export function LiaAnalysisModal({
   const [loadingAnalysis, setLoadingAnalysis] = useState<AnalysisType | null>(null)
   const [copiedTab, setCopiedTab] = useState<AnalysisType | null>(null)
   const [savedMessage, setSavedMessage] = useState<string | null>(null)
-  const { toast } = useToast()
-
-  const generateAnalysis = useCallback(async (type: AnalysisType) => {
+const generateAnalysis = useCallback(async (type: AnalysisType) => {
     if (!candidate?.id) return
     
     setLoadingAnalysis(type)
@@ -91,11 +88,7 @@ export function LiaAnalysisModal({
         }
       }))
     } catch (error) {
-      toast({
-        title: "Erro ao gerar análise",
-        description: "Não foi possível gerar a análise. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao gerar análise", { description: "Não foi possível gerar a análise. Tente novamente." })
     } finally {
       setLoadingAnalysis(null)
     }
@@ -115,16 +108,9 @@ export function LiaAnalysisModal({
       await navigator.clipboard.writeText(analysis.content)
       setCopiedTab(type)
       setTimeout(() => setCopiedTab(null), 2000)
-      toast({
-        title: "Copiado!",
-        description: "Análise copiada para a área de transferência"
-      })
+      toast.success("Copiado!", { description: "Análise copiada para a área de transferência" })
     } catch (error) {
-      toast({
-        title: "Erro ao copiar",
-        description: "Não foi possível copiar o texto",
-        variant: "destructive"
-      })
+      toast.error("Erro ao copiar", { description: "Não foi possível copiar o texto" })
     }
   }
 

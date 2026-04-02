@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { liaApi, CandidateList } from "@/services/lia-api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -18,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { toast } from "sonner"
 
 const LIST_COLORS = [
   { value: 'var(--gray-400)', name: 'Cinza' },
@@ -43,8 +43,7 @@ export function AddToListModal({
   candidateNames, 
   onSuccess 
 }: AddToListModalProps) {
-  const { toast } = useToast()
-  const [lists, setLists] = useState<CandidateList[]>([])
+const [lists, setLists] = useState<CandidateList[]>([])
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [isCreatingNew, setIsCreatingNew] = useState(false)
   const [newListName, setNewListName] = useState('')
@@ -71,7 +70,7 @@ export function AddToListModal({
         setIsCreatingNew(true)
       }
     } catch (error) {
-      toast({ title: "Erro ao carregar listas", variant: "destructive" })
+      toast.error("Erro ao carregar listas")
     } finally {
       setIsLoading(false)
     }
@@ -81,12 +80,12 @@ export function AddToListModal({
     if (isSubmitting) return
     
     if (!isCreatingNew && !selectedListId) {
-      toast({ title: "Selecione ou crie uma lista", variant: "destructive" })
+      toast.error("Selecione ou crie uma lista")
       return
     }
     
     if (isCreatingNew && !newListName.trim()) {
-      toast({ title: "Digite um nome para a lista", variant: "destructive" })
+      toast.error("Digite um nome para a lista")
       return
     }
     
@@ -103,22 +102,19 @@ export function AddToListModal({
       }
       
       if (!listId) {
-        toast({ title: "Selecione ou crie uma lista", variant: "destructive" })
+        toast.error("Selecione ou crie uma lista")
         setIsSubmitting(false)
         return
       }
       
       const result = await liaApi.addCandidatesToList(listId, candidateIds)
       
-      toast({
-        title: "Candidatos adicionados",
-        description: `${result.added} adicionado(s)${result.already_exists > 0 ? `, ${result.already_exists} já estava(m) na lista` : ''}`
-      })
+      toast.success("Candidatos adicionados", { description: `${result.added} adicionado(s)${result.already_exists > 0 ? `, ${result.already_exists} já existente(s)` : ''}` })
       
       onSuccess?.()
       onClose()
     } catch (error) {
-      toast({ title: "Erro ao adicionar candidatos", variant: "destructive" })
+      toast.error("Erro ao adicionar candidatos")
     } finally {
       setIsSubmitting(false)
     }

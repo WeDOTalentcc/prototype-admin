@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { X, Save, Target, Plus, Loader2, Brain } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
 import type { SearchSpec } from "@/lib/api/candidate-search"
 import {
   extractTagsFromSearchSpec,
@@ -15,6 +14,7 @@ import {
   type ExtractedTag,
 } from "@/lib/utils/extract-tags-from-search"
 import { textStyles, cardStyles, inputStyles, badgeStyles } from "@/lib/design-tokens"
+import { toast } from "sonner"
 
 interface SaveArchetypeModalProps {
   open: boolean
@@ -58,8 +58,7 @@ export function SaveArchetypeModal({
   query,
   onSuccess,
 }: SaveArchetypeModalProps) {
-  const { toast } = useToast()
-  const [isSaving, setIsSaving] = useState(false)
+const [isSaving, setIsSaving] = useState(false)
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [selectedEmoji, setSelectedEmoji] = useState("🎯")
@@ -105,11 +104,7 @@ export function SaveArchetypeModal({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      toast({
-        title: "Nome obrigatório",
-        description: "Por favor, insira um nome para o arquétipo.",
-        variant: "destructive",
-      })
+      toast.error("Nome obrigatório", { description: "Por favor, insira um nome para o arquétipo." })
       return
     }
 
@@ -140,19 +135,12 @@ export function SaveArchetypeModal({
 
       const data = await response.json()
 
-      toast({
-        title: "Arquétipo salvo!",
-        description: `O arquétipo "${name}" foi criado com sucesso.`,
-      })
+      toast.success("Arquétipo salvo!", { description: `O arquétipo "${name}" foi criado com sucesso.` })
 
       onSuccess?.(data)
       onClose()
     } catch (error) {
-      toast({
-        title: "Erro ao salvar",
-        description: error instanceof Error ? error.message : "Não foi possível salvar o arquétipo.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao salvar", { description: error instanceof Error ? error.message : "Não foi possível salvar o arquétipo." })
     } finally {
       setIsSaving(false)
     }

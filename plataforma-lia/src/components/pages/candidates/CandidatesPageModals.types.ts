@@ -81,8 +81,6 @@ export interface CandidatesPageModalsProps {
   setRubricCandidate: (v: Candidate | null) => void
   rubricEvaluationData: Record<string, unknown> | null
   setRubricEvaluationData: (v: Record<string, unknown> | null) => void
-  toast: (opts: { title: string; description?: string; variant?: string }) => void
-
   // Send Email Modal
   showSendEmailModal: boolean
   setShowSendEmailModal: (v: boolean) => void

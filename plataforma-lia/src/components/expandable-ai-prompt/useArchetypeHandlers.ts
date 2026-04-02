@@ -2,6 +2,7 @@
 
 import { useCallback } from "react"
 import React from "react"
+import { toast } from "sonner"
 
 interface BackendEntities {
   location?: string
@@ -34,7 +35,6 @@ interface SearchFilters {
 }
 
 interface UseArchetypeHandlersParams {
-  toast: (opts: Record<string, unknown>) => void
   parsedEntities: BackendEntities
   advancedFilters: SearchFilters
   naturalSearchValue: string
@@ -65,7 +65,6 @@ interface UseArchetypeHandlersParams {
 
 export function useArchetypeHandlers(params: UseArchetypeHandlersParams) {
   const {
-    toast,
     parsedEntities,
     advancedFilters,
     naturalSearchValue,
@@ -175,11 +174,7 @@ export function useArchetypeHandlers(params: UseArchetypeHandlersParams) {
 
   const createArchetypeFromActiveSearch = useCallback(async () => {
     if (!hasParsedEntities()) {
-      toast({
-        title: "Busca incompleta",
-        description: "Faça uma busca com critérios definidos antes de salvar como arquétipo.",
-        variant: "destructive"
-      })
+      toast.error("Busca incompleta", { description: "Faça uma busca com critérios definidos antes de salvar como arquétipo." })
       return
     }
 
@@ -205,28 +200,17 @@ export function useArchetypeHandlers(params: UseArchetypeHandlersParams) {
         const data = await res.json()
         const newArchetype = data.archetype || data
         setArchetypes(prev => [...prev, newArchetype])
-        toast({
-          title: "Arquétipo salvo!",
-          description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado a partir da sua busca.`
-        })
+        toast.success("Arquétipo salvo!", { description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado a partir da sua busca.` })
       } else {
         const error = await res.json()
-        toast({
-          title: "Erro ao salvar arquétipo",
-          description: error.detail || error.error || "Não foi possível salvar o arquétipo.",
-          variant: "destructive"
-        })
+        toast.error("Erro ao salvar arquétipo", { description: error.detail || error.error || "Não foi possível salvar o arquétipo." })
       }
     } catch (error) {
-      toast({
-        title: "Erro ao salvar arquétipo",
-        description: "Ocorreu um erro de conexão. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao salvar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
     } finally {
       setIsCreatingFromSearch(false)
     }
-  }, [hasParsedEntities, buildSearchSpec, generateArchetypeName, naturalSearchValue, toast, setIsCreatingFromSearch, setArchetypes])
+  }, [hasParsedEntities, buildSearchSpec, generateArchetypeName, naturalSearchValue, setIsCreatingFromSearch, setArchetypes])
 
   const createArchetypeFromDescription = useCallback(async (description: string) => {
     if (!description.trim()) return
@@ -256,17 +240,10 @@ export function useArchetypeHandlers(params: UseArchetypeHandlersParams) {
           const newArchetype = data.archetype || data
           setArchetypes(prev => [...prev, newArchetype])
           setNewArchetypeDescription("")
-          toast({
-            title: "Arquétipo criado",
-            description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.`
-          })
+          toast.success("Arquétipo criado", { description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.` })
         } else {
           const error = await res.json()
-          toast({
-            title: "Erro ao criar arquétipo",
-            description: error.detail || error.error || "Não foi possível criar o arquétipo.",
-            variant: "destructive"
-          })
+          toast.error("Erro ao criar arquétipo", { description: error.detail || error.error || "Não foi possível criar o arquétipo." })
         }
       } else {
         const payload: Record<string, unknown> = {
@@ -286,29 +263,18 @@ export function useArchetypeHandlers(params: UseArchetypeHandlersParams) {
           const newArchetype = data.archetype || data
           setArchetypes(prev => [...prev, newArchetype])
           setNewArchetypeDescription("")
-          toast({
-            title: "Arquétipo criado",
-            description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.`
-          })
+          toast.success("Arquétipo criado", { description: `"${newArchetype.name || generatedName || 'Novo arquétipo'}" foi criado com sucesso.` })
         } else {
           const error = await res.json()
-          toast({
-            title: "Erro ao criar arquétipo",
-            description: error.detail || error.error || "Não foi possível criar o arquétipo.",
-            variant: "destructive"
-          })
+          toast.error("Erro ao criar arquétipo", { description: error.detail || error.error || "Não foi possível criar o arquétipo." })
         }
       }
     } catch (error) {
-      toast({
-        title: "Erro ao criar arquétipo",
-        description: "Ocorreu um erro de conexão. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao criar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
     } finally {
       setIsCreatingArchetype(false)
     }
-  }, [generateArchetypeName, hasParsedEntities, buildSearchSpec, toast, setIsCreatingArchetype, setArchetypes, setNewArchetypeDescription])
+  }, [generateArchetypeName, hasParsedEntities, buildSearchSpec, setIsCreatingArchetype, setArchetypes, setNewArchetypeDescription])
 
   const openEditArchetype = useCallback((arch: ArchetypeData, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -364,28 +330,17 @@ export function useArchetypeHandlers(params: UseArchetypeHandlersParams) {
         const updated = await res.json()
         setArchetypes(prev => prev.map(a => a.id === editingArchetype.id ? { ...a, ...updated } : a))
         closeEditArchetype()
-        toast({
-          title: "Arquétipo atualizado",
-          description: `"${editArchetypeName}" foi salvo com sucesso.`
-        })
+        toast.success("Arquétipo atualizado", { description: `"${editArchetypeName}" foi salvo com sucesso.` })
       } else {
         const error = await res.json()
-        toast({
-          title: "Erro ao atualizar arquétipo",
-          description: error.detail || error.error || "Não foi possível salvar as alterações.",
-          variant: "destructive"
-        })
+        toast.error("Erro ao atualizar arquétipo", { description: error.detail || error.error || "Não foi possível salvar as alterações." })
       }
     } catch (error) {
-      toast({
-        title: "Erro ao atualizar arquétipo",
-        description: "Ocorreu um erro de conexão. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao atualizar arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
     } finally {
       setIsSavingArchetype(false)
     }
-  }, [editingArchetype, editArchetypeName, editArchetypeQuery, editArchetypeDescription, editArchetypeEmoji, editArchetypeTags, closeEditArchetype, toast, setIsSavingArchetype, setArchetypes])
+  }, [editingArchetype, editArchetypeName, editArchetypeQuery, editArchetypeDescription, editArchetypeEmoji, editArchetypeTags, closeEditArchetype, setIsSavingArchetype, setArchetypes])
 
   const openDeleteArchetypeDialog = useCallback((arch: ArchetypeData, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -408,29 +363,18 @@ export function useArchetypeHandlers(params: UseArchetypeHandlersParams) {
 
       if (res.ok) {
         setArchetypes(prev => prev.filter(a => a.id !== archId))
-        toast({
-          title: "Arquétipo excluído",
-          description: `"${archName}" foi removido com sucesso.`
-        })
+        toast.success("Arquétipo excluído", { description: `"${archName}" foi removido com sucesso.` })
       } else {
         const error = await res.json()
-        toast({
-          title: "Erro ao excluir arquétipo",
-          description: error.detail || error.error || "Não foi possível excluir o arquétipo.",
-          variant: "destructive"
-        })
+        toast.error("Erro ao excluir arquétipo", { description: error.detail || error.error || "Não foi possível excluir o arquétipo." })
       }
     } catch (error) {
-      toast({
-        title: "Erro ao excluir arquétipo",
-        description: "Ocorreu um erro de conexão. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao excluir arquétipo", { description: "Ocorreu um erro de conexão. Tente novamente." })
     } finally {
       setIsDeletingArchetype(null)
       setArchetypeToDelete(null)
     }
-  }, [archetypeToDelete, toast, setIsDeletingArchetype, setShowDeleteArchetypeDialog, setArchetypes, setArchetypeToDelete])
+  }, [archetypeToDelete, setIsDeletingArchetype, setShowDeleteArchetypeDialog, setArchetypes, setArchetypeToDelete])
 
   return {
     hasParsedEntities,

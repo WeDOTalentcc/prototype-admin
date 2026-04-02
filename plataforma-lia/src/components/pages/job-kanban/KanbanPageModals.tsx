@@ -50,6 +50,7 @@ import {
 import { formatScorePercent } from "@/lib/design-tokens"
 import { calculateNotaLiaGeral, getLiaAlerts } from "@/components/pages/job-kanban/utils/kanbanHelpers"
 import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
+import { toast } from "sonner"
 
 const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false })
 
@@ -228,10 +229,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
         onSuccess={() => {
           setShowAddToListModal(false)
           setSelectedCandidates(new Set())
-          toast({
-            title: "Sucesso",
-            description: "Candidatos adicionados à lista com sucesso!",
-          })
+          toast.success("Sucesso", { description: "Candidatos adicionados à lista com sucesso!" })
         }}
       />
 
@@ -298,10 +296,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
         candidateNames={candidateForVacancy ? [(candidateForVacancy.name as string) || ''] : []}
         currentRecruiterEmail={user?.email}
         onSuccess={() => {
-          toast({
-            title: "Candidato adicionado",
-            description: "Candidato adicionado à vaga com sucesso"
-          })
+          toast.success("Candidato adicionado", { description: "Candidato adicionado à vaga com sucesso" })
         }}
       />
 
@@ -847,7 +842,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
           mode={jobStatusModalMode}
           onStatusChange={(_jobIds, newStatus) => {
             setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, status: newStatus }))
-            toast({ title: newStatus === 'Paralisada' ? 'Vaga pausada com sucesso' : 'Vaga reativada com sucesso' })
+            toast.success(newStatus === 'Paralisada' ? 'Vaga pausada com sucesso' : 'Vaga reativada com sucesso')
             setShowJobStatusModal(false)
           }}
         />
@@ -883,7 +878,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             otherCandidates={otherCandidates}
             onConfirm={async () => {
               setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, status: 'Encerrada' }))
-              toast({ title: 'Vaga encerrada com sucesso' })
+              toast.success('Vaga encerrada com sucesso')
               setShowCloseVacancyModal(false)
             }}
           />
@@ -914,16 +909,9 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
                   onClick={() => {
                     try {
                       navigator.clipboard.writeText(publicLink)
-                      toast({
-                        title: "Link copiado!",
-                        description: "O link foi copiado para a área de transferência.",
-                      })
+                      toast.success("Link copiado!", { description: "O link foi copiado para a área de transferência." })
                     } catch {
-                      toast({
-                        title: "Não foi possível copiar",
-                        description: "Selecione o link manualmente e copie.",
-                        variant: "destructive",
-                      })
+                      toast.error("Não foi possível copiar", { description: "Selecione o link manualmente e copie." })
                     }
                   }}
                   className="p-2 rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none flex-shrink-0"

@@ -525,34 +525,22 @@
   - Focus: `ring-2 ring-gray-400 ring-offset-2`
   - Disabled: `pointer-events-none opacity-50`
 
-### 2.33 Toast
-- **Arquivo:** `plataforma-lia/src/components/ui/toast.tsx`
-- **Exports:** `ToastProvider`, `ToastViewport`, `Toast`, `ToastTitle`, `ToastDescription`, `ToastClose`, `ToastAction`
-- **Primitiva:** Radix Toast
-- **Viewport:** `fixed top-0 z-[100]`, mobile: top, desktop: `sm:bottom-0 sm:right-0`, max-w: `md:max-w-[420px]`
-- **Toast base:** `rounded-md`, border, `p-6 pr-8`, swipe gestures
+### 2.33 Toast (Sonner)
+- **Biblioteca:** `sonner` (npm package)
+- **Configuração:** `<SonnerToaster position="top-right" richColors />` em `layout.tsx`
+- **Import:** `import { toast } from "sonner"`
+- **Sistema anterior (Radix) removido:** `toast.tsx`, `toaster.tsx`, `use-toast.ts` deletados
 
-| Variante | Background | Text | Border |
-|----------|-----------|------|--------|
-| `default` | `bg-background` | `text-foreground` | border |
-| `destructive` | `bg-destructive` | `text-destructive-foreground` | `border-destructive` |
-| `success` | `bg-green-50` | `text-green-900` | `border-green-200` |
-| `warning` | `bg-yellow-50` | `text-yellow-900` | `border-yellow-200` |
-| `info` | `bg-blue-50` | `text-blue-900` | `border-blue-200` |
+| Método | Cor (richColors) | Uso |
+|--------|-----------------|-----|
+| `toast.success(title, opts)` | Verde | Confirmações de ações |
+| `toast.error(title, opts)` | Vermelho | Erros e falhas |
+| `toast.warning(title, opts)` | Amarelo | Avisos não-críticos |
+| `toast.info(title, opts)` | Azul | Informações gerais |
 
-- **ToastTitle:** `text-sm font-semibold`
-- **ToastDescription:** `text-sm opacity-90`
-- **ToastClose:** `X` icon `h-4 w-4`, `absolute right-2 top-2`, `opacity-0` → `group-hover:opacity-100`
-- **ToastAction:** `h-8 rounded-md px-3 text-sm font-medium`
-- **Animações:** slide-in-from-top (mobile), slide-in-from-bottom (desktop), fade-out-80 on close, swipe-to-dismiss
-- **States:** open (slide in + fade in), closed (fade out + slide right), swiping (translate-x follows finger)
-
-### 2.34 Toaster
-- **Arquivo:** `plataforma-lia/src/components/ui/toaster.tsx`
-- **Export:** `Toaster`
-- **Usa:** `useToast()` hook, renderiza lista de `Toast` components
-- **Layout:** `ToastProvider` → map toasts → `Toast` + `ToastTitle` + `ToastDescription` + action + `ToastClose` → `ToastViewport`
-- **Posição global:** Montado no root layout da aplicação
+- **Options:** `{ description?: string, duration?: number, action?: { label, onClick } }`
+- **Posição:** `top-right` (consistente em toda a plataforma)
+- **Auto-dismiss:** 4s padrão para success/info
 
 ### 2.35 Command (cmdk)
 - **Arquivo:** `plataforma-lia/src/components/ui/command.tsx`
@@ -1952,7 +1940,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 ### 13.3 Sistema de Notificações
 - **Componente:** `NotificationSystem` (`components/notification-system.tsx`)
 - **Ícone trigger:** `Bell` (Lucide) na TopBar
-- **Toast:** Componente `Toaster` + `Toast` (Radix)
+- **Toast:** Sonner (`toast.success/error/warning/info` — `position="top-right"`, `richColors`)
 
 ### 13.4 AI Disclaimer
 - **Componente:** `AIDisclaimer` (`components/ui/ai-disclaimer.tsx`)
@@ -3041,7 +3029,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | | `use-navigation-intent.ts` | Intenção de navegação |
 | | `use-navigation-persistence.ts` | Persistência de navegação |
 | | `use-recent-items.ts` | Itens recentes |
-| | `use-toast.ts` | Toast notifications |
+| | ~~`use-toast.ts`~~ | ~~Removido — usar `import { toast } from "sonner"` direto~~ |
 | | `useTableFeatures.ts` | Features da tabela |
 | | `useUIActions.ts` | Ações de UI |
 | | `useUnifiedSearch.ts` | Busca unificada |
@@ -3164,7 +3152,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Empty (sem vagas) | `EmptyState` centralizado | Ícone `Briefcase`, "Nenhuma vaga encontrada" |
 | Loaded | Tabela com dados | `Table` + `TableRow` por vaga |
 | Filtered (sem resultados) | `EmptyState` com filtro ativo | Mensagem de filtro |
-| Error (API fail) | Toast destructive | `Toast variant="destructive"` |
+| Error (API fail) | Toast error | `toast.error("...")` (Sonner) |
 
 ### 17.2 Kanban (Gestão da Vaga)
 | Estado | Visual | Componente/Estilo |
@@ -3176,7 +3164,7 @@ Search, Plus, MapPin, Calendar, Users, DollarSign, Eye, Edit, Edit2, Share2, Clo
 | Drop target | Border highlight na coluna | `border-cyan-300` (destino válido) |
 | Candidate preview | Side panel slide-in | `slideInFromRight` animation |
 | Bulk selection | Bottom bar visible | `UnifiedBulkActionsBar` slide-up |
-| Error | Toast | `Toast variant="destructive"` |
+| Error | Toast error | `toast.error("...")` (Sonner) |
 
 ### 17.3 Funil de Talentos
 | Estado | Visual | Componente/Estilo |

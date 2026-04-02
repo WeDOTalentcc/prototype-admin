@@ -5,7 +5,6 @@ import { liaApi, JobVacancy } from "@/services/lia-api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useToast } from "@/hooks/use-toast"
 import {
   Dialog,
   DialogContent,
@@ -18,6 +17,7 @@ import { Briefcase, Search, Loader2, Users, Check, Building2, MapPin } from "luc
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface AddListToVacanciesModalProps {
   isOpen: boolean
@@ -38,8 +38,7 @@ export function AddListToVacanciesModal({
   selectedCandidateIds, 
   onSuccess 
 }: AddListToVacanciesModalProps) {
-  const { toast } = useToast()
-  const [vacancies, setVacancies] = useState<JobVacancy[]>([])
+const [vacancies, setVacancies] = useState<JobVacancy[]>([])
   const [selectedVacancyIds, setSelectedVacancyIds] = useState<Set<string>>(new Set())
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -59,7 +58,7 @@ export function AddListToVacanciesModal({
       const response = await liaApi.listJobVacancies('open', 0, 100)
       setVacancies(response.items || [])
     } catch (error) {
-      toast({ title: "Erro ao carregar vagas", variant: "destructive" })
+      toast.error("Erro ao carregar vagas")
     } finally {
       setIsLoading(false)
     }
@@ -91,7 +90,7 @@ export function AddListToVacanciesModal({
 
   const handleSubmit = async () => {
     if (selectedVacancyIds.size === 0) {
-      toast({ title: "Selecione pelo menos uma vaga", variant: "destructive" })
+      toast.error("Selecione pelo menos uma vaga")
       return
     }
     
@@ -103,15 +102,12 @@ export function AddListToVacanciesModal({
         selectedCandidateIds
       )
       
-      toast({
-        title: "Candidatos adicionados às vagas",
-        description: `${result.assigned} adicionado(s) a ${result.jobs_count} vaga(s)${result.already_in_job > 0 ? `. ${result.already_in_job} já estavam em alguma vaga.` : ''}`
-      })
+      toast.success("Candidatos adicionados às vagas", { description: `${result.assigned} adicionado(s) a ${result.jobs_count} vaga(s)${result.already_in_job > 0 ? `, ${result.already_in_job} já existente(s)` : ''}` })
       
       onSuccess?.()
       onClose()
     } catch (error) {
-      toast({ title: "Erro ao adicionar às vagas", variant: "destructive" })
+      toast.error("Erro ao adicionar às vagas")
     } finally {
       setIsSubmitting(false)
     }

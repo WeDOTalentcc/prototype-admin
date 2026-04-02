@@ -1,14 +1,12 @@
 "use client"
 
-
 import React, { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { FileText, Image, FileVideo, Award, File } from "lucide-react"
 import { formatRelativeTime, formatFileSize } from "@/lib/format-utils"
 import { liaApi, type CandidateLocal } from "@/services/lia-api"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
-import { useToast } from "@/hooks/use-toast"
-
+import { toast } from "sonner"
 type ActiveTab = 'profile' | 'activities' | 'files' | 'opinions'
 type ActivityCategory = 'all' | 'interview' | 'screening' | 'general'
 
@@ -20,8 +18,7 @@ interface OpinionData {
 export function useCandidatePageCore() {
   const params = useParams()
   const router = useRouter()
-  const { toast } = useToast()
-  const candidateId = params.id as string
+const candidateId = params.id as string
 
   
   const [candidate, setCandidate] = useState<CandidateLocal | null>(null)
@@ -190,11 +187,7 @@ export function useCandidatePageCore() {
       const file = files[i]
       
       if (file.size > 10 * 1024 * 1024) {
-        toast({
-          title: "Arquivo muito grande",
-          description: `${file.name} excede o limite de 10MB`,
-          variant: "destructive"
-        })
+        toast.error("Arquivo muito grande", { description: `${file.name} excede o limite de 10MB` })
         errorCount++
         continue
       }
@@ -218,11 +211,7 @@ export function useCandidatePageCore() {
           successCount++
         } else {
           errorCount++
-          toast({
-            title: "Erro no upload",
-            description: data.error || `Erro ao enviar ${file.name}`,
-            variant: "destructive"
-          })
+          toast.error("Erro no upload", { description: data.error || `Erro ao enviar ${file.name}` })
         }
       } catch (error) {
         errorCount++
@@ -235,10 +224,7 @@ export function useCandidatePageCore() {
     setUploadProgress(0)
     
     if (successCount > 0) {
-      toast({
-        title: "Upload concluído",
-        description: `${successCount} arquivo(s) enviado(s) com sucesso`
-      })
+      toast.success("Upload concluído", { description: `${successCount} arquivo(s) enviado(s) com sucesso` })
       fetchCandidateFiles()
     }
   }
@@ -254,24 +240,13 @@ export function useCandidatePageCore() {
       const data = await response.json()
       
       if (data.success) {
-        toast({
-          title: "Arquivo excluído",
-          description: "O arquivo foi removido com sucesso"
-        })
+        toast.info("Arquivo excluído", { description: "O arquivo foi removido com sucesso" })
         fetchCandidateFiles()
       } else {
-        toast({
-          title: "Erro",
-          description: "Não foi possível excluir o arquivo",
-          variant: "destructive"
-        })
+        toast.error("Erro", { description: "Não foi possível excluir o arquivo" })
       }
     } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao excluir arquivo",
-        variant: "destructive"
-      })
+      toast.error("Erro", { description: "Erro ao excluir arquivo" })
     }
   }
 
@@ -366,7 +341,6 @@ export function useCandidatePageCore() {
     }
   }
 
-
   const cleanMarkdown = (text: string): string => {
     if (!text) return ''
     return text
@@ -383,16 +357,9 @@ export function useCandidatePageCore() {
   const copyToClipboard = async (text: string, label: string = 'Conteúdo') => {
     try {
       await navigator.clipboard.writeText(cleanMarkdown(text))
-      toast({
-        title: "Copiado!",
-        description: `${label} copiado para a área de transferência.`,
-      })
+      toast.success("Copiado!", { description: `${label} copiado para a área de transferência.` })
     } catch (err) {
-      toast({
-        title: "Erro ao copiar",
-        description: "Não foi possível copiar o conteúdo.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao copiar", { description: "Não foi possível copiar o conteúdo." })
     }
   }
 
@@ -479,10 +446,7 @@ export function useCandidatePageCore() {
         await fetch(`/api/backend-proxy/candidates/${candidate.id}/favorite`, { method: 'POST' })
       }
       setIsFavorite(!isFavorite)
-      toast({
-        title: isFavorite ? "Removido dos favoritos" : "Adicionado aos favoritos",
-        description: `${candidate.name} foi ${isFavorite ? 'removido dos' : 'adicionado aos'} favoritos`
-      })
+      toast.success(isFavorite ? "Removido dos favoritos" : "Adicionado aos favoritos", { description: `${candidate.name} foi ${isFavorite ? 'removido dos' : 'adicionado aos'} favoritos` })
     } catch (error) {
     }
   }
@@ -496,10 +460,7 @@ export function useCandidatePageCore() {
         await fetch(`/api/backend-proxy/candidates/${candidate.id}/hide`, { method: 'POST' })
       }
       setIsHidden(!isHidden)
-      toast({
-        title: isHidden ? "Candidato visível" : "Candidato oculto",
-        description: `${candidate.name} foi ${isHidden ? 'tornado visível' : 'ocultado'}`
-      })
+      toast.success(isHidden ? "Candidato visível" : "Candidato oculto", { description: `${candidate.name} foi ${isHidden ? 'tornado visível' : 'ocultado'}` })
     } catch (error) {
     }
   }
@@ -576,7 +537,6 @@ export function useCandidatePageCore() {
   const experiences = (cRecord?.workHistory || cRecord?.work_history || cRecord?.experiences || cAdditional?.work_history || cAdditional?.experiences || []) as Array<Record<string, unknown>>
   const education = (cRecord?.education || cAdditional?.education || []) as Array<Record<string, unknown>>
   const opinion = opinionsData?.current_general_opinion || opinionsData?.vacancy_opinions?.[0]
-
 
   return {
     activeTab,

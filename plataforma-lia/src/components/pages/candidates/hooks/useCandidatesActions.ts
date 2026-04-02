@@ -2,6 +2,7 @@
 
 import React from "react"
 import type { Candidate } from "../types"
+import { toast } from "sonner"
 
 export interface CandidatesActionsContext {
   candidates: Candidate[]
@@ -33,7 +34,6 @@ export interface CandidatesActionsContext {
   setShowSearchResults: React.Dispatch<React.SetStateAction<boolean>>
   lastSearchQuery: string
   deselectAllCandidates: () => void
-  toast: (opts: { title: string; description?: string; variant?: "destructive" | "default" }) => void
   user: { id?: string; name?: string; email?: string; [key: string]: unknown } | null
 }
 
@@ -56,7 +56,6 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
     setShowSearchResults,
     lastSearchQuery,
     deselectAllCandidates,
-    toast,
   } = ctx
 
   // Salvar candidatos Pearch selecionados na base local
@@ -66,11 +65,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
     )
 
     if (selectedPearchCandidates.length === 0) {
-      toast({
-        title: "Nenhum candidato Pearch selecionado",
-        description: "Selecione candidatos de busca global para salvar na base.",
-        variant: "destructive"
-      })
+      toast.error("Nenhum candidato Pearch selecionado", { description: "Selecione candidatos de busca global para salvar na base." })
       return
     }
 
@@ -161,20 +156,13 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
 
       const result = await response.json()
 
-      toast({
-        title: "Candidatos salvos na base!",
-        description: result.message,
-      })
+      toast.success("Candidatos salvos na base!", { description: result.message })
 
       // Limpar seleção após salvar
       deselectAllCandidates()
 
     } catch (error) {
-      toast({
-        title: "Erro ao salvar candidatos",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao salvar candidatos", { description: "Tente novamente em alguns instantes." })
     } finally {
       setIsSavingToBase(false)
     }
@@ -323,18 +311,11 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
 
       // Mostrar toast informativo
       if (result.imported_count > 0 || result.updated_count > 0) {
-        toast({
-          title: "Candidatos importados",
-          description: `${result.imported_count || 0} novo(s), ${result.updated_count || 0} atualizado(s)`,
-        })
+        toast.success("Candidatos importados", { description: `${result.imported_count || 0} novo(s), ${result.updated_count || 0} atualizado(s)` })
       }
 
     } catch (error) {
-      toast({
-        title: "Erro ao importar candidatos",
-        description: "Não foi possível salvar candidatos Pearch na base. Tente novamente.",
-        variant: "destructive"
-      })
+      toast.error("Erro ao importar candidatos", { description: "Não foi possível salvar candidatos Pearch na base. Tente novamente." })
     } finally {
       setIsAddingToList(false)
     }
@@ -441,10 +422,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
 
       const result = await response.json()
 
-      toast({
-        title: "Candidatos salvos!",
-        description: result.message,
-      })
+      toast.success("Candidatos salvos!", { description: result.message })
 
       // Limpar resultados de busca e mudar para a aba pendente
       setCandidates([])
@@ -457,11 +435,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
 
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao salvar candidatos'
-      toast({
-        title: "Erro ao salvar",
-        description: errorMessage,
-        variant: "destructive"
-      })
+      toast.error("Erro ao salvar", { description: errorMessage })
     } finally {
       setIsSavingToBase(false)
     }

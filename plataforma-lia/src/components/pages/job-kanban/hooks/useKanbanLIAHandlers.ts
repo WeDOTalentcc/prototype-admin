@@ -2,11 +2,11 @@
 
 import { useCallback } from "react"
 import type React from "react"
-import { useToast } from "@/hooks/use-toast"
 import { callKanbanAssistant, callOrchestratedJobChat } from "@/lib/api/kanban-assistant"
 import { isClearChatCommand } from "@/lib/chat-commands"
 import { type KanbanCandidate } from "@/components/kanban"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
+import { toast } from "sonner"
 
 interface KanbanJob {
   id?: string | number

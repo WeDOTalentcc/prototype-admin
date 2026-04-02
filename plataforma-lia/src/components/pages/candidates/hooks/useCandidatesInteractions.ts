@@ -12,6 +12,7 @@ import { type QuickAction } from "@/components/ui/quick-action-chips"
 import { type ParsedCVResponse } from "@/components/cv"
 import type { Candidate } from "@/components/pages/candidates/types"
 import { PREVIEW_WIDTH_MIN, PREVIEW_WIDTH_MAX } from "./candidates-core"
+import { toast } from "sonner"
 
 interface UseCandidatesInteractionsParams {
   // Candidate data
@@ -49,7 +50,6 @@ interface UseCandidatesInteractionsParams {
   setParsedCVData: (d: ParsedCVResponse | null) => void
   setShowCVPreviewModal: (v: boolean) => void
   // Toast
-  toast: (opts: { title: string; description?: string; duration?: number }) => void
   // Callbacks from props
   onAddRecentItem?: (item: {
     id: string; type: 'candidato' | 'vaga' | 'chat'; title: string; subtitle?: string; meta?: Record<string, string | undefined>
@@ -91,7 +91,6 @@ export function useCandidatesInteractions({
   setShowBatchApproval,
   setParsedCVData,
   setShowCVPreviewModal,
-  toast,
   onAddRecentItem,
   markCandidateAsViewed,
   handleBulkActionComplete,
@@ -225,7 +224,7 @@ export function useCandidatesInteractions({
       data.type === 'whatsapp' ? 'WhatsApp' :
       data.type === 'triagem' ? 'Convite de triagem' :
       data.type === 'agendamento' ? 'Convite de entrevista' : 'Feedback'
-    toast({ title: 'Mensagem enviada!', description: `${label} enviado com sucesso.` })
+    toast.success('Mensagem enviada!', { description: `${label} enviado com sucesso.` })
     handleUnifiedModalClose()
   }
 

@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { toast } from "sonner"
 
 interface KanbanJobHeaderProps {
   onBack?: () => void
@@ -35,7 +36,6 @@ interface KanbanJobHeaderProps {
   setShowJobEditor: (show: boolean) => void
   pipelineInheritance: { isCustomized: boolean; isLoading: boolean; resetToCompanyDefault: () => Promise<boolean> }
   setJobLocalOverrides: (fn: (prev: Record<string, unknown>) => Record<string, unknown>) => void
-  toast: (opts: { title: string; description?: string }) => void
 }
 
 export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: KanbanJobHeaderProps) {
@@ -44,7 +44,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
     setJobStatusModalMode, setShowJobStatusModal, setShowCloseVacancyModal,
     setActiveTab, computedSuggestions, setShowExpandedLIA, setShowLiaSuggestionsPanel,
     allTableCandidates, selectedCandidates, setSelectedCandidates, setShowShareGestorModal,
-    handleShowReport, activeTab, setShowJobEditor, pipelineInheritance, toast,
+    handleShowReport, activeTab, setShowJobEditor, pipelineInheritance,
   } = props
 
   return (
@@ -129,10 +129,10 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       try {
                         await liaApi.updateJobVacancy(jobId, { screeningStatus: newStatus } as Record<string, unknown>)
                         setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, screeningStatus: newStatus }))
-                        toast({ title: `Triagem ${newStatus === 'active' ? 'ativada' : newStatus === 'paused' ? 'pausada' : 'atualizada'}` })
+                        toast.success(`Triagem ${newStatus === 'active' ? 'ativada' : newStatus === 'paused' ? 'pausada' : 'atualizada'}`)
                       } catch {
                         // @ts-ignore TODO: fix type
-                        toast({ title: 'Erro ao atualizar triagem', variant: 'destructive' })
+                        toast.error('Erro ao atualizar triagem')
                       }
                     }
                     const badge = (
@@ -294,10 +294,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
             {/* Right: Action Buttons */}
             <div className="flex items-center gap-2 pt-1 flex-shrink-0">
               <Button variant="outline" size="sm" className="gap-2 h-8" onClick={() => {
-                toast({
-                  title: "Em breve",
-                  description: "Em breve: Configuração de etapas do pipeline",
-                })
+                toast.success("Em breve", { description: "Em breve: Configuração de etapas do pipeline" })
               }}>
                 <Settings className="w-3.5 h-3.5" />
                 Configurar Etapas
@@ -312,10 +309,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                 } else {
                   // @ts-ignore TODO: fix type
                   setSelectedCandidates(new Set(allTableCandidates.map(c => c.id as string)))
-                  toast({
-                    title: "Modo Compartilhamento",
-                    description: "Todos os candidatos foram selecionados. Ajuste a seleção e clique em Compartilhar na barra de ações.",
-                  })
+                  toast.success("Modo Compartilhamento", { description: "Todos os candidatos foram selecionados. Ajuste a seleção e clique em Compartilhar na barra de ações." })
                 }
               }}>
                 <Share2 className="w-3.5 h-3.5" />
@@ -366,7 +360,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                     onClick={async () => {
                       const success = await pipelineInheritance.resetToCompanyDefault()
                       if (success) {
-                        toast({ title: 'Pipeline resetado', description: 'Pipeline restaurado para o padrão da empresa.' })
+                        toast.success('Pipeline resetado', { description: 'Pipeline restaurado para o padrão da empresa.' })
                         window.location.reload()
                       }
                     }}

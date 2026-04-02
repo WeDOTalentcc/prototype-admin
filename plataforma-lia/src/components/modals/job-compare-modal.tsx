@@ -35,8 +35,8 @@ import {
   ArrowRightLeft,
   XCircle,
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
 import { LiaAnalysisPanel, CandidateFunnelPanel } from "./job-compare"
+import { toast } from "sonner"
 
 interface JobCompareModalProps {
   isOpen: boolean
@@ -150,8 +150,7 @@ interface LiaAnalysisData {
 }
 
 export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps) {
-  const { toast } = useToast()
-  const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimension>>(
+const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimension>>(
     new Set(["technical_requirements", "competencies", "salary_range", "location", "performance"])
   )
   const [isExporting, setIsExporting] = useState(false)
@@ -325,16 +324,9 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
       
-      toast({
-        title: "PDF exportado",
-        description: "Arquivo salvo com sucesso.",
-      })
+      toast.success("PDF exportado", { description: "Arquivo salvo com sucesso." })
     } catch (error) {
-      toast({
-        title: "Erro ao exportar",
-        description: "Não foi possível gerar o PDF.",
-        variant: "destructive",
-      })
+      toast.error("Erro ao exportar", { description: "Não foi possível gerar o PDF." })
     } finally {
       setIsExporting(false)
     }
@@ -501,10 +493,7 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
 
       if (navigator.share && navigator.canShare(shareData)) {
         await navigator.share(shareData)
-        toast({
-          title: "PDF compartilhado",
-          description: "Relatório enviado com sucesso.",
-        })
+        toast.success("PDF compartilhado", { description: "Relatório enviado com sucesso." })
       } else {
         const url = URL.createObjectURL(pdfBlob)
         const a = document.createElement("a")
@@ -514,18 +503,11 @@ export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps)
         a.click()
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
-        toast({
-          title: "PDF baixado",
-          description: "Compartilhamento não suportado. Arquivo baixado.",
-        })
+        toast.success("PDF baixado", { description: "Compartilhamento não suportado. Arquivo baixado." })
       }
     } catch (error) {
       if ((error as Error).name !== "AbortError") {
-        toast({
-          title: "Erro",
-          description: "Não foi possível compartilhar o PDF.",
-          variant: "destructive",
-        })
+        toast.error("Erro", { description: "Não foi possível compartilhar o PDF." })
       }
     } finally {
       setIsExporting(false)

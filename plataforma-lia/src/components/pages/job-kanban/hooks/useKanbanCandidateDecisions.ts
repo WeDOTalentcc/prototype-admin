@@ -1,8 +1,8 @@
 "use client"
 
-import { useToast } from "@/hooks/use-toast"
 import { type KanbanCandidate, type DynamicStage } from "@/components/kanban"
 import { type KanbanJob } from "@/components/pages/job-kanban/types"
+import { toast } from "sonner"
 
 interface RubricCriterion {
   name: string
@@ -19,7 +19,7 @@ interface RubricEvaluationData {
 }
 
 export interface KanbanCandidateDecisionsContext {
-  toast: ReturnType<typeof useToast>["toast"]
+  toast: typeof import("sonner").toast
   job: KanbanJob | null
   dynamicStages: DynamicStage[]
   setCandidatesData: (updater: (prev: Record<string, KanbanCandidate[]>) => Record<string, KanbanCandidate[]>) => void
@@ -90,34 +90,18 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
           return newData
         })
 
-        toast({
-          title: 'Candidato aprovado',
-          description: `${candidate.name} foi movido para ${targetStage}.`,
-          variant: 'default'
-        })
+        toast.success('Candidato aprovado', { description: `${candidate.name} foi movido para ${targetStage}.` })
       } else {
         const errorData = await response.json().catch(() => ({}))
 
         if (errorData.detail?.error === 'missing_contact_info') {
-          toast({
-            title: 'Dados de contato incompletos',
-            description: `${candidate.name} não possui email ou telefone válido. Adicione um contato antes de aprovar.`,
-            variant: 'destructive'
-          })
+          toast.error('Dados de contato incompletos', { description: `${candidate.name} não possui email ou telefone válido. Adicione um contato antes de aprovar.` })
         } else {
-          toast({
-            title: 'Erro ao aprovar',
-            description: errorData.detail?.message || errorData.error || 'Não foi possível aprovar o candidato.',
-            variant: 'destructive'
-          })
+          toast.error('Erro ao aprovar', { description: errorData.detail?.message || errorData.error || 'Não foi possível aprovar o candidato.' })
         }
       }
     } catch (error) {
-      toast({
-        title: 'Erro de conexão',
-        description: 'Não foi possível conectar ao servidor.',
-        variant: 'destructive'
-      })
+      toast.error('Erro de conexão', { description: 'Não foi possível conectar ao servidor.' })
     }
   }
 
@@ -150,26 +134,14 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
 
       if (response.ok) {
         const data = await response.json()
-        toast({
-          title: 'Candidato reprovado',
-          description: `${candidate.name} foi movido para ${data.new_stage || 'Reprovados'}.`,
-          variant: 'destructive'
-        })
+        toast.error('Candidato reprovado', { description: `${candidate.name} foi movido para ${data.new_stage || 'Reprovados'}.` })
         moveToRejected()
       } else {
         const errorData = await response.json().catch(() => ({}))
-        toast({
-          title: 'Erro ao reprovar',
-          description: errorData.error || 'Não foi possível reprovar o candidato.',
-          variant: 'destructive'
-        })
+        toast.error('Erro ao reprovar', { description: errorData.error || 'Não foi possível reprovar o candidato.' })
       }
     } catch (error) {
-      toast({
-        title: 'Erro de conexão',
-        description: 'Não foi possível conectar ao servidor.',
-        variant: 'destructive'
-      })
+      toast.error('Erro de conexão', { description: 'Não foi possível conectar ao servidor.' })
     }
   }
 
@@ -193,26 +165,14 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         if (errorData.detail?.error === 'missing_contact_info') {
-          toast({
-            title: 'Dados de contato incompletos',
-            description: `${candidate.name} não possui email ou telefone válido. Adicione um contato antes de aprovar.`,
-            variant: 'destructive'
-          })
+          toast.error('Dados de contato incompletos', { description: `${candidate.name} não possui email ou telefone válido. Adicione um contato antes de aprovar.` })
         } else {
-          toast({
-            title: 'Erro ao aprovar',
-            description: errorData.detail?.message || errorData.error || 'Não foi possível aprovar o candidato.',
-            variant: 'destructive'
-          })
+          toast.error('Erro ao aprovar', { description: errorData.detail?.message || errorData.error || 'Não foi possível aprovar o candidato.' })
         }
         return
       }
     } catch (error) {
-      toast({
-        title: 'Erro de conexão',
-        description: 'Não foi possível conectar ao servidor.',
-        variant: 'destructive'
-      })
+      toast.error('Erro de conexão', { description: 'Não foi possível conectar ao servidor.' })
       return
     }
 
@@ -254,19 +214,11 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        toast({
-          title: 'Erro ao reprovar',
-          description: errorData.detail?.message || errorData.error || 'Não foi possível registrar a reprovação.',
-          variant: 'destructive'
-        })
+        toast.error('Erro ao reprovar', { description: errorData.detail?.message || errorData.error || 'Não foi possível registrar a reprovação.' })
         return
       }
     } catch (error) {
-      toast({
-        title: 'Erro de conexão',
-        description: 'Não foi possível conectar ao servidor.',
-        variant: 'destructive'
-      })
+      toast.error('Erro de conexão', { description: 'Não foi possível conectar ao servidor.' })
       return
     }
 
@@ -303,10 +255,7 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
     } else if (action.startsWith('reject')) {
       await handleRejectCandidate(candidate)
       if (action === 'reject_with_feedback' && feedbackMessage) {
-        toast({
-          title: 'Feedback enviado',
-          description: `Mensagem de feedback enviada para ${candidate.name} via ${channel === 'whatsapp' ? 'WhatsApp' : 'Email'}.`,
-        })
+        toast.success('Feedback enviado', { description: `Mensagem de feedback enviada para ${candidate.name} via ${channel === 'whatsapp' ? 'WhatsApp' : 'Email'}.` })
       }
     }
 
