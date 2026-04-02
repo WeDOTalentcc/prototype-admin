@@ -243,7 +243,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
               </td>
               <td className="py-3 px-3">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="h-8 w-8">
                     <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
                     <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary dark:text-lia-text-secondary">
                       {candidate.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}

@@ -330,12 +330,11 @@ export function UnifiedCandidateTable({
   }
 
   return (
-    <div className={`bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle ${className}`}>
-      <div
-        ref={enableVirtualScroll ? virtualScrollRef : undefined}
-        className="overflow-x-auto"
-        style={enableVirtualScroll ? { overflowY: "auto", maxHeight: "600px" } : undefined}
-      >
+    <div
+      ref={enableVirtualScroll ? virtualScrollRef : undefined}
+      className={`bg-white dark:bg-lia-bg-primary overflow-auto rounded-md border border-lia-border-subtle dark:border-lia-border-subtle ${className}`}
+      style={enableVirtualScroll ? { maxHeight: "600px" } : undefined}
+    >
         <table className="w-full" style={{tableLayout: enableColumnResize ? 'fixed' : 'auto'}}>
           <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 #e5e7eb' }}>
             <tr>
@@ -497,7 +496,6 @@ export function UnifiedCandidateTable({
             }
           </tbody>
         </table>
-      </div>
 
       {showPagination && totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">

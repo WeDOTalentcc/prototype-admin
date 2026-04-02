@@ -94,7 +94,7 @@ export function CandidateCell({
 
   return (
     <div className="flex items-center gap-2">
-      <Avatar className="w-7 h-7">
+      <Avatar className="w-8 h-8">
         <AvatarImage src={avatarUrl} />
         <AvatarFallback 
           className="text-xs font-medium bg-wedo-cyan/15"
