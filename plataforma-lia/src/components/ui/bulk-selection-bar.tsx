@@ -209,7 +209,7 @@ export function BulkSelectionBarInline({
   return (
     <div 
       className={cn(
- "bg-gray-100 dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md",
+ "bg-white dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md",
         "px-4 py-2.5",
         "animate-in fade-in duration-200",
         className

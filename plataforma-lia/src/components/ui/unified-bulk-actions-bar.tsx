@@ -122,7 +122,7 @@ export const UnifiedBulkActionsBar = React.memo(function UnifiedBulkActionsBar({
   const availableActions = BULK_ACTIONS.filter(action => action.contexts.includes(context))
 
   return (
-    <div className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+    <div className="p-3 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
       <div className="flex items-center justify-between flex-wrap gap-2">
         {/* Left: Selection info */}
         <div className="flex items-center gap-3">
