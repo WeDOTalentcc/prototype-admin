@@ -34,14 +34,14 @@ export function ProfileEducationSection({ education }: ProfileEducationSectionPr
         {education.length > 0 ? (
           education.map((edu, index) => (
             <div
-              key={}
-              className={}
+              key={index}
+              className="flex items-start justify-between gap-2"
             >
               <div>
                 <h5 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
                   {edu.degree || edu.title || "Formação"}
                   {(edu.field_of_study || edu.fieldOfStudy) &&
-                    }
+                    ` em ${edu.field_of_study || edu.fieldOfStudy}`}
                 </h5>
                 <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">
                   {edu.school || edu.institution || "Instituição não informada"}

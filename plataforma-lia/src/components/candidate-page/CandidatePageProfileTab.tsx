@@ -2,9 +2,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
 import { ProfileExperienceSection } from "@/components/candidate-profile/ProfileExperienceSection"
 import { ProfileEducationSection } from "@/components/candidate-profile/ProfileEducationSection"
+import {
   MapPin, Building, GraduationCap, Briefcase, Award,
   Brain, CheckCircle, AlertCircle, Clock, Users,
   DollarSign, User, Languages, Home, Cake,

@@ -4,10 +4,10 @@ export const modules: ModuleMap = {
   "./components/mockups/arch-compare/EstadoAtual.tsx": () => import("../components/mockups/arch-compare/EstadoAtual.tsx"),
   "./components/mockups/arch-compare/EstadoDesejado.tsx": () => import("../components/mockups/arch-compare/EstadoDesejado.tsx"),
   "./components/mockups/funil-elevenlabs/FunilElevenLabs.tsx": () => import("../components/mockups/funil-elevenlabs/FunilElevenLabs.tsx"),
-  "./components/mockups/wsi-report/Tab1Respostas.tsx": () => import("../components/mockups/wsi-report/Tab1Respostas.tsx"),
-  "./components/mockups/wsi-report/Tab2Aprovado.tsx": () => import("../components/mockups/wsi-report/Tab2Aprovado.tsx"),
-  "./components/mockups/wsi-report/Tab2Pendente.tsx": () => import("../components/mockups/wsi-report/Tab2Pendente.tsx"),
   "./components/mockups/weekly-digest/BellNotification.tsx": () => import("../components/mockups/weekly-digest/BellNotification.tsx"),
   "./components/mockups/weekly-digest/ChatFlutuante.tsx": () => import("../components/mockups/weekly-digest/ChatFlutuante.tsx"),
-  "./components/mockups/weekly-digest/TeamsAdaptiveCard.tsx": () => import("../components/mockups/weekly-digest/TeamsAdaptiveCard.tsx")
+  "./components/mockups/weekly-digest/TeamsAdaptiveCard.tsx": () => import("../components/mockups/weekly-digest/TeamsAdaptiveCard.tsx"),
+  "./components/mockups/wsi-report/Tab1Respostas.tsx": () => import("../components/mockups/wsi-report/Tab1Respostas.tsx"),
+  "./components/mockups/wsi-report/Tab2Aprovado.tsx": () => import("../components/mockups/wsi-report/Tab2Aprovado.tsx"),
+  "./components/mockups/wsi-report/Tab2Pendente.tsx": () => import("../components/mockups/wsi-report/Tab2Pendente.tsx")
 };

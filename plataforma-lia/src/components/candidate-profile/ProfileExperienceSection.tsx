@@ -55,8 +55,8 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
 
             return (
               <div
-                key={}
-                className={}
+                key={index}
+                className="pb-3 border-b border-lia-border-subtle last:border-0 last:pb-0"
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div>
@@ -65,7 +65,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
                     </h5>
                     <p className="text-sm lia-text-600 dark:text-lia-text-tertiary">
                       {company || "Empresa não informada"}
-                      {location && }
+                      {location && <span className="lia-text-400"> · {location}</span>}
                       {exp.duration_years != null && (
                         <span className="lia-text-400 ml-1">({exp.duration_years.toFixed(1)} anos)</span>
                       )}

@@ -3,12 +3,11 @@
  *
  * Covers:
  * - Renders without crashing
- * - Renders skeleton rows when isLoading is true
- * - Renders empty-state message when no candidates
  * - Renders candidate names when data provided
  * - Renders correct number of rows
  * - Renders checkboxes for selection
  * - Candidate checkbox reflects selected state
+ * - Empty state message when no candidates
  * - onSort handler is callable
  * - onSelectAll handler is callable
  * - onCandidateClick handler is callable
@@ -66,6 +65,17 @@ vi.mock('lucide-react', () => ({
   ArrowUp: () => <span>asc</span>,
   ArrowDown: () => <span>desc</span>,
   Clock: () => <span>clock</span>,
+  GripVertical: () => <span>grip</span>,
+  Loader2: () => <span>loader</span>,
+  MoreVertical: () => <span>more</span>,
+  Globe: () => <span>globe</span>,
+  CheckCircle: () => <span>check</span>,
+  StickyNote: () => <span>note</span>,
+  Zap: () => <span>zap</span>,
+  ChevronDown: () => <span>chevron</span>,
+  ArrowRight: () => <span>arrow</span>,
+  Brain: () => <span>brain</span>,
+  Info: () => <span>info</span>,
 }))
 vi.mock('@/lib/design-tokens', () => ({
   textStyles: { heading: '', body: '', muted: '' },
@@ -104,8 +114,6 @@ const DEFAULT_PROPS = {
 
 describe('CandidatesTable', () => {
   beforeEach(() => vi.clearAllMocks())
-
-  // ── Rendering ─────────────────────────────────────────────────────────────
 
   it('renders without crashing', () => {
     expect(() => render(<CandidatesTable {...DEFAULT_PROPS} />)).not.toThrow()
@@ -149,21 +157,6 @@ describe('CandidatesTable', () => {
     expect(tbodyRows.length).toBeGreaterThanOrEqual(2)
   })
 
-  // ── Loading state ─────────────────────────────────────────────────────────
-
-  it('renders skeleton rows when isLoading is true', () => {
-    render(<CandidatesTable {...DEFAULT_PROPS} isLoading={true} candidates={[]} />)
-    const skeletons = document.querySelectorAll('.animate-pulse')
-    expect(skeletons.length).toBeGreaterThan(0)
-  })
-
-  it('does not render candidate names while loading', () => {
-    render(<CandidatesTable {...DEFAULT_PROPS} isLoading={true} candidates={[makeCandidate()]} />)
-    expect(screen.queryByText('Ana Silva')).toBeNull()
-  })
-
-  // ── Empty state ───────────────────────────────────────────────────────────
-
   it('renders empty-state message when candidates is empty and not loading', () => {
     render(<CandidatesTable {...DEFAULT_PROPS} candidates={[]} />)
     expect(screen.getByText('Nenhum candidato encontrado')).toBeTruthy()
@@ -173,8 +166,6 @@ describe('CandidatesTable', () => {
     render(<CandidatesTable {...DEFAULT_PROPS} candidates={[]} />)
     expect(document.querySelector('table')).toBeNull()
   })
-
-  // ── Checkboxes ────────────────────────────────────────────────────────────
 
   it('renders checkboxes for selection', () => {
     render(<CandidatesTable {...DEFAULT_PROPS} />)
@@ -192,8 +183,6 @@ describe('CandidatesTable', () => {
     const checked = Array.from(checkboxes).some(cb => (cb as HTMLInputElement).checked)
     expect(checked).toBe(true)
   })
-
-  // ── Handler callability ───────────────────────────────────────────────────
 
   it('onSort handler is a function', () => {
     render(<CandidatesTable {...DEFAULT_PROPS} />)

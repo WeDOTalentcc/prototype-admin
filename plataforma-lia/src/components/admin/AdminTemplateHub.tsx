@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { VariableSelector } from "@/components/ui/variable-selector"
-import {
 import { ThinkingDots } from "@/components/ui/thinking-dots"
+import {
   Mail, Clock, Edit, Save, X, Eye, Brain, Send, FileText,
   Check, AlertCircle, MessageSquare, PenTool, RefreshCw, Copy,
   Bell, Shield, Calendar, Timer, Wand2, Zap, Loader2, CheckCircle,

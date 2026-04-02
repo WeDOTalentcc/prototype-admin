@@ -15,8 +15,8 @@ import { Brain, X, ExternalLink, Loader2, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useAgentStreaming } from "@/hooks/use-agent-streaming"
-import {
 import { ThinkingDots } from "@/components/ui/thinking-dots"
+import {
   useFloatConversation,
   formatMessageTime,
   type FloatMessage,
