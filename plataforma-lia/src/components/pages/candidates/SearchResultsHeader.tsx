@@ -32,7 +32,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
 }: SearchResultsHeaderProps) {
   // DS v4.2.1: Tailwind tokens — sem hex hardcoded
   const pillStyles: Record<string, { pill: string; icon: string }> = {
-    job_title:        { pill: 'bg-gray-100 text-lia-text-secondary',      icon: 'text-lia-text-secondary' },
+    job_title:        { pill: 'bg-lia-bg-tertiary text-lia-text-secondary',      icon: 'text-lia-text-secondary' },
     location:         { pill: 'bg-wedo-purple/10 text-wedo-purple',   icon: 'text-wedo-purple' },
     years_experience: { pill: 'bg-status-warning/10 text-status-warning',     icon: 'text-status-warning' },
     skill:            { pill: 'bg-status-success/10 text-status-success', icon: 'text-status-success' },
@@ -150,7 +150,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
         result.push(<span key={`t${idx}`}>{query.substring(pos, span.start)}</span>)
       }
 
-      const style = pillStyles[span.type] || { pill: 'bg-gray-200 text-lia-text-secondary', icon: 'text-lia-text-tertiary' }
+      const style = pillStyles[span.type] || { pill: 'bg-lia-interactive-active text-lia-text-secondary', icon: 'text-lia-text-tertiary' }
       result.push(
         <span
           key={`p${idx}`}
@@ -172,7 +172,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
   }
 
   return (
-    <div className="flex items-center gap-3 -mt-1 bg-white rounded-md px-3 py-2">
+    <div className="flex items-center gap-3 -mt-1 bg-lia-bg-primary rounded-md px-3 py-2">
       {/* Botão Voltar - apenas ícone em azul negrito */}
       <TooltipProvider>
         <Tooltip>
@@ -207,7 +207,7 @@ const SearchResultsHeader = memo(function SearchResultsHeader({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => onOpenEditQueryModal(lastSearchQuery || '')}
-                    className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-gray-200 transition-[width,height] ml-1"
+                    className="inline-flex items-center justify-center w-6 h-6 rounded-full hover:bg-lia-interactive-active transition-[width,height] ml-1"
                   >
                     <Edit className="w-3 h-3 text-lia-text-secondary" />
                   </button>

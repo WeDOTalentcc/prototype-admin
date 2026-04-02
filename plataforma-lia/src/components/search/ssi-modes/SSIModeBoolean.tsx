@@ -55,14 +55,14 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
             "w-full resize-none rounded-md pl-10 pr-28 py-3 text-sm font-mono focus:outline-none min-h-14 transition-colors border bg-lia-bg-primary",
             booleanError && "ring-2 ring-red-300"
           )}
-          style={{borderColor: booleanError ? "var(--status-error)" : "var(--gray-200)",
-            color: "var(--gray-950)"}}
+          style={{borderColor: booleanError ? "var(--status-error)" : "var(--lia-border-subtle)",
+            color: "var(--lia-btn-primary-bg)"}}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = "var(--gray-300)"
+            e.currentTarget.style.borderColor = "var(--lia-border-default)"
             e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = booleanError ? "var(--status-error)" : "var(--gray-200)"
+            e.currentTarget.style.borderColor = booleanError ? "var(--status-error)" : "var(--lia-border-subtle)"
             e.currentTarget.style.boxShadow = "none"
           }}
           rows={2}
@@ -81,7 +81,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                       "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                       searchSource === 'local'
                         ? "bg-wedo-green/15 ring-1 ring-wedo-green"
-                        : "hover:bg-gray-100"
+                        : "hover:bg-lia-bg-tertiary"
                     , searchSource === 'local' ? "text-wedo-green" : "text-lia-text-tertiary"
                     )}
                   >
@@ -106,7 +106,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                         "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         searchSource === 'hybrid'
                           ? "bg-wedo-orange/15 ring-1 ring-wedo-orange"
-                          : "hover:bg-gray-100"
+                          : "hover:bg-lia-bg-tertiary"
                       , searchSource === 'hybrid' ? "text-wedo-orange" : "text-lia-text-tertiary"
                       )}
                     >
@@ -131,8 +131,8 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                       className={cn(
                         "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         searchSource === 'global'
-                          ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20"
-                          : "hover:bg-gray-100"
+                          ? "bg-wedo-cyan/15 ring-1 ring-lia-btn-primary-bg/20"
+                          : "hover:bg-lia-bg-tertiary"
                       , searchSource === 'global' ? "text-lia-text-primary" : "text-lia-text-tertiary"
                       )}
                     >
@@ -160,7 +160,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                           "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                           requireEmails
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green"
-                            : "hover:bg-gray-100"
+                            : "hover:bg-lia-bg-tertiary"
                         , requireEmails ? "text-wedo-green" : "text-lia-text-tertiary"
                         )}
                       >
@@ -184,7 +184,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
                           "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                           requirePhoneNumbers
                             ? "bg-wedo-green/15 ring-1 ring-wedo-green"
-                            : "hover:bg-gray-100"
+                            : "hover:bg-lia-bg-tertiary"
                         , requirePhoneNumbers ? "text-wedo-green" : "text-lia-text-tertiary"
                         )}
                       >
@@ -207,7 +207,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
               disabled={!canSubmit() || isLoading}
               className={cn(
                 "flex items-center justify-center p-1.5 rounded-md transition-colors",
-                canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
+                canSubmit() ? "hover:bg-lia-bg-tertiary" : "opacity-50 cursor-not-allowed"
               , canSubmit() ? "text-lia-text-tertiary" : "text-lia-text-disabled"
               )}
             >
@@ -234,9 +234,9 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
           <button
             key={op}
             onClick={() => onChange(value + (value ? " " : "") + op + " ")}
-            className="px-2 py-0.5 rounded-md text-xs font-mono hover:bg-gray-100 transition-colors motion-reduce:transition-none"
-            style={{backgroundColor: 'var(--gray-100)',
-              color: 'var(--gray-500)'}}
+            className="px-2 py-0.5 rounded-md text-xs font-mono hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+            style={{backgroundColor: 'var(--lia-bg-tertiary)',
+              color: 'var(--lia-text-secondary)'}}
           >
             {op}
           </button>
@@ -244,7 +244,7 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
       </div>
 
       {/* Dica contextual padronizada */}
-      <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
+      <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
           <p className="text-xs text-lia-text-primary">

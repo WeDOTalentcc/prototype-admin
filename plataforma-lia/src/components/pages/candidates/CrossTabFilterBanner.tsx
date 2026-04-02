@@ -19,10 +19,10 @@ export function CrossTabFilterBanner({
   if (!showCrossTabBanner || !crossTabFilter) return null
 
   return (
-    <Card className="bg-gray-50 dark:bg-lia-bg-secondary">
+    <Card className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-900 dark:bg-gray-100 rounded-md flex items-center justify-center">
+          <div className="w-10 h-10 bg-lia-btn-primary-bg dark:bg-lia-bg-tertiary rounded-md flex items-center justify-center">
             {cf.type === 'company' ? (
               <Building className="w-5 h-5 text-white" />
             ) : (

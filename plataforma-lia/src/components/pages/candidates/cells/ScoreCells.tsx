@@ -17,10 +17,10 @@ export function renderMatchScoreCell(candidate: Candidate, searchQuery: string):
   }
 
   const getMatchRingColor = (score: number) => {
-    if (score >= 85) return "var(--gray-600)"
+    if (score >= 85) return "var(--lia-text-secondary)"
     if (score >= 70) return "var(--wedo-green-light)"
     if (score >= 50) return "var(--wedo-orange)"
-    return "var(--gray-400)"
+    return "var(--lia-text-tertiary)"
   }
 
   const ringColor = getMatchRingColor(matchScore)
@@ -80,7 +80,7 @@ export function renderLiaScoreCell(candidate: Candidate): React.ReactNode {
       <div className="relative group cursor-help">
         <span className="text-xs text-lia-text-primary">—</span>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-          <div className="bg-gray-900 dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md text-xs min-w-[180px]">
+          <div className="bg-lia-btn-primary-bg dark:bg-lia-bg-elevated text-white px-3 py-2 rounded-md text-xs min-w-[180px]">
             <div className="font-semibold mb-1.5 flex items-center gap-1.5">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
               Sem avaliação
@@ -91,7 +91,7 @@ export function renderLiaScoreCell(candidate: Candidate): React.ReactNode {
             <div className="text-xs text-lia-text-primary mt-1.5">
               O Score LIA é calculado quando o candidato é avaliado para uma vaga específica.
             </div>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-lia-btn-primary-bg dark:border-t-lia-border-strong"></div>
           </div>
         </div>
       </div>

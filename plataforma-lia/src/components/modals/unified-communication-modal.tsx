@@ -460,7 +460,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
   }
 
   const modalContent = (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-modal flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-lia-overlay backdrop-blur-[1px] z-modal flex items-center justify-center p-4">
       <div 
         className={`${cardStyles.default} rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col`}
        
@@ -812,7 +812,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                     <div className="px-4 py-3 border-b border-lia-border-subtle bg-lia-bg-secondary">
                       <div className="flex items-center gap-2 mb-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarFallback className="text-micro bg-lia-btn-primary-bg text-white">RH</AvatarFallback>
+                          <AvatarFallback className="text-micro bg-lia-btn-primary-bg text-lia-btn-primary-text">RH</AvatarFallback>
                         </Avatar>
                         <div>
                           <div className={textStyles.bodySmall}>Equipe de Recrutamento</div>
@@ -935,7 +935,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               variant="outline"
               size="sm"
               onClick={onClose}
-              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-lia-interactive-hover text-lia-text-secondary dark:hover:bg-lia-btn-primary-bg"
+              className="h-9 px-4 text-xs font-medium bg-lia-bg-primary border border-lia-border-default hover:bg-lia-interactive-hover text-lia-text-secondary dark:hover:bg-lia-btn-primary-bg"
             >
               Cancelar
             </Button>
@@ -943,7 +943,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               size="sm"
               onClick={handleSend}
               disabled={isSending || !message.trim() || ((channel === 'email' || channel === 'both') && !subject.trim())}
-              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active gap-2"
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active gap-2"
             >
               {isSending ? (
                 <>

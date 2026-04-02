@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 font-open-sans p-4">
+    <div className="min-h-screen flex items-center justify-center bg-lia-bg-secondary font-open-sans p-4">
       <div className="w-full max-w-md">
         <div className="bg-lia-bg-primary rounded-xl p-10">
           <div className="flex items-center justify-center mb-6">
@@ -52,15 +52,15 @@ export default function ForgotPasswordPage() {
               <div className="w-16 h-16 bg-status-success/15 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-8 h-8 text-status-success" />
               </div>
-              <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50 mb-3">Email Enviado!</h2>
-              <p className="lia-text-600 mb-6">
+              <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Email Enviado!</h2>
+              <p className="text-lia-text-secondary mb-6">
                 Se existe uma conta com o email <strong>{email}</strong>, você receberá um link para redefinir sua senha.
               </p>
-              <p className="lia-text-500 text-sm mb-6">
+              <p className="text-lia-text-secondary text-sm mb-6">
                 Verifique também sua pasta de spam caso não encontre o email.
               </p>
               <Link href="/login">
-                <Button className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md">
+                <Button className="w-full py-3 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text rounded-md">
                   Voltar para o Login
                 </Button>
               </Link>
@@ -68,18 +68,18 @@ export default function ForgotPasswordPage() {
           ) : (
             <>
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Mail className="w-8 h-8 lia-text-600" aria-hidden="true" />
+                <div className="w-16 h-16 bg-lia-bg-tertiary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Mail className="w-8 h-8 text-lia-text-secondary" aria-hidden="true" />
                 </div>
-                <h2 className="text-2xl font-bold lia-text-950 dark:lia-text-50 mb-3">Esqueceu a senha?</h2>
-                <p className="lia-text-600 text-base leading-relaxed">
+                <h2 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">Esqueceu a senha?</h2>
+                <p className="text-lia-text-secondary text-base leading-relaxed">
                   Digite seu email e enviaremos um link para você redefinir sua senha.
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5" aria-label="Formulário de recuperação de senha">
                 <div>
-                  <label htmlFor="campo-email" className="block text-sm font-medium lia-text-800 dark:text-lia-text-primary mb-2">
+                  <label htmlFor="campo-email" className="block text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                     Email
                   </label>
                   <input
@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Digite seu email"
-                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
+                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                     required
                     aria-required="true"
                     aria-describedby={error ? "forgot-error" : undefined}
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors motion-reduce:transition-none font-medium"
+                  className="w-full py-3 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text rounded-md transition-colors motion-reduce:transition-none font-medium"
                 >
                   {isLoading ? (
                     <>
@@ -121,7 +121,7 @@ export default function ForgotPasswordPage() {
 
                 <Link 
                   href="/login" 
-                  className="flex items-center justify-center gap-2 lia-text-600 hover:lia-text-900 text-sm transition-colors motion-reduce:transition-none"
+                  className="flex items-center justify-center gap-2 text-lia-text-secondary hover:lia-text-900 text-sm transition-colors motion-reduce:transition-none"
                 >
                   <ArrowLeft className="w-4 h-4" aria-hidden="true" />
                   Voltar para o Login

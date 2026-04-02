@@ -315,7 +315,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
       aria-labelledby="add-to-job-modal-title"
     >
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-[1px]"
+        className="absolute inset-0 bg-lia-overlay backdrop-blur-[1px]"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -554,7 +554,7 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
+              className="h-9 px-4 text-xs font-medium bg-lia-bg-primary border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
             >
               Cancelar
             </Button>

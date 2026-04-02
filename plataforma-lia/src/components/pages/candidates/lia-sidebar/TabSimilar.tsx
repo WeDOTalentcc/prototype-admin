@@ -106,7 +106,7 @@ export const TabSimilar = React.memo(function TabSimilar({
           value={similarProfileUrl}
           onChange={(e) => setSimilarProfileUrl(e.target.value)}
           placeholder="Cole o link do LinkedIn ou nome do candidato..."
-          className="w-full p-3 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
+          className="w-full p-3 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
         />
       </div>
       <div className="p-3 rounded-md bg-wedo-cyan/[0.06]">
@@ -118,7 +118,7 @@ export const TabSimilar = React.memo(function TabSimilar({
         </div>
       </div>
       <Button
-        className={`w-full h-11 !text-sm font-semibold text-white font-open-sans ${isSearchingSimilar ? 'bg-gray-400' : 'bg-wedo-cyan-dark'}`}
+        className={`w-full h-11 !text-sm font-semibold text-white font-open-sans ${isSearchingSimilar ? 'bg-lia-border-medium' : 'bg-wedo-cyan-dark'}`}
         onClick={handleSearch}
         disabled={!similarProfileUrl.trim() || isSearchingSimilar}
       >

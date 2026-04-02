@@ -70,7 +70,7 @@ const getStatusBadge = (status: string) => {
     case "Rejeitado":
       return "bg-status-error/10 text-status-error border-status-error/30"
     default:
-      return "bg-gray-50 text-lia-text-primary border-lia-border-subtle"
+      return "bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle"
   }
 }
 
@@ -86,7 +86,7 @@ export function InterviewsSection() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {candidates.map((candidate) => (
-          <div key={candidate.id} className="wedo-card p-5 hover:border-lia-border-default dark:hover:border-gray-600 transition-colors motion-reduce:transition-none cursor-pointer">
+          <div key={candidate.id} className="wedo-card p-5 hover:border-lia-border-default dark:hover:border-lia-border-medium transition-colors motion-reduce:transition-none cursor-pointer">
             <div className="space-y-4">
               {/* Header com avatar, nome e status */}
               <div className="flex items-start gap-3">
@@ -96,7 +96,7 @@ export function InterviewsSection() {
                     alt={candidate.name}
                     className="object-cover"
                   />
-                  <AvatarFallback className="bg-gray-100 text-lia-text-secondary">
+                  <AvatarFallback className="bg-lia-bg-tertiary text-lia-text-secondary">
                     {candidate.name.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
@@ -141,7 +141,7 @@ export function InterviewsSection() {
                 </div>
 
                 <div className="flex items-center gap-1">
-                  <div className="w-16 h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+                  <div className="w-16 h-2 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-[width,height] ${
  candidate.score >= 8 ? 'bg-status-success' :
@@ -162,7 +162,7 @@ export function InterviewsSection() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-6 px-2 text-xs bg-gray-50 hover:bg-gray-100 border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default"
+                    className="h-6 px-2 text-xs bg-lia-bg-secondary hover:bg-lia-bg-tertiary border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium dark:border-lia-border-default"
                     onClick={() => window.open(`https://wa.me/${candidate.phone.replace(/\D/g, '')}`, '_blank')}
                   >
                     WhatsApp
@@ -174,7 +174,7 @@ export function InterviewsSection() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-6 px-2 text-xs bg-gray-50 hover:bg-gray-100 border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default"
+                    className="h-6 px-2 text-xs bg-lia-bg-secondary hover:bg-lia-bg-tertiary border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium dark:border-lia-border-default"
                     onClick={() => window.open(`mailto:${candidate.email}`, '_blank')}
                   >
                     Email
@@ -184,11 +184,11 @@ export function InterviewsSection() {
 
               {/* Ações */}
               <div className="flex items-center gap-2 pt-2">
-                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default">
+                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-lia-bg-secondary hover:bg-lia-bg-tertiary border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium dark:border-lia-border-default">
                   <MessageSquare className="w-3 h-3" />
                   Ver Chat
                 </Button>
-                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-gray-50 hover:bg-gray-100 border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600 dark:border-lia-border-default">
+                <Button size="sm" variant="outline" className="flex-1 gap-1 text-xs h-8 bg-lia-bg-secondary hover:bg-lia-bg-tertiary border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium dark:border-lia-border-default">
                   <FileText className="w-3 h-3" />
                   Perfil
                 </Button>

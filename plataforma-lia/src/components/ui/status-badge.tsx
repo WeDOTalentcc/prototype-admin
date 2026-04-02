@@ -43,44 +43,44 @@ import { SUB_STATUSES, type SubStatus } from '@/lib/recruitment-stages'
 // Tom = progresso no funil (mais claro = início, mais escuro = final).
 // Consistente com RECRUITMENT_STAGES.color em recruitment-stages.ts.
 export const STAGE_PASTEL_COLORS: Record<string, string> = {
-  sourcing: 'var(--gray-200)',
-  screening: 'var(--gray-200)',
-  long_list: 'var(--gray-300)',          // gray-300 equiv (entre gray-200 e gray-400)
-  short_list: 'var(--gray-300)',
-  interview_hr: 'var(--gray-400)',
-  technical_test: 'var(--gray-400)',
-  english_test: 'var(--gray-400)',
-  interview_technical: 'var(--gray-500)', // gray-500 equiv
-  interview_manager: 'var(--gray-500)',
-  interview_manager2: 'var(--gray-500)',
-  interview_final: 'var(--gray-600)',
-  references: 'var(--gray-600)',
-  offer: 'var(--gray-800)',
+  sourcing: 'var(--lia-border-subtle)',
+  screening: 'var(--lia-border-subtle)',
+  long_list: 'var(--lia-border-default)',          // gray-300 equiv (entre gray-200 e gray-400)
+  short_list: 'var(--lia-border-default)',
+  interview_hr: 'var(--lia-text-tertiary)',
+  technical_test: 'var(--lia-text-tertiary)',
+  english_test: 'var(--lia-text-tertiary)',
+  interview_technical: 'var(--lia-text-secondary)', // gray-500 equiv
+  interview_manager: 'var(--lia-text-secondary)',
+  interview_manager2: 'var(--lia-text-secondary)',
+  interview_final: 'var(--lia-text-secondary)',
+  references: 'var(--lia-text-secondary)',
+  offer: 'var(--lia-text-primary)',
   hired: 'var(--status-success)',  // único verde semântico
-  rejected: 'var(--gray-200)',     // faded
-  offer_declined: 'var(--gray-200)',
-  standby: 'var(--gray-300)',
+  rejected: 'var(--lia-border-subtle)',     // faded
+  offer_declined: 'var(--lia-border-subtle)',
+  standby: 'var(--lia-border-default)',
 }
 
 // Dark mode — inversão da escala (claro vira escuro, escuro vira claro)
 export const STAGE_PASTEL_COLORS_DARK: Record<string, string> = {
-  sourcing: 'var(--gray-600)',
-  screening: 'var(--gray-600)',
-  long_list: 'var(--gray-600)',
-  short_list: 'var(--gray-600)',
-  interview_hr: 'var(--gray-500)',
-  technical_test: 'var(--gray-500)',
-  english_test: 'var(--gray-500)',
-  interview_technical: 'var(--gray-400)',
-  interview_manager: 'var(--gray-400)',
-  interview_manager2: 'var(--gray-400)',
-  interview_final: 'var(--gray-300)',
-  references: 'var(--gray-300)',
-  offer: 'var(--gray-200)',
+  sourcing: 'var(--lia-text-secondary)',
+  screening: 'var(--lia-text-secondary)',
+  long_list: 'var(--lia-text-secondary)',
+  short_list: 'var(--lia-text-secondary)',
+  interview_hr: 'var(--lia-text-secondary)',
+  technical_test: 'var(--lia-text-secondary)',
+  english_test: 'var(--lia-text-secondary)',
+  interview_technical: 'var(--lia-text-tertiary)',
+  interview_manager: 'var(--lia-text-tertiary)',
+  interview_manager2: 'var(--lia-text-tertiary)',
+  interview_final: 'var(--lia-border-default)',
+  references: 'var(--lia-border-default)',
+  offer: 'var(--lia-border-subtle)',
   hired: 'var(--status-success)',
-  rejected: 'var(--gray-600)',
-  offer_declined: 'var(--gray-600)',
-  standby: 'var(--gray-600)',
+  rejected: 'var(--lia-text-secondary)',
+  offer_declined: 'var(--lia-text-secondary)',
+  standby: 'var(--lia-text-secondary)',
 }
 
 // Tipos de badge
@@ -205,83 +205,83 @@ const variantStyles: Record<BadgeVariant, {
   darkBorder?: string
 }> = {
   standard: {
-    bg: 'var(--gray-50)',
-    text: 'var(--gray-600)',
-    icon: 'var(--gray-400)',
+    bg: 'var(--lia-bg-secondary)',
+    text: 'var(--lia-text-secondary)',
+    icon: 'var(--lia-text-tertiary)',
     fontWeight: '500',
-    darkBg: 'var(--gray-600)',
-    darkText: 'var(--gray-200)',
-    darkIcon: 'var(--gray-400)',
+    darkBg: 'var(--lia-text-secondary)',
+    darkText: 'var(--lia-border-subtle)',
+    darkIcon: 'var(--lia-text-tertiary)',
   },
   dark: {
-    bg: 'var(--gray-950)',
+    bg: 'var(--lia-btn-primary-bg)',
     text: 'white',
     icon: 'white',
     fontWeight: '700',
-    darkBg: 'var(--gray-50)',
-    darkText: 'var(--gray-950)',
-    darkIcon: 'var(--gray-950)',
+    darkBg: 'var(--lia-bg-secondary)',
+    darkText: 'var(--lia-btn-primary-bg)',
+    darkIcon: 'var(--lia-btn-primary-bg)',
   },
   accent: {
     bg: '', // preenchido dinamicamente com STAGE_PASTEL_COLORS[stageId]
-    text: 'var(--gray-950)',
-    icon: 'var(--gray-800)',
+    text: 'var(--lia-btn-primary-bg)',
+    icon: 'var(--lia-text-primary)',
     fontWeight: '600',
-    darkBg: 'var(--gray-600)',
-    darkText: 'var(--gray-200)',
-    darkIcon: 'var(--gray-200)',
+    darkBg: 'var(--lia-text-secondary)',
+    darkText: 'var(--lia-border-subtle)',
+    darkIcon: 'var(--lia-border-subtle)',
   },
   outlined: {
-    bg: 'var(--gray-50)',
-    text: 'var(--gray-600)',
-    icon: 'var(--gray-600)',
-    border: 'var(--gray-200)',
+    bg: 'var(--lia-bg-secondary)',
+    text: 'var(--lia-text-secondary)',
+    icon: 'var(--lia-text-secondary)',
+    border: 'var(--lia-border-subtle)',
     fontWeight: '400',
-    darkBg: 'var(--gray-800)',
-    darkText: 'var(--gray-200)',
-    darkIcon: 'var(--gray-200)',
-    darkBorder: 'var(--gray-600)',
+    darkBg: 'var(--lia-text-primary)',
+    darkText: 'var(--lia-border-subtle)',
+    darkIcon: 'var(--lia-border-subtle)',
+    darkBorder: 'var(--lia-text-secondary)',
   },
   channel: {
-    bg: 'var(--gray-50)',
-    text: 'var(--gray-800)',
-    icon: 'var(--gray-800)',
-    border: 'var(--gray-200)',
+    bg: 'var(--lia-bg-secondary)',
+    text: 'var(--lia-text-primary)',
+    icon: 'var(--lia-text-primary)',
+    border: 'var(--lia-border-subtle)',
     fontWeight: '400',
-    darkBg: 'var(--gray-600)',
-    darkText: 'var(--gray-200)',
-    darkIcon: 'var(--gray-200)',
-    darkBorder: 'var(--gray-400)',
+    darkBg: 'var(--lia-text-secondary)',
+    darkText: 'var(--lia-border-subtle)',
+    darkIcon: 'var(--lia-border-subtle)',
+    darkBorder: 'var(--lia-text-tertiary)',
   },
   scheduled: {
-    bg: 'var(--gray-800)',
+    bg: 'var(--lia-text-primary)',
     text: 'white',
     icon: 'var(--wedo-cyan)',   // ícone de calendário: único uso cyan não-LIA justificado
-    border: 'var(--gray-600)', // (scheduled = ação pendente de alta relevância)
+    border: 'var(--lia-text-secondary)', // (scheduled = ação pendente de alta relevância)
     fontWeight: '600',
-    darkBg: 'var(--gray-200)',
-    darkText: 'var(--gray-950)',
+    darkBg: 'var(--lia-border-subtle)',
+    darkText: 'var(--lia-btn-primary-bg)',
     darkIcon: 'var(--wedo-cyan-dark)',
   },
   hired: {
-    bg: 'var(--gray-950)',
+    bg: 'var(--lia-btn-primary-bg)',
     text: 'white',
     icon: 'var(--status-success)',   // Trophy verde = único indicador de contratação
     fontWeight: '700',
-    darkBg: 'var(--gray-50)',
-    darkText: 'var(--gray-950)',
+    darkBg: 'var(--lia-bg-secondary)',
+    darkText: 'var(--lia-btn-primary-bg)',
     darkIcon: 'var(--status-success)',
   },
   rejected: {
-    bg: 'var(--gray-50)',
-    text: 'var(--gray-600)',
-    icon: 'var(--gray-400)',
-    border: 'var(--gray-200)',
+    bg: 'var(--lia-bg-secondary)',
+    text: 'var(--lia-text-secondary)',
+    icon: 'var(--lia-text-tertiary)',
+    border: 'var(--lia-border-subtle)',
     fontWeight: '500',
-    darkBg: 'var(--gray-600)',
-    darkText: 'var(--gray-200)',
-    darkIcon: 'var(--gray-400)',
-    darkBorder: 'var(--gray-400)',
+    darkBg: 'var(--lia-text-secondary)',
+    darkText: 'var(--lia-border-subtle)',
+    darkIcon: 'var(--lia-text-tertiary)',
+    darkBorder: 'var(--lia-text-tertiary)',
   },
 }
 
@@ -312,10 +312,10 @@ export function StatusBadge({
   
   // Para accent, usar cor pastel da etapa (light e dark)
   const bgColor = variant === 'accent' 
-    ? STAGE_PASTEL_COLORS[stageId] || 'var(--gray-200)'
+    ? STAGE_PASTEL_COLORS[stageId] || 'var(--lia-border-subtle)'
     : styles.bg
   const bgColorDark = variant === 'accent'
-    ? STAGE_PASTEL_COLORS_DARK[stageId] || 'var(--gray-600)'
+    ? STAGE_PASTEL_COLORS_DARK[stageId] || 'var(--lia-text-secondary)'
     : styles.darkBg || styles.bg
   
   // Obter ícone

@@ -117,7 +117,7 @@ export function SCMSectionConfiguracoes({
                     ].map((preset) => {
                       const isSelected = (screeningConfig?.settings?.min_score_preset ?? 'recommended') === preset.key
                       return (
-                        <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-lia-bg-secondary/50' : 'border-lia-border-subtle bg-white/50'}`}>
+                        <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-lia-bg-secondary/50' : 'border-lia-border-subtle bg-lia-bg-primary/50'}`}>
                           <div className="flex items-center justify-between mb-0.5">
                             <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`}>{preset.label}</span>
                             {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-disabled" />}
@@ -188,7 +188,7 @@ export function SCMSectionConfiguracoes({
                       const currentPreset = screeningConfig?.settings?.auto_approval_preset ?? 'recommended'
                       const isSelected = currentPreset === preset.key
                       return (
-                        <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-lia-bg-secondary/50' : 'border-lia-border-subtle bg-white/50'}`}>
+                        <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-lia-bg-secondary/50' : 'border-lia-border-subtle bg-lia-bg-primary/50'}`}>
                           <div className="flex items-center justify-between mb-0.5">
                             <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`}>{preset.label}</span>
                             {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-disabled" />}
@@ -248,7 +248,7 @@ export function SCMSectionConfiguracoes({
                       ].map((preset) => {
                         const isSelected = (screeningConfig?.scheduling?.min_score_for_auto_preset ?? 'recommended') === preset.key
                         return (
-                          <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-lia-bg-secondary/50' : 'border-lia-border-subtle bg-white/50'}`}>
+                          <div key={preset.key} className={`p-2 rounded-md border text-left ${isSelected ? 'border-lia-border-default bg-lia-bg-secondary/50' : 'border-lia-border-subtle bg-lia-bg-primary/50'}`}>
                             <div className="flex items-center justify-between mb-0.5">
                               <span className={`text-micro font-semibold ${isSelected ? 'text-lia-text-secondary' : 'text-lia-text-disabled'}`}>{preset.label}</span>
                               {isSelected && <CheckCircle className="w-3 h-3 text-lia-text-disabled" />}

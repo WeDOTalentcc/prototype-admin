@@ -131,7 +131,7 @@ export function PrevisoesIAPlaceholder() {
         <CardContent className="pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Applications Prediction */}
- <div className="p-4 bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
+ <div className="p-4 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
               <p className={`${textStyles.description} mb-1`}>Candidaturas Esperadas</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-inter font-bold text-lia-text-primary">2.847</span>
@@ -143,11 +143,11 @@ export function PrevisoesIAPlaceholder() {
             </div>
 
             {/* Hires Prediction */}
-            <div className="p-4 bg-white dark:bg-lia-bg-secondary rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
+            <div className="p-4 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">
               <p className={`${textStyles.description} mb-1`}>Contratações Previstas</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-inter font-bold text-lia-text-primary">127</span>
- <Badge className="bg-gray-100 text-lia-text-primary text-xs font-inter">
+ <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs font-inter">
                   +8%
                 </Badge>
               </div>
@@ -155,7 +155,7 @@ export function PrevisoesIAPlaceholder() {
             </div>
 
             {/* Time to Fill Prediction */}
-            <div className="p-4 bg-white dark:bg-lia-bg-secondary rounded-md border border-wedo-orange/30 dark:border-wedo-orange/30">
+            <div className="p-4 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-wedo-orange/30 dark:border-wedo-orange/30">
               <p className={`${textStyles.description} mb-1`}>Time-to-Fill Médio</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-inter font-bold text-lia-text-primary">18</span>
@@ -165,7 +165,7 @@ export function PrevisoesIAPlaceholder() {
             </div>
 
             {/* Cost Prediction */}
-            <div className="p-4 bg-white dark:bg-lia-bg-secondary rounded-md border border-status-success/30 dark:border-status-success/30">
+            <div className="p-4 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-status-success/30 dark:border-status-success/30">
               <p className={`${textStyles.description} mb-1`}>Custo por Contratação</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-inter font-bold text-lia-text-primary">R$ 3.2k</span>
@@ -207,22 +207,22 @@ export function PrevisoesIAPlaceholder() {
               </Badge>
             </div>
 
- <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
+ <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
               <div>
                 <p className="font-open-sans font-semibold text-lia-text-primary text-sm">Beatriz Costa</p>
                 <p className={`${textStyles.description}`}>UX Designer • Figma Expert</p>
               </div>
- <Badge className="bg-gray-100 text-lia-text-primary font-inter font-bold">
+ <Badge className="bg-lia-bg-tertiary text-lia-text-primary font-inter font-bold">
                 94/100
               </Badge>
             </div>
 
- <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
+ <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
               <div>
                 <p className="font-open-sans font-semibold text-lia-text-primary text-sm">Rafael Santos</p>
                 <p className={`${textStyles.description}`}>Data Scientist • Python/ML</p>
               </div>
- <Badge className="bg-gray-100 text-lia-text-primary font-inter font-bold">
+ <Badge className="bg-lia-bg-tertiary text-lia-text-primary font-inter font-bold">
                 93/100
               </Badge>
             </div>
@@ -268,7 +268,7 @@ export function PrevisoesIAPlaceholder() {
               </div>
             </div>
 
- <div className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border-l-4 border-gray-900 dark:border-lia-border-medium">
+ <div className="flex items-start gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border-l-4 border-lia-btn-primary-bg dark:border-lia-border-medium">
               <Brain className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-cyan" />
               <div>
                 <p className="text-sm font-open-sans font-semibold text-lia-text-primary">Recomendação automática</p>
@@ -302,8 +302,8 @@ export function PrevisoesIAPlaceholder() {
                   </Badge>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-900 w-[92%]"></div>
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
+                <div className="h-2 rounded-full bg-lia-btn-primary-bg w-[92%]"></div>
               </div>
             </div>
 
@@ -317,7 +317,7 @@ export function PrevisoesIAPlaceholder() {
                   </Badge>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-green-bright w-[85%]"></div>
               </div>
             </div>
@@ -327,13 +327,13 @@ export function PrevisoesIAPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-lia-text-primary">Node.js</span>
                 <div className="flex items-center gap-2">
                   <span className="text-xs tracking-tight font-inter text-lia-text-primary">218 vagas</span>
- <Badge className="bg-gray-100 text-lia-text-primary text-xs font-inter">
+ <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs font-inter">
                     +15%
                   </Badge>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-900 w-[78%]"></div>
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
+                <div className="h-2 rounded-full bg-lia-btn-primary-bg w-[78%]"></div>
               </div>
             </div>
 
@@ -347,7 +347,7 @@ export function PrevisoesIAPlaceholder() {
                   </Badge>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-purple w-[71%]"></div>
               </div>
             </div>
@@ -362,7 +362,7 @@ export function PrevisoesIAPlaceholder() {
                   </Badge>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-purple w-[62%]"></div>
               </div>
             </div>
@@ -378,7 +378,7 @@ export function PrevisoesIAPlaceholder() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-lia-text-primary">Tecnologia</p>
                 <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-micro font-medium">
@@ -390,7 +390,7 @@ export function PrevisoesIAPlaceholder() {
               </p>
             </div>
 
-            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-lia-text-primary">Vendas</p>
  <Badge className={`${badgeStyles.info} dark:bg-lia-bg-secondary`}>
@@ -402,7 +402,7 @@ export function PrevisoesIAPlaceholder() {
               </p>
             </div>
 
-            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-lia-text-primary">Marketing</p>
                 <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
@@ -414,7 +414,7 @@ export function PrevisoesIAPlaceholder() {
               </p>
             </div>
 
-            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-lia-text-primary">Operações</p>
                 <Badge className={`${badgeStyles.warning} dark:bg-wedo-orange/30 dark:text-wedo-orange`}>

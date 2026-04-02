@@ -96,8 +96,8 @@ export function BatchApprovalModal({
 
   // Available stages for moving candidates
   const availableStages = [
-    { id: 'triagem', name: 'Triagem Inicial', color: 'bg-gray-100 text-lia-text-primary' },
-    { id: 'entrevista_rh', name: 'Entrevista RH', color: 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary' },
+    { id: 'triagem', name: 'Triagem Inicial', color: 'bg-lia-bg-tertiary text-lia-text-primary' },
+    { id: 'entrevista_rh', name: 'Entrevista RH', color: 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary' },
     { id: 'teste_tecnico', name: 'Teste Técnico', color: 'bg-wedo-purple/15 text-wedo-purple' },
     { id: 'entrevista_tecnica', name: 'Entrevista Técnica', color: 'bg-wedo-orange/15 text-wedo-orange' },
     { id: 'entrevista_final', name: 'Entrevista Final', color: 'bg-status-warning/15 text-status-warning' },
@@ -131,7 +131,7 @@ export function BatchApprovalModal({
       type: 'move' as const,
       description: 'Mover candidatos para próxima etapa',
       icon: ArrowRight,
-      color: 'bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200',
+      color: 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active',
       defaultComment: 'Candidatos avançados para próxima etapa do processo.'
     },
     {
@@ -140,7 +140,7 @@ export function BatchApprovalModal({
       type: 'note' as const,
       description: 'Adicionar comentários aos candidatos',
       icon: MessageSquare,
-      color: 'bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200',
+      color: 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active',
       defaultComment: 'Notas adicionadas durante revisão em lote.'
     }
   ]
@@ -179,7 +179,7 @@ export function BatchApprovalModal({
 
   const getScoreColor = (score: number) => {
     if (score >= 85) return "text-status-success bg-status-success/15"
-    if (score >= 70) return "text-lia-text-primary bg-gray-100 dark:bg-lia-bg-elevated"
+    if (score >= 70) return "text-lia-text-primary bg-lia-bg-tertiary dark:bg-lia-bg-elevated"
     if (score >= 60) return "text-status-warning bg-status-warning/15"
     return "text-status-error bg-status-error/15"
   }
@@ -189,7 +189,7 @@ export function BatchApprovalModal({
       case 'alta': return 'bg-status-error/15 text-status-error'
       case 'média': return 'bg-wedo-orange/15 text-wedo-orange'
       case 'baixa': return 'bg-status-success/15 text-status-success'
-      default: return 'bg-gray-100 text-lia-text-primary'
+      default: return 'bg-lia-bg-tertiary text-lia-text-primary'
     }
   }
 
@@ -291,12 +291,12 @@ export function BatchApprovalModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-lia-overlay/70 z-50 flex items-center justify-center p-4">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl max-h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
+            <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
               <Users className="w-5 h-5 text-lia-text-secondary" />
             </div>
             <div>
@@ -311,7 +311,7 @@ export function BatchApprovalModal({
 
           <div className="flex items-center gap-3">
             {/* Step indicator */}
-            <div className="flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-full">
+            <div className="flex items-center gap-2 px-3 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-full">
               <span className="text-sm font-medium text-lia-text-primary">
                 Etapa {['selection', 'action', 'review', 'processing', 'complete'].indexOf(currentStep) + 1} de 5
               </span>
@@ -324,9 +324,9 @@ export function BatchApprovalModal({
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated h-1">
+        <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated h-1">
           <div
-            className="bg-gray-900 h-1 transition-colors motion-reduce:transition-none duration-500"
+            className="bg-lia-btn-primary-bg h-1 transition-colors motion-reduce:transition-none duration-500"
             style={{width: `${(['selection', 'action', 'review', 'processing', 'complete'].indexOf(currentStep) + 1) * 20}%`}}
           />
         </div>
@@ -345,14 +345,14 @@ export function BatchApprovalModal({
                       placeholder="Buscar candidatos..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                      className="pl-10 pr-4 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                     />
                   </div>
 
                   <select
                     value={filterCriteria.stage}
                     onChange={(e) => setFilterCriteria({...filterCriteria, stage: e.target.value})}
-                    className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm"
+                    className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm"
                   >
                     <option value="all">Todas as etapas</option>
                     {availableStages.map(stage => (
@@ -363,7 +363,7 @@ export function BatchApprovalModal({
                   <select
                     value={filterCriteria.score}
                     onChange={(e) => setFilterCriteria({...filterCriteria, score: e.target.value})}
-                    className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm"
+                    className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm"
                   >
                     <option value="all">Todos os scores</option>
                     <option value="high">Alto (85+)</option>
@@ -392,7 +392,7 @@ export function BatchApprovalModal({
                     key={candidate.id}
                     className={`cursor-pointer transition-colors motion-reduce:transition-none duration-200 ${
  selectedCandidates.has(candidate.id)
-                        ? 'ring-2 ring-gray-900 dark:ring-gray-50 bg-gray-50 dark:bg-lia-bg-elevated'
+                        ? 'ring-2 ring-lia-btn-primary-bg dark:ring-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-elevated'
                         : 'hover:border-lia-border-default'
                     }`}
                     onClick={() => toggleCandidateSelection(candidate.id)}
@@ -403,12 +403,12 @@ export function BatchApprovalModal({
                           <div className="relative">
                             <Avatar className="w-10 h-10">
                               <AvatarImage src={candidate.avatar} alt={candidate.name} />
-                              <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary text-sm font-medium">
+                              <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary text-sm font-medium">
                                 {candidate.name.split(' ').map(n => n[0]).join('')}
                               </AvatarFallback>
                             </Avatar>
                             {selectedCandidates.has(candidate.id) && (
-                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-lia-btn-primary-bg rounded-full flex items-center justify-center">
                                 <Check className="w-3 h-3 text-white" />
                               </div>
                             )}
@@ -505,7 +505,7 @@ export function BatchApprovalModal({
                       key={template.id}
                       className={`cursor-pointer transition-colors motion-reduce:transition-none duration-200 ${
  batchAction.type === template.type
-                          ? 'ring-2 ring-gray-900 dark:ring-gray-50 bg-gray-50 dark:bg-lia-bg-elevated'
+                          ? 'ring-2 ring-lia-btn-primary-bg dark:ring-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-elevated'
                           : 'hover:border-lia-border-default'
                       }`}
                       onClick={() => setBatchAction({
@@ -547,7 +547,7 @@ export function BatchApprovalModal({
                         <select
                           value={batchAction.targetStage || ''}
                           onChange={(e) => setBatchAction({...batchAction, targetStage: e.target.value})}
-                          className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
+                          className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
                         >
                           <option value="">Selecione uma etapa</option>
                           {availableStages.map(stage => (
@@ -565,12 +565,12 @@ export function BatchApprovalModal({
                         value={batchAction.comment}
                         onChange={(e) => setBatchAction({...batchAction, comment: e.target.value})}
                         placeholder="Adicione um comentário sobre esta ação em lote..."
-                        className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary h-24 resize-none"
+                        className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary h-24 resize-none"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                      <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                         <input
                           type="checkbox"
                           checked={batchAction.notifyTeam}
@@ -581,7 +581,7 @@ export function BatchApprovalModal({
                         <span className="text-sm text-lia-text-primary">Notificar equipe</span>
                       </label>
 
-                      <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                         <input
                           type="checkbox"
                           checked={batchAction.sendEmail}
@@ -592,7 +592,7 @@ export function BatchApprovalModal({
                         <span className="text-sm text-lia-text-primary">Enviar email aos candidatos</span>
                       </label>
 
-                      <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                         <input
                           type="checkbox"
                           checked={batchAction.scheduleInterview}
@@ -603,7 +603,7 @@ export function BatchApprovalModal({
                         <span className="text-sm text-lia-text-primary">Agendar entrevistas automaticamente</span>
                       </label>
 
-                      <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <label className="flex items-center gap-2 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                         <input
                           type="checkbox"
                           checked={batchAction.addToTalentPool}
@@ -697,7 +697,7 @@ export function BatchApprovalModal({
                         <label className="text-sm font-medium text-lia-text-primary">Ações Adicionais:</label>
                         <div className="flex flex-wrap gap-2 mt-1">
                           {batchAction.notifyTeam && (
-                            <Badge className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary flex items-center gap-1">
+                            <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary flex items-center gap-1">
                               <Bell className="w-3 h-3" />
                               Notificar equipe
                             </Badge>
@@ -738,11 +738,11 @@ export function BatchApprovalModal({
                         if (!candidate) return null
 
                         return (
-                          <div key={candidateId} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                          <div key={candidateId} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                             <div className="flex items-center gap-3">
                               <Avatar className="w-8 h-8">
                                 <AvatarImage src={candidate.avatar} alt={candidate.name} />
-                                <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary text-xs">
+                                <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary text-xs">
                                   {candidate.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                               </Avatar>
@@ -772,7 +772,7 @@ export function BatchApprovalModal({
           {currentStep === 'processing' && (
             <div className="p-6 h-full flex items-center justify-center">
               <div className="text-center">
-                <div className="w-16 h-16 border-4 border-gray-900 border-t-transparent rounded-full animate-spin motion-reduce:animate-none mx-auto mb-4"></div>
+                <div className="w-16 h-16 border-4 border-lia-btn-primary-bg border-t-transparent rounded-full animate-spin motion-reduce:animate-none mx-auto mb-4"></div>
                 <h3 className="text-lg font-semibold text-lia-text-primary mb-2">
                   Processando Aprovação em Lote
                 </h3>
@@ -847,7 +847,7 @@ export function BatchApprovalModal({
                 <div className="flex justify-center gap-4">
                   <Button
                     onClick={() => onApprovalComplete(results)}
-                    className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                    className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                   >
                     <Download className="w-4 h-4" />
                     Baixar Relatório
@@ -889,7 +889,7 @@ export function BatchApprovalModal({
                 <Button
                   onClick={() => setCurrentStep('action')}
                   disabled={selectedCount === 0}
-                  className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   Continuar
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -907,7 +907,7 @@ export function BatchApprovalModal({
                   <Button
                     onClick={() => setCurrentStep('review')}
                     disabled={!batchAction.type || (batchAction.type === 'move' && !batchAction.targetStage)}
-                    className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                    className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                   >
                     Revisar
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -926,7 +926,7 @@ export function BatchApprovalModal({
                   <Button
                     onClick={processBatchApproval}
                     disabled={processing}
-                    className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                    className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                   >
                     {processing ? 'Processando...' : 'Confirmar e Processar'}
                     <Zap className="w-4 h-4 ml-2" />

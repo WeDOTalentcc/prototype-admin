@@ -17,12 +17,12 @@ import type { Benefit } from "./setup-empresa.types"
 export const BENEFIT_CATEGORIES = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error" },
   { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange" },
-  { id: "transport", name: "Transporte", icon: Car, color: "lia-text-600 dark:text-lia-text-tertiary" },
+  { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-secondary dark:text-lia-text-tertiary" },
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success" },
-  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "lia-text-700 dark:text-lia-text-secondary" },
+  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-primary dark:text-lia-text-secondary" },
   { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta" },
-  { id: "security", name: "Segurança", icon: Shield, color: "lia-text-500" },
+  { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-secondary" },
 ]
 
 export const SENIORITY_LEVELS = [

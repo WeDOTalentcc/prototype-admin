@@ -61,7 +61,7 @@ export const ApproverSection = React.memo(function ApproverSection({
         </div>
       )}
 
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
@@ -76,7 +76,7 @@ export const ApproverSection = React.memo(function ApproverSection({
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 py-1.5 px-2 text-xs rounded-full border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="gap-1.5 py-1.5 px-2 text-xs rounded-full border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
               onClick={() => {
                 setNewApprover({
                   userName: "",
@@ -94,7 +94,7 @@ export const ApproverSection = React.memo(function ApproverSection({
         </CardHeader>
         <CardContent className="p-3 space-y-3">
           {(showApproverForm || editingApprover) && (
-            <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md mb-3">
+            <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md mb-3">
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold">
                   {editingApprover ? "Editar Aprovador" : "Novo Aprovador"}
@@ -106,7 +106,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                     </label>
                     <input
                       type="text"
-                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-xs"
+                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
                       placeholder="Nome do aprovador"
                       value={editingApprover ? editingApprover.userName : newApprover.userName}
                       onChange={(e) =>
@@ -122,7 +122,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                     </label>
                     <input
                       type="email"
-                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-xs"
+                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
                       placeholder="email@empresa.com"
                       value={editingApprover ? editingApprover.email : newApprover.email}
                       onChange={(e) =>
@@ -138,7 +138,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                     </label>
                     <input
                       type="text"
-                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-xs"
+                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
                       placeholder="Ex: Gerente de RH"
                       value={editingApprover ? editingApprover.role : newApprover.role}
                       onChange={(e) =>
@@ -155,7 +155,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                     <input
                       type="number"
                       min="1"
-                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-xs"
+                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
                       value={editingApprover ? editingApprover.level : newApprover.level}
                       onChange={(e) =>
                         editingApprover
@@ -180,7 +180,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                   <Button
                     size="sm"
                     onClick={handleSaveApprover}
-                    className="py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                    className="py-1.5 px-2 text-xs rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                   >
                     <Save className="w-3.5 h-3.5 mr-1" />
                     Salvar
@@ -202,7 +202,7 @@ export const ApproverSection = React.memo(function ApproverSection({
             </div>
           ) : (
             <div className="relative">
-              <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-lia-bg-elevated" />
+              <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-lia-interactive-active dark:bg-lia-bg-elevated" />
               {approvers
                 .sort((a, b) => a.level - b.level)
                 .map((approver) => (
@@ -215,11 +215,11 @@ export const ApproverSection = React.memo(function ApproverSection({
                     >
                       {approver.level}
                     </div>
-                    <Card className="flex-1 border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+                    <Card className="flex-1 border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
                       <CardContent className="p-2 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary text-micro">
+                            <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary text-micro">
                               {approver.userName
                                 .split(" ")
                                 .map((n) => n[0])
@@ -245,7 +245,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="h-7 w-7 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                             onClick={() => setEditingApprover(approver)}
                           >
                             <Edit className="w-3.5 h-3.5" />
@@ -266,7 +266,7 @@ export const ApproverSection = React.memo(function ApproverSection({
             </div>
           )}
 
-          <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-2 border border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-lia-text-secondary" />
               <div>

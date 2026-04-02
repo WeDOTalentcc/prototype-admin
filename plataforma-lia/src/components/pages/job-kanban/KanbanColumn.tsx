@@ -27,7 +27,7 @@ export function KanbanColumn({
 }: KanbanColumnProps) {
   return (
     <div 
-      className="flex flex-col w-panel-sm min-w-panel-sm bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
+      className="flex flex-col w-panel-sm min-w-panel-sm bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
       data-testid="kanban-column"
       data-stage-id={stage.id}
     >

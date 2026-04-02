@@ -120,7 +120,7 @@ export function SaveAsArchetypeModal({
               </p>
 
               {/* Query atual */}
-              <div className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+              <div className="p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                 <p className="text-xs font-medium text-lia-text-primary mb-1">
                   {isCreatingArchetype ? 'Descrição do perfil:' : 'Busca atual:'}
                 </p>
@@ -139,8 +139,8 @@ export function SaveAsArchetypeModal({
                       onClick={() => setEmojiInput(emoji)}
                       className={`w-10 h-10 rounded-md text-xl flex items-center justify-center transition-colors motion-reduce:transition-none ${
                         emojiInput === emoji
-                          ? 'bg-gray-100 dark:bg-lia-bg-secondary border-2 border-gray-900 dark:border-lia-border-medium'
-                          : 'bg-gray-100 dark:bg-lia-bg-elevated hover:bg-gray-200 dark:hover:bg-gray-600'
+                          ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-2 border-lia-btn-primary-bg dark:border-lia-border-medium'
+                          : 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated hover:bg-lia-interactive-active dark:hover:bg-lia-border-medium'
                       }`}
                     >
                       {emoji}
@@ -169,7 +169,7 @@ export function SaveAsArchetypeModal({
           <AlertDialogAction
             onClick={handleSave}
             disabled={!nameInput.trim()}
-            className="text-white bg-gray-900"
+            className="text-white bg-lia-btn-primary-bg"
           >
             <Bookmark className="w-4 h-4 mr-1" />
             Salvar Arquétipo

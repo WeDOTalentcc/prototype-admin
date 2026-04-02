@@ -196,7 +196,7 @@ export function HistoryTab({
               <span className="text-xs font-medium text-lia-text-primary uppercase tracking-wide">
                 {dateGroup}
               </span>
-              <div className="flex-1 h-px bg-gray-200 dark:bg-lia-bg-elevated" />
+              <div className="flex-1 h-px bg-lia-interactive-active dark:bg-lia-bg-elevated" />
             </div>
 
             <div className="space-y-2">
@@ -207,7 +207,7 @@ export function HistoryTab({
                 return (
                   <div
                     key={item.id}
-                    className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
+                    className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer"
                     onClick={() => onReExecuteSearch(item)}
                   >
                     <div 
@@ -251,7 +251,7 @@ export function HistoryTab({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                        className="h-8 w-8 p-0 hover:bg-lia-bg-tertiary"
                         onClick={(e) => handleSaveClick(item, e)}
                         title="Salvar busca"
                       >
@@ -318,7 +318,7 @@ export function HistoryTab({
             </div>
 
             {selectedItem && (
-              <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                 <p className="text-xs text-lia-text-primary mb-1">Query:</p>
                 <code className="text-xs text-lia-text-primary">
                   {selectedItem.query}
@@ -334,7 +334,7 @@ export function HistoryTab({
             <Button
               onClick={handleSaveSearch}
               disabled={!saveName.trim()}
-              className="bg-gray-900 hover:bg-gray-800 text-white"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               <Check className="w-4 h-4 mr-2" />
               Salvar

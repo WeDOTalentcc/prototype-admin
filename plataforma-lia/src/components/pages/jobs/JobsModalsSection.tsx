@@ -805,7 +805,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
 
       {showReactivateScreeningDialog && reactivateScreeningJobs.length > 0 && (
         <Dialog open={showReactivateScreeningDialog} onOpenChange={(open) => !open && onSetReactivateScreeningDialog(false)}>
-          <DialogContent className="max-w-sm rounded-md bg-white border border-lia-border-subtle dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+          <DialogContent className="max-w-sm rounded-md bg-lia-bg-primary border border-lia-border-subtle dark:bg-lia-bg-primary dark:border-lia-border-subtle">
             <DialogHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <DialogTitle className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
                 Reativar Triagem?
@@ -860,7 +860,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
                   onSetReactivateScreeningJobs([])
                   onSetReactivateEndDate('')
                 }}
-                className="h-8 px-4 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200"
+                className="h-8 px-4 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active"
               >
                 Sim, reativar triagem
               </Button>

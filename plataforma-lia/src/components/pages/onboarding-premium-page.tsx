@@ -159,7 +159,7 @@ const approvedCandidates: ApprovedCandidate[] = [
 ]
 
 const kanbanStages = [
-  { id: 'welcome', name: 'Boas-vindas', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary', description: 'Email de boas-vindas enviado' },
+  { id: 'welcome', name: 'Boas-vindas', color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary', description: 'Email de boas-vindas enviado' },
   { id: 'documentation', name: 'Documentação', color: 'bg-status-warning/15 text-status-warning', description: 'Coleta de documentos' },
   { id: 'equipment', name: 'Equipamentos', color: 'bg-wedo-orange/15 text-wedo-orange', description: 'Entrega de equipamentos' },
   { id: 'systems', name: 'Sistemas', color: 'bg-wedo-purple/15 text-wedo-purple', description: 'Criação de acessos' },
@@ -266,7 +266,7 @@ export function OnboardingPremiumPage() {
 
   const getStageColor = (stage: string) => {
     const stageData = kanbanStages.find(s => s.id === stage)
-    return stageData?.color || 'bg-gray-100 text-lia-text-primary'
+    return stageData?.color || 'bg-lia-bg-tertiary text-lia-text-primary'
   }
 
   const filteredCandidates = approvedCandidates.filter(candidate => {
@@ -288,7 +288,7 @@ export function OnboardingPremiumPage() {
                 <p className="text-2xl font-bold text-lia-text-primary">{approvedCandidates.length}</p>
                 <p className="text-xs text-lia-text-primary">em onboarding</p>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+              <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                 <UserPlus className="w-6 h-6 text-lia-text-secondary" />
               </div>
             </div>
@@ -355,14 +355,14 @@ export function OnboardingPremiumPage() {
               placeholder="Buscar colaboradores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 w-80"
+              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 w-80"
             />
           </div>
 
           <select
             value={stageFilter}
             onChange={(e) => setStageFilter(e.target.value)}
-            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
           >
             <option value="all">Todas as Etapas</option>
             {kanbanStages.map(stage => (
@@ -536,7 +536,7 @@ export function OnboardingPremiumPage() {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-md w-fit">
+          <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-md w-fit">
             {[
               { id: 'kanban', label: 'Kanban', icon: Workflow },
               { id: 'candidates', label: 'Colaboradores', icon: Users },
@@ -601,7 +601,7 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
 
   return (
     <Card
-      className="cursor-move transition-colors motion-reduce:transition-none duration-200 border-l-4 border-l-gray-400 dark:border-l-gray-500"
+      className="cursor-move transition-colors motion-reduce:transition-none duration-200 border-l-4 border-l-lia-border-medium dark:border-l-lia-border-medium"
       draggable
       onDragStart={(e) => onDragStart(e, candidate)}
       onClick={onClick}
@@ -627,9 +627,9 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
             <span className="text-lia-text-secondary">Progresso:</span>
             <span className="font-medium">{candidate.progress}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-lia-interactive-active rounded-full h-2">
             <div
-              className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full"
+              className="bg-lia-bg-inverse dark:bg-lia-text-tertiary h-2 rounded-full"
               style={{width: `${candidate.progress}%`}}
             />
           </div>
@@ -721,7 +721,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
               onClick={() => setActiveTab(tab.id as Parameters<typeof setActiveTab>[0])}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none ${
                 activeTab === tab.id
-                  ? "text-lia-text-secondary border-b-2 border-gray-900 dark:border-lia-border-medium"
+                  ? "text-lia-text-secondary border-b-2 border-lia-btn-primary-bg dark:border-lia-border-medium"
                   : "text-lia-text-secondary hover:text-lia-text-primary"
               }`}
             >
@@ -780,9 +780,9 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                         <span className="text-sm text-lia-text-secondary">Progresso Geral</span>
                         <span className="text-sm font-medium">{candidate.progress}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div className="w-full bg-lia-interactive-active rounded-full h-3">
                         <div
-                          className="bg-gray-700 dark:bg-lia-text-tertiary h-3 rounded-full"
+                          className="bg-lia-bg-inverse dark:bg-lia-text-tertiary h-3 rounded-full"
                           style={{width: `${candidate.progress}%`}}
                         />
                       </div>
@@ -844,7 +844,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                           <p className="text-xs text-lia-text-secondary">Vence hoje</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                      <div className="flex items-center gap-3 p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                         <Calendar className="w-4 h-4 text-lia-text-secondary" />
                         <div className="flex-1">
                           <p className="text-sm font-medium">Agendar exame admissional</p>

@@ -63,17 +63,17 @@ interface Alert {
 const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
 const priorityConfig = {
-  low: { label: 'Baixa', color: 'lia-text-600', bg: 'bg-gray-100' },
+  low: { label: 'Baixa', color: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary' },
   medium: { label: 'Média', color: 'text-status-warning', bg: 'bg-status-warning/15' },
   high: { label: 'Alta', color: 'text-wedo-orange', bg: 'bg-wedo-orange/15' },
   critical: { label: 'Crítica', color: 'text-status-error', bg: 'bg-status-error/15' }
 }
 
 const statusConfig = {
-  planned: { label: 'Planejada', color: 'lia-text-600 dark:text-lia-text-tertiary', bg: 'bg-gray-100 dark:bg-lia-bg-secondary' },
+  planned: { label: 'Planejada', color: 'lia-text-600 dark:text-lia-text-tertiary', bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' },
   open: { label: 'Aberta', color: 'text-status-warning', bg: 'bg-status-warning/15' },
   filled: { label: 'Preenchida', color: 'text-status-success', bg: 'bg-status-success/15' },
-  cancelled: { label: 'Cancelada', color: 'lia-text-600', bg: 'bg-gray-100' }
+  cancelled: { label: 'Cancelada', color: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary' }
 }
 
 const headcountTypeConfig = {
@@ -293,10 +293,10 @@ export default function ClientWorkforcePage({
         <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8 text-status-error" />
         </div>
-        <h3 className="text-lg font-medium mb-1 lia-text-800 dark:text-lia-text-primary">
+        <h3 className="text-lg font-medium mb-1 text-lia-text-primary dark:text-lia-text-primary">
           Erro ao carregar dados
         </h3>
-        <p className="text-sm mb-4 lia-text-400 dark:lia-text-500">
+        <p className="text-sm mb-4 text-lia-text-tertiary dark:text-lia-text-secondary">
           {error}
         </p>
         <Button variant="outline" onClick={fetchPlan}>
@@ -312,14 +312,14 @@ export default function ClientWorkforcePage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Calendar className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <Calendar className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary"
             >
               Planejamento de Contratações
             </h2>
           </div>
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Planejamento anual de contratações e headcount
           </p>
         </div>
@@ -327,7 +327,7 @@ export default function ClientWorkforcePage({
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            className="text-sm border rounded-md px-3 py-2 border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:lia-bg-950 lia-text-800 dark:text-lia-text-primary"
+            className="text-sm border rounded-md px-3 py-2 border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary"
           >
             <option value={2024}>2024</option>
             <option value={2025}>2025</option>
@@ -390,18 +390,18 @@ export default function ClientWorkforcePage({
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs lia-text-400 dark:lia-text-500">
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                   Total Planejado {selectedYear}
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {plan?.totalPlanned || 0}
                 </p>
-                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
+                <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   vagas no plano anual
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-                <Target className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <div className="w-10 h-10 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
+                <Target className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -411,10 +411,10 @@ export default function ClientWorkforcePage({
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs lia-text-400 dark:lia-text-500">
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                   Preenchidas
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {plan?.totalFilled || 0}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -435,13 +435,13 @@ export default function ClientWorkforcePage({
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs lia-text-400 dark:lia-text-500">
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                   Em Processo
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {plan?.totalOpen || 0}
                 </p>
-                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
+                <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   vagas abertas
                 </p>
               </div>
@@ -456,13 +456,13 @@ export default function ClientWorkforcePage({
           <CardContent className="p-4">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs lia-text-400 dark:lia-text-500">
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                   Departamentos
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {departmentSummaries.length}
                 </p>
-                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
+                <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   com vagas planejadas
                 </p>
               </div>
@@ -478,8 +478,8 @@ export default function ClientWorkforcePage({
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
-                <Calendar className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+              <CardTitle className="text-base flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary">
+                <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Plano Anual por Mês
               </CardTitle>
             </CardHeader>
@@ -488,11 +488,11 @@ export default function ClientWorkforcePage({
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                      <th className="text-left py-2 pr-4 font-medium lia-text-400 dark:lia-text-500">Mês</th>
-                      <th className="text-center py-2 px-2 font-medium lia-text-400 dark:lia-text-500">Planejado</th>
-                      <th className="text-center py-2 px-2 font-medium lia-text-400 dark:lia-text-500">Preenchido</th>
-                      <th className="text-center py-2 px-2 font-medium lia-text-400 dark:lia-text-500">Aberto</th>
-                      <th className="text-left py-2 pl-4 font-medium lia-text-400 dark:lia-text-500">Progresso</th>
+                      <th className="text-left py-2 pr-4 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Mês</th>
+                      <th className="text-center py-2 px-2 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Planejado</th>
+                      <th className="text-center py-2 px-2 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Preenchido</th>
+                      <th className="text-center py-2 px-2 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Aberto</th>
+                      <th className="text-left py-2 pl-4 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Progresso</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -501,10 +501,10 @@ export default function ClientWorkforcePage({
                         key={row.month} 
                         className="border-b last:border-0 border-lia-border-subtle dark:border-lia-border-subtle"
                       >
-                        <td className="py-3 pr-4 font-medium lia-text-800 dark:text-lia-text-primary">
+                        <td className="py-3 pr-4 font-medium text-lia-text-primary dark:text-lia-text-primary">
                           {row.month}
                         </td>
-                        <td className="py-3 px-2 text-center lia-text-500 dark:text-lia-text-tertiary">
+                        <td className="py-3 px-2 text-center text-lia-text-secondary dark:text-lia-text-tertiary">
                           {row.planned}
                         </td>
                         <td className="py-3 px-2 text-center">
@@ -519,7 +519,7 @@ export default function ClientWorkforcePage({
                               value={row.planned > 0 ? (row.filled / row.planned) * 100 : 0} 
                               className="h-2 flex-1" 
                             />
-                            <span className="text-xs min-w-10 lia-text-400 dark:lia-text-500">
+                            <span className="text-xs min-w-10 text-lia-text-tertiary dark:text-lia-text-secondary">
                               {row.planned > 0 ? Math.round((row.filled / row.planned) * 100) : 0}%
                             </span>
                           </div>
@@ -536,7 +536,7 @@ export default function ClientWorkforcePage({
         <div>
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
+              <CardTitle className="text-base flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Sugestões da LIA
               </CardTitle>
@@ -549,7 +549,7 @@ export default function ClientWorkforcePage({
                       key={idx}
                       className="p-3 rounded-md bg-wedo-cyan/[0.08]"
                     >
-                      <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+                      <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                         {suggestion.text}
                       </p>
                     </div>
@@ -557,10 +557,10 @@ export default function ClientWorkforcePage({
                 </div>
               ) : (
                 <div 
-                  className="p-4 rounded-md text-center bg-gray-50 dark:bg-lia-bg-primary"
+                  className="p-4 rounded-md text-center bg-lia-bg-secondary dark:bg-lia-bg-primary"
                 >
                   <Brain className="w-8 h-8 mx-auto mb-2 text-wedo-cyan opacity-50" />
-                  <p className="text-sm lia-text-400 dark:lia-text-500">
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                     A LIA analisará os dados de recrutamento e fornecerá sugestões de otimização do plano.
                   </p>
                 </div>
@@ -573,8 +573,8 @@ export default function ClientWorkforcePage({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
-              <Building2 className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+            <CardTitle className="text-base flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary">
+              <Building2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
               Breakdown por Departamento
             </CardTitle>
             <Button 
@@ -596,7 +596,7 @@ export default function ClientWorkforcePage({
           {departmentSummaries.length === 0 ? (
             <div className="text-center py-8">
               <Building2 className="w-12 h-12 mx-auto mb-3 opacity-20" />
-              <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                 Nenhuma vaga planejada para {selectedYear}
               </p>
             </div>
@@ -608,30 +608,30 @@ export default function ClientWorkforcePage({
                   className="border rounded-md overflow-hidden border-lia-border-subtle dark:border-lia-border-subtle"
                 >
                   <div 
-                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none"
+                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none"
                     onClick={() => toggleDepartment(dept.name)}
                   >
                     <div className="flex items-center gap-3">
                       {expandedDepts.has(dept.name) ? (
-                        <ChevronDown className="w-4 h-4 lia-text-400 dark:lia-text-500" />
+                        <ChevronDown className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
                       ) : (
-                        <ChevronRight className="w-4 h-4 lia-text-400 dark:lia-text-500" />
+                        <ChevronRight className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
                       )}
                       <div>
-                        <p className="font-medium lia-text-800 dark:text-lia-text-primary">
+                        <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
                           {dept.name}
                         </p>
-                        <p className="text-xs lia-text-400 dark:lia-text-500">
+                        <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           {dept.vacancies.length} posição(ões)
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                        <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                           {dept.totalFilled}/{dept.totalPlanned}
                         </p>
-                        <p className="text-xs lia-text-400 dark:lia-text-500">
+                        <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           preenchidas
                         </p>
                       </div>
@@ -646,18 +646,18 @@ export default function ClientWorkforcePage({
 
                   {expandedDepts.has(dept.name) && (
                     <div 
-                      className="border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary"
+                      className="border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary"
                     >
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                              <th className="text-left py-2 px-4 font-medium lia-text-400 dark:lia-text-500">Posição</th>
-                              <th className="text-center py-2 px-2 font-medium lia-text-400 dark:lia-text-500">Mês</th>
-                              <th className="text-center py-2 px-2 font-medium lia-text-400 dark:lia-text-500">Tipo</th>
-                              <th className="text-center py-2 px-2 font-medium lia-text-400 dark:lia-text-500">Prioridade</th>
-                              <th className="text-center py-2 px-2 font-medium lia-text-400 dark:lia-text-500">Status</th>
-                              <th className="text-center py-2 px-4 font-medium lia-text-400 dark:lia-text-500">Budget</th>
+                              <th className="text-left py-2 px-4 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Posição</th>
+                              <th className="text-center py-2 px-2 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Mês</th>
+                              <th className="text-center py-2 px-2 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Tipo</th>
+                              <th className="text-center py-2 px-2 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Prioridade</th>
+                              <th className="text-center py-2 px-2 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Status</th>
+                              <th className="text-center py-2 px-4 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Budget</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -668,16 +668,16 @@ export default function ClientWorkforcePage({
                                   key={vacancy.id}
                                   className="border-b last:border-0 border-lia-border-subtle dark:border-lia-border-subtle"
                                 >
-                                  <td className="py-3 px-4 lia-text-800 dark:text-lia-text-primary">
+                                  <td className="py-3 px-4 text-lia-text-primary dark:text-lia-text-primary">
                                     {vacancy.title}
                                   </td>
-                                  <td className="py-3 px-2 text-center lia-text-500 dark:text-lia-text-tertiary">
+                                  <td className="py-3 px-2 text-center text-lia-text-secondary dark:text-lia-text-tertiary">
                                     {months[vacancy.plannedMonth - 1]}
                                   </td>
                                   <td className="py-3 px-2 text-center">
                                     <div className="flex items-center justify-center gap-1">
-                                      <HeadcountIcon className="w-3 h-3 lia-text-400 dark:lia-text-500" />
-                                      <span className="text-xs lia-text-400 dark:lia-text-500">
+                                      <HeadcountIcon className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary" />
+                                      <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                                         {headcountTypeConfig[vacancy.headcountType]?.label}
                                       </span>
                                     </div>

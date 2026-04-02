@@ -275,7 +275,7 @@ export function KanbanTableView({
     )}
 
     {/* Conteúdo da Tabela */}
-    <div className="flex-1 overflow-hidden bg-white dark:bg-lia-bg-primary flex flex-col min-w-0">
+    <div className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0">
       <div className="flex-1 overflow-auto px-4 py-2">
       {/* Tabela Elegante - Unified Component */}
       {(() => {
@@ -361,7 +361,7 @@ export function KanbanTableView({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 rounded-full text-micro font-semibold"
+                        className="h-6 px-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active rounded-full text-micro font-semibold"
                         title="Aprovar candidato"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -433,14 +433,14 @@ export function KanbanTableView({
             getStageBorderColor={((candidate: KanbanCandidate): string => {
               const stage = ((candidate.stage as string | undefined) || (candidate.etapa as string | undefined) || 'funil').toLowerCase()
               const stageColors: Record<string, string> = {
-                'funil': 'var(--gray-600)',
+                'funil': 'var(--lia-text-secondary)',
                 'triagem': 'var(--status-warning)',
                 'entrevista': 'var(--wedo-purple)',
-                'final': 'var(--gray-600)',
+                'final': 'var(--lia-text-secondary)',
                 'aprovados': 'var(--status-success)',
                 'reprovados': 'var(--status-error)'
               }
-              return stageColors[stage] || 'var(--gray-950)'
+              return stageColors[stage] || 'var(--lia-btn-primary-bg)'
             }) as unknown as Parameters<typeof UnifiedCandidateTable>[0]["getStageBorderColor"]}
             className="max-h-[calc(100vh-22rem)]"
           />

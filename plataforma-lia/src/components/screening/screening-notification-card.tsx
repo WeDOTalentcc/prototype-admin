@@ -51,7 +51,7 @@ export function ScreeningNotificationCard({
 
   return (
     <div
-      className={`rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary border-l-4 ${config.borderColor} ${className}`}
+      className={`rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary border-l-4 ${config.borderColor} ${className}`}
     >
       <div className="p-4">
         <div className="flex items-center gap-2 mb-3">
@@ -88,7 +88,7 @@ export function ScreeningNotificationCard({
                   {wsiScore}/100
                 </p>
               </div>
-              <div className="h-2 rounded-full bg-gray-200 dark:bg-lia-bg-elevated overflow-hidden">
+              <div className="h-2 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-[width,height] ${
  wsiScore >= 75
@@ -112,7 +112,7 @@ export function ScreeningNotificationCard({
                 {wsiBlocks.map((block, index) => (
                   <div
                     key={block.name}
-                    className="p-2 rounded-md bg-gray-50 dark:bg-lia-bg-elevated/50"
+                    className="p-2 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-elevated/50"
                   >
                     <p className="text-micro text-lia-text-secondary">
                       {block.name}
@@ -143,7 +143,7 @@ export function ScreeningNotificationCard({
       </div>
 
       {onViewDetails && (
-        <div className="px-4 py-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-elevated/30 rounded-b-md">
+        <div className="px-4 py-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-elevated/30 rounded-b-md">
           <button
             onClick={onViewDetails}
             className="flex items-center gap-1.5 text-sm font-medium text-wedo-cyan-dark dark:text-wedo-cyan hover:text-wedo-cyan-dark dark:hover:text-wedo-cyan transition-colors motion-reduce:transition-none"

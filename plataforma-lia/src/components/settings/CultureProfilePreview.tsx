@@ -147,7 +147,7 @@ export function CultureProfilePreview({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-900">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-lia-btn-primary-bg">
             <Brain className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -185,7 +185,7 @@ export function CultureProfilePreview({
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle/50 bg-gray-50/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle/50 bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
               <Target className="w-4 h-4" />
@@ -198,7 +198,7 @@ export function CultureProfilePreview({
                 value={editedProfile.mission || ""}
                 onChange={(e) => updateField("mission", e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 text-sm rounded-md border border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 resize-none"
+                className="w-full px-3 py-2 text-sm rounded-md border border-lia-border-default dark:border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg resize-none"
                 placeholder="Descreva a missão da empresa..."
               />
             ) : (
@@ -209,7 +209,7 @@ export function CultureProfilePreview({
           </CardContent>
         </Card>
 
-        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/50 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
               <Eye className="w-4 h-4" />
@@ -222,7 +222,7 @@ export function CultureProfilePreview({
                 value={editedProfile.vision || ""}
                 onChange={(e) => updateField("vision", e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 text-sm rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-500/20 focus:border-gray-500 resize-none"
+                className="w-full px-3 py-2 text-sm rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-medium/20 focus:border-lia-border-medium resize-none"
                 placeholder="Descreva a visão da empresa..."
               />
             ) : (
@@ -235,7 +235,7 @@ export function CultureProfilePreview({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/50 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
               <Heart className="w-4 h-4" />
@@ -249,15 +249,15 @@ export function CultureProfilePreview({
                   key={`value-${index}`}
                   className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium 
                     ${isEditing 
-                      ? "bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated pr-1" 
-                      : "bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated"
+                      ? "bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated pr-1" 
+                      : "bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated"
                     }`}
                 >
                   {value}
                   {isEditing && (
                     <button
                       onClick={() => removeValue(index)}
-                      className="ml-1 p-0.5 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors motion-reduce:transition-none"
+                      className="ml-1 p-0.5 rounded-full hover:bg-lia-border-default dark:hover:bg-lia-border-medium transition-colors motion-reduce:transition-none"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -276,7 +276,7 @@ export function CultureProfilePreview({
                   onChange={(e) => setNewValue(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addValue()}
                   placeholder="Novo valor..."
-                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-success/30 dark:border-status-success/30 bg-white dark:bg-lia-bg-primary"
+                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-success/30 dark:border-status-success/30 bg-lia-bg-primary dark:bg-lia-bg-primary"
                 />
                 <Button size="sm" variant="ghost" onClick={addValue} className="h-8 px-2">
                   <Plus className="w-4 h-4" />
@@ -324,7 +324,7 @@ export function CultureProfilePreview({
                   onChange={(e) => setNewEvp(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && addEvp()}
                   placeholder="Novo diferencial..."
-                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-warning/30 dark:border-status-warning/30 bg-white dark:bg-lia-bg-primary"
+                  className="flex-1 px-3 py-1.5 text-xs rounded-md border border-status-warning/30 dark:border-status-warning/30 bg-lia-bg-primary dark:bg-lia-bg-primary"
                 />
                 <Button size="sm" variant="ghost" onClick={addEvp} className="h-8 px-2">
                   <Plus className="w-4 h-4" />
@@ -335,7 +335,7 @@ export function CultureProfilePreview({
         </Card>
       </div>
 
-      <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
+      <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
         <CardHeader className="pb-2 pt-4 px-4">
           <CardTitle className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
             <Users className="w-4 h-4" />
@@ -349,15 +349,15 @@ export function CultureProfilePreview({
                 key={`comp-${index}`}
                 className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium 
                   ${isEditing 
-                    ? "bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary pr-1" 
-                    : "bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary"
+                    ? "bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary pr-1" 
+                    : "bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary"
                   }`}
               >
                 {competency}
                 {isEditing && (
                   <button
                     onClick={() => removeCompetency(index)}
-                    className="ml-1 p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
+                    className="ml-1 p-0.5 rounded-full hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -376,7 +376,7 @@ export function CultureProfilePreview({
                 onChange={(e) => setNewCompetency(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && addCompetency()}
                 placeholder="Nova competência... Ex: Liderança, Comunicação"
-                className="flex-1 px-3 py-1.5 text-xs rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30 bg-white dark:bg-lia-bg-primary"
+                className="flex-1 px-3 py-1.5 text-xs rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30 bg-lia-bg-primary dark:bg-lia-bg-primary"
               />
               <Button size="sm" variant="ghost" onClick={addCompetency} className="h-8 px-2">
                 <Plus className="w-4 h-4" />
@@ -386,14 +386,14 @@ export function CultureProfilePreview({
         </CardContent>
       </Card>
 
-      <Card className="rounded-xl bg-gray-50/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm border border-lia-border-subtle dark:border-lia-border-subtle/50">
+      <Card className="rounded-xl bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm border border-lia-border-subtle dark:border-lia-border-subtle/50">
         <CardHeader className="pb-2 pt-4 px-4">
           <CardTitle className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
             <Compass className="w-4 h-4" />
             Perfil Organizacional (Big Five)
             <Popover>
               <PopoverTrigger asChild>
-                <button className="ml-1 p-0.5 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors motion-reduce:transition-none">
+                <button className="ml-1 p-0.5 rounded-full hover:bg-lia-interactive-active/50 dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none">
                   <HelpCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </button>
               </PopoverTrigger>
@@ -449,7 +449,7 @@ export function CultureProfilePreview({
       </Card>
 
       {(editedProfile.industry || editedProfile.employee_count || editedProfile.headquarters || editedProfile.founded_year) && (
-        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle/50 bg-gray-50/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle/50 bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
               <Building2 className="w-4 h-4" />
@@ -511,7 +511,7 @@ export function CultureProfilePreview({
       )}
 
       {(editedProfile.work_model || editedProfile.growth_opportunities || editedProfile.team_dynamics || editedProfile.leadership_style) && (
-        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
+        <Card className="rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/20 backdrop-blur-sm">
           <CardHeader className="pb-2 pt-4 px-4">
             <CardTitle className="text-xs font-semibold text-lia-text-primary flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
@@ -631,7 +631,7 @@ export function CultureProfilePreview({
               size="sm"
               onClick={() => onSaveAdjustments(editedProfile)}
               disabled={isLoading}
-              className="gap-2 border-lia-border-default text-lia-text-primary hover:bg-gray-50 dark:border-lia-border-default dark:hover:bg-gray-800"
+              className="gap-2 border-lia-border-default text-lia-text-primary hover:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-btn-primary-hover"
             >
               <Save className="w-4 h-4" />
               Salvar Ajustes
@@ -646,8 +646,8 @@ export function CultureProfilePreview({
               }, 800)
             }}
             disabled={isLoading || acceptedAll}
-            className={`gap-2 bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none duration-300 ease-in-out ${
-              acceptedAll ? 'scale-105 ring-2 ring-gray-900/50 ring-offset-2 dark:lia-ring-50/50' : 'hover:scale-[1.02]'
+            className={`gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none duration-300 ease-in-out ${
+              acceptedAll ? 'scale-105 ring-2 ring-lia-btn-primary-bg/50 ring-offset-2 dark:ring-lia-border-subtle/50' : 'hover:scale-[1.02]'
             }`}
           >
             <CheckCircle2 

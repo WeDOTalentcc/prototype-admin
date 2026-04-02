@@ -153,7 +153,7 @@ export function AgentExplainabilityPanel({
       onOpenChange={handleToggle}
       className={cn("rounded-md border border-lia-border-default/50", className)}
     >
-      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-gray-900 px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-900/80">
+      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-lia-btn-primary-bg px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-btn-primary-bg/80">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-wedo-cyan" />
           <span className="text-sm font-medium text-lia-text-disabled font-[Inter]">
@@ -177,7 +177,7 @@ export function AgentExplainabilityPanel({
       </CollapsibleTrigger>
 
       <CollapsibleContent>
-        <div className="border-t border-lia-border-default/50 bg-gray-900 px-4 py-3" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="border-t border-lia-border-default/50 bg-lia-btn-primary-bg px-4 py-3" role="status" aria-live="polite" aria-label="Carregando...">
           {loading && (
             <div className="flex items-center justify-center gap-2 py-8" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-wedo-cyan" />
@@ -223,13 +223,13 @@ export function AgentExplainabilityPanel({
                         {step.iteration}
                       </div>
                       {!isLast && (
-                        <div className="w-px flex-1 bg-lia-bg-tertiary dark:bg-gray-700 my-1" />
+                        <div className="w-px flex-1 bg-lia-bg-tertiary dark:bg-lia-bg-inverse my-1" />
                       )}
                     </div>
 
                     <div
                       className={cn(
- "mb-3 flex-1 rounded-md bg-gray-900 p-3",
+ "mb-3 flex-1 rounded-md bg-lia-btn-primary-bg p-3",
                         isLast && "mb-0"
                       )}
                     >
@@ -283,7 +283,7 @@ export function AgentExplainabilityPanel({
           )}
 
           {!loading && !error && summary && (
-            <div className="mt-4 grid grid-cols-2 gap-2 rounded-md bg-gray-900 p-3 sm:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-2 rounded-md bg-lia-btn-primary-bg p-3 sm:grid-cols-4">
               <div className="flex flex-col items-center gap-1">
                 <BarChart3 className="h-4 w-4 text-wedo-cyan" />
                 <span className="text-micro text-lia-text-secondary font-[Inter]">

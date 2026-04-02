@@ -330,7 +330,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="text"
                     value={formData.name || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                     placeholder="Ex: Ana Silva"
                   />
                 </div>
@@ -341,7 +341,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="email"
                     value={formData.email || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                     placeholder="ana.silva@empresa.com"
                   />
                 </div>
@@ -352,7 +352,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="tel"
                     value={formData.phone || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                     placeholder="+55 11 99999-9999"
                   />
                 </div>
@@ -363,7 +363,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="tel"
                     value={formData.whatsapp || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                     placeholder="+55 11 99999-9999"
                   />
                 </div>
@@ -374,7 +374,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="text"
                     value={formData.location || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                     placeholder="São Paulo, SP"
                   />
                 </div>
@@ -393,7 +393,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="text"
                     value={formData.role || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                     placeholder="Ex: Recrutadora Sênior"
                   />
                 </div>
@@ -403,7 +403,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                   <select
                     value={formData.department || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                   >
                     <option value="">Selecione...</option>
                     <option value="Talent Acquisition">Talent Acquisition</option>
@@ -419,7 +419,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     type="text"
                     value={formData.position || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
-                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                     placeholder="Senior Recruiter"
                   />
                 </div>
@@ -429,7 +429,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                   <select
                     value={formData.status || 'ativo'}
                     onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as typeof prev.status }))}
-                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900"
+                    className="w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
                   >
                     <option value="ativo">Ativo</option>
                     <option value="inativo">Inativo</option>
@@ -608,14 +608,14 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
             placeholder="Buscar usuários..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900 dark:bg-lia-bg-elevated dark:border-lia-border-default"
+            className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
           />
         </div>
 
         <select
           value={departmentFilter}
           onChange={(e) => setDepartmentFilter(e.target.value)}
-          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900 dark:bg-lia-bg-elevated dark:border-lia-border-default"
+          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
           <option value="all">Todos os Departamentos</option>
           {departments.map(dept => (
@@ -626,7 +626,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-gray-900/10 focus:border-gray-900 dark:bg-lia-bg-elevated dark:border-lia-border-default"
+          className="px-2 py-1.5 text-xs border border-lia-border-default rounded-md focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
         >
           <option value="all">Todos os Status</option>
           <option value="ativo">Ativo</option>
@@ -634,7 +634,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
           <option value="pendente">Pendente</option>
         </select>
 
-        <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-0.5">
+        <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-0.5">
           <button
             onClick={() => setViewMode('cards')}
             className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors motion-reduce:transition-none ${
@@ -680,7 +680,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                           {user.status}
                         </Badge>
                         {user.isScimManaged && (
-                          <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
+                          <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                             <Shield className="w-2.5 h-2.5 mr-0.5" />
                             SSO
                           </Badge>
@@ -725,7 +725,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                   </div>
 
                   {user.isManager && (
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-subtle text-micro">
+                    <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                       <Users className="w-3 h-3 mr-1" />
                       Gestor
                     </Badge>
@@ -762,7 +762,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-lia-bg-secondary">
+                <thead className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <tr>
                     <th className="px-2 py-2.5 text-left text-micro font-medium text-lia-text-secondary uppercase tracking-wider">
                       Usuário
@@ -780,9 +780,9 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                     )}
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-lia-bg-secondary divide-y divide-gray-200 dark:lia-divide-700">
+                <tbody className="bg-lia-bg-primary dark:bg-lia-bg-secondary divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
                   {filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <tr key={user.id} className="hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse">
                       <td className="px-2 py-1.5 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Avatar className="w-8 h-8">
@@ -807,7 +807,7 @@ export function UserManagement({ onUserUpdate }: UserManagementProps) {
                             {user.status}
                           </Badge>
                           {user.isScimManaged && (
-                            <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
+                            <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                               <Shield className="w-2.5 h-2.5 mr-0.5" />
                               SSO
                             </Badge>

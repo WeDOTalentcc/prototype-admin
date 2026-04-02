@@ -380,8 +380,8 @@ export function UniversalTransitionModal({
         className={cn(
           "max-h-[85vh] overflow-hidden p-0 rounded-md",
           showChatPanel
-            ? "max-w-4xl bg-white dark:bg-lia-bg-secondary"
-            : "max-w-lg bg-white dark:bg-lia-bg-secondary"
+            ? "max-w-4xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
+            : "max-w-lg bg-lia-bg-primary dark:bg-lia-bg-secondary"
         )}
       >
         <DialogHeader className="px-5 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
@@ -439,7 +439,7 @@ export function UniversalTransitionModal({
             <div className={`p-2.5 ${cardStyles.flat} space-y-2`}>
               {isSingle && candidate ? (
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full flex items-center justify-center flex-shrink-0">
                     {candidate.avatar ? (
                       <NextImage src={candidate.avatar} alt="" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
                     ) : (
@@ -459,7 +459,7 @@ export function UniversalTransitionModal({
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-micro font-semibold text-lia-text-secondary">{candidates.length}</span>
                   </div>
                   <p className="text-xs font-medium text-lia-text-primary" aria-live="polite" aria-atomic="true">
@@ -469,7 +469,7 @@ export function UniversalTransitionModal({
               )}
 
               <div className="flex items-center justify-center gap-2">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium text-lia-text-secondary border border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-elevated">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium text-lia-text-secondary border border-lia-border-default dark:border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-elevated">
                   {fromStageDisplayName}
                 </span>
                 <ArrowRight className="w-3.5 h-3.5 text-lia-text-tertiary flex-shrink-0" />
@@ -478,26 +478,26 @@ export function UniversalTransitionModal({
                     type="button"
                     onClick={() => stageSelectable && setShowStageSelector(!showStageSelector)}
                     className={cn(
-                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-semibold border bg-white dark:bg-lia-bg-elevated",
+                      "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-semibold border bg-lia-bg-primary dark:bg-lia-bg-elevated",
                       stageSelectable
-                        ? "text-lia-text-primary border-gray-900 dark:border-lia-border-default cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600"
-                        : "text-lia-text-primary border-gray-900 dark:border-lia-border-default cursor-default"
+                        ? "text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-default cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-border-medium"
+                        : "text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-default cursor-default"
                     )}
                   >
                     {selectedToStageDisplayName}
                     {stageSelectable && <ChevronDown className="w-3 h-3" />}
                   </button>
                   {showStageSelector && stageSelectable && (
-                    <div className="absolute top-full left-0 mt-1 z-50 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md shadow-lia-md max-h-48 overflow-y-auto min-w-[160px]">
+                    <div className="absolute top-full left-0 mt-1 z-50 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md shadow-lia-md max-h-48 overflow-y-auto min-w-[160px]">
                       {filteredAvailableStages.map((stage) => (
                         <button
                           key={stage.id}
                           type="button"
                           onClick={() => handleStageSelect(stage)}
                           className={cn(
-                            "w-full text-left px-3 py-1.5 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none",
+                            "w-full text-left px-3 py-1.5 text-xs hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none",
                             stage.id === selectedToStage
-                              ? "bg-gray-100 dark:bg-lia-bg-elevated font-semibold text-lia-text-primary"
+                              ? "bg-lia-bg-tertiary dark:bg-lia-bg-elevated font-semibold text-lia-text-primary"
                               : "text-lia-text-primary"
                           )}
                         >
@@ -557,10 +557,10 @@ export function UniversalTransitionModal({
                           return (
                             <div
                               key={c.id}
-                              className="p-2.5 bg-gray-50 rounded-md border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
+                              className="p-2.5 bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
                             >
                               <div className="flex items-center gap-2.5">
-                                <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
+                                <div className="w-7 h-7 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
                                   {c.avatar ? (
                                     <NextImage src={c.avatar} alt="" width={28} height={28} className="w-7 h-7 rounded-full object-cover" />
                                   ) : (
@@ -627,8 +627,8 @@ export function UniversalTransitionModal({
                         className={cn(
                           "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
                           action === 'lia_auto'
-                            ? "border-gray-900 bg-white dark:lia-border-400 dark:bg-lia-bg-secondary"
-                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-gray-600"
+                            ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
+                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
                         )}
                         onClick={() => setAction('lia_auto')}
                       >
@@ -637,7 +637,7 @@ export function UniversalTransitionModal({
                           <label htmlFor="action-lia" className="flex items-center gap-1 cursor-pointer">
                             <Brain className="w-3 h-3 text-wedo-cyan" />
                             <span className="text-xs font-medium text-lia-text-primary">LIA automático</span>
-                            <span className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary px-1 py-px rounded-full ml-auto">
+                            <span className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary px-1 py-px rounded-full ml-auto">
                               Recomendado
                             </span>
                           </label>
@@ -651,8 +651,8 @@ export function UniversalTransitionModal({
                         className={cn(
                           "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
                           action === 'manual'
-                            ? "border-gray-900 bg-white dark:lia-border-400 dark:bg-lia-bg-secondary"
-                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-gray-600"
+                            ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
+                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
                         )}
                         onClick={() => setAction('manual')}
                       >
@@ -682,8 +682,8 @@ export function UniversalTransitionModal({
                         className={cn(
                           "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
                           action === 'just_move'
-                            ? "border-gray-900 bg-white dark:lia-border-400 dark:bg-lia-bg-secondary"
-                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-gray-600"
+                            ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
+                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
                         )}
                         onClick={() => setAction('just_move')}
                       >
@@ -711,8 +711,8 @@ export function UniversalTransitionModal({
                         className={cn(
                           "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
                           action === 'lia_auto'
-                            ? "border-gray-900 bg-white dark:lia-border-400 dark:bg-lia-bg-secondary"
-                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-gray-600"
+                            ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
+                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
                         )}
                         onClick={() => setAction('lia_auto')}
                       >
@@ -726,8 +726,8 @@ export function UniversalTransitionModal({
                         className={cn(
                           "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
                           action === 'just_move'
-                            ? "border-gray-900 bg-white dark:lia-border-400 dark:bg-lia-bg-secondary"
-                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-gray-600"
+                            ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
+                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
                         )}
                         onClick={() => setAction('just_move')}
                       >
@@ -744,7 +744,7 @@ export function UniversalTransitionModal({
 
           {/* RIGHT PANEL: Chat with LIA (follows lia-expanded-panel pattern) */}
           {showChatPanel && (
-            <div className="md:w-[64%] border-t md:border-t-0 md:border-l border-lia-border-subtle dark:border-lia-border-subtle flex flex-col md:max-h-[calc(85vh-120px)] bg-white dark:bg-lia-bg-secondary">
+            <div className="md:w-[64%] border-t md:border-t-0 md:border-l border-lia-border-subtle dark:border-lia-border-subtle flex flex-col md:max-h-[calc(85vh-120px)] bg-lia-bg-primary dark:bg-lia-bg-secondary">
               <TransitionChatPanel
                 messages={messages}
                 isLoading={isInterpreting}
@@ -759,12 +759,12 @@ export function UniversalTransitionModal({
 
         {/* SUB-STATUS ROW (separate band above footer buttons) */}
         {currentSubStatusOptions.length > 0 && (
-          <div className="flex items-center justify-end gap-2 w-full px-5 py-2.5 bg-gray-50 dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="flex items-center justify-end gap-2 w-full px-5 py-2.5 bg-lia-bg-secondary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle">
             <span className="text-xs font-medium text-lia-text-secondary whitespace-nowrap">
               {isRejectedBatch ? 'Motivo padrão:' : isRejectedStage ? 'Motivo:' : 'Sub-status da etapa:'}
             </span>
             <Select value={subStatus} onValueChange={handleGlobalSubStatusChange}>
-              <SelectTrigger className="w-[220px] h-8 rounded-md text-xs bg-white dark:bg-lia-bg-secondary">
+              <SelectTrigger className="w-[220px] h-8 rounded-md text-xs bg-lia-bg-primary dark:bg-lia-bg-secondary">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent className="z-modal" position="popper" sideOffset={4} side="top">
@@ -784,14 +784,14 @@ export function UniversalTransitionModal({
         )}
 
         {/* FOOTER: Action buttons */}
-        <DialogFooter className="px-5 py-0 bg-gray-50 dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle">
+        <DialogFooter className="px-5 py-0 bg-lia-bg-secondary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between w-full py-2.5 gap-3">
             <div className="flex items-center gap-2">
               {currentActionBehavior === 'conclusion_rejected' && onOpenSpecializedModal && (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-9 px-3 text-xs font-medium rounded-md border-lia-border-default text-lia-text-secondary hover:bg-gray-50 focus:ring-2 focus:ring-gray-900/20 focus:outline-none dark:border-lia-border-default"
+                  className="h-9 px-3 text-xs font-medium rounded-md border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:border-lia-border-default"
                   onClick={() => onOpenSpecializedModal('rejection-feedback', { candidates, toStage: selectedToStage })}
                 >
                   <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
@@ -805,7 +805,7 @@ export function UniversalTransitionModal({
                 variant="outline"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="h-9 px-4 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-white text-lia-text-primary border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 focus:ring-2 focus:ring-gray-900/20 focus:outline-none dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
+                className="h-9 px-4 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-bg-primary text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
               >
                 Cancelar
               </Button>
@@ -813,7 +813,7 @@ export function UniversalTransitionModal({
               <Button
                 onClick={handleConfirm}
                 disabled={isSubmitting || (isRejectedStage && !subStatus)}
-                className="h-9 px-4 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 focus:ring-2 focus:ring-gray-900/20 focus:outline-none dark:hover:bg-gray-200"
+                className="h-9 px-4 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-bg-inverse focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none dark:hover:bg-lia-interactive-active"
               >
                 {isSubmitting ? (
                   <>

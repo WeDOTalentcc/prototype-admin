@@ -272,7 +272,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
 
       {/* Lista de Comandos */}
       {filteredCommands.length === 0 ? (
-        <Card className="bg-white dark:bg-lia-bg-secondary p-8 text-center">
+        <Card className="bg-lia-bg-primary dark:bg-lia-bg-secondary p-8 text-center">
           <div className="text-lia-text-primary">
             <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-medium mb-2">
@@ -289,7 +289,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredCommands.map((command) => (
-            <Card key={command.id} className="hover:transition-shadow bg-white dark:bg-lia-bg-secondary">
+            <Card key={command.id} className="hover:transition-shadow bg-lia-bg-primary dark:bg-lia-bg-secondary">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -340,7 +340,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
 
               <CardContent className="space-y-4">
                 {/* Comando */}
-                <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-3">
+                <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <MessageCircle className="w-4 h-4 text-wedo-purple" />
                     <span className="text-xs font-medium text-lia-text-primary">Comando:</span>
@@ -356,7 +356,7 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
                 </p>
 
                 {/* Estatísticas */}
-                <div className="flex items-center justify-between text-xs text-lia-text-primary bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-2">
+                <div className="flex items-center justify-between text-xs text-lia-text-primary bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md p-2">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
@@ -401,8 +401,8 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
 
       {/* Modal de Confirmação de Exclusão */}
       {showDeleteConfirm && commandToDelete && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md bg-white dark:bg-lia-bg-secondary">
+        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md bg-lia-bg-primary dark:bg-lia-bg-secondary">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-lia-text-primary flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-status-error" />

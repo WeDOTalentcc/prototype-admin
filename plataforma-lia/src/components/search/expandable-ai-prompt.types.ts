@@ -138,10 +138,10 @@ export const CONTEXT_COLORS: Record<string, {
     headerBg: 'var(--wedo-green-bg-15)',
   },
   jobs: {
-    border: 'var(--gray-400)',
-    bg: 'var(--gray-bg-05)',
-    headerText: 'var(--gray-600)',
-    headerBg: 'var(--gray-bg-10)',
+    border: 'var(--lia-text-tertiary)',
+    bg: 'var(--lia-bg-secondary)',
+    headerText: 'var(--lia-text-secondary)',
+    headerBg: 'var(--lia-bg-secondary)',
   },
 }
 

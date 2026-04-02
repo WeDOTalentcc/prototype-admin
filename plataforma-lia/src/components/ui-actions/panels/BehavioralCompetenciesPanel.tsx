@@ -132,7 +132,7 @@ export function BehavioralCompetenciesPanel({
       <Button
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+        className="w-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
         size="lg"
       >
         {isLoading ? (
@@ -163,7 +163,7 @@ function CompetencyCard({
     <div className="border rounded-md overflow-hidden dark:border-lia-border-subtle dark:bg-lia-bg-secondary">
       <button
         type="button"
-        className="w-full text-left p-3 hover:bg-muted/50 dark:hover:bg-gray-700/50 transition-colors motion-reduce:transition-none"
+        className="w-full text-left p-3 hover:bg-muted/50 dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none"
         onClick={onToggleExpand}
       >
         <div className="flex items-start justify-between gap-3">

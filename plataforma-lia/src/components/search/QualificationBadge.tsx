@@ -45,7 +45,7 @@ const levelConfig = {
   baixa: {
     label: "Baixa",
     icon: HardHat,
-    className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-lia-text-primary border border-lia-border-subtle bg-gray-100",
+    className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-lia-text-primary border border-lia-border-subtle bg-lia-bg-tertiary",
     bgStyle: {},
     darkClassName: "dark:text-lia-text-secondary dark:border-lia-border-default dark:bg-lia-bg-secondary",
     tooltipText: "Vaga de qualificação básica (júnior/estágio). Busca com alcance amplo.",
@@ -71,7 +71,7 @@ export function QualificationBadge({
 }: QualificationBadgeProps) {
   if (isClassifying) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-lia-text-secondary border border-lia-border-subtle bg-gray-50 dark:border-lia-border-default dark:bg-lia-bg-secondary">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-lia-text-secondary border border-lia-border-subtle bg-lia-bg-secondary dark:border-lia-border-default dark:bg-lia-bg-secondary">
         <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
         Classificando...
       </span>
@@ -82,7 +82,7 @@ export function QualificationBadge({
     return (
       <button
         onClick={onClassify}
-        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-lia-text-tertiary border border-dashed border-lia-border-default hover:border-gray-400 hover:text-lia-text-secondary transition-colors motion-reduce:transition-none cursor-pointer dark:border-lia-border-default dark:hover:border-gray-500"
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium text-lia-text-tertiary border border-dashed border-lia-border-default hover:border-lia-border-medium hover:text-lia-text-secondary transition-colors motion-reduce:transition-none cursor-pointer dark:border-lia-border-default dark:hover:border-lia-border-medium"
       >
         <Brain className="w-3 h-3 text-wedo-cyan" />
         Classificar
@@ -154,7 +154,7 @@ export function QualificationBadge({
               </DropdownMenu>
             </span>
           </TooltipTrigger>
-          <TooltipContent side="bottom" className="bg-gray-900 text-white text-xs rounded-md p-2">
+          <TooltipContent side="bottom" className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs rounded-md p-2">
             {tooltipContent}
           </TooltipContent>
         </Tooltip>
@@ -166,7 +166,7 @@ export function QualificationBadge({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>{badge}</TooltipTrigger>
-        <TooltipContent side="bottom" className="bg-gray-900 text-white text-xs rounded-md p-2">
+        <TooltipContent side="bottom" className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs rounded-md p-2">
           {tooltipContent}
         </TooltipContent>
       </Tooltip>

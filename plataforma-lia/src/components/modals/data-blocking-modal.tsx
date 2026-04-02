@@ -197,7 +197,7 @@ export function DataBlockingModal({
           <Button
             onClick={handleResendRequest}
             disabled={isResending || isProceeding}
-            className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
+            className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             {isResending ? (
               <>
@@ -215,7 +215,7 @@ export function DataBlockingModal({
             variant="outline"
             onClick={handleProceedAnyway}
             disabled={isResending || isProceeding}
-            className="w-full bg-white border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
+            className="w-full bg-lia-bg-primary border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
           >
             {isProceeding ? (
               <>

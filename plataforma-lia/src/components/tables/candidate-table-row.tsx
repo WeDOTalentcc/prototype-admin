@@ -193,8 +193,8 @@ export function CandidateTableRow({
     <tr
       className={`group cursor-pointer transition-colors motion-reduce:transition-none relative border-b border-lia-border-subtle dark:border-lia-border-subtle ${
  isSelected 
-          ? 'bg-gray-100 dark:bg-lia-bg-secondary hover:bg-gray-200/70 dark:hover:bg-gray-700/70' 
-          : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
+          ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary hover:bg-lia-interactive-active/70 dark:hover:bg-lia-bg-inverse/70' 
+          : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50'
       }`}
       style={rowStyle}
       onClick={onRowClick}
@@ -215,7 +215,7 @@ export function CandidateTableRow({
               className="absolute left-0 top-0 h-full flex items-center pl-2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none duration-200 z-20"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center gap-0.5 bg-white/95 dark:bg-lia-bg-primary/95 backdrop-blur-sm rounded-md px-1.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="flex items-center gap-0.5 bg-lia-bg-primary/95 dark:bg-lia-bg-primary/95 backdrop-blur-sm rounded-md px-1.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle">
                 {overlayContent}
               </div>
             </div>

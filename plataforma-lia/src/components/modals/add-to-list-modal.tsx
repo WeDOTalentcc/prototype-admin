@@ -302,7 +302,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
             variant="outline"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
+            className="h-9 px-4 text-xs font-medium bg-lia-bg-primary border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
           >
             Cancelar
           </Button>
@@ -310,7 +310,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || isLoading || !canSubmit}
-            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             {isSubmitting ? (
               <>

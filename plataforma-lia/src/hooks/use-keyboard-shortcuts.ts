@@ -111,9 +111,9 @@ export function useKeyboardShortcuts({
   // Mostrar modal de ajuda com atalhos
   const showKeyboardShortcutsHelp = () => {
     const helpModal = document.createElement('div')
-    helpModal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-toast'
+    helpModal.className = 'fixed inset-0 bg-lia-overlay flex items-center justify-center z-toast'
     helpModal.innerHTML = `
-      <div class="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-6 max-w-md w-full mx-4">
+      <div class="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-6 max-w-md w-full mx-4">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-lia-text-primary">Atalhos de Teclado</h3>
           <button id="close-help" class="text-lia-text-tertiary hover:text-lia-text-secondary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse">
@@ -126,31 +126,31 @@ export function useKeyboardShortcuts({
         <div class="space-y-3 text-sm">
           <div class="flex justify-between">
             <span class="text-lia-text-secondary dark:text-lia-text-tertiary">Ativar IA Copilot</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+K</kbd>
+            <kbd class="px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+K</kbd>
           </div>
           <div class="flex justify-between">
             <span class="text-lia-text-secondary dark:text-lia-text-tertiary">Busca por Voz</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+;</kbd>
+            <kbd class="px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+;</kbd>
           </div>
           <div class="flex justify-between">
             <span class="text-lia-text-secondary dark:text-lia-text-tertiary">Biblioteca LIA</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+Shift+L</kbd>
+            <kbd class="px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+Shift+L</kbd>
           </div>
           <div class="flex justify-between">
             <span class="text-lia-text-secondary dark:text-lia-text-tertiary">Chat com LIA</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+Shift+C</kbd>
+            <kbd class="px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Ctrl+Shift+C</kbd>
           </div>
           <div class="flex justify-between">
             <span class="text-lia-text-secondary dark:text-lia-text-tertiary">Fechar Modal</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Esc</kbd>
+            <kbd class="px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md text-xs font-mono">Esc</kbd>
           </div>
           <div class="flex justify-between">
             <span class="text-lia-text-secondary dark:text-lia-text-tertiary">Esta Ajuda</span>
-            <kbd class="px-2 py-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-md text-xs font-mono">F1</kbd>
+            <kbd class="px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md text-xs font-mono">F1</kbd>
           </div>
         </div>
 
-        <div class="mt-4 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+        <div class="mt-4 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
           <p class="text-xs text-wedo-cyan-dark dark:text-lia-text-tertiary">
             💡 Dica: Use Ctrl+K em qualquer página para ativar rapidamente a busca com IA
           </p>

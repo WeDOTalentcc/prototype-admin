@@ -37,7 +37,7 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
               {score}%
             </span>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-lia-bg-secondary">
+          <div className="h-1.5 rounded-full overflow-hidden bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
             <div
               className="h-full rounded-full transition-[width,height] duration-500"
               style={{width: `${score}%`, backgroundColor: scoreColor}}
@@ -66,7 +66,7 @@ export function SearchQualityPanel({ searchAnalysis, onAlertActionClick }: Searc
                   alert.severity === 'warning'
                     ? 'var(--status-warning-bg-08)'
                     : 'var(--wedo-cyan-bg-08)',
-                color: 'var(--gray-500)'}}
+                color: 'var(--lia-text-secondary)'}}
             >
               {alert.severity === 'warning' ? (
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-status-warning" />

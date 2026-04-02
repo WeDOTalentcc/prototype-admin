@@ -157,7 +157,7 @@ export function ExcludedCompaniesInput({
       <div className="flex items-center gap-2">
         <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors motion-reduce:transition-none">
+            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
               <span className="text-lia-text-primary">{currentTimeOption?.label}</span>
               <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
             </button>
@@ -172,14 +172,14 @@ export function ExcludedCompaniesInput({
                     setIsTimeFilterOpen(false)
                   }}
                   className={cn(
-                    "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors motion-reduce:transition-none",
-                    timeFilter === option.value && "bg-gray-50"
+                    "w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+                    timeFilter === option.value && "bg-lia-bg-secondary"
                   )}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-lia-text-primary">{option.label}</span>
                     {timeFilter === option.value && (
-                      <div className="w-2 h-2 rounded-full bg-gray-900" />
+                      <div className="w-2 h-2 rounded-full bg-lia-btn-primary-bg" />
                     )}
                   </div>
                   <p className="text-xs text-lia-text-secondary mt-0.5">{option.description}</p>
@@ -252,7 +252,7 @@ export function ExcludedCompaniesInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
           />
         </div>
 
@@ -267,7 +267,7 @@ export function ExcludedCompaniesInput({
                 onClick={() => addCompany(company)}
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50"
+                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
                 )}
               >
                 <div className="flex items-center justify-between">
@@ -312,7 +312,7 @@ export function ExcludedCompaniesInput({
       />
 
       {showSavePresetModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowSavePresetModal(false)}>
+        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50" onClick={() => setShowSavePresetModal(false)}>
           <div className="bg-lia-bg-primary rounded-md p-4 w-80" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-medium text-sm mb-3">Salvar Preset</h3>
             <Input
@@ -329,7 +329,7 @@ export function ExcludedCompaniesInput({
                 size="sm" 
                 onClick={handleSaveCustomPreset}
                 disabled={!savePresetName.trim()}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
               >
                 <Save className="w-3.5 h-3.5 mr-1.5" />
                 Salvar

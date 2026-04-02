@@ -137,9 +137,9 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
     switch (status) {
       case 'active': return 'bg-status-success/15 text-status-success border-status-success/30'
       case 'planning': return 'bg-status-warning/15 text-status-warning border-status-warning/30'
-      case 'paused': return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
-      case 'completed': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
-      default: return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+      case 'paused': return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
+      case 'completed': return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
+      default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -148,7 +148,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
       case 'high': return 'bg-status-error/15 text-status-error'
       case 'medium': return 'bg-status-warning/15 text-status-warning'
       case 'low': return 'bg-status-success/15 text-status-success'
-      default: return 'bg-gray-100 text-lia-text-primary'
+      default: return 'bg-lia-bg-tertiary text-lia-text-primary'
     }
   }
 
@@ -166,7 +166,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-lia-bg-primary rounded-md max-w-6xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md max-w-6xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="p-6 bg-status-error/10 dark:bg-status-error/20">
           <div className="flex items-center justify-between">
@@ -186,7 +186,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
 
         <div className="flex h-[calc(90vh-120px)]">
           {/* Sidebar - Lista de Campanhas */}
-          <div className="w-80 bg-white dark:bg-lia-bg-secondary overflow-y-auto">
+          <div className="w-80 bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-y-auto">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-medium font-sans text-lia-text-primary">
@@ -203,7 +203,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                   <Card
                     key={campaign.id}
                     className={`cursor-pointer transition-colors motion-reduce:transition-none ${
- selectedCampaign === campaign.id ? 'border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary' : ''
+ selectedCampaign === campaign.id ? 'border-lia-btn-primary-bg bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : ''
                     }`}
                     onClick={() => setSelectedCampaign(campaign.id)}
                   >
@@ -226,9 +226,9 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                           <span>Progresso</span>
                           <span>{campaign.progress}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1">
+                        <div className="w-full bg-lia-interactive-active rounded-full h-1">
                           <div
-                            className="bg-gray-700 h-1 rounded-full transition-[width,height]"
+                            className="bg-lia-bg-inverse h-1 rounded-full transition-[width,height]"
                             style={{width: `${campaign.progress}%`}}
                           />
                         </div>
@@ -387,10 +387,10 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                   <CardContent>
                     <div className="space-y-3">
                       {selectedCampaignData.targets.map((target) => (
-                        <div key={target.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                        <div key={target.id} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                           <div className="flex items-center gap-3">
                             <Avatar className="w-10 h-10">
-                              <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary font-medium text-sm">
+                              <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary font-medium text-sm">
                                 {target.name.split(' ').map(n => n[0]).join('')}
                               </AvatarFallback>
                             </Avatar>

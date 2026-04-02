@@ -205,7 +205,7 @@ export function AISearchToggle({
       <div className="relative w-full max-w-md">
         <div
           onClick={handleExpand}
-          className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-lia-bg-secondary rounded-md cursor-pointer transition-colors motion-reduce:transition-none duration-200"
+          className="flex items-center gap-3 px-4 py-2.5 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md cursor-pointer transition-colors motion-reduce:transition-none duration-200"
         >
           <Brain className="w-4 h-4 text-status-success dark:text-status-success" />
           <span className="text-sm text-lia-text-primary flex-1">
@@ -254,7 +254,7 @@ export function AISearchToggle({
 
           {/* Input Principal */}
           <div className="p-4">
-            <div className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
+            <div className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md">
               <Brain className="w-4 h-4 text-status-success" />
               <input
                 ref={inputRef}
@@ -276,7 +276,7 @@ export function AISearchToggle({
               <Button
                 onClick={() => handleSubmit()}
                 disabled={!query.trim()}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 px-3 py-1.5 text-sm"
+                className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active px-3 py-1.5 text-sm"
               >
                 <Send className="w-3 h-3" />
               </Button>
@@ -293,7 +293,7 @@ export function AISearchToggle({
                 <button
                   key={suggestion.title}
                   onClick={() => handleSubmit(suggestion.command)}
-                  className="text-left p-3 bg-white dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-200 group"
+                  className="text-left p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-200 group"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <suggestion.icon className="w-4 h-4 text-status-success group-hover:text-status-success" />
@@ -345,7 +345,7 @@ export function AISearchToggle({
 
   // Modal expansivo (mantém funcionalidade existente para outros contextos)
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20">
+    <div className="fixed inset-0 bg-lia-overlay backdrop-blur-sm z-50 flex items-start justify-center pt-20">
       <div className="bg-status-success/10 dark:bg-status-success/20 rounded-xl w-full max-w-4xl mx-4">
 
         {/* Header */}
@@ -375,7 +375,7 @@ export function AISearchToggle({
 
         {/* Input Principal */}
         <div className="p-6">
-          <div className="flex items-center gap-3 p-4 bg-white dark:bg-lia-bg-secondary rounded-md">
+          <div className="flex items-center gap-3 p-4 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md">
             <Brain className="w-5 h-5 text-status-success" />
             <input
               ref={inputRef}
@@ -397,7 +397,7 @@ export function AISearchToggle({
             <Button
               onClick={() => handleSubmit()}
               disabled={!query.trim()}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               <Send className="w-4 h-4" />
             </Button>
@@ -414,7 +414,7 @@ export function AISearchToggle({
               <button
                 key={suggestion.title}
                 onClick={() => handleSubmit(suggestion.command)}
-                className="text-left p-4 bg-white dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-200 group"
+                className="text-left p-4 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-200 group"
               >
                 <div className="flex items-center gap-3 mb-2">
                   <suggestion.icon className="w-5 h-5 text-status-success group-hover:text-status-success" />

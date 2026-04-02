@@ -150,7 +150,7 @@ export function UniversityLocationsInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
           />
         </div>
 
@@ -164,7 +164,7 @@ export function UniversityLocationsInput({
                 return (
                   <div
                     key={`header-${item.label}`}
-                    className="px-3 py-1.5 text-xs font-semibold text-wedo-purple bg-gray-50 uppercase tracking-wider"
+                    className="px-3 py-1.5 text-xs font-semibold text-wedo-purple bg-lia-bg-secondary uppercase tracking-wider"
                   >
                     {item.label}
                   </div>
@@ -180,7 +180,7 @@ export function UniversityLocationsInput({
                   onClick={() => addLocation(item.value!)}
                   className={cn(
                     "w-full text-left px-3 py-2 text-sm transition-colors",
-                    focusedIndex === currentSelectableIndex ? "bg-gray-100" : "hover:bg-gray-50"
+                    focusedIndex === currentSelectableIndex ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
                   )}
                 >
                   <span className="text-lia-text-primary">{item.label}</span>
@@ -196,12 +196,12 @@ export function UniversityLocationsInput({
           {value.map(location => (
             <Badge
               key={location}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
             >
               <span>{location}</span>
               <button
                 onClick={() => removeLocation(location)}
-                className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
+                className="hover:bg-lia-interactive-active rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

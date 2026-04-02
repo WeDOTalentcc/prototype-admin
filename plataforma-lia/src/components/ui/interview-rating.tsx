@@ -127,7 +127,7 @@ const LikertRating = React.forwardRef<HTMLDivElement, LikertRatingProps>(
  "rounded-md font-medium transition-opacity duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-lia-btn-primary-bg/20 disabled:pointer-events-none disabled:opacity-50 border whitespace-nowrap",
               buttonSizeClasses[size],
               value === option.value
-                ? "bg-gray-900 text-white border-gray-900"
+                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg"
                 : "border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary hover:border-lia-text-primary"
             )}
           >

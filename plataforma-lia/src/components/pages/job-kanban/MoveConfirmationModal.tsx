@@ -60,7 +60,7 @@ export function MoveConfirmationModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-white dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle max-w-md rounded-md">
+      <DialogContent className="bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle max-w-md rounded-md">
         <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
           <DialogTitle className="text-lia-text-primary flex items-center gap-2">
             Confirmar Movimentação
@@ -107,7 +107,7 @@ export function MoveConfirmationModal({
                 {substatusSuggestions.map((suggestion, index) => (
                   <div 
                     key={`substatus-${index}`}
- className="flex items-center space-x-2 p-2 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:hover:border-lia-border-default transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-secondary"
+ className="flex items-center space-x-2 p-2 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:hover:border-lia-border-default transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-secondary"
                   >
                     <RadioGroupItem 
                       value={suggestion.content} 
@@ -143,7 +143,7 @@ export function MoveConfirmationModal({
                 {toStage.substatuses.map((substatus) => (
                   <div 
                     key={substatus.id}
-                    className="flex items-center space-x-2 p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary"
+                    className="flex items-center space-x-2 p-2 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary"
                   >
                     <RadioGroupItem 
                       value={substatus.label} 
@@ -171,12 +171,12 @@ export function MoveConfirmationModal({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Ex: Entrevista marcada para próxima terça..."
-              className="bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary placeholder:text-lia-text-tertiary dark:placeholder:text-lia-text-tertiary min-h-20"
+              className="bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary placeholder:text-lia-text-tertiary dark:placeholder:text-lia-text-tertiary min-h-20"
             />
           </div>
         </div>
 
-        <DialogFooter className="gap-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
+        <DialogFooter className="gap-2 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
           <Button
             variant="ghost"
             onClick={handleClose}
@@ -186,7 +186,7 @@ export function MoveConfirmationModal({
           </Button>
           <Button
             onClick={handleConfirm}
-            className="bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200 text-white"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active text-white"
           >
             <Check className="h-4 w-4 mr-2" />
             Confirmar

@@ -79,7 +79,7 @@ export function ClientSelector() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[280px] justify-between bg-white border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
+          className="w-[280px] justify-between bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
         >
           {selectedClient ? (
             <div className="flex items-center gap-2 truncate">
@@ -88,7 +88,7 @@ export function ClientSelector() {
                   <AvatarImage src={selectedClient.logoUrl} alt={selectedClient.name} />
                 ) : null}
                 <AvatarFallback 
-                  className="text-micro bg-gray-900 text-white"
+                  className="text-micro bg-lia-btn-primary-bg text-lia-btn-primary-text"
                 >
                   {getClientInitials(selectedClient)}
                 </AvatarFallback>
@@ -118,7 +118,7 @@ export function ClientSelector() {
                 onSelect={() => handleSelect(null)}
                 className="flex items-center gap-3 py-2"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-lia-bg-secondary">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                   <Users className="h-4 w-4 text-lia-text-secondary" />
                 </div>
                 <div className="flex flex-col">
@@ -146,7 +146,7 @@ export function ClientSelector() {
                           <AvatarImage src={client.logoUrl} alt={client.name} />
                         ) : null}
                         <AvatarFallback 
-                          className="text-xs bg-gray-900 text-white"
+                          className="text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text"
                         >
                           {getClientInitials(client)}
                         </AvatarFallback>

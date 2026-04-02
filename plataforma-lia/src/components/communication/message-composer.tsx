@@ -211,7 +211,7 @@ export function MessageComposer({
   return (
     <div className={className}>
       {successMessage && (
-        <div className="mb-3 px-3 py-2 rounded-md flex items-center gap-2 bg-gray-200/30 border border-wedo-cyan/30 text-wedo-cyan-dark">
+        <div className="mb-3 px-3 py-2 rounded-md flex items-center gap-2 bg-lia-interactive-active/30 border border-wedo-cyan/30 text-wedo-cyan-dark">
           <Check className="w-4 h-4 text-lia-text-secondary" />
           <span className="text-xs">{successMessage}</span>
         </div>
@@ -252,8 +252,8 @@ export function MessageComposer({
                   onClick={() => handleTemplateSelect(template)}
                   className={`w-full p-2.5 rounded-md border text-left transition-colors motion-reduce:transition-none ${
  selectedTemplateId === template.id
-                      ? 'border-gray-500 bg-gray-50'
-                      : 'border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50'
+                      ? 'border-lia-border-medium bg-lia-bg-secondary'
+                      : 'border-lia-border-subtle hover:border-lia-border-default hover:bg-lia-bg-secondary'
                   }`}
                 >
                   <div className="text-xs font-medium text-lia-text-primary">
@@ -283,7 +283,7 @@ export function MessageComposer({
                   onSelect={insertVariableAtCursor}
                   trigger={
                     <button 
-                      className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
+                      className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
                       onFocus={() => setFocusedField('subject')}
                     >
                       <span>Inserir Variável</span>
@@ -298,7 +298,7 @@ export function MessageComposer({
               value={subject}
               onChange={(e) => handleSubjectChange(e.target.value)}
               onFocus={() => setFocusedField('subject')}
-              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none"
+              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium focus:outline-none"
              
               placeholder="Assunto do email..."
             />
@@ -315,7 +315,7 @@ export function MessageComposer({
                 onSelect={insertVariableAtCursor}
                 trigger={
                   <button 
-                    className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
+                    className="text-micro flex items-center gap-1 px-2 py-1 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
                     onFocus={() => setFocusedField('message')}
                   >
                     <span>Inserir Variável</span>
@@ -330,7 +330,7 @@ export function MessageComposer({
             onChange={(e) => handleMessageChange(e.target.value)}
             onFocus={() => setFocusedField('message')}
             rows={8}
-            className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none resize-none"
+            className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium focus:outline-none resize-none"
            
             placeholder={channel === 'email' ? 'Escreva sua mensagem...' : 'Escreva sua mensagem WhatsApp...'}
           />
@@ -341,7 +341,7 @@ export function MessageComposer({
         <Card className="mt-4 rounded-md border border-lia-border-subtle bg-lia-bg-primary">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
+              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <div className="flex-1">
@@ -355,7 +355,7 @@ export function MessageComposer({
               <select
                 value={toneStyle}
                 onChange={(e) => setToneStyle(e.target.value as ToneStyle)}
-                className="text-xs border border-lia-border-subtle rounded-md px-2 py-1.5 bg-lia-bg-primary focus:outline-none focus:ring-1 focus:ring-gray-400"
+                className="text-xs border border-lia-border-subtle rounded-md px-2 py-1.5 bg-lia-bg-primary focus:outline-none focus:ring-1 focus:ring-lia-border-medium"
                
               >
                 {TONE_OPTIONS.map(opt => (
@@ -372,14 +372,14 @@ export function MessageComposer({
                 onKeyDown={(e) => e.key === 'Enter' && !isGenerating && handleAdjustWithLIA()}
                 placeholder="Ex: Torne mais formal e adicione urgência..."
                 disabled={isGenerating}
-                className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 focus:outline-none disabled:bg-gray-50 disabled:lia-text-secondary"
+                className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium focus:outline-none disabled:bg-lia-bg-secondary disabled:lia-text-secondary"
                
               />
               <Button
                 onClick={handleAdjustWithLIA}
                 disabled={isGenerating || (!aiPrompt.trim() && !message.trim())}
                 className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px]"
-                style={{backgroundColor: isGenerating ? 'var(--wedo-cyan)' : 'var(--gray-600)', color: 'white'}}
+                style={{backgroundColor: isGenerating ? 'var(--wedo-cyan)' : 'var(--lia-text-secondary)', color: 'white'}}
               >
                 {isGenerating ? (
                   <>
@@ -398,7 +398,7 @@ export function MessageComposer({
             {isGenerating && (
               <div className="flex items-center gap-2 p-2 rounded-md bg-wedo-cyan/[.08]">
                 <div className="flex gap-1">
-                  <ThinkingDots dotClassName="bg-gray-900" size="md" />
+                  <ThinkingDots dotClassName="bg-lia-btn-primary-bg" size="md" />
                 </div>
                 <span className="text-xs" style={{color: 'var(--wedo-cyan-dark)'}}>
                   A LIA está analisando e ajustando a mensagem...
@@ -410,12 +410,12 @@ export function MessageComposer({
       )}
 
       {aiResultModal?.show && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-md bg-lia-bg-primary">
             <div className="border-b border-lia-border-subtle p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
+                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </div>
                   <div>
@@ -439,7 +439,7 @@ export function MessageComposer({
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {aiResultModal.changesMade.map((change, idx) => (
-                    <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-gray-200/30 text-wedo-cyan-dark">
+                    <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-lia-interactive-active/30 text-wedo-cyan-dark">
                       <Check className="w-3 h-3 mr-1" />
                       {change}
                     </Badge>
@@ -452,7 +452,7 @@ export function MessageComposer({
                   <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                     Novo Assunto
                   </label>
-                  <div className="p-3 bg-gray-50 rounded-md text-xs text-lia-text-primary">
+                  <div className="p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary">
                     {aiResultModal.newSubject}
                   </div>
                 </div>
@@ -462,7 +462,7 @@ export function MessageComposer({
                 <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                   Nova Mensagem
                 </label>
-                <div className="p-3 bg-gray-50 rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto">
+                <div className="p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto">
                   {aiResultModal.newBody}
                 </div>
               </div>
@@ -482,7 +482,7 @@ export function MessageComposer({
               </Button>
               <Button 
                 onClick={handleConfirmAIAdjustment}
-                className="rounded-md px-4 py-2 text-xs gap-1.5 bg-gray-900 text-white"
+                className="rounded-md px-4 py-2 text-xs gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text"
               >
                 <Check className="w-3.5 h-3.5" />
                 Aplicar Ajustes

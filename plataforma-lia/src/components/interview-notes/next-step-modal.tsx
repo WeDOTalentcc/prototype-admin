@@ -133,8 +133,8 @@ export function NextStepModal({
                 className={cn(
  "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                   decisionType === "approve"
-                    ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
-                    : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
+                    ? "border-lia-btn-primary-bg bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 ring-1 ring-lia-btn-primary-bg/20"
+                    : "border-lia-border-subtle hover:border-lia-border-default hover:bg-lia-bg-secondary"
                 )}
               >
                 <RadioGroupItem value="approve" id="approve" className="sr-only" />
@@ -142,8 +142,8 @@ export function NextStepModal({
                   className={cn(
  "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "approve"
-                      ? "bg-gray-200 text-lia-text-primary"
-                      : "bg-gray-100 lia-text-secondary"
+                      ? "bg-lia-interactive-active text-lia-text-primary"
+                      : "bg-lia-bg-tertiary lia-text-secondary"
                   )}
                 >
                   <CheckCircle className="h-4 w-4" />
@@ -160,8 +160,8 @@ export function NextStepModal({
                 className={cn(
  "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                   decisionType === "reject"
-                    ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
-                    : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
+                    ? "border-lia-btn-primary-bg bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 ring-1 ring-lia-btn-primary-bg/20"
+                    : "border-lia-border-subtle hover:border-lia-border-default hover:bg-lia-bg-secondary"
                 )}
               >
                 <RadioGroupItem value="reject" id="reject" className="sr-only" />
@@ -169,8 +169,8 @@ export function NextStepModal({
                   className={cn(
  "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "reject"
-                      ? "bg-gray-200 text-lia-text-primary"
-                      : "bg-gray-100 lia-text-secondary"
+                      ? "bg-lia-interactive-active text-lia-text-primary"
+                      : "bg-lia-bg-tertiary lia-text-secondary"
                   )}
                 >
                   <XCircle className="h-4 w-4" />
@@ -187,8 +187,8 @@ export function NextStepModal({
                 className={cn(
  "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                   decisionType === "pending"
-                    ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
-                    : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
+                    ? "border-lia-btn-primary-bg bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 ring-1 ring-lia-btn-primary-bg/20"
+                    : "border-lia-border-subtle hover:border-lia-border-default hover:bg-lia-bg-secondary"
                 )}
               >
                 <RadioGroupItem value="pending" id="pending" className="sr-only" />
@@ -196,8 +196,8 @@ export function NextStepModal({
                   className={cn(
  "flex h-8 w-8 items-center justify-center rounded-full",
                     decisionType === "pending"
-                      ? "bg-gray-200 text-lia-text-primary"
-                      : "bg-gray-100 lia-text-secondary"
+                      ? "bg-lia-interactive-active text-lia-text-primary"
+                      : "bg-lia-bg-tertiary lia-text-secondary"
                   )}
                 >
                   <Clock className="h-4 w-4" />
@@ -225,7 +225,7 @@ export function NextStepModal({
                       <div className="flex items-center gap-2">
                         <span>{stage}</span>
                         {suggestedNextStage === stage && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 text-micro font-medium text-lia-text-secondary">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1.5 py-0.5 text-micro font-medium text-lia-text-secondary">
                             <Brain className="h-3 w-3 text-wedo-cyan" />
                             Sugestão LIA
                           </span>
@@ -260,8 +260,8 @@ export function NextStepModal({
                   className={cn(
  "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                     feedbackAction === "send_now"
-                      ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
-                      : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
+                      ? "border-lia-btn-primary-bg bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 ring-1 ring-lia-btn-primary-bg/20"
+                      : "border-lia-border-subtle hover:border-lia-border-default hover:bg-lia-bg-secondary"
                   )}
                 >
                   <RadioGroupItem
@@ -273,8 +273,8 @@ export function NextStepModal({
                     className={cn(
  "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "send_now"
-                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
-                        : "bg-gray-100 lia-text-secondary"
+                        ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
+                        : "bg-lia-bg-tertiary lia-text-secondary"
                     )}
                   >
                     <Mail className="h-3.5 w-3.5" />
@@ -290,8 +290,8 @@ export function NextStepModal({
                   className={cn(
  "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                     feedbackAction === "schedule"
-                      ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
-                      : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
+                      ? "border-lia-btn-primary-bg bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 ring-1 ring-lia-btn-primary-bg/20"
+                      : "border-lia-border-subtle hover:border-lia-border-default hover:bg-lia-bg-secondary"
                   )}
                 >
                   <RadioGroupItem
@@ -303,8 +303,8 @@ export function NextStepModal({
                     className={cn(
  "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "schedule"
-                        ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
-                        : "bg-gray-100 lia-text-secondary"
+                        ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
+                        : "bg-lia-bg-tertiary lia-text-secondary"
                     )}
                   >
                     <Calendar className="h-3.5 w-3.5" />
@@ -320,8 +320,8 @@ export function NextStepModal({
                   className={cn(
  "flex items-center gap-3 rounded-md border p-3 cursor-pointer transition-colors",
                     feedbackAction === "none"
-                      ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 ring-1 ring-gray-900/20"
-                      : "border-lia-border-subtle hover:border-lia-border-default hover:bg-gray-50"
+                      ? "border-lia-btn-primary-bg bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 ring-1 ring-lia-btn-primary-bg/20"
+                      : "border-lia-border-subtle hover:border-lia-border-default hover:bg-lia-bg-secondary"
                   )}
                 >
                   <RadioGroupItem value="none" id="none" className="sr-only" />
@@ -329,8 +329,8 @@ export function NextStepModal({
                     className={cn(
  "flex h-7 w-7 items-center justify-center rounded-full",
                       feedbackAction === "none"
-                        ? "bg-gray-200 text-lia-text-secondary"
-                        : "bg-gray-100 lia-text-secondary"
+                        ? "bg-lia-interactive-active text-lia-text-secondary"
+                        : "bg-lia-bg-tertiary lia-text-secondary"
                     )}
                   >
                     <XCircle className="h-3.5 w-3.5" />
@@ -365,18 +365,18 @@ export function NextStepModal({
           )}
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
+        <DialogFooter className="gap-2 sm:gap-0 border-t border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
           <Button 
             variant="outline" 
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:hover:bg-gray-700"
+            className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={isConfirmDisabled()}
-            className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             Confirmar
           </Button>

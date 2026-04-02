@@ -175,9 +175,9 @@ export const FilterSectionEmpresa = React.memo(function FilterSectionEmpresa({
                         className={cn(
                           "px-3 py-1.5 rounded-full text-xs border transition-[width,height]",
                           isLocalSearch
-                            ? "border-lia-border-subtle bg-gray-100 text-lia-text-tertiary cursor-not-allowed"
+                            ? "border-lia-border-subtle bg-lia-bg-tertiary text-lia-text-tertiary cursor-not-allowed"
                             : isSelected
-                              ? "border-gray-500 bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary"
+                              ? "border-lia-border-medium bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary"
                               : "border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-lia-border-default"
                         )}
                       >
@@ -220,8 +220,8 @@ export const FilterSectionEmpresa = React.memo(function FilterSectionEmpresa({
                     }}
                     placeholder="Ano de Fundação"
                     className={cn(
-                      "border-lia-border-subtle focus:ring-1 focus:ring-gray-400 focus:border-gray-500 pr-10",
-                      isLocalSearch && "bg-gray-100 cursor-not-allowed"
+                      "border-lia-border-subtle focus:ring-1 focus:ring-lia-border-medium focus:border-lia-border-medium pr-10",
+                      isLocalSearch && "bg-lia-bg-tertiary cursor-not-allowed"
                     )}
                   />
                   <div className={cn("absolute right-3 top-1/2 transform -translate-y-1/2", isLocalSearch ? "text-lia-text-disabled" : "text-lia-text-tertiary")}>

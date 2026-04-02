@@ -329,7 +329,7 @@ export function KanbanColumnRenderer({
   return (
     <div
       className={`flex flex-col flex-1 bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
-        isDropping ? "ring-2 ring-gray-400 bg-gray-50/20" : ""
+        isDropping ? "ring-2 ring-lia-border-medium bg-lia-bg-secondary/20" : ""
       } h-[calc(100vh-16rem)]`}
       onDragOver={(e) => onDragOver(e, stageId)}
       onDragLeave={onDragLeave}
@@ -345,7 +345,7 @@ export function KanbanColumnRenderer({
               }`}
             ></div>
             <h3 className={`font-medium text-xs ${columnStyle.header}`}>{displayTitle}</h3>
-            <span className="text-micro text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
+            <span className="text-micro text-lia-text-primary bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
               {filteredCandidates.length}
             </span>
             {stageId === "screening" && (currentJob.backendId || currentJob.id) && (
@@ -388,7 +388,7 @@ export function KanbanColumnRenderer({
                   setSelectedCandidates(newSelected)
                 }
               }}
-              className="w-3.5 h-3.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+              className="w-3.5 h-3.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
               title={`Selecionar todos da etapa ${displayTitle}`}
             />
           )}
@@ -403,9 +403,9 @@ export function KanbanColumnRenderer({
             draggable
             onDragStart={(e) => onDragStart(e, candidate, stageId)}
             onDragEnd={onDragEnd}
-            className={`bg-white dark:bg-lia-bg-secondary rounded-md border relative overflow-hidden ${
+            className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border relative overflow-hidden ${
               candidate.needsAction
-                ? "border-l-4 border-l-gray-800 border-lia-border-subtle dark:border-lia-border-subtle"
+                ? "border-l-4 border-l-lia-btn-primary-hover border-lia-border-subtle dark:border-lia-border-subtle"
                 : (candidate.status === "triado_aprovado" || candidate.status === "triado") &&
                   stageId === "screening"
                 ? "border-l-4 border-l-green-500 border-lia-border-subtle dark:border-lia-border-subtle bg-status-success/10/30 dark:bg-status-success/20"
@@ -431,7 +431,7 @@ export function KanbanColumnRenderer({
           >
             {/* Tarja de Ação Necessária - Cinza puro */}
             {candidate.needsAction && (
-              <div className="px-2 py-0.5 border-b bg-gray-100">
+              <div className="px-2 py-0.5 border-b bg-lia-bg-tertiary">
                 <div className="flex items-center gap-1">
                   <Flag className="w-3 h-3 text-status-warning" />
                   <span className="text-micro font-bold text-lia-text-tertiary">Ação Necessária</span>
@@ -485,7 +485,7 @@ export function KanbanColumnRenderer({
                 {/* D9 — Checkbox para comparação de candidatos */}
                 <input
                   type="checkbox"
-                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-default accent-gray-900"
+                  className="w-3 h-3 rounded-md cursor-pointer flex-shrink-0 border border-lia-border-default accent-lia-btn-primary-bg"
                   checked={selectedForCompare.has(candidate.id)}
                   onChange={(e) => {
                     setSelectedForCompare((prev: Set<string>) => {
@@ -541,7 +541,7 @@ export function KanbanColumnRenderer({
                   })()}
                   {viewedCandidateIds.has(candidate.id) && (
                     <div
-                      className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-gray-300 rounded-full flex items-center justify-center border border-white"
+                      className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-lia-border-default rounded-full flex items-center justify-center border border-white"
                       title="Perfil visualizado"
                     >
                       <Eye className="w-2 h-2 text-white" />

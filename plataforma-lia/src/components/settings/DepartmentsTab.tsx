@@ -235,7 +235,7 @@ export function DepartmentsTab({
                 <Button
                   onClick={() => setShowDepartmentForm(true)}
                   size="sm"
-                  className="gap-1.5 py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="gap-1.5 py-1.5 px-2 text-xs rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Novo Departamento
@@ -267,7 +267,7 @@ export function DepartmentsTab({
         />
 
         {showDepartmentForm && isEditingDepartments && (
-          <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+          <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
             <CardContent className="p-3 space-y-2">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-xs font-semibold text-lia-text-primary">
@@ -293,7 +293,7 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, name: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                     placeholder="Ex: Engenharia"
                   />
                 </div>
@@ -307,7 +307,7 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                     placeholder="Nome do gestor"
                   />
                 </div>
@@ -323,7 +323,7 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager_title: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                     placeholder="Ex: Diretor de Engenharia"
                   />
                 </div>
@@ -337,7 +337,7 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager_email: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                     placeholder="gestor@empresa.com"
                   />
                 </div>
@@ -351,7 +351,7 @@ export function DepartmentsTab({
                     onChange={(e) =>
                       setNewDepartment((prev) => ({ ...prev, manager_phone: e.target.value }))
                     }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                     placeholder="+55 11 99999-0000"
                   />
                 </div>
@@ -365,7 +365,7 @@ export function DepartmentsTab({
                   onChange={(e) =>
                     setNewDepartment((prev) => ({ ...prev, description: e.target.value }))
                   }
-                  className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
+                  className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                   rows={2}
                   placeholder="Descrição do departamento"
                 />
@@ -382,7 +382,7 @@ export function DepartmentsTab({
                       onClick={() =>
                         setNewDepartment((prev) => ({ ...prev, color }))
                       }
-                      className={`w-4 h-4 rounded-full ${color.split(" ")[0]} ${newDepartment.color === color ? "ring-2 ring-offset-2 ring-gray-900 dark:lia-ring-50" : ""}`}
+                      className={`w-4 h-4 rounded-full ${color.split(" ")[0]} ${newDepartment.color === color ? "ring-2 ring-offset-2 ring-lia-btn-primary-bg dark:ring-lia-border-subtle" : ""}`}
                     />
                   ))}
                 </div>
@@ -403,7 +403,7 @@ export function DepartmentsTab({
                         setNewMember({ ...DEFAULT_NEW_MEMBER });
                       }}
                       disabled={!isEditingDepartments}
-                      className={`py-1 px-2 text-micro rounded-full border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 ${!isEditingDepartments ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`py-1 px-2 text-micro rounded-full border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse ${!isEditingDepartments ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <Plus className="w-3 h-3 mr-1" />
                       Adicionar
@@ -419,11 +419,11 @@ export function DepartmentsTab({
                       departmentMembers.map((member) => (
                         <div
                           key={member.id}
-                          className="flex items-center justify-between p-2 bg-gray-50 rounded-md"
+                          className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md"
                         >
                           <div className="flex items-center gap-2">
                             <Avatar className="w-7 h-7">
-                              <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary">
+                              <AvatarFallback className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary">
                                 {member.name.charAt(0).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
@@ -442,7 +442,7 @@ export function DepartmentsTab({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleEditMember(member)}
-                                className="h-6 w-6 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                                className="h-6 w-6 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                               >
                                 <Edit className="w-3 h-3" />
                               </Button>
@@ -462,7 +462,7 @@ export function DepartmentsTab({
                   </div>
 
                   {showMemberForm && (
-                    <div className="mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary">
+                    <div className="mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary">
                       <h6 className="text-micro font-medium text-lia-text-secondary mb-2">
                         {editingMember ? "Editar Colaborador" : "Novo Colaborador"}
                       </h6>
@@ -474,7 +474,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, name: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                         />
                         <input
                           type="text"
@@ -483,7 +483,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, title: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                         />
                         <input
                           type="email"
@@ -492,7 +492,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, email: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                         />
                         <input
                           type="text"
@@ -501,7 +501,7 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, phone: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                         />
                         <input
                           type="url"
@@ -510,14 +510,14 @@ export function DepartmentsTab({
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, linkedin_url: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none col-span-2"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none col-span-2"
                         />
                         <select
                           value={newMember.level}
                           onChange={(e) =>
                             setNewMember((prev) => ({ ...prev, level: e.target.value }))
                           }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none col-span-2"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none col-span-2"
                         >
                           <option value="ceo">CEO</option>
                           <option value="vp">VP</option>
@@ -562,7 +562,7 @@ export function DepartmentsTab({
                         <Button
                           size="sm"
                           onClick={handleSaveMember}
-                          className="py-1 px-2 text-micro rounded-full bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
+                          className="py-1 px-2 text-micro rounded-full bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
                           disabled={savingMember}
                         >
                           {savingMember ? (
@@ -592,7 +592,7 @@ export function DepartmentsTab({
                 <Button
                   size="sm"
                   onClick={handleSaveDepartment}
-                  className="py-1.5 px-2 text-xs rounded-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="py-1.5 px-2 text-xs rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   <Save className="w-3.5 h-3.5 mr-1" />
                   {editingDepartment ? "Atualizar" : "Salvar"}
@@ -630,7 +630,7 @@ export function DepartmentsTab({
             departments.map((dept) => (
               <Card
                 key={dept.id}
-                className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md hover:transition-shadow"
+                className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md hover:transition-shadow"
               >
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between">
@@ -653,7 +653,7 @@ export function DepartmentsTab({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 w-7 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="h-7 w-7 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                         onClick={() => handleOpenOrgChart(dept)}
                         title="Ver organograma"
                       >
@@ -662,7 +662,7 @@ export function DepartmentsTab({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 w-7 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="h-7 w-7 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                         onClick={() => handleStartEditDepartment(dept)}
                         disabled={!isEditingDepartments}
                       >
@@ -679,7 +679,7 @@ export function DepartmentsTab({
                       </Button>
                     </div>
                   </div>
-                  <div className="mt-2 pt-2 border-t border-lia-border-subtle dark:lia-border-800 flex items-center justify-between">
+                  <div className="mt-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-strong flex items-center justify-between">
                     <div className="flex items-center gap-2 text-micro text-lia-text-secondary">
                       <Users className="w-3 h-3" />
                       <span>{dept.headcount} colaboradores</span>
@@ -738,7 +738,7 @@ export function DepartmentsTab({
             <DialogHeader>
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-10 h-10 rounded-md ${orgChartDepartment?.color || "bg-gray-900 text-white"} flex items-center justify-center`}
+                  className={`w-10 h-10 rounded-md ${orgChartDepartment?.color || "bg-lia-btn-primary-bg text-lia-btn-primary-text"} flex items-center justify-center`}
                 >
                   <Network className="w-5 h-5" />
                 </div>
@@ -794,7 +794,7 @@ export function DepartmentsTab({
                           >
                             {getLevelLabel(level)}
                           </Badge>
-                          <div className="flex-1 h-px bg-gray-200"></div>
+                          <div className="flex-1 h-px bg-lia-interactive-active"></div>
                           <span className="text-micro text-lia-text-tertiary">
                             {members.length}{" "}
                             {members.length === 1 ? "pessoa" : "pessoas"}
@@ -814,7 +814,7 @@ export function DepartmentsTab({
                                     className="w-full h-full object-cover rounded-full"
                                   />
                                 ) : (
-                                  <AvatarFallback className="text-xs bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary">
+                                  <AvatarFallback className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary">
                                     {member.name
                                       .split(" ")
                                       .map((n) => n[0])

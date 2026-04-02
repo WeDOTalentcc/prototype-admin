@@ -57,7 +57,7 @@ export function getUrgencyLevel(score: number): UrgencyLevel {
 }
 
 export function getScoreColor(score: number | null | undefined): string {
-  if (score == null) return 'bg-gray-100'
+  if (score == null) return 'bg-lia-bg-tertiary'
   if (score >= 80) return 'bg-status-success/15 text-status-success'
   if (score >= 60) return 'bg-status-warning/15 text-status-warning'
   if (score >= 40) return 'bg-wedo-orange/15 text-wedo-orange'
@@ -65,24 +65,24 @@ export function getScoreColor(score: number | null | undefined): string {
 }
 
 export function getScoreBgColor(score: number | null | undefined): string {
-  if (score == null) return 'var(--gray-200)'
+  if (score == null) return 'var(--lia-border-subtle)'
   if (score >= 80) return 'var(--status-success)'
   if (score >= 60) return 'var(--status-warning)'
-  if (score >= 40) return 'var(--gray-400)'
-  return 'var(--gray-600)'
+  if (score >= 40) return 'var(--lia-text-tertiary)'
+  return 'var(--lia-text-secondary)'
 }
 
 export function getStageColor(stageName: string): string {
   const stage = stageName?.toLowerCase() || ''
 
-  if (stage === 'funil' || stage === 'sourcing') return 'var(--gray-200)'
-  if (stage === 'triagem' || stage === 'screening') return 'var(--gray-300)'
-  if (stage.includes('entrevista') || stage.includes('interview')) return 'var(--gray-400)'
-  if (stage === 'final' || stage === 'offer') return 'var(--gray-600)'
+  if (stage === 'funil' || stage === 'sourcing') return 'var(--lia-border-subtle)'
+  if (stage === 'triagem' || stage === 'screening') return 'var(--lia-border-default)'
+  if (stage.includes('entrevista') || stage.includes('interview')) return 'var(--lia-text-tertiary)'
+  if (stage === 'final' || stage === 'offer') return 'var(--lia-text-secondary)'
   if (stage === 'aprovados' || stage === 'hired') return 'var(--status-success)'
-  if (stage === 'reprovados' || stage === 'rejected') return 'var(--gray-200)'
+  if (stage === 'reprovados' || stage === 'rejected') return 'var(--lia-border-subtle)'
   
-  return 'var(--gray-200)'
+  return 'var(--lia-border-subtle)'
 }
 
 export function calculateGeneralScore(candidate: {
@@ -124,8 +124,8 @@ export const URGENCY_ICON_COLORS = {
 } as const
 
 export const ALERT_COLORS = {
-  urgent: 'bg-gray-900 text-white border-gray-900 dark:border-lia-border-subtle',
-  action: 'bg-gray-200 text-lia-text-primary border-lia-border-default dark:lia-border-700',
-  warning: 'bg-gray-300 text-lia-text-primary border-gray-400 dark:lia-border-600',
-  pending: 'bg-gray-200 text-lia-text-primary border-lia-border-default dark:lia-border-600'
+  urgent: 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg dark:border-lia-border-subtle',
+  action: 'bg-lia-interactive-active text-lia-text-primary border-lia-border-default dark:border-lia-border-strong',
+  warning: 'bg-lia-border-default text-lia-text-primary border-lia-border-medium dark:border-lia-border-medium',
+  pending: 'bg-lia-interactive-active text-lia-text-primary border-lia-border-default dark:border-lia-border-medium'
 } as const

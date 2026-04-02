@@ -672,13 +672,13 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
         </Tabs>
 
         <DialogFooter className="mt-4 border-t border-lia-border-subtle bg-lia-bg-secondary p-4 -mx-6 -mb-6 rounded-b-xl">
-          <Button variant="outline" onClick={onClose} className="bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg">
+          <Button variant="outline" onClick={onClose} className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg">
             Cancelar
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={!formData.name || !formData.email || !formData.phone || !formData.position}
-            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             <Plus className="w-4 h-4 mr-2" />
             Adicionar Candidato

@@ -98,7 +98,7 @@ export function ScheduleTab({
                   value={sendingHours.start}
                   onChange={(e) => setSendingHours(prev => ({ ...prev, start: parseInt(e.target.value) }))}
                   disabled={!isEditingSchedule}
-                  className="flex-1 disabled:opacity-50 accent-gray-700"
+                  className="flex-1 disabled:opacity-50 accent-lia-btn-primary-bg"
                 />
                 <div className="w-14 text-center">
                   <span className="text-xs font-semibold text-lia-text-primary">{sendingHours.start}:00</span>
@@ -115,7 +115,7 @@ export function ScheduleTab({
                   value={sendingHours.end}
                   onChange={(e) => setSendingHours(prev => ({ ...prev, end: parseInt(e.target.value) }))}
                   disabled={!isEditingSchedule}
-                  className="flex-1 disabled:opacity-50 accent-gray-700"
+                  className="flex-1 disabled:opacity-50 accent-lia-btn-primary-bg"
                 />
                 <div className="w-14 text-center">
                   <span className="text-xs font-semibold text-lia-text-primary">{sendingHours.end}:00</span>
@@ -124,16 +124,16 @@ export function ScheduleTab({
             </div>
           </div>
 
-          <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3">
+          <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-micro font-medium text-lia-text-secondary">Janela de Envio</span>
               <Badge variant="outline" className="text-micro rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
                 {sendingHours.end - sendingHours.start} horas/dia
               </Badge>
             </div>
-            <div className="relative h-6 bg-gray-200 rounded-full overflow-hidden">
+            <div className="relative h-6 bg-lia-interactive-active rounded-full overflow-hidden">
               <div
-                className="absolute h-full rounded-full bg-gray-800"
+                className="absolute h-full rounded-full bg-lia-btn-primary-hover"
                 style={{left: `${((sendingHours.start - 6) / 18) * 100}%`, width: `${((sendingHours.end - sendingHours.start) / 18) * 100}%`}}
               />
               <div className="absolute inset-0 flex items-center justify-between px-2">
@@ -148,17 +148,17 @@ export function ScheduleTab({
               Configurações Adicionais
             </h4>
             <div className="space-y-1.5">
-              <label className={`flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
+              <label className={`flex items-center justify-between gap-3 p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
                 <span className="text-xs text-lia-text-primary">Respeitar feriados nacionais</span>
-                <input type="checkbox" checked={respectHolidays} onChange={(e) => setRespectHolidays(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-gray-700" />
+                <input type="checkbox" checked={respectHolidays} onChange={(e) => setRespectHolidays(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
-              <label className={`flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
+              <label className={`flex items-center justify-between gap-3 p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
                 <span className="text-xs text-lia-text-primary">Não enviar nos finais de semana</span>
-                <input type="checkbox" checked={respectWeekends} onChange={(e) => setRespectWeekends(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-gray-700" />
+                <input type="checkbox" checked={respectWeekends} onChange={(e) => setRespectWeekends(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
-              <label className={`flex items-center justify-between gap-3 p-2.5 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
+              <label className={`flex items-center justify-between gap-3 p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
                 <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">Limite máximo de {maxMessagesPerDay} mensagens/dia por candidato</span>
-                <input type="checkbox" checked={maxMessagesPerDay > 0} onChange={(e) => setMaxMessagesPerDay(e.target.checked ? 3 : 0)} disabled={!isEditingSchedule} className="rounded-md accent-gray-700" />
+                <input type="checkbox" checked={maxMessagesPerDay > 0} onChange={(e) => setMaxMessagesPerDay(e.target.checked ? 3 : 0)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
             </div>
           </div>

@@ -79,11 +79,11 @@ export function MLInsightsCard({ companyId, jobData, className = "" }: MLInsight
   }, [companyId, jobData, fetchTimeToFill, fetchSalary])
 
   return (
-    <div className={`border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary overflow-hidden ${className}`}>
+    <div className={`border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden ${className}`}>
       {/* Header — sempre visível */}
       <button
         onClick={handleToggle}
-        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+        className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
        
       >
         <span className="flex items-center gap-1.5">

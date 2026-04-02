@@ -26,7 +26,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
     <>
       {contextData.type === "compensation-package" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white">
+          <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -90,9 +90,9 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   </div>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <Button className="flex-1 border border-lia-border-subtle bg-white text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Ajustar Valores</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Ajustar Valores</Button>
                   <Button className="flex-1 bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary"><CheckCircle className="w-4 h-4 mr-2" />Aprovar Pacote</Button>
-                  <Button className="flex-1 border border-lia-border-subtle bg-white text-lia-text-primary"><Download className="w-4 h-4 mr-2" />Exportar</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"><Download className="w-4 h-4 mr-2" />Exportar</Button>
                 </div>
               </div>
             </CardContent>
@@ -102,7 +102,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
 
       {contextData.type === "org-structure-analysis" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white">
+          <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3">
                 <Network className="w-5 h-5 text-lia-text-secondary" />
@@ -136,7 +136,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   </div>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <Button className="flex-1 border border-lia-border-subtle bg-white text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Editar Estrutura</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Editar Estrutura</Button>
                   <Button className="flex-1 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary"><CheckCircle className="w-4 h-4 mr-2" />Confirmar Análise</Button>
                 </div>
               </div>
@@ -147,7 +147,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
 
       {contextData.type === "role-scope-definition" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white">
+          <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3">
                 <Target className="w-5 h-5 text-lia-text-secondary" />
@@ -172,7 +172,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   </div>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <Button className="flex-1 border border-lia-border-subtle bg-white text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Editar Escopo</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Editar Escopo</Button>
                   <Button className="flex-1 bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary"><CheckCircle className="w-4 h-4 mr-2" />Aprovar Definição</Button>
                 </div>
               </div>
@@ -183,7 +183,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
 
       {contextData.type === "work-arrangement" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white">
+          <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Clock className="w-5 h-5 text-lia-text-secondary" />
@@ -215,7 +215,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
 
       {contextData.type === "final-job-description" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white">
+          <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Globe className="w-5 h-5 text-lia-text-secondary" />
@@ -269,7 +269,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
 
       {contextData.type === "job-publishing" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white">
+          <Card className="border-0 bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -319,7 +319,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   </div>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <Button className="flex-1 border border-lia-border-subtle bg-white text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Editar Canais</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Editar Canais</Button>
                   <Button className="flex-1 bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary"><Send className="w-4 h-4 mr-2" />Publicar Vaga</Button>
                 </div>
               </div>

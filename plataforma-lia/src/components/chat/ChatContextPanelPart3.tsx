@@ -30,7 +30,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
     <>
       {contextData.type === "predictive-insights" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Brain className="w-5 h-5 text-wedo-cyan" />
@@ -90,7 +90,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
 
       {contextData.type === "offer-letter" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center justify-between font-open-sans">
                 <div className="flex items-center space-x-3">
@@ -110,13 +110,13 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                     <div><span className="text-lia-text-secondary">Empresa Atual:</span><p className="font-medium text-lia-text-primary">{data.candidate_info.current_company}</p></div>
                   </div>
                 </div>
-                <div className="p-6 rounded-md border bg-white bg-lia-bg-primary border-lia-border-subtle">
+                <div className="p-6 rounded-md border bg-lia-bg-primary bg-lia-bg-primary border-lia-border-subtle">
                   <div className="prose prose-sm max-w-none">
                     <pre className="whitespace-pre-wrap font-open-sans text-sm text-lia-text-primary">{data.letter_template}</pre>
                   </div>
                 </div>
                 <div className="flex gap-3 pt-4">
-                  <Button className="flex-1 border border-lia-border-subtle bg-white bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Revisar e Editar</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Revisar e Editar</Button>
                   <Button className="flex-1 bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary"><Send className="w-4 h-4 mr-2" />Enviar para Candidato</Button>
                 </div>
               </div>
@@ -127,7 +127,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
 
       {contextData.type === "interview-scheduling" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Calendar className="w-5 h-5 text-lia-text-secondary" />
@@ -147,7 +147,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                         </div>
                         <div className="flex gap-2 text-xs text-lia-text-secondary">
                           <span>Preferências:</span>
-                          {candidate.preferred_times.map((time: string, i: number) => (<span key={`ptime-${i}`} className="px-2 py-1 rounded-md bg-white bg-lia-bg-primary">{time}</span>))}
+                          {candidate.preferred_times.map((time: string, i: number) => (<span key={`ptime-${i}`} className="px-2 py-1 rounded-md bg-lia-bg-primary bg-lia-bg-primary">{time}</span>))}
                         </div>
                       </div>
                     ))}
@@ -180,7 +180,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                   </div>
                 </div>
                 <div className="flex gap-3 pt-4">
-                  <Button className="flex-1 border border-lia-border-subtle bg-white bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Ajustar Horários</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Ajustar Horários</Button>
                   <Button className="flex-1 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary"><CheckCircle className="w-4 h-4 mr-2" />Confirmar Agendamentos</Button>
                 </div>
               </div>
@@ -191,7 +191,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
 
       {contextData.type === "technical-matrix" && contextData.data && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Target className="w-5 h-5 text-lia-text-secondary" />
@@ -211,7 +211,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
 
       {contextData.type === "timeline" && contextData.data && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <CalendarDays className="w-5 h-5 text-lia-text-secondary" />
@@ -230,7 +230,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
       )}
       {contextData.type === "interview-flow" && contextData.data && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Workflow className="w-5 h-5 text-lia-text-secondary" />
@@ -250,7 +250,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
 
       {contextData.type === "org-chart" && contextData.data && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Network className="w-5 h-5 text-lia-text-secondary" />
@@ -269,7 +269,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
       )}
       {contextData.type === "job-creation-progress" && contextData.data && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Briefcase className="w-5 h-5 text-lia-text-secondary" />
@@ -306,7 +306,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                   </div>
                 </div>
                 {data.next_panel && (
-                  <div className="p-4 rounded-md border border-lia-border-medium bg-white bg-lia-bg-primary">
+                  <div className="p-4 rounded-md border border-lia-border-medium bg-lia-bg-primary bg-lia-bg-primary">
                     <div className="flex items-start gap-3">
                       <ArrowUpDown className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                       <div>

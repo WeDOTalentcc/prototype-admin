@@ -9,13 +9,13 @@ export const metadata: Metadata = {
 
 function LoadingSkeleton() {
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary p-6">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary p-6">
       <div className="animate-pulse motion-reduce:animate-none">
-        <div className="h-8 w-48 bg-gray-200 dark:bg-lia-bg-elevated rounded-md mb-4" />
-        <div className="h-4 w-96 bg-gray-200 dark:bg-lia-bg-elevated rounded-md mb-8" />
+        <div className="h-8 w-48 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md mb-4" />
+        <div className="h-4 w-96 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md mb-8" />
         <div className="space-y-4">
           {[1,2,3,4,5].map(i => (
-            <div key={i} className="h-16 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
+            <div key={i} className="h-16 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md" />
           ))}
         </div>
       </div>

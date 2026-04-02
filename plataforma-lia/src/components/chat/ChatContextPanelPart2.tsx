@@ -26,7 +26,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
     <>
       {contextData.type === "sourcing-progress" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3">
                 <TrendingUp className="w-5 h-5 text-lia-text-secondary" />
@@ -59,7 +59,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   </div>
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <Button className="flex-1 border border-lia-border-subtle bg-white bg-lia-bg-primary text-lia-text-primary"><Eye className="w-4 h-4 mr-2" />Ver Pipeline Completo</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary bg-lia-bg-primary text-lia-text-primary"><Eye className="w-4 h-4 mr-2" />Ver Pipeline Completo</Button>
                   <Button className="flex-1 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary"><Send className="w-4 h-4 mr-2" />Convidar Candidatos</Button>
                 </div>
               </div>
@@ -70,7 +70,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
 
       {contextData.type === "interview-management" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Calendar className="w-5 h-5 text-lia-text-secondary" />
@@ -117,7 +117,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
 
       {contextData.type === "final-selection" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <UserCheck className="w-5 h-5 text-lia-text-secondary" />
@@ -146,7 +146,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   </div>
                 </div>
                 <div className="flex gap-3 pt-4">
-                  <Button className="flex-1 border border-lia-border-subtle bg-white bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Revisar Proposta</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Revisar Proposta</Button>
                   <Button className="flex-1 bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary"><CheckCircle className="w-4 h-4 mr-2" />Confirmar Seleção</Button>
                 </div>
               </div>
@@ -157,7 +157,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
 
       {contextData.type === "onboarding-plan" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Workflow className="w-5 h-5 text-lia-text-secondary" />
@@ -187,9 +187,9 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   </div>
                 </div>
                 <div className="flex gap-3 pt-4">
-                  <Button className="flex-1 border border-lia-border-subtle bg-white bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Editar Cronograma</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Editar Cronograma</Button>
                   <Button className="flex-1 bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary"><CheckCircle className="w-4 h-4 mr-2" />Aprovar Plano</Button>
-                  <Button className="flex-1 border border-lia-border-subtle bg-white bg-lia-bg-primary text-lia-text-primary"><Download className="w-4 h-4 mr-2" />Exportar PDF</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary bg-lia-bg-primary text-lia-text-primary"><Download className="w-4 h-4 mr-2" />Exportar PDF</Button>
                 </div>
               </div>
             </CardContent>
@@ -199,7 +199,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
 
       {contextData.type === "performance-management" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Target className="w-5 h-5 text-lia-text-secondary" />
@@ -236,7 +236,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   </div>
                 </div>
                 <div className="flex gap-3 pt-4">
-                  <Button className="flex-1 border border-lia-border-subtle bg-white bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Ajustar OKRs</Button>
+                  <Button className="flex-1 border border-lia-border-subtle bg-lia-bg-primary bg-lia-bg-primary text-lia-text-primary"><Edit className="w-4 h-4 mr-2" />Ajustar OKRs</Button>
                   <Button className="flex-1 bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary"><CheckCircle className="w-4 h-4 mr-2" />Aprovar Framework</Button>
                 </div>
               </div>
@@ -247,7 +247,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
 
       {contextData.type === "journey-summary" && (
         <div className="space-y-6 font-open-sans">
-          <Card className="border-0 bg-white bg-lia-bg-primary">
+          <Card className="border-0 bg-lia-bg-primary bg-lia-bg-primary">
             <CardHeader className="bg-lia-bg-tertiary">
               <CardTitle className="flex items-center space-x-3 font-open-sans">
                 <Award className="w-5 h-5 text-lia-text-secondary" />

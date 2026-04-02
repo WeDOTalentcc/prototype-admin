@@ -313,7 +313,7 @@ export function IndustryFilterInput({
       <div className="flex items-center gap-2">
         <Popover open={isTimeFilterOpen} onOpenChange={setIsTimeFilterOpen}>
           <PopoverTrigger asChild>
-            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-gray-50 transition-colors motion-reduce:transition-none">
+            <button className="flex items-center gap-2 px-2.5 py-1 rounded-md border border-lia-border-subtle text-xs hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
               <span className="text-lia-text-primary">{currentTimeOption?.label}</span>
               <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />
             </button>
@@ -328,14 +328,14 @@ export function IndustryFilterInput({
                     setIsTimeFilterOpen(false)
                   }}
                   className={cn(
-                    "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors motion-reduce:transition-none",
-                    timeFilter === option.value && "bg-gray-50"
+                    "w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+                    timeFilter === option.value && "bg-lia-bg-secondary"
                   )}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-lia-text-primary">{option.label}</span>
                     {timeFilter === option.value && (
-                      <div className="w-2 h-2 rounded-full bg-gray-900" />
+                      <div className="w-2 h-2 rounded-full bg-lia-btn-primary-bg" />
                     )}
                   </div>
                   <p className="text-xs text-lia-text-secondary mt-0.5">{option.description}</p>
@@ -374,7 +374,7 @@ export function IndustryFilterInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
           />
           {isLoadingAI && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
@@ -406,7 +406,7 @@ export function IndustryFilterInput({
                 }}
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50",
+                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
                   item.type === 'ai' && "border-b border-lia-border-subtle"
                 )}
               >
@@ -440,12 +440,12 @@ export function IndustryFilterInput({
           {value.map(industry => (
             <Badge
               key={industry}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
             >
               <span>{industry}</span>
               <button
                 onClick={() => removeIndustry(industry)}
-                className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
+                className="hover:bg-lia-interactive-active rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

@@ -135,7 +135,7 @@ export function useCompanyData(): UseCompanyDataResult {
                 manager_email: d.manager_email || undefined,
                 manager_phone: d.manager_phone || undefined,
                 headcount: d.headcount || 0,
-                color: d.color || "bg-gray-100 text-lia-text-primary dark:text-lia-text-primary",
+                color: d.color || "bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary",
               })),
             );
           }

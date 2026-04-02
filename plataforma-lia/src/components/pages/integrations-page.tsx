@@ -76,7 +76,7 @@ export function IntegrationsPage() {
       type: 'teams',
       status: 'active',
       icon: MessageSquare,
-      color: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary',
+      color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary',
       webhookUrl: 'https://outlook.office.com/webhook/xxxxx/IncomingWebhook/yyyyy',
       channels: ['RH Geral', 'Aprovações'],
       events: ['aprovacao_lote', 'candidato_final', 'relatorio_semanal'],
@@ -224,7 +224,7 @@ export function IntegrationsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-status-success/15 text-status-success border-status-success/30'
-      case 'inactive': return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+      case 'inactive': return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
       case 'error': return 'bg-status-error/15 text-status-error border-status-error/30'
       default: return 'bg-status-warning/15 text-status-warning border-status-warning/30'
     }
@@ -281,7 +281,7 @@ export function IntegrationsPage() {
   })
 
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary p-6">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -306,7 +306,7 @@ export function IntegrationsPage() {
               </Button>
               <Button
                 onClick={() => setShowNewIntegration(true)}
-                className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200"
+                className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active"
               >
                 <Plus className="w-4 h-4" />
                 Nova Integração
@@ -652,7 +652,7 @@ export function IntegrationsPage() {
               <CardContent>
                 <div className="space-y-2">
                   {availableEvents.map((event) => (
-                    <div key={event.id} className="flex items-start gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <div key={event.id} className="flex items-start gap-3 p-2 rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                       <event.icon className="w-4 h-4 text-lia-text-secondary mt-0.5" />
                       <div>
                         <h5 className="text-sm font-medium text-lia-text-primary">
@@ -673,7 +673,7 @@ export function IntegrationsPage() {
         {/* Modals placeholder */}
         {showNewIntegration && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-lia-bg-secondary rounded-md max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <h3 className="text-lg font-semibold text-lia-text-primary mb-4">
                   Nova Integração
@@ -687,7 +687,7 @@ export function IntegrationsPage() {
                     <select
                       value={newIntegration.type}
                       onChange={(e) => setNewIntegration({...newIntegration, type: e.target.value as 'slack' | 'teams'})}
-                      className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
+                      className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
                     >
                       <option value="slack">Slack</option>
                       <option value="teams">Microsoft Teams</option>
@@ -703,7 +703,7 @@ export function IntegrationsPage() {
                       value={newIntegration.name}
                       onChange={(e) => setNewIntegration({...newIntegration, name: e.target.value})}
                       placeholder="Ex: Canal #recrutamento"
-                      className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
+                      className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
                     />
                   </div>
 
@@ -716,7 +716,7 @@ export function IntegrationsPage() {
                       value={newIntegration.webhookUrl}
                       onChange={(e) => setNewIntegration({...newIntegration, webhookUrl: e.target.value})}
                       placeholder="https://hooks.slack.com/services/..."
-                      className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
+                      className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
                     />
                   </div>
 
@@ -726,7 +726,7 @@ export function IntegrationsPage() {
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       {availableEvents.map((event) => (
-                        <label key={event.id} className="flex items-center gap-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <label key={event.id} className="flex items-center gap-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse">
                           <input
                             type="checkbox"
                             checked={newIntegration.events.includes(event.id)}
@@ -763,7 +763,7 @@ export function IntegrationsPage() {
                         type: newIntegration.type,
                         status: 'active',
                         icon: newIntegration.type === 'slack' ? Slack : MessageSquare,
-                        color: newIntegration.type === 'slack' ? 'bg-wedo-purple/15 text-wedo-purple' : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary',
+                        color: newIntegration.type === 'slack' ? 'bg-wedo-purple/15 text-wedo-purple' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary',
                         webhookUrl: newIntegration.webhookUrl,
                         channels: newIntegration.channels,
                         events: newIntegration.events,
@@ -783,7 +783,7 @@ export function IntegrationsPage() {
                         events: []
                       })
                     }}
-                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200"
+                    className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active"
                   >
                     Criar Integração
                   </Button>

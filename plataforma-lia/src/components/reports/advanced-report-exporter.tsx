@@ -273,7 +273,7 @@ export function AdvancedReportExporter({
                   <Card
                     key={template.id}
                     className={`cursor-pointer transition-colors motion-reduce:transition-none hover:${
- selectedTemplate?.id === template.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20 bg-gray-100 dark:bg-lia-bg-secondary' : ''
+ selectedTemplate?.id === template.id ? 'ring-2 ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20 bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : ''
                     }`}
                     onClick={() => setSelectedTemplate(template)}
                   >
@@ -463,9 +463,9 @@ export function AdvancedReportExporter({
                         <span>Gerando relatório...</span>
                         <span>{exportProgress}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-lia-interactive-active rounded-full h-2">
                         <div
-                          className="bg-gray-700 h-2 rounded-full transition-[width,height] duration-300"
+                          className="bg-lia-bg-inverse h-2 rounded-full transition-[width,height] duration-300"
                           style={{width: `${exportProgress}%`}}
                         />
                       </div>

@@ -51,7 +51,7 @@ const discDimensions = {
     letter: "D",
     name: "Dominância",
     icon: Target,
-    bgColor: "bg-gray-100 dark:bg-lia-bg-secondary",
+    bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
     borderColor: "border-lia-border-default dark:border-lia-border-default",
     high: {
       label: "Alto",
@@ -79,8 +79,8 @@ const discDimensions = {
     letter: "I",
     name: "Influência",
     icon: Users,
-    bgColor: "bg-gray-100 dark:bg-lia-bg-secondary",
-    borderColor: "border-gray-900/25",
+    bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
+    borderColor: "border-lia-btn-primary-bg/25",
     high: {
       label: "Alto",
       keywords: ["Entusiasta", "Otimista", "Comunicativo", "Persuasivo"],
@@ -107,7 +107,7 @@ const discDimensions = {
     letter: "S",
     name: "Estabilidade",
     icon: Shield,
-    bgColor: "bg-gray-100",
+    bgColor: "bg-lia-bg-tertiary",
     borderColor: "border-lia-border-subtle",
     high: {
       label: "Alto",
@@ -135,8 +135,8 @@ const discDimensions = {
     letter: "C",
     name: "Conformidade",
     icon: Zap,
-    color: "var(--gray-400)",
-    bgColor: "bg-gray-50",
+    color: "var(--lia-text-tertiary)",
+    bgColor: "bg-lia-bg-secondary",
     borderColor: "border-lia-border-subtle",
     high: {
       label: "Alto",
@@ -318,15 +318,15 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-lia-bg-primary rounded-md max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
-        <div className="p-6 bg-gray-50 dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-lia-overlay backdrop-blur-sm p-4">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md max-w-4xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+        <div className="p-6 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               {/* @ts-ignore TODO: fix type */}
-              <Avatar className="w-14 h-14 ring-4 ring-white dark:ring-gray-800">
+              <Avatar className="w-14 h-14 ring-4 ring-white dark:ring-lia-border-strong">
                 <AvatarImage src={candidate?.avatar as string} />
-                <AvatarFallback className="text-lg bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
+                <AvatarFallback className="text-lg bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
                   {String(candidate?.name || '')} • {data.assessmentProvider || 'Assessment Comportamental'}
                 </AvatarFallback>
               </Avatar>
@@ -342,7 +342,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
             </div>
             <div className="flex items-center gap-2">
               {data.reportUrl && (
-                <Button variant="outline" size="sm" className="text-xs bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
+                <Button variant="outline" size="sm" className="text-xs bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
                   <Download className="w-3 h-3 mr-1" />
                   PDF
                 </Button>
@@ -354,7 +354,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
           </div>
 
           <div className="mt-4 grid grid-cols-4 gap-3">
-            <div className="col-span-2 bg-gradient-to-r from-gray-100 dark:from-gray-800 to-gray-50 rounded-md p-4 border border-lia-border-default dark:border-lia-border-default">
+            <div className="col-span-2 bg-gradient-to-r from-lia-bg-tertiary dark:from-lia-btn-primary-hover to-lia-bg-secondary rounded-md p-4 border border-lia-border-default dark:border-lia-border-default">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{profileInfo.icon}</span>
                 <div>
@@ -368,7 +368,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               </div>
             </div>
             {data.comparisonToRole && (
-              <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
@@ -381,7 +381,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               </div>
             )}
             {data.culturalFitScore && (
-              <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 lia-text-secondary" />
@@ -400,7 +400,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-900 rounded-full"></div>
+                <div className="w-2 h-2 bg-lia-btn-primary-bg rounded-full"></div>
                 Dimensões DISC
               </h3>
 
@@ -427,7 +427,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                       </div>
                     </div>
 
-                    <div className="h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden mb-3">
+                    <div className="h-2 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full overflow-hidden mb-3">
                       <div 
                         className="h-full rounded-full transition-[width,height] duration-500"
                         style={{width: `${score}%`, backgroundColor: dim.bgColor}}
@@ -449,7 +449,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
             </div>
 
             <div className="space-y-4">
-              <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
                 <h3 className="text-sm font-semibold text-lia-text-primary mb-3 flex items-center gap-2">
                   <span className="text-lg">{profileInfo.icon}</span>
                   Perfil: {profileInfo.title}
@@ -461,7 +461,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                     <p className="text-xs font-semibold text-lia-text-primary mb-1">Pontos Fortes</p>
                     <div className="flex flex-wrap gap-1">
                       {profileInfo.strengths.map((s, i) => (
-                        <Badge key={i} className="text-micro bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default">
+                        <Badge key={i} className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default">
                           ✓ {s}
                         </Badge>
                       ))}
@@ -475,10 +475,10 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               </div>
 
               {data.leadershipStyle && (
-                <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
                   <h3 className="text-sm font-semibold text-lia-text-primary mb-3">Estilo de Liderança</h3>
                   <div className="flex items-center gap-3 mb-3">
-                    <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default">
+                    <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default">
                       {data.leadershipStyle}
                     </Badge>
                     {data.leadershipScore && (
@@ -498,7 +498,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               )}
 
               {data.developmentAreas && data.developmentAreas.length > 0 && (
-                <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
                   <h3 className="text-sm font-semibold text-lia-text-primary mb-3">Áreas de Desenvolvimento</h3>
                   <ul className="space-y-1">
                     {data.developmentAreas.map((a: string, i: number) => (
@@ -511,7 +511,7 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
               )}
 
               {data.recommendation && (
-                <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-default dark:border-lia-border-default">
+                <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4 border border-lia-border-default dark:border-lia-border-default">
                   <h3 className="text-sm font-semibold text-lia-text-primary mb-2">Recomendação</h3>
                   <p className="text-xs text-lia-text-secondary">{data.recommendation}</p>
                 </div>
@@ -519,19 +519,19 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
 
               <div className="grid grid-cols-3 gap-2">
                 {data.teamworkScore && (
-                  <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                  <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
                     <p className="text-lg font-bold text-lia-text-primary">{data.teamworkScore}%</p>
                     <p className="text-micro lia-text-secondary">Trabalho em Equipe</p>
                   </div>
                 )}
                 {data.adaptabilityScore && (
-                  <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                  <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
                     <p className="text-lg font-bold text-lia-text-primary">{data.adaptabilityScore}%</p>
                     <p className="text-micro lia-text-secondary">Adaptabilidade</p>
                   </div>
                 )}
                 {data.stressResilienceScore && (
-                  <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
+                  <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle text-center">
                     <p className="text-lg font-bold text-lia-text-primary">{data.stressResilienceScore}%</p>
                     <p className="text-micro lia-text-secondary">Resiliência</p>
                   </div>
@@ -541,12 +541,12 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
           </div>
         </div>
 
-        <div className="p-4 bg-gray-50 dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-between items-center">
+        <div className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-between items-center">
           <p className="text-xs lia-text-secondary">
             {data.completedAt && `Realizado em ${data.completedAt}`}
             {data.duration && ` • Duração: ${data.duration}`}
           </p>
-          <Button onClick={onClose} className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
+          <Button onClick={onClose} className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">
             Fechar
           </Button>
         </div>

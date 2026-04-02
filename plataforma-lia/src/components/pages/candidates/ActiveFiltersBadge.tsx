@@ -26,7 +26,7 @@ export function ActiveFiltersBadge({
 
   return (
     <div className="mb-1.5 flex items-center gap-2">
-      <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
+      <Badge className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
         filtros ativos
       </Badge>
       {selectedCandidatesForBatch.size > 0 && (

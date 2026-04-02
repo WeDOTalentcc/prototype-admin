@@ -67,7 +67,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
       name: `custom_${Date.now()}`,
       displayName: 'Nova Etapa',
       stageOrder: stages.length + 1,
-      color: 'var(--gray-400)',
+      color: 'var(--lia-text-tertiary)',
       icon: 'plus-circle',
       stageType: 'active' as const,
       isInitial: false,
@@ -125,7 +125,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                 className={cn(
                   "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px",
                   activeSubTab === tab.id
-                    ? "border-gray-900 dark:lia-border-50 text-lia-text-primary"
+                    ? "border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary"
                     : "border-transparent text-lia-text-secondary hover:text-lia-text-primary"
                 )}
               >
@@ -161,7 +161,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                 <h3 className="text-lg font-medium text-lia-text-primary mb-1">Jornada de Recrutamento</h3>
                 <p className="text-sm text-lia-text-secondary mb-4">Visualize as etapas do processo seletivo configuradas.</p>
 
-                <div className="flex items-center gap-6 text-xs text-lia-text-secondary mb-6 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-lg">
+                <div className="flex items-center gap-6 text-xs text-lia-text-secondary mb-6 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-lg">
                   <div className="flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5" />
                     <span><strong>Sistema:</strong> Etapas fixas (Funil, Triagem, Entrevista RH, Contratado, Reprovado)</span>
@@ -183,12 +183,12 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                       className={cn(
                         "flex items-center gap-4 p-4 border rounded-md transition-colors",
                         stage.isActive
-                          ? "border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary"
-                          : "border-lia-border-subtle dark:lia-border-800 bg-gray-50 dark:bg-lia-bg-primary/50 opacity-60"
+                          ? "border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary"
+                          : "border-lia-border-subtle dark:border-lia-border-strong bg-lia-bg-secondary dark:bg-lia-bg-primary/50 opacity-60"
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-10">
-                        <span className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-lg flex items-center justify-center text-sm font-medium text-lia-text-secondary">
+                        <span className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-lg flex items-center justify-center text-sm font-medium text-lia-text-secondary">
                           {stage.order}
                         </span>
                       </div>

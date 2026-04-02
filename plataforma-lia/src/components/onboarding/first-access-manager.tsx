@@ -382,7 +382,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="text"
                     value={userData.name}
                     onChange={(e) => setUserData(prev => ({...prev, name: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
+                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
                     placeholder="Seu nome completo"
                   />
                 </div>
@@ -396,7 +396,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="email"
                     value={userData.email}
                     onChange={(e) => setUserData(prev => ({...prev, email: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
+                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
                     placeholder="seu.email@empresa.com"
                   />
                 </div>
@@ -410,7 +410,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="tel"
                     value={userData.phone}
                     onChange={(e) => setUserData(prev => ({...prev, phone: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
+                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
                     placeholder="+55 11 99999-9999"
                   />
                 </div>
@@ -423,7 +423,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   <select
                     value={userData.role}
                     onChange={(e) => setUserData(prev => ({...prev, role: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
+                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
                   >
                     <option value="Recrutador">Recrutador</option>
                     <option value="Coordenador de RH">Coordenador de RH</option>
@@ -443,7 +443,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                       type={showPassword ? "text" : "password"}
                       value={userData.password}
                       onChange={(e) => setUserData(prev => ({...prev, password: e.target.value}))}
-                      className="w-full px-6 py-4 pr-14 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
+                      className="w-full px-6 py-4 pr-14 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
                       placeholder="Mínimo 8 caracteres"
                     />
                     <button
@@ -465,7 +465,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     type="password"
                     value={userData.confirmPassword}
                     onChange={(e) => setUserData(prev => ({...prev, confirmPassword: e.target.value}))}
-                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
+                    className="w-full px-6 py-4 border-2 border-lia-border-subtle rounded-lg focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-transparent lia-bg-lia-bg-primary lia-font-sans lia-text-medium transition-colors motion-reduce:transition-none duration-200"
                     placeholder="Confirme sua senha"
                   />
                 </div>
@@ -477,7 +477,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     id="terms"
                     checked={userData.acceptTerms}
                     onChange={(e) => setUserData(prev => ({...prev, acceptTerms: e.target.checked}))}
-                    className="mt-1 w-5 h-5 rounded-md text-lia-text-secondary focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                    className="mt-1 w-5 h-5 rounded-md text-lia-text-secondary focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                   />
                   <label htmlFor="terms" className="lia-text-medium lia-text-black">
                     Aceito os <a href="#" className="lia-text-blue hover:underline lia-text-bold">termos de uso</a> e a{' '}

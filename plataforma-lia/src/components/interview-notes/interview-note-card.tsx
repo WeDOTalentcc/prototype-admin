@@ -45,10 +45,10 @@ interface InterviewNoteCardProps {
 }
 
 const categoryColors: Record<InterviewNoteQuestion["category"], string> = {
-  vaga: "bg-gray-100 text-lia-text-primary",
-  gap_analysis: "bg-gray-100 text-lia-text-primary",
-  fit_cultural: "bg-gray-100 text-lia-text-primary",
-  custom: "bg-gray-100 text-lia-text-primary",
+  vaga: "bg-lia-bg-tertiary text-lia-text-primary",
+  gap_analysis: "bg-lia-bg-tertiary text-lia-text-primary",
+  fit_cultural: "bg-lia-bg-tertiary text-lia-text-primary",
+  custom: "bg-lia-bg-tertiary text-lia-text-primary",
 }
 
 const categoryLabels: Record<InterviewNoteQuestion["category"], string> = {
@@ -89,7 +89,7 @@ function QuestionItem({
     <div
       className={cn(
  "border rounded-md p-4 space-y-3",
-        question.skipped ? "bg-gray-50 opacity-60" : "bg-lia-bg-primary"
+        question.skipped ? "bg-lia-bg-secondary opacity-60" : "bg-lia-bg-primary"
       )}
     >
       <div className="flex items-start justify-between gap-4">
@@ -295,8 +295,8 @@ export function InterviewNoteCard({
                   className={cn(
  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
                     !showScoreCard
-                      ? "bg-gray-900 text-white"
-                      : "bg-lia-bg-primary text-lia-text-secondary hover:bg-gray-50"
+                      ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                      : "bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-secondary"
                   )}
                 >
                   <List className="h-3.5 w-3.5" />
@@ -308,8 +308,8 @@ export function InterviewNoteCard({
                   className={cn(
  "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
                     showScoreCard
-                      ? "bg-gray-900 text-white"
-                      : "bg-lia-bg-primary text-lia-text-secondary hover:bg-gray-50"
+                      ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                      : "bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-secondary"
                   )}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
@@ -399,7 +399,7 @@ export function InterviewNoteCard({
               )}
             </button>
             {isTranscriptionOpen && (
-              <div className="bg-gray-50 rounded-md p-4 max-h-content-md overflow-y-auto">
+              <div className="bg-lia-bg-secondary rounded-md p-4 max-h-content-md overflow-y-auto">
                 <p className="text-sm text-lia-text-primary whitespace-pre-wrap">
                   {note.transcription}
                 </p>
@@ -424,7 +424,7 @@ export function InterviewNoteCard({
               className="min-h-[120px]"
             />
           ) : (
-            <div className="bg-gray-50 border border-lia-border-subtle rounded-md p-6 text-center">
+            <div className="bg-lia-bg-secondary border border-lia-border-subtle rounded-md p-6 text-center">
               <Bot className="h-8 w-8 lia-text-secondary mx-auto mb-2" />
               <p className="text-sm lia-text-secondary">
                 Clique em &quot;Gerar Parecer com LIA&quot; para obter uma

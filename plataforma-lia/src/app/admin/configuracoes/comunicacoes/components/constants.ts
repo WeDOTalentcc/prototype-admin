@@ -11,14 +11,14 @@ import type { AutomationRule } from './types'
 export const categoryLabels: Record<string, { label: string, color: string }> = {
   approval: { label: 'Aprovação', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
   rejection: { label: 'Rejeição', color: 'bg-status-error/10 text-status-error dark:bg-status-error/20 dark:text-status-error' },
-  scheduling: { label: 'Agendamento', color: 'bg-gray-100 lia-text-700 dark:lia-bg-800 dark:lia-text-300' },
+  scheduling: { label: 'Agendamento', color: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled' },
   followup: { label: 'Follow-up', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
   feedback: { label: 'Feedback', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan-dark/20 dark:text-wedo-cyan' },
   system: { label: 'Sistema', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' }
 }
 
 export const severityColors: Record<string, string> = {
-  low: 'bg-gray-100 lia-text-600 dark:lia-bg-800 dark:lia-text-400',
+  low: 'bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-btn-primary-hover dark:text-lia-text-tertiary',
   medium: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   high: 'bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange',
   critical: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error'
@@ -45,7 +45,7 @@ export const moduleLabels: Record<string, { label: string, emoji: string }> = {
 }
 
 export const recipientLabels: Record<string, { label: string, color: string }> = {
-  candidate: { label: 'Candidato', color: 'bg-gray-100 lia-text-700 dark:lia-bg-800 dark:lia-text-300' },
+  candidate: { label: 'Candidato', color: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled' },
   recruiter: { label: 'Recrutador', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
   manager: { label: 'Gestor', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
   admin: { label: 'Admin', color: 'bg-status-error/10 text-status-error dark:bg-status-error/20 dark:text-status-error' },
@@ -55,14 +55,14 @@ export const recipientLabels: Record<string, { label: string, color: string }> =
 }
 
 export const channelConfig: Record<string, { label: string, color: string, activeColor: string }> = {
-  email: { label: 'Email', color: 'bg-gray-100 lia-text-500', activeColor: 'bg-gray-200 lia-text-700 dark:lia-bg-700 dark:lia-text-300' },
-  whatsapp: { label: 'WhatsApp', color: 'bg-gray-100 lia-text-500', activeColor: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' },
-  bell: { label: 'Bell', color: 'bg-gray-100 lia-text-500', activeColor: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' },
-  teams: { label: 'Teams', color: 'bg-gray-100 lia-text-500', activeColor: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple' },
-  chat: { label: 'Chat', color: 'bg-gray-100 lia-text-500', activeColor: 'bg-wedo-cyan/20 text-wedo-cyan-dark dark:bg-wedo-cyan-dark/30 dark:text-wedo-cyan' },
-  log: { label: 'Log', color: 'bg-gray-100 lia-text-500', activeColor: 'bg-gray-200 lia-text-700 dark:lia-bg-700 dark:lia-text-300' },
-  briefing: { label: 'Briefing', color: 'bg-gray-100 lia-text-500', activeColor: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' },
-  parecer: { label: 'Parecer', color: 'bg-gray-100 lia-text-500', activeColor: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple' }
+  email: { label: 'Email', color: 'bg-lia-bg-tertiary text-lia-text-secondary', activeColor: 'bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-inverse dark:text-lia-text-disabled' },
+  whatsapp: { label: 'WhatsApp', color: 'bg-lia-bg-tertiary text-lia-text-secondary', activeColor: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' },
+  bell: { label: 'Bell', color: 'bg-lia-bg-tertiary text-lia-text-secondary', activeColor: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' },
+  teams: { label: 'Teams', color: 'bg-lia-bg-tertiary text-lia-text-secondary', activeColor: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple' },
+  chat: { label: 'Chat', color: 'bg-lia-bg-tertiary text-lia-text-secondary', activeColor: 'bg-wedo-cyan/20 text-wedo-cyan-dark dark:bg-wedo-cyan-dark/30 dark:text-wedo-cyan' },
+  log: { label: 'Log', color: 'bg-lia-bg-tertiary text-lia-text-secondary', activeColor: 'bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-inverse dark:text-lia-text-disabled' },
+  briefing: { label: 'Briefing', color: 'bg-lia-bg-tertiary text-lia-text-secondary', activeColor: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' },
+  parecer: { label: 'Parecer', color: 'bg-lia-bg-tertiary text-lia-text-secondary', activeColor: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple' }
 }
 
 export const tabs = [

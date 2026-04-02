@@ -197,15 +197,15 @@ export function EventsSection() {
       key={event.id}
       className={`flex items-start gap-3 p-4 rounded-md transition-colors motion-reduce:transition-none duration-200 cursor-pointer border ${
  event.isSuggested
- ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default'
-          : 'bg-gray-50 dark:bg-lia-bg-elevated border-lia-border-subtle dark:border-lia-border-default'
+ ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-border-default'
+          : 'bg-lia-bg-secondary dark:bg-lia-bg-elevated border-lia-border-subtle dark:border-lia-border-default'
       }`}
       onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}
     >
       <div className={`w-10 h-10 rounded-md flex items-center justify-center border ${
  event.isSuggested
- ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default'
-          : 'bg-white border-lia-border-subtle dark:border-lia-border-medium'
+ ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-border-default'
+          : 'bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-medium'
       }`}>
         {event.isSuggested ? (
           <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
@@ -261,7 +261,7 @@ export function EventsSection() {
               key={actionIndex}
               size="sm"
               variant="outline"
-              className="h-7 px-2 text-xs border-lia-border-default dark:border-lia-border-medium hover:border-gray-400 dark:hover:border-gray-400 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors motion-reduce:transition-none duration-200"
+              className="h-7 px-2 text-xs border-lia-border-default dark:border-lia-border-medium hover:border-lia-border-medium dark:hover:border-lia-border-medium text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-border-medium transition-colors motion-reduce:transition-none duration-200"
             >
               <action.icon className="w-3 h-3 mr-1" />
               {action.label}
@@ -274,7 +274,7 @@ export function EventsSection() {
 
   return (
     <div className="w-full transition-colors motion-reduce:transition-none duration-300">
-      <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
+      <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
@@ -315,7 +315,7 @@ export function EventsSection() {
           {/* Sessão Manhã */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
                 <span className="text-sm">🌅</span>
               </div>
               <div>
@@ -333,7 +333,7 @@ export function EventsSection() {
           {/* Sessão Tarde */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
                 <span className="text-sm">☀️</span>
               </div>
               <div>
@@ -359,12 +359,12 @@ export function EventsSection() {
                   if (!event) return null
 
                   return (
-                    <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-default">
+                    <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-default">
                       <div className="flex items-start gap-3 mb-3">
                         <div className={`w-10 h-10 rounded-md flex items-center justify-center border ${
  event.isSuggested
- ? 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default'
-                            : 'bg-white border-lia-border-subtle dark:border-lia-border-medium'
+ ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-border-default'
+                            : 'bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-medium'
                         }`}>
                           {event.isSuggested ? (
  <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
@@ -394,7 +394,7 @@ export function EventsSection() {
                       </div>
 
                       {event.candidateInfo && (
-                        <div className="bg-white rounded-md p-3 mb-3 border border-lia-border-subtle dark:border-lia-border-medium">
+                        <div className="bg-lia-bg-primary rounded-md p-3 mb-3 border border-lia-border-subtle dark:border-lia-border-medium">
                           <h4 className="font-medium text-lia-text-primary mb-2 flex items-center gap-2">
                             <User className="w-4 h-4" />
                             Candidato
@@ -421,7 +421,7 @@ export function EventsSection() {
                           <Button
                             key={actionIndex}
                             size="sm"
-                            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white border-0 dark:hover:bg-gray-200"
+                            className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text border-0 dark:hover:bg-lia-interactive-active"
                           >
                             <action.icon className="w-4 h-4" />
                             {action.label}

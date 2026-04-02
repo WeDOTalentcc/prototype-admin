@@ -33,7 +33,7 @@ const TRIGGER_TYPE_LABELS: Record<string, { label: string; color: string }> = {
 const PRIORITY_COLORS: Record<string, string> = {
   'high': 'bg-status-error',
   'medium': 'bg-status-warning',
-  'low': 'bg-gray-400'
+  'low': 'bg-lia-border-medium'
 }
 
 const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
@@ -41,7 +41,7 @@ const CHANNEL_LABELS: Record<string, { label: string; color: string }> = {
   'whatsapp': { label: 'WhatsApp', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
   'bell': { label: 'Bell', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
   'teams': { label: 'Teams', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
- 'briefing': { label: 'Briefing', color: 'bg-gray-50 text-lia-text-primary dark:bg-lia-bg-secondary' },
+ 'briefing': { label: 'Briefing', color: 'bg-lia-bg-secondary text-lia-text-primary dark:bg-lia-bg-secondary' },
   'parecer': { label: 'Parecer', color: 'bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple' },
   'report': { label: 'Report', color: 'bg-wedo-magenta/10 text-wedo-magenta dark:bg-wedo-magenta/20 dark:text-wedo-magenta' },
   'chat_lia': { label: 'Chat LIA', color: 'bg-wedo-cyan/10 text-wedo-cyan dark:bg-wedo-cyan/20 dark:text-wedo-cyan' }
@@ -355,7 +355,7 @@ export function AdminTemplateHub() {
       </div>
 
       {successMessage && (
-        <div className="px-3 py-2 rounded-md flex items-center gap-2 border border-wedo-cyan/30 text-wedo-cyan-dark bg-gray-200/30">
+        <div className="px-3 py-2 rounded-md flex items-center gap-2 border border-wedo-cyan/30 text-wedo-cyan-dark bg-lia-interactive-active/30">
           <CheckCircle className="w-4 h-4 text-lia-text-secondary" />
           <span>{successMessage}</span>
         </div>
@@ -395,9 +395,9 @@ export function AdminTemplateHub() {
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
  channelFilter === key 
                     ? 'text-white' 
-                    : 'bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated'
+                    : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated'
                 }`}
-                style={channelFilter === key ? { backgroundColor: 'var(--gray-950)' } : {}}
+                style={channelFilter === key ? { backgroundColor: 'var(--lia-btn-primary-bg)' } : {}}
               >
                 {Icon && <Icon className="w-3.5 h-3.5" />}
                 {label}
@@ -409,7 +409,7 @@ export function AdminTemplateHub() {
             <select
               value={triggerTypeFilter}
               onChange={(e) => setTriggerTypeFilter(e.target.value as 'all' | 'automatic' | 'manual' | 'both')}
-              className="px-2.5 py-1.5 rounded-md text-xs font-medium border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-lia-text-secondary"
+              className="px-2.5 py-1.5 rounded-md text-xs font-medium border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-secondary"
             >
               <option value="all">Todos Tipos</option>
               <option value="automatic">Automático</option>
@@ -455,7 +455,7 @@ export function AdminTemplateHub() {
             {filteredTemplates.length === 0 ? (
               <Card className="border border-dashed border-lia-border-subtle rounded-md">
                 <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-gray-200/30">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-lia-interactive-active/30">
                     <Search className="w-4 h-4 text-lia-text-secondary" />
                   </div>
                   <p className="text-sm text-lia-text-secondary" aria-live="polite" aria-atomic="true">
@@ -479,7 +479,7 @@ export function AdminTemplateHub() {
                   
                   return (
                     <AccordionItem key={groupKey} value={groupKey} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
-                      <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                      <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50">
                         <div className="flex items-center gap-2 text-left">
                           <span className="text-lg">{group.icon}</span>
                           <span className="text-sm font-semibold text-lia-text-primary">
@@ -497,7 +497,7 @@ export function AdminTemplateHub() {
                               key={template.id}
                               className={`border cursor-pointer transition-colors motion-reduce:transition-none rounded-md ${
  selectedTemplate?.id === template.id 
-                                  ? 'border-gray-900' 
+                                  ? 'border-lia-btn-primary-bg' 
                                   : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
                               }`}
                               style={selectedTemplate?.id === template.id ? { boxShadow: '0 0 0 2px var(--wedo-cyan-bg-20)' } : {}}
@@ -506,7 +506,7 @@ export function AdminTemplateHub() {
                               <CardContent className="p-2.5">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <div className={`w-7 h-7 rounded-md ${CHANNEL_LABELS[template.channel || 'email']?.color || 'bg-gray-50 text-lia-text-secondary'} flex items-center justify-center flex-shrink-0`}>
+                                    <div className={`w-7 h-7 rounded-md ${CHANNEL_LABELS[template.channel || 'email']?.color || 'bg-lia-bg-secondary text-lia-text-secondary'} flex items-center justify-center flex-shrink-0`}>
                                       {getChannelIcon(template.channel || 'email')}
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -530,7 +530,7 @@ export function AdminTemplateHub() {
                                       </div>
                                     </div>
                                   </div>
-                                  <Badge variant={template.isActive ? "default" : "outline"} className="text-micro flex-shrink-0" style={template.isActive ? { backgroundColor: 'var(--gray-950)' } : {}}>
+                                  <Badge variant={template.isActive ? "default" : "outline"} className="text-micro flex-shrink-0" style={template.isActive ? { backgroundColor: 'var(--lia-btn-primary-bg)' } : {}}>
                                     {template.isActive ? 'Ativo' : 'Inativo'}
                                   </Badge>
                                 </div>
@@ -559,7 +559,7 @@ export function AdminTemplateHub() {
                         <Button variant="ghost" size="sm" onClick={() => setEditingTemplate(null)}>
                           <X className="w-3.5 h-3.5" />
                         </Button>
-                        <Button size="sm" className="py-1.5 px-2 text-xs bg-gray-900 text-white" onClick={handleSaveTemplate}>
+                        <Button size="sm" className="py-1.5 px-2 text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text" onClick={handleSaveTemplate}>
                           <Save className="w-3.5 h-3.5 mr-1" />
                           {saving ? 'Salvando...' : 'Salvar'}
                         </Button>
@@ -578,7 +578,7 @@ export function AdminTemplateHub() {
                   </div>
                 </div>
 
-                <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 rounded-md">
+                <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 rounded-md">
                   <CardContent className="p-4 space-y-4">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className={`${CHANNEL_LABELS[selectedTemplate.channel || 'email']?.color || ''}`}>
@@ -603,7 +603,7 @@ export function AdminTemplateHub() {
                             className="w-full px-3 py-2 text-sm border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:outline-none"
                           />
                         ) : (
-                          <p className="text-sm text-lia-text-primary bg-gray-50 rounded-md px-3 py-2">{selectedTemplate.subject}</p>
+                          <p className="text-sm text-lia-text-primary bg-lia-bg-secondary rounded-md px-3 py-2">{selectedTemplate.subject}</p>
                         )}
                       </div>
                     )}
@@ -627,7 +627,7 @@ export function AdminTemplateHub() {
                           className="w-full px-3 py-2 text-sm border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:outline-none font-mono"
                         />
                       ) : (
-                        <div className="bg-gray-50 rounded-md p-3">
+                        <div className="bg-lia-bg-secondary rounded-md p-3">
                           <pre className="text-sm text-lia-text-primary whitespace-pre-wrap font-sans">
                             {selectedTemplate.body}
                           </pre>
@@ -667,7 +667,7 @@ export function AdminTemplateHub() {
                   <Card className="rounded-md border border-lia-border-subtle bg-lia-bg-primary">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
+                        <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
                           <Brain className="w-4 h-4 text-wedo-cyan" />
                         </div>
                         <div>
@@ -685,14 +685,14 @@ export function AdminTemplateHub() {
                           onKeyDown={(e) => e.key === 'Enter' && !isGenerating && aiPrompt.trim() && handleAdjustWithAI()}
                           placeholder="Ex: Torne mais formal e adicione contexto técnico..."
                           disabled={isGenerating}
-                          className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 focus:outline-none disabled:bg-gray-50 disabled:lia-text-secondary"
+                          className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium focus:outline-none disabled:bg-lia-bg-secondary disabled:lia-text-secondary"
                          
                         />
                         <Button 
                           onClick={handleAdjustWithAI}
                           disabled={isGenerating || !aiPrompt.trim()}
                           className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px]"
-                          style={{backgroundColor: isGenerating ? 'var(--wedo-cyan)' : 'var(--gray-600)', color: 'white'}}
+                          style={{backgroundColor: isGenerating ? 'var(--wedo-cyan)' : 'var(--lia-text-secondary)', color: 'white'}}
                         >
                           {isGenerating ? (
                             <>
@@ -710,7 +710,7 @@ export function AdminTemplateHub() {
                       {isGenerating && (
                         <div className="flex items-center gap-2 p-2 rounded-md bg-wedo-cyan/[.08]">
                           <div className="flex gap-1">
-                            <ThinkingDots dotClassName="bg-gray-900" size="md" />
+                            <ThinkingDots dotClassName="bg-lia-btn-primary-bg" size="md" />
                           </div>
                           <span className="text-xs" style={{color: 'var(--wedo-cyan-dark)'}}>
                             A LIA está analisando e ajustando o template...
@@ -722,12 +722,12 @@ export function AdminTemplateHub() {
                 )}
 
                 {aiResultModal?.show && (
-                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
                     <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-md bg-lia-bg-primary">
                       <div className="border-b border-lia-border-subtle p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
+                            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
                               <Brain className="w-5 h-5 text-wedo-cyan" />
                             </div>
                             <div>
@@ -751,7 +751,7 @@ export function AdminTemplateHub() {
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {aiResultModal.changesMade.map((change, idx) => (
-                              <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-gray-200/30 text-wedo-cyan-dark">
+                              <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-lia-interactive-active/30 text-wedo-cyan-dark">
                                 <Check className="w-3 h-3 mr-1" />
                                 {change}
                               </Badge>
@@ -764,7 +764,7 @@ export function AdminTemplateHub() {
                             <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                               Novo Assunto
                             </label>
-                            <div className="p-3 bg-gray-50 rounded-md text-xs text-lia-text-primary">
+                            <div className="p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary">
                               {aiResultModal.newSubject}
                             </div>
                           </div>
@@ -774,7 +774,7 @@ export function AdminTemplateHub() {
                           <label className="block text-xs font-medium lia-text-secondary uppercase tracking-wide mb-2">
                             Novo Conteúdo
                           </label>
-                          <div className="p-3 bg-gray-50 rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto">
+                          <div className="p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto">
                             {aiResultModal.newBody}
                           </div>
                         </div>
@@ -794,7 +794,7 @@ export function AdminTemplateHub() {
                         </Button>
                         <Button 
                           onClick={handleConfirmAIAdjustment}
-                          className="rounded-md px-4 py-2 text-xs gap-1.5 bg-gray-900 text-white"
+                          className="rounded-md px-4 py-2 text-xs gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text"
                         >
                           <Check className="w-3.5 h-3.5" />
                           Aplicar Ajustes
@@ -807,7 +807,7 @@ export function AdminTemplateHub() {
             ) : (
               <Card className="border-dashed border-2 border-lia-border-subtle rounded-md h-96 flex items-center justify-center">
                 <CardContent className="text-center">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-gray-200/30">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-lia-interactive-active/30">
                     <Settings className="w-6 h-6 text-lia-text-secondary" />
                   </div>
                   <p className="text-sm text-lia-text-secondary mb-1">

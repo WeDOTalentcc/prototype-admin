@@ -275,7 +275,7 @@ export function JobDescriptionFinal({
             <ol className="space-y-3">
               {data.interview_process.map((stage) => (
                 <li key={stage.order} className="flex gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary flex items-center justify-center text-sm font-medium">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary flex items-center justify-center text-sm font-medium">
                     {stage.order}
                   </span>
                   <div className="flex-1">

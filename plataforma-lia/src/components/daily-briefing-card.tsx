@@ -254,11 +254,11 @@ export function DailyBriefingCard({
       case 'opportunity':
         return 'bg-status-success/10 border-status-success/30 text-status-success'
       case 'suggestion':
-        return 'bg-gray-50 dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark'
+        return 'bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark'
       case 'success':
         return 'bg-status-success/10 border-status-success/30 text-status-success'
       default:
-        return 'bg-gray-50 border-lia-border-subtle text-lia-text-primary'
+        return 'bg-lia-bg-secondary border-lia-border-subtle text-lia-text-primary'
     }
   }
 
@@ -292,7 +292,7 @@ export function DailyBriefingCard({
 
   return (
     <Card
-      className="border-0 overflow-hidden bg-gray-100 dark:bg-lia-bg-secondary"
+      className="border-0 overflow-hidden bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
     >
       <CardHeader className="pb-3 pt-4 px-5">
         <div className="flex items-center justify-between">
@@ -340,8 +340,8 @@ export function DailyBriefingCard({
             {/* Card Urgentes */}
             <div 
               className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
-              style={{backgroundColor: briefing.summary.urgent_count > 0 ? 'var(--gray-50)' : 'var(--gray-50)',
-                borderColor: 'var(--gray-200)'}}
+              style={{backgroundColor: briefing.summary.urgent_count > 0 ? 'var(--lia-bg-secondary)' : 'var(--lia-bg-secondary)',
+                borderColor: 'var(--lia-border-subtle)'}}
               onClick={() => handleActionClick('view_urgent')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -356,7 +356,7 @@ export function DailyBriefingCard({
             {/* Card Tarefas Hoje */}
             <div 
               className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
-              style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
+              style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-subtle)'}}
               onClick={() => handleActionClick('view_tasks')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -371,7 +371,7 @@ export function DailyBriefingCard({
             {/* Card Entrevistas */}
             <div 
               className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
-              style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
+              style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-subtle)'}}
               onClick={() => handleActionClick('view_interviews')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -386,7 +386,7 @@ export function DailyBriefingCard({
             {/* Card Alertas */}
             <div 
               className="p-2 rounded-md border cursor-pointer transition-colors motion-reduce:transition-none"
-              style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
+              style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-subtle)'}}
               onClick={() => handleActionClick('view_alerts')}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -410,8 +410,8 @@ export function DailyBriefingCard({
                   <div
                     key={action.id}
                     className="flex items-center justify-between p-2 rounded-md border"
-                    style={{backgroundColor: 'var(--gray-50)',
-                      borderColor: 'var(--gray-200)'}}
+                    style={{backgroundColor: 'var(--lia-bg-secondary)',
+                      borderColor: 'var(--lia-border-subtle)'}}
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate" style={{color: 'var(--wedo-cyan-dark)'}}>
@@ -448,13 +448,13 @@ export function DailyBriefingCard({
                   <div
                     key={item.id}
                     className="flex items-center gap-2 p-2 rounded-md border shrink-0 cursor-pointer transition-colors motion-reduce:transition-none"
-                    style={{backgroundColor: 'var(--gray-50)', borderColor: 'var(--gray-200)'}}
+                    style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-subtle)'}}
                     // @ts-ignore TODO: fix type — Argument of type 'ScheduleItem' is not assignable to parameter of type 'Record<s
                     onClick={() => handleActionClick('view_interview', item)}
                   >
                     <div 
                       className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
-                      style={{backgroundColor: 'var(--gray-100)'}}
+                      style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
                     >
                       <Clock className="w-4 h-4 text-lia-text-secondary" />
                     </div>
@@ -518,13 +518,13 @@ export function DailyBriefingCard({
           {/* Card Pipeline - Paleta Monocromática */}
           <div 
             className="p-3 rounded-md border"
-            style={{backgroundColor: 'var(--gray-50)'}}
+            style={{backgroundColor: 'var(--lia-bg-secondary)'}}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div 
                   className="w-8 h-8 rounded-md flex items-center justify-center"
-                  style={{backgroundColor: 'var(--gray-100)'}}
+                  style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
                 >
                   <BarChart3 className="w-4 h-4 text-lia-text-secondary" />
                 </div>

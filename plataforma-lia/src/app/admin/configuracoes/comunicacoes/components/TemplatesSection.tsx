@@ -67,7 +67,7 @@ export function TemplatesSection({
             variant={(templateChannelFilter === 'email' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('email')}
-            className={templateChannelFilter === 'email' ? 'bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:lia-text-900' : ''}
+            className={templateChannelFilter === 'email' ? 'bg-lia-btn-primary-bg dark:bg-lia-bg-secondary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active text-white dark:text-lia-text-primary' : ''}
           >
             <Mail className="w-4 h-4 mr-2" />
             Email
@@ -105,7 +105,7 @@ export function TemplatesSection({
             variant={(templateChannelFilter === 'chat_lia' ? 'default' : 'outline') as any}
             size="sm"
             onClick={() => setTemplateChannelFilter('chat_lia')}
-            className={templateChannelFilter === 'chat_lia' ? 'bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200' : ''}
+            className={templateChannelFilter === 'chat_lia' ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active' : ''}
           >
             <Bot className="w-4 h-4 mr-2" />
             Chat LIA
@@ -148,7 +148,7 @@ export function TemplatesSection({
         </div>
         <Button
           size="sm"
-          className="bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200"
+          className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
           onClick={handleCreateTemplate}
           disabled={templatesLoading}
         >
@@ -159,29 +159,29 @@ export function TemplatesSection({
 
       {templatesLoading ? (
         <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
-          <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-primary dark:text-lia-text-secondary" />
+          <span className="ml-3 text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
             Carregando templates...
           </span>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="space-y-3">
-            <h3 className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary" >
+            <h3 className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >
               Templates Disponíveis ({filteredTemplates.length})
             </h3>
             {filteredTemplates.length === 0 ? (
               <Card className="flex flex-col items-center justify-center py-12">
-                <FileText className="w-12 h-12 mb-3 lia-text-400 dark:lia-text-500"  />
-                <p className="text-sm font-medium mb-1 lia-text-500 dark:text-lia-text-tertiary"  aria-live="polite" aria-atomic="true">
+                <FileText className="w-12 h-12 mb-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                <p className="text-sm font-medium mb-1 text-lia-text-secondary dark:text-lia-text-tertiary"  aria-live="polite" aria-atomic="true">
                   Nenhum template encontrado
                 </p>
-                <p className="text-xs mb-4 lia-text-400 dark:lia-text-500" >
+                <p className="text-xs mb-4 text-lia-text-tertiary dark:text-lia-text-secondary" >
                   Crie um novo template para começar
                 </p>
                 <Button
                   size="sm"
-                  className="bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200"
+                  className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
                   onClick={handleCreateTemplate}
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -192,7 +192,7 @@ export function TemplatesSection({
               filteredTemplates.map(template => (
                 <Card
                   key={template.id}
-                  className={`cursor-pointer transition-colors motion-reduce:transition-none ${selectedTemplate?.id === template.id ? 'ring-2 ring-gray-900/20 dark:lia-ring-50/20' : 'hover:border-lia-border-default'}`}
+                  className={`cursor-pointer transition-colors motion-reduce:transition-none ${selectedTemplate?.id === template.id ? 'ring-2 ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20' : 'hover:border-lia-border-default'}`}
                   onClick={() => {
                     setSelectedTemplate(template)
                     setEditingTemplate(null)
@@ -202,7 +202,7 @@ export function TemplatesSection({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
+                          <h4 className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary" >
                             {template.name}
                           </h4>
                           <Badge className={`text-xs ${categoryLabels[template.category]?.color || categoryLabels.system.color}`}>
@@ -210,11 +210,11 @@ export function TemplatesSection({
                           </Badge>
                         </div>
                         {template.subject && (
-                          <p className="text-xs mb-2 lia-text-400 dark:lia-text-500" >
+                          <p className="text-xs mb-2 text-lia-text-tertiary dark:text-lia-text-secondary" >
                             {template.subject}
                           </p>
                         )}
-                        <div className="flex items-center gap-3 text-xs lia-text-400 dark:lia-text-500" >
+                        <div className="flex items-center gap-3 text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                           <span className="flex items-center gap-1">
                             <Users className="w-3 h-3" />
                             {template.usedByCompanies} empresas
@@ -250,7 +250,7 @@ export function TemplatesSection({
                       </Button>
                       <Button 
                         size="sm" 
-                        className="bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200" 
+                        className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active" 
                         onClick={handleSaveTemplate}
                         disabled={savingTemplate}
                       >
@@ -266,14 +266,14 @@ export function TemplatesSection({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Nome</label>
+                    <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >Nome</label>
                     <Input
                       value={editingTemplate.name}
                       onChange={(e) => setEditingTemplate({ ...editingTemplate, name: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Categoria</label>
+                    <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >Categoria</label>
                     <select
                       className="w-full mt-1 px-3 py-2 border rounded-md text-sm"
                       value={editingTemplate.category}
@@ -286,7 +286,7 @@ export function TemplatesSection({
                   </div>
                   {editingTemplate.channel === 'email' && (
                     <div>
-                      <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Assunto</label>
+                      <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >Assunto</label>
                       <Input
                         value={editingTemplate.subject}
                         onChange={(e) => setEditingTemplate({ ...editingTemplate, subject: e.target.value })}
@@ -294,7 +294,7 @@ export function TemplatesSection({
                     </div>
                   )}
                   <div>
-                    <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Corpo da Mensagem</label>
+                    <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >Corpo da Mensagem</label>
                     <Textarea
                       value={editingTemplate.body}
                       onChange={(e) => setEditingTemplate({ ...editingTemplate, body: e.target.value })}
@@ -302,7 +302,7 @@ export function TemplatesSection({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >
+                    <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >
                       Variáveis (separadas por vírgula)
                     </label>
                     <Input
@@ -361,15 +361,15 @@ export function TemplatesSection({
                   </div>
                   {selectedTemplate.subject && (
                     <div>
-                      <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Assunto</label>
-                      <p className="text-sm mt-1 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md lia-text-800 dark:text-lia-text-primary" >
+                      <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >Assunto</label>
+                      <p className="text-sm mt-1 p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md text-lia-text-primary dark:text-lia-text-primary" >
                         {selectedTemplate.subject}
                       </p>
                     </div>
                   )}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Corpo da Mensagem</label>
+                      <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >Corpo da Mensagem</label>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -380,12 +380,12 @@ export function TemplatesSection({
                         {showHtmlView ? 'Ver Texto' : 'Ver HTML'}
                       </Button>
                     </div>
-                    <pre className="text-sm p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md whitespace-pre-wrap max-h-96 overflow-y-auto lia-text-800 dark:text-lia-text-primary font-[inherit]">
+                    <pre className="text-sm p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md whitespace-pre-wrap max-h-96 overflow-y-auto text-lia-text-primary dark:text-lia-text-primary font-[inherit]">
                       {showHtmlView ? selectedTemplate.body : stripHtmlToText(selectedTemplate.body)}
                     </pre>
                   </div>
                   <div>
-                    <label className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary" >Variáveis Disponíveis</label>
+                    <label className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >Variáveis Disponíveis</label>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {selectedTemplate.variables.length > 0 ? (
                         selectedTemplate.variables.map(v => (
@@ -394,7 +394,7 @@ export function TemplatesSection({
                           </Badge>
                         ))
                       ) : (
-                        <span className="text-xs lia-text-400 dark:lia-text-500" >
+                        <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                           Nenhuma variável definida
                         </span>
                       )}
@@ -404,7 +404,7 @@ export function TemplatesSection({
               </Card>
             ) : (
               <Card className="flex items-center justify-center h-64">
-                <p className="text-sm lia-text-400 dark:lia-text-500" >
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                   Selecione um template para visualizar
                 </p>
               </Card>

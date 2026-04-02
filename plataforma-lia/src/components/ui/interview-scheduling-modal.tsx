@@ -136,7 +136,7 @@ export function InterviewSchedulingModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-white dark:bg-lia-bg-secondary rounded-md dark:border-lia-border-subtle">
+      <DialogContent className="max-w-2xl bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md dark:border-lia-border-subtle">
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-lia-text-secondary" />
@@ -196,7 +196,7 @@ export function InterviewSchedulingModal({
                       onChange={(e) =>
                         setEmailTemplate({ ...emailTemplate, subject: e.target.value })
                       }
-                      className="h-9 text-xs font-medium border-lia-border-subtle focus:ring-gray-400 focus:border-gray-400 bg-gray-50 text-lia-text-primary"
+                      className="h-9 text-xs font-medium border-lia-border-subtle focus:ring-lia-border-medium focus:border-lia-border-medium bg-lia-bg-secondary text-lia-text-primary"
                     />
                     <div
                       className="p-3 rounded-md border border-lia-border-subtle text-xs overflow-y-auto max-h-chart-sm bg-lia-bg-secondary text-lia-text-secondary"
@@ -223,7 +223,7 @@ export function InterviewSchedulingModal({
                     }
                   }}
                   disabled={isScheduling}
-                  className="h-9 text-xs border-lia-border-subtle focus:ring-gray-400 focus:border-gray-400 bg-gray-50 text-lia-text-primary"
+                  className="h-9 text-xs border-lia-border-subtle focus:ring-lia-border-medium focus:border-lia-border-medium bg-lia-bg-secondary text-lia-text-primary"
                 />
                 <p className="text-xs lia-text-secondary">
                   Use linguagem natural: "amanhã às 14h comigo" ou "próxima segunda 10h"
@@ -258,7 +258,7 @@ export function InterviewSchedulingModal({
                 <Button
                   onClick={handleSchedule}
                   disabled={isScheduling || !schedulingPrompt.trim()}
-                  className="h-9 px-4 text-xs font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   {isScheduling ? (
                     <>

@@ -92,7 +92,7 @@ export function TasksSection() {
       case "high": return "border-status-error/30 bg-status-error/10 text-status-error"
       case "medium": return "border-status-warning/30 bg-status-warning/10 text-status-warning"
       case "low": return "border-status-success/30 bg-status-success/10 text-status-success"
-      default: return "border-lia-border-subtle bg-gray-50 text-lia-text-primary"
+      default: return "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-primary"
     }
   }
 
@@ -125,7 +125,7 @@ export function TasksSection() {
             >
               <CardContent className="p-2">
                 <div className="flex items-start gap-2">
-                  <div className="flex-shrink-0 w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                  <div className="flex-shrink-0 w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
  <task.icon className="w-3 h-3 text-lia-text-secondary" />
                   </div>
 

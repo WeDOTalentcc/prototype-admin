@@ -144,7 +144,7 @@ export function CandidateCard({
   }
 
   return (
-    <Card className="border border-lia-border-subtle hover:transition-shadow rounded-md bg-white dark:bg-lia-bg-primary">
+    <Card className="border border-lia-border-subtle hover:transition-shadow rounded-md bg-lia-bg-primary dark:bg-lia-bg-primary">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">

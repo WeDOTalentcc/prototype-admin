@@ -263,7 +263,7 @@ export function LanguageFilterInput({
             onKeyDown={handleKeyDown}
             onFocus={() => setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
           />
         </div>
 
@@ -278,7 +278,7 @@ export function LanguageFilterInput({
                 onClick={() => addLanguage(language)}
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50"
+                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
                 )}
               >
                 <span className="font-medium text-lia-text-primary">{language}</span>
@@ -299,7 +299,7 @@ export function LanguageFilterInput({
           >
             <button
               onClick={() => addLanguage(inputValue.trim())}
-              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
             >
               <div className="flex items-center gap-2">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -315,7 +315,7 @@ export function LanguageFilterInput({
           {value.map(language => (
             <div
               key={language}
-              className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 rounded-md text-sm"
+              className="flex items-center gap-1.5 px-2.5 py-1 bg-lia-bg-tertiary rounded-md text-sm"
             >
               <span className="text-lia-text-primary">{language}</span>
               <button

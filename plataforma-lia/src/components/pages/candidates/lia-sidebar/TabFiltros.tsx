@@ -51,7 +51,7 @@ export const TabFiltros = React.memo(function TabFiltros({
       )}
       <Button
         className="w-full h-12 !text-sm font-semibold"
-        style={{backgroundColor: showTableFiltersPanel ? 'var(--gray-800)' : 'var(--gray-600)', color: 'var(--gray-50)'}}
+        style={{backgroundColor: showTableFiltersPanel ? 'var(--lia-text-primary)' : 'var(--lia-text-secondary)', color: 'var(--lia-bg-secondary)'}}
         onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
       >
         <Filter className="w-4 h-4 mr-2" />

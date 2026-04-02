@@ -216,12 +216,12 @@ const toGeneric = (p: LocationPreset): SearchPreset<LocationItem> => ({
 const renderLocationBadges = (items: LocationItem[]) => (
   <div className="flex flex-wrap gap-1.5 mt-2">
     {items.slice(0, 4).map((loc, i) => (
-      <Badge key={i} className="bg-gray-50 text-lia-text-secondary text-micro font-normal">
+      <Badge key={i} className="bg-lia-bg-secondary text-lia-text-secondary text-micro font-normal">
         {loc.value.split(',')[0]}
       </Badge>
     ))}
     {items.length > 4 && (
-      <Badge className="bg-gray-50 text-lia-text-secondary text-micro font-normal">
+      <Badge className="bg-lia-bg-secondary text-lia-text-secondary text-micro font-normal">
         +{items.length - 4} more
       </Badge>
     )}

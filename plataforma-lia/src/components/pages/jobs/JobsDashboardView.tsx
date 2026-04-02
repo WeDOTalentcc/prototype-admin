@@ -30,28 +30,28 @@ export function JobsDashboardView({
       <div className="w-full max-w-[780px] mx-auto px-4 flex flex-col">
         <LiaPromptHeader title="Posso te ajudar com análises de vagas?" />
         <div className="rounded-xl overflow-hidden bg-lia-bg-primary border border-lia-border-subtle">
-          <div className="px-4 pt-4 pb-4 border-b border-b-gray-200">
+          <div className="px-4 pt-4 pb-4 border-b border-b-lia-border-subtle">
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => {
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenJobCreationChat('Criar nova vaga'), 100)
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
               >
                 <Plus className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Criar nova vaga
               </button>
               <button
                 onClick={() => onSetActiveFilter('ativas')}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
               >
                 <Briefcase className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Ver minhas vagas
               </button>
               <button
                 onClick={() => onSetActiveFilter('todas')}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
               >
                 <Building2 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Ver todas as vagas
@@ -61,7 +61,7 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenGeneralChat('Resumo das minhas vagas ativas'), 100)
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
               >
                 <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Resumo das vagas
@@ -76,14 +76,14 @@ export function JobsDashboardView({
           </div>
 
           <div className="px-4 pt-4 pb-4">
-            <div className="flex items-center gap-3 px-4 py-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle transition-colors motion-reduce:transition-none focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-900/20">
+            <div className="flex items-center gap-3 px-4 py-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle transition-colors motion-reduce:transition-none focus-within:border-lia-border-medium focus-within:ring-1 focus-within:ring-lia-btn-primary-bg/20">
               <input
                 type="text"
                 placeholder="Como posso te ajudar com suas vagas hoje?"
                 value={liaPromptValue}
                 onChange={(e) => onSetLiaPromptValue(e.target.value)}
                
-                className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-lia-text-primary"
+                className="flex-1 bg-transparent placeholder-lia-text-tertiary text-sm focus:outline-none text-lia-text-primary"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && liaPromptValue.trim()) {
                     onSetActiveFilter('todas')
@@ -98,7 +98,7 @@ export function JobsDashboardView({
               <div className="flex items-center gap-1">
                 <AudioRecordButton
                   onTranscription={(text) => onSetLiaPromptValue(liaPromptValue ? `${liaPromptValue} ${text}` : text)}
-                  className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                  className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 />
               </div>
               
@@ -133,7 +133,7 @@ export function JobsDashboardView({
                     onSetActiveFilter('todas')
                     setTimeout(() => onOpenGeneralChat(suggestion), 100)
                   }}
-                  className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-gray-50 text-lia-text-primary border border-lia-border-subtle hover:text-lia-text-primary hover:bg-gray-100"
+                  className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle hover:text-lia-text-primary hover:bg-lia-bg-tertiary"
                  
                 >
                   {suggestion}

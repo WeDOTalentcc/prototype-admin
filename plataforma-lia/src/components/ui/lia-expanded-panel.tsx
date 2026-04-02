@@ -323,7 +323,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           data-testid="chat-input"
-          className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-gray-50/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary"
+          className="w-full h-32 p-4 text-sm rounded-md border focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary"
           style={{border: '1px solid var(--lia-border-subtle)',
             backgroundColor: 'var(--lia-bg-secondary)'}}
         />
@@ -346,7 +346,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
             )}
           </div>
           <Button
-            className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200' : 'bg-lia-bg-tertiary text-lia-text-disabled'}`}
+            className={`h-10 px-6 text-sm font-medium rounded-md ${value.trim() ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active' : 'bg-lia-bg-tertiary text-lia-text-disabled'}`}
             
             onClick={onSubmit}
             disabled={!value.trim() || isLoading}

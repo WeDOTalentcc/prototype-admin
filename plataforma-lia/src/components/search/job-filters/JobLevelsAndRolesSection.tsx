@@ -90,7 +90,7 @@ export const JobLevelsAndRolesSection = ({
                 className={cn(
                   "px-2.5 py-1 rounded-md text-xs border transition-colors",
                   isSelected
-                    ? "border-gray-400 bg-gray-100 text-lia-text-primary font-medium"
+                    ? "border-lia-border-medium bg-lia-bg-tertiary text-lia-text-primary font-medium"
                     : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                 )}
               >
@@ -135,7 +135,7 @@ export const JobLevelsAndRolesSection = ({
               onFocus={() => roleInput.length >= 2 && setShowRoleSuggestions(true)}
               onBlur={() => setTimeout(() => setShowRoleSuggestions(false), 200)}
               placeholder="Digite área e pressione Enter"
-              className="h-7 text-xs border border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
+              className="h-7 text-xs border border-lia-border-subtle focus:ring-1 focus:ring-lia-border-medium"
             />
             {isLoadingRoles && (
               <div className="absolute right-2 top-1/2 -translate-y-1/2" role="status" aria-live="polite" aria-label="Carregando...">
@@ -160,7 +160,7 @@ export const JobLevelsAndRolesSection = ({
                     e.preventDefault()
                     handleAddRole(suggestion.term)
                   }}
-                  className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 flex items-center justify-between gap-2"
+                  className="w-full text-left px-2 py-1.5 text-xs hover:bg-lia-bg-secondary flex items-center justify-between gap-2"
                 >
                   <span>{suggestion.term}</span>
                   <span className="text-micro text-lia-text-tertiary">
@@ -210,7 +210,7 @@ export const JobLevelsAndRolesSection = ({
                 className={cn(
                   "px-2.5 py-1 rounded-md text-xs border transition-colors",
                   isSelected
-                    ? "border-gray-400 bg-gray-100 text-lia-text-primary font-medium"
+                    ? "border-lia-border-medium bg-lia-bg-tertiary text-lia-text-primary font-medium"
                     : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                 )}
               >

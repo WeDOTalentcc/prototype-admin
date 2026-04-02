@@ -413,7 +413,7 @@ export function FieldsOfStudyInput({
               "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-[width,height]",
               mode === 'regular'
                 ? "border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
-                : "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
+                : "border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
             )}
           >
             {mode === 'regular' ? 'Regular' : 'Nested'}
@@ -428,15 +428,15 @@ export function FieldsOfStudyInput({
                   setIsModeDropdownOpen(false)
                 }}
                 className={cn(
-                  "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-50 rounded-t-lg",
-                  mode === 'regular' && "bg-gray-50"
+                  "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary rounded-t-lg",
+                  mode === 'regular' && "bg-lia-bg-secondary"
                 )}
               >
                 <div className="flex items-center gap-2">
                   <div className={cn(
                     "w-3 h-3 rounded-full border-2",
                     mode === 'regular' 
-                      ? "border-gray-700 bg-gray-700" 
+                      ? "border-lia-border-strong bg-lia-bg-inverse" 
                       : "border-lia-border-default"
                   )}>
                     {mode === 'regular' && (
@@ -456,15 +456,15 @@ export function FieldsOfStudyInput({
                   setIsModeDropdownOpen(false)
                 }}
                 className={cn(
-                  "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-50 rounded-b-lg border-t border-lia-border-subtle",
-                  mode === 'nested' && "bg-gray-50 dark:bg-lia-bg-secondary/50"
+                  "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary rounded-b-lg border-t border-lia-border-subtle",
+                  mode === 'nested' && "bg-lia-bg-secondary dark:bg-lia-bg-secondary/50"
                 )}
               >
                 <div className="flex items-center gap-2">
                   <div className={cn(
                     "w-3 h-3 rounded-full border-2",
                     mode === 'nested' 
-                      ? "border-gray-900 bg-gray-900 dark:lia-border-50" 
+                      ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg dark:border-lia-border-subtle" 
                       : "border-lia-border-default"
                   )}>
                     {mode === 'nested' && (
@@ -517,7 +517,7 @@ export function FieldsOfStudyInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
@@ -544,7 +544,7 @@ export function FieldsOfStudyInput({
                 }}
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50",
+                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
                   item.type === 'ai' && "border-b border-lia-border-subtle"
                 )}
               >
@@ -567,12 +567,12 @@ export function FieldsOfStudyInput({
           {value.map(field => (
             <Badge
               key={field}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
             >
               <span>{field}</span>
               <button
                 onClick={() => removeField(field)}
-                className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
+                className="hover:bg-lia-interactive-active rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

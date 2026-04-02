@@ -13,32 +13,32 @@ export function useKanbanColumnConfig({ dynamicStages }: UseKanbanColumnConfigPr
     // Estilos fixos para etapas conhecidas
     const fixedStyles: Record<string, { bg: string; border: string; dot: string; header: string; accentColor: string }> = {
       sourcing: {
-        bg: 'bg-white dark:bg-lia-bg-primary',
+        bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
         border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-        dot: 'bg-gray-700 dark:bg-gray-300',
+        dot: 'bg-lia-bg-inverse dark:bg-lia-border-default',
         header: 'text-lia-text-primary',
-        accentColor: 'var(--gray-600)'
+        accentColor: 'var(--lia-text-secondary)'
       },
       hired: {
-        bg: 'bg-white dark:bg-lia-bg-primary',
+        bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
         border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-        dot: 'bg-gray-700 dark:bg-gray-300',
+        dot: 'bg-lia-bg-inverse dark:bg-lia-border-default',
         header: 'text-lia-text-primary',
-        accentColor: 'var(--gray-600)'
+        accentColor: 'var(--lia-text-secondary)'
       },
       rejected: {
-        bg: 'bg-white dark:bg-lia-bg-primary',
+        bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
         border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-        dot: 'bg-gray-300 dark:bg-lia-bg-elevated',
+        dot: 'bg-lia-border-default dark:bg-lia-bg-elevated',
         header: 'text-lia-text-primary',
-        accentColor: 'var(--gray-200)'
+        accentColor: 'var(--lia-border-subtle)'
       },
       offer_declined: {
-        bg: 'bg-white dark:bg-lia-bg-primary',
+        bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
         border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-        dot: 'bg-gray-300 dark:bg-lia-bg-elevated',
+        dot: 'bg-lia-border-default dark:bg-lia-bg-elevated',
         header: 'text-lia-text-primary',
-        accentColor: 'var(--gray-200)'
+        accentColor: 'var(--lia-border-subtle)'
       }
     }
 
@@ -48,12 +48,12 @@ export function useKanbanColumnConfig({ dynamicStages }: UseKanbanColumnConfigPr
 
     // Para etapas dinâmicas, buscar a cor da etapa
     const dynamicStage = dynamicStages.find(s => s.id === columnId)
-    const stageColor = dynamicStage?.color || 'var(--gray-400)'
+    const stageColor = dynamicStage?.color || 'var(--lia-text-tertiary)'
 
     return {
-      bg: 'bg-white dark:bg-lia-bg-primary',
+      bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-gray-500 dark:bg-gray-400',
+      dot: 'bg-lia-bg-secondary0 dark:bg-lia-border-medium',
       header: 'text-lia-text-primary',
       accentColor: stageColor
     }
@@ -87,15 +87,15 @@ export function useKanbanColumnConfig({ dynamicStages }: UseKanbanColumnConfigPr
   }
 
   const STAGE_PASTEL_COLORS: Record<string, string> = {
-    'sourcing': 'var(--gray-200)',
-    'screening': 'var(--gray-200)',
-    'interview_hr': 'var(--gray-300)',
-    'interview_technical': 'var(--gray-300)',
-    'interview_manager': 'var(--gray-300)',
-    'offer': 'var(--gray-300)',
-    'hired': 'var(--gray-300)',
-    'rejected': 'var(--gray-300)',
-    'offer_declined': 'var(--gray-300)'
+    'sourcing': 'var(--lia-border-subtle)',
+    'screening': 'var(--lia-border-subtle)',
+    'interview_hr': 'var(--lia-border-default)',
+    'interview_technical': 'var(--lia-border-default)',
+    'interview_manager': 'var(--lia-border-default)',
+    'offer': 'var(--lia-border-default)',
+    'hired': 'var(--lia-border-default)',
+    'rejected': 'var(--lia-border-default)',
+    'offer_declined': 'var(--lia-border-default)'
   }
 
   return {

@@ -93,7 +93,7 @@ export default function ClientAutomacoesPage({
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'send_email':
-        return <Mail className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+        return <Mail className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
       case 'send_whatsapp':
         return <MessageSquare className="w-5 h-5 text-status-success" />
       case 'send_notification':
@@ -101,14 +101,14 @@ export default function ClientAutomacoesPage({
       case 'webhook':
         return <Webhook className="w-5 h-5 text-wedo-orange" />
       default:
-        return <Zap className="w-5 h-5 lia-text-600" />
+        return <Zap className="w-5 h-5 text-lia-text-secondary" />
     }
   }
 
   const getActionBgColor = (action: string) => {
     switch (action) {
       case 'send_email':
-        return 'bg-gray-100 dark:bg-lia-bg-secondary'
+        return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
       case 'send_whatsapp':
         return 'bg-status-success/15 dark:bg-status-success/30'
       case 'send_notification':
@@ -116,7 +116,7 @@ export default function ClientAutomacoesPage({
       case 'webhook':
         return 'bg-wedo-orange/15 dark:bg-wedo-orange/30'
       default:
-        return 'bg-gray-100 dark:bg-lia-bg-primary/30'
+        return 'bg-lia-bg-tertiary dark:bg-lia-bg-primary/30'
     }
   }
 
@@ -128,20 +128,20 @@ export default function ClientAutomacoesPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Zap className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <Zap className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary"
             >
               Automações
             </h2>
           </div>
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Regras automáticas de comunicação e ações
           </p>
         </div>
         <Button 
           size="sm"
-          className="bg-gray-800"
+          className="bg-lia-btn-primary-hover"
         >
           <Plus className="w-4 h-4 mr-2" />
           Nova Automação
@@ -167,10 +167,10 @@ export default function ClientAutomacoesPage({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold lia-text-900 dark:lia-text-50">
+            <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
               {loading ? '-' : automations.length}
             </p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Total de Automações
             </p>
           </CardContent>
@@ -180,7 +180,7 @@ export default function ClientAutomacoesPage({
             <p className="text-2xl font-semibold text-status-success">
               {loading ? '-' : activeCount}
             </p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Ativas
             </p>
           </CardContent>
@@ -190,7 +190,7 @@ export default function ClientAutomacoesPage({
             <p className="text-2xl font-semibold text-wedo-purple">
               {loading ? '-' : totalExecutions}
             </p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Execuções
             </p>
           </CardContent>
@@ -199,8 +199,8 @@ export default function ClientAutomacoesPage({
 
       {loading ? (
         <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
-          <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <span className="ml-3 text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Carregando automações...
           </span>
         </div>
@@ -221,11 +221,11 @@ export default function ClientAutomacoesPage({
       ) : automations.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <Zap className="w-12 h-12 mx-auto lia-text-300 dark:text-lia-text-primary mb-4" />
-            <p className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary">
+            <Zap className="w-12 h-12 mx-auto text-lia-text-disabled dark:text-lia-text-primary mb-4" />
+            <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
               Nenhuma automação configurada
             </p>
-            <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+            <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
               Clique em "Nova Automação" para criar a primeira.
             </p>
           </CardContent>
@@ -235,7 +235,7 @@ export default function ClientAutomacoesPage({
           {automations.map((automation) => (
             <Card 
               key={automation.id}
-              className={`hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none ${!automation.is_active ? 'opacity-60' : ''}`}
+              className={`hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none ${!automation.is_active ? 'opacity-60' : ''}`}
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
@@ -245,7 +245,7 @@ export default function ClientAutomacoesPage({
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 
-                        className="font-medium lia-text-800 dark:text-lia-text-primary"
+                        className="font-medium text-lia-text-primary dark:text-lia-text-primary"
                       >
                         {automation.name}
                       </h3>
@@ -254,16 +254,16 @@ export default function ClientAutomacoesPage({
                       </Badge>
                     </div>
                     <p 
-                      className="text-sm lia-text-400 dark:lia-text-500"
+                      className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary"
                     >
                       {automation.description}
                     </p>
                   </div>
                   <div className="text-right mr-4">
-                    <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
+                    <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
                       {automation.trigger_count || 0}
                     </p>
-                    <p className="text-xs lia-text-400 dark:lia-text-500">
+                    <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                       execuções
                     </p>
                   </div>

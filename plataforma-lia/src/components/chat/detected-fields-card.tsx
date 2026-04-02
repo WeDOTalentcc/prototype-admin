@@ -44,7 +44,7 @@ export function DetectedFieldsCard({ fields, title = "Campos detectados automati
         {fields.map((field, index) => (
           <div
             key={field.label}
-            className="flex items-center justify-between py-1.5 px-2 rounded-md bg-white/60/40"
+            className="flex items-center justify-between py-1.5 px-2 rounded-md bg-lia-bg-primary/60/40"
           >
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <CheckCircle2 className={cn("w-3.5 h-3.5 flex-shrink-0", confidenceColor(field.confidence))} />

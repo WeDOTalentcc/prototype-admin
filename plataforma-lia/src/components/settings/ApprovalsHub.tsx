@@ -59,13 +59,13 @@ const STATUS_CONFIG: Record<string, { label: string, color: string, icon: React.
   pending: { label: 'Pendente', color: 'bg-status-warning/15 text-status-warning', icon: Clock },
   approved: { label: 'Aprovado', color: 'bg-status-success/15 text-status-success', icon: CheckCircle },
   rejected: { label: 'Rejeitado', color: 'bg-status-error/15 text-status-error', icon: XCircle },
-  cancelled: { label: 'Cancelado', color: 'bg-gray-100 text-lia-text-secondary', icon: AlertCircle }
+  cancelled: { label: 'Cancelado', color: 'bg-lia-bg-tertiary text-lia-text-secondary', icon: AlertCircle }
 }
 
 const PRIORITY_CONFIG: Record<string, { label: string, color: string }> = {
-  low: { label: 'Baixa', color: 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary' },
-  normal: { label: 'Normal', color: 'bg-gray-50 text-lia-text-secondary' },
-  high: { label: 'Alta', color: 'bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated' },
+  low: { label: 'Baixa', color: 'bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary' },
+  normal: { label: 'Normal', color: 'bg-lia-bg-secondary text-lia-text-secondary' },
+  high: { label: 'Alta', color: 'bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated' },
   urgent: { label: 'Urgente', color: 'bg-status-error/10 text-status-error' }
 }
 
@@ -245,7 +245,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="border border-lia-border-subtle dark:border-lia-border-default rounded-full px-2 py-1.5 text-xs bg-white dark:bg-lia-bg-secondary"
+                className="border border-lia-border-subtle dark:border-lia-border-default rounded-full px-2 py-1.5 text-xs bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="all">Todos os status</option>
                 <option value="pending">Pendentes</option>
@@ -280,7 +280,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-lia-border-subtle">
               {filteredApprovals.map((approval) => {
                 const statusConfig = STATUS_CONFIG[approval.status]
                 const priorityConfig = PRIORITY_CONFIG[approval.priority] || PRIORITY_CONFIG.normal
@@ -289,7 +289,7 @@ export function ApprovalsHub({ companyId, currentUserEmail = 'admin@example.com'
                 return (
                   <div 
                     key={approval.id} 
-                    className="p-3 hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+                    className="p-3 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
                   >
                     <div className="flex items-start gap-3">
                       <div className={`p-1.5 rounded-md ${statusConfig.color}`}>

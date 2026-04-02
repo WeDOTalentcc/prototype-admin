@@ -198,7 +198,7 @@ export function WarRoomOperacionalPlaceholder() {
       </Card>
 
       {/* Gargalos e Recomendações LIA */}
-      <Card className="border-status-error/30 dark:border-status-error/30 rounded-md bg-white dark:bg-lia-bg-primary">
+      <Card className="border-status-error/30 dark:border-status-error/30 rounded-md bg-lia-bg-primary dark:bg-lia-bg-primary">
         <CardHeader className="px-4 py-3">
           <CardTitle className={`${textStyles.title} flex items-center gap-2`}>
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />

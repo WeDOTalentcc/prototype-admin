@@ -28,7 +28,7 @@ export function ApplyAllModal({
   applyValueToAll,
 }: ApplyAllModalProps) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
       <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-md">
         <div className="flex items-center justify-between mb-4">
           <h3 className={textStyles.h4}>
@@ -48,7 +48,7 @@ export function ApplyAllModal({
               type="number"
               value={applyAllValue}
               onChange={(e) => setApplyAllValue(parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-['Open_Sans',sans-serif]"
+              className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-['Open_Sans',sans-serif]"
             />
           </div>
 
@@ -58,7 +58,7 @@ export function ApplyAllModal({
                 type="checkbox"
                 checked={applyAllMonths}
                 onChange={(e) => setApplyAllMonths(e.target.checked)}
-                className="w-4 h-4 rounded-md border-lia-border-default accent-gray-900"
+                className="w-4 h-4 rounded-md border-lia-border-default accent-lia-btn-primary-bg"
               />
               <span className={textStyles.bodySmall}>
                 Aplicar mesmo valor a todos os meses
@@ -70,7 +70,7 @@ export function ApplyAllModal({
                 type="checkbox"
                 checked={applyAllUsers}
                 onChange={(e) => setApplyAllUsers(e.target.checked)}
-                className="w-4 h-4 rounded-md border-lia-border-default accent-gray-900"
+                className="w-4 h-4 rounded-md border-lia-border-default accent-lia-btn-primary-bg"
               />
               <span className={textStyles.bodySmall}>
                 Aplicar a todos os usuários
@@ -91,7 +91,7 @@ export function ApplyAllModal({
                   allUsers: applyAllUsers
                 })
               }}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               <Save className="w-3.5 h-3.5 mr-1.5" />
               Aplicar

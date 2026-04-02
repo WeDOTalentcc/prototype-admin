@@ -332,11 +332,11 @@ export function UnifiedCandidateTable({
   return (
     <div
       ref={enableVirtualScroll ? virtualScrollRef : undefined}
-      className={`bg-white dark:bg-lia-bg-primary overflow-auto rounded-md border border-lia-border-subtle dark:border-lia-border-subtle ${className}`}
+      className={`bg-lia-bg-primary dark:bg-lia-bg-primary overflow-auto rounded-md border border-lia-border-subtle dark:border-lia-border-subtle ${className}`}
       style={enableVirtualScroll ? { maxHeight: "600px" } : undefined}
     >
         <table className="w-full" style={{tableLayout: enableColumnResize ? 'fixed' : 'auto'}}>
-          <thead className="sticky top-0 z-10 bg-white dark:bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 #e5e7eb' }}>
+          <thead className="sticky top-0 z-10 bg-lia-bg-primary dark:bg-lia-bg-primary" style={{ boxShadow: '0 1px 0 #e5e7eb' }}>
             <tr>
               {showCheckboxes && (
                 <th className="py-3 px-3 w-[50px] text-center">
@@ -361,7 +361,7 @@ export function UnifiedCandidateTable({
                       ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
                       ${isDragging ? 'opacity-50' : ''}
                       ${isDropTarget ? 'bg-wedo-cyan/10' : ''}
-                      ${column.sortable ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50' : ''}
+                      ${column.sortable ? 'cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50' : ''}
                     `}
                     style={{width: typeof width === 'number' ? `${width}px` : width,
                       minWidth: column.minWidth || '50px'}}
@@ -400,8 +400,8 @@ export function UnifiedCandidateTable({
                       <div
                         className={`absolute right-0 top-0 h-full w-2 cursor-col-resize transition-colors motion-reduce:transition-none ${
  resizingColumnId === column.id 
-                            ? 'bg-gray-400 w-1' 
-                            : 'bg-transparent hover:bg-gray-300 group-hover:bg-gray-200'
+                            ? 'bg-lia-border-medium w-1' 
+                            : 'bg-transparent hover:bg-lia-border-default group-hover:bg-lia-interactive-active'
                         }`}
                         style={{zIndex: 20}}
                         onMouseDown={(e) => {
@@ -419,7 +419,7 @@ export function UnifiedCandidateTable({
             </tr>
           </thead>
           <tbody
-            className="divide-y divide-gray-100 dark:divide-gray-700"
+            className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong"
             style={rowVirtualizer ? {
               position: "relative",
               height: `${rowVirtualizer.getTotalSize()}px`,
@@ -506,7 +506,7 @@ export function UnifiedCandidateTable({
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 text-xs rounded-md border border-lia-border-default dark:border-lia-border-default hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-xs rounded-md border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Anterior
             </button>
@@ -516,7 +516,7 @@ export function UnifiedCandidateTable({
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1 text-xs rounded-md border border-lia-border-default dark:border-lia-border-default hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1 text-xs rounded-md border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Próxima
             </button>

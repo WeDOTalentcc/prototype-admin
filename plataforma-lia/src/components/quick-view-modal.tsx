@@ -67,7 +67,7 @@ export function QuickViewModal({
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return "text-status-success bg-status-success/15"
-    if (score >= 80) return "text-lia-text-primary bg-gray-100"
+    if (score >= 80) return "text-lia-text-primary bg-lia-bg-tertiary"
     if (score >= 70) return "text-status-warning bg-status-warning/15"
     return "text-status-error bg-status-error/15"
   }
@@ -75,10 +75,10 @@ export function QuickViewModal({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-status-success/15 text-status-success border-status-success/30'
-      case 'prospect': return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+      case 'prospect': return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
       case 'interview': return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
       case 'hired': return 'bg-status-success/15 text-status-success border-status-success/30'
-      default: return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+      default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -94,15 +94,15 @@ export function QuickViewModal({
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-lia-overlay backdrop-blur-[1px] flex items-center justify-center z-50 p-4"
      
     >
-      <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-4">
             <Avatar className="w-16 h-16">
-              <AvatarFallback className="bg-gray-100 text-lia-text-primary font-medium text-lg">
+              <AvatarFallback className="bg-lia-bg-tertiary text-lia-text-primary font-medium text-lg">
                 {candidate.name.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
@@ -125,11 +125,11 @@ export function QuickViewModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary text-xs">
+            <Button variant="outline" size="sm" className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-primary text-xs">
               <Share2 className="w-4 h-4 mr-2" />
               Compartilhar
             </Button>
-            <Button variant="outline" size="sm" className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary text-xs">
+            <Button variant="outline" size="sm" className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-primary text-xs">
               <Download className="w-4 h-4 mr-2" />
               CV
             </Button>
@@ -137,7 +137,7 @@ export function QuickViewModal({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-8 w-8 p-0 lia-text-secondary hover:text-lia-text-secondary hover:bg-gray-50"
+              className="h-8 w-8 p-0 lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-secondary"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -157,7 +157,7 @@ export function QuickViewModal({
                 onClick={() => setActiveTab(tab.id as Parameters<typeof setActiveTab>[0])}
                 className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-xs ${
  activeTab === tab.id
-                    ? 'border-gray-800 text-lia-text-primary dark:border-lia-border-subtle'
+                    ? 'border-lia-border-strong text-lia-text-primary dark:border-lia-border-subtle'
                     : 'border-transparent text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse hover:border-lia-border-default'
                 }`}
               >
@@ -243,7 +243,7 @@ export function QuickViewModal({
                   <h3 className="text-xs font-medium text-lia-text-primary mb-3">Tags</h3>
                   <div className="flex flex-wrap gap-2">
                     {candidate.tags.map((tag) => (
-                      <Badge key={tag} className="text-micro bg-gray-100 text-lia-text-primary border-lia-border-subtle">
+                      <Badge key={tag} className="text-micro bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                         {tag}
                       </Badge>
                     ))}
@@ -327,7 +327,7 @@ export function QuickViewModal({
                   </div>
 
                   {/* Recommendation */}
-                  <div className="bg-gray-50 dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
+                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
                     <h3 className="text-xs font-medium text-lia-text-secondary mb-2 flex items-center gap-2">
                       <TrendingUp className="w-4 h-4" />
                       Recomendação da LIA
@@ -339,7 +339,7 @@ export function QuickViewModal({
                 <div className="text-center py-8">
                   <TrendingUp className="w-12 h-12 lia-text-secondary mx-auto mb-4" />
                   <p className="text-lia-text-secondary text-xs">Análise da LIA não disponível</p>
-                  <Button variant="outline" size="sm" className="mt-4 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary text-xs">
+                  <Button variant="outline" size="sm" className="mt-4 bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-primary text-xs">
                     <Target className="w-4 h-4 mr-2" />
                     Solicitar Análise
                   </Button>
@@ -350,13 +350,13 @@ export function QuickViewModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between p-5 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+        <div className="flex items-center justify-between p-5 border-t border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary dark:border-lia-border-subtle">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary text-xs">
+            <Button variant="outline" size="sm" className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-primary text-xs">
               <Star className="w-4 h-4 mr-2" />
               Favoritar
             </Button>
-            <Button variant="outline" size="sm" className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary text-xs">
+            <Button variant="outline" size="sm" className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-primary text-xs">
               <UserPlus className="w-4 h-4 mr-2" />
               Adicionar a Lista
             </Button>
@@ -366,7 +366,7 @@ export function QuickViewModal({
             <Button
               variant="outline"
               onClick={() => onContactCandidate(candidate)}
-              className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary text-xs"
+              className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-primary text-xs"
             >
               <MessageCircle className="w-4 h-4 mr-2" />
               Contatar
@@ -374,14 +374,14 @@ export function QuickViewModal({
             <Button
               variant="outline"
               onClick={() => onScheduleInterview(candidate)}
-              className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary text-xs"
+              className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-primary text-xs"
             >
               <Calendar className="w-4 h-4 mr-2" />
               Agendar
             </Button>
             <Button
               onClick={() => onNavigateToFullProfile(candidate)}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-xs"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active text-xs"
             >
               <Eye className="w-4 h-4 mr-2" />
               Perfil Completo

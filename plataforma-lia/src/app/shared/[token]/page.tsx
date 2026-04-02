@@ -355,7 +355,7 @@ export default function SharedSearchPage() {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center font-['Open_Sans']" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex flex-col items-center gap-4" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 lia-text-600 dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
+          <Loader2 className="w-8 h-8 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
           <p className="text-zinc-400">Carregando...</p>
         </div>
       </div>
@@ -369,7 +369,7 @@ export default function SharedSearchPage() {
           <div className="text-status-error text-lg mb-4">{error}</div>
           <Button
             onClick={() => fetchSharedData()}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
           >
             Tentar novamente
           </Button>
@@ -455,7 +455,7 @@ export default function SharedSearchPage() {
           <section className="mb-8">
             <div className="bg-zinc-900 rounded-md p-6 border border-zinc-800 max-w-md mx-auto">
               <div className="flex items-center gap-3 mb-4">
-                <Mail className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <Mail className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 <h3 className="text-lg font-medium text-white">Acesso Necessário</h3>
               </div>
               <p className="text-zinc-400 text-sm mb-4" aria-live="polite" aria-atomic="true">
@@ -477,7 +477,7 @@ export default function SharedSearchPage() {
                   <Button
                     onClick={handleRequestOtp}
                     disabled={authLoading}
-                    className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                    className="w-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
                   >
                     {authLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
@@ -506,7 +506,7 @@ export default function SharedSearchPage() {
                   <Button
                     onClick={handleVerifyOtp}
                     disabled={authLoading}
-                    className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                    className="w-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
                   >
                     {authLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
@@ -545,7 +545,7 @@ export default function SharedSearchPage() {
                 </div>
                 <div className="w-full bg-zinc-800 rounded-full h-2">
                   <div
-                    className="bg-gray-900 dark:lia-bg-50 h-2 rounded-full transition-[width,height] duration-300"
+                    className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary h-2 rounded-full transition-[width,height] duration-300"
                     style={{width: `${(evaluatedCount / totalCount) * 100 || 0}%`}}
                   />
                 </div>
@@ -580,7 +580,7 @@ export default function SharedSearchPage() {
                     onClick={() => setActiveFilter(key)}
                     className={`px-4 py-2 rounded-md text-sm transition-colors motion-reduce:transition-none ${
                       activeFilter === key
-                        ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900'
+                        ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary'
                         : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-zinc-800'
                     }`}
                   >
@@ -631,7 +631,7 @@ export default function SharedSearchPage() {
                                 )}
                               </div>
                               {candidate.wsi_score !== undefined && (
-                                <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary border-0 flex-shrink-0">
+                                <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-0 flex-shrink-0">
                                   WSI {candidate.wsi_score}
                                 </Badge>
                               )}
@@ -704,7 +704,7 @@ export default function SharedSearchPage() {
 
                         <button
                           onClick={() => toggleCardExpanded(candidate.id)}
-                          className="flex items-center gap-1 lia-text-600 dark:text-lia-text-tertiary text-sm mt-4 hover:text-wedo-cyan-dark transition-colors motion-reduce:transition-none"
+                          className="flex items-center gap-1 text-lia-text-secondary dark:text-lia-text-tertiary text-sm mt-4 hover:text-wedo-cyan-dark transition-colors motion-reduce:transition-none"
                         >
                           {isExpanded ? (
                             <>
@@ -847,7 +847,7 @@ export default function SharedSearchPage() {
                                     onChange={(e) =>
                                       updatePendingComment(candidate.id, e.target.value)
                                     }
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded-md p-2 text-sm text-white placeholder:text-zinc-500 resize-none focus:outline-none focus:border-gray-400"
+                                    className="w-full bg-zinc-800 border border-zinc-700 rounded-md p-2 text-sm text-white placeholder:text-zinc-500 resize-none focus:outline-none focus:border-lia-border-medium"
                                     rows={2}
                                   />
                                 )}
@@ -870,7 +870,7 @@ export default function SharedSearchPage() {
                                     onClick={() => handleSaveFeedback(candidate.id)}
                                     disabled={isSaving}
                                     size="sm"
-                                    className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                                    className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
                                   >
                                     {isSaving ? (
                                       <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-1" />

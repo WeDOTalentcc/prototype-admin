@@ -185,7 +185,7 @@ export function CandidateQueriesGuide({
             className={cn(
  "px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] whitespace-nowrap",
               !activeCategory 
-                ? "bg-gray-900 text-white" 
+                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                 : "bg-lia-bg-tertiary lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
             )}
            
@@ -199,7 +199,7 @@ export function CandidateQueriesGuide({
               className={cn(
  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] whitespace-nowrap",
                 activeCategory === key 
-                  ? "bg-gray-900 text-white" 
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                   : "bg-lia-bg-tertiary lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
               )}
              
@@ -220,7 +220,7 @@ export function CandidateQueriesGuide({
                 style={{backgroundColor: 'var(--lia-bg-secondary)',
                   border: '1px solid var(--lia-bg-tertiary)'}}
               >
-                <div className="p-2 rounded-md flex-shrink-0 bg-gray-900/[0.08]">
+                <div className="p-2 rounded-md flex-shrink-0 bg-lia-btn-primary-bg/[0.08]">
                   <query.icon className="w-4 h-4 text-lia-text-secondary" />
                 </div>
                 <span

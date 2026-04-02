@@ -23,7 +23,7 @@ export const ModalFooterActions = React.memo(function ModalFooterActions({
   handleApply,
 }: ModalFooterActionsProps) {
   return (
-    <div className="flex items-center justify-between px-6 py-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+    <div className="flex items-center justify-between px-6 py-3 border-t border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary dark:border-lia-border-subtle">
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"
@@ -35,7 +35,7 @@ export const ModalFooterActions = React.memo(function ModalFooterActions({
           Limpar filtros
         </Button>
         {onSave && (
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary">
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-md text-xs bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary">
             {(() => {
               const dest = saveDestinations.find(d => d.key === saveDestination)
               const Icon = dest?.icon || Bookmark
@@ -59,7 +59,7 @@ export const ModalFooterActions = React.memo(function ModalFooterActions({
         <Button
           size="sm"
           onClick={handleApply}
-          className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+          className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
         >
           Aplicar Filtros
         </Button>

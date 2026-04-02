@@ -100,7 +100,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
 
   return (
     <div
-      className={"p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none " + activeClass}
+      className={"p-3 flex items-center justify-between hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none " + activeClass}
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">

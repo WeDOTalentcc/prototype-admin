@@ -94,7 +94,7 @@ export function CandidateDetailSidebar({
   }
 
   const getScoreColor = (score?: number) => {
-    if (!score) return "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
+    if (!score) return "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
     if (score >= 80) return "bg-status-success/15 text-status-success"
     if (score >= 60) return "bg-status-warning/15 text-status-warning"
     return "bg-wedo-orange/15 text-wedo-orange"
@@ -106,14 +106,14 @@ export function CandidateDetailSidebar({
 
   return (
     <Sheet open={open} onOpenChange={() => onClose()}>
-      <SheetContent className="w-[450px] sm:w-panel-xl p-0 bg-white dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
+      <SheetContent className="w-[450px] sm:w-panel-xl p-0 bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
         <SheetHeader className="p-6 pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-start gap-4">
             <Avatar className="h-16 w-16">
               {candidate.picture_url ? (
                 <AvatarImage src={candidate.picture_url} alt={candidate.name} />
               ) : null}
-              <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-lg">
+              <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-lg">
                 {getInitials(candidate.name)}
               </AvatarFallback>
             </Avatar>
@@ -147,8 +147,8 @@ export function CandidateDetailSidebar({
                     variant="outline" 
                     className={`${
                       candidate.source === "local" 
-                        ? "border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-secondary" 
-                        : "border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
+                        ? "border-lia-border-default dark:border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-secondary" 
+                        : "border-lia-border-default dark:border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
                     }`}
                   >
                     {candidate.source === "local" ? (
@@ -202,7 +202,7 @@ export function CandidateDetailSidebar({
                   <Star className="h-4 w-4 text-lia-text-secondary" />
                   Resumo do Match
                 </h4>
-                <p className="text-sm text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                <p className="text-sm text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                   {candidate.insights.overall_summary}
                 </p>
               </div>
@@ -223,7 +223,7 @@ export function CandidateDetailSidebar({
                     <Badge 
                       key={skill} 
                       variant="secondary" 
-                      className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary font-normal"
+                      className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary font-normal"
                     >
                       {skill}
                     </Badge>
@@ -241,7 +241,7 @@ export function CandidateDetailSidebar({
                 <div className="space-y-4">
                   {candidate.experiences.slice(0, 3).map((exp, idx) => (
                     <div key={`exp-${idx}`} className="relative pl-4 border-l-2 border-lia-border-subtle dark:border-lia-border-subtle">
-                      <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-gray-300" />
+                      <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-lia-border-default" />
                       <p className="font-medium text-lia-text-primary">{exp.title}</p>
                       <p className="text-sm text-lia-text-secondary">{exp.company}</p>
                       {(exp.start_date || exp.end_date) && (
@@ -323,7 +323,7 @@ export function CandidateDetailSidebar({
                   Sugestão de Mensagem
                 </h4>
                 <div className="relative">
-                  <p className="text-sm text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle pr-10">
+                  <p className="text-sm text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle pr-10">
                     {candidate.insights.outreach_message}
                   </p>
                   <Button
@@ -344,7 +344,7 @@ export function CandidateDetailSidebar({
               <h4 className="text-sm font-medium text-lia-text-primary mb-3">Contato</h4>
               <div className="space-y-2">
                 {candidate.email && (
-                  <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-lia-text-primary" />
                       <span className="text-sm text-lia-text-primary">{candidate.email}</span>
@@ -370,7 +370,7 @@ export function CandidateDetailSidebar({
                   </div>
                 )}
                 {candidate.phone && (
-                  <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-lia-text-primary" />
                       <span className="text-sm text-lia-text-primary">{candidate.phone}</span>
@@ -390,7 +390,7 @@ export function CandidateDetailSidebar({
                     href={candidate.linkedin_url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
+                    className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
                   >
                     <div className="flex items-center gap-2">
                       <Linkedin className="h-4 w-4 text-lia-text-secondary" />
@@ -414,12 +414,12 @@ export function CandidateDetailSidebar({
           </div>
         </ScrollArea>
 
-        <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex flex-col gap-2">
             {candidate.is_discovered && onSaveToBase && (
               <Button 
                 variant="outline"
-                className="w-full border-gray-900 dark:lia-border-50 text-lia-text-secondary hover:bg-gray-100 dark:bg-lia-bg-secondary"
+                className="w-full border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                 onClick={() => onSaveToBase(candidate.id)}
               >
                 <Save className="h-4 w-4 mr-2" />
@@ -437,7 +437,7 @@ export function CandidateDetailSidebar({
               </Button>
               {onAddToJob && (
                 <Button 
-                  className="flex-1 bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 text-white"
+                  className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active text-white"
                   onClick={() => onAddToJob(candidate.id)}
                 >
                   <UserPlus className="h-4 w-4 mr-2" />

@@ -164,9 +164,9 @@ const CandidateCard = memo(function CandidateCard({
       draggable
       onDragStart={handleDragStartInternal}
       onDragEnd={onDragEnd}
-      className={`bg-white dark:bg-lia-bg-primary rounded-md border relative overflow-hidden ${
-        candidate.needsAction ? 'border-l-4 border-l-gray-800 border-lia-border-subtle dark:border-lia-border-subtle' : 
-        (candidate.status === 'triado_aprovado' || candidate.status === 'triado') && stageId === 'screening' ? 'border-l-4 border-l-gray-300 dark:lia-border-l-600 border-lia-border-subtle dark:border-lia-border-subtle bg-gray-100 dark:bg-lia-bg-secondary' : 
+      className={`bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border relative overflow-hidden ${
+        candidate.needsAction ? 'border-l-4 border-l-lia-btn-primary-hover border-lia-border-subtle dark:border-lia-border-subtle' : 
+        (candidate.status === 'triado_aprovado' || candidate.status === 'triado') && stageId === 'screening' ? 'border-l-4 border-l-lia-border-default dark:border-l-lia-border-medium border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : 
         'border-lia-border-subtle dark:border-lia-border-subtle'
       } ${isDragging ? 'opacity-50 cursor-grabbing' : 'cursor-move'} transition-colors duration-300 group`}
       style={{animationDelay: `${index * 50}ms`,
@@ -189,7 +189,7 @@ const CandidateCard = memo(function CandidateCard({
     >
       {candidate.needsAction && (
         <div 
-          className="px-2 py-0.5 border-b bg-gray-100"
+          className="px-2 py-0.5 border-b bg-lia-bg-tertiary"
         >
           <div className="flex items-center gap-1">
             <Zap className="w-2 h-2 animate-pulse motion-reduce:animate-none text-lia-text-secondary" />
@@ -205,7 +205,7 @@ const CandidateCard = memo(function CandidateCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-opacity motion-reduce:transition-none bg-white/80 dark:bg-lia-bg-primary/80"
+                className="p-1 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80 dark:bg-lia-bg-primary/80"
                 onClick={(e) => e.stopPropagation()}
                 title="Mais opções"
               >
@@ -215,7 +215,7 @@ const CandidateCard = memo(function CandidateCard({
             <DropdownMenuContent side="right" align="start" sideOffset={8} className="w-48">
               <DropdownMenuItem 
                 onClick={handleQuickAction('email')} 
-                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
                
               >
                 <Mail className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
@@ -223,7 +223,7 @@ const CandidateCard = memo(function CandidateCard({
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('whatsapp')} 
-                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
                
               >
                 <MessageCircle className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
@@ -231,7 +231,7 @@ const CandidateCard = memo(function CandidateCard({
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('schedule_interview')} 
-                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
                
               >
                 <Calendar className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
@@ -239,7 +239,7 @@ const CandidateCard = memo(function CandidateCard({
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('wsi_screening')} 
-                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
                
               >
                 <ClipboardList className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
@@ -247,7 +247,7 @@ const CandidateCard = memo(function CandidateCard({
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('feedback')} 
-                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
                
               >
                 <MessageSquareText className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
@@ -256,7 +256,7 @@ const CandidateCard = memo(function CandidateCard({
               <DropdownMenuSeparator />
               <DropdownMenuItem 
                 onClick={handleQuickAction('toggle_favorite')} 
-                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
                
               >
                 <Heart className={`w-3.5 h-3.5 mr-2 ${isFavorite ? 'fill-red-500 text-status-error' : 'text-lia-text-secondary'}`} />
@@ -264,7 +264,7 @@ const CandidateCard = memo(function CandidateCard({
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={handleQuickAction('hide')} 
-                className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer" 
+                className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer" 
                
               >
                 <EyeOff className="w-3.5 h-3.5 mr-2 text-lia-text-secondary" />
@@ -274,7 +274,7 @@ const CandidateCard = memo(function CandidateCard({
           </DropdownMenu>
 
           <button
-            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none bg-white/80 dark:bg-lia-bg-primary/80"
+            className="p-1 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none bg-lia-bg-primary/80 dark:bg-lia-bg-primary/80"
             onClick={handleQuickAction('view_details')}
             title="Ver detalhes do candidato"
           >
@@ -298,7 +298,7 @@ const CandidateCard = memo(function CandidateCard({
               size="sm"
             />
             {isViewed && (
-              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-gray-300 rounded-full flex items-center justify-center border border-white" title="Perfil visualizado">
+              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-lia-border-default rounded-full flex items-center justify-center border border-white" title="Perfil visualizado">
                 <Eye className="w-2 h-2 text-white" />
               </div>
             )}
@@ -390,7 +390,7 @@ const CandidateCard = memo(function CandidateCard({
                   return (
                     <DropdownMenuItem
                       key={opt.code}
-                      className={`text-xs cursor-pointer ${isCurrent ? 'bg-gray-100 dark:bg-lia-bg-secondary' : ''}`}
+                      className={`text-xs cursor-pointer ${isCurrent ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : ''}`}
                       onClick={(e) => {
                         e.stopPropagation()
                         onSubStatusChange(candidate.id, opt.code, stageId)

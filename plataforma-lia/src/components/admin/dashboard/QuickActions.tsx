@@ -45,7 +45,7 @@ export function QuickActions({
               <a
                 key={action.href}
                 href={action.href}
-                className="flex items-center gap-3 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+                className="flex items-center gap-3 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
               >
                 <Icon 
                   className="w-5 h-5" 

@@ -148,7 +148,7 @@ export function CandidateActivitiesTab({
                         </Badge>
                       )}
                       {activity.statusLabel && (
-                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-white text-lia-text-secondary border-lia-border-subtle'}`}>
+                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
                           {activity.statusLabel}
                         </Badge>
                       )}
@@ -219,7 +219,7 @@ export function CandidateActivitiesTab({
                     </Badge>
                   )}
                   {activity.statusLabel && (
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-white text-lia-text-secondary border-lia-border-subtle'}`}>
+                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'bg-status-error/10 text-status-error border-status-error/30 font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
                       {activity.statusLabel}
                     </Badge>
                   )}

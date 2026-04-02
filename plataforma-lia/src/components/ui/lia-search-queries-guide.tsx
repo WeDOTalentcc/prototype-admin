@@ -179,7 +179,7 @@ export function LiaSearchQueriesGuide({
             className={cn(
  "px-2 py-1 rounded-full text-micro font-medium transition-[width,height] whitespace-nowrap",
               !activeCategory 
-                ? "bg-gray-900 text-white" 
+                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                 : "bg-lia-bg-tertiary lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
             )}
            
@@ -193,7 +193,7 @@ export function LiaSearchQueriesGuide({
               className={cn(
  "inline-flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium transition-[width,height] whitespace-nowrap",
                 activeCategory === key 
-                  ? "bg-gray-900 text-white" 
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                   : "bg-lia-bg-tertiary lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
               )}
              
@@ -240,7 +240,7 @@ export function LiaSearchQueriesGuide({
                 }}
               >
                 <div 
-                  className="p-1.5 rounded-md flex-shrink-0 bg-gray-900/[0.08]"
+                  className="p-1.5 rounded-md flex-shrink-0 bg-lia-btn-primary-bg/[0.08]"
                 >
                   <query.icon className="w-3 h-3 text-lia-text-secondary" />
                 </div>

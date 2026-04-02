@@ -200,13 +200,13 @@ function AdminSidebar({
       <div className="flex items-center justify-between h-16 px-4 border-b border-lia-border-subtle" >
         {!sidebarCollapsed && (
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 lia-text-900 dark:lia-text-50" />
-            <span className="font-semibold text-lg lia-text-800" >
+            <Shield className="w-6 h-6 text-lia-text-primary dark:text-lia-text-primary" />
+            <span className="font-semibold text-lg text-lia-text-primary" >
               WedoTalent Admin
             </span>
           </div>
         )}
-        {sidebarCollapsed && <Shield className="w-5 h-5 lia-text-900 dark:lia-text-50 mx-auto" />}
+        {sidebarCollapsed && <Shield className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary mx-auto" />}
       </div>
 
       {activeClient && !sidebarCollapsed && (
@@ -216,10 +216,10 @@ function AdminSidebar({
         >
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
+              <p className="text-xs font-medium uppercase tracking-wider text-lia-text-tertiary dark:text-lia-text-secondary" >
                 Cliente Ativo
               </p>
-              <p className="text-sm font-semibold truncate mt-0.5 lia-text-800" >
+              <p className="text-sm font-semibold truncate mt-0.5 text-lia-text-primary" >
                 {activeClient.name}
               </p>
             </div>
@@ -247,7 +247,7 @@ function AdminSidebar({
             )}
             {!sidebarCollapsed && (
               <p 
-                className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider lia-text-400 dark:lia-text-500"
+                className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-lia-text-tertiary dark:text-lia-text-secondary"
                 
               >
                 {group.label}
@@ -265,15 +265,15 @@ function AdminSidebar({
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
                       isActive
-                        ? "bg-lia-bg-tertiary lia-text-900 dark:lia-text-50 font-semibold"
-                        : "hover:bg-lia-interactive-hover lia-text-500"
+                        ? "bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary font-semibold"
+                        : "hover:bg-lia-interactive-hover text-lia-text-secondary"
                     )}
                     title={sidebarCollapsed ? item.name : undefined}
                   >
                     <Icon 
                       className={cn(
                         "w-5 h-5 shrink-0",
-                        isComplianceItem && item.name === "Dashboard Compliance" && !isActive && "lia-text-600"
+                        isComplianceItem && item.name === "Dashboard Compliance" && !isActive && "text-lia-text-secondary"
                       )}
                     />
                     {!sidebarCollapsed && (
@@ -313,10 +313,10 @@ function AdminSidebar({
               <AvatarFallback className="bg-lia-bg-inverse text-lia-text-on-inverse text-xs">AD</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate lia-text-800" >
+              <p className="text-sm font-medium truncate text-lia-text-primary" >
                 Admin WedoTalent
               </p>
-              <p className="text-xs truncate lia-text-400 dark:lia-text-500" >
+              <p className="text-xs truncate text-lia-text-tertiary dark:text-lia-text-secondary" >
                 admin@wedotalent.com
               </p>
             </div>
@@ -369,7 +369,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
           <div className="flex items-center gap-2">
             <span 
-              className="text-sm lia-text-400 dark:lia-text-500"
+              className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary"
               
             >
               Painel Administrativo

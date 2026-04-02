@@ -26,7 +26,7 @@ export const FilterChipsBar = React.memo(function FilterChipsBar({
   removeFromArray,
 }: FilterChipsBarProps) {
   return (
-    <div className="px-6 py-2 border-t border-lia-border-subtle dark:lia-border-800 bg-gray-50/50 dark:bg-lia-bg-primary/50">
+    <div className="px-6 py-2 border-t border-lia-border-subtle dark:border-lia-border-strong bg-lia-bg-secondary/50 dark:bg-lia-bg-primary/50">
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-micro text-lia-text-secondary font-medium">Filtros ativos:</span>
         {filters.general?.minExperience && (

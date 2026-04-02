@@ -125,7 +125,7 @@ export function AudioPlayer({
         className={cn(
  "flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center transition-colors",
           isLoaded
-            ? "bg-gray-900 text-white hover:bg-gray-800"
+            ? "bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
             : "bg-lia-border-default text-lia-text-tertiary cursor-not-allowed"
         )}
         aria-label={isPlaying ? "Pausar áudio" : "Reproduzir áudio"}
@@ -148,7 +148,7 @@ export function AudioPlayer({
           aria-valuemax={duration}
         >
           <div
-            className="absolute inset-y-0 left-0 bg-gray-900 rounded-full transition-[width] duration-100"
+            className="absolute inset-y-0 left-0 bg-lia-btn-primary-bg rounded-full transition-[width] duration-100"
             style={{width: `${progress}%`}}
           />
         </div>

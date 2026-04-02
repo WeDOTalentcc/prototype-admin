@@ -213,9 +213,9 @@ export function RealTimeDashboardPage() {
         return 'text-status-error bg-status-error/15 border-status-error/30'
       case 'offline':
       case 'queued':
-        return 'text-lia-text-secondary bg-gray-100 border-lia-border-subtle'
+        return 'text-lia-text-secondary bg-lia-bg-tertiary border-lia-border-subtle'
       default:
-        return 'text-lia-text-secondary bg-gray-100 border-lia-border-subtle'
+        return 'text-lia-text-secondary bg-lia-bg-tertiary border-lia-border-subtle'
     }
   }
 
@@ -245,12 +245,12 @@ export function RealTimeDashboardPage() {
     switch (trend) {
       case 'up': return <TrendingUp className="w-3 h-3 text-status-success" />
       case 'down': return <TrendingDown className="w-3 h-3 text-status-error" />
-      default: return <div className="w-3 h-3 bg-gray-400 rounded-full" />
+      default: return <div className="w-3 h-3 bg-lia-border-medium rounded-full" />
     }
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="max-w-full mx-auto px-6 py-6">
         {/* Header */}
         <div className="mb-6">
@@ -285,7 +285,7 @@ export function RealTimeDashboardPage() {
               <select
                 value={selectedTimeframe}
                 onChange={(e) => setSelectedTimeframe(e.target.value)}
-                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               >
                 <option value="1m">1 minuto</option>
                 <option value="5m">5 minutos</option>
@@ -336,7 +336,7 @@ export function RealTimeDashboardPage() {
 
                 {/* Progress bar */}
                 <div className="mt-3">
-                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div className="w-full bg-lia-interactive-active rounded-full h-1.5">
                     <div
                       className={`h-1.5 rounded-full transition-[width,height] ${
                         metric.value >= metric.threshold.critical ? 'bg-status-error' :
@@ -435,9 +435,9 @@ export function RealTimeDashboardPage() {
                       <span>Progresso</span>
                       <span>{workflow.progress}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-lia-interactive-active rounded-full h-2">
                       <div
-                        className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full transition-[width,height] duration-500"
+                        className="bg-lia-bg-inverse dark:bg-lia-text-tertiary h-2 rounded-full transition-[width,height] duration-500"
                         style={{width: `${workflow.progress}%`}}
                       />
                     </div>
@@ -477,12 +477,12 @@ export function RealTimeDashboardPage() {
                 { time: "14:43:58", event: "Novo candidato adicionado ao pipeline", system: "Recruitment", type: "success" },
                 { time: "14:43:45", event: "Email NPS enviado para 23 candidatos", system: "Communication", type: "success" }
               ].map((activity, index) => (
-                <div key={`${activity.time}-${index}`} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
+                <div key={`${activity.time}-${index}`} className="flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md">
                   <div className="text-xs text-lia-text-primary w-16">{activity.time}</div>
                   <div className={`w-2 h-2 rounded-full ${
                     activity.type === 'success' ? 'bg-status-success' :
                     activity.type === 'warning' ? 'bg-status-warning' :
-                    activity.type === 'error' ? 'bg-status-error' : 'bg-gray-700 dark:bg-lia-text-tertiary'
+                    activity.type === 'error' ? 'bg-status-error' : 'bg-lia-bg-inverse dark:bg-lia-text-tertiary'
                   }`} />
                   <div className="flex-1">
                     <div className="text-sm font-medium text-lia-text-primary">{activity.event}</div>

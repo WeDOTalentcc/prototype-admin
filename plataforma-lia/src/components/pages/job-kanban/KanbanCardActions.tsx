@@ -59,7 +59,7 @@ export function KanbanCardActions({
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <button
-        className="p-1 hover:bg-gray-100 rounded-md transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80"
+        className="p-1 hover:bg-lia-bg-tertiary rounded-md transition-opacity motion-reduce:transition-none bg-lia-bg-primary/80"
         onClick={(e) => e.stopPropagation()}
         title="Mais opções"
         aria-label="Mais opções do candidato"
@@ -73,7 +73,7 @@ export function KanbanCardActions({
           e.stopPropagation()
           onSendEmail(candidate)
         }}
-        className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+        className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <Mail className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
         Enviar Email
@@ -83,7 +83,7 @@ export function KanbanCardActions({
           e.stopPropagation()
           onSendWhatsApp(candidate)
         }}
-        className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+        className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <MessageCircle className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
         Enviar WhatsApp
@@ -93,7 +93,7 @@ export function KanbanCardActions({
           e.stopPropagation()
           onScheduleInterview(candidate)
         }}
-        className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+        className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <Calendar className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
         Agendar Entrevista
@@ -103,7 +103,7 @@ export function KanbanCardActions({
           e.stopPropagation()
           onSendWSIInvite(candidate)
         }}
-        className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+        className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <ClipboardList className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
         Triagem WSI
@@ -113,7 +113,7 @@ export function KanbanCardActions({
           e.stopPropagation()
           onSendFeedback(candidate)
         }}
-        className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+        className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <MessageSquareText className="w-3.5 h-3.5 mr-2 text-lia-text-tertiary" />
         Enviar Feedback
@@ -124,12 +124,12 @@ export function KanbanCardActions({
           e.stopPropagation()
           onToggleShortList(candidate.id)
         }}
-        className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+        className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <Bookmark
           className={`w-3.5 h-3.5 mr-2 ${
             shortListedCandidateIds.has(candidate.id)
-              ? "fill-gray-900 text-lia-text-primary dark:fill-gray-50"
+              ? "fill-lia-btn-primary-bg text-lia-text-primary dark:fill-lia-bg-secondary"
               : "text-lia-text-tertiary"
           }`}
         />
@@ -142,7 +142,7 @@ export function KanbanCardActions({
           e.stopPropagation()
           onToggleFavorite(candidate.id)
         }}
-        className="text-xs text-lia-text-primary hover:bg-gray-50 cursor-pointer"
+        className="text-xs text-lia-text-primary hover:bg-lia-bg-secondary cursor-pointer"
       >
         <Heart
           className={`w-3.5 h-3.5 mr-2 ${
@@ -160,7 +160,7 @@ export function KanbanCardActions({
 
   {/* Botão de Preview */}
   <button
-    className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none bg-lia-bg-primary/80"
+    className="p-1 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none bg-lia-bg-primary/80"
     onClick={(e) => {
       e.stopPropagation()
       onOpenPreview(candidate)

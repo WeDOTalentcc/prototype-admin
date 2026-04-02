@@ -307,7 +307,7 @@ export function CompensationBenefitsPanel({
       <Button
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+        className="w-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
         size="lg"
       >
         {isLoading ? (
@@ -351,7 +351,7 @@ function BenefitRow({
       >
         <span>{benefit.name}</span>
         {benefit.is_mandatory && (
-          <span className="ml-1 text-micro px-1 py-0 rounded-full bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary">obrig.</span>
+          <span className="ml-1 text-micro px-1 py-0 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">obrig.</span>
         )}
         {benefit.is_highlighted && (
           <Heart className="inline w-3 h-3 ml-1 text-wedo-magenta fill-pink-500" />

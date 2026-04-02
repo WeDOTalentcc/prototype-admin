@@ -141,7 +141,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-4xl h-[80vh] p-0 gap-0 overflow-hidden bg-white border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
+        className="max-w-4xl h-[80vh] p-0 gap-0 overflow-hidden bg-lia-bg-primary border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
        
       >
         <VisuallyHidden>
@@ -166,7 +166,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
           <>
             <div className="flex items-center justify-between px-5 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
                   <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </div>
                 <div>
@@ -185,7 +185,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                   variant="outline"
                   size="sm"
                   onClick={onClose}
-                  className="h-9 px-4 text-sm-ui font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:hover:bg-gray-700"
+                  className="h-9 px-4 text-sm-ui font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
                 >
                   Cancelar
                 </Button>
@@ -193,7 +193,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                   onClick={handleSend}
                   disabled={!isValid || sending}
                   size="sm"
-                  className="h-9 px-4 text-sm-ui font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="h-9 px-4 text-sm-ui font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   {sending ? (
                     <>
@@ -229,7 +229,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                 </div>
               </div>
 
-              <div className="w-[45%] flex flex-col bg-white">
+              <div className="w-[45%] flex flex-col bg-lia-bg-primary">
                 <div className="px-4 py-3 border-b border-lia-border-subtle">
                   <p className="text-xs font-medium text-lia-text-secondary uppercase tracking-wider mb-2">
                     Preview
@@ -241,17 +241,17 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                         Para:
                       </p>
                       <div className="flex items-center gap-0.5">
-                        <button className="p-0.5 hover:bg-gray-50 rounded-md">
+                        <button className="p-0.5 hover:bg-lia-bg-secondary rounded-md">
                           <ChevronLeft className="w-3.5 h-3.5 lia-text-secondary" />
                         </button>
-                        <button className="p-0.5 hover:bg-gray-50 rounded-md">
+                        <button className="p-0.5 hover:bg-lia-bg-secondary rounded-md">
                           <ChevronRight className="w-3.5 h-3.5 lia-text-secondary" />
                         </button>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-2 mt-1.5">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0">
                         <User className="w-4 h-4 lia-text-secondary" />
                       </div>
                       <div className="flex-1 min-w-0">

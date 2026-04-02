@@ -21,7 +21,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
       />
 
       {/* Painel Lateral */}
-      <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-white dark:bg-lia-bg-primary" style={{animation: 'slideInRight 0.3s ease-out'}}>
+      <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-lia-bg-primary dark:bg-lia-bg-primary" style={{animation: 'slideInRight 0.3s ease-out'}}>
         {/* Header */}
         <div className="bg-wedo-purple p-4 text-white">
           <div className="flex items-center justify-between">
@@ -59,14 +59,14 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
 
           <div className="space-y-3">
             {/* Sugestão 1 */}
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
               <div className="flex items-start justify-between mb-2">
                 <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
                   Qual método de pesquisa seria mais apropriado para validar a usabilidade de um protótipo em fase inicial?
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs">Recomendada</Badge>
-                  <Badge className="bg-gray-100 text-lia-text-primary text-xs">2 min</Badge>
+                  <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">Recomendada</Badge>
+                  <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">2 min</Badge>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">
@@ -88,7 +88,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                 </div>
                 <Button
                   size="sm"
-                  className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white"
+                  className="text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white"
                   onClick={onClose}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />
@@ -98,14 +98,14 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
             </div>
 
             {/* Sugestão 2 */}
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
               <div className="flex items-start justify-between mb-2">
                 <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
                   Como você priorizaria funcionalidades em um MVP usando a matriz de esforço vs impacto?
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-gray-900 text-white dark:bg-lia-bg-tertiary text-xs">Alta Relevância</Badge>
-                  <Badge className="bg-gray-100 text-lia-text-primary text-xs">3 min</Badge>
+                  <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-tertiary text-xs">Alta Relevância</Badge>
+                  <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">3 min</Badge>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">
@@ -127,7 +127,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                 </div>
                 <Button
                   size="sm"
-                  className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white"
+                  className="text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white"
                   onClick={onClose}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />
@@ -137,14 +137,14 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
             </div>
 
             {/* Sugestão 3 */}
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
               <div className="flex items-start justify-between mb-2">
                 <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
                   Qual é a diferença fundamental entre Design System e Style Guide?
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs">Conceitual</Badge>
-                  <Badge className="bg-gray-100 text-lia-text-primary text-xs">2 min</Badge>
+                  <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">Conceitual</Badge>
+                  <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">2 min</Badge>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">
@@ -166,7 +166,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                 </div>
                 <Button
                   size="sm"
-                  className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white"
+                  className="text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white"
                   onClick={onClose}
                 >
                   <RefreshCw className="w-3 h-3 mr-1" />
@@ -186,7 +186,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
         </div>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-3 bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <p className="text-xs text-lia-text-primary">
               <Brain className="w-3 h-3 inline mr-1 text-wedo-cyan" />

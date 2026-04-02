@@ -100,8 +100,8 @@ export function CalibrationCard({
     <Card className={cn(
  "w-full border transition-colors duration-200",
       feedbackGiven === 'like' && "border-status-success/30 bg-status-success/10/50 dark:bg-status-success/10",
-      feedbackGiven === 'dislike' && "border-lia-border-default bg-gray-50/50 dark:bg-lia-bg-primary/10 opacity-60",
-      !feedbackGiven && "border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle hover:",
+      feedbackGiven === 'dislike' && "border-lia-border-default bg-lia-bg-secondary/50 dark:bg-lia-bg-primary/10 opacity-60",
+      !feedbackGiven && "border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary hover:border-lia-border-subtle hover:",
       className
     )}>
       {progress && (
@@ -127,7 +127,7 @@ export function CalibrationCard({
             </div>
             <Progress 
               value={progressPercentage} 
-              className="h-1.5 bg-gray-100 dark:bg-lia-bg-secondary"
+              className="h-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
             />
             {!progress.isComplete && feedbacksRemaining > 0 && (
               <p className="text-xs text-lia-text-primary">
@@ -152,7 +152,7 @@ export function CalibrationCard({
               {candidate.avatar_url ? (
                 <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
               ) : null}
-              <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-sm font-medium">
+              <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-sm font-medium">
                 {getInitials(candidate.name)}
               </AvatarFallback>
             </Avatar>
@@ -177,7 +177,7 @@ export function CalibrationCard({
                     </a>
                   )}
                   {candidate.lia_score && (
-                    <Badge className="text-xs py-0 px-1.5 bg-gray-100 text-lia-text-primary border-lia-border-subtle">
+                    <Badge className="text-xs py-0 px-1.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                       Score: {candidate.lia_score}
                     </Badge>
                   )}
@@ -224,7 +224,7 @@ export function CalibrationCard({
                   <Badge 
                     key={skill} 
                     variant="secondary"
-                    className="text-xs py-0 px-1.5 bg-gray-100 dark:bg-lia-bg-secondary"
+                    className="text-xs py-0 px-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                   >
                     {skill}
                   </Badge>
@@ -258,7 +258,7 @@ export function CalibrationCard({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex-1 h-8 text-xs gap-1.5 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="flex-1 h-8 text-xs gap-1.5 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover"
                   onClick={handleDislike}
                   disabled={isLoading}
                 >
@@ -292,7 +292,7 @@ export function CalibrationCard({
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1 h-7 text-xs bg-gray-600 hover:bg-gray-700"
+                    className="flex-1 h-7 text-xs bg-lia-border-medium hover:bg-lia-bg-inverse"
                     onClick={submitDislike}
                   >
                     <ThumbsDown className="w-3 h-3 mr-1" />

@@ -519,7 +519,7 @@ export function useSetupEmpresa() {
 
   const getCategoryColor = (categoryId: string) => {
     const cat = BENEFIT_CATEGORIES.find((c) => c.id === categoryId)
-    return cat ? cat.color : "lia-text-500"
+    return cat ? cat.color : "text-lia-text-secondary"
   }
 
   return {

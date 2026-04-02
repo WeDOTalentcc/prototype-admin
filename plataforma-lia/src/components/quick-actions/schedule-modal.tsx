@@ -53,7 +53,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
       name: 'Telefônica',
       icon: Phone,
       description: 'Conversa por telefone',
-      color: 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+      color: 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     },
     {
       id: 'video',
@@ -324,7 +324,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
       <div className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-3xl max-h-[90vh] overflow-y-auto`}>
         <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
@@ -341,7 +341,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
+          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -358,7 +358,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 <select
                   value={liaFocus}
                   onChange={(e) => setLiaFocus(e.target.value as 'comprehensive' | 'technical' | 'behavioral' | 'cultural')}
-                  className="text-micro border border-lia-border-subtle rounded-md px-2 py-1 bg-lia-bg-primary focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                  className="text-micro border border-lia-border-subtle rounded-md px-2 py-1 bg-lia-bg-primary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                 >
                   <option value="comprehensive">Análise Completa</option>
                   <option value="technical">Foco Técnico</option>
@@ -368,7 +368,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 <button
                   onClick={generateLiaRecommendations}
                   disabled={isLiaAnalyzing}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none disabled:opacity-50"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none disabled:opacity-50"
                 >
                   {isLiaAnalyzing ? (
                     <>
@@ -405,7 +405,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                         <div className="text-micro text-lia-text-secondary">Duração sugerida</div>
                         <button
                           onClick={() => applyLiaRecommendation('duration')}
-                          className="text-micro mt-1 h-6 px-2 text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
+                          className="text-micro mt-1 h-6 px-2 text-lia-text-primary hover:bg-lia-bg-secondary rounded-full transition-[width,height]"
                         >
                           Aplicar
                         </button>
@@ -416,7 +416,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                         <div className="text-micro text-lia-text-secondary">Tipo recomendado</div>
                         <button
                           onClick={() => applyLiaRecommendation('type')}
-                          className="text-micro mt-1 h-6 px-2 text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
+                          className="text-micro mt-1 h-6 px-2 text-lia-text-primary hover:bg-lia-bg-secondary rounded-full transition-[width,height]"
                         >
                           Aplicar
                         </button>
@@ -427,7 +427,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                         <div className="text-micro text-lia-text-secondary">Plataforma sugerida</div>
                         <button
                           onClick={() => applyLiaRecommendation('platform')}
-                          className="text-micro mt-1 h-6 px-2 text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
+                          className="text-micro mt-1 h-6 px-2 text-lia-text-primary hover:bg-lia-bg-secondary rounded-full transition-[width,height]"
                         >
                           Aplicar
                         </button>
@@ -446,7 +446,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                             </div>
                             <button
                               onClick={() => setTime(timeRec.time)}
-                              className="text-micro h-6 px-2 text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
+                              className="text-micro h-6 px-2 text-lia-text-primary hover:bg-lia-bg-secondary rounded-full transition-[width,height]"
                             >
                               Usar
                             </button>
@@ -479,7 +479,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                       </div>
                       <button
                         onClick={() => applyLiaRecommendation('notes')}
-                        className="text-micro mt-2 px-2 py-1 text-lia-text-primary hover:bg-gray-50 rounded-full transition-[width,height]"
+                        className="text-micro mt-2 px-2 py-1 text-lia-text-primary hover:bg-lia-bg-secondary rounded-full transition-[width,height]"
                       >
                         Aplicar foco nas observações
                       </button>
@@ -527,8 +527,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                   onClick={() => setScheduleType(type.id as 'phone' | 'video' | 'presential')}
                   className={`p-4 border rounded-md text-left transition-colors motion-reduce:transition-none ${
  scheduleType === type.id
-                      ? 'border-lia-border-default bg-gray-100'
-                      : 'border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle'
+                      ? 'border-lia-border-default bg-lia-bg-tertiary'
+                      : 'border-lia-border-subtle hover:bg-lia-bg-secondary hover:border-lia-border-subtle'
                   }`}
                 >
                   <type.icon className={`w-5 h-5 mb-2 ${scheduleType === type.id ? 'text-lia-text-primary' : 'lia-text-secondary'}`} />
@@ -550,7 +550,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               />
             </div>
             <div>
@@ -561,7 +561,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               />
             </div>
             <div>
@@ -571,7 +571,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               <select
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               >
                 <option value="30">30 minutos</option>
                 <option value="45">45 minutos</option>
@@ -595,8 +595,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                     onClick={() => setPlatform(plat.id)}
                     className={`p-3 border rounded-md text-center transition-colors motion-reduce:transition-none ${
  platform === plat.id
-                        ? 'border-lia-border-default bg-gray-100'
-                        : 'border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle'
+                        ? 'border-lia-border-default bg-lia-bg-tertiary'
+                        : 'border-lia-border-subtle hover:bg-lia-bg-secondary hover:border-lia-border-subtle'
                     }`}
                   >
                     <plat.icon className={`w-5 h-5 mx-auto mb-1 ${platform === plat.id ? 'text-lia-text-primary' : 'lia-text-secondary'}`} />
@@ -616,7 +616,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-lia-bg-secondary dark:border-lia-border-default"
+                className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg dark:bg-lia-bg-secondary dark:border-lia-border-default"
                 placeholder="Endereço completo ou sala"
               />
             </div>
@@ -630,7 +630,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
             <select
               value={interviewer}
               onChange={(e) => setInterviewer(e.target.value)}
-              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
             >
               <option value="">Selecione o entrevistador</option>
               {interviewers.map((person) => (
@@ -648,7 +648,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-lia-bg-secondary dark:border-lia-border-default"
+              className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg dark:bg-lia-bg-secondary dark:border-lia-border-default"
               placeholder="Pontos específicos a abordar, preparações necessárias..."
             />
           </div>
@@ -668,14 +668,14 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
           <div className="flex justify-end gap-3 pt-5 border-t border-lia-border-subtle">
             <button
               onClick={onClose}
-              className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+              className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
             >
               Cancelar
             </button>
             {createdInterviewId && (
               <button
                 onClick={handleDownloadIcs}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
               >
                 <Download className="w-4 h-4" />
                 Baixar .ICS
@@ -684,7 +684,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
             <button
               onClick={handleSchedule}
               disabled={!date || !time || !interviewer || isScheduling}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-colors motion-reduce:transition-none disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text transition-colors motion-reduce:transition-none disabled:opacity-50"
             >
               {isScheduling ? (
                 <>

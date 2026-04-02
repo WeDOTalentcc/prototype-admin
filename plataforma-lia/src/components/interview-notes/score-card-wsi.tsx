@@ -120,7 +120,7 @@ function getDecisionBadgeStyles(decision: WSIScore["decision"]): string {
     case "rejected":
       return "bg-status-error/15 text-status-error border-status-error/30"
     default:
-      return "bg-gray-100 text-lia-text-primary border-lia-border-subtle"
+      return "bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle"
   }
 }
 
@@ -170,7 +170,7 @@ function BlockSection({
             key={question.id}
             className={cn(
  "flex items-center justify-between py-1.5 px-2 rounded-md text-xs",
-              question.skipped ? "bg-gray-50 lia-text-secondary" : "bg-gray-50"
+              question.skipped ? "bg-lia-bg-secondary lia-text-secondary" : "bg-lia-bg-secondary"
             )}
           >
             <span className="flex-1 truncate text-lia-text-secondary">
@@ -296,7 +296,7 @@ export function ScoreCardWSI({
           ))}
         </div>
 
-        <div className="border border-lia-border-subtle rounded-md p-4 bg-gray-50">
+        <div className="border border-lia-border-subtle rounded-md p-4 bg-lia-bg-secondary">
           <div className="flex items-center gap-2 mb-4">
             <Calculator className="h-4 w-4 text-lia-text-secondary" />
             <h3 className="text-sm font-semibold text-lia-text-primary">

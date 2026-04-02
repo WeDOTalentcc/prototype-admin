@@ -198,7 +198,7 @@ export function PromptSuggestionsPanel({
       </div>
 
       {showHistory && commandHistory.length > 0 && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-md border">
+        <div className="mb-4 p-3 bg-lia-bg-secondary rounded-md border">
           <h4 className="text-xs font-medium text-lia-text-primary mb-2">Comandos Recentes</h4>
           <div className="space-y-1">
             {commandHistory.map((command, index) => (
@@ -226,7 +226,7 @@ export function PromptSuggestionsPanel({
             className={`flex items-start gap-3 p-3 text-left rounded-md border border-lia-border-subtle bg-lia-bg-primary transition-colors motion-reduce:transition-none group ${
  isProcessing
                 ? 'opacity-50 cursor-not-allowed'
-                : 'hover:border-gray-400 hover:'
+                : 'hover:border-lia-border-medium hover:'
             }`}
           >
             <span className="text-lg flex-shrink-0">{suggestion.icon}</span>
@@ -238,7 +238,7 @@ export function PromptSuggestionsPanel({
                 {suggestion.description}
               </div>
               {suggestion.category && (
-                <Badge className="mt-2 text-micro bg-gray-100 text-lia-text-primary border-0">
+                <Badge className="mt-2 text-micro bg-lia-bg-tertiary text-lia-text-primary border-0">
                   {suggestion.category}
                 </Badge>
               )}

@@ -38,14 +38,14 @@ const quickActions: QuickAction[] = [
   {
     href: "/admin/clientes",
     icon: Building,
-    iconColor: "var(--gray-600)",
+    iconColor: "var(--lia-text-secondary)",
     title: "Adicionar Cliente",
     subtitle: "Nova organização",
   },
   {
     href: "/admin/configuracoes",
     icon: Zap,
-    iconColor: "var(--gray-600)",
+    iconColor: "var(--lia-text-secondary)",
     title: "Configurar Integração",
     subtitle: "Pearch, OpenMic, ATS",
   },
@@ -75,7 +75,7 @@ function formatDate(dateString?: string): string {
 }
 
 function getDaysRemainingColor(days?: number): string {
-  if (days === undefined) return "lia-text-500"
+  if (days === undefined) return "text-lia-text-secondary"
   if (days <= 3) return "text-status-error"
   if (days <= 7) return "text-wedo-orange"
   return "text-status-success"
@@ -84,9 +84,9 @@ function getDaysRemainingColor(days?: number): string {
 function getPlanBadgeColor(plan: string): string {
   const planLower = plan.toLowerCase()
   if (planLower.includes("enterprise")) return "bg-wedo-purple/15 text-wedo-purple"
-  if (planLower.includes("professional") || planLower.includes("pro")) return "bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50"
-  if (planLower.includes("starter") || planLower.includes("basic")) return "bg-gray-100 lia-text-800 dark:text-lia-text-primary"
-  return "bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50"
+  if (planLower.includes("professional") || planLower.includes("pro")) return "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary"
+  if (planLower.includes("starter") || planLower.includes("basic")) return "bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary"
+  return "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary"
 }
 
 export default function AdminDashboard() {
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
   const serviceItems: ServiceItem[] = [
     {
       icon: Zap,
-      iconColor: "var(--gray-600)",
+      iconColor: "var(--lia-text-secondary)",
       title: "Consumo de IA (Claude + Gemini)",
       subtitle: "1.2M tokens este mês",
       value: "R$ 850",
@@ -197,12 +197,12 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1
-            className="text-3xl font-semibold mb-2 lia-text-800 dark:text-lia-text-primary"
+            className="text-3xl font-semibold mb-2 text-lia-text-primary dark:text-lia-text-primary"
             
           >
             Dashboard Administrativo
           </h1>
-          <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
             Visão geral da plataforma WedoTalent • {isLoading ? 'Carregando...' : 'Atualizado em tempo real'}
           </p>
         </div>
@@ -226,11 +226,11 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <Card className="p-6 bg-white dark:lia-bg-950" >
+        <Card className="p-6 bg-lia-bg-primary dark:bg-lia-bg-primary" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold lia-text-950 dark:lia-text-50">Novos Clientes</h3>
+              <h3 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Novos Clientes</h3>
             </div>
             <span className="text-sm px-2 py-0.5 rounded-full bg-status-success/15 text-status-success">
               {newClients.length} no período
@@ -239,10 +239,10 @@ export default function AdminDashboard() {
           
           {isLoading ? (
             <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-400" />
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
             </div>
           ) : newClients.length === 0 ? (
-            <p className="text-sm lia-text-500 text-center py-8">
+            <p className="text-sm text-lia-text-secondary text-center py-8">
               Nenhum novo cliente no período
             </p>
           ) : (
@@ -251,13 +251,13 @@ export default function AdminDashboard() {
                 <Link 
                   key={client.id}
                   href={`/admin/clientes/${client.id}`}
-                  className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none group"
+                  className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none group"
                 >
                   <div>
-                    <p className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none">
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none">
                       {client.name}
                     </p>
-                    <p className="text-xs lia-text-500">
+                    <p className="text-xs text-lia-text-secondary">
                       Criado em {formatDate(client.createdAt)}
                     </p>
                   </div>
@@ -265,7 +265,7 @@ export default function AdminDashboard() {
                     <span className={`text-xs px-2 py-0.5 rounded-full ${getPlanBadgeColor(client.plan)}`}>
                       {client.plan}
                     </span>
-                    <ExternalLink className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none" />
+                    <ExternalLink className="w-4 h-4 text-lia-text-tertiary group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none" />
                   </div>
                 </Link>
               ))}
@@ -273,11 +273,11 @@ export default function AdminDashboard() {
           )}
         </Card>
 
-        <Card className="p-6 bg-white dark:lia-bg-950" >
+        <Card className="p-6 bg-lia-bg-primary dark:bg-lia-bg-primary" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-status-warning" />
-              <h3 className="font-semibold lia-text-950 dark:lia-text-50">Clientes em Trial</h3>
+              <h3 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Clientes em Trial</h3>
             </div>
             <span className="text-sm px-2 py-0.5 rounded-full bg-wedo-orange/15 text-wedo-orange">
               {trialClients.length} ativos
@@ -286,10 +286,10 @@ export default function AdminDashboard() {
           
           {isLoading ? (
             <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-400" />
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
             </div>
           ) : trialClients.length === 0 ? (
-            <p className="text-sm lia-text-500 text-center py-8">
+            <p className="text-sm text-lia-text-secondary text-center py-8">
               Nenhum cliente em trial
             </p>
           ) : (
@@ -298,13 +298,13 @@ export default function AdminDashboard() {
                 <Link 
                   key={client.id}
                   href={`/admin/clientes/${client.id}`}
-                  className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none group"
+                  className="flex items-center justify-between p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none group"
                 >
                   <div>
-                    <p className="font-medium lia-text-950 dark:lia-text-50 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none">
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none">
                       {client.name}
                     </p>
-                    <p className="text-xs lia-text-500">
+                    <p className="text-xs text-lia-text-secondary">
                       Expira em {formatDate(client.trialEndDate)}
                     </p>
                   </div>
@@ -312,7 +312,7 @@ export default function AdminDashboard() {
                     <span className={`text-sm font-semibold ${getDaysRemainingColor(client.daysRemaining)}`}>
                       {client.daysRemaining} dias
                     </span>
-                    <ExternalLink className="w-4 h-4 lia-text-400 group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none" />
+                    <ExternalLink className="w-4 h-4 text-lia-text-tertiary group-hover:lia-text-900 dark:group-hover:lia-text-50 transition-colors motion-reduce:transition-none" />
                   </div>
                 </Link>
               ))}
@@ -320,11 +320,11 @@ export default function AdminDashboard() {
           )}
         </Card>
 
-        <Card className="p-6 bg-white dark:lia-bg-950" >
+        <Card className="p-6 bg-lia-bg-primary dark:bg-lia-bg-primary" >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <UserMinus className="w-5 h-5 text-red-600" />
-              <h3 className="font-semibold lia-text-950 dark:lia-text-50">Churned</h3>
+              <h3 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">Churned</h3>
             </div>
             <span className="text-sm px-2 py-0.5 rounded-full bg-status-error/15 text-status-error">
               {churnedClients.length} no período
@@ -333,12 +333,12 @@ export default function AdminDashboard() {
           
           {isLoading ? (
             <div className="flex items-center justify-center py-8" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none lia-text-400" />
+              <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
             </div>
           ) : churnedClients.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <CheckCircle className="w-8 h-8 text-status-success mb-2" />
-              <p className="text-sm lia-text-500">
+              <p className="text-sm text-lia-text-secondary">
                 Nenhum churn no período
               </p>
             </div>
@@ -350,14 +350,14 @@ export default function AdminDashboard() {
                   className="p-3 rounded-md border border-lia-border-subtle bg-status-error/10/30"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium lia-text-950 dark:lia-text-50">
+                    <p className="font-medium text-lia-text-primary dark:text-lia-text-primary">
                       {client.name}
                     </p>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${getPlanBadgeColor(client.plan)}`}>
                       {client.plan}
                     </span>
                   </div>
-                  <p className="text-xs lia-text-500">
+                  <p className="text-xs text-lia-text-secondary">
                     Churned em {formatDate(client.churnedAt)}
                   </p>
                   {client.reason && (

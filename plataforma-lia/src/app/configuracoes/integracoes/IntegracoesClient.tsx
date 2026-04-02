@@ -52,10 +52,10 @@ export default function IntegracoesPage() {
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-lg font-semibold lia-text-900 dark:lia-text-50 font-['Open_Sans',sans-serif]">
+        <h1 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
           Integrações de Calendário
         </h1>
-        <p className="text-xs lia-text-500 mt-1 font-['Open_Sans',sans-serif]" aria-live="polite" aria-atomic="true">
+        <p className="text-xs text-lia-text-secondary mt-1 font-['Open_Sans',sans-serif]" aria-live="polite" aria-atomic="true">
           Conecte seu calendário para agendar entrevistas automaticamente com candidatos.
         </p>
       </div>
@@ -69,10 +69,10 @@ export default function IntegracoesPage() {
                 <Calendar className="w-5 h-5 text-wedo-cyan-dark dark:text-wedo-cyan-dark" />
               </div>
               <div>
-                <CardTitle className="text-sm font-semibold lia-text-900 dark:lia-text-50 font-['Open_Sans',sans-serif]">
+                <CardTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
                   Microsoft Calendar
                 </CardTitle>
-                <p className="text-xs lia-text-500 font-['Open_Sans',sans-serif]">
+                <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
                   Agendamento via Microsoft Graph / Outlook
                 </p>
               </div>
@@ -86,17 +86,17 @@ export default function IntegracoesPage() {
                 <CheckCircle2 className="w-3 h-3" /> Conectado
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-micro gap-1 border-lia-border-subtle lia-text-500">
+              <Badge variant="outline" className="text-micro gap-1 border-lia-border-subtle text-lia-text-secondary">
                 <XCircle className="w-3 h-3" /> Não configurado
               </Badge>
             )}
           </div>
         </CardHeader>
         <CardContent className="px-4 pb-4">
-          <p className="text-xs lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
-            Configure as variáveis <code className="bg-gray-100 dark:bg-lia-bg-secondary px-1 rounded-md text-micro">AZURE_CLIENT_ID</code>,{" "}
-            <code className="bg-gray-100 dark:bg-lia-bg-secondary px-1 rounded-md text-micro">AZURE_CLIENT_SECRET</code> e{" "}
-            <code className="bg-gray-100 dark:bg-lia-bg-secondary px-1 rounded-md text-micro">AZURE_TENANT_ID</code> para habilitar.
+          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+            Configure as variáveis <code className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1 rounded-md text-micro">AZURE_CLIENT_ID</code>,{" "}
+            <code className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1 rounded-md text-micro">AZURE_CLIENT_SECRET</code> e{" "}
+            <code className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1 rounded-md text-micro">AZURE_TENANT_ID</code> para habilitar.
           </p>
         </CardContent>
       </Card>
@@ -110,10 +110,10 @@ export default function IntegracoesPage() {
                 <Chrome className="w-5 h-5 text-status-error dark:text-status-error" />
               </div>
               <div>
-                <CardTitle className="text-sm font-semibold lia-text-900 dark:lia-text-50 font-['Open_Sans',sans-serif]">
+                <CardTitle className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
                   Google Calendar
                 </CardTitle>
-                <p className="text-xs lia-text-500 font-['Open_Sans',sans-serif]">
+                <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
                   Agendamento com Google Meet automático
                 </p>
               </div>
@@ -123,14 +123,14 @@ export default function IntegracoesPage() {
                 <CheckCircle2 className="w-3 h-3" /> Conectado
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-micro gap-1 border-lia-border-subtle lia-text-500">
+              <Badge variant="outline" className="text-micro gap-1 border-lia-border-subtle text-lia-text-secondary">
                 <XCircle className="w-3 h-3" /> Não conectado
               </Badge>
             )}
           </div>
         </CardHeader>
         <CardContent className="px-4 pb-4 space-y-3">
-          <p className="text-xs lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+          <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
             Conecte sua conta Google Workspace para criar eventos com link do Google Meet automaticamente ao agendar entrevistas.
           </p>
           {errorMsg && (

@@ -80,7 +80,7 @@ export function SearchFeedbackButtons({
           btnSize,
           "rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none",
           isSubmitting && "opacity-50 pointer-events-none"
-        , "bg-gray-800")}
+        , "bg-lia-btn-primary-hover")}
         title="Aprovar candidato"
       >
         <ThumbsUp className={cn(iconSize, "text-white")} strokeWidth={2} />

@@ -138,7 +138,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                         size="sm"
                         onClick={handleSaveEdit}
                         disabled={!editText.trim()}
-                        className="h-7 w-7 p-0 rounded-lg bg-lia-btn-primary-bg text-white hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
+                        className="h-7 w-7 p-0 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
                       >
                         <Check className="w-3.5 h-3.5" />
                       </Button>
@@ -236,7 +236,7 @@ export function CustomQuestions({ isEditing, questions, onAddQuestion, onRemoveQ
                     size="sm"
                     onClick={handleAdd}
                     disabled={!newQuestionText.trim()}
-                    className="h-7 w-7 p-0 rounded-lg bg-lia-btn-primary-bg text-white hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
+                    className="h-7 w-7 p-0 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
                   >
                     <Check className="w-3.5 h-3.5" />
                   </Button>

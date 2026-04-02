@@ -128,7 +128,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
               onFeedbackChange={onSearchFeedback}
               size="sm"
             />
-            <div className="w-px h-5 bg-gray-200 dark:bg-lia-bg-elevated mx-1" />
+            <div className="w-px h-5 bg-lia-interactive-active dark:bg-lia-bg-elevated mx-1" />
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -204,7 +204,7 @@ const CandidatesTableComponent = memo(function CandidatesTable({
 
   if (candidates.length === 0 && !isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-lia-text-secondary bg-white dark:bg-lia-bg-primary">
+      <div className="flex flex-col items-center justify-center py-20 text-lia-text-secondary bg-lia-bg-primary dark:bg-lia-bg-primary">
         <p className="text-lg">Nenhum candidato encontrado</p>
         <p className="text-sm mt-2">Tente ajustar os filtros ou fazer uma nova busca</p>
       </div>

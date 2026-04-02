@@ -48,12 +48,12 @@ export function RevealCreditsModal({
   return (
     <AlertDialog open={isOpen} onOpenChange={(open: boolean) => !open && onClose()}>
       <AlertDialogContent 
-        className="max-w-md bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
+        className="max-w-md bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle"
        
       >
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-md bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
+            <div className="p-2.5 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
               <Icon className="w-5 h-5" />
             </div>
             <AlertDialogTitle className="text-base-ui font-semibold text-lia-text-primary">
@@ -94,7 +94,7 @@ export function RevealCreditsModal({
             <Button 
               variant="outline" 
               disabled={isLoading} 
-              className="gap-2 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-primary"
+              className="gap-2 bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-primary"
             >
               <X className="w-4 h-4" />
               Cancelar
@@ -103,7 +103,7 @@ export function RevealCreditsModal({
           <Button
             onClick={handleConfirm}
             disabled={isLoading}
-            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+            className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             {isLoading ? (
               <>

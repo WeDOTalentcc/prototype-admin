@@ -71,18 +71,18 @@ function InlineFieldEditor({
           onClick={() => { onSave(!currentValue) }}
           disabled={isSaving}
           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${
-            currentValue ? 'bg-gray-900' : 'bg-gray-300'
+            currentValue ? 'bg-lia-btn-primary-bg' : 'bg-lia-border-default'
           }`}
         >
           <span
-            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-lia-bg-primary transition-transform motion-reduce:transition-none ${
+            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-primary dark:bg-lia-bg-primary transition-transform motion-reduce:transition-none ${
               currentValue ? 'translate-x-4' : 'translate-x-0.5'
             }`}
           />
         </button>
         <button
           onClick={onCancel}
-          className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
         >
           <X className="w-3 h-3 text-lia-text-tertiary" />
         </button>
@@ -100,7 +100,7 @@ function InlineFieldEditor({
           onKeyDown={handleKeyDown}
           autoFocus
           disabled={isSaving}
-          className="text-xs font-medium text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-gray-400"
+          className="text-xs font-medium text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-lia-border-medium"
           style={{fontFamily: '"Inter", sans-serif'}}
         >
           <option value="">Selecionar...</option>
@@ -111,13 +111,13 @@ function InlineFieldEditor({
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
         >
           <Check className="w-3 h-3 text-status-success" />
         </button>
         <button
           onClick={onCancel}
-          className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+          className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
         >
           <X className="w-3 h-3 text-lia-text-tertiary" />
         </button>
@@ -138,7 +138,7 @@ function InlineFieldEditor({
         min={config?.min}
         max={config?.max}
         placeholder={config?.placeholder || ''}
-        className="w-24 text-xs font-medium text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-gray-400"
+        className="w-24 text-xs font-medium text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-lia-border-medium"
         style={{fontFamily: '"Inter", sans-serif'}}
       />
       {config?.suffix && (
@@ -147,7 +147,7 @@ function InlineFieldEditor({
       <button
         onClick={handleSave}
         disabled={isSaving}
-        className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
       >
         {isSaving ? (
           <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
@@ -157,7 +157,7 @@ function InlineFieldEditor({
       </button>
       <button
         onClick={onCancel}
-        className="p-0.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
       >
         <X className="w-3 h-3 text-lia-text-tertiary" />
       </button>
@@ -214,9 +214,9 @@ export function HiringPoliciesHub() {
             )}
           </div>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5">
+        <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5">
           <div
-            className="h-1.5 rounded-full transition-[width,height] duration-500 bg-gray-900"
+            className="h-1.5 rounded-full transition-[width,height] duration-500 bg-lia-btn-primary-bg"
             style={{width: `${setupProgress}%`}}
           />
         </div>
@@ -224,12 +224,12 @@ export function HiringPoliciesHub() {
 
       <div className="flex gap-4 flex-1 min-h-0">
         <div
-          className="w-[60%] flex flex-col bg-white dark:bg-lia-bg-primary rounded-md overflow-hidden"
-          style={{border: '1px solid var(--gray-200)'}}
+          className="w-[60%] flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md overflow-hidden"
+          style={{border: '1px solid var(--lia-border-subtle)'}}
         >
           <div
             className="flex-shrink-0 px-4 py-3"
-            style={{backgroundColor: 'var(--gray-50)'}}
+            style={{backgroundColor: 'var(--lia-bg-secondary)'}}
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -255,13 +255,13 @@ export function HiringPoliciesHub() {
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button
-                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex items-center justify-center"
+                  className="h-7 w-7 p-0 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none flex items-center justify-center"
                   aria-label="Expandir chat"
                 >
                   <Maximize2 className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </button>
                 <button
-                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex items-center justify-center"
+                  className="h-7 w-7 p-0 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none flex items-center justify-center"
                   aria-label="Fechar chat"
                 >
                   <X className="w-4 h-4 text-lia-text-secondary" />
@@ -272,7 +272,7 @@ export function HiringPoliciesHub() {
 
           <div
             className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
-            style={{backgroundColor: 'var(--gray-50)'}}
+            style={{backgroundColor: 'var(--lia-bg-secondary)'}}
           >
             {messages.map((msg, idx) => (
               <LiaChatMessage
@@ -288,7 +288,7 @@ export function HiringPoliciesHub() {
 
           <div
             className="flex-shrink-0 p-4"
-            style={{backgroundColor: 'var(--gray-50)'}}
+            style={{backgroundColor: 'var(--lia-bg-secondary)'}}
           >
             <LiaChatInput
               value={inputValue}
@@ -313,12 +313,12 @@ export function HiringPoliciesHub() {
             return (
               <Card
                 key={block.key}
-                className="bg-white dark:bg-lia-bg-secondary overflow-hidden rounded-md"
-                style={{border: '1px solid var(--gray-200)'}}
+                className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-md"
+                style={{border: '1px solid var(--lia-border-subtle)'}}
               >
                 <button
                   onClick={() => toggleBlock(block.key)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none duration-150"
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none duration-150"
                   aria-expanded={isExpanded}
                   aria-label={`${block.title} - ${isCompleted ? 'Configurado' : 'Pendente'}`}
                 >
@@ -333,7 +333,7 @@ export function HiringPoliciesHub() {
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium border ${
                         isCompleted
                           ? 'bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:text-status-success dark:border-status-success/30'
-                          : 'bg-gray-100 text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-elevated dark:border-lia-border-default'
+                          : 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-elevated dark:border-lia-border-default'
                       }`}
                     >
                       {isCompleted ? 'Configurado' : 'Pendente'}
@@ -347,7 +347,7 @@ export function HiringPoliciesHub() {
                 </button>
 
                 {(isExpanded && blockData as any) && (
-                  <CardContent className="px-4 py-3" style={{borderTop: '1px solid var(--gray-200)'}}>
+                  <CardContent className="px-4 py-3" style={{borderTop: '1px solid var(--lia-border-subtle)'}}>
                     <div className="space-y-1">
                       {block.fields.map((field) => {
                         // @ts-ignore TODO: fix type
@@ -360,7 +360,7 @@ export function HiringPoliciesHub() {
                           <div
                             key={field}
                             className={`group flex items-center justify-between gap-2 py-1.5 px-1.5 rounded-md transition-colors motion-reduce:transition-none duration-300 ${
-                              isUpdated ? 'bg-status-success/10 dark:bg-status-success/10' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                              isUpdated ? 'bg-status-success/10 dark:bg-status-success/10' : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50'
                             }`}
                           >
                             <span className={`${textStyles.description} flex-shrink-0`}>
@@ -386,7 +386,7 @@ export function HiringPoliciesHub() {
                                     e.stopPropagation()
                                     startEditing(block.key, field)
                                   }}
-                                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-opacity motion-reduce:transition-none"
+                                  className="opacity-0 group-hover:opacity-100 p-0.5 rounded-md hover:bg-lia-interactive-active dark:hover:bg-lia-border-medium transition-opacity motion-reduce:transition-none"
                                   aria-label={`Editar ${FIELD_LABELS[field] || field}`}
                                 >
                                   <Pencil className="w-3 h-3 text-lia-text-tertiary" />
@@ -401,7 +401,7 @@ export function HiringPoliciesHub() {
                 )}
 
                 {isExpanded && !blockData && (
-                  <CardContent className="px-4 py-3" style={{borderTop: '1px solid var(--gray-200)'}}>
+                  <CardContent className="px-4 py-3" style={{borderTop: '1px solid var(--lia-border-subtle)'}}>
                     <p className={textStyles.description}>Nenhum dado configurado ainda.</p>
                   </CardContent>
                 )}

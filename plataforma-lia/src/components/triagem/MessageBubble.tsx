@@ -78,7 +78,7 @@ const MessageBubble = memo(function MessageBubble({ message, candidateName = "Ca
           className={cn(
  "px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-lg",
             isLia
-              ? "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
+              ? "bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
               : "bg-lia-btn-primary-bg text-lia-btn-primary-text"
           )}
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(parseSimpleMarkdown(message.content)) }}

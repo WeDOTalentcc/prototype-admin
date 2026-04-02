@@ -222,14 +222,14 @@ export function AlertSettingsModal({
     switch (severity) {
       case 'critical': return 'bg-status-error/10 text-status-error border-status-error/30'
       case 'warning': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
-      case 'info': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
-      default: return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+      case 'info': return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
+      default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }
   }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-6xl h-[90vh] flex flex-col dark:border-lia-border-subtle">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-6xl h-[90vh] flex flex-col dark:border-lia-border-subtle">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div>
@@ -247,7 +247,7 @@ export function AlertSettingsModal({
             <Button 
               onClick={handleSaveRules} 
               disabled={isSaving}
-              className="gap-2 text-xs font-['Open_Sans'] bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="gap-2 text-xs font-['Open_Sans'] bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               {isSaving ? (
                 <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
@@ -273,7 +273,7 @@ export function AlertSettingsModal({
                 <Button
                   size="sm"
                   onClick={handleAddNewRule}
-                  className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   <Plus className="w-4 h-4" />
                   Adicionar Regra
@@ -285,7 +285,7 @@ export function AlertSettingsModal({
                   <Card
                     key={rule.id}
                     className={`transition-colors motion-reduce:transition-none cursor-pointer hover:${
- editingRule?.id === rule.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20' : ''
+ editingRule?.id === rule.id ? 'ring-2 ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20' : ''
                     }`}
                     onClick={() => handleEditRule(rule)}
                   >
@@ -305,7 +305,7 @@ export function AlertSettingsModal({
                               handleToggleRule(rule.id)
                             }}
                             className={`w-8 h-4 rounded-full transition-colors motion-reduce:transition-none ${
- rule.enabled ? 'bg-status-success' : 'bg-gray-300'
+ rule.enabled ? 'bg-status-success' : 'bg-lia-border-default'
                             }`}
                           >
                             <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${
@@ -521,7 +521,7 @@ export function AlertSettingsModal({
                               notifications: { ...prev.notifications, email: !prev.notifications.email }
                             } : null)}
                             className={`w-8 h-4 rounded-full transition-colors motion-reduce:transition-none ${
- editingRule.notifications.email ? 'bg-status-success' : 'bg-gray-300'
+ editingRule.notifications.email ? 'bg-status-success' : 'bg-lia-border-default'
                             }`}
                           >
                             <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${
@@ -541,7 +541,7 @@ export function AlertSettingsModal({
                               notifications: { ...prev.notifications, push: !prev.notifications.push }
                             } : null)}
                             className={`w-8 h-4 rounded-full transition-colors motion-reduce:transition-none ${
- editingRule.notifications.push ? 'bg-status-success' : 'bg-gray-300'
+ editingRule.notifications.push ? 'bg-status-success' : 'bg-lia-border-default'
                             }`}
                           >
                             <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${
@@ -561,7 +561,7 @@ export function AlertSettingsModal({
                               notifications: { ...prev.notifications, inApp: !prev.notifications.inApp }
                             } : null)}
                             className={`w-8 h-4 rounded-full transition-colors motion-reduce:transition-none ${
- editingRule.notifications.inApp ? 'bg-status-success' : 'bg-gray-300'
+ editingRule.notifications.inApp ? 'bg-status-success' : 'bg-lia-border-default'
                             }`}
                           >
                             <div className={`w-3 h-3 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${
@@ -577,7 +577,7 @@ export function AlertSettingsModal({
                   <div className="flex gap-2">
                     <Button
                       onClick={handleSaveEditedRule}
-                      className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                      className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                     >
                       <Save className="w-4 h-4" />
                       Salvar Regra

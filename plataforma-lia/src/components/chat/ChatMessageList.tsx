@@ -93,7 +93,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     src="https://randomuser.me/api/portraits/women/44.jpg"
                     alt="Ana Silva"
                   />
-                  <AvatarFallback className="bg-lia-btn-primary-bg text-white text-sm font-medium">
+                  <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium">
                     AS
                   </AvatarFallback>
                 </Avatar>
@@ -101,7 +101,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
 
               {/* Message content */}
               <div
-                className={`rounded-md p-5 flex-1 text-lia-text-primary ${message.sender === "user" ? "bg-white bg-lia-bg-primary" : "bg-lia-bg-tertiary"}`}
+                className={`rounded-md p-5 flex-1 text-lia-text-primary ${message.sender === "user" ? "bg-lia-bg-primary bg-lia-bg-primary" : "bg-lia-bg-tertiary"}`}
               >
                 <div className="flex items-center space-x-2 mb-2">
                   <span
@@ -231,7 +231,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                               candidatos qualificados.
                             </p>
 
-                            <div className="bg-white/60/40 rounded-md p-3 mb-3 space-y-1.5">
+                            <div className="bg-lia-bg-primary/60/40 rounded-md p-3 mb-3 space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
                                 <span className="text-lia-text-secondary">
                                   Créditos disponíveis:
@@ -448,7 +448,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                       </div>
                       <Badge
                         variant="secondary"
-                        className="text-xs border-0 bg-white bg-lia-bg-primary text-lia-text-secondary"
+                        className="text-xs border-0 bg-lia-bg-primary bg-lia-bg-primary text-lia-text-secondary"
                       >
                         {message.approvalStatus === "pending"
                           ? "Aguardando"

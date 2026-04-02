@@ -252,7 +252,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
       case 'alta': return 'bg-status-error/15 text-status-error border-status-error/30'
       case 'media': return 'bg-status-warning/15 text-status-warning border-status-warning/30'
       case 'baixa': return 'bg-status-success/15 text-status-success border-status-success/30'
-      default: return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+      default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -277,7 +277,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
             <div className="flex items-center gap-3">
               {/* Seletor de visualização */}
-              <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
+              <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-1">
                 {(['regioes', 'estados'] as const).map((mode) => (
                   <button
                     key={mode}
@@ -294,14 +294,14 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
               </div>
 
               {/* Seletor de ordenação */}
-              <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
+              <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-1">
                 {(['total', 'salario', 'crescimento'] as const).map((sort) => (
                   <button
                     key={sort}
                     onClick={() => setSortBy(sort)}
                     className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  sortBy === sort
-                        ? 'bg-gray-900 text-white'
+                        ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                         : 'text-lia-text-secondary hover:text-lia-text-primary'
                     }`}
                   >
@@ -331,7 +331,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
                   {/* Header da região/estado */}
                   <div
-                    className="p-4 bg-gray-50 dark:bg-lia-bg-secondary cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
+                    className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary cursor-pointer hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
                     onClick={() => isRegion && toggleRegionExpansion(item.regiao)}
                   >
                     <div className="flex items-center justify-between">
@@ -390,7 +390,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
 
                     {/* Barra de distribuição de modelos de trabalho */}
                     <div className="mt-4">
-                      <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-lia-bg-elevated">
+                      <div className="flex rounded-full overflow-hidden h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated">
                         <div
                           // @ts-ignore TODO: fix type
                           className="bg-status-success"
@@ -398,13 +398,13 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                           title={`Remoto: ${item.remoto} (${percentages.remoto.toFixed(1)}%)`}
                         />
                         <div
-                          className="bg-gray-700"
+                          className="bg-lia-bg-inverse"
                           style={{width: `${percentages.hibrido}%`}}
                           title={`Híbrido: ${item.hibrido} (${percentages.hibrido.toFixed(1)}%)`}
                         />
                         <div
                           // @ts-ignore TODO: fix type
-                          className="bg-gray-500"
+                          className="bg-lia-bg-secondary0"
                           style={{width: `${percentages.presencial}%`}}
                           title={`Presencial: ${item.presencial} (${percentages.presencial.toFixed(1)}%)`}
                         />
@@ -434,7 +434,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                     <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {item.estados.map((estado: RegionData, estadoIndex: number) => (
-                          <div key={estadoIndex} className="p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                          <div key={estadoIndex} className="p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-medium text-lia-text-primary">
                                 {estado.estado} - {estado.cidade}
@@ -445,17 +445,17 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                             </div>
 
                             <div className="space-y-2">
-                              <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-lia-bg-elevated">
+                              <div className="flex rounded-full overflow-hidden h-2 bg-lia-interactive-active dark:bg-lia-bg-elevated">
                                 <div
                                   className="bg-status-success"
                                   style={{width: `${(estado.remoto / estado.total) * 100}%`}}
                                 />
                                 <div
-                                  className="bg-gray-700"
+                                  className="bg-lia-bg-inverse"
                                   style={{width: `${(estado.hibrido / estado.total) * 100}%`}}
                                 />
                                 <div
-                                  className="bg-gray-500"
+                                  className="bg-lia-bg-secondary0"
                                   style={{width: `${(estado.presencial / estado.total) * 100}%`}}
                                 />
                               </div>

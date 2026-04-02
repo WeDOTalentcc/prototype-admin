@@ -270,7 +270,7 @@ export function ScoreBreakdownBadge({
       </TooltipProvider>
 
       {expanded && showExpand && (
-        <div className="mt-2 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-lg border border-lia-border-subtle dark:border-lia-border-subtle max-w-xs">
+        <div className="mt-2 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-lg border border-lia-border-subtle dark:border-lia-border-subtle max-w-xs">
           <div className="space-y-2 mb-3">
             {dimensions.map((dim) => (
               <ProgressBar key={dim.label} {...dim} />

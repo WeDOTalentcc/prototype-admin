@@ -474,7 +474,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                           className={cn(
                             "flex-shrink-0 px-3 py-1.5 rounded-md border text-xs transition-colors whitespace-nowrap",
                             selectedTemplateId === tpl.id
-                              ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-white"
+                              ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text"
                               : "border-lia-border-subtle hover:border-lia-border-medium text-lia-text-secondary"
                           )}
                         >
@@ -658,7 +658,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                     </div>
 
                     <div className="flex justify-center pt-1">
-                      <div className="bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-white rounded-md px-6 py-2 text-xs font-medium flex items-center gap-2">
+                      <div className="bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-md px-6 py-2 text-xs font-medium flex items-center gap-2">
                         <ExternalLink className="w-3.5 h-3.5" />
                         Acessar Candidatos
                       </div>
@@ -758,7 +758,7 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || !canSubmit}
-              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
             >
               {isSubmitting ? (
                 <>

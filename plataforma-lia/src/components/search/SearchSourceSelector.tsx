@@ -46,7 +46,7 @@ export function SearchSourceSelector({
               type="button"
               onClick={(e) => { e.stopPropagation(); onLocalClick() }}
               className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
-                searchSource === 'local' ? 'bg-gray-200' : 'hover:bg-gray-100'
+                searchSource === 'local' ? 'bg-lia-interactive-active' : 'hover:bg-lia-bg-tertiary'
               }`}
             >
               <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`} />
@@ -67,7 +67,7 @@ export function SearchSourceSelector({
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onHybridClick() }}
                 className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
-                  searchSource === 'hybrid' ? 'bg-gray-200' : 'hover:bg-gray-100'
+                  searchSource === 'hybrid' ? 'bg-lia-interactive-active' : 'hover:bg-lia-bg-tertiary'
                 }`}
               >
                 <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`} />
@@ -89,7 +89,7 @@ export function SearchSourceSelector({
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onGlobalClick() }}
                 className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
-                  searchSource === 'global' ? 'bg-gray-200' : 'hover:bg-gray-100'
+                  searchSource === 'global' ? 'bg-lia-interactive-active' : 'hover:bg-lia-bg-tertiary'
                 }`}
               >
                 <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`} />
@@ -103,7 +103,7 @@ export function SearchSourceSelector({
       )}
 
       {/* Separador visual */}
-      <div className="w-px h-4 bg-gray-200 mx-1" />
+      <div className="w-px h-4 bg-lia-interactive-active mx-1" />
 
       {/* Toggle Email */}
       <TooltipProvider>
@@ -115,7 +115,7 @@ export function SearchSourceSelector({
               className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                 requireEmails
                   ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
-                  : 'hover:bg-gray-100'
+                  : 'hover:bg-lia-bg-tertiary'
               }`}
             >
               <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'text-lia-text-tertiary'}`} />
@@ -138,7 +138,7 @@ export function SearchSourceSelector({
               className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                 requirePhoneNumbers
                   ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
-                  : 'hover:bg-gray-100'
+                  : 'hover:bg-lia-bg-tertiary'
               }`}
             >
               <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'text-lia-text-tertiary'}`} />

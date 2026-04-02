@@ -147,11 +147,11 @@ Equipe de Recrutamento`
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-6xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-6xl max-h-[95vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 bg-gray-100 dark:bg-lia-bg-secondary">
+        <div className="flex items-center justify-between p-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+            <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
               <Settings className="w-6 h-6 text-lia-text-secondary" />
             </div>
             <div>
@@ -176,7 +176,7 @@ Equipe de Recrutamento`
 
         <div className="flex">
           {/* Sidebar Navigation */}
-          <div className="w-64 bg-white dark:bg-lia-bg-secondary p-4">
+          <div className="w-64 bg-lia-bg-primary dark:bg-lia-bg-secondary p-4">
             <div className="space-y-2">
               {sections.map((section) => (
                 <button
@@ -184,8 +184,8 @@ Equipe de Recrutamento`
                   onClick={() => setActiveSection(section.id as Parameters<typeof setActiveSection>[0])}
                   className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeSection === section.id
-                      ? 'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-lia-text-primary'
+                      ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-dark'
+                      : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse text-lia-text-primary'
                   }`}
                 >
                   <section.icon className="w-4 h-4" />
@@ -211,7 +211,7 @@ Equipe de Recrutamento`
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {companyTemplates.map((template) => (
                     <Card key={template.id} className={`cursor-pointer transition-colors motion-reduce:transition-none ${
- selectedTemplate === template.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20' : ''
+ selectedTemplate === template.id ? 'ring-2 ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20' : ''
                     }`}>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
@@ -264,7 +264,7 @@ Equipe de Recrutamento`
                     <input
                       type="text"
                       value={approachSettings.tone}
-                      className="w-full p-3 rounded-md bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                      className="w-full p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-elevated focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                     />
                   </CardContent>
                 </Card>
@@ -277,13 +277,13 @@ Equipe de Recrutamento`
                     <div className="space-y-3">
                       {approachSettings.structure.map((step, index) => (
                         <div key={`step-${index}`} className="flex items-center gap-3">
-                          <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-xs font-bold">
+                          <div className="w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-xs font-bold">
                             {index + 1}
                           </div>
                           <input
                             type="text"
                             value={step}
-                            className="flex-1 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="flex-1 p-2 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-elevated focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                           />
                           <Button variant="ghost" size="sm">
                             <Trash2 className="w-3 h-3" />
@@ -330,7 +330,7 @@ Equipe de Recrutamento`
                     <CardContent>
                       <div className="space-y-2">
                         {category.questions.map((question, questionIndex) => (
-                          <div key={questionIndex} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                          <div key={questionIndex} className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                             <span className="text-sm flex-1">{question}</span>
                             <Button variant="ghost" size="sm">
                               <Edit className="w-3 h-3" />
@@ -368,7 +368,7 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={feedbackTemplates.approved.timing}
-                            className="w-full p-2 rounded-md text-sm bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-2 rounded-md text-sm bg-lia-bg-secondary dark:bg-lia-bg-elevated focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                           />
                         </div>
                         <div>
@@ -376,14 +376,14 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={feedbackTemplates.approved.subject}
-                            className="w-full p-2 rounded-md text-sm bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-2 rounded-md text-sm bg-lia-bg-secondary dark:bg-lia-bg-elevated focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                           />
                         </div>
                         <div>
                           <label className="text-xs font-medium text-lia-text-primary">Mensagem:</label>
                           <textarea
                             value={feedbackTemplates.approved.message}
-                            className="w-full p-3 rounded-md text-sm bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-3 rounded-md text-sm bg-lia-bg-secondary dark:bg-lia-bg-elevated focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                             rows={8}
                           />
                         </div>
@@ -406,7 +406,7 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={feedbackTemplates.rejected.timing}
-                            className="w-full p-2 rounded-md text-sm bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-2 rounded-md text-sm bg-lia-bg-secondary dark:bg-lia-bg-elevated focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                           />
                         </div>
                         <div>
@@ -414,14 +414,14 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={feedbackTemplates.rejected.subject}
-                            className="w-full p-2 rounded-md text-sm bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-2 rounded-md text-sm bg-lia-bg-secondary dark:bg-lia-bg-elevated focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                           />
                         </div>
                         <div>
                           <label className="text-xs font-medium text-lia-text-primary">Mensagem:</label>
                           <textarea
                             value={feedbackTemplates.rejected.message}
-                            className="w-full p-3 rounded-md text-sm bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="w-full p-3 rounded-md text-sm bg-lia-bg-secondary dark:bg-lia-bg-elevated focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                             rows={8}
                           />
                         </div>
@@ -449,7 +449,7 @@ Equipe de Recrutamento`
                           <input
                             type="text"
                             value={guideline}
-                            className="flex-1 p-2 rounded-md text-sm bg-gray-50 dark:bg-lia-bg-elevated focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                            className="flex-1 p-2 rounded-md text-sm bg-lia-bg-secondary dark:bg-lia-bg-elevated focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                           />
                           <Button variant="ghost" size="sm">
                             <Trash2 className="w-3 h-3" />
@@ -470,12 +470,12 @@ Equipe de Recrutamento`
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-3 gap-2 text-xs">
-                      <code className="p-2 bg-gray-100 rounded-md">{"{NOME}"}</code>
-                      <code className="p-2 bg-gray-100 rounded-md">{"{VAGA}"}</code>
-                      <code className="p-2 bg-gray-100 rounded-md">{"{EMPRESA}"}</code>
-                      <code className="p-2 bg-gray-100 rounded-md">{"{PONTOS_FORTES}"}</code>
-                      <code className="p-2 bg-gray-100 rounded-md">{"{AREAS_DESENVOLVIMENTO}"}</code>
-                      <code className="p-2 bg-gray-100 rounded-md">{"{PROXIMA_ETAPA}"}</code>
+                      <code className="p-2 bg-lia-bg-tertiary rounded-md">{"{NOME}"}</code>
+                      <code className="p-2 bg-lia-bg-tertiary rounded-md">{"{VAGA}"}</code>
+                      <code className="p-2 bg-lia-bg-tertiary rounded-md">{"{EMPRESA}"}</code>
+                      <code className="p-2 bg-lia-bg-tertiary rounded-md">{"{PONTOS_FORTES}"}</code>
+                      <code className="p-2 bg-lia-bg-tertiary rounded-md">{"{AREAS_DESENVOLVIMENTO}"}</code>
+                      <code className="p-2 bg-lia-bg-tertiary rounded-md">{"{PROXIMA_ETAPA}"}</code>
                     </div>
                   </CardContent>
                 </Card>
@@ -485,7 +485,7 @@ Equipe de Recrutamento`
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="p-6 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div className="text-sm text-lia-text-primary">
               Configurações serão aplicadas a novos roteiros criados
@@ -494,7 +494,7 @@ Equipe de Recrutamento`
               <Button variant="outline">
                 Cancelar
               </Button>
-              <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
+              <Button className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">
                 <Save className="w-4 h-4" />
                 Salvar Configurações
               </Button>

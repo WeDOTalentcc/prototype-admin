@@ -47,7 +47,7 @@ interface RobustFiltersProps {
 }
 
 const candidateStatuses = [
-  { id: 'novo', label: 'Novo', color: 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary', count: 45 },
+  { id: 'novo', label: 'Novo', color: 'bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary', count: 45 },
   { id: 'em_triagem', label: 'Em Triagem', color: 'bg-status-warning/10 text-status-warning', count: 23 },
   { id: 'aprovado', label: 'Aprovado', color: 'bg-status-success/10 text-status-success', count: 12 },
   { id: 'entrevista', label: 'Entrevista', color: 'bg-wedo-purple/15 text-wedo-purple', count: 8 },
@@ -58,9 +58,9 @@ const candidateStatuses = [
 const jobStatuses = [
   { id: 'ativa', label: 'Ativa', color: 'bg-status-success/10 text-status-success', count: 15 },
   { id: 'pausada', label: 'Pausada', color: 'bg-status-warning/10 text-status-warning', count: 5 },
-  { id: 'fechada', label: 'Fechada', color: 'bg-gray-100 text-lia-text-primary', count: 8 },
+  { id: 'fechada', label: 'Fechada', color: 'bg-lia-bg-tertiary text-lia-text-primary', count: 8 },
   { id: 'urgente', label: 'Urgente', color: 'bg-status-error/10 text-status-error', count: 3 },
-  { id: 'rascunho', label: 'Rascunho', color: 'bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary', count: 2 }
+  { id: 'rascunho', label: 'Rascunho', color: 'bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary', count: 2 }
 ]
 
 const locations = ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Porto Alegre', 'Remoto', 'Híbrido']
@@ -130,7 +130,7 @@ export function RobustFilters({
     <div className={cn("space-y-4", className)}>
       {/* Search Bar */}
       <div className="relative">
-        <div className="relative rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle transition-shadow duration-200 focus-within:shadow-lia-focus">
+        <div className="relative rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle transition-shadow duration-200 focus-within:shadow-lia-focus">
           <div className="flex items-center">
             <Search className="absolute left-3 w-4 h-4 text-lia-text-secondary" />
             <input
@@ -138,7 +138,7 @@ export function RobustFilters({
               placeholder={type === 'candidates' ? "Buscar candidatos..." : "Buscar vagas..."}
               value={filters.search}
               onChange={(e) => updateFilter('search', e.target.value)}
-              className="w-full pl-10 pr-20 py-3 bg-transparent border-0 focus:outline-none text-lia-text-primary placeholder-gray-600"
+              className="w-full pl-10 pr-20 py-3 bg-transparent border-0 focus:outline-none text-lia-text-primary placeholder-lia-text-secondary"
             />
             <div className="absolute right-2 flex items-center gap-2">
               {resultsCount !== undefined && (
@@ -157,7 +157,7 @@ export function RobustFilters({
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className={cn(
  "h-8 w-8 p-0",
-                  showAdvanced && "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
+                  showAdvanced && "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
                 )}
               >
                 <SlidersHorizontal className="w-4 h-4" />
@@ -178,7 +178,7 @@ export function RobustFilters({
               "hover:scale-[1.02] active:scale-[0.98]",
               filters.status.includes(status.id)
                 ? status.color + " border-current"
-                : "bg-gray-100 text-lia-text-secondary border-lia-border-subtle hover:bg-gray-200 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
+                : "bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle hover:bg-lia-interactive-active dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-bg-inverse"
             )}
           >
             {status.label}
@@ -205,7 +205,7 @@ export function RobustFilters({
           className="overflow-hidden"
           style={{animation: 'slideInUp 0.3s ease-out'}}
         >
-          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 space-y-6">
+          <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 space-y-6">
 
             {/* Grid Layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -225,8 +225,8 @@ export function RobustFilters({
  "w-full text-left px-3 py-2 rounded-md text-sm transition-colors border",
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.location.includes(location)
-                          ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-gray-900"
-                          : "bg-white text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
+                          ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-btn-primary-bg"
+                          : "bg-lia-bg-primary text-lia-text-primary border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-bg-inverse"
                       )}
                     >
                       {location}
@@ -251,7 +251,7 @@ export function RobustFilters({
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.experience.includes(level)
                           ? "bg-status-success/10 text-status-success border-status-success/30"
-                          : "bg-white text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
+                          : "bg-lia-bg-primary text-lia-text-primary border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-bg-inverse"
                       )}
                     >
                       {level}
@@ -276,7 +276,7 @@ export function RobustFilters({
                         "hover:scale-[1.02] active:scale-[0.98]",
                         filters.contractType.includes(contract)
                           ? "bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30"
-                          : "bg-white text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
+                          : "bg-lia-bg-primary text-lia-text-primary border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-bg-inverse"
                       )}
                     >
                       {contract}
@@ -305,7 +305,7 @@ export function RobustFilters({
                       ...filters.salary,
                       min: e.target.value ? Number(e.target.value) : null
                     })}
-                    className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                    className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                   />
                 </div>
                 <div>
@@ -320,7 +320,7 @@ export function RobustFilters({
                       ...filters.salary,
                       max: e.target.value ? Number(e.target.value) : null
                     })}
-                    className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                    className="w-full px-3 py-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                   />
                 </div>
               </div>
@@ -342,7 +342,7 @@ export function RobustFilters({
                       "hover:scale-[1.05] active:scale-[0.95]",
                       filters.skills.includes(skill)
                         ? "bg-wedo-orange/15 text-wedo-orange"
- : "text-lia-text-primary hover:dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+ : "text-lia-text-primary hover:dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
                     )}
                   >
                     {skill}
@@ -367,7 +367,7 @@ export function RobustFilters({
                       "hover:scale-[1.02] active:scale-[0.98]",
                       filters.status.includes(status.id)
                         ? status.color + " border-current"
-                        : "bg-white text-lia-text-primary border-lia-border-subtle hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-gray-700"
+                        : "bg-lia-bg-primary text-lia-text-primary border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-bg-inverse"
                     )}
                   >
                     <span>{status.label}</span>
@@ -383,7 +383,7 @@ export function RobustFilters({
       {/* Active Filters Summary */}
       {activeFiltersCount > 0 && (
         <div
-          className="flex flex-wrap items-center gap-2 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md"
+          className="flex flex-wrap items-center gap-2 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md"
           style={{animation: 'fadeIn 0.3s ease-out'}}
         >
           <span className="text-sm font-medium text-lia-text-primary">
@@ -394,7 +394,7 @@ export function RobustFilters({
               {statuses.find(s => s.id === status)?.label}
               <button
                 onClick={() => toggleArrayFilter('status', status)}
-                className="ml-1 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full"
+                className="ml-1 hover:bg-lia-border-default dark:hover:bg-lia-border-medium rounded-full"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -405,7 +405,7 @@ export function RobustFilters({
               📍 {location}
               <button
                 onClick={() => toggleArrayFilter('location', location)}
-                className="ml-1 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full"
+                className="ml-1 hover:bg-lia-border-default dark:hover:bg-lia-border-medium rounded-full"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -416,7 +416,7 @@ export function RobustFilters({
               🏷️ {skill}
               <button
                 onClick={() => toggleArrayFilter('skills', skill)}
-                className="ml-1 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full"
+                className="ml-1 hover:bg-lia-border-default dark:hover:bg-lia-border-medium rounded-full"
               >
                 <X className="w-3 h-3" />
               </button>

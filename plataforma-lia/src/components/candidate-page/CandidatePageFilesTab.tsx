@@ -36,7 +36,7 @@ export function CandidatePageFilesTab({
   return (
     <div className="space-y-4">
       {/* Upload Area */}
-      <Card className="border-2 border-dashed border-lia-border-default dark:border-lia-border-default hover:border-gray-400 dark:hover:border-gray-500">
+      <Card className="border-2 border-dashed border-lia-border-default dark:border-lia-border-default hover:border-lia-border-medium dark:hover:border-lia-border-medium">
         <CardContent className="p-6">
           <div
             className={`text-center cursor-pointer transition-colors ${isDragging ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
@@ -83,7 +83,7 @@ export function CandidatePageFilesTab({
                 <p className="text-xs text-lia-text-primary">2.1 MB • há 3 dias</p>
                 <div className="flex gap-1 mt-2">
                   <Badge className="bg-status-success/15 text-status-success text-xs">✓ Verificado</Badge>
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">LIA: 95%</Badge>
+                  <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">LIA: 95%</Badge>
                 </div>
               </div>
             </div>
@@ -197,7 +197,7 @@ export function CandidatePageFilesTab({
                 <h4 className="font-medium text-sm truncate">Triagem_Voz_{_candidate.name.split(" ")[0]}.mp3</h4>
                 <p className="text-xs text-lia-text-primary">1.8 MB • 4:32 min • há 1 dia</p>
                 <div className="flex gap-1 mt-2">
-                  <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">Triagem WSI</Badge>
+                  <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">Triagem WSI</Badge>
                   <Badge className="bg-status-success/15 text-status-success text-xs">Score: 92%</Badge>
                 </div>
               </div>

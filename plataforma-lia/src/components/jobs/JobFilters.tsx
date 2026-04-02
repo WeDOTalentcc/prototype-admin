@@ -52,7 +52,7 @@ export function JobFiltersPanel({
             <h3 className="text-xs font-semibold text-lia-text-primary">Filtros de Vagas</h3>
           </div>
           {getActiveJobFiltersCount() > 0 && (
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-btn-primary-bg text-white">
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-btn-primary-bg text-lia-btn-primary-text">
               {getActiveJobFiltersCount()}
             </Badge>
           )}
@@ -71,7 +71,7 @@ export function JobFiltersPanel({
                 onClick={() => toggleJobFilter('status', 'statuses', 'Ativa')}
                 className={`h-8 text-xs justify-start ${
                   jobFilters.status?.statuses?.includes('Ativa') 
-                    ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:lia-border-50 text-lia-text-primary font-semibold' 
+                    ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-semibold' 
                     : ''
                 }`}
               >
@@ -97,7 +97,7 @@ export function JobFiltersPanel({
                 onClick={() => toggleJobFilter('position', 'workModels', 'remoto')}
                 className={`h-8 text-xs justify-start ${
                   jobFilters.position?.workModels?.includes('remoto') 
-                    ? 'bg-lia-bg-secondary border-lia-btn-primary-bg dark:lia-border-50 text-wedo-cyan-dark font-semibold' 
+                    ? 'bg-lia-bg-secondary border-lia-btn-primary-bg dark:border-lia-border-subtle text-wedo-cyan-dark font-semibold' 
                     : ''
                 }`}
               >
@@ -132,7 +132,7 @@ export function JobFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.statuses?.includes(status)
-                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:lia-border-50 text-lia-text-primary font-medium'
+                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => toggleJobFilter('status', 'statuses', status)}
@@ -205,7 +205,7 @@ export function JobFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none capitalize ${
                     jobFilters.position?.workModels?.includes(model)
-                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:lia-border-50 text-lia-text-primary font-medium'
+                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => toggleJobFilter('position', 'workModels', model)}
@@ -228,7 +228,7 @@ export function JobFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.levels?.includes(level)
-                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:lia-border-50 text-lia-text-primary font-medium'
+                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => toggleJobFilter('position', 'levels', level)}
@@ -251,7 +251,7 @@ export function JobFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.locations?.includes(loc)
-                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:lia-border-50 text-lia-text-primary font-medium'
+                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => toggleJobFilter('position', 'locations', loc)}
@@ -274,7 +274,7 @@ export function JobFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.team?.departments?.includes(dept)
-                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:lia-border-50 text-lia-text-primary font-medium'
+                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => toggleJobFilter('team', 'departments', dept)}
@@ -297,7 +297,7 @@ export function JobFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.team?.recruiters?.includes(recruiter)
-                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:lia-border-50 text-lia-text-primary font-medium'
+                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => toggleJobFilter('team', 'recruiters', recruiter)}
@@ -320,7 +320,7 @@ export function JobFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.team?.managers?.includes(manager)
-                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:lia-border-50 text-lia-text-primary font-medium'
+                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => toggleJobFilter('team', 'managers', manager)}
@@ -347,7 +347,7 @@ export function JobFiltersPanel({
                   variant="outline"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                     jobFilters.publishing?.channels?.includes(channel.value)
-                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:lia-border-50 text-lia-text-primary font-medium'
+                      ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary font-medium'
                       : 'bg-lia-bg-primary text-lia-text-primary'
                   }`}
                   onClick={() => toggleJobFilter('publishing', 'channels', channel.value)}

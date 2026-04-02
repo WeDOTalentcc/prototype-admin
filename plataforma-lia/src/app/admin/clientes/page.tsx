@@ -88,11 +88,11 @@ export default function AdminClientesPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
+      <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse motion-reduce:animate-none">
-            <div className="h-8 bg-gray-200 rounded-md w-1/3 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded-md w-1/2 mb-8"></div>
+            <div className="h-8 bg-lia-interactive-active rounded-md w-1/3 mb-4"></div>
+            <div className="h-4 bg-lia-interactive-active rounded-md w-1/2 mb-8"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-4 h-32"></div>
@@ -105,20 +105,20 @@ export default function AdminClientesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
+            <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
               Gestão de Clientes
             </h1>
-            <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mt-1">
+            <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
               Gerencie todos os clientes da plataforma WedoTalent
             </p>
           </div>
           <Button
             onClick={() => setShowCreateModal(true)}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
           >
             <Plus className="w-4 h-4 mr-2" />
             Novo Cliente

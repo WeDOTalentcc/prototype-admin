@@ -78,7 +78,7 @@ export function AISuggestionBadge({
           <Badge 
             variant="outline" 
             className={cn(
- "cursor-pointer gap-1 border-lia-border-default dark:border-lia-border-default text-lia-text-primary hover:bg-gray-100 dark:bg-lia-bg-secondary",
+ "cursor-pointer gap-1 border-lia-border-default dark:border-lia-border-default text-lia-text-primary hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
  className
             )}
           >
@@ -128,7 +128,7 @@ export function AISuggestionBadge({
 
   return (
     <div className={cn(
- "flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-default dark:border-lia-border-default",
+ "flex items-center gap-2 p-2 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-primary border border-lia-border-default dark:border-lia-border-default",
       className
     )}>
       <Brain className="h-4 w-4 text-wedo-cyan flex-shrink-0" />

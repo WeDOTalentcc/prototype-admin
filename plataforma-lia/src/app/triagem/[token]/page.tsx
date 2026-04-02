@@ -21,10 +21,10 @@ function LoadingSkeleton() {
     <ChatContainer>
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-md space-y-4 animate-pulse motion-reduce:animate-none">
-          <div className="h-12 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-2/3 mx-auto" />
-          <div className="h-6 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-1/2 mx-auto" />
-          <div className="h-32 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
-          <div className="h-10 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
+          <div className="h-12 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-2/3 mx-auto" />
+          <div className="h-6 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-1/2 mx-auto" />
+          <div className="h-32 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md" />
+          <div className="h-10 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md" />
         </div>
       </div>
     </ChatContainer>
@@ -33,9 +33,9 @@ function LoadingSkeleton() {
 
 function ErrorCard({ code, message }: { code: string; message: string }) {
   const iconMap: Record<string, React.ReactNode> = {
-    TOKEN_INVALID: <Link2Off className="w-8 h-8 lia-text-400 dark:lia-text-500" />,
-    TOKEN_EXPIRED: <Clock className="w-8 h-8 lia-text-400 dark:lia-text-500" />,
-    SESSION_COMPLETED: <ShieldAlert className="w-8 h-8 lia-text-400 dark:lia-text-500" />,
+    TOKEN_INVALID: <Link2Off className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-secondary" />,
+    TOKEN_EXPIRED: <Clock className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-secondary" />,
+    SESSION_COMPLETED: <ShieldAlert className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-secondary" />,
     RATE_LIMITED: <AlertTriangle className="w-8 h-8 text-status-warning" />,
     SERVER_ERROR: <ServerCrash className="w-8 h-8 text-status-error" />,
   }
@@ -51,12 +51,12 @@ function ErrorCard({ code, message }: { code: string; message: string }) {
   return (
     <ChatContainer>
       <div className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-sm bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md shadow-lia-sm p-6 text-center space-y-4">
+        <div className="w-full max-w-sm bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md shadow-lia-sm p-6 text-center space-y-4">
           <div className="flex justify-center">{iconMap[code] || iconMap.SERVER_ERROR}</div>
-          <h2 className="text-base font-semibold lia-text-900 dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
+          <h2 className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
             {titleMap[code] || "Erro"}
           </h2>
-          <p className="text-sm lia-text-500 dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary font-['Open_Sans',sans-serif]">
             {message}
           </p>
         </div>
@@ -295,7 +295,7 @@ export default function TriagemPage() {
 function LGPDFooter() {
   return (
     <div className="py-3 px-4 text-center">
-      <p className="text-micro lia-text-400 dark:lia-text-500 font-['Open_Sans',sans-serif]">
+      <p className="text-micro text-lia-text-tertiary dark:text-lia-text-secondary font-['Open_Sans',sans-serif]">
         Powered by <span className="text-wedo-cyan font-medium">LIA</span> · WeDOTalent ·{" "}
         <a
           href="/privacidade"

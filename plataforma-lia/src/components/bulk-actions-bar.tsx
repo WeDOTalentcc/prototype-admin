@@ -60,8 +60,8 @@ interface BulkActionsBarProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'new', label: 'Novo', color: 'bg-gray-100 text-lia-text-primary' },
-  { value: 'screening', label: 'Em Triagem', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark' },
+  { value: 'new', label: 'Novo', color: 'bg-lia-bg-tertiary text-lia-text-primary' },
+  { value: 'screening', label: 'Em Triagem', color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-dark' },
   { value: 'interview', label: 'Entrevista', color: 'bg-wedo-purple/15 text-wedo-purple' },
   { value: 'offer', label: 'Proposta', color: 'bg-status-warning/15 text-status-warning' },
   { value: 'hired', label: 'Contratado', color: 'bg-status-success/15 text-status-success' },
@@ -325,15 +325,15 @@ const BulkActionsBar = memo(function BulkActionsBar({
         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300"
        
       >
-        <div className="flex items-center gap-3 px-4 py-3 bg-gray-900 text-white rounded-md border border-gray-700">
-          <div className="flex items-center gap-2 pr-3 border-r border-gray-600">
+        <div className="flex items-center gap-3 px-4 py-3 bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-md border border-lia-border-strong">
+          <div className="flex items-center gap-2 pr-3 border-r border-lia-border-medium">
             <span className="text-sm font-medium" aria-live="polite" aria-atomic="true">
               {selectedCount} candidato{selectedCount !== 1 ? 's' : ''} selecionado{selectedCount !== 1 ? 's' : ''}
             </span>
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 hover:bg-gray-700 text-lia-text-secondary hover:text-white"
+              className="h-6 w-6 p-0 hover:bg-lia-bg-inverse text-lia-text-secondary hover:text-white"
               onClick={onClearSelection}
               disabled={isProcessing}
             >
@@ -346,7 +346,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="text-white hover:bg-gray-700"
+                className="text-white hover:bg-lia-bg-inverse"
                 disabled={isProcessing}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -371,7 +371,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
           <Button 
             variant="ghost" 
             size="sm"
-            className="text-white hover:bg-gray-700"
+            className="text-white hover:bg-lia-bg-inverse"
             onClick={() => setAssignJobModal(true)}
             disabled={isProcessing || jobVacancies.length === 0}
           >
@@ -382,7 +382,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
           <Button 
             variant="ghost" 
             size="sm"
-            className="text-white hover:bg-gray-700"
+            className="text-white hover:bg-lia-bg-inverse"
             onClick={() => setSendEmailModal(true)}
             disabled={isProcessing || emailTemplates.length === 0}
           >
@@ -393,7 +393,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
           <Button 
             variant="ghost" 
             size="sm"
-            className="text-white hover:bg-gray-700"
+            className="text-white hover:bg-lia-bg-inverse"
             onClick={() => setConfirmScreeningModal(true)}
             disabled={isProcessing}
           >
@@ -406,7 +406,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="text-white hover:bg-gray-700"
+                className="text-white hover:bg-lia-bg-inverse"
                 disabled={isProcessing}
               >
                 <FileSpreadsheet className="h-4 w-4 mr-2" />
@@ -427,7 +427,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
           <Button
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-gray-700"
+            className="text-white hover:bg-lia-bg-inverse"
             onClick={() => setShareSelectionModal(true)}
             disabled={isProcessing}
           >
@@ -435,7 +435,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
             Compartilhar Seleção
           </Button>
 
-          <div className="h-4 w-px bg-gray-600" />
+          <div className="h-4 w-px bg-lia-border-medium" />
 
           <Button
             variant="ghost"
@@ -590,7 +590,7 @@ const BulkActionsBar = memo(function BulkActionsBar({
             </Button>
             <Button
               onClick={handleStartScreening}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               Iniciar Triagem
             </Button>

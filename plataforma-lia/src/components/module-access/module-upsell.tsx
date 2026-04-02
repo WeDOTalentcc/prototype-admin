@@ -39,14 +39,14 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'premium': return 'bg-gray-700'
+      case 'premium': return 'bg-lia-bg-inverse'
       case 'enterprise': return 'bg-wedo-purple/10'
-      default: return 'bg-gray-600'
+      default: return 'bg-lia-border-medium'
     }
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary flex items-center justify-center p-6">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex items-center justify-center p-6">
       <div className="max-w-4xl w-full">
         {/* Main Upsell Card */}
         <Card className="">
@@ -114,7 +114,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 
                 {/* Pricing and CTA */}
                 <div>
-                  <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-6 mb-6">
+                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-6 mb-6">
                     <div className="text-center mb-4">
                       <div className="text-3xl font-bold text-lia-text-primary">
                         R$ {moduleInfo.price}
@@ -125,7 +125,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 
                     <div className="space-y-3 mb-6">
                       <Button
-                        className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                        className="w-full gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                         onClick={onUpgrade}
                       >
                         <CreditCard className="w-4 h-4" />
@@ -155,7 +155,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   </div>
 
                   {/* Enterprise Benefits */}
-                  <div className="rounded-md p-4 bg-gray-50 dark:bg-lia-bg-secondary">
+                  <div className="rounded-md p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                     <h4 className="font-medium text-lia-text-primary mb-3">
                       ✨ Benefícios Enterprise
                     </h4>
@@ -218,7 +218,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                 </CardContent>
               </Card>
 
-              <Card className="ring-2 ring-gray-900/20 dark:ring-gray-50/20">
+              <Card className="ring-2 ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20">
                 <CardHeader>
                   <CardTitle className="text-lg text-lia-text-secondary">Professional</CardTitle>
                   <p className="text-lia-text-primary">Recomendado</p>
@@ -276,7 +276,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 // Componente para mostrar aviso de módulo desabilitado
 export function ModuleLockedBanner({ moduleName, onUpgrade }: { moduleName: string, onUpgrade?: () => void }) {
   return (
-    <div className="bg-gray-900 text-white p-4 rounded-md mb-6">
+    <div className="bg-lia-btn-primary-bg text-lia-btn-primary-text p-4 rounded-md mb-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Lock className="w-6 h-6" />
@@ -287,7 +287,7 @@ export function ModuleLockedBanner({ moduleName, onUpgrade }: { moduleName: stri
         </div>
         <Button
           variant="secondary"
-          className="gap-2 bg-lia-bg-primary text-lia-text-secondary hover:bg-gray-100"
+          className="gap-2 bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary"
           onClick={onUpgrade}
         >
           <Crown className="w-4 h-4" />

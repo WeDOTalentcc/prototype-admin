@@ -14,23 +14,23 @@ export const TEMPLATE_GROUPS: Record<string, { label: string; icon: string; situ
 }
 
 export const TRIGGER_TYPE_LABELS: Record<string, { label: string; color: string }> = {
-  'automatic': { label: 'Automático', color: 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary' },
+  'automatic': { label: 'Automático', color: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary' },
   'manual': { label: 'Manual', color: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' },
-  'both': { label: 'Ambos', color: 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary' }
+  'both': { label: 'Ambos', color: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary' }
 }
 
 export const PRIORITY_COLORS: Record<string, string> = {
   'high': 'bg-status-error',
   'medium': 'bg-status-warning',
-  'low': 'bg-gray-400'
+  'low': 'bg-lia-border-medium'
 }
 
 export const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
   approval: { label: 'Aprovação', color: 'bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success' },
   rejection: { label: 'Rejeição', color: 'bg-status-error/10 text-status-error dark:bg-status-error/20 dark:text-status-error' },
-  scheduling: { label: 'Agendamento', color: 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary' },
+  scheduling: { label: 'Agendamento', color: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary' },
   followup: { label: 'Follow-up', color: 'bg-status-warning/10 text-status-warning dark:bg-status-warning/20 dark:text-status-warning' },
-  feedback: { label: 'Feedback', color: 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary' }
+  feedback: { label: 'Feedback', color: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary' }
 }
 
 export const DEFAULT_ALERTS: AlertConfig[] = [

@@ -82,7 +82,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
                   {industries.slice(0, 2).map((ind: string) => (
                     <span
                       key={ind}
-                      className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
+                      className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
                     >
                       <Building2 className="w-2.5 h-2.5 mr-0.5" />
                       {ind}
@@ -94,7 +94,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
                     </span>
                   )}
                   {companySize && (
-                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle">
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle">
                       <Users className="w-2.5 h-2.5" />
                       {companySize}
                     </span>
@@ -110,7 +110,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
                     {technologies.slice(0, 6).map((tech: string) => (
                       <span
                         key={tech}
-                        className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
+                        className="inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
                       >
                         {tech}
                       </span>

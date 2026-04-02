@@ -614,7 +614,7 @@ export function JobEditTab({
                     <Card className="border border-lia-border-subtle">
                       <CardContent className="p-4">
                         <div className="space-y-0">
-                          <div className="flex items-center justify-between py-2.5 border-b border-lia-border-subtle dark:lia-border-800">
+                          <div className="flex items-center justify-between py-2.5 border-b border-lia-border-subtle dark:border-lia-border-strong">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-lg bg-wedo-cyan/10 flex items-center justify-center"><Linkedin className="w-4 h-4 text-wedo-cyan-dark" /></div>
                               <div>
@@ -624,7 +624,7 @@ export function JobEditTab({
                             </div>
                             <Switch checked={!!jobEditForm.publishedLinkedIn} onCheckedChange={(val: boolean) => updateField("publishedLinkedIn", val)} disabled={!isEditing} />
                           </div>
-                          <div className="flex items-center justify-between py-2.5 border-b border-lia-border-subtle dark:lia-border-800">
+                          <div className="flex items-center justify-between py-2.5 border-b border-lia-border-subtle dark:border-lia-border-strong">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-lg bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center"><Globe className="w-4 h-4 text-status-success" /></div>
                               <div>
@@ -846,7 +846,7 @@ export function JobEditTab({
                                     const isSelected = selectedBenefits.includes(name)
                                     const isFromCompany = companyBenefitNames.includes(name)
                                     return (
-                                      <button key={name} type="button" onClick={() => isEditing && toggleBenefit(name)} disabled={!isEditing} className={`px-3 py-1.5 rounded-md text-xs font-['Open_Sans',sans-serif] font-medium border transition-colors ${isSelected ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg" : "bg-white text-lia-text-secondary border-lia-border-subtle hover:border-lia-border-medium"} ${!isEditing ? "cursor-default opacity-75" : "cursor-pointer"}`}>
+                                      <button key={name} type="button" onClick={() => isEditing && toggleBenefit(name)} disabled={!isEditing} className={`px-3 py-1.5 rounded-md text-xs font-['Open_Sans',sans-serif] font-medium border transition-colors ${isSelected ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg" : "bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle hover:border-lia-border-medium"} ${!isEditing ? "cursor-default opacity-75" : "cursor-pointer"}`}>
                                         {isSelected ? "✓ " : ""}{name}
                                         {!isFromCompany && <span className="ml-1 text-micro opacity-60">(custom)</span>}
                                       </button>

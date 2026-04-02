@@ -134,7 +134,7 @@ export function ScreeningStatusModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-md bg-white border border-lia-border-subtle">
+      <DialogContent className="max-w-md rounded-md bg-lia-bg-primary border border-lia-border-subtle">
         <DialogHeader className="pb-4 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
@@ -195,7 +195,7 @@ export function ScreeningStatusModal({
               <Button
                 onClick={() => handleStatusChange('active')}
                 disabled={isUpdating}
-                className="w-full h-10 text-base-ui font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active gap-2"
+                className="w-full h-10 text-base-ui font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active gap-2"
               >
                 {isUpdating ? (
                   <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
@@ -363,7 +363,7 @@ export function ScreeningStatusModal({
             <Button
               onClick={() => handleStatusChange('active')}
               disabled={isUpdating}
-              className="w-full h-9 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active gap-1.5"
+              className="w-full h-9 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active gap-1.5"
             >
               {isUpdating ? <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" /> : <Play className="w-3.5 h-3.5" />}
               Retomar Triagem
@@ -384,7 +384,7 @@ export function ScreeningStatusModal({
           {screeningStatus === 'not_configured' && onNavigateToJob && (
             <Button
               onClick={() => { onNavigateToJob(); onClose() }}
-              className="w-full h-9 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active gap-1.5"
+              className="w-full h-9 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active gap-1.5"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Ir para Vaga

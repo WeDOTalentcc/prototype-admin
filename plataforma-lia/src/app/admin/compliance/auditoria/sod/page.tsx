@@ -132,22 +132,22 @@ export default function SoDPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
             >
-              <Users className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Users className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+                className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
               >
                 Matriz SoD
               </h1>
-              <p className="text-sm lia-text-400 dark:lia-text-500">
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                 Segregação de Funções (Segregation of Duties)
               </p>
             </div>
           </div>
-          <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
+          <Button className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active">
             <FileText className="w-4 h-4" />
             Gerar Relatório
           </Button>
@@ -176,14 +176,14 @@ export default function SoDPage() {
         <Card className="mb-6">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                <Info className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+                <Info className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                   O que é Segregação de Funções (SoD)?
                 </p>
-                <p className="text-xs lia-text-500 mt-1">
+                <p className="text-xs text-lia-text-secondary mt-1">
                   A Segregação de Funções é um controle interno crítico exigido pela <strong>SOX Section 404</strong>. 
                   O princípio determina que nenhum indivíduo deve ter controle sobre todas as fases de uma transação crítica. 
                   Por exemplo, a mesma pessoa não deve poder criar e aprovar pagamentos, ou configurar e auditar sistemas. 
@@ -198,12 +198,12 @@ export default function SoDPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                  <Users className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+                  <Users className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-sm lia-text-500">Total de Conflitos</p>
-                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">{conflictCount}</p>
+                  <p className="text-sm text-lia-text-secondary">Total de Conflitos</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{conflictCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -216,8 +216,8 @@ export default function SoDPage() {
                   <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
-                  <p className="text-sm lia-text-500">Pendentes</p>
-                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">{pendingCount}</p>
+                  <p className="text-sm text-lia-text-secondary">Pendentes</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{pendingCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -230,8 +230,8 @@ export default function SoDPage() {
                   <ShieldCheck className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-sm lia-text-500">Mitigados</p>
-                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">{mitigatedCount}</p>
+                  <p className="text-sm text-lia-text-secondary">Mitigados</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{mitigatedCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -244,8 +244,8 @@ export default function SoDPage() {
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-sm lia-text-500">Status Geral</p>
-                  <p className="text-lg font-semibold lia-text-950 dark:lia-text-50">
+                  <p className="text-sm text-lia-text-secondary">Status Geral</p>
+                  <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
                     {pendingCount === 0 ? 'Conforme' : 'Atenção'}
                   </p>
                 </div>
@@ -262,25 +262,25 @@ export default function SoDPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
-                    <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">Função A</th>
-                    <th className="text-center text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">vs</th>
-                    <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Função B</th>
-                    <th className="text-center text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Conflito?</th>
-                    <th className="text-center text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Nível de Risco</th>
+                  <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
+                    <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">Função A</th>
+                    <th className="text-center text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">vs</th>
+                    <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Função B</th>
+                    <th className="text-center text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Conflito?</th>
+                    <th className="text-center text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Nível de Risco</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
+                <tbody className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
                   {conflictMatrix.map((item, _index) => (
-                    <tr key={`${item.functionA}-${item.functionB}`} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
+                    <tr key={`${item.functionA}-${item.functionB}`} className="hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none">
                       <td className="px-6 py-4">
-                        <span className="text-sm font-medium lia-text-950 dark:lia-text-50">{item.functionA}</span>
+                        <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{item.functionA}</span>
                       </td>
                       <td className="px-4 py-4 text-center">
-                        <span className="lia-text-400">↔</span>
+                        <span className="text-lia-text-tertiary">↔</span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-sm font-medium lia-text-950 dark:lia-text-50">{item.functionB}</span>
+                        <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{item.functionB}</span>
                       </td>
                       <td className="px-4 py-4 text-center">
                         {item.conflict ? (
@@ -315,35 +315,35 @@ export default function SoDPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
-                    <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">Usuário</th>
-                    <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Função 1</th>
-                    <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Função 2</th>
-                    <th className="text-center text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Tipo</th>
-                    <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Mitigação</th>
-                    <th className="text-center text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Status</th>
+                  <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
+                    <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">Usuário</th>
+                    <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Função 1</th>
+                    <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Função 2</th>
+                    <th className="text-center text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Tipo</th>
+                    <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Mitigação</th>
+                    <th className="text-center text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
+                <tbody className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
                   {detectedConflicts.map((conflict) => (
-                    <tr key={conflict.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
+                    <tr key={conflict.id} className="hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none">
                       <td className="px-6 py-4">
                         <div>
-                          <p className="text-sm font-medium lia-text-950 dark:lia-text-50">{conflict.user}</p>
-                          <p className="text-xs lia-text-500">{conflict.userEmail}</p>
+                          <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{conflict.user}</p>
+                          <p className="text-xs text-lia-text-secondary">{conflict.userEmail}</p>
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-sm lia-text-800 dark:text-lia-text-primary">{conflict.role1}</span>
+                        <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{conflict.role1}</span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-sm lia-text-800 dark:text-lia-text-primary">{conflict.role2}</span>
+                        <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{conflict.role2}</span>
                       </td>
                       <td className="px-4 py-4 text-center">
                         {getRiskBadge(conflict.type)}
                       </td>
                       <td className="px-4 py-4">
-                        <span className="text-sm lia-text-800 dark:text-lia-text-primary">{conflict.mitigation}</span>
+                        <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{conflict.mitigation}</span>
                       </td>
                       <td className="px-4 py-4 text-center">
                         {getStatusBadge(conflict.status)}
@@ -364,19 +364,19 @@ export default function SoDPage() {
             <div className="flex flex-wrap gap-6">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-status-success" />
-                <span className="text-sm lia-text-800 dark:text-lia-text-primary">Sem Conflito / OK</span>
+                <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Sem Conflito / OK</span>
               </div>
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-status-error" />
-                <span className="text-sm lia-text-800 dark:text-lia-text-primary">Conflito Identificado</span>
+                <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Conflito Identificado</span>
               </div>
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-status-warning" />
-                <span className="text-sm lia-text-800 dark:text-lia-text-primary">Mitigado</span>
+                <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Mitigado</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5 text-status-error" />
-                <span className="text-sm lia-text-800 dark:text-lia-text-primary">Pendente</span>
+                <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Pendente</span>
               </div>
             </div>
           </CardContent>

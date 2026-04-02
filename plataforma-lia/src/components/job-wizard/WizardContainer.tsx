@@ -66,7 +66,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
         key={stage}
         className={cn(
  "flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors",
-          isCurrent && "bg-gray-100 dark:bg-lia-bg-secondary",
+          isCurrent && "bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
           isPast && "opacity-70 cursor-pointer hover:opacity-100",
           !isPast && !isCurrent && "cursor-default"
         )}
@@ -74,7 +74,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
       >
         <div className={cn(
  "w-4 h-4 rounded-full flex items-center justify-center text-micro font-semibold",
-          isCurrent && "bg-gray-900 text-white",
+          isCurrent && "bg-lia-btn-primary-bg text-lia-btn-primary-text",
           isPast && "bg-status-success text-white",
           !isCurrent && !isPast && "border border-lia-border-default lia-text-secondary"
         )}>
@@ -94,28 +94,28 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
 
   return (
     <div className={cn(
- "flex flex-col bg-white h-full",
+ "flex flex-col bg-lia-bg-primary h-full",
       inline ? "rounded-md border border-lia-border-subtle" : "fixed inset-0 z-50"
     )}>
       {/* Header with phase navigation */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-lia-bg-primary border-b border-lia-border-subtle">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-btn-primary-hover to-wedo-cyan-dark flex items-center justify-center">
               <span className="text-white text-sm font-bold">L</span>
             </div>
             <span className="text-sm font-semibold text-lia-text-primary">
               LIA • Criação de Vaga
             </span>
           </div>
-          <div className="h-4 w-px bg-gray-200" />
-          <div className="flex items-center gap-1 bg-gray-100 rounded-md px-2 py-1">
+          <div className="h-4 w-px bg-lia-interactive-active" />
+          <div className="flex items-center gap-1 bg-lia-bg-tertiary rounded-md px-2 py-1">
             {WIZARD_PHASES.map((phase, phaseIndex) => (
               <React.Fragment key={phase.id}>
                 <span className={cn(
  "text-micro font-medium px-2 py-0.5 rounded-full",
                   currentPhase.id === phase.id
-                    ? "bg-gray-900 text-white"
+                    ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
                     : "lia-text-secondary"
                 )}>
                   {phase.label}
@@ -193,7 +193,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
  "flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-medium transition-colors",
             isFirstStage
               ? "lia-text-secondary cursor-not-allowed"
-              : "text-lia-text-secondary hover:bg-gray-100 dark:bg-lia-bg-secondary"
+              : "text-lia-text-secondary hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
           )}
          
         >
@@ -215,9 +215,9 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
             <span className="text-micro lia-text-secondary">
               {currentStageIndex + 1} de {WIZARD_STAGES.length}
             </span>
-            <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div className="w-16 h-1 bg-lia-interactive-active rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gray-900 transition-[width,height] duration-300"
+                className="h-full bg-lia-btn-primary-bg transition-[width,height] duration-300"
                 style={{width: `${((currentStageIndex + 1) / WIZARD_STAGES.length) * 100}%`}}
               />
             </div>
@@ -239,7 +239,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
           </button>
         ) : isReviewStage ? (
           <button
-            className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none"
+            className="flex items-center gap-1.5 px-4 py-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active rounded-md text-xs font-medium transition-colors motion-reduce:transition-none"
            
           >
             Publicar Vaga
@@ -252,8 +252,8 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
             className={cn(
  "flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-medium transition-colors",
               canAdvance || currentStage === 'salary'
-                ? "bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
-                : "bg-gray-300 lia-text-secondary cursor-not-allowed"
+                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
+                : "bg-lia-border-default lia-text-secondary cursor-not-allowed"
             )}
            
           >

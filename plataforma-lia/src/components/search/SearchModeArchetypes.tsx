@@ -116,8 +116,8 @@ export function SearchModeArchetypes({
           className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
             archetypeTab === "list"
-              ? "bg-gray-100 ring-1 ring-gray-400"
-              : "bg-lia-bg-primary ring-1 ring-gray-200 hover:bg-gray-50"
+              ? "bg-lia-bg-tertiary ring-1 ring-lia-border-medium"
+              : "bg-lia-bg-primary ring-1 ring-lia-border-subtle hover:bg-lia-bg-secondary"
           , archetypeTab === "list" ? "text-lia-text-primary" : "text-lia-text-tertiary"
           )}
         >
@@ -126,7 +126,7 @@ export function SearchModeArchetypes({
         </button>
         <button
           onClick={() => onArchetypeTabChange("create")}
-          className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ring-1 ring-gray-300 hover:ring-gray-400 hover:bg-gray-50 bg-lia-bg-primary"
+          className="flex items-center gap-1 h-7 px-3 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ring-1 ring-lia-border-default hover:ring-lia-border-medium hover:bg-lia-bg-secondary bg-lia-bg-primary"
         >
           <Plus className="w-3 h-3" />
           Criar Novo
@@ -147,7 +147,7 @@ export function SearchModeArchetypes({
               value={archetypeSearch}
               onChange={(e) => onArchetypeSearchChange(e.target.value)}
               placeholder="Buscar arquétipos..."
-              className="w-full rounded-md pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-2 border border-lia-border-default bg-gray-50 text-lia-text-primary"
+              className="w-full rounded-md pl-8 pr-3 py-2 text-xs focus:outline-none focus:ring-2 border border-lia-border-default bg-lia-bg-secondary text-lia-text-primary"
             />
           </div>
 
@@ -170,7 +170,7 @@ export function SearchModeArchetypes({
                 onClick={() => onArchetypeTabChange("create")}
                 variant="ghost"
                 size="sm"
-                className="mt-3 bg-gray-100"
+                className="mt-3 bg-lia-bg-tertiary"
               >
                 <Plus className="w-3.5 h-3.5 mr-1" />
                 Criar Arquétipo
@@ -186,10 +186,10 @@ export function SearchModeArchetypes({
                     className={cn(
                       "group relative w-full rounded-md text-left transition-colors cursor-pointer border",
                       isExpanded
-                        ? "bg-gray-50 ring-1 ring-gray-900/20 border-lia-border-default"
+                        ? "bg-lia-bg-secondary ring-1 ring-lia-btn-primary-bg/20 border-lia-border-default"
                         : selectedArchetype?.id === arch.id
-                        ? "bg-gray-50 ring-1 ring-gray-900/20 border-lia-border-default"
-                        : "bg-lia-bg-primary hover:bg-gray-50 border-lia-border-subtle"
+                        ? "bg-lia-bg-secondary ring-1 ring-lia-btn-primary-bg/20 border-lia-border-default"
+                        : "bg-lia-bg-primary hover:bg-lia-bg-secondary border-lia-border-subtle"
                     )}
                   >
                     <div
@@ -215,7 +215,7 @@ export function SearchModeArchetypes({
                             {arch.tags.slice(0, 2).map((tag: string) => (
                               <span
                                 key={tag}
-                                className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
+                                className="text-micro px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary"
                               >
                                 {tag}
                               </span>
@@ -244,7 +244,7 @@ export function SearchModeArchetypes({
 
                     {isExpanded && (
                       <div
-                        className="px-3 pb-3 space-y-2 border-t border-t-gray-200 pt-2.5"
+                        className="px-3 pb-3 space-y-2 border-t border-t-lia-border-subtle pt-2.5"
                       >
                         {arch.description && (
                           <p className="text-micro">{arch.description}</p>
@@ -264,7 +264,7 @@ export function SearchModeArchetypes({
                               {arch.tags.map((tag: string) => (
                                 <span
                                   key={tag}
-                                  className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
+                                  className="text-micro px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary"
                                 >
                                   {tag}
                                 </span>
@@ -280,7 +280,7 @@ export function SearchModeArchetypes({
                               {(arch.filters as any).skills.map((skill: string) => (
                                 <span
                                   key={skill}
-                                  className="text-micro px-1.5 py-0.5 rounded-full bg-gray-100"
+                                  className="text-micro px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary"
                                 >
                                   {skill}
                                 </span>
@@ -361,7 +361,7 @@ export function SearchModeArchetypes({
                               {(arch.filters as any).languages.map((lang: string) => (
                                 <span
                                   key={lang}
-                                  className="px-1.5 py-0.5 rounded-full text-micro bg-gray-100"
+                                  className="px-1.5 py-0.5 rounded-full text-micro bg-lia-bg-tertiary"
                                 >
                                   {lang}
                                 </span>
@@ -370,7 +370,7 @@ export function SearchModeArchetypes({
                           </div>
                         )}
 
-                        <div className="flex items-center gap-2 pt-2 mt-1 border-t border-t-gray-100">
+                        <div className="flex items-center gap-2 pt-2 mt-1 border-t border-t-lia-border-subtle">
                           <Button
                             size="sm"
                             onClick={(e) => {
@@ -379,7 +379,7 @@ export function SearchModeArchetypes({
                               onArchetypeSearchPromptChange(buildArchetypePrompt(arch))
                               onExpandedArchetypeIdChange(null)
                             }}
-                            className="flex-1 text-xs h-8 bg-gray-800 text-white"
+                            className="flex-1 text-xs h-8 bg-lia-btn-primary-hover text-white"
                           >
                             <Check className="w-3 h-3 mr-1" />
                             Usar Arquétipo
@@ -496,7 +496,7 @@ export function SearchModeArchetypes({
           )}
 
           {/* Dica */}
-          <div className="px-2 py-1.5 rounded-md bg-gray-50 border border-lia-border-subtle">
+          <div className="px-2 py-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
             <div className="flex items-center gap-1.5">
               <Lightbulb className="w-3 h-3 flex-shrink-0 text-lia-text-primary" />
               <p className="text-xs text-lia-text-primary">
@@ -517,8 +517,8 @@ export function SearchModeArchetypes({
               className={cn(
                 "flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors border border-lia-border-subtle",
                 archetypeCreateMode === "job"
-                  ? "bg-gray-100 ring-1 ring-gray-400 text-lia-text-primary"
-                  : "bg-lia-bg-primary hover:bg-gray-50 text-lia-text-secondary"
+                  ? "bg-lia-bg-tertiary ring-1 ring-lia-border-medium text-lia-text-primary"
+                  : "bg-lia-bg-primary hover:bg-lia-bg-secondary text-lia-text-secondary"
               )}
             >
               <Briefcase className="w-3.5 h-3.5 inline mr-1.5" />
@@ -529,8 +529,8 @@ export function SearchModeArchetypes({
               className={cn(
                 "flex-1 px-3 py-2 rounded-md text-xs font-medium transition-colors border border-lia-border-subtle",
                 archetypeCreateMode === "description"
-                  ? "bg-gray-100 ring-1 ring-gray-400 text-lia-text-primary"
-                  : "bg-lia-bg-primary hover:bg-gray-50 text-lia-text-secondary"
+                  ? "bg-lia-bg-tertiary ring-1 ring-lia-border-medium text-lia-text-primary"
+                  : "bg-lia-bg-primary hover:bg-lia-bg-secondary text-lia-text-secondary"
               )}
             >
               <FileText className="w-3.5 h-3.5 inline mr-1.5" />
@@ -557,7 +557,7 @@ export function SearchModeArchetypes({
                     onSearchJobsForArchetype(e.target.value)
                   }}
                   placeholder="Buscar vaga por nome ou ID..."
-                  className="w-full pl-8 pr-3 py-2 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle"
+                  className="w-full pl-8 pr-3 py-2 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 border border-lia-border-subtle"
                 />
                 {isSearchingJobs && (
                   <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-primary" />
@@ -585,7 +585,7 @@ export function SearchModeArchetypes({
                       <button
                         key={job.id}
                         onClick={() => onOpenArchetypeFromJob(job)}
-                        className="w-full p-2.5 text-left transition-colors motion-reduce:transition-none hover:bg-gray-50 border-b border-lia-border-subtle last:border-b-0"
+                        className="w-full p-2.5 text-left transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary border-b border-lia-border-subtle last:border-b-0"
                       >
                         <div className="flex items-start gap-2">
                           <Briefcase className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
@@ -602,13 +602,13 @@ export function SearchModeArchetypes({
                                     job.status === "Publicada"
                                       ? "var(--status-success-bg-15)"
                                       : job.status === "Encerrada"
-                                      ? "var(--gray-light-bg-20)"
+                                      ? "var(--lia-bg-tertiary)"
                                       : "var(--status-warning-bg-15)",
                                   color:
                                     job.status === "Publicada"
                                       ? "var(--status-success)"
                                       : job.status === "Encerrada"
-                                      ? "var(--gray-400)"
+                                      ? "var(--lia-text-tertiary)"
                                       : "var(--status-warning)"}}
                               >
                                 {job.status}
@@ -665,7 +665,7 @@ export function SearchModeArchetypes({
                 </div>
               )}
 
-              <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
+              <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
                 <div className="flex items-start gap-2">
                   <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
                   <p className="text-xs text-lia-text-primary">
@@ -688,13 +688,13 @@ export function SearchModeArchetypes({
                 onChange={(e) => onArchetypeDescriptionChange(e.target.value)}
                 placeholder="Ex: Desenvolvedor Python sênior com experiência em machine learning e cloud AWS, preferencialmente com background em fintechs..."
                 rows={3}
-                className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none border border-lia-border-default bg-gray-50 text-lia-text-primary"
+                className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 resize-none border border-lia-border-default bg-lia-bg-secondary text-lia-text-primary"
               />
               <Button
                 onClick={() => onCreateArchetypeFromDescription(archetypeDescription)}
                 disabled={archetypeDescription.length < 20 || isCreatingArchetype}
                 size="sm"
-                className={cn("w-full", archetypeDescription.length >= 20 ? "bg-gray-950 text-white" : "bg-gray-100 text-lia-text-secondary")}
+                className={cn("w-full", archetypeDescription.length >= 20 ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-lia-bg-tertiary text-lia-text-secondary")}
               >
                 {isCreatingArchetype ? (
                   <>
@@ -709,7 +709,7 @@ export function SearchModeArchetypes({
                 )}
               </Button>
 
-              <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
+              <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
                 <div className="flex items-start gap-2">
                   <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
                   <p className="text-xs text-lia-text-primary">
@@ -771,7 +771,7 @@ function ScopeButtons({
                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                   searchSource === "local"
                     ? "bg-wedo-green/15 ring-1 ring-wedo-green"
-                    : "hover:bg-gray-100"
+                    : "hover:bg-lia-bg-tertiary"
                 , searchSource === "local" ? "text-wedo-green" : "text-lia-text-tertiary"
                 )}
               >
@@ -803,7 +803,7 @@ function ScopeButtons({
                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                     searchSource === "hybrid"
                       ? "bg-wedo-orange/15 ring-1 ring-wedo-orange"
-                      : "hover:bg-gray-100"
+                      : "hover:bg-lia-bg-tertiary"
                   , searchSource === "hybrid" ? "text-wedo-orange" : "text-lia-text-tertiary"
                   )}
                 >
@@ -835,8 +835,8 @@ function ScopeButtons({
                   className={cn(
                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                     searchSource === "global"
-                      ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20"
-                      : "hover:bg-gray-100"
+                      ? "bg-wedo-cyan/15 ring-1 ring-lia-btn-primary-bg/20"
+                      : "hover:bg-lia-bg-tertiary"
                   , searchSource === "global" ? "text-lia-text-primary" : "text-lia-text-tertiary"
                   )}
                 >
@@ -872,7 +872,7 @@ function ScopeButtons({
                         "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         requireEmails
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green"
-                          : "hover:bg-gray-100"
+                          : "hover:bg-lia-bg-tertiary"
                       , requireEmails ? "text-wedo-green" : "text-lia-text-tertiary"
                       )}
                     >
@@ -905,7 +905,7 @@ function ScopeButtons({
                         "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         requirePhoneNumbers
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green"
-                          : "hover:bg-gray-100"
+                          : "hover:bg-lia-bg-tertiary"
                       , requirePhoneNumbers ? "text-wedo-green" : "text-lia-text-tertiary"
                       )}
                     >
@@ -935,7 +935,7 @@ function ScopeButtons({
                 disabled={!selectedArchetype || isLoading}
                 className={cn(
                   "flex items-center justify-center p-1.5 rounded-md transition-colors",
-                  selectedArchetype ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
+                  selectedArchetype ? "hover:bg-lia-bg-tertiary" : "opacity-50 cursor-not-allowed"
                 , selectedArchetype ? "text-lia-text-tertiary" : "text-lia-text-disabled"
                 )}
               >

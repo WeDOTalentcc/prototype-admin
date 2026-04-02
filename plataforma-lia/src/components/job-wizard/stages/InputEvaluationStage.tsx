@@ -61,7 +61,7 @@ export function InputEvaluationStage() {
     <>
       {/* Banner when using company config */}
       {configLoaded && hasConfigData && (
-        <div className="mb-3 px-3 py-2 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md flex items-center gap-2">
+        <div className="mb-3 px-3 py-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md flex items-center gap-2">
           <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
           <span className="text-xs text-lia-text-secondary">
             Usando dados das Configurações da sua empresa
@@ -89,7 +89,7 @@ export function InputEvaluationStage() {
                 className={cn(
  "flex items-center gap-2.5 py-2 px-3 rounded-md transition-colors duration-300",
                   isDetected 
-                    ? "bg-gray-50" 
+                    ? "bg-lia-bg-secondary" 
                     : "bg-lia-bg-primary"
                 )}
                 style={{boxShadow: isDetected ? 'var(--status-success-shadow)' : '0 1px 2px var(--overlay-04)'}}
@@ -135,9 +135,9 @@ export function InputEvaluationStage() {
             {detectedCount} / {totalCount}
           </span>
         </div>
-        <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-lia-interactive-active rounded-full overflow-hidden">
           <div 
-            className="h-full rounded-full transition-[width,height] duration-500 bg-gray-900"
+            className="h-full rounded-full transition-[width,height] duration-500 bg-lia-btn-primary-bg"
             style={{width: `${(detectedCount / totalCount) * 100}%`}}
           />
         </div>

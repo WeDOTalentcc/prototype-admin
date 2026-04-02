@@ -58,7 +58,7 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
                   <TooltipTrigger asChild>
                     <button
                       onClick={addSimilarUrl}
-                      className="h-8 px-3 rounded-md text-sm font-bold hover:bg-gray-800 hover:text-white transition-colors motion-reduce:transition-none text-lia-text-secondary bg-gray-100"
+                      className="h-8 px-3 rounded-md text-sm font-bold hover:bg-lia-btn-primary-hover hover:text-white transition-colors motion-reduce:transition-none text-lia-text-secondary bg-lia-bg-tertiary"
                     >
                       + URL
                     </button>
@@ -75,9 +75,9 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
 
       {/* CV Upload section with separator */}
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-px bg-gray-200" />
+        <div className="flex-1 h-px bg-lia-interactive-active" />
         <span className="text-xs text-lia-text-secondary px-2">ou</span>
-        <div className="flex-1 h-px bg-gray-200" />
+        <div className="flex-1 h-px bg-lia-interactive-active" />
       </div>
 
       <div className="relative">
@@ -95,7 +95,7 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
               <div
                 key={`cv-${file.name || index}`}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs"
-                style={{backgroundColor: 'var(--gray-100)'}}
+                style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
               >
                 <FileText className="w-3.5 h-3.5 text-lia-text-primary" />
                 <span className="max-w-[150px] truncate">{file.name}</span>
@@ -107,8 +107,8 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
             {similarCvFiles.length < MAX_CV_FILES && (
               <button
                 onClick={() => cvFileInputRef.current?.click()}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors motion-reduce:transition-none border border-lia-border-subtle"
-                style={{backgroundColor: 'var(--gray-100)'}}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none border border-lia-border-subtle"
+                style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
               >
                 <Upload className="w-3 h-3" />
                 + CV
@@ -118,8 +118,8 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
         ) : (
           <button
             onClick={() => cvFileInputRef.current?.click()}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-lia-text-primary hover:bg-gray-100 transition-colors motion-reduce:transition-none border border-lia-border-subtle"
-            style={{backgroundColor: 'var(--gray-100)'}}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs text-lia-text-primary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none border border-lia-border-subtle"
+            style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
           >
             <Upload className="w-3.5 h-3.5" />
             Arraste CVs aqui ou clique para upload (máx. 2)
@@ -132,7 +132,7 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
         <button
           onClick={analyzeProfiles}
           disabled={isAnalyzingProfiles}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs font-medium text-white disabled:opacity-50 bg-gray-900"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-xs font-medium text-white disabled:opacity-50 bg-lia-btn-primary-bg"
         >
           {isAnalyzingProfiles ? (
             <>
@@ -150,7 +150,7 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
 
       {/* Combined Suggestions Box */}
       {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-        <div className="p-3 rounded-md space-y-2 border border-lia-border-subtle" style={{backgroundColor: "var(--gray-50)"}}>
+        <div className="p-3 rounded-md space-y-2 border border-lia-border-subtle" style={{backgroundColor: "var(--lia-bg-secondary)"}}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -202,15 +202,15 @@ export const EAPTabSimilar = React.memo(function EAPTabSimilar(props: EAPTabSimi
         }}
         disabled={similarUrls.filter(u => u.trim()).length === 0 && similarCvFiles.length === 0}
         className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{backgroundColor: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--gray-950)" : "var(--gray-200)",
-          color: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--white)" : "var(--gray-400)"}}
+        style={{backgroundColor: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--lia-btn-primary-bg)" : "var(--lia-border-subtle)",
+          color: (similarUrls.filter(u => u.trim()).length > 0 || similarCvFiles.length > 0) ? "var(--white)" : "var(--lia-text-tertiary)"}}
       >
         <Search className="w-4 h-4" />
         {hasMultipleSources() ? "Buscar com perfil combinado" : "Buscar candidatos similares"}
       </button>
 
       {/* Dica contextual */}
-      <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
+      <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
           <p className="text-xs text-lia-text-primary">

@@ -79,10 +79,10 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'var(--gray-600)'
+      case 'online': return 'var(--lia-text-secondary)'
       case 'idle': return 'var(--status-warning)'
       case 'warning': return 'var(--status-error)'
-      default: return 'var(--gray-400)'
+      default: return 'var(--lia-text-tertiary)'
     }
   }
 
@@ -133,7 +133,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
   }
 
   return (
-    <div className={`flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-lia-bg-primary ${className}`}>
+    <div className={`flex-1 overflow-y-auto p-6 bg-lia-bg-secondary dark:bg-lia-bg-primary ${className}`}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
@@ -173,14 +173,14 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
             title="Ações Hoje"
             value={globalMetrics.actions_today}
             trend={globalMetrics.actions_delta}
-            accentColor="var(--gray-600)"
+            accentColor="var(--lia-text-secondary)"
           />
           <MetricCard
             variant="compact"
             icon={<Users className="w-4 h-4" />}
             title="Agentes Ativos"
             value={`${globalMetrics.active_agents}/${globalMetrics.total_agents}`}
-            accentColor="var(--gray-600)"
+            accentColor="var(--lia-text-secondary)"
           />
           <MetricCard
             variant="compact"
@@ -194,7 +194,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
             icon={<Clock className="w-4 h-4" />}
             title="Tempo Médio"
             value={`${globalMetrics.avg_response_time}s`}
-            accentColor="var(--gray-600)"
+            accentColor="var(--lia-text-secondary)"
           />
           <MetricCard
             variant="compact"
@@ -218,16 +218,16 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
               {proactiveAlerts.map(alert => (
                 <div
                   key={alert.id}
-                  className="flex items-center justify-between p-3 rounded-md bg-white"
+                  className="flex items-center justify-between p-3 rounded-md bg-lia-bg-primary"
                 >
                   <div className="flex items-center gap-3">
                     <Badge
                       variant="outline"
                       className="text-xs"
                       style={{borderColor: alert.severity === 'high' ? 'var(--status-error)' :
-                                    alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--gray-600)',
+                                    alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--lia-text-secondary)',
                         color: alert.severity === 'high' ? 'var(--status-error)' :
-                               alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--gray-600)'}}
+                               alert.severity === 'medium' ? 'var(--status-warning)' : 'var(--lia-text-secondary)'}}
                     >
                       {alert.severity}
                     </Badge>
@@ -255,7 +255,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
             <Card
               key={agent.id}
               onClick={() => handleAgentClick(agent)}
-              className={`border transition-transform motion-reduce:transition-none duration-200 hover:scale-[1.02] hover:cursor-pointer group bg-white ${selectedAgent?.id === agent.id ? 'border-gray-900 dark:border-lia-border-subtle' : 'border-lia-border-subtle dark:border-lia-border-subtle'}`}
+              className={`border transition-transform motion-reduce:transition-none duration-200 hover:scale-[1.02] hover:cursor-pointer group bg-lia-bg-primary ${selectedAgent?.id === agent.id ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle' : 'border-lia-border-subtle dark:border-lia-border-subtle'}`}
             >
               <CardContent className="p-4">
                 {/* Header */}
@@ -281,12 +281,12 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
 
                 {/* Sparkline */}
                 <div className="mb-3 h-8">
-                  <Sparkline data={agent.sparkline} color="var(--gray-600)" />
+                  <Sparkline data={agent.sparkline} color="var(--lia-text-secondary)" />
                 </div>
 
                 {/* Metrics Row */}
                 <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div className="p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                  <div className="p-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-lia-text-disabled">
                         Ações 24h
@@ -300,19 +300,19 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                       </span>
                     </div>
                     {/* Progress bar */}
-                    <div className="mt-1 h-1 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
+                    <div className="mt-1 h-1 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
                       <div 
-                        className="h-full rounded-full transition-[width,height] bg-gray-900" style={{width: `${Math.min(agent.progress, 100)}%`}}
+                        className="h-full rounded-full transition-[width,height] bg-lia-btn-primary-bg" style={{width: `${Math.min(agent.progress, 100)}%`}}
                       />
                     </div>
                   </div>
-                  <div className="p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                  <div className="p-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <span className="text-xs block text-lia-text-disabled">
                       Progresso
                     </span>
                     <span 
                       className="text-lg font-bold"
-                      style={{color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)'}}
+                      style={{color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--lia-btn-primary-bg)' : 'var(--status-warning)'}}
                     >
                       {agent.progress}%
                     </span>
@@ -346,7 +346,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
         </div>
 
         {/* Activity Feed Section */}
-        <div className="rounded-md border bg-white border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="rounded-md border bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
           {/* Feed Header with Filters */}
           <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-center justify-between mb-3">
@@ -365,7 +365,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   size="sm"
                   className={`text-xs ${filterPeriod === 'today' ? '' : 'text-lia-text-tertiary'}`}
                   onClick={() => setFilterPeriod('today')}
-                  style={{backgroundColor: filterPeriod === 'today' ? 'var(--gray-bg-30)' : 'transparent'}}
+                  style={{backgroundColor: filterPeriod === 'today' ? 'var(--lia-interactive-active)' : 'transparent'}}
                 >
                   Hoje
                 </Button>
@@ -374,7 +374,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   size="sm"
                   className={`text-xs ${filterPeriod === 'week' ? '' : 'text-lia-text-tertiary'}`}
                   onClick={() => setFilterPeriod('week')}
-                  style={{backgroundColor: filterPeriod === 'week' ? 'var(--gray-bg-30)' : 'transparent'}}
+                  style={{backgroundColor: filterPeriod === 'week' ? 'var(--lia-interactive-active)' : 'transparent'}}
                 >
                   Semana
                 </Button>
@@ -391,9 +391,9 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <button
                     key={agent.id}
                     onClick={() => toggleAgentFilter(agent.id)}
-                    className={`px-2 py-1 rounded-full text-xs transition-[width,height] ${selectedAgentFilter.includes(agent.id) ? '' : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-tertiary'}`}
+                    className={`px-2 py-1 rounded-full text-xs transition-[width,height] ${selectedAgentFilter.includes(agent.id) ? '' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-tertiary'}`}
                     style={{backgroundColor: selectedAgentFilter.includes(agent.id) ? 'var(--wedo-cyan-bg-15)' : undefined,
-                      border: `1px solid ${selectedAgentFilter.includes(agent.id) ? 'var(--gray-950)' : 'transparent'}`}}
+                      border: `1px solid ${selectedAgentFilter.includes(agent.id) ? 'var(--lia-btn-primary-bg)' : 'transparent'}`}}
                   >
                     {agent.icon} {agent.name.split(' ')[0]}
                   </button>
@@ -406,7 +406,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   <button
                     key={status}
                     onClick={() => toggleStatusFilter(status)}
-                    className={`px-2 py-1 rounded-full text-xs transition-[width,height] flex items-center gap-1 ${!selectedStatusFilter.includes(status) ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-tertiary' : ''}`}
+                    className={`px-2 py-1 rounded-full text-xs transition-[width,height] flex items-center gap-1 ${!selectedStatusFilter.includes(status) ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-tertiary' : ''}`}
                     style={{backgroundColor: selectedStatusFilter.includes(status) ?
                         (status === 'success' ? 'var(--wedo-green-active-15)' : status === 'error' ? 'var(--status-error-bg-15)' : 'var(--status-warning-bg-15)') :
                         undefined,
@@ -444,7 +444,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 Nenhuma atividade encontrada com os filtros selecionados
               </div>
             ) : (
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              <div className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
                 {activities.map((activity) => (
                   <div 
                     key={activity.id}

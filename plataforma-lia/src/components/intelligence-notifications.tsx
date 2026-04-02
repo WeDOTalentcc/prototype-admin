@@ -140,7 +140,7 @@ export function IntelligenceNotifications({
       case 'low':
         return 'bg-wedo-cyan/15 text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default'
       default:
-        return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+        return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -232,7 +232,7 @@ export function IntelligenceNotifications({
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 top-12 w-96 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md z-50 max-h-96 overflow-hidden">
+        <div className="absolute right-0 top-12 w-96 bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md z-50 max-h-96 overflow-hidden">
           <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-lia-text-primary">
@@ -307,7 +307,7 @@ export function IntelligenceNotifications({
                 <div
                   key={notification.id}
                   className={`p-4 border-b border-lia-border-subtle transition-colors motion-reduce:transition-none ${
- !notification.read ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+ !notification.read ? 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15' : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -369,7 +369,7 @@ export function IntelligenceNotifications({
             )}
           </div>
 
-          <div className="p-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
+          <div className="p-3 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
             <div className="flex items-center justify-between">
               {lastFetch && (
                 <span className="text-xs text-lia-text-secondary">

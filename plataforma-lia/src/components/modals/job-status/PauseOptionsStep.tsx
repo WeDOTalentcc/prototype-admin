@@ -231,7 +231,7 @@ export function PauseOptionsStep({
                       // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                       <Button key={channel} type="button" variant={recruiterChannel === channel ? 'default' : 'outline'} size="sm"
                         onClick={() => onRecruiterChannelChange(channel)}
-                        className={cn("h-6 px-2 text-micro gap-1", recruiterChannel === channel ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white" : "border border-lia-border-default text-lia-text-secondary")}>
+                        className={cn("h-6 px-2 text-micro gap-1", recruiterChannel === channel ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" : "border border-lia-border-default text-lia-text-secondary")}>
                         {channel === 'email' && <Mail className="w-3 h-3" />}
                         {channel === 'teams' && <MessageSquare className="w-3 h-3" />}
                         {channel === 'bell' && <Bell className="w-3 h-3" />}

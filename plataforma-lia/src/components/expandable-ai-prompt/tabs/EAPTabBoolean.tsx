@@ -45,8 +45,8 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
                   onClick={(e) => { e.stopPropagation(); setSearchSource('local'); }}
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                     searchSource === 'local'
-                      ? 'bg-gray-200'
-                      : 'hover:bg-gray-100'
+                      ? 'bg-lia-interactive-active'
+                      : 'hover:bg-lia-bg-tertiary'
                   }`}
                 >
                   <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
@@ -68,8 +68,8 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
                     onClick={(e) => { e.stopPropagation(); handleSourceChange('hybrid'); }}
                     className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                       searchSource === 'hybrid'
-                        ? 'bg-gray-200'
-                        : 'hover:bg-gray-100'
+                        ? 'bg-lia-interactive-active'
+                        : 'hover:bg-lia-bg-tertiary'
                     }`}
                   >
                     <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
@@ -92,8 +92,8 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
                     onClick={(e) => { e.stopPropagation(); handleSourceChange('global'); }}
                     className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                       searchSource === 'global'
-                        ? 'bg-gray-200'
-                        : 'hover:bg-gray-100'
+                        ? 'bg-lia-interactive-active'
+                        : 'hover:bg-lia-bg-tertiary'
                     }`}
                   >
                     <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
@@ -108,7 +108,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
           )}
 
           {/* Separador */}
-          <div className="w-px h-4 bg-gray-200 mx-0.5" />
+          <div className="w-px h-4 bg-lia-interactive-active mx-0.5" />
 
           {/* Contato: Email / Telefone */}
           <TooltipProvider>
@@ -120,7 +120,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                     requireEmails
                       ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
-                      : 'hover:bg-gray-100'
+                      : 'hover:bg-lia-bg-tertiary'
                   }`}
                 >
                   <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
@@ -142,7 +142,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                     requirePhoneNumbers
                       ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
-                      : 'hover:bg-gray-100'
+                      : 'hover:bg-lia-bg-tertiary'
                   }`}
                 >
                   <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
@@ -156,7 +156,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
           </TooltipProvider>
 
           {/* Separador */}
-          <div className="w-px h-4 bg-gray-200 mx-0.5" />
+          <div className="w-px h-4 bg-lia-interactive-active mx-0.5" />
 
           {/* Botão de Buscar */}
           <button
@@ -169,7 +169,7 @@ export const EAPTabBoolean = React.memo(function EAPTabBoolean(props: EAPTabBool
         </div>
       </div>
       <div className="flex flex-wrap gap-1.5">
-        <span className="text-xs" style={{color: 'var(--gray-400)'}}>Operadores:</span>
+        <span className="text-xs" style={{color: 'var(--lia-text-tertiary)'}}>Operadores:</span>
         {['AND', 'OR', 'NOT', '( )', '" "'].map((op) => (
           <button
             key={op}

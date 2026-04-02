@@ -106,8 +106,8 @@ export function CandidatePageOpinionsTab({
             onClick={() => setOpinionsSubTab("pareceres")}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
               opinionsSubTab === "pareceres"
-                ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle"
-                : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800"
+                ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-b-2 border-lia-btn-primary-bg dark:border-lia-border-subtle"
+                : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
             }`}
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -123,7 +123,7 @@ export function CandidatePageOpinionsTab({
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-t transition-colors motion-reduce:transition-none ${
               opinionsSubTab === "analises"
                 ? "bg-wedo-purple/10 dark:bg-wedo-purple/20 text-wedo-purple dark:text-wedo-purple border-b-2 border-wedo-purple/30"
-                : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-800"
+                : "text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
             }`}
           >
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -146,15 +146,15 @@ export function CandidatePageOpinionsTab({
                   <Card key={i} className="animate-pulse motion-reduce:animate-none">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                        <div className="w-8 h-8 bg-lia-interactive-active rounded-full"></div>
                         <div className="flex-1">
-                          <div className="w-32 h-4 bg-gray-200 rounded-md mb-1"></div>
-                          <div className="w-24 h-3 bg-gray-200 rounded-md"></div>
+                          <div className="w-32 h-4 bg-lia-interactive-active rounded-md mb-1"></div>
+                          <div className="w-24 h-3 bg-lia-interactive-active rounded-md"></div>
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <div className="w-full h-3 bg-gray-200 rounded-md"></div>
-                        <div className="w-3/4 h-3 bg-gray-200 rounded-md"></div>
+                        <div className="w-full h-3 bg-lia-interactive-active rounded-md"></div>
+                        <div className="w-3/4 h-3 bg-lia-interactive-active rounded-md"></div>
                       </div>
                     </CardContent>
                   </Card>
@@ -165,7 +165,7 @@ export function CandidatePageOpinionsTab({
             {!isLoadingHistory && opinionsHistory.length === 0 && (
               <Card>
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center mx-auto mb-3">
                     <FileText className="w-6 h-6 lia-text-secondary" />
                   </div>
                   <p className={`${textStyles.subtitle} mb-1`}>Nenhum parecer disponível</p>
@@ -189,11 +189,11 @@ export function CandidatePageOpinionsTab({
                     <Card key={opinion.id as string} className="overflow-hidden">
                       <div
                         onClick={() => setExpandedOpinionId(isExpanded ? null : opinion.id as string | null)}
-                        className="p-3 flex items-center justify-between hover:bg-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
+                        className="p-3 flex items-center justify-between hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            isWsiOpinion ? "bg-wedo-purple/15" : "bg-gray-100 dark:bg-lia-bg-secondary"
+                            isWsiOpinion ? "bg-wedo-purple/15" : "bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                           }`}>
                             {isWsiOpinion ? (
                               <Target className="w-4 h-4 text-wedo-purple" />
@@ -207,12 +207,12 @@ export function CandidatePageOpinionsTab({
                                 {isWsiOpinion ? "Parecer WSI" : (opinion.job_vacancy_id ? "Parecer de Vaga" : "Parecer Geral")}
                               </span>
                               {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                                <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
+                                <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
                                   <Briefcase className="w-2.5 h-2.5" />
                                   #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title as string}
                                 </Badge>
                               ) : !opinion.job_vacancy_id ? (
-                                <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle">
+                                <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                                   Sem vaga vinculada
                                 </Badge>
                               ) : null}
@@ -246,7 +246,7 @@ export function CandidatePageOpinionsTab({
                                   e.stopPropagation()
                                   handleCopyOpinion(opinion, (opinion.opinion_type as string | undefined) || "general")
                                 }}
-                                className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
+                                className="p-1 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
                               >
                                 {copiedItemId === `opinion-${opinion.id as string}` ? (
                                   <Check className="w-3.5 h-3.5 text-status-success" />
@@ -283,7 +283,7 @@ export function CandidatePageOpinionsTab({
                               <div className="grid grid-cols-2 gap-1.5">
                                 {Object.entries(opinion.score_breakdown as Record<string, unknown>).map(([key, value]: [string, unknown]) => (
                                   value !== null && value !== undefined && (
-                                    <div key={key} className="flex items-center justify-between text-micro bg-gray-50 dark:bg-lia-bg-elevated rounded-full px-2 py-1">
+                                    <div key={key} className="flex items-center justify-between text-micro bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-full px-2 py-1">
                                       {/* @ts-ignore TODO: fix type */}
                                       <span className="text-lia-text-secondary capitalize">{key.replace(/_/g, ' ')}</span>
                                       <span className="font-medium text-lia-text-primary">{(typeof value === "number" ? `${Math.round(value)}%` : value as React.ReactNode)}</span>
@@ -353,15 +353,15 @@ export function CandidatePageOpinionsTab({
                   <Card key={i} className="animate-pulse motion-reduce:animate-none">
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                        <div className="w-8 h-8 bg-lia-interactive-active rounded-full"></div>
                         <div className="flex-1">
-                          <div className="w-32 h-4 bg-gray-200 rounded-md mb-1"></div>
-                          <div className="w-24 h-3 bg-gray-200 rounded-md"></div>
+                          <div className="w-32 h-4 bg-lia-interactive-active rounded-md mb-1"></div>
+                          <div className="w-24 h-3 bg-lia-interactive-active rounded-md"></div>
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <div className="w-full h-3 bg-gray-200 rounded-md"></div>
-                        <div className="w-3/4 h-3 bg-gray-200 rounded-md"></div>
+                        <div className="w-full h-3 bg-lia-interactive-active rounded-md"></div>
+                        <div className="w-3/4 h-3 bg-lia-interactive-active rounded-md"></div>
                       </div>
                     </CardContent>
                   </Card>
@@ -397,7 +397,7 @@ export function CandidatePageOpinionsTab({
                   return (
                     <Card key={analysis.id as string} className="overflow-hidden hover:transition-shadow">
                       <div
-                        className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50/50 transition-colors motion-reduce:transition-none"
+                        className="flex items-center justify-between p-3 cursor-pointer hover:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none"
                         onClick={() => setExpandedAnalysisId(isExpanded ? null : analysis.id as string | null)}
                       >
                         <div className="flex items-center gap-2.5">
@@ -426,7 +426,7 @@ export function CandidatePageOpinionsTab({
                                   e.stopPropagation()
                                   handleCopyAnalysis(analysis)
                                 }}
-                                className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
+                                className="p-1 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
                               >
                                 {copiedItemId === `analysis-${analysis.id}` ? (
                                   <Check className="w-3.5 h-3.5 text-status-success" />
@@ -442,8 +442,8 @@ export function CandidatePageOpinionsTab({
                       </div>
 
                       {isExpanded && (
-                        <div className="px-3 pb-3 border-t border-gray-50">
-                          <div className={`${textStyles.description} text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-gray-50 rounded-md p-3 mt-2`}>
+                        <div className="px-3 pb-3 border-t border-lia-border-subtle">
+                          <div className={`${textStyles.description} text-lia-text-primary leading-relaxed whitespace-pre-wrap bg-lia-bg-secondary rounded-md p-3 mt-2`}>
                             {cleanTextForCopy(analysis.content as string)}
                           </div>
                           <div className="flex justify-end mt-2">

@@ -63,8 +63,8 @@ import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-
 import { toast } from "sonner"
 
 const LIST_COLORS = [
-  { value: 'var(--gray-600)', name: 'Cyan' },
-  { value: 'var(--gray-400)', name: 'Cinza' },
+  { value: 'var(--lia-text-secondary)', name: 'Cyan' },
+  { value: 'var(--lia-text-tertiary)', name: 'Cinza' },
   { value: 'var(--status-success)', name: 'Verde' },
   { value: 'var(--status-warning)', name: 'Amarelo' },
   { value: 'var(--status-error)', name: 'Vermelho' },
@@ -255,7 +255,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
       case 'expired':
         return <Badge className="bg-status-error/15 text-status-error border-status-error/30 text-micro">Expirado</Badge>
       case 'revoked':
-        return <Badge className="bg-gray-100 text-lia-text-secondary border-lia-border-subtle text-micro">Revogado</Badge>
+        return <Badge className="bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle text-micro">Revogado</Badge>
     }
   }
 
@@ -368,7 +368,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
           <Button
             onClick={openCreateModal}
             size="sm"
-            className="h-8 text-xs gap-1.5 bg-gray-900 hover:bg-gray-800 text-white"
+            className="h-8 text-xs gap-1.5 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
           >
             <Plus className="w-3.5 h-3.5" />
             Nova Lista
@@ -387,15 +387,15 @@ const [lists, setLists] = useState<CandidateList[]>([])
             <div
               key={list.id}
               onClick={() => onListSelect(list.id)}
-              className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
+              className="group relative flex items-center gap-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer"
             >
               <div 
-                className="flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center relative bg-gray-100"
+                className="flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center relative bg-lia-bg-tertiary"
               >
                 <List className="w-5 h-5 text-lia-text-secondary" />
                 <div
                   className="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white"
-                  style={{backgroundColor: list.color || 'var(--gray-400)'}}
+                  style={{backgroundColor: list.color || 'var(--lia-text-tertiary)'}}
                 />
               </div>
 
@@ -430,7 +430,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                  className="h-8 w-8 p-0 hover:bg-lia-bg-tertiary"
                   onClick={(e) => { e.stopPropagation(); openAddCandidateModal(list) }}
                   title="Adicionar candidatos"
                 >
@@ -439,7 +439,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                  className="h-8 w-8 p-0 hover:bg-lia-bg-tertiary"
                   onClick={(e) => { e.stopPropagation(); handleShareList(list) }}
                   title="Compartilhar lista"
                 >
@@ -448,7 +448,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                  className="h-8 w-8 p-0 hover:bg-lia-bg-tertiary"
                   onClick={(e) => { e.stopPropagation(); openEditModal(list) }}
                   title="Editar lista"
                 >
@@ -457,7 +457,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                  className="h-8 w-8 p-0 hover:bg-lia-bg-tertiary"
                   onClick={(e) => { e.stopPropagation(); onAddToJobs(list.id) }}
                   title="Adicionar a vagas"
                 >
@@ -522,7 +522,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
       ) : (
         <div className="flex flex-col items-center justify-center py-16 px-4">
           <div
-            className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-gray-100"
+            className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-lia-bg-tertiary"
           >
             <FolderOpen className="w-8 h-8 text-lia-text-tertiary" />
           </div>
@@ -537,7 +537,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
           {!searchTerm && (
             <Button
               onClick={openCreateModal}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white"
+              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               <Plus className="w-4 h-4" />
               Criar primeira lista
@@ -553,7 +553,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
             <Link2 className="w-4 h-4 text-lia-text-secondary" />
             Compartilhados
             {totalNewFeedbacks > 0 && (
-              <Badge className="bg-gray-100 text-lia-text-secondary border-lia-border-subtle text-micro ml-2">
+              <Badge className="bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle text-micro ml-2">
                 {totalNewFeedbacks} {totalNewFeedbacks === 1 ? 'novo' : 'novos'} ●
               </Badge>
             )}
@@ -570,11 +570,11 @@ const [lists, setLists] = useState<CandidateList[]>([])
             {sharedSearches.map((shared) => (
               <div
                 key={shared.id}
-                className="group relative p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+                className="group relative p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                       <Link2 className="w-5 h-5 text-lia-text-secondary" />
                     </div>
                     <div>
@@ -676,8 +676,8 @@ const [lists, setLists] = useState<CandidateList[]>([])
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-10 px-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-dashed border-lia-border-subtle dark:border-lia-border-subtle">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-gray-100 dark:bg-lia-bg-secondary">
+          <div className="flex flex-col items-center justify-center py-10 px-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md border border-dashed border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
               <Link2 className="w-6 h-6 text-lia-text-disabled" />
             </div>
             <p className="text-sm text-lia-text-secondary text-center max-w-sm">
@@ -733,7 +733,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
                     onClick={() => setFormColor(color.value)}
                     className={`w-8 h-8 rounded-full flex items-center justify-center transition-[width,height] ${
  formColor === color.value
-                        ? 'ring-2 ring-offset-2 ring-gray-400'
+                        ? 'ring-2 ring-offset-2 ring-lia-border-medium'
                         : 'hover:scale-110'
                     }`}
                     style={{backgroundColor: color.value}}
@@ -759,7 +759,7 @@ const [lists, setLists] = useState<CandidateList[]>([])
             <Button
               onClick={handleSave}
               disabled={saving || !formName.trim()}
-              className="bg-gray-900 hover:bg-gray-800 text-white"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               {saving ? (
                 <>

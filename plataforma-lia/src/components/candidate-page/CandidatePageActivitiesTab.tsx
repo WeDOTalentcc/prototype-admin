@@ -124,7 +124,7 @@ export function CandidatePageActivitiesTab({
               <select
                 value={periodFilter}
                 onChange={(e) => setPeriodFilter(e.target.value)}
-                className="text-xs px-2 py-1 bg-white dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-default rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400/20"
+                className="text-xs px-2 py-1 bg-lia-bg-primary dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-default rounded-md focus:outline-none focus:ring-1 focus:ring-lia-border-medium/20"
               >
                 <option value="7days">Últimos 7 dias</option>
                 <option value="30days">Últimos 30 dias</option>
@@ -132,12 +132,12 @@ export function CandidatePageActivitiesTab({
                 <option value="all">Todo período</option>
               </select>
 
-              <div className="flex items-center bg-white dark:bg-lia-bg-elevated rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
+              <div className="flex items-center bg-lia-bg-primary dark:bg-lia-bg-elevated rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
                 <button
                   onClick={() => setViewMode('timeline')}
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  viewMode === 'timeline'
-                      ? 'bg-gray-200 text-lia-text-primary'
+                      ? 'bg-lia-interactive-active text-lia-text-primary'
                       : 'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
                   }`}
                   title="Visualização Timeline"
@@ -148,7 +148,7 @@ export function CandidatePageActivitiesTab({
                   onClick={() => setViewMode('list')}
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  viewMode === 'list'
-                      ? 'bg-gray-200 text-lia-text-primary'
+                      ? 'bg-lia-interactive-active text-lia-text-primary'
                       : 'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
                   }`}
                   title="Visualização Lista"
@@ -173,8 +173,8 @@ export function CandidatePageActivitiesTab({
               onClick={() => setActivityFilter('all')}
               className={`px-2 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  activityFilter === 'all'
-                  ? 'bg-gray-600 text-white'
-                  : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary hover:bg-gray-200'
+                  ? 'bg-lia-border-medium text-white'
+                  : 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary hover:bg-lia-interactive-active'
               }`}
             >
               Todas
@@ -183,8 +183,8 @@ export function CandidatePageActivitiesTab({
               onClick={() => setActivityFilter('emails')}
               className={`px-2 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none ${
  activityFilter === 'emails'
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
+                  : 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary hover:bg-lia-interactive-active dark:hover:bg-lia-border-medium'
               }`}
             >
               📧 Emails
@@ -233,7 +233,7 @@ export function CandidatePageActivitiesTab({
         </CardContent>
       </Card>
 
-      <Card className="bg-gray-50 dark:bg-lia-bg-secondary/50">
+      <Card className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
         <CardHeader
           className="pb-3 cursor-pointer hover:bg-wedo-purple/15/30 dark:hover:bg-wedo-purple/30 transition-colors motion-reduce:transition-none"
           onClick={() => setShowAIPredictions(!showAIPredictions)}
@@ -258,7 +258,7 @@ export function CandidatePageActivitiesTab({
           <CardContent className="pt-0">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {aiPredictions.map((prediction) => (
-                <div key={prediction.id} className="bg-white dark:bg-lia-bg-secondary rounded-md p-3">
+                <div key={prediction.id} className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-3">
                   <div className="flex items-start gap-2">
                     <span className="text-xl">{prediction.icon}</span>
                     <div className="flex-1">
@@ -305,7 +305,7 @@ export function CandidatePageActivitiesTab({
                     <div className="ml-12 flex-1">
                       <Card className="border border-lia-border-subtle dark:border-lia-border-subtle">
                         <CardContent
-                          className="p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+                          className="p-3 cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
                           onClick={() => setExpandedActivity(expandedActivity === activity.id ? null : activity.id)}
                         >
                           <div className="flex items-start gap-3">
@@ -333,7 +333,7 @@ export function CandidatePageActivitiesTab({
                                   {activity.score && (
                                     <Badge
                                       className="text-xs"
-                                      style={{backgroundColor: 'var(--gray-100)',
+                                      style={{backgroundColor: 'var(--lia-bg-tertiary)',
                                         color: activity.score >= 80 ? 'var(--status-success)' : 'var(--status-warning)'}}
                                     >
                                       {activity.score}%
@@ -355,11 +355,11 @@ export function CandidatePageActivitiesTab({
                             {activity.type === 'lia-evaluation' && (
                               <div className="mt-2 space-y-2">
                                 <div className="grid grid-cols-2 gap-2">
-                                  <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
+                                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md">
                                     <span className="text-xs text-lia-text-primary">Score Técnico</span>
                                     <p className="text-sm font-semibold">{activity.details.technicalScore}%</p>
                                   </div>
-                                  <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
+                                  <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md">
                                     <span className="text-xs text-lia-text-primary">Fit Cultural</span>
                                     <p className="text-sm font-semibold">{activity.details.culturalFit}%</p>
                                   </div>
@@ -369,7 +369,7 @@ export function CandidatePageActivitiesTab({
 
                             {activity.type === 'whatsapp-screening' && activity.details.conversation && (
                               <div className="mt-2 space-y-2">
-                                <div className="bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md max-h-48 overflow-y-auto">
+                                <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md max-h-48 overflow-y-auto">
                                   <p className="text-xs text-lia-text-primary mb-2">Conversa via {activity.platform}</p>
                                   <div className="space-y-2">
                                     {activity.details.conversation.map((msg, i: number) => (
@@ -381,7 +381,7 @@ export function CandidatePageActivitiesTab({
                                           className={`max-w-[70%] px-3 py-2 rounded-md text-xs ${
  msg.sender === 'LIA'
                                               ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
-                                              : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary'
+                                              : 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary'
                                           }`}
                                         >
                                           <p>{msg.message}</p>

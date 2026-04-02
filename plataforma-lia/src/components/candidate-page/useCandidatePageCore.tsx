@@ -45,7 +45,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       id: 'lia-eval-1',
       type: 'lia-evaluation',
       icon: Brain,
-      iconColor: 'var(--gray-600)',
+      iconColor: 'var(--lia-text-secondary)',
       title: 'Avaliação da LIA - UX Designer Sênior',
       author: 'LIA AI',
       authorRole: 'Sistema',
@@ -123,7 +123,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       id: 'whatsapp-screening',
       type: 'lia-screening',
       icon: Bot,
-      iconColor: 'var(--gray-600)',
+      iconColor: 'var(--lia-text-secondary)',
       title: 'Triagem via WhatsApp - LIA',
       author: 'LIA Bot',
       authorRole: 'AI Assistant',
@@ -152,7 +152,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       id: 'video-interview-1',
       type: 'video-interview',
       icon: Video,
-      iconColor: 'var(--gray-400)',
+      iconColor: 'var(--lia-text-tertiary)',
       title: 'Vídeo de apresentação gravado',
       author: candidateName,
       authorRole: 'Candidato',
@@ -221,7 +221,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       timeframe: '3-5 dias',
       recommendation: 'Preparar margem de negociação de até 10%',
       icon: '💰',
-      color: 'var(--gray-300)'
+      color: 'var(--lia-border-default)'
     },
     {
       id: 'acceptance',
@@ -230,7 +230,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       timeframe: '5-7 dias',
       recommendation: 'Iniciar preparação do onboarding',
       icon: '✅',
-      color: 'var(--gray-200)'
+      color: 'var(--lia-border-subtle)'
     },
     {
       id: 'start-date',
@@ -239,7 +239,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       timeframe: '30 dias',
       recommendation: 'Agendar primeira semana de integração',
       icon: '🎯',
-      color: 'var(--gray-200)'
+      color: 'var(--lia-border-subtle)'
     }
   ]
 
@@ -251,10 +251,10 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
   ]
 
   const colorToBg: Record<string, string> = {
-    'var(--gray-200)': 'var(--gray-200-bg-20)',
-    'var(--gray-300)': 'var(--gray-300-bg-20)',
-    'var(--gray-400)': 'var(--gray-bg-10)',
-    'var(--gray-600)': 'var(--gray-600-bg-10)',
+    'var(--lia-border-subtle)': 'var(--lia-border-subtle)',
+    'var(--lia-border-default)': 'var(--lia-border-default)',
+    'var(--lia-text-tertiary)': 'var(--lia-bg-secondary)',
+    'var(--lia-text-secondary)': 'var(--lia-bg-secondary)',
     'var(--status-success)': 'var(--status-success-bg)',
     'var(--status-error)': 'var(--status-error-bg)',
     'var(--status-warning)': 'var(--status-warning-bg)',
@@ -263,7 +263,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
     'var(--wedo-orange)': 'var(--wedo-orange-bg-15)',
     'var(--wedo-cyan)': 'var(--wedo-cyan-bg-10)',
   }
-  const getBgColor = (color: string) => colorToBg[color] || 'var(--gray-bg-10)'
+  const getBgColor = (color: string) => colorToBg[color] || 'var(--lia-bg-secondary)'
 
   const filterByPeriod = (activity: Record<string, unknown>) => {
     if (periodFilter === 'all') return true
@@ -297,15 +297,15 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
   }
 
   const localBadgeStyles = {
-    default: 'text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-0',
+    default: 'text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0',
     success: 'text-micro px-1.5 py-0 h-4 bg-status-success/10 dark:bg-status-success/20 text-status-success dark:text-status-success border-0',
     warning: 'text-micro px-1.5 py-0 h-4 bg-status-warning/10 dark:bg-status-warning/20 text-status-warning dark:text-status-warning border-0',
     error: 'text-micro px-1.5 py-0 h-4 bg-status-error/10 dark:bg-status-error/20 text-status-error dark:text-status-error border-0',
-    info: 'text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary border-0'
+    info: 'text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary border-0'
   }
 
   const localCardStyles = {
-    default: 'bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md'
+    default: 'bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md'
   }
 
   const cleanTextForCopy = (text: string): string => {
@@ -420,9 +420,9 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return "bg-wedo-green-pastel text-lia-text-primary"
-    if (score >= 80) return "bg-gray-100 text-lia-text-primary"
-    if (score >= 70) return "bg-gray-200 text-lia-text-primary"
-    return "bg-gray-100 text-lia-text-primary"
+    if (score >= 80) return "bg-lia-bg-tertiary text-lia-text-primary"
+    if (score >= 70) return "bg-lia-interactive-active text-lia-text-primary"
+    return "bg-lia-bg-tertiary text-lia-text-primary"
   }
 
   const formatDateShort = (dateStr: string | null | undefined) => {

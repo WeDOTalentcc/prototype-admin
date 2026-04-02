@@ -695,17 +695,17 @@ export default function AdminComunicacoesPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold mb-2 lia-text-800 dark:text-lia-text-primary" >
+        <h1 className="text-3xl font-semibold mb-2 text-lia-text-primary dark:text-lia-text-primary" >
           Comunicações
         </h1>
-        <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+        <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
           Gerenciamento global de templates, webhooks e políticas de comunicação
         </p>
       </div>
 
       {successMessage && (
-        <div className="mb-4 px-3 py-2 rounded-md flex items-center gap-2 bg-gray-200/30" style={{ borderColor: 'var(--wedo-cyan-border)', color: 'var(--wedo-cyan-dark)', border: '1px solid' }}>
-          <CheckCircle className="w-4 h-4 lia-text-700" />
+        <div className="mb-4 px-3 py-2 rounded-md flex items-center gap-2 bg-lia-interactive-active/30" style={{ borderColor: 'var(--wedo-cyan-border)', color: 'var(--wedo-cyan-dark)', border: '1px solid' }}>
+          <CheckCircle className="w-4 h-4 text-lia-text-primary" />
           <span className="text-sm">{successMessage}</span>
         </div>
       )}
@@ -728,7 +728,7 @@ export default function AdminComunicacoesPage() {
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
-              {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 dark:lia-bg-50" />}
+              {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-lia-btn-primary-bg dark:bg-lia-bg-secondary" />}
             </button>
           )
         })}

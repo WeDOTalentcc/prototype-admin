@@ -96,8 +96,8 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   onClick={(e) => { e.stopPropagation(); setSearchSource('local'); }}
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                     searchSource === 'local'
-                      ? 'bg-gray-200'
-                      : 'hover:bg-gray-100'
+                      ? 'bg-lia-interactive-active'
+                      : 'hover:bg-lia-bg-tertiary'
                   }`}
                 >
                   <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
@@ -119,8 +119,8 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                     onClick={(e) => { e.stopPropagation(); handleSourceChange('hybrid'); }}
                     className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                       searchSource === 'hybrid'
-                        ? 'bg-gray-200'
-                        : 'hover:bg-gray-100'
+                        ? 'bg-lia-interactive-active'
+                        : 'hover:bg-lia-bg-tertiary'
                     }`}
                   >
                     <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
@@ -143,8 +143,8 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                     onClick={(e) => { e.stopPropagation(); handleSourceChange('global'); }}
                     className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                       searchSource === 'global'
-                        ? 'bg-gray-200'
-                        : 'hover:bg-gray-100'
+                        ? 'bg-lia-interactive-active'
+                        : 'hover:bg-lia-bg-tertiary'
                     }`}
                   >
                     <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-lia-text-secondary' : 'lia-text-secondary'}`} />
@@ -159,7 +159,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
           )}
 
           {/* Separador */}
-          <div className="w-px h-4 bg-gray-200 mx-0.5" />
+          <div className="w-px h-4 bg-lia-interactive-active mx-0.5" />
 
           {/* Contato: Email / Telefone */}
           <TooltipProvider>
@@ -171,7 +171,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                     requireEmails
                       ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
-                      : 'hover:bg-gray-100'
+                      : 'hover:bg-lia-bg-tertiary'
                   }`}
                 >
                   <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
@@ -193,7 +193,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                     requirePhoneNumbers
                       ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light'
-                      : 'hover:bg-gray-100'
+                      : 'hover:bg-lia-bg-tertiary'
                   }`}
                 >
                   <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
@@ -207,7 +207,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
           </TooltipProvider>
 
           {/* Separador */}
-          <div className="w-px h-4 bg-gray-200 mx-0.5" />
+          <div className="w-px h-4 bg-lia-interactive-active mx-0.5" />
 
           {/* Botão de Buscar */}
           <button
@@ -235,11 +235,11 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 }}
                 className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors motion-reduce:transition-none ${
                   selectedAutocompleteIndex === index
-                    ? 'bg-gray-100'
-                    : 'hover:bg-gray-50'
+                    ? 'bg-lia-bg-tertiary'
+                    : 'hover:bg-lia-bg-secondary'
                 }`}
               >
-                <span style={{color: 'var(--gray-950)'}}>{suggestion.text}</span>
+                <span style={{color: 'var(--lia-btn-primary-bg)'}}>{suggestion.text}</span>
                 <span className="text-xs lia-text-secondary">{suggestion.category}</span>
               </button>
             ))}
@@ -262,7 +262,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
       {/* Prompt Enhancement Card */}
       {promptEnhancement && !showAutocomplete && (
         <div
-          className="mt-2 p-3 rounded-md border transition-colors motion-reduce:transition-none bg-gray-200/20" style={{ borderColor: 'var(--wedo-cyan-border)' }}
+          className="mt-2 p-3 rounded-md border transition-colors motion-reduce:transition-none bg-lia-interactive-active/20" style={{ borderColor: 'var(--wedo-cyan-border)' }}
         >
           <div className="flex items-start gap-2" role="status" aria-live="polite" aria-label="Carregando...">
             <Wand2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
@@ -270,7 +270,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               <div className="flex items-center gap-1.5 mb-1" role="status" aria-live="polite" aria-label="Carregando...">
                 <span className="text-xs font-medium text-lia-text-secondary">Sugestão da LIA</span>
                 {isEnhancingPrompt && (
-                  <div className="w-3 h-3 border-2 border-gray-900 border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
+                  <div className="w-3 h-3 border-2 border-lia-btn-primary-bg border-t-transparent rounded-full animate-spin motion-reduce:animate-none" />
                 )}
               </div>
               <p className="text-sm text-lia-text-primary mb-2">{promptEnhancement.enhanced_query}</p>
@@ -280,14 +280,14 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleAcceptEnhancement}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none bg-gray-900 text-white"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg text-lia-btn-primary-text"
                 >
                   <Check className="w-3 h-3" />
                   Usar sugestão
                 </button>
                 <button
                   onClick={handleDismissEnhancement}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium lia-text-secondary hover:text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 >
                   <X className="w-3 h-3" />
                   Ignorar
@@ -362,8 +362,8 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] hover:opacity-90",
                   autocompleteEnabled
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 lia-text-secondary"
+                    ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                    : "bg-lia-bg-tertiary lia-text-secondary"
                 )}
               >
                 <Brain className={`w-3.5 h-3.5 ${autocompleteEnabled ? 'text-wedo-cyan' : 'lia-text-secondary'}`} />
@@ -423,7 +423,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
               <TooltipTrigger asChild>
                 <button
                   onClick={() => setShowSaveArchetypeModal(true)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-[width,height] hover:opacity-90 bg-gray-200/30" style={{ border: '1px solid var(--wedo-cyan-border)' }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium transition-[width,height] hover:opacity-90 bg-lia-interactive-active/30" style={{ border: '1px solid var(--wedo-cyan-border)' }}
                 >
                   <Target className="w-3 h-3" />
                   <span className="font-medium">Salvar Arquétipo</span>
@@ -459,7 +459,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   {searchAnalysis.completeness_score}%
                 </span>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-lia-bg-secondary">
+              <div className="h-1.5 rounded-full overflow-hidden bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                 <div
                   className="h-full rounded-full transition-[width,height] duration-500"
                   style={{width: `${searchAnalysis.completeness_score}%`,
@@ -535,7 +535,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 setNaturalSearchValue(suggestion)
                 parseEntitiesFromQuery(suggestion)
               }}
-              className="px-2.5 py-1.5 text-xs rounded-full border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-gray-400 hover:text-lia-text-primary transition-colors motion-reduce:transition-none text-left"
+              className="px-2.5 py-1.5 text-xs rounded-full border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-lia-border-medium hover:text-lia-text-primary transition-colors motion-reduce:transition-none text-left"
             >
               {suggestion}
             </button>

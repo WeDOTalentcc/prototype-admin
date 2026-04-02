@@ -841,7 +841,7 @@ export function JDEvaluationPanel({
                       {/* Description textarea */}
                       <div>
                         <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide mb-2 block">Descrição / Sumário</label>
-                        <div className="bg-white rounded-md border border-lia-border-subtle p-3">
+                        <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-3">
                           <textarea
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value)}

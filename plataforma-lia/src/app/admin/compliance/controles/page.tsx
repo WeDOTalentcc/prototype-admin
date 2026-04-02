@@ -76,7 +76,7 @@ export default function ControlesPage() {
       key: 'ISO27001',
       name: 'ISO 27001:2022',
       description: 'Sistema de Gestão de Segurança da Informação',
-      icon: <ShieldCheck className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />,
+      icon: <ShieldCheck className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />,
       href: '/admin/compliance/controles/iso-27001',
       stats: dashboard?.byFramework?.['ISO27001'] || null
     },
@@ -84,7 +84,7 @@ export default function ControlesPage() {
       key: 'SOC2',
       name: 'SOC 2 Type II',
       description: 'Trust Service Criteria',
-      icon: <Shield className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />,
+      icon: <Shield className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />,
       href: '/admin/compliance/controles/soc-2',
       stats: dashboard?.byFramework?.['SOC2'] || null
     },
@@ -92,7 +92,7 @@ export default function ControlesPage() {
       key: 'SOX',
       name: 'SOX',
       description: 'Sarbanes-Oxley Compliance',
-      icon: <Scale className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />,
+      icon: <Scale className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />,
       href: '/admin/compliance/controles/sox',
       stats: dashboard?.byFramework?.['SOX'] || null
     }
@@ -106,8 +106,8 @@ export default function ControlesPage() {
     return (
       <div className="p-6" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="max-w-7xl mx-auto flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
-          <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <span className="ml-3 text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Carregando biblioteca de controles...
           </span>
         </div>
@@ -121,17 +121,17 @@ export default function ControlesPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
             >
-              <FileCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <FileCheck className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+                className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
               >
                 Biblioteca de Controles
               </h1>
-              <p className="text-sm lia-text-400 dark:lia-text-500">
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                 Controles de segurança e conformidade por framework
               </p>
             </div>
@@ -146,18 +146,18 @@ export default function ControlesPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-base font-semibold lia-text-800 dark:text-lia-text-primary">
+                <h2 className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary">
                   Visão Geral de Conformidade
                 </h2>
-                <p className="text-sm lia-text-400 dark:lia-text-500">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                   Status consolidado de todos os frameworks
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
                   {Math.round(overallPercentage)}%
                 </p>
-                <p className="text-xs lia-text-400 dark:lia-text-500">
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                   Conformidade Global
                 </p>
               </div>
@@ -167,10 +167,10 @@ export default function ControlesPage() {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-status-success" />
                 <div>
-                  <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                     {totalImplemented}
                   </p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                     Implementados
                   </p>
                 </div>
@@ -178,10 +178,10 @@ export default function ControlesPage() {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-status-warning" />
                 <div>
-                  <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                     {Object.values(dashboard?.byFramework || {}).reduce((acc, fw) => acc + fw.inProgress, 0)}
                   </p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                     Em Progresso
                   </p>
                 </div>
@@ -189,21 +189,21 @@ export default function ControlesPage() {
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-wedo-orange" />
                 <div>
-                  <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                     {Object.values(dashboard?.byFramework || {}).reduce((acc, fw) => acc + fw.notStarted, 0)}
                   </p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                     Não Iniciados
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <XCircle className="w-4 h-4 lia-text-400" />
+                <XCircle className="w-4 h-4 text-lia-text-tertiary" />
                 <div>
-                  <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                     {Object.values(dashboard?.byFramework || {}).reduce((acc, fw) => acc + fw.notApplicable, 0)}
                   </p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500">
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                     N/A
                   </p>
                 </div>
@@ -213,7 +213,7 @@ export default function ControlesPage() {
         </Card>
 
         <div>
-          <h2 className="text-base font-semibold mb-4 lia-text-800 dark:text-lia-text-primary">
+          <h2 className="text-base font-semibold mb-4 text-lia-text-primary dark:text-lia-text-primary">
             Frameworks de Compliance
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -226,25 +226,25 @@ export default function ControlesPage() {
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-4">
                       <div 
-                        className="w-12 h-12 rounded-md flex items-center justify-center bg-gray-200/30"
+                        className="w-12 h-12 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
                       >
                         {framework.icon}
                       </div>
                       {getStatusBadge(framework.stats)}
                     </div>
-                    <h3 className="text-base font-semibold mb-1 lia-text-800 dark:text-lia-text-primary">
+                    <h3 className="text-base font-semibold mb-1 text-lia-text-primary dark:text-lia-text-primary">
                       {framework.name}
                     </h3>
-                    <p className="text-xs mb-4 lia-text-400 dark:lia-text-500">
+                    <p className="text-xs mb-4 text-lia-text-tertiary dark:text-lia-text-secondary">
                       {framework.description}
                     </p>
                     {framework.stats ? (
                       <>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs lia-text-400 dark:lia-text-500">
+                          <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                             {framework.stats.implemented + framework.stats.verified} / {framework.stats.totalControls} controles
                           </span>
-                          <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">
+                          <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                             {Math.round(framework.stats.compliancePercentage)}%
                           </span>
                         </div>
@@ -255,13 +255,13 @@ export default function ControlesPage() {
                       </>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className="text-xs lia-text-400 dark:lia-text-500">
+                        <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           Nenhum controle configurado
                         </span>
                       </div>
                     )}
                     <div className="flex items-center justify-end mt-3">
-                      <span className="text-xs lia-text-600 dark:text-lia-text-tertiary flex items-center gap-1">
+                      <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex items-center gap-1">
                         Ver controles <ChevronRight className="w-3 h-3" />
                       </span>
                     </div>
@@ -278,21 +278,21 @@ export default function ControlesPage() {
                 <CardContent className="p-5 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-4">
                     <div 
-                      className="w-12 h-12 rounded-md flex items-center justify-center bg-gray-200/30"
+                      className="w-12 h-12 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
                     >
-                      <Grid3X3 className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+                      <Grid3X3 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     </div>
                     <Badge variant="info">Cross-Framework</Badge>
                   </div>
-                  <h3 className="text-base font-semibold mb-1 lia-text-800 dark:text-lia-text-primary">
+                  <h3 className="text-base font-semibold mb-1 text-lia-text-primary dark:text-lia-text-primary">
                     Mapa de Cobertura
                   </h3>
-                  <p className="text-xs mb-4 lia-text-400 dark:lia-text-500">
+                  <p className="text-xs mb-4 text-lia-text-tertiary dark:text-lia-text-secondary">
                     Análise de gaps e sobreposição entre frameworks
                   </p>
                   <div className="flex-1" />
                   <div className="flex items-center justify-end mt-3">
-                    <span className="text-xs lia-text-600 dark:text-lia-text-tertiary flex items-center gap-1">
+                    <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary flex items-center gap-1">
                       Ver cobertura <ChevronRight className="w-3 h-3" />
                     </span>
                   </div>
@@ -304,37 +304,37 @@ export default function ControlesPage() {
 
         <Card >
           <CardContent className="p-6">
-            <h2 className="text-base font-semibold mb-4 lia-text-800 dark:text-lia-text-primary">
+            <h2 className="text-base font-semibold mb-4 text-lia-text-primary dark:text-lia-text-primary">
               Legenda de Status
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-status-success" />
-                <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   Implementado / Verificado
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-status-warning" />
-                <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   Em Progresso
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-wedo-orange" />
-                <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   Não Iniciado
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-gray-300" />
-                <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                <div className="w-3 h-3 rounded-full bg-lia-border-default" />
+                <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   Não Aplicável
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-gray-700 dark:lia-bg-300" />
-                <span className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                <div className="w-3 h-3 rounded-full bg-lia-bg-inverse dark:bg-lia-interactive-active" />
+                <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                   Verificado
                 </span>
               </div>

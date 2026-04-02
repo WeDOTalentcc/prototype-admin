@@ -91,7 +91,7 @@ export interface StandbyReason {
 //
 // Valores hex = mesmos que as CSS vars em design-tokens.css.
 // Componentes que precisam usar CSS vars diretamente podem usar:
-//   style={{ backgroundColor: 'var(--gray-400)' }}
+//   style={{ backgroundColor: 'var(--lia-text-tertiary)' }}
 // ──────────────────────────────────────────────────────────────
 
 export const RECRUITMENT_STAGES: RecruitmentStage[] = [
@@ -99,7 +99,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'sourcing',
     displayName: 'Funil',
     stageOrder: 1,
-    color: 'var(--gray-200)',  // --gray-200 — entrada no funil
+    color: 'var(--lia-border-subtle)',  // --gray-200 — entrada no funil
     icon: 'search',
     stageType: 'active',
     isInitial: true,
@@ -111,7 +111,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'screening',
     displayName: 'Triagem',
     stageOrder: 2,
-    color: 'var(--gray-200)',  // --gray-200 — triagem inicial
+    color: 'var(--lia-border-subtle)',  // --gray-200 — triagem inicial
     icon: 'file-text',
     stageType: 'active',
     isInitial: false,
@@ -123,7 +123,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'long_list',
     displayName: 'Long List',
     stageOrder: 3,
-    color: 'var(--gray-300)',  // gray-300 equivalente — qualificação inicial
+    color: 'var(--lia-border-default)',  // gray-300 equivalente — qualificação inicial
     icon: 'list',
     stageType: 'active',
     isInitial: false,
@@ -135,7 +135,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'short_list',
     displayName: 'Short List',
     stageOrder: 4,
-    color: 'var(--gray-300)',  // gray-300 equivalente — qualificação refinada
+    color: 'var(--lia-border-default)',  // gray-300 equivalente — qualificação refinada
     icon: 'list-checks',
     stageType: 'active',
     isInitial: false,
@@ -147,7 +147,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_hr',
     displayName: 'Entrevista RH',
     stageOrder: 5,
-    color: 'var(--gray-400)',  // --gray-400 — entrevistas iniciam
+    color: 'var(--lia-text-tertiary)',  // --gray-400 — entrevistas iniciam
     icon: 'users',
     stageType: 'active',
     isInitial: false,
@@ -159,7 +159,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'technical_test',
     displayName: 'Teste Técnico',
     stageOrder: 6,
-    color: 'var(--gray-400)',  // --gray-400
+    color: 'var(--lia-text-tertiary)',  // --gray-400
     icon: 'code-2',
     stageType: 'active',
     isInitial: false,
@@ -171,7 +171,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'english_test',
     displayName: 'Teste de Inglês',
     stageOrder: 7,
-    color: 'var(--gray-400)',  // --gray-400
+    color: 'var(--lia-text-tertiary)',  // --gray-400
     icon: 'languages',
     stageType: 'active',
     isInitial: false,
@@ -183,7 +183,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_technical',
     displayName: 'Entrevista Técnica',
     stageOrder: 8,
-    color: 'var(--gray-500)',  // gray-500 equivalente — progresso avançado
+    color: 'var(--lia-text-secondary)',  // gray-500 equivalente — progresso avançado
     icon: 'code',
     stageType: 'active',
     isInitial: false,
@@ -195,7 +195,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_manager',
     displayName: 'Entrevista Gestor',
     stageOrder: 9,
-    color: 'var(--gray-500)',  // gray-500 equivalente
+    color: 'var(--lia-text-secondary)',  // gray-500 equivalente
     icon: 'briefcase',
     stageType: 'active',
     isInitial: false,
@@ -207,7 +207,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_manager2',
     displayName: 'Entrevista Gestor 2',
     stageOrder: 10,
-    color: 'var(--gray-500)',  // gray-500 equivalente
+    color: 'var(--lia-text-secondary)',  // gray-500 equivalente
     icon: 'briefcase',
     stageType: 'active',
     isInitial: false,
@@ -219,7 +219,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'interview_final',
     displayName: 'Entrevista Final',
     stageOrder: 11,
-    color: 'var(--gray-600)',  // --gray-600 — decisão final se aproxima
+    color: 'var(--lia-text-secondary)',  // --gray-600 — decisão final se aproxima
     icon: 'award',
     stageType: 'active',
     isInitial: false,
@@ -231,7 +231,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'references',
     displayName: 'Referências',
     stageOrder: 12,
-    color: 'var(--gray-600)',  // --gray-600
+    color: 'var(--lia-text-secondary)',  // --gray-600
     icon: 'phone',
     stageType: 'active',
     isInitial: false,
@@ -243,7 +243,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'offer',
     displayName: 'Proposta',
     stageOrder: 13,
-    color: 'var(--gray-800)',  // --gray-800 — quase lá, alta relevância
+    color: 'var(--lia-text-primary)',  // --gray-800 — quase lá, alta relevância
     icon: 'file-check',
     stageType: 'active',
     isInitial: false,
@@ -268,7 +268,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'rejected',
     displayName: 'Reprovado',
     stageOrder: 15,
-    color: 'var(--gray-200)',  // --gray-200 — faded, encerrado sem progressão
+    color: 'var(--lia-border-subtle)',  // --gray-200 — faded, encerrado sem progressão
     icon: 'x-circle',
     stageType: 'final',
     isInitial: false,
@@ -281,7 +281,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'offer_declined',
     displayName: 'Proposta Recusada',
     stageOrder: 16,
-    color: 'var(--gray-200)',  // --gray-200 — faded, terminal
+    color: 'var(--lia-border-subtle)',  // --gray-200 — faded, terminal
     icon: 'x',
     stageType: 'final',
     isInitial: false,
@@ -293,7 +293,7 @@ export const RECRUITMENT_STAGES: RecruitmentStage[] = [
     name: 'standby',
     displayName: 'Stand By',
     stageOrder: 17,
-    color: 'var(--gray-300)',  // gray-300 equivalente — parado, aguardando
+    color: 'var(--lia-border-default)',  // gray-300 equivalente — parado, aguardando
     icon: 'pause-circle',
     stageType: 'standby',
     isInitial: false,
@@ -863,21 +863,21 @@ export const DOCUMENT_STATUSES: SubStatus[] = [
 // ==================== CANDIDATE SOURCES ====================
 
 export const CANDIDATE_SOURCES: CandidateSource[] = [
-  { id: 'website', name: 'website', displayName: 'Website', icon: 'globe', color: 'var(--gray-600)' },
+  { id: 'website', name: 'website', displayName: 'Website', icon: 'globe', color: 'var(--lia-text-secondary)' },
   { id: 'linkedin', name: 'linkedin', displayName: 'LinkedIn', icon: 'linkedin', color: '#0A66C2' }, // brand color — isento
-  { id: 'indeed', name: 'indeed', displayName: 'Indeed', icon: 'briefcase', color: 'var(--gray-600)' },
-  { id: 'glassdoor', name: 'glassdoor', displayName: 'Glassdoor', icon: 'building', color: 'var(--gray-600)' },
-  { id: 'referral', name: 'referral', displayName: 'Indicação', icon: 'users', color: 'var(--gray-700)' },
-  { id: 'internal', name: 'internal', displayName: 'Interno', icon: 'home', color: 'var(--gray-800)' },
-  { id: 'agency', name: 'agency', displayName: 'Agência', icon: 'briefcase', color: 'var(--gray-500)' },
-  { id: 'university', name: 'university', displayName: 'Universidade', icon: 'graduation-cap', color: 'var(--gray-500)' },
-  { id: 'event', name: 'event', displayName: 'Evento', icon: 'calendar', color: 'var(--gray-400)' },
-  { id: 'ats_gupy', name: 'ats_gupy', displayName: 'Gupy', icon: 'database', color: 'var(--gray-600)' },
-  { id: 'ats_greenhouse', name: 'ats_greenhouse', displayName: 'Greenhouse', icon: 'database', color: 'var(--gray-600)' },
-  { id: 'ats_lever', name: 'ats_lever', displayName: 'Lever', icon: 'database', color: 'var(--gray-700)' },
+  { id: 'indeed', name: 'indeed', displayName: 'Indeed', icon: 'briefcase', color: 'var(--lia-text-secondary)' },
+  { id: 'glassdoor', name: 'glassdoor', displayName: 'Glassdoor', icon: 'building', color: 'var(--lia-text-secondary)' },
+  { id: 'referral', name: 'referral', displayName: 'Indicação', icon: 'users', color: 'var(--lia-text-primary)' },
+  { id: 'internal', name: 'internal', displayName: 'Interno', icon: 'home', color: 'var(--lia-text-primary)' },
+  { id: 'agency', name: 'agency', displayName: 'Agência', icon: 'briefcase', color: 'var(--lia-text-secondary)' },
+  { id: 'university', name: 'university', displayName: 'Universidade', icon: 'graduation-cap', color: 'var(--lia-text-secondary)' },
+  { id: 'event', name: 'event', displayName: 'Evento', icon: 'calendar', color: 'var(--lia-text-tertiary)' },
+  { id: 'ats_gupy', name: 'ats_gupy', displayName: 'Gupy', icon: 'database', color: 'var(--lia-text-secondary)' },
+  { id: 'ats_greenhouse', name: 'ats_greenhouse', displayName: 'Greenhouse', icon: 'database', color: 'var(--lia-text-secondary)' },
+  { id: 'ats_lever', name: 'ats_lever', displayName: 'Lever', icon: 'database', color: 'var(--lia-text-primary)' },
   { id: 'pearch', name: 'pearch', displayName: 'Pearch AI', icon: 'search', color: 'var(--wedo-cyan)' },
-  { id: 'manual', name: 'manual', displayName: 'Manual', icon: 'edit', color: 'var(--gray-500)' },
-  { id: 'other', name: 'other', displayName: 'Outro', icon: 'more-horizontal', color: 'var(--gray-400)' },
+  { id: 'manual', name: 'manual', displayName: 'Manual', icon: 'edit', color: 'var(--lia-text-secondary)' },
+  { id: 'other', name: 'other', displayName: 'Outro', icon: 'more-horizontal', color: 'var(--lia-text-tertiary)' },
 ]
 
 // ==================== HELPER FUNCTIONS ====================

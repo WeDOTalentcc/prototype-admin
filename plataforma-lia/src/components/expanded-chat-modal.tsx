@@ -99,7 +99,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
+                  className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-lia-bg-tertiary"
                   aria-label="Buscar"
                 >
                   <Search className="w-3.5 h-3.5" />
@@ -116,7 +116,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                           content: m.content,
                           timestamp: m.timestamp
                         })))}
-                        className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
+                        className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-lia-bg-tertiary"
                         title="Voltar para prompt lateral"
                         aria-label="Voltar para prompt lateral"
                       >
@@ -127,7 +127,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsFullscreen(!isFullscreen)}
-                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
+                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-lia-bg-tertiary"
                       title={isFullscreen ? "Reduzir" : "Expandir tela cheia"}
                       aria-label={isFullscreen ? "Reduzir diálogo" : "Expandir para tela cheia"}
                     >
@@ -137,7 +137,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                       variant="ghost"
                       size="icon"
                       onClick={onClose}
-                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
+                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-lia-bg-tertiary"
                       title="Fechar"
                       aria-label="Fechar diálogo"
                     >
@@ -150,7 +150,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsFullscreen(!isFullscreen)}
-                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
+                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-lia-bg-tertiary"
                       title={isFullscreen ? "Reduzir" : "Expandir tela cheia"}
                       aria-label={isFullscreen ? "Reduzir diálogo" : "Expandir para tela cheia"}
                     >
@@ -161,7 +161,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                         variant="ghost"
                         size="icon"
                         onClick={onMinimize}
-                        className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
+                        className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-lia-bg-tertiary"
                         aria-label="Minimizar diálogo"
                       >
                         <Minimize2 className="w-3.5 h-3.5" />
@@ -171,7 +171,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                       variant="ghost"
                       size="icon"
                       onClick={onClose}
-                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-gray-100"
+                      className="h-6 w-6 lia-text-secondary hover:lia-text-secondary hover:bg-lia-bg-tertiary"
                       aria-label="Fechar diálogo"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -236,7 +236,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                     <div className="flex items-center gap-1.5 px-1">
                       <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
                     </div>
-                    <div className="bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
+                    <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                       <div className="flex items-center gap-1">
                         <ThinkingDots dotClassName="bg-chat-cyan" size="md" />
                       </div>
@@ -298,7 +298,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsPanelOpen(true)}
-                className="h-7 px-2 lia-text-secondary hover:text-lia-text-secondary hover:bg-gray-100 gap-1"
+                className="h-7 px-2 lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary gap-1"
                 title="Mostrar painel de etapas"
                 aria-label="Mostrar painel de etapas do wizard"
               >

@@ -159,19 +159,19 @@ export default function PrivacidadePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-lia-bg-secondary to-white">
       <header className="border-b bg-lia-bg-primary">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-              <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+              <Shield className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold lia-text-950 dark:lia-text-50">Portal de Privacidade</h1>
-              <p className="text-xs lia-text-500">Seus dados, seus direitos</p>
+              <h1 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">Portal de Privacidade</h1>
+              <p className="text-xs text-lia-text-secondary">Seus dados, seus direitos</p>
             </div>
           </div>
-          <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
+          <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
             LGPD Art. 18
           </Badge>
         </div>
@@ -179,10 +179,10 @@ export default function PrivacidadePage() {
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-semibold lia-text-950 dark:lia-text-50 mb-2">
+          <h2 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-2">
             Exercite seus Direitos de Privacidade
           </h2>
-          <p className="lia-text-600 max-w-2xl mx-auto">
+          <p className="text-lia-text-secondary max-w-2xl mx-auto">
             Conforme a Lei Geral de Proteção de Dados (LGPD), você tem o direito de saber 
             como seus dados pessoais são tratados e solicitar ações sobre eles.
           </p>
@@ -192,7 +192,7 @@ export default function PrivacidadePage() {
           <Button
             variant={(activeTab === 'request' ? 'default' : 'outline') as any}
             onClick={() => setActiveTab('request')}
-            className={activeTab === 'request' ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 hover:bg-gray-800 dark:hover:bg-gray-200' : ''}
+            className={activeTab === 'request' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active' : ''}
           >
             <Send className="w-4 h-4 mr-2" />
             Nova Solicitação
@@ -200,7 +200,7 @@ export default function PrivacidadePage() {
           <Button
             variant={(activeTab === 'track' ? 'default' : 'outline') as any}
             onClick={() => setActiveTab('track')}
-            className={activeTab === 'track' ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 hover:bg-gray-800 dark:hover:bg-gray-200' : ''}
+            className={activeTab === 'track' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active' : ''}
           >
             <Search className="w-4 h-4 mr-2" />
             Acompanhar Solicitação
@@ -223,8 +223,8 @@ export default function PrivacidadePage() {
                       Sua solicitação foi registrada e será analisada em até 15 dias úteis.
                     </p>
                     <div className="bg-lia-bg-primary rounded-md p-4 inline-block mb-4">
-                      <p className="text-sm lia-text-600 mb-1">Código de Acompanhamento:</p>
-                      <p className="text-2xl font-mono font-bold lia-text-900 dark:lia-text-50">{submittedId}</p>
+                      <p className="text-sm text-lia-text-secondary mb-1">Código de Acompanhamento:</p>
+                      <p className="text-2xl font-mono font-bold text-lia-text-primary dark:text-lia-text-primary">{submittedId}</p>
                     </div>
                     <p className="text-sm text-status-success mb-6">
                       Guarde este código para acompanhar o status da sua solicitação.
@@ -234,7 +234,7 @@ export default function PrivacidadePage() {
                         Nova Solicitação
                       </Button>
                       <Button 
-                        className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                        className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
                         onClick={() => {
                           setTrackingId(submittedId)
                           setActiveTab('track')
@@ -266,26 +266,26 @@ export default function PrivacidadePage() {
                               key={type.value}
                               className={`p-4 rounded-md border-2 cursor-pointer transition-colors motion-reduce:transition-none ${
                                 requestType === type.value
-                                  ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-secondary/50'
+                                  ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50'
                                   : 'border-lia-border-subtle hover:border-lia-border-default'
                               }`}
                               onClick={() => setRequestType(type.value)}
                             >
                               <div className="flex items-start gap-3">
                                 <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
-                                  requestType === type.value ? 'bg-gray-100 dark:bg-lia-bg-secondary' : 'bg-gray-100'
+                                  requestType === type.value ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : 'bg-lia-bg-tertiary'
                                 }`}>
                                   <Icon className={`w-5 h-5 ${
-                                    requestType === type.value ? 'lia-text-600 dark:text-lia-text-tertiary' : 'lia-text-500'
+                                    requestType === type.value ? 'lia-text-600 dark:text-lia-text-tertiary' : 'text-lia-text-secondary'
                                   }`} />
                                 </div>
                                 <div>
                                   <p className={`font-medium ${
- requestType === type.value ? 'lia-text-600' : 'lia-text-950 dark:lia-text-50'
+ requestType === type.value ? 'text-lia-text-secondary' : 'lia-text-950 dark:text-lia-text-primary'
                                   }`}>
                                     {type.label}
                                   </p>
-                                  <p className="text-xs lia-text-500">{type.description}</p>
+                                  <p className="text-xs text-lia-text-secondary">{type.description}</p>
                                 </div>
                               </div>
                             </div>
@@ -298,7 +298,7 @@ export default function PrivacidadePage() {
                       <div className="space-y-2">
                         <Label htmlFor="name">Nome Completo *</Label>
                         <div className="relative">
-                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
                           <Input
                             id="name"
                             value={name}
@@ -312,7 +312,7 @@ export default function PrivacidadePage() {
                       <div className="space-y-2">
                         <Label htmlFor="email">E-mail *</Label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
                           <Input
                             id="email"
                             type="email"
@@ -341,7 +341,7 @@ export default function PrivacidadePage() {
                       <div className="space-y-2">
                         <Label htmlFor="phone">Telefone</Label>
                         <div className="relative">
-                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400" />
+                          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
                           <Input
                             id="phone"
                             value={phone}
@@ -375,7 +375,7 @@ export default function PrivacidadePage() {
                     <div className="flex justify-end">
                       <Button 
                         type="submit" 
-                        className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                        className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
                         disabled={submitting || !requestType || !name || !email || !cpf}
                       >
                         {submitting ? (
@@ -419,7 +419,7 @@ export default function PrivacidadePage() {
                   </div>
                   <Button 
                     type="submit" 
-                    className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+                    className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
                     disabled={tracking || !trackingId}
                   >
                     {tracking ? (
@@ -460,10 +460,10 @@ export default function PrivacidadePage() {
                       const Icon = status.icon
                       const colorClasses: Record<string, string> = {
                         'amber': 'bg-status-warning/15 text-status-warning',
-                        'cyan': 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50',
+                        'cyan': 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary',
                         'emerald': 'bg-status-success/15 text-status-success',
                         'red': 'bg-status-error/15 text-status-error',
-                        'gray': 'bg-gray-100 lia-text-800 dark:text-lia-text-primary',
+                        'gray': 'bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary',
                       }
                       return (
                         <Badge className={colorClasses[status.color]}>
@@ -478,13 +478,13 @@ export default function PrivacidadePage() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs lia-text-500 mb-1">Tipo de Solicitação</p>
+                        <p className="text-xs text-lia-text-secondary mb-1">Tipo de Solicitação</p>
                         <p className="font-medium">
                           {REQUEST_TYPES.find(t => t.value === trackingResult.request_type)?.label || trackingResult.request_type}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs lia-text-500 mb-1">Data da Solicitação</p>
+                        <p className="text-xs text-lia-text-secondary mb-1">Data da Solicitação</p>
                         <p className="font-medium">
                           {new Date(trackingResult.created_at as string).toLocaleDateString('pt-BR')}
                         </p>
@@ -492,14 +492,14 @@ export default function PrivacidadePage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <p className="text-xs lia-text-500 mb-1">Prazo para Resposta</p>
+                        <p className="text-xs text-lia-text-secondary mb-1">Prazo para Resposta</p>
                         <p className="font-medium">
                           {new Date(trackingResult.deadline_at as string).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                       {trackingResult.completed_at && (
                         <div>
-                          <p className="text-xs lia-text-500 mb-1">Data de Conclusão</p>
+                          <p className="text-xs text-lia-text-secondary mb-1">Data de Conclusão</p>
                           <p className="font-medium text-status-success">
                             {new Date(trackingResult.completed_at).toLocaleDateString('pt-BR')}
                           </p>
@@ -514,12 +514,12 @@ export default function PrivacidadePage() {
                       </div>
                     )}
 
-                    <div className="mt-4 p-4 bg-gray-50 rounded-md">
+                    <div className="mt-4 p-4 bg-lia-bg-secondary rounded-md">
                       <div className="flex items-start gap-3">
-                        <Clock className="w-5 h-5 lia-text-400 flex-shrink-0 mt-0.5" />
+                        <Clock className="w-5 h-5 text-lia-text-tertiary flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="text-sm font-medium lia-text-950 dark:lia-text-50">Acompanhamento</p>
-                          <p className="text-xs lia-text-500 mt-1">
+                          <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Acompanhamento</p>
+                          <p className="text-xs text-lia-text-secondary mt-1">
                             Sua solicitação será respondida em até 15 dias úteis conforme previsto na LGPD (Art. 18, §3º).
                             Você receberá atualizações por e-mail.
                           </p>
@@ -534,45 +534,45 @@ export default function PrivacidadePage() {
         )}
 
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-gray-50">
+          <Card className="bg-lia-bg-secondary">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-                  <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                  <Shield className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <h3 className="font-medium lia-text-950 dark:lia-text-50">Seus Dados Protegidos</h3>
-                  <p className="text-xs lia-text-500 mt-1">
+                  <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary">Seus Dados Protegidos</h3>
+                  <p className="text-xs text-lia-text-secondary mt-1">
                     Tratamos seus dados com segurança e transparência
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gray-50">
+          <Card className="bg-lia-bg-secondary">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-                  <Clock className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                  <Clock className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <h3 className="font-medium lia-text-950 dark:lia-text-50">Prazo de 15 Dias</h3>
-                  <p className="text-xs lia-text-500 mt-1">
+                  <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary">Prazo de 15 Dias</h3>
+                  <p className="text-xs text-lia-text-secondary mt-1">
                     Respondemos sua solicitação no prazo legal
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-gray-50">
+          <Card className="bg-lia-bg-secondary">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-                  <FileSearch className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                  <FileSearch className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <h3 className="font-medium lia-text-950 dark:lia-text-50">Acompanhamento</h3>
-                  <p className="text-xs lia-text-500 mt-1">
+                  <h3 className="font-medium text-lia-text-primary dark:text-lia-text-primary">Acompanhamento</h3>
+                  <p className="text-xs text-lia-text-secondary mt-1">
                     Consulte o status da sua solicitação a qualquer momento
                   </p>
                 </div>
@@ -581,16 +581,16 @@ export default function PrivacidadePage() {
           </Card>
         </div>
 
-        <div className="mt-8 text-center text-sm lia-text-500">
+        <div className="mt-8 text-center text-sm text-lia-text-secondary">
           <p>
             Este portal é disponibilizado em conformidade com a{' '}
-            <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm" target="_blank" rel="noopener noreferrer" className="lia-text-600 dark:text-lia-text-tertiary hover:underline">
+            <a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm" target="_blank" rel="noopener noreferrer" className="text-lia-text-secondary dark:text-lia-text-tertiary hover:underline">
               Lei nº 13.709/2018 (LGPD)
             </a>
           </p>
           <p className="mt-2">
             Em caso de dúvidas, entre em contato com nosso DPO através do e-mail{' '}
-            <a href="mailto:dpo@wedotalent.com.br" className="lia-text-600 dark:text-lia-text-tertiary hover:underline">
+            <a href="mailto:dpo@wedotalent.com.br" className="text-lia-text-secondary dark:text-lia-text-tertiary hover:underline">
               dpo@wedotalent.com.br
             </a>
           </p>

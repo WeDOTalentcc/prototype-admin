@@ -45,7 +45,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         status: 'in-progress',
         label: 'Em Contato',
         icon: <Clock className="w-3.5 h-3.5" />,
- color: 'bg-gray-100 text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default'
+ color: 'bg-lia-bg-tertiary text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default'
       }
     }
 
@@ -63,7 +63,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         status: 'not-started',
         label: 'Não Contatado',
         icon: <Phone className="w-3.5 h-3.5" />,
-        color: 'bg-gray-100 text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary'
+        color: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary'
       }
     }
 
@@ -71,7 +71,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
       status: 'unknown',
       label: 'Status Indefinido',
       icon: <MessageCircle className="w-3.5 h-3.5" />,
-      color: 'bg-gray-100 text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary'
+      color: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary'
     }
   }
 
@@ -102,7 +102,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         {candidate.contactStatus !== 'não contatado' && (
           // @ts-ignore TODO: fix type
           <div
- className="w-6 h-6 rounded-md bg-gray-100 flex items-center justify-center"
+ className="w-6 h-6 rounded-md bg-lia-bg-tertiary flex items-center justify-center"
             title="Contato realizado pela LIA"
           >
  <Phone className="w-3 h-3 text-lia-text-secondary" />
@@ -112,7 +112,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         {/* Triagem em Andamento ou Completa */}
         {(candidate.liaStatus === 'em_contato' || candidate.triageComplete || candidate.liaStatus === 'triagem_completa') && (
           <>
-            <div className="w-3 h-px bg-gray-300"></div>
+            <div className="w-3 h-px bg-lia-border-default"></div>
             <div
               className={`w-6 h-6 rounded-md flex items-center justify-center ${
  candidate.triageComplete || candidate.liaStatus === 'triagem_completa'
@@ -137,7 +137,7 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
         {/* Entrevista Agendada */}
         {hasScheduledInterview && (
           <>
-            <div className="w-3 h-px bg-gray-300"></div>
+            <div className="w-3 h-px bg-lia-border-default"></div>
             <div
               className="w-6 h-6 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center"
               title="Entrevista agendada"

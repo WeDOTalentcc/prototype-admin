@@ -40,7 +40,7 @@ export default function CertificacoesPage() {
         <div className="mb-4">
           <Link 
             href="/admin/compliance/trust-center"
-            className="inline-flex items-center gap-1 text-sm hover:underline lia-text-700"
+            className="inline-flex items-center gap-1 text-sm hover:underline text-lia-text-primary"
           >
             <ArrowLeft className="w-4 h-4" />
             Voltar ao Trust Center
@@ -49,50 +49,50 @@ export default function CertificacoesPage() {
 
         <div className="flex items-center gap-3 mb-6">
           <div 
-            className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+            className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
           >
-            <BadgeCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+            <BadgeCheck className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
               
             >
               Lista de Certificações
             </h1>
-            <p className="text-sm lia-text-400 dark:lia-text-500" >
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
               Certificações obtidas e em andamento
             </p>
           </div>
         </div>
         
         <div 
-          className="rounded-md border overflow-hidden bg-white dark:lia-bg-950 border-lia-border-subtle dark:border-lia-border-subtle"
+          className="rounded-md border overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle"
           
         >
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr 
-                  className="border-b bg-gray-50 dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle"
+                  className="border-b bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle"
                   
                 >
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Certificação
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Status
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Data de Emissão
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Data de Validade
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
+                  <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wider text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Organismo Certificador
                   </th>
-                  <th className="text-center px-4 py-3 text-xs font-medium uppercase tracking-wider lia-text-400 dark:lia-text-500" >
+                  <th className="text-center px-4 py-3 text-xs font-medium uppercase tracking-wider text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Ação
                   </th>
                 </tr>
@@ -101,12 +101,12 @@ export default function CertificacoesPage() {
                 {certifications.map((cert, index) => (
                   <tr 
                     key={cert.id}
-                    className={`border-b hover:bg-gray-50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle ${index % 2 !== 0 ? 'bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
+                    className={`border-b hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle ${index % 2 !== 0 ? 'bg-lia-bg-secondary dark:bg-lia-bg-primary' : ''}`}
                   >
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
-                        <BadgeCheck className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
-                        <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
+                        <BadgeCheck className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                        <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary" >
                           {cert.name}
                         </span>
                       </div>
@@ -115,31 +115,31 @@ export default function CertificacoesPage() {
                       {getStatusBadge(cert.status)}
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+                      <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                         {formatDate(cert.issued)}
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+                      <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                         {formatDate(cert.expires)}
                       </span>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+                      <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                         {cert.issuer}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-center">
                       {cert.hasDocument ? (
                         <button 
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-white hover:opacity-90 transition-opacity motion-reduce:transition-none bg-gray-900"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-white hover:opacity-90 transition-opacity motion-reduce:transition-none bg-lia-btn-primary-bg"
                           onClick={() => toast.info('Funcionalidade de download em implementação', { description: 'Em breve você poderá baixar os certificados.' })}
                         >
                           <Download className="w-3.5 h-3.5" />
                           Download
                         </button>
                       ) : (
-                        <span className="text-xs italic lia-text-400 dark:lia-text-500" >
+                        <span className="text-xs italic text-lia-text-tertiary dark:text-lia-text-secondary" >
                           Documento interno
                         </span>
                       )}
@@ -152,10 +152,10 @@ export default function CertificacoesPage() {
         </div>
 
         <div 
-          className="mt-4 p-4 rounded-md border bg-gray-200/20 border-wedo-cyan/20"
+          className="mt-4 p-4 rounded-md border bg-lia-interactive-active/20 border-wedo-cyan/20"
         >
-          <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
-            <strong>Nota:</strong> Para solicitar cópias oficiais de certificados ou relatórios de auditoria, entre em contato com nossa equipe de compliance através do email <span className="lia-text-700">compliance@lia.ai</span>
+          <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
+            <strong>Nota:</strong> Para solicitar cópias oficiais de certificados ou relatórios de auditoria, entre em contato com nossa equipe de compliance através do email <span className="text-lia-text-primary">compliance@lia.ai</span>
           </p>
         </div>
       </div>

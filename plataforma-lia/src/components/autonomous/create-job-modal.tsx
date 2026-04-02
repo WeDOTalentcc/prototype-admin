@@ -282,8 +282,8 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
                     className={cn(
  "flex items-center justify-center gap-2 p-3 rounded-md border transition-colors text-xs",
                       scheduleType === option.value
-                        ? "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50 text-lia-text-secondary"
-                        : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-gray-600"
+                        ? "border-lia-btn-primary-bg bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 text-lia-text-secondary"
+                        : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-lia-border-medium"
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -330,7 +330,7 @@ export function CreateJobModal({ open, onOpenChange, onJobCreated }: CreateJobMo
             <Button
               type="submit"
               disabled={loading || !jobType || !jobName}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               {loading ? (
                 <>

@@ -59,7 +59,7 @@ export default function CandidateProfilePage() {
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-lia-bg-primary" role="status" aria-live="polite">
+      <div className="flex items-center justify-center min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary" role="status" aria-live="polite">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary mx-auto mb-3" />
           <p className="text-sm text-lia-text-secondary">Carregando perfil...</p>
@@ -71,7 +71,7 @@ export default function CandidateProfilePage() {
   // ── Error ────────────────────────────────────────────────────────────────
   if (error || !candidate) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-white dark:bg-lia-bg-primary" role="alert" aria-live="assertive">
+      <div className="flex items-center justify-center min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary" role="alert" aria-live="assertive">
         <div className="text-center">
           <p className="text-sm text-status-error mb-4">{error || "Candidato não encontrado"}</p>
           <Button variant="outline" onClick={() => router.back()}>
@@ -86,7 +86,7 @@ export default function CandidateProfilePage() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
+      <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
         <div className="max-w-7xl mx-auto py-6 px-4">
           <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />Voltar
@@ -98,7 +98,7 @@ export default function CandidateProfilePage() {
               <div className="flex items-start gap-5">
                 <Avatar className="h-20 w-20 border-2 border-lia-border-subtle">
                   {candidate.avatar_url && <AvatarImage src={candidate.avatar_url} alt={candidate.name} />}
-                  <AvatarFallback className="bg-gray-100 text-lia-text-secondary text-xl font-semibold">
+                  <AvatarFallback className="bg-lia-bg-tertiary text-lia-text-secondary text-xl font-semibold">
                     {getInitials(candidate.name)}
                   </AvatarFallback>
                 </Avatar>
@@ -107,7 +107,7 @@ export default function CandidateProfilePage() {
                   {/* Name row */}
                   <div className="flex items-center gap-3 mb-1.5 flex-wrap">
                     <h1 className="text-xl font-semibold text-lia-text-primary">{candidate.name}</h1>
-                    <span className="text-xs font-mono text-lia-text-secondary bg-gray-100 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-mono text-lia-text-secondary bg-lia-bg-tertiary px-2 py-0.5 rounded-md">
                       {getShortId(candidate.id)}
                     </span>
                     {!!candidate.seniority_level && <Badge className={badgeStyles.primary}>{candidate.seniority_level}</Badge>}
@@ -136,7 +136,7 @@ export default function CandidateProfilePage() {
                       </Tooltip>
                     )}
                     {!!candidate.is_tech && (
-                      <Badge variant="outline" className="text-xs bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">Tech</Badge>
+                      <Badge variant="outline" className="text-xs bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">Tech</Badge>
                     )}
                     {!!candidate.is_potential && (
                       <Badge variant="outline" className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">Potencial</Badge>
@@ -152,7 +152,7 @@ export default function CandidateProfilePage() {
                       onTransportToOpinions={() => fetchSavedAnalyses()}
                     >
                       <button
-                        className="p-1.5 rounded-full hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+                        className="p-1.5 rounded-full hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
                         title="Análise LIA do Perfil"
                       >
                         <Brain className="w-5 h-5 text-wedo-cyan" />
@@ -193,10 +193,10 @@ export default function CandidateProfilePage() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <a href={candidate.linkedin_url || "#"} target="_blank" rel="noopener noreferrer"
-                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.linkedin_url ? "hover:bg-gray-100 dark:hover:bg-gray-800" : "opacity-30 cursor-default"}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.linkedin_url ? "hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover" : "opacity-30 cursor-default"}`}
                           onClick={(e) => !candidate.linkedin_url && e.preventDefault()}
                         >
-                          <Linkedin className={`w-5 h-5 ${candidate.linkedin_url ? "text-brand-linkedin" : "text-gray-400"}`} />
+                          <Linkedin className={`w-5 h-5 ${candidate.linkedin_url ? "text-brand-linkedin" : "text-lia-text-tertiary"}`} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>LinkedIn</TooltipContent>
@@ -204,10 +204,10 @@ export default function CandidateProfilePage() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <a href={candidate.github_url || "#"} target="_blank" rel="noopener noreferrer"
-                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.github_url ? "hover:bg-gray-100" : "opacity-30 cursor-default"}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.github_url ? "hover:bg-lia-bg-tertiary" : "opacity-30 cursor-default"}`}
                           onClick={(e) => !candidate.github_url && e.preventDefault()}
                         >
-                          <Github className="w-5 h-5" style={{ color: candidate.github_url ? "#181717" : "var(--gray-400)" }} />
+                          <Github className="w-5 h-5" style={{ color: candidate.github_url ? "#181717" : "var(--lia-text-tertiary)" }} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>GitHub</TooltipContent>
@@ -215,10 +215,10 @@ export default function CandidateProfilePage() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <a href={candidate.portfolio_url || "#"} target="_blank" rel="noopener noreferrer"
-                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.portfolio_url ? "hover:bg-gray-100 dark:hover:bg-gray-800" : "opacity-30 cursor-default"}`}
+                          className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${candidate.portfolio_url ? "hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover" : "opacity-30 cursor-default"}`}
                           onClick={(e) => !candidate.portfolio_url && e.preventDefault()}
                         >
-                          <Globe className="w-5 h-5" style={{ color: candidate.portfolio_url ? "var(--gray-950)" : "var(--gray-400)" }} />
+                          <Globe className="w-5 h-5" style={{ color: candidate.portfolio_url ? "var(--lia-btn-primary-bg)" : "var(--lia-text-tertiary)" }} />
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>Portfolio</TooltipContent>
@@ -229,13 +229,13 @@ export default function CandidateProfilePage() {
                 {/* Right column — work prefs + dates */}
                 <div className="text-right space-y-3 min-w-sidebar-content">
                   <div className="flex flex-wrap gap-1.5 justify-end">
-                    {!!candidate.work_model && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.work_model)}</Badge>}
-                    {!!candidate.work_mode && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.work_mode)}</Badge>}
-                    {!!candidate.contract_type && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.contract_type)}</Badge>}
-                    {!!candidate.is_remote && <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default">🌐 Remoto</Badge>}
+                    {!!candidate.work_model && <Badge variant="outline" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_model)}</Badge>}
+                    {!!candidate.work_mode && <Badge variant="outline" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_mode)}</Badge>}
+                    {!!candidate.contract_type && <Badge variant="outline" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.contract_type)}</Badge>}
+                    {!!candidate.is_remote && <Badge variant="outline" className="text-xs bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default">🌐 Remoto</Badge>}
                     {!!candidate.willing_to_relocate && <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">✈️ Aceita Mudança</Badge>}
                     {!!candidate.mobility && <Badge variant="outline" className="text-xs bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30">🚗 Mobilidade</Badge>}
-                    {!!candidate.availability && <Badge variant="outline" className="text-xs bg-gray-50 text-lia-text-primary border-lia-border-subtle">{String(candidate.availability)}</Badge>}
+                    {!!candidate.availability && <Badge variant="outline" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.availability)}</Badge>}
                   </div>
                   <div className="text-xs text-lia-text-secondary space-y-0.5">
                     <p className="font-semibold text-lia-text-primary">Datas</p>
@@ -310,7 +310,7 @@ export default function CandidateProfilePage() {
                     size="sm"
                     variant="outline"
                     onClick={handleHideCandidate}
-                    className={`gap-1.5 ${isHidden ? "bg-gray-500 hover:bg-gray-600 text-white" : ""}`}
+                    className={`gap-1.5 ${isHidden ? "bg-lia-bg-secondary0 hover:bg-lia-border-medium text-white" : ""}`}
                   >
                     <EyeOff className={`w-4 h-4 ${isHidden ? "text-white" : "text-lia-text-secondary"}`} />
                     {isHidden ? "Oculto" : "Ocultar"}
@@ -328,7 +328,7 @@ export default function CandidateProfilePage() {
 
           {/* ── TABS ──────────────────────────────────────────────────── */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)} className="space-y-4">
-            <TabsList className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+            <TabsList className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
               <TabsTrigger value="profile" className="gap-1.5"><FileText className="w-4 h-4" />Perfil Completo</TabsTrigger>
               <TabsTrigger value="activities" className="gap-1.5"><Activity className="w-4 h-4" />Atividades</TabsTrigger>
               <TabsTrigger value="files" className="gap-1.5"><List className="w-4 h-4" />Arquivos</TabsTrigger>

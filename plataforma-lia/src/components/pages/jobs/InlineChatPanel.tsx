@@ -199,15 +199,15 @@ export function InlineChatPanel({
       ) : (
         /* MODO GERAL - Prompt Expandido Original */
         <Card
-          className="h-full flex flex-col overflow-hidden border border-lia-border-default bg-white dark:bg-lia-bg-secondary"
+          className="h-full flex flex-col overflow-hidden border border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-secondary"
           style={{maxHeight: "calc(100vh - 180px)"}}
         >
           {/* Mensagem de Apresentação da LIA */}
-          <div className="flex-shrink-0 px-4 py-3 bg-white dark:bg-lia-bg-secondary">
+          <div className="flex-shrink-0 px-4 py-3 bg-lia-bg-primary dark:bg-lia-bg-secondary">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <div
-                  className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-lia-bg-primary"
+                  className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-lia-bg-secondary dark:bg-lia-bg-primary"
                 >
                   <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
                 </div>
@@ -226,7 +226,7 @@ export function InlineChatPanel({
                   size="sm"
                   onClick={() => onOpenGeneralChat("")}
                   title="Expandir chat"
-                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0"
+                  className="h-7 w-7 p-0 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none flex-shrink-0"
                 >
                   <Maximize2 className="w-4 h-4 text-lia-text-tertiary" />
                 </Button>
@@ -238,7 +238,7 @@ export function InlineChatPanel({
                     onSetUserCollapsedLIA(true)
                   }}
                   title="Fechar"
-                  className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0"
+                  className="h-7 w-7 p-0 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none flex-shrink-0"
                 >
                   <X className="w-4 h-4 text-lia-text-tertiary" />
                 </Button>
@@ -249,7 +249,7 @@ export function InlineChatPanel({
           {/* Indicador de vagas selecionadas - mensagem compacta */}
           {selectedJobsForBatch.size > 0 && (
             <div className="flex-shrink-0 px-4 py-2">
-              <div className="px-3 py-2 bg-gray-100 rounded-md border border-lia-border-subtle flex items-center gap-2">
+              <div className="px-3 py-2 bg-lia-bg-tertiary rounded-md border border-lia-border-subtle flex items-center gap-2">
                 <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
                 <span className="text-xs text-lia-text-secondary font-medium" aria-live="polite" aria-atomic="true">
                   {selectedJobsForBatch.size} vaga{selectedJobsForBatch.size > 1 ? "s" : ""} selecionada
@@ -274,7 +274,7 @@ export function InlineChatPanel({
                         alt="Você"
                         className="w-6 h-6 rounded-full object-cover flex-shrink-0"
                       />
-                      <div className="px-2.5 py-2 rounded-md bg-gray-100 dark:bg-lia-bg-elevated">
+                      <div className="px-2.5 py-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-elevated">
                         <p className="text-xs text-lia-text-primary leading-relaxed">{message.content}</p>
                       </div>
                     </div>
@@ -337,7 +337,7 @@ export function InlineChatPanel({
 
               {liaInlineLoading && (
                 <div className="flex justify-start" role="status" aria-live="polite" aria-label="Carregando...">
-                  <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+                  <div className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
                     <div className="w-5 h-5 rounded-md bg-lia-bg-primary flex items-center justify-center" role="status" aria-live="polite" aria-label="Carregando...">
                       <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
                     </div>
@@ -373,7 +373,7 @@ export function InlineChatPanel({
               />
               <AudioRecordButton
                 onTranscription={(text) => onSetLiaPromptValue((prev) => (prev ? `${prev} ${text}` : text))}
-                className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
               />
               <button
                 type="button"
@@ -384,7 +384,7 @@ export function InlineChatPanel({
                   }
                 }}
                 disabled={!liaPromptValue.trim() || liaInlineLoading}
-                className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50 bg-gray-900"
+                className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50 bg-lia-btn-primary-bg"
               >
                 <Send className="w-3.5 h-3.5 text-white" />
               </button>
@@ -396,8 +396,8 @@ export function InlineChatPanel({
                 onClick={() => setActiveSearchTab("ia-natural")}
                 className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-[width,height] ${
                   activeSearchTab === "ia-natural"
-                    ? "text-white bg-gray-900"
-                    : "text-lia-text-secondary hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
+                    ? "text-white bg-lia-btn-primary-bg"
+                    : "text-lia-text-secondary hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse"
                 }`}
               >
                 <div className="flex items-center gap-1">
@@ -409,8 +409,8 @@ export function InlineChatPanel({
                 onClick={() => setActiveSearchTab("job-description")}
                 className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-[width,height] ${
                   activeSearchTab === "job-description"
-                    ? "text-white bg-gray-900"
-                    : "text-lia-text-secondary hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
+                    ? "text-white bg-lia-btn-primary-bg"
+                    : "text-lia-text-secondary hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse"
                 }`}
               >
                 <div className="flex items-center gap-1">
@@ -422,8 +422,8 @@ export function InlineChatPanel({
                 onClick={() => setActiveSearchTab("templates")}
                 className={`flex-shrink-0 px-2.5 py-1 rounded-full text-xs font-medium transition-[width,height] ${
                   activeSearchTab === "templates"
-                    ? "text-white bg-gray-900"
-                    : "text-lia-text-secondary hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
+                    ? "text-white bg-lia-btn-primary-bg"
+                    : "text-lia-text-secondary hover:dark:text-lia-text-secondary dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse"
                 }`}
               >
                 <div className="flex items-center gap-1">
@@ -442,7 +442,7 @@ export function InlineChatPanel({
                     onSetShowExpandedLIA(false)
                     onOpenJobCreationChat()
                   }}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-[width,height]"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary rounded-full hover:bg-lia-interactive-active transition-[width,height]"
                 >
                   <Plus className="w-2.5 h-2.5 text-lia-text-tertiary" />
                   Criar vaga
@@ -451,7 +451,7 @@ export function InlineChatPanel({
                   onSelectQuery={(query) => {
                     onSendMessage(query)
                   }}
-                  className="!px-2 !py-0.5 !text-micro !bg-gray-100 !border-0 hover:!bg-gray-200"
+                  className="!px-2 !py-0.5 !text-micro !bg-lia-bg-tertiary !border-0 hover:!bg-lia-interactive-active"
                 />
               </div>
             )}
@@ -459,12 +459,12 @@ export function InlineChatPanel({
 
           {/* Conteúdo das outras abas */}
           {(activeSearchTab === "job-description" || activeSearchTab === "templates") && (
-            <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-lia-bg-secondary">
+            <div className="flex-1 overflow-y-auto p-4 bg-lia-bg-primary dark:bg-lia-bg-secondary">
               {/* ABA 2: JOB DESCRIPTION */}
               {activeSearchTab === "job-description" && (
                 <div className="space-y-3">
                   {/* Descrição */}
-                  <div className="p-2.5 rounded-md" style={{backgroundColor: "var(--gray-50)"}}>
+                  <div className="p-2.5 rounded-md" style={{backgroundColor: "var(--lia-bg-secondary)"}}>
                     <p className="text-xs" aria-live="polite" aria-atomic="true">
                       Cole ou anexe uma descrição de vaga e eu vou criar a vaga automaticamente para você,
                       configurando todos os detalhes.
@@ -477,8 +477,8 @@ export function InlineChatPanel({
                       placeholder="Cole aqui o job description completo (requisitos, responsabilidades, benefícios...)..."
                       value={jobDescriptionText}
                       onChange={(e) => setJobDescriptionText(e.target.value)}
-                      className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-gray-900/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary border border-lia-border-subtle"
-                      style={{backgroundColor: "var(--gray-50)"}}
+                      className="w-full h-28 p-3 pb-10 text-xs rounded-md border focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 transition-colors motion-reduce:transition-none resize-none text-lia-text-primary border border-lia-border-subtle"
+                      style={{backgroundColor: "var(--lia-bg-secondary)"}}
                     />
                     {/* Botões de Anexo */}
                     <div className="absolute bottom-2 right-2 flex items-center gap-1">
@@ -495,7 +495,7 @@ export function InlineChatPanel({
                       />
                       <button
                         type="button"
-                        className="p-1.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-50"
+                        className="p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none disabled:opacity-50"
                         title="Anexar documento (.txt, .md, .pdf, .docx — máx 5MB)"
                         disabled={isUploadingJD}
                         onClick={() => jdFileInputRef.current?.click()}
@@ -536,8 +536,8 @@ export function InlineChatPanel({
                   {/* Botão Criar Vaga */}
                   <Button
                     className="w-full h-9 !text-xs font-medium rounded-md"
-                    style={{backgroundColor: jobDescriptionText.trim() ? "var(--gray-800)" : "var(--gray-50)",
-                      color: jobDescriptionText.trim() ? "var(--white)" : "var(--gray-400)"}}
+                    style={{backgroundColor: jobDescriptionText.trim() ? "var(--lia-text-primary)" : "var(--lia-bg-secondary)",
+                      color: jobDescriptionText.trim() ? "var(--white)" : "var(--lia-text-tertiary)"}}
                     onClick={() => {
                       if (jobDescriptionText.trim()) {
                         onSetShowExpandedLIA(false)
@@ -575,13 +575,13 @@ export function InlineChatPanel({
                         <div
                           key={template.title}
                           className="cursor-pointer transition-colors motion-reduce:transition-none rounded-md p-2 hover:border border-lia-border-subtle"
-                          style={{backgroundColor: "var(--gray-50)"}}
+                          style={{backgroundColor: "var(--lia-bg-secondary)"}}
                           onClick={() => {
                             onSetLiaPromptValue(`Criar vaga ${template.title}`)
                             setActiveSearchTab("ia-natural")
                           }}
-                          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--gray-400)")}
-                          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--gray-50)")}
+                          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--lia-text-tertiary)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--lia-bg-secondary)")}
                         >
                           <div className="flex items-center gap-1.5">
                             <span className="text-sm">{template.icon}</span>
@@ -592,7 +592,7 @@ export function InlineChatPanel({
                                   <span
                                     key={tag}
                                     className="text-micro px-1 py-0.5 rounded-full text-lia-text-disabled"
-                                    style={{backgroundColor: "var(--gray-50)"}}
+                                    style={{backgroundColor: "var(--lia-bg-secondary)"}}
                                   >
                                     {tag}
                                   </span>
@@ -619,9 +619,9 @@ export function InlineChatPanel({
                         type="text"
                         placeholder="Buscar vaga por título ou ID..."
                         className="w-full pl-8 pr-3 py-2 text-xs rounded-md focus:outline-none transition-colors motion-reduce:transition-none text-lia-text-primary border border-lia-border-subtle"
-                        style={{backgroundColor: "var(--gray-50)"}}
-                        onFocus={(e) => (e.target.style.borderColor = "var(--gray-400)")}
-                        onBlur={(e) => (e.target.style.borderColor = "var(--gray-50)")}
+                        style={{backgroundColor: "var(--lia-bg-secondary)"}}
+                        onFocus={(e) => (e.target.style.borderColor = "var(--lia-text-tertiary)")}
+                        onBlur={(e) => (e.target.style.borderColor = "var(--lia-bg-secondary)")}
                       />
                     </div>
 
@@ -635,17 +635,17 @@ export function InlineChatPanel({
                         <div
                           key={job.id}
                           className="flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors motion-reduce:transition-none border border-lia-border-subtle"
-                          style={{backgroundColor: "var(--gray-50)"}}
+                          style={{backgroundColor: "var(--lia-bg-secondary)"}}
                           onClick={() => {
                             onSetLiaPromptValue(`Duplicar vaga ${job.id} - ${job.title}`)
                             setActiveSearchTab("ia-natural")
                           }}
-                          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--gray-400)")}
-                          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--gray-50)")}
+                          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--lia-text-tertiary)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--lia-bg-secondary)")}
                         >
                           <span
                             className="text-micro px-1.5 py-0.5 rounded-full"
-                            style={{backgroundColor: "var(--gray-50)"}}
+                            style={{backgroundColor: "var(--lia-bg-secondary)"}}
                           >
                             {job.id}
                           </span>

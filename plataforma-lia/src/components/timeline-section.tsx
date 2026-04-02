@@ -79,11 +79,11 @@ export function TimelineSection() {
             <div key={item.id} className="relative">
               {/* Timeline Line */}
               {index < liaActivities.length - 1 && (
-                <div className="absolute left-4 top-8 bottom-0 w-px bg-gray-200"></div>
+                <div className="absolute left-4 top-8 bottom-0 w-px bg-lia-interactive-active"></div>
               )}
 
               <div className="flex gap-3">
-                <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center relative z-10 flex-shrink-0">
+                <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center relative z-10 flex-shrink-0">
                   <item.icon className="w-4 h-4 text-lia-text-secondary" />
                 </div>
 

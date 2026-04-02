@@ -118,7 +118,7 @@ export function UnsavedPearchWarningModal({
           <Button 
             variant="outline" 
             onClick={onExitWithoutSaving}
-            className="gap-2 order-3 sm:order-1 bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
+            className="gap-2 order-3 sm:order-1 bg-lia-bg-primary border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
             disabled={isSaving}
           >
             <X className="w-4 h-4" />
@@ -126,7 +126,7 @@ export function UnsavedPearchWarningModal({
           </Button>
           <Button
             onClick={onSaveAndExit}
-            className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active order-1 sm:order-2"
+            className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active order-1 sm:order-2"
             disabled={isSaving}
           >
             {isSaving ? (

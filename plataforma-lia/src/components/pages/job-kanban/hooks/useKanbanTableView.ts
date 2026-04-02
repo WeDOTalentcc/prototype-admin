@@ -170,10 +170,10 @@ export function useKanbanTableView({
     const allCandidates: Record<string, unknown>[] = []
     const stageMapping: Record<string, { name: string; color: string }> = {}
     dynamicStages.forEach(stage => {
-      let color = 'bg-gray-100 text-lia-text-primary'
-      if (stage.isHired) color = 'bg-gray-900 text-white dark:bg-gray-50 font-bold'
-      else if (stage.isRejection || stage.id === 'offer_declined') color = 'bg-gray-400 text-lia-text-primary dark:bg-lia-bg-elevated font-medium'
-      else if (stage.stageType === 'final') color = 'bg-gray-300 text-lia-text-primary dark:bg-lia-bg-elevated font-bold'
+      let color = 'bg-lia-bg-tertiary text-lia-text-primary'
+      if (stage.isHired) color = 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary font-bold'
+      else if (stage.isRejection || stage.id === 'offer_declined') color = 'bg-lia-border-medium text-lia-text-primary dark:bg-lia-bg-elevated font-medium'
+      else if (stage.stageType === 'final') color = 'bg-lia-border-default text-lia-text-primary dark:bg-lia-bg-elevated font-bold'
       stageMapping[stage.id] = { name: stage.displayName, color }
     })
     Object.entries(candidatesData).forEach(([stage, candidates]) => {
@@ -182,7 +182,7 @@ export function useKanbanTableView({
           allCandidates.push({
             ...candidate,
             stage: stageMapping[stage]?.name || stage,
-            stageColor: stageMapping[stage]?.color || 'bg-gray-100 text-lia-text-primary'
+            stageColor: stageMapping[stage]?.color || 'bg-lia-bg-tertiary text-lia-text-primary'
           })
         })
       }
@@ -259,7 +259,7 @@ export function useKanbanTableView({
   const pipelineStages = useMemo(() =>
     dynamicStages.map(stage => ({
       id: stage.id, name: stage.displayName,
-      color: stage.isHired ? 'bg-gray-100 text-lia-text-primary font-medium' : 'bg-gray-100 text-lia-text-primary',
+      color: stage.isHired ? 'bg-lia-bg-tertiary text-lia-text-primary font-medium' : 'bg-lia-bg-tertiary text-lia-text-primary',
       count: candidatesData[stage.id]?.length || 0
     })),
     [dynamicStages, candidatesData]
@@ -270,7 +270,7 @@ export function useKanbanTableView({
     dynamicStages.map(stage => ({
       id: stage.id, title: stage.displayName,
       count: candidatesData[stage.id]?.length || 0,
-      color: 'bg-gray-50 border-lia-border-subtle', stageColor: stage.color
+      color: 'bg-lia-bg-secondary border-lia-border-subtle', stageColor: stage.color
     })),
     [dynamicStages, candidatesData]
   )

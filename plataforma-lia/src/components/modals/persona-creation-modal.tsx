@@ -118,7 +118,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
               <div key={stepNum} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   step >= stepNum
-                    ? 'bg-lia-btn-primary-bg text-white'
+                    ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                     : 'bg-lia-interactive-active text-lia-text-primary'
                 }`}>
                   {step > stepNum ? <CheckCircle className="w-4 h-4" /> : stepNum}
@@ -517,7 +517,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                   Próximo
                 </Button>
               ) : (
-                <Button onClick={handleCreate} className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active">
+                <Button onClick={handleCreate} className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">
                   <Star className="w-4 h-4 mr-2" />
                   Criar Persona
                 </Button>

@@ -47,7 +47,7 @@ export function EditableCell({
         onKeyDown={handleKeyDown}
         autoFocus
         min={0}
-        className="w-10 px-1 py-1 text-xs border border-gray-400 rounded-md text-center bg-lia-bg-primary focus:outline-none focus:ring-1 focus:ring-gray-900 font-[Open_Sans,sans-serif]"
+        className="w-10 px-1 py-1 text-xs border border-lia-border-medium rounded-md text-center bg-lia-bg-primary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg font-[Open_Sans,sans-serif]"
       />
     )
   }
@@ -56,7 +56,7 @@ export function EditableCell({
   return (
     <div
       onClick={handleClick}
-      className="w-10 px-1 py-1 text-xs text-center cursor-pointer hover:bg-gray-100 rounded-md font-[Open_Sans,sans-serif]"
+      className="w-10 px-1 py-1 text-xs text-center cursor-pointer hover:bg-lia-bg-tertiary rounded-md font-[Open_Sans,sans-serif]"
     >
       {displayValue}
     </div>

@@ -78,10 +78,10 @@ export const stageTypeLabels: Record<string, string> = {
 }
 
 export const inputClass = (disabled: boolean) =>
-  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary" : ""}`
+  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary" : ""}`
 
 export const selectClass = (disabled: boolean) =>
-  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary" : ""}`
+  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary" : ""}`
 
 export const labelClass = "text-xs font-semibold text-lia-text-primary uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3 block"
 

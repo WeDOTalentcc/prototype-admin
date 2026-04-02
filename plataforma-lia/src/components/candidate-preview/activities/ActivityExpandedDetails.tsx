@@ -51,7 +51,7 @@ export function ActivityExpandedDetails({
   onSetShowPreview,
 }: ActivityExpandedDetailsProps) {
     return (
-      <div className="px-3 pb-3 border-t border-lia-border-subtle bg-white/50/50">
+      <div className="px-3 pb-3 border-t border-lia-border-subtle bg-lia-bg-primary/50/50">
         {activity.type === 'email-sent' && (
           <div className="mt-3 space-y-3">
             <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-md overflow-hidden">

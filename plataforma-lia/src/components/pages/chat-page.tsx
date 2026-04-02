@@ -109,11 +109,11 @@ export function ChatPage() {
   } = useChatPageCore()
 
   return (
-    <div className="flex overflow-hidden flex-1 bg-gray-50">
+    <div className="flex overflow-hidden flex-1 bg-lia-bg-secondary">
       {/* Main Chat Area */}
       <div className={`flex flex-col transition-colors motion-reduce:transition-none duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
         {/* Header */}
-        <div className="py-3 px-6 flex-shrink-0 bg-gray-50 border-b border-lia-border-subtle">
+        <div className="py-3 px-6 flex-shrink-0 bg-lia-bg-secondary border-b border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <LIAIcon size="lg" />
@@ -158,7 +158,7 @@ export function ChatPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowSearch(false)}
-                className="hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -171,16 +171,16 @@ export function ChatPage() {
               <TabsList className="bg-transparent p-0 h-auto gap-4 border-b border-lia-border-subtle">
                 <TabsTrigger 
                   value="conversa" 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                  style={{color: activeTab === 'conversa' ? 'var(--gray-950)' : 'var(--gray-500)'}} /* dynamic */
+                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-lia-btn-primary-bg dark:border-lia-border-medium transition-colors motion-reduce:transition-none"
+                  style={{color: activeTab === 'conversa' ? 'var(--lia-btn-primary-bg)' : 'var(--lia-text-secondary)'}} /* dynamic */
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Conversa
                 </TabsTrigger>
                 <TabsTrigger 
                   value="controle" 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-gray-900 dark:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                  style={{color: activeTab === 'controle' ? 'var(--gray-950)' : 'var(--gray-500)'}} /* dynamic */
+                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-lia-btn-primary-bg dark:border-lia-border-medium transition-colors motion-reduce:transition-none"
+                  style={{color: activeTab === 'controle' ? 'var(--lia-btn-primary-bg)' : 'var(--lia-text-secondary)'}} /* dynamic */
                 >
                   <Cpu className="w-4 h-4 mr-2" />
                   Centro de Controle
@@ -201,7 +201,7 @@ export function ChatPage() {
         {/* Messages com altura flexível e scroll */}
         <div
           ref={messagesContainerRef}
-          className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 relative transition-colors motion-reduce:transition-none duration-300 ${chatContainerClass} ${
+          className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-lia-border-default dark:scrollbar-thumb-lia-border-medium scrollbar-track-transparent hover:scrollbar-thumb-lia-border-medium dark:hover:scrollbar-thumb-lia-border-medium relative transition-colors motion-reduce:transition-none duration-300 ${chatContainerClass} ${
             !isEmptyChat ? 'p-4' : ''
           }`}
           style={{scrollBehavior: 'smooth'}} /* dynamic - scroll-smooth class not fully equivalent */
@@ -237,7 +237,7 @@ export function ChatPage() {
                     <div className="flex-shrink-0 pt-4">
                       <LIAIcon size="md" />
                     </div>
-                    <div className="rounded-md p-5 flex-1 bg-gray-100">
+                    <div className="rounded-md p-5 flex-1 bg-lia-bg-tertiary">
                       <div className="flex items-center space-x-2 mb-2">
                         <span className="text-sm font-medium lia-name -ml-1 text-lia-text-primary">
                           Lia
@@ -282,7 +282,7 @@ export function ChatPage() {
                 <div className="flex-shrink-0 pt-4" role="status" aria-live="polite" aria-label="Carregando...">
                   <LIAIcon size="md" />
                 </div>
-                <div className="rounded-md p-5 flex-1 bg-gray-100" role="status" aria-live="polite" aria-label="Carregando...">
+                <div className="rounded-md p-5 flex-1 bg-lia-bg-tertiary" role="status" aria-live="polite" aria-label="Carregando...">
                   <div className="flex items-center space-x-2" role="status" aria-live="polite" aria-label="Carregando...">
                     <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
                     <span className="text-sm text-lia-text-tertiary">
@@ -301,7 +301,7 @@ export function ChatPage() {
             <div className="absolute bottom-4 right-4">
               <Button
                 onClick={scrollToBottom}
-                className="rounded-full bg-gray-800 text-white"
+                className="rounded-full bg-lia-btn-primary-hover text-white"
                 size="sm"
               >
                 <ChevronDown className="w-4 h-4 mr-1" />
@@ -312,7 +312,7 @@ export function ChatPage() {
         </div>
 
         {/* Input Card */}
-        <div className="p-6 flex-shrink-0 bg-gray-50">
+        <div className="p-6 flex-shrink-0 bg-lia-bg-secondary">
           <div className={inputContainerClass}>
             {/* Context Pills */}
             {contextData && (contextData.data as any)?.totalCount > 0 && (
@@ -358,7 +358,7 @@ export function ChatPage() {
                             key={suggestion}
                             size="sm"
                             onClick={() => setInput(suggestion)}
-                            className="text-xs h-7 px-3 transition-transform motion-reduce:transition-none duration-200 hover:scale-105 text-lia-text-primary border border-lia-border-subtle bg-gray-50"
+                            className="text-xs h-7 px-3 transition-transform motion-reduce:transition-none duration-200 hover:scale-105 text-lia-text-primary border border-lia-border-subtle bg-lia-bg-secondary"
                           >
                             {suggestion}
                           </Button>
@@ -394,7 +394,7 @@ export function ChatPage() {
 
                 {/* Attached Files Preview */}
                 {attachedFiles.length > 0 && (
-                  <div className="flex flex-wrap gap-2 p-2 rounded-md mb-2 bg-gray-100">
+                  <div className="flex flex-wrap gap-2 p-2 rounded-md mb-2 bg-lia-bg-tertiary">
                     {attachedFiles.map((file, index) => {
                       const fileSizeKB = (file.size / 1024).toFixed(0)
                       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1)
@@ -414,7 +414,7 @@ export function ChatPage() {
                           </span>
                           <button
                             onClick={() => handleRemoveFile(index)}
-                            className="p-0.5 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none"
+                            className="p-0.5 rounded-full hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
                           >
                             <X className="w-3 h-3 text-lia-text-tertiary" />
                           </button>
@@ -445,7 +445,7 @@ export function ChatPage() {
 
                 {/* Audio Ready Indicator */}
                 {audioBlob && !isRecording && (
-                  <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300 bg-gray-200/30 border border-wedo-cyan/30"
+                  <div className="flex items-center gap-3 p-3 rounded-md mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300 bg-lia-interactive-active/30 border border-wedo-cyan/30"
                   >
                     <div className="flex items-center gap-2">
                       <Mic className="w-4 h-4 text-lia-text-secondary" />
@@ -541,7 +541,7 @@ export function ChatPage() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle bg-gray-50 text-lia-text-primary"
+                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-primary"
                       rows={1}
                     />
                   </div>
@@ -578,7 +578,7 @@ export function ChatPage() {
                       onClick={() => handleSendMessage()}
                       disabled={!input.trim() || isLoading || emptyFieldNotifications.hasPendingNotifications}
                       size="sm"
-                      className="transition-transform motion-reduce:transition-none duration-200 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50 bg-gray-800 text-white"
+                      className="transition-transform motion-reduce:transition-none duration-200 hover:scale-105 disabled:hover:scale-100 disabled:opacity-50 bg-lia-btn-primary-hover text-white"
                       title={emptyFieldNotifications.hasPendingNotifications ? "Resolva as pendências acima para continuar" : undefined}
                     >
                       <Send className="w-4 h-4" />
@@ -706,7 +706,7 @@ export function ChatPage() {
       {/* Debug Buttons for Testing UI Actions Panels */}
       {process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ENABLE_UI_ACTIONS_DEBUG === 'true' && (
         <div className="fixed bottom-24 right-4 z-50 flex flex-col gap-2">
-          <div className="bg-gray-900/90 backdrop-blur-sm rounded-md p-2 border border-gray-700">
+          <div className="bg-lia-btn-primary-bg/90 backdrop-blur-sm rounded-md p-2 border border-lia-border-strong">
             <div className="text-xs text-lia-text-secondary mb-2 px-2">Debug: UI Actions</div>
             <div className="flex flex-col gap-1">
               <button
@@ -715,7 +715,7 @@ export function ChatPage() {
                   salary_max: 25000,
                   benefits: []
                 }, "Remuneração e Benefícios")}
-                className="px-3 py-1.5 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200 rounded-md transition-colors motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active rounded-md transition-colors motion-reduce:transition-none"
               >
                 Debug Panel
               </button>

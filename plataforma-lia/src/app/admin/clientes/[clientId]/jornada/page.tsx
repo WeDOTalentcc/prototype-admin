@@ -31,7 +31,7 @@ interface RecruitmentStage {
 }
 
 const DEFAULT_STAGES: RecruitmentStage[] = [
-  { id: 'applied', name: 'Candidatura', color: 'var(--gray-400)', isActive: true, order: 1 },
+  { id: 'applied', name: 'Candidatura', color: 'var(--lia-text-tertiary)', isActive: true, order: 1 },
   // @ts-ignore // TODO: fix type
   // @ts-ignore // TODO: fix type
   { id: 'screening', name: 'Triagem', isActive: true, order: 2 },
@@ -90,8 +90,8 @@ export default function ClientJornadaPage({
     return (
       <div className="flex items-center justify-center py-16" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-4" />
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Carregando jornada...
           </p>
         </div>
@@ -104,14 +104,14 @@ export default function ClientJornadaPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Workflow className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <Workflow className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary"
             >
               Jornada de Recrutamento
             </h2>
           </div>
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Pipeline e etapas do processo seletivo
           </p>
         </div>
@@ -160,7 +160,7 @@ export default function ClientJornadaPage({
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base text-lia-text-primary dark:text-lia-text-primary">
               Pipeline de Etapas
             </CardTitle>
             <Badge variant="outline">
@@ -175,8 +175,8 @@ export default function ClientJornadaPage({
                 <div 
                   className={`flex flex-col items-center gap-2 px-4 py-3 rounded-md border min-w-[120px] ${
                     stage.isActive
-                      ? 'bg-white dark:bg-lia-bg-primary'
-                      : 'bg-gray-50 dark:bg-lia-bg-secondary opacity-50 border-lia-border-subtle dark:border-lia-border-subtle'
+                      ? 'bg-lia-bg-primary dark:bg-lia-bg-primary'
+                      : 'bg-lia-bg-secondary dark:bg-lia-bg-secondary opacity-50 border-lia-border-subtle dark:border-lia-border-subtle'
                   }`}
                   style={{borderColor: stage.isActive ? stage.color : undefined}}
                 >
@@ -185,18 +185,18 @@ export default function ClientJornadaPage({
                     style={{backgroundColor: stage.color}}
                   />
                   <span 
-                    className="text-sm font-medium text-center lia-text-800 dark:text-lia-text-primary"
+                    className="text-sm font-medium text-center text-lia-text-primary dark:text-lia-text-primary"
                   >
                     {stage.name}
                   </span>
                   {stage.isActive ? (
                     <CheckCircle2 className="w-4 h-4 text-status-success" />
                   ) : (
-                    <Clock className="w-4 h-4 lia-text-400" />
+                    <Clock className="w-4 h-4 text-lia-text-tertiary" />
                   )}
                 </div>
                 {index < stages.length - 1 && (
-                  <ArrowRight className="w-5 h-5 shrink-0 lia-text-400 dark:lia-text-500" />
+                  <ArrowRight className="w-5 h-5 shrink-0 text-lia-text-tertiary dark:text-lia-text-secondary" />
                 )}
               </React.Fragment>
             ))}
@@ -207,8 +207,8 @@ export default function ClientJornadaPage({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold lia-text-900 dark:lia-text-50">{activeStages.length}</p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{activeStages.length}</p>
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Etapas Ativas
             </p>
           </CardContent>
@@ -218,7 +218,7 @@ export default function ClientJornadaPage({
             <p className="text-2xl font-semibold text-status-success">
               {stages.filter(s => s.automations?.emailFeedback).length}
             </p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Com Email Automático
             </p>
           </CardContent>
@@ -228,7 +228,7 @@ export default function ClientJornadaPage({
             <p className="text-2xl font-semibold text-wedo-purple">
               {stages.filter(s => s.automations?.whatsappNotification).length}
             </p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Com WhatsApp Automático
             </p>
           </CardContent>

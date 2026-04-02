@@ -70,10 +70,10 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
             <div
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-[width,height] ${
  step.status === 'completed'
-                  ? 'bg-gray-900 text-white'
+                  ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                   : step.status === 'current'
-                  ? 'bg-gray-900 text-white ring-2 ring-gray-900/20'
-                  : 'bg-gray-200 text-lia-text-tertiary dark:bg-lia-bg-elevated'
+                  ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text ring-2 ring-lia-btn-primary-bg/20'
+                  : 'bg-lia-interactive-active text-lia-text-tertiary dark:bg-lia-bg-elevated'
               }`}
              
             >
@@ -100,8 +100,8 @@ const Stepper: React.FC<StepperProps> = ({ steps }) => {
             <div
               className={`flex-1 h-0.5 mx-1.5 ${
  steps[index + 1].status === 'completed' || steps[index + 1].status === 'current'
-                  ? 'bg-gray-900'
-                  : 'bg-gray-200 dark:bg-lia-bg-elevated'
+                  ? 'bg-lia-btn-primary-bg'
+                  : 'bg-lia-interactive-active dark:bg-lia-bg-elevated'
               }`}
             />
           )}
@@ -220,7 +220,7 @@ Equipe de Recrutamento`
             { id: 'schedule', label: 'Agendamento', status: 'upcoming' as const },
           ],
           confirmLabel: 'Iniciar Triagem',
-          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200',
+          confirmColor: 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active',
         }
       case 'approve_to_interview':
         return {
@@ -233,7 +233,7 @@ Equipe de Recrutamento`
             { id: 'schedule', label: 'Agendamento', status: 'upcoming' as const },
           ],
           confirmLabel: 'Agendar Entrevista',
-          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200',
+          confirmColor: 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active',
         }
       case 'reject_pre_triage':
         return {
@@ -267,7 +267,7 @@ Equipe de Recrutamento`
           icon: <Calendar className="w-5 h-5 text-lia-text-secondary" />,
           steps: [],
           confirmLabel: 'Buscar Novos Horários',
-          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200',
+          confirmColor: 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active',
           description: 'A LIA vai buscar novos horários disponíveis na sua agenda e enviar as opções para o candidato escolher.',
         }
       case 'confirm_hire':
@@ -281,7 +281,7 @@ Equipe de Recrutamento`
             { id: 'hire', label: 'Contratação', status: 'current' as const },
           ],
           confirmLabel: 'Confirmar Contratação',
-          confirmColor: 'bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200',
+          confirmColor: 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active',
         }
     }
   }
@@ -320,7 +320,7 @@ Equipe de Recrutamento`
 
         <div className="px-5 py-4">
           <div className="flex items-center gap-3 mb-4">
-            <div className="relative w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center overflow-hidden">
+            <div className="relative w-10 h-10 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center overflow-hidden">
               {candidate.avatar ? (
                 <NextImage src={candidate.avatar} alt={candidate.name} fill className="object-cover" />
               ) : (
@@ -342,9 +342,9 @@ Equipe de Recrutamento`
           )}
 
           {(flowType === 'approve_to_triage' || flowType === 'approve_to_interview') && (
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                   <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 </div>
                 <div className="flex-1">
@@ -364,9 +364,9 @@ Equipe de Recrutamento`
           )}
 
           {flowType === 'confirm_hire' && (
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                   <CheckCircle className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </div>
                 <div className="flex-1">
@@ -436,9 +436,9 @@ Equipe de Recrutamento`
           )}
 
           {flowType === 'reschedule_interview' && (
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-3 mb-4">
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
                   <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
                 </div>
                 <div className="flex-1">
@@ -454,12 +454,12 @@ Equipe de Recrutamento`
           )}
         </div>
 
-        <div className="px-6 py-3 bg-gray-50 dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-end gap-2">
+        <div className="px-6 py-3 bg-lia-bg-secondary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle flex justify-end gap-2">
           <Button 
             variant="outline" 
             onClick={onClose} 
             disabled={isLoading}
-            className="text-xs h-8 border border-lia-border-default text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:hover:bg-gray-800"
+            className="text-xs h-8 border border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-btn-primary-hover"
            
           >
             Cancelar

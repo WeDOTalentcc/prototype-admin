@@ -220,7 +220,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-6xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-6xl max-h-[95vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 bg-status-success/10 dark:bg-status-success/20">
           <div className="flex items-center gap-3">
@@ -254,7 +254,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
 
         <div className="flex">
           {/* Sidebar Navigation */}
-          <div className="w-64 bg-white dark:bg-lia-bg-secondary p-4">
+          <div className="w-64 bg-lia-bg-primary dark:bg-lia-bg-secondary p-4">
             <div className="space-y-2">
               {sections.map((section) => (
                 <button
@@ -263,7 +263,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeSection === section.id
                       ? 'bg-status-success/15 dark:bg-status-success/20 text-status-success dark:text-status-success'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-lia-text-primary'
+                      : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse text-lia-text-primary'
                   }`}
                 >
                   <section.icon className="w-4 h-4" />
@@ -273,7 +273,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
             </div>
 
             {/* Quick Stats */}
-            <div className="mt-6 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+            <div className="mt-6 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <h4 className="text-sm font-medium font-sans text-lia-text-primary mb-2">Informações da Vaga</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
@@ -289,7 +289,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <div className="flex items-center gap-1">
                     {Array.from({length: 5}).map((_, i) => (
                       <div key={i} className={`w-2 h-2 rounded-full ${
- i < (j.num('urgencyLevel', 3)) ? 'bg-status-error' : 'bg-gray-300'
+ i < (j.num('urgencyLevel', 3)) ? 'bg-status-error' : 'bg-lia-border-default'
                       }`} />
                     ))}
                   </div>
@@ -387,7 +387,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <h5 className="font-medium font-sans text-lia-text-primary mb-3">Checklist de Requisitos Essenciais</h5>
                   <div className="space-y-2">
                     {j.arr<string>('requirements').length > 0 ? j.arr<string>('requirements').map((requirement: string) => (
-                      <div key={requirement} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                      <div key={requirement} className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                         <input type="checkbox" className="rounded-md" />
                         <span className="text-sm text-lia-text-primary">{requirement}</span>
                       </div>
@@ -414,7 +414,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="text-center p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                        <div className="text-center p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
  <div className="text-sm font-medium text-lia-text-secondary">Tom</div>
  <div className="text-xs text-lia-text-secondary">{approachStrategy.tone}</div>
                         </div>
@@ -441,7 +441,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       <CardContent>
                         <div className="space-y-3">
                           {approachStrategy.structure.map((step, index) => (
-                            <div key={`step-${index}`} className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                            <div key={`step-${index}`} className="flex items-center gap-3 p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                               <div className="w-6 h-6 bg-status-success/15 dark:bg-status-success/20 rounded-full flex items-center justify-center text-status-success text-xs font-bold">
                                 {index + 1}
                               </div>
@@ -547,20 +547,20 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
- <div className="p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md text-xs text-lia-text-secondary">
+ <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md text-xs text-lia-text-secondary">
                             <strong>Objetivo:</strong> {section.purpose}
                           </div>
                           <div className="space-y-2">
                             {section.questions.map((question: unknown, questionIndex: number) => (
                               <div key={questionIndex} className="flex items-start gap-3 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
-                                <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-xs font-bold flex-shrink-0">
+                                <div className="w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-xs font-bold flex-shrink-0">
                                   {questionIndex + 1}
                                 </div>
                                 <div className="flex-1">
                                   <p className="text-sm text-lia-text-primary">{String(question)}</p>
                                   <textarea
                                     placeholder="Anotações da resposta..."
-                                    className="w-full mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-default rounded-md text-xs bg-gray-50 dark:bg-lia-bg-secondary"
+                                    className="w-full mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-default rounded-md text-xs bg-lia-bg-secondary dark:bg-lia-bg-secondary"
                                     rows={2}
                                   />
                                 </div>
@@ -708,7 +708,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="text-center p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                      <div className="text-center p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                         <MapPin className="w-5 h-5 text-lia-text-secondary mx-auto mb-1" />
  <div className="text-sm font-medium text-lia-text-secondary">Local</div>
  <div className="text-xs text-lia-text-secondary">{j.str('location')}</div>
@@ -743,7 +743,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {jobPresentation.benefits.map((benefit: string) => (
-                        <div key={benefit} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                        <div key={benefit} className="flex items-center gap-2 p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                           <CheckCircle className="w-4 h-4 text-status-success" />
                           <span className="text-sm text-lia-text-primary">{benefit}</span>
                         </div>
@@ -773,7 +773,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                     </Button>
                   </CardHeader>
                   <CardContent>
-                    <div className="p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+                    <div className="p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
                       <p className="text-sm text-lia-text-primary leading-relaxed">
                         "Deixe eu te contar um pouco sobre nós e sobre esta oportunidade.
                         <br /><br />
@@ -823,7 +823,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                   <CardContent>
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
-                        <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-sm font-bold">
+                        <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-sm font-bold">
                           1
                         </div>
                         <div className="flex-1">
@@ -933,7 +933,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="p-6 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="bg-status-success/15 text-status-success">
@@ -948,7 +948,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
                 <FileText className="w-4 h-4" />
                 Salvar Roteiro
               </Button>
-              <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
+              <Button className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Iniciar Triagem
               </Button>

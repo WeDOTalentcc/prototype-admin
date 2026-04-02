@@ -134,7 +134,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
     <div className="rounded-md border border-lia-border-subtle overflow-hidden">
       <button
         onClick={() => setActiveSection(activeSection === id ? null : id)}
-        className="w-full px-3 py-2 bg-gray-50 flex items-center justify-between hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+        className="w-full px-3 py-2 bg-lia-bg-secondary flex items-center justify-between hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-center gap-2">
           <Icon className="w-4 h-4 text-lia-text-secondary" />
@@ -142,7 +142,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
             {title}
           </span>
           {count !== undefined && (
-            <span className="px-1.5 py-0.5 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-micro font-medium rounded-full">
+            <span className="px-1.5 py-0.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-micro font-medium rounded-full">
               {count}
             </span>
           )}
@@ -161,7 +161,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
     <div className="space-y-3">
       {/* Job Description Section */}
       <div className="rounded-md border border-lia-border-subtle overflow-hidden">
-        <div className="px-3 py-2 bg-gray-50 flex items-center justify-between">
+        <div className="px-3 py-2 bg-lia-bg-secondary flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-lia-text-secondary" />
             <span className="text-xs font-semibold text-lia-text-primary" aria-live="polite" aria-atomic="true">
@@ -171,7 +171,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
           <button
             onClick={generateDescription}
             disabled={isGeneratingDescription}
-            className="flex items-center gap-1 px-2 py-1 text-micro text-lia-text-secondary hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full transition-colors motion-reduce:transition-none"
+            className="flex items-center gap-1 px-2 py-1 text-micro text-lia-text-secondary hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full transition-colors motion-reduce:transition-none"
           >
             {isGeneratingDescription ? (
               <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
@@ -196,7 +196,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
           ) : (
             <button
               onClick={generateDescription}
-              className="w-full py-6 border-2 border-dashed border-lia-border-subtle rounded-md text-lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex flex-col items-center gap-2"
+              className="w-full py-6 border-2 border-dashed border-lia-border-subtle rounded-md text-lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex flex-col items-center gap-2"
             >
               <FileText className="w-6 h-6" />
               <span className="text-xs font-medium" aria-live="polite" aria-atomic="true">Clique para gerar a descrição da vaga</span>
@@ -253,7 +253,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
                 </span>
               ))}
               {technicalSkills.length > 8 && (
-                <span className="px-1.5 py-0.5 bg-gray-100 lia-text-secondary text-micro rounded-full">
+                <span className="px-1.5 py-0.5 bg-lia-bg-tertiary lia-text-secondary text-micro rounded-full">
                   +{technicalSkills.length - 8} mais
                 </span>
               )}
@@ -314,7 +314,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
 
       {/* Publishing Platforms */}
       <div className="rounded-md border border-lia-border-subtle overflow-hidden">
-        <div className="px-3 py-2 bg-gray-50 flex items-center gap-2">
+        <div className="px-3 py-2 bg-lia-bg-secondary flex items-center gap-2">
           <Rocket className="w-4 h-4 text-lia-text-secondary" />
           <span className="text-xs font-semibold text-lia-text-primary">
             Publicar em
@@ -329,13 +329,13 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
                 className={cn(
  "flex items-center gap-2 p-2 rounded-md transition-colors",
                   platform.enabled
-                    ? "bg-gray-100 dark:bg-lia-bg-secondary border border-gray-900"
-                    : "bg-gray-50 border border-transparent hover:border-lia-border-subtle"
+                    ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-btn-primary-bg"
+                    : "bg-lia-bg-secondary border border-transparent hover:border-lia-border-subtle"
                 )}
               >
                 <div className={cn(
  "w-4 h-4 rounded-md flex items-center justify-center",
-                  platform.enabled ? "bg-gray-900 text-white" : "border border-lia-border-subtle"
+                  platform.enabled ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "border border-lia-border-subtle"
                 )}>
                   {platform.enabled && <CheckCircle2 className="w-2.5 h-2.5" />}
                 </div>

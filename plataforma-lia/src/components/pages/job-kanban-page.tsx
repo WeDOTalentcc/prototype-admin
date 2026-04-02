@@ -360,9 +360,9 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
   // Renderização apenas no cliente para evitar erros de hidratação SSR
   if (!isClient) {
     return (
-      <div className="flex items-center justify-center h-screen bg-white" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="flex items-center justify-center h-screen bg-lia-bg-primary" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex flex-col items-center gap-4" role="status" aria-live="polite" aria-label="Carregando...">
-          <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-gray-600" role="status" aria-live="polite" aria-label="Carregando..."></div>
+          <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-lia-border-medium" role="status" aria-live="polite" aria-label="Carregando..."></div>
           <span className="text-sm text-lia-text-tertiary font-['Open_Sans']">Carregando...</span>
         </div>
       </div>
@@ -403,7 +403,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         }
       `}</style>
 
-    <div className="h-screen bg-white dark:bg-lia-bg-primary flex flex-col overflow-hidden">
+    <div className="h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col overflow-hidden">
       {/* Header Principal */}
       <KanbanJobHeader
         onBack={onBack}
@@ -440,7 +440,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               className={`flex items-start gap-2 px-3 py-2 rounded-md border text-xs ${
                 insight.urgency === 'urgent' ? 'bg-status-error/10 border-status-error/30 text-status-error' :
                 insight.urgency === 'high' ? 'bg-status-warning/10 border-status-warning/30 text-status-warning' :
-                'bg-gray-50 border-lia-border-subtle text-lia-text-secondary'
+                'bg-lia-bg-secondary border-lia-border-subtle text-lia-text-secondary'
               }`}
             >
               <span className="font-medium flex-shrink-0">{insight.title}</span>
@@ -458,7 +458,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
       )}
 
       {activeTab === 'edit' ? (
-        <div className="flex-1 overflow-y-auto bg-white dark:bg-lia-bg-primary">
+        <div className="flex-1 overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary">
           <div className="px-4 py-4 pb-12">
             <JobEditTab
               jobEditForm={jobEditForm}
@@ -482,10 +482,10 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-hidden bg-white dark:bg-lia-bg-primary flex flex-col min-w-0">
+        <div className="flex-1 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col min-w-0">
           {/* Pipeline Flow - Cards do Funil (apenas no modo Tabela) */}
           {viewMode === "table" && (
-            <div className="flex-shrink-0 bg-white dark:bg-lia-bg-primary px-4 py-2">
+            <div className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-primary px-4 py-2">
               <div className="w-full">
                 <div className="flex items-center gap-2">
                   {tableStageFilter.length > 0 && (
@@ -621,7 +621,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
           />
 
           {/* Container Principal com LIA Sidebar Unificada */}
-          <div className="flex-1 flex gap-2 overflow-hidden bg-white dark:bg-lia-bg-primary min-w-0">
+          <div className="flex-1 flex gap-2 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary min-w-0">
             {/* Super Chat Expandido - Ocupa a maior parte da tela, deixando apenas uma coluna visível */}
             {showSuperChat && (
               <>
@@ -661,23 +661,23 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowSuperChat(false)}
-                    className="h-8 w-8 p-0 rounded-md hover:bg-gray-100"
+                    className="h-8 w-8 p-0 rounded-md hover:bg-lia-bg-tertiary"
                     title="Expandir visualização"
                   >
                     <ChevronRight className="w-4 h-4 text-lia-text-tertiary" />
                   </Button>
                   
-                  <div className="w-6 h-px bg-gray-200 my-1" />
+                  <div className="w-6 h-px bg-lia-interactive-active my-1" />
                   
                   {/* Ícone HubSpot/Integração */}
-                  <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors motion-reduce:transition-none">
+                  <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-lia-bg-secondary rounded-md px-2 transition-colors motion-reduce:transition-none">
                     <div className="w-6 h-6 rounded-full bg-wedo-orange flex items-center justify-center">
                       <span className="text-white text-micro font-bold">H</span>
                     </div>
                   </div>
                   
                   {/* Ícone Ações/Automação */}
-                  <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-gray-50 rounded-md px-2 transition-colors motion-reduce:transition-none">
+                  <div className="flex flex-col items-center gap-1 py-2 cursor-pointer hover:bg-lia-bg-secondary rounded-md px-2 transition-colors motion-reduce:transition-none">
                     <div className="w-6 h-6 rounded-full bg-status-warning flex items-center justify-center">
                       <Brain className="w-3.5 h-3.5 text-white" />
                     </div>
@@ -687,7 +687,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                   
                   {/* Candidatos - Texto Vertical */}
                   <div 
-                    className="flex flex-col items-center gap-1 py-3 cursor-pointer hover:bg-gray-50 rounded-md px-1 transition-colors motion-reduce:transition-none border-r-2 border-gray-900 dark:border-lia-border-medium"
+                    className="flex flex-col items-center gap-1 py-3 cursor-pointer hover:bg-lia-bg-secondary rounded-md px-1 transition-colors motion-reduce:transition-none border-r-2 border-lia-btn-primary-bg dark:border-lia-border-medium"
                     onClick={() => setShowSuperChat(false)}
                   >
                     <Users className="w-4 h-4 text-lia-text-secondary" />
@@ -759,7 +759,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                             <div className="flex items-center gap-1.5">
                               <div className="w-2 h-2 rounded-full animate-pulse motion-reduce:animate-none" style={{backgroundColor: stage.color}}></div>
                               <h3 className="font-medium text-xs text-lia-text-disabled">{stage.displayName}</h3>
-                              <span className="text-micro text-lia-text-disabled bg-gray-100 px-1.5 py-0.5 rounded-full animate-pulse motion-reduce:animate-none">...</span>
+                              <span className="text-micro text-lia-text-disabled bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full animate-pulse motion-reduce:animate-none">...</span>
                             </div>
                           </div>
                           <div className="flex-1 flex items-center justify-center">
@@ -799,10 +799,10 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
                       ))}
                       <div className="flex-shrink-0 w-[280px]">
                         <div 
-                          className="h-full min-h-chart-sm rounded-md border-2 border-dashed border-lia-border-default hover:border-gray-400 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors motion-reduce:transition-none hover:bg-gray-50/50 group"
+                          className="h-full min-h-chart-sm rounded-md border-2 border-dashed border-lia-border-default hover:border-lia-border-medium flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary/50 group"
                           onClick={() => setShowAddColumnPopover(true)}
                         >
-                          <div className="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors motion-reduce:transition-none">
+                          <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary group-hover:bg-lia-interactive-active flex items-center justify-center transition-colors motion-reduce:transition-none">
                             <Plus className="w-5 h-5 text-lia-text-disabled group-hover:text-lia-text-secondary" />
                           </div>
                           <span className="text-xs text-lia-text-disabled group-hover:text-lia-text-secondary font-medium transition-colors motion-reduce:transition-none">
@@ -835,7 +835,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
               {/* Preview do Candidato - Painel Lateral Direito (KANBAN) */}
               {isPreviewOpen && previewCandidate && (
                 <div className={`flex-shrink-0 transition-colors motion-reduce:transition-none duration-300 ${isPreviewMaximized ? 'w-[600px]' : 'w-panel-lg'}`}>
-                  <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+                  <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview
                     candidate={previewCandidate}
                     isOpen={isPreviewOpen}

@@ -132,7 +132,7 @@ export function LIASearchSidebarChat({
         <div className="space-y-3">
           {/* Mensagem do usuário */}
           <div className="flex justify-end">
-            <div className="max-w-[85%] p-3 rounded-md bg-gray-900 dark:bg-lia-btn-primary-bg text-white">
+            <div className="max-w-[85%] p-3 rounded-md bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text">
               <p className="text-xs">{searchResults.query}</p>
             </div>
           </div>
@@ -144,7 +144,7 @@ export function LIASearchSidebarChat({
             </div>
             <div className="flex-1 space-y-3">
               {/* Resumo dos resultados */}
-              <div className="p-3 rounded-md bg-white dark:bg-lia-bg-secondary">
+              <div className="p-3 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary">
                 <p className="text-xs font-medium text-lia-text-primary mb-2">
                   Encontrei <span className="text-lia-text-secondary" aria-live="polite" aria-atomic="true">{searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)} candidato{(searchResults.localCount + (searchResults.showGlobalResults ? searchResults.globalCount : 0)) > 1 ? 's' : ''}</span> para sua busca:
                 </p>
@@ -171,7 +171,7 @@ export function LIASearchSidebarChat({
                     onClick={() => {
                       setShowSaveAsArchetypeModal(true)
                     }}
-                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border border-gray-900 dark:border-lia-border-medium text-lia-text-secondary hover:bg-gray-100 dark:bg-lia-bg-secondary transition-[width,height]"
+                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full border border-lia-btn-primary-bg dark:border-lia-border-medium text-lia-text-secondary hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary transition-[width,height]"
                   >
                     <Bookmark className="w-3 h-3" />
                     Salvar Arquétipo
@@ -181,7 +181,7 @@ export function LIASearchSidebarChat({
 
               {/* Candidatos locais na tabela */}
               {searchResults.localCount > 0 && (
-                <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                   <div className="flex items-center gap-2">
                     <Home className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <p className="text-xs text-lia-text-primary">
@@ -193,7 +193,7 @@ export function LIASearchSidebarChat({
 
               {/* Botão para expandir busca para global - OPT-IN: só mostra após busca local */}
               {currentSearchSource === 'local' && !searchResults.showGlobalResults && !searchResults.globalDismissed && searchResults.query && (
-                <div className="p-3 rounded-md border border-gray-900 dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
+                <div className="p-3 rounded-md border border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Globe className="w-4 h-4 text-lia-text-secondary" />
@@ -210,7 +210,7 @@ export function LIASearchSidebarChat({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="!text-xs !px-2.5 !py-1.5 text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
+                        className="!text-xs !px-2.5 !py-1.5 text-lia-text-primary hover:text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover"
                         onClick={() => {
                           setSearchResults(prev => ({ ...prev, globalDismissed: true }))
                         }}
@@ -220,7 +220,7 @@ export function LIASearchSidebarChat({
                       </Button>
                       <Button
                         size="sm"
-                        className="!text-xs !px-3 !py-1.5 bg-gray-900" style={{color: 'var(--gray-50)'}}
+                        className="!text-xs !px-3 !py-1.5 bg-lia-btn-primary-bg" style={{color: 'var(--lia-bg-secondary)'}}
                         onClick={() => setShowGlobalExpansionConfirm(true)}
                       >
                         <Globe className="w-3 h-3 mr-1" />
@@ -233,7 +233,7 @@ export function LIASearchSidebarChat({
 
               {/* Mensagem quando usuário descartou busca global */}
               {currentSearchSource === 'local' && searchResults.globalDismissed && !searchResults.showGlobalResults && searchResults.query && (
-                <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
+                <div className="p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Globe className="w-3.5 h-3.5 text-lia-text-primary" />
@@ -253,7 +253,7 @@ export function LIASearchSidebarChat({
 
               {/* Confirmação de candidatos globais adicionados */}
               {searchResults.showGlobalResults && searchResults.globalCount > 0 && (
-                <div className="p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary border border-gray-900 dark:border-lia-border-subtle">
+                <div className="p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-btn-primary-bg dark:border-lia-border-subtle">
                   <div className="flex items-center gap-2">
                     <Globe className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <p className="text-xs text-wedo-cyan-dark">
@@ -273,7 +273,7 @@ export function LIASearchSidebarChat({
           {/* Mensagem do usuário (query atual) */}
           {searchResults.query && (
             <div className="flex justify-end">
-              <div className="max-w-[85%] p-3 rounded-md bg-gray-900 dark:bg-lia-btn-primary-bg text-white">
+              <div className="max-w-[85%] p-3 rounded-md bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text">
                 <p className="text-xs">{searchResults.query}</p>
               </div>
             </div>
@@ -286,13 +286,13 @@ export function LIASearchSidebarChat({
             </div>
             <div className="flex-1 space-y-2">
               {/* Card de status */}
-              <div className="p-4 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
+              <div className="p-4 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="relative">
-                    <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
                       <Search className="w-4 h-4 text-lia-text-secondary animate-pulse motion-reduce:animate-none" />
                     </div>
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-gray-900 dark:bg-lia-btn-primary-bg rounded-full animate-ping motion-reduce:animate-none" />
+                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg rounded-full animate-ping motion-reduce:animate-none" />
                   </div>
                   <div>
                     <p className="text-xs font-medium text-lia-text-primary">
@@ -315,13 +315,13 @@ export function LIASearchSidebarChat({
                     <span>Interpretando critérios</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-lia-text-primary" role="status" aria-live="polite" aria-label="Carregando...">
-                    <div className="w-4 h-4 rounded-full bg-gray-900 dark:bg-lia-btn-primary-bg flex items-center justify-center animate-spin motion-reduce:animate-none" role="status" aria-live="polite" aria-label="Carregando...">
+                    <div className="w-4 h-4 rounded-full bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg flex items-center justify-center animate-spin motion-reduce:animate-none" role="status" aria-live="polite" aria-label="Carregando...">
                       <div className="w-2 h-2 border border-white border-t-transparent rounded-full" />
                     </div>
                     <span aria-live="polite" aria-atomic="true">Buscando na base de candidatos</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-lia-text-primary">
-                    <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-lia-bg-elevated" />
+                    <div className="w-4 h-4 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated" />
                     <span>Rankeando por compatibilidade</span>
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export function LIASearchSidebarChat({
               {/* Typing indicator */}
               <div className="flex items-center gap-1.5 px-3 py-2">
                 <div className="flex gap-1">
-                  <ThinkingDots dotClassName="bg-gray-900 dark:bg-lia-btn-primary-bg" size="lg" />
+                  <ThinkingDots dotClassName="bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg" size="lg" />
                 </div>
               </div>
             </div>
@@ -350,7 +350,7 @@ export function LIASearchSidebarChat({
                 className="w-7 h-7 rounded-full object-cover flex-shrink-0"
               />
               <div
-                className="px-2.5 py-2 rounded-md bg-gray-100"
+                className="px-2.5 py-2 rounded-md bg-lia-bg-tertiary"
               >
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="text-micro font-bold text-lia-text-primary">Você</span>

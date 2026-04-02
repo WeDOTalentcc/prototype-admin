@@ -169,8 +169,8 @@ export function BigFiveDashboardPage() {
       {
         label: 'Correlação (0-1)',
         data: performanceCorrelation.map(d => d.correlation),
-        backgroundColor: 'var(--gray-400)',
-        borderColor: 'var(--gray-400)',
+        backgroundColor: 'var(--lia-text-tertiary)',
+        borderColor: 'var(--lia-text-tertiary)',
         borderWidth: 1
       }
     ]
@@ -219,7 +219,7 @@ export function BigFiveDashboardPage() {
       {
         label: 'Fit Cultural %',
         data: hiringOutcomes.map(d => d.fit),
-        borderColor: 'var(--gray-400)',
+        borderColor: 'var(--lia-text-tertiary)',
         backgroundColor: 'var(--wedo-blue-bg-10)',
         borderWidth: 3,
         tension: 0.4,
@@ -271,15 +271,15 @@ export function BigFiveDashboardPage() {
       {
         label: 'Métodos Tradicionais',
         data: successPrediction.map(d => d.tradicional),
-        backgroundColor: 'var(--gray-200)',
-        borderColor: 'var(--gray-200)',
+        backgroundColor: 'var(--lia-border-subtle)',
+        borderColor: 'var(--lia-border-subtle)',
         borderWidth: 1
       },
       {
         label: 'Big Five + IA',
         data: successPrediction.map(d => d.bigFive),
-        backgroundColor: 'var(--gray-400)',
-        borderColor: 'var(--gray-400)',
+        backgroundColor: 'var(--lia-text-tertiary)',
+        borderColor: 'var(--lia-text-tertiary)',
         borderWidth: 1
       }
     ]
@@ -292,7 +292,7 @@ export function BigFiveDashboardPage() {
       {
         label: 'Abertura',
         data: departmentData.map(d => d.openness),
-        borderColor: 'var(--gray-400)',
+        borderColor: 'var(--lia-text-tertiary)',
         backgroundColor: 'var(--wedo-blue-bg-20)',
         borderWidth: 2
       },
@@ -379,7 +379,7 @@ export function BigFiveDashboardPage() {
       </div>
 
       {/* Filtros */}
-      <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+      <div className="flex items-center gap-4 p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-lia-text-primary" />
           <span className="text-sm font-medium text-lia-text-primary">Filtros:</span>
@@ -387,7 +387,7 @@ export function BigFiveDashboardPage() {
         <select
           value={selectedDepartment}
           onChange={(e) => setSelectedDepartment(e.target.value)}
-          className="px-3 py-1 rounded-md border border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-elevated text-sm"
+          className="px-3 py-1 rounded-md border border-lia-border-default dark:border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-elevated text-sm"
         >
           <option value="Todos">Todos os Departamentos</option>
           {departmentData.map(dept => (
@@ -397,7 +397,7 @@ export function BigFiveDashboardPage() {
         <select
           value={selectedTimeRange}
           onChange={(e) => setSelectedTimeRange(e.target.value)}
-          className="px-3 py-1 rounded-md border border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-elevated text-sm"
+          className="px-3 py-1 rounded-md border border-lia-border-default dark:border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-elevated text-sm"
         >
           <option value="3 meses">Últimos 3 meses</option>
           <option value="6 meses">Últimos 6 meses</option>
@@ -407,7 +407,7 @@ export function BigFiveDashboardPage() {
 
       {/* KPIs Principais */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-        <Card style={{borderColor: 'var(--gray-400)'}} className="dark:border-lia-border-default">
+        <Card style={{borderColor: 'var(--lia-text-tertiary)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -455,7 +455,7 @@ export function BigFiveDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card style={{borderColor: 'var(--gray-300)'}} className="dark:border-lia-border-default">
+        <Card style={{borderColor: 'var(--lia-border-default)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -587,7 +587,7 @@ export function BigFiveDashboardPage() {
 
       {/* Insights Executivos */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card style={{borderColor: 'var(--gray-400)'}} className="dark:border-lia-border-default">
+        <Card style={{borderColor: 'var(--lia-text-tertiary)'}} className="dark:border-lia-border-default">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <CheckCircle className="w-5 h-5 mt-1 text-wedo-green-pastel" />

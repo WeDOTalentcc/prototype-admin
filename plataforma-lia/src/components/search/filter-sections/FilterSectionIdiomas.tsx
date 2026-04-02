@@ -33,7 +33,7 @@ export const FilterSectionIdiomas = React.memo(function FilterSectionIdiomas({
             value={filters.languages?.proficiencyLevel || "any"}
             onValueChange={(value) => updateFilter("languages", "proficiencyLevel", value)}
           >
-            <SelectTrigger className="w-auto h-7 px-2 py-1 text-xs border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 gap-1">
+            <SelectTrigger className="w-auto h-7 px-2 py-1 text-xs border border-lia-border-subtle focus:ring-1 focus:ring-lia-border-medium gap-1">
               <SelectValue placeholder="Qualquer Nível" />
             </SelectTrigger>
             <SelectContent>

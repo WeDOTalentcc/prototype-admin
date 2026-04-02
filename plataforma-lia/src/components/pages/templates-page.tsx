@@ -239,16 +239,16 @@ export function TemplatesPage() {
   // Cores por categoria
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'search': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default'
+      case 'search': return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default'
       case 'communication': return 'bg-status-success/15 text-status-success border-status-success/30'
       case 'workflow': return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
       case 'analysis': return 'bg-wedo-orange/15 text-wedo-orange border-wedo-orange/30'
-      default: return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+      default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary p-6">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -347,7 +347,7 @@ export function TemplatesPage() {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
+            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
           >
             <option value="all">Todas Categorias</option>
             <option value="search">🔍 Busca</option>
@@ -359,7 +359,7 @@ export function TemplatesPage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'usage' | 'recent' | 'success')}
-            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
+            className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
           >
             <option value="usage">Mais Usados</option>
             <option value="recent">Mais Recentes</option>
@@ -429,7 +429,7 @@ export function TemplatesPage() {
               <div className="flex gap-2">
                 <Button
                   onClick={() => executeTemplate(template)}
-                  className="flex-1 gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200"
+                  className="flex-1 gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active"
                   size="sm"
                 >
                   <Play className="w-3 h-3" />

@@ -54,7 +54,7 @@ const CATEGORY_CONFIG: Record<ActionCategoryUI, { label: string; icon: React.Ele
   authentication: {
     label: 'Autenticação',
     icon: LogIn,
-    color: 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary',
+    color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary',
   },
   data_access: {
     label: 'Acesso a Dados',
@@ -84,7 +84,7 @@ const CATEGORY_CONFIG: Record<ActionCategoryUI, { label: string; icon: React.Ele
   system: {
     label: 'Sistema',
     icon: Cog,
-    color: 'bg-gray-50 lia-text-800 dark:bg-lia-bg-primary/20 dark:text-lia-text-primary',
+    color: 'bg-lia-bg-secondary text-lia-text-primary dark:bg-lia-bg-primary/20 dark:text-lia-text-primary',
   },
 }
 
@@ -282,7 +282,7 @@ export default function AuditLogsPage() {
   const mainCategories: ActionCategoryUI[] = ['authentication', 'data_access', 'configuration', 'ai_decision']
 
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary" aria-live="polite" aria-busy={isLoading}>
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary" aria-live="polite" aria-busy={isLoading}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
@@ -290,19 +290,19 @@ export default function AuditLogsPage() {
               variant="ghost"
               size="sm"
               onClick={() => window.history.back()}
-              className="lia-text-600"
+              className="text-lia-text-secondary"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
               Voltar
             </Button>
             <div>
               <div className="flex items-center gap-2">
-                <ScrollText className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
-                <h1 className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
+                <ScrollText className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
+                <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
                   Auditoria & Logs
                 </h1>
               </div>
-              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mt-1">
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
                 Logs consolidados de auditoria para conformidade SOX/ISO
               </p>
             </div>
@@ -320,7 +320,7 @@ export default function AuditLogsPage() {
             <Button
               onClick={handleExportCSV}
               disabled={isExporting || filteredLogs.length === 0}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
             >
               <Download className="w-4 h-4" />
               {isExporting ? 'Exportando...' : 'Exportar CSV'}
@@ -337,7 +337,7 @@ export default function AuditLogsPage() {
               <Card
                 key={key}
                 className={`cursor-pointer transition-colors motion-reduce:transition-none hover:${
-                  selectedCategory === key ? 'ring-2 ring-gray-900/20' : ''
+                  selectedCategory === key ? 'ring-2 ring-lia-btn-primary-bg/20' : ''
                 }`}
                 onClick={() => {
                   setSelectedCategory(selectedCategory === key ? 'all' : key)
@@ -350,10 +350,10 @@ export default function AuditLogsPage() {
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         {config.label}
                       </p>
-                      <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
+                      <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
                         {count}
                       </p>
                     </div>
@@ -368,11 +368,11 @@ export default function AuditLogsPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base font-medium flex items-center gap-2">
-                <Filter className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <Filter className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Filtros
               </CardTitle>
               {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="lia-text-500 gap-1">
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-lia-text-secondary gap-1">
                   <X className="w-4 h-4" />
                   Limpar
                 </Button>
@@ -382,7 +382,7 @@ export default function AuditLogsPage() {
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
                 <Input
                   placeholder="Buscar por usuário, ação, recurso..."
                   value={searchQuery}
@@ -409,7 +409,7 @@ export default function AuditLogsPage() {
                 }}
               >
                 <SelectTrigger className="w-sidebar-content">
-                  <Building2 className="w-4 h-4 mr-2 lia-text-400" />
+                  <Building2 className="w-4 h-4 mr-2 text-lia-text-tertiary" />
                   <SelectValue placeholder="Cliente" />
                 </SelectTrigger>
                 <SelectContent>
@@ -457,15 +457,15 @@ export default function AuditLogsPage() {
           <CardContent className="p-0">
             {isLoading ? (
               <div className="py-12 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
+                <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
             ) : paginatedLogs.length === 0 ? (
               <div className="py-12 text-center">
-                <ScrollText className="w-12 h-12 lia-text-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium lia-text-950 dark:lia-text-50 mb-2">
+                <ScrollText className="w-12 h-12 text-lia-text-tertiary mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-lia-text-primary dark:text-lia-text-primary mb-2">
                   Nenhum registro encontrado
                 </h3>
-                <p className="lia-text-500">
+                <p className="text-lia-text-secondary">
                   Tente ajustar os filtros de busca
                 </p>
               </div>
@@ -473,43 +473,43 @@ export default function AuditLogsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
-                      <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
+                    <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
+                      <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">
                         <div className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           Timestamp
                         </div>
                       </th>
-                      <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
+                      <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">
                         <div className="flex items-center gap-1">
                           <User className="w-3 h-3" />
                           Usuário
                         </div>
                       </th>
-                      <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
+                      <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">
                         <div className="flex items-center gap-1">
                           <Building2 className="w-3 h-3" />
                           Cliente
                         </div>
                       </th>
-                      <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
+                      <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">
                         Ação
                       </th>
-                      <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
+                      <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">
                         Recurso
                       </th>
-                      <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
+                      <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">
                         <div className="flex items-center gap-1">
                           <Globe className="w-3 h-3" />
                           IP
                         </div>
                       </th>
-                      <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
+                      <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">
                         Status
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
+                  <tbody className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
                     {paginatedLogs.map((log) => {
                       const categoryConfig = CATEGORY_CONFIG[log.actionCategory as ActionCategoryUI] || CATEGORY_CONFIG.system
                       const CategoryIcon = categoryConfig.icon
@@ -517,23 +517,23 @@ export default function AuditLogsPage() {
                       return (
                         <tr
                           key={log.id}
-                          className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none"
+                          className="hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none"
                         >
                           <td className="px-6 py-4">
-                            <span className="text-sm lia-text-950 dark:lia-text-50">
+                            <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                               {formatDateTime(log.timestamp)}
                             </span>
                           </td>
                           <td className="px-6 py-4">
                             <div>
-                              <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                              <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                                 {log.userId || '-'}
                               </p>
-                              <p className="text-xs lia-text-500">{log.userEmail || '-'}</p>
+                              <p className="text-xs text-lia-text-secondary">{log.userEmail || '-'}</p>
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="text-sm lia-text-800 dark:text-lia-text-primary">
+                            <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                               {log.clientName || '-'}
                             </span>
                           </td>
@@ -542,25 +542,25 @@ export default function AuditLogsPage() {
                               <div className={`p-1 rounded-md ${categoryConfig.color}`}>
                                 <CategoryIcon className="w-3 h-3" />
                               </div>
-                              <span className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                              <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                                 {ACTION_LABELS[log.action] || log.action}
                               </span>
                             </div>
                           </td>
                           <td className="px-6 py-4">
                             <div>
-                              <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+                              <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                                 {log.resourceType || '-'}
                               </p>
                               {log.details && Object.keys(log.details).length > 0 && (
-                                <p className="text-xs lia-text-500 mt-1 max-w-xs truncate">
+                                <p className="text-xs text-lia-text-secondary mt-1 max-w-xs truncate">
                                   {JSON.stringify(log.details)}
                                 </p>
                               )}
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="text-sm font-mono lia-text-600 dark:text-lia-text-tertiary">
+                            <span className="text-sm font-mono text-lia-text-secondary dark:text-lia-text-tertiary">
                               {log.ipAddress || '-'}
                             </span>
                           </td>
@@ -583,7 +583,7 @@ export default function AuditLogsPage() {
 
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-6 py-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-                <p className="text-sm lia-text-500">
+                <p className="text-sm text-lia-text-secondary">
                   Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} a {Math.min(currentPage * ITEMS_PER_PAGE, totalLogs || filteredLogs.length)} de {totalLogs || filteredLogs.length}
                 </p>
                 <div className="flex items-center gap-2">
@@ -595,7 +595,7 @@ export default function AuditLogsPage() {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <span className="text-sm lia-text-800 dark:text-lia-text-primary px-2">
+                  <span className="text-sm text-lia-text-primary dark:text-lia-text-primary px-2">
                     Página {currentPage} de {totalPages}
                   </span>
                   <Button
@@ -617,7 +617,7 @@ export default function AuditLogsPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Shield className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                  <Shield className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   Política de Retenção de Dados
                 </CardTitle>
                 {retentionPolicies.length === 0 && (
@@ -653,16 +653,16 @@ export default function AuditLogsPage() {
                   })
                 ) : (
                   <>
-                    <div className="flex items-start gap-3 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                      <Database className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary mt-0.5" />
+                    <div className="flex items-start gap-3 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+                      <Database className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5" />
                       <div>
-                        <p className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary">
+                        <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                           Logs de Auditoria (SOX Compliance)
                         </p>
-                        <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mt-1">
+                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
                           Retenção: <strong>7 anos (84 meses)</strong>
                         </p>
-                        <p className="text-xs lia-text-600 dark:text-lia-text-tertiary">
+                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                           Próxima purga agendada: {formatNextPurgeDate(84)}
                         </p>
                       </div>
@@ -706,34 +706,34 @@ export default function AuditLogsPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-medium flex items-center gap-2">
-                <Calendar className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Estatísticas de Auditoria
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                   <div className="flex items-center gap-2">
-                    <ScrollText className="w-4 h-4 lia-text-500" />
-                    <span className="text-sm lia-text-800 dark:text-lia-text-primary">Total de Registros</span>
+                    <ScrollText className="w-4 h-4 text-lia-text-secondary" />
+                    <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Total de Registros</span>
                   </div>
-                  <span className="text-lg font-semibold lia-text-950 dark:lia-text-50">
+                  <span className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
                     {(stats?.totalLogs || totalLogs || 0).toLocaleString()}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4 text-status-warning" />
-                    <span className="text-sm lia-text-800 dark:text-lia-text-primary">Ações com Falha</span>
+                    <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Ações com Falha</span>
                   </div>
                   <span className="text-lg font-semibold text-status-warning">{failedActions}</span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                   <div className="flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-purple" />
-                    <span className="text-sm lia-text-800 dark:text-lia-text-primary">Decisões IA Auditáveis</span>
+                    <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">Decisões IA Auditáveis</span>
                   </div>
                   <span className="text-lg font-semibold text-wedo-purple">
                     {stats?.aiDecisionsCount || categoryStats.ai_decision}

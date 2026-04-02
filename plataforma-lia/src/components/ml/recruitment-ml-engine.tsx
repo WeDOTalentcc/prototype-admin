@@ -426,7 +426,7 @@ export function RecruitmentMLDashboard({
       <Card className="w-full">
         <CardContent className="p-8">
           <div className="flex items-center justify-center">
-            <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <div className="animate-spin motion-reduce:animate-none rounded-full h-8 w-8 border-b-2 border-lia-btn-primary-bg"></div>
             <span className="ml-3 text-lia-text-secondary">Processando dados com ML...</span>
           </div>
         </CardContent>
@@ -540,7 +540,7 @@ export function RecruitmentMLDashboard({
                   className={`p-4 rounded-md border-l-4 ${
  insight.impact === 'high' ? 'bg-status-error/10 border-status-error' :
                     insight.impact === 'medium' ? 'bg-status-warning/10 border-status-warning' :
-                    'bg-gray-100 dark:bg-lia-bg-secondary border-gray-900'
+                    'bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-btn-primary-bg'
                   }`}
                 >
                   <div className="flex items-start justify-between">
@@ -573,14 +573,14 @@ export function RecruitmentMLDashboard({
                       <Badge className={`text-xs ${
  insight.impact === 'high' ? 'bg-status-error/10 text-status-error' :
                         insight.impact === 'medium' ? 'bg-status-warning/10 text-status-warning' :
-                        'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark'
+                        'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-dark'
                       }`}>
                         {insight.type}
                       </Badge>
                       <Badge className={`text-xs ${
  insight.impact === 'high' ? 'bg-status-error text-white' :
                         insight.impact === 'medium' ? 'bg-status-warning text-white' :
-                        'bg-gray-900 text-white'
+                        'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                       }`}>
                         {insight.impact}
                       </Badge>

@@ -111,7 +111,7 @@ export function TemplateSuggestionToast({
     } else if (suggestion.complexity >= 8) {
       return 'bg-wedo-purple/15 text-wedo-purple border-wedo-purple/30'
     } else {
-      return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
+      return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
     }
   }
 
@@ -121,7 +121,7 @@ export function TemplateSuggestionToast({
         isDismissing ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'
       }`}
     >
-      <Card className="w-80 border-l-4 border-l-gray-400 dark:border-l-gray-500 bg-white dark:bg-lia-bg-secondary">
+      <Card className="w-80 border-l-4 border-l-lia-border-medium dark:border-l-lia-border-medium bg-lia-bg-primary dark:bg-lia-bg-secondary">
         <CardContent className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
@@ -149,7 +149,7 @@ export function TemplateSuggestionToast({
           </div>
 
           {/* Comando */}
-          <div className="mb-3 p-2 bg-gray-50 dark:bg-lia-bg-elevated rounded-md text-xs font-mono text-lia-text-primary line-clamp-2">
+          <div className="mb-3 p-2 bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md text-xs font-mono text-lia-text-primary line-clamp-2">
             "{suggestion.command}"
           </div>
 
@@ -169,7 +169,7 @@ export function TemplateSuggestionToast({
           <div className="space-y-2">
             <Button
               onClick={handleCreateTemplate}
-              className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-sm h-8"
+              className="w-full gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active text-sm h-8"
             >
               <Archive className="w-3 h-3" />
               Criar Template
@@ -210,9 +210,9 @@ export function TemplateSuggestionToast({
       </Card>
 
       {/* Indicador de progresso (auto-dismiss) */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-b">
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-b">
         <div
-          className="h-full bg-gray-700 rounded-b transition-[width,height] duration-[15000ms] ease-linear"
+          className="h-full bg-lia-bg-inverse rounded-b transition-[width,height] duration-[15000ms] ease-linear"
           style={{width: isVisible ? '0%' : '100%'}}
         />
       </div>

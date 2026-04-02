@@ -76,7 +76,7 @@ const getAlertBgColor = (type: 'warning' | 'info' | 'success') => {
     case 'warning':
       return 'bg-status-warning/10 border-status-warning/30 dark:bg-status-warning/20 dark:border-status-warning/30'
     case 'info':
- return 'bg-gray-50 border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
+ return 'bg-lia-bg-secondary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
     case 'success':
       return 'bg-status-success/10 border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30'
   }
@@ -97,11 +97,11 @@ export function ProactiveInsightCard({
   const workModelEntries = Object.entries(distributions?.work_model || {}).sort((a, b) => b[1] - a[1])
 
   return (
-    <Card className={cn("w-full bg-white dark:bg-lia-bg-primary border border-lia-border-subtle", className)}>
+    <Card className={cn("w-full bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle", className)}>
       <CardHeader className="pb-2 pt-3 px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+            <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
@@ -245,7 +245,7 @@ export function ProactiveInsightCard({
                     <Badge 
                       key={level} 
                       variant="secondary"
-                      className="text-xs py-0.5 px-1.5 bg-gray-100 dark:bg-lia-bg-secondary"
+                      className="text-xs py-0.5 px-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                     >
                       {level}: {count}
                     </Badge>
@@ -288,7 +288,7 @@ export function ProactiveInsightCard({
                       className={cn(
  "text-xs py-0.5 px-1.5",
                         model.toLowerCase().includes('remoto') && "bg-status-success/10 border-status-success/30 text-status-success",
-                        model.toLowerCase().includes('híbrido') && "bg-gray-50 dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark",
+                        model.toLowerCase().includes('híbrido') && "bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark",
                         model.toLowerCase().includes('presencial') && "bg-wedo-purple/10 border-wedo-purple/30 text-wedo-purple"
                       )}
                     >
@@ -309,7 +309,7 @@ export function ProactiveInsightCard({
                   {top_skills.slice(0, 8).map((skill) => (
                     <Badge 
                       key={skill.skill} 
-                      className="text-xs py-0.5 px-1.5 bg-gray-100 text-lia-text-primary border-lia-border-subtle hover:bg-gray-200"
+                      className="text-xs py-0.5 px-1.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle hover:bg-lia-interactive-active"
                     >
                       {skill.skill} ({skill.count})
                     </Badge>

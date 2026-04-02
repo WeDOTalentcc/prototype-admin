@@ -97,7 +97,7 @@ export function StrategicTab() {
             <div className="space-y-4">
               {[
                 { level: "Júnior", days: 18, color: "bg-status-success", target: 20 },
-                { level: "Pleno", days: 28, color: "bg-gray-700 dark:bg-lia-text-tertiary", target: 30 },
+                { level: "Pleno", days: 28, color: "bg-lia-bg-inverse dark:bg-lia-text-tertiary", target: 30 },
                 { level: "Sênior", days: 42, color: "bg-status-warning", target: 45 },
                 { level: "Liderança", days: 67, color: "bg-status-error", target: 60 },
               ].map((item, index) => (
@@ -117,7 +117,7 @@ export function StrategicTab() {
                       </Badge>
                     </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-lia-interactive-active rounded-full h-2">
                     <div
                       className={`${item.color} h-2 rounded-full transition-[width,height] duration-300`}
                       style={{ width: `${Math.min((item.days / 70) * 100, 100)}%` }}
@@ -152,21 +152,21 @@ export function StrategicTab() {
                   <span>Feminino</span>
                   <span className="font-medium">47%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-lia-interactive-active rounded-full h-2">
                   <div className="bg-wedo-magenta h-2 rounded-full w-[47%]" />
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span>Masculino</span>
                   <span className="font-medium">51%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full w-[51%]" />
+                <div className="w-full bg-lia-interactive-active rounded-full h-2">
+                  <div className="bg-lia-bg-inverse dark:bg-lia-text-tertiary h-2 rounded-full w-[51%]" />
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span>Não-binário</span>
                   <span className="font-medium">2%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-lia-interactive-active rounded-full h-2">
                   <div className="bg-wedo-purple h-2 rounded-full w-[2%]" />
                 </div>
               </div>
@@ -200,7 +200,7 @@ export function StrategicTab() {
               <h4 className="font-medium text-lia-text-primary mb-3">
                 Inclusão PCD
               </h4>
-              <div className="text-center p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+              <div className="text-center p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                 <div className="text-2xl font-bold text-lia-text-primary">
                   8.2%
                 </div>

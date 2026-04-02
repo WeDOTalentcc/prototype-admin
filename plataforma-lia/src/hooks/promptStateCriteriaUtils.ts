@@ -115,20 +115,20 @@ export function extractCriteriaFromText(
 
 /** Pure colour lookup for search tag badges — no React state needed. */
 export function getTagColors(key: string, filled: boolean) {
-  if (!filled) return { bg: "var(--gray-50)", text: "var(--gray-400)", iconBg: "var(--gray-400)" }
+  if (!filled) return { bg: "var(--lia-bg-secondary)", text: "var(--lia-text-tertiary)", iconBg: "var(--lia-text-tertiary)" }
   switch (key) {
     case "job_title":
-      return { bg: "var(--gray-50)", text: "var(--gray-600)", iconBg: "var(--gray-600)" }
+      return { bg: "var(--lia-bg-secondary)", text: "var(--lia-text-secondary)", iconBg: "var(--lia-text-secondary)" }
     case "location":
-      return { bg: "var(--gray-50)", text: "var(--wedo-purple)", iconBg: "var(--wedo-purple)" }
+      return { bg: "var(--lia-bg-secondary)", text: "var(--wedo-purple)", iconBg: "var(--wedo-purple)" }
     case "skills":
-      return { bg: "var(--gray-50)", text: "var(--status-success)", iconBg: "var(--wedo-green-light)" }
+      return { bg: "var(--lia-bg-secondary)", text: "var(--status-success)", iconBg: "var(--wedo-green-light)" }
     case "years_experience":
-      return { bg: "var(--gray-50)", text: "var(--status-warning)", iconBg: "var(--wedo-orange)" }
+      return { bg: "var(--lia-bg-secondary)", text: "var(--status-warning)", iconBg: "var(--wedo-orange)" }
     case "industry":
-      return { bg: "var(--gray-50)", text: "var(--gray-600)", iconBg: "var(--gray-600)" }
+      return { bg: "var(--lia-bg-secondary)", text: "var(--lia-text-secondary)", iconBg: "var(--lia-text-secondary)" }
     default:
-      return { bg: "var(--gray-50)", text: "var(--gray-600)", iconBg: "var(--gray-600)" }
+      return { bg: "var(--lia-bg-secondary)", text: "var(--lia-text-secondary)", iconBg: "var(--lia-text-secondary)" }
   }
 }
 

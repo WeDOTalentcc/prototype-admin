@@ -93,7 +93,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div 
@@ -339,7 +339,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
           <Button
             onClick={onClose}
             size="sm"
-            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             Fechar
           </Button>

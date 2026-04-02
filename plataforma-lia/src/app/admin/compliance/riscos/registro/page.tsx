@@ -157,14 +157,14 @@ const getStatusConfig = (status: string) => {
     case 'closed':
       return { icon: CheckCircle2, color: 'text-status-success', bg: 'bg-status-success/15', label: 'Fechado' }
     default:
-      return { icon: Clock, color: 'lia-text-600', bg: 'bg-gray-100', label: status }
+      return { icon: Clock, color: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary', label: status }
   }
 }
 
 const getTreatmentConfig = (treatment: string) => {
   switch (treatment) {
     case 'mitigate':
-      return { icon: ShieldCheck, color: 'lia-text-600 dark:text-lia-text-tertiary', bg: 'bg-gray-50 dark:bg-lia-bg-secondary/50', label: 'Mitigar' }
+      return { icon: ShieldCheck, color: 'lia-text-600 dark:text-lia-text-tertiary', bg: 'bg-lia-bg-secondary dark:bg-lia-bg-secondary/50', label: 'Mitigar' }
     case 'accept':
       return { icon: CheckCircle2, color: 'text-status-success', bg: 'bg-status-success/10', label: 'Aceitar' }
     case 'transfer':
@@ -172,7 +172,7 @@ const getTreatmentConfig = (treatment: string) => {
     case 'avoid':
       return { icon: XCircle, color: 'text-status-error', bg: 'bg-status-error/10', label: 'Evitar' }
     default:
-      return { icon: Clock, color: 'lia-text-600', bg: 'bg-gray-50', label: treatment }
+      return { icon: Clock, color: 'text-lia-text-secondary', bg: 'bg-lia-bg-secondary', label: treatment }
   }
 }
 
@@ -204,10 +204,10 @@ const getCategoryColor = (category: string) => {
     'Operacional': 'bg-status-warning/15 text-status-warning',
     'Compliance': 'bg-wedo-purple/15 text-wedo-purple',
     'Privacidade': 'bg-wedo-purple/15 text-wedo-purple',
-    'Legal': 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary',
-    'Financeiro': 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50',
+    'Legal': 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary',
+    'Financeiro': 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary',
   }
-  return colors[category] || 'bg-gray-100 lia-text-800 dark:text-lia-text-primary'
+  return colors[category] || 'bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary'
 }
 
 export default function RiskRegisterPage() {
@@ -234,18 +234,18 @@ export default function RiskRegisterPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
             >
-              <FileWarning className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <FileWarning className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+                className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
                 
               >
                 Risk Register (ISMS)
               </h1>
-              <p className="text-sm lia-text-400 dark:lia-text-500" >
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                 Registro de riscos do Sistema de Gestão de Segurança da Informação
               </p>
             </div>
@@ -264,7 +264,7 @@ export default function RiskRegisterPage() {
                 <p className="font-medium text-sm text-status-error">
                   Gap de Compliance - ISO 27001
                 </p>
-                <p className="text-sm mt-1 lia-text-500 dark:text-lia-text-tertiary" >
+                <p className="text-sm mt-1 text-lia-text-secondary dark:text-lia-text-tertiary" >
                   O registro de riscos é um requisito crítico da norma ISO 27001. Mantenha este registro 
                   atualizado com avaliações periódicas de probabilidade e impacto para garantir conformidade 
                   com o Sistema de Gestão de Segurança da Informação (SGSI).
@@ -278,12 +278,12 @@ export default function RiskRegisterPage() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <FileWarning className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <FileWarning className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{risks.length}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Total de Riscos</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{risks.length}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Total de Riscos</p>
                 </div>
               </div>
             </CardContent>
@@ -296,8 +296,8 @@ export default function RiskRegisterPage() {
                   <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{criticalCount}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Riscos Críticos</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{criticalCount}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Riscos Críticos</p>
                 </div>
               </div>
             </CardContent>
@@ -310,8 +310,8 @@ export default function RiskRegisterPage() {
                   <Clock className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{inTreatmentCount}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Em Tratamento</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{inTreatmentCount}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Em Tratamento</p>
                 </div>
               </div>
             </CardContent>
@@ -324,8 +324,8 @@ export default function RiskRegisterPage() {
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{closedCount}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Fechados</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{closedCount}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Fechados</p>
                 </div>
               </div>
             </CardContent>
@@ -335,12 +335,12 @@ export default function RiskRegisterPage() {
         <Card >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
                 Registro de Riscos
               </CardTitle>
               <div className="flex items-center gap-2 flex-wrap">
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400 dark:lia-text-500"  />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary"  />
                   <Input
                     placeholder="Buscar riscos..."
                     value={searchTerm}
@@ -409,7 +409,7 @@ export default function RiskRegisterPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm lia-text-800 dark:text-lia-text-primary" >
+                          <span className="text-sm text-lia-text-primary dark:text-lia-text-primary" >
                             {risk.description}
                           </span>
                         </TableCell>
@@ -449,12 +449,12 @@ export default function RiskRegisterPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
+                          <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary" >
                             {risk.owner}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1 text-sm lia-text-400 dark:lia-text-500" >
+                          <div className="flex items-center gap-1 text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                             <Calendar className="w-3 h-3" />
                             {new Date(risk.identifiedDate).toLocaleDateString('pt-BR')}
                           </div>

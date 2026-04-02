@@ -235,7 +235,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center p-4">
       <div className="bg-lia-bg-primary rounded-md p-8 max-w-md w-full text-center">
         <h2 className="text-2xl font-bold text-lia-text-primary mb-4">
           Acesso Restrito
@@ -246,13 +246,13 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
         <div className="space-y-3">
           <button
             onClick={() => window.location.href = '/login'}
-            className="w-full text-white px-6 py-2 rounded-md hover:opacity-90 transition-colors motion-reduce:transition-none bg-gray-900"
+            className="w-full text-white px-6 py-2 rounded-md hover:opacity-90 transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg"
           >
             Fazer Login
           </button>
           <button
             onClick={() => window.location.href = '/demo-onboarding'}
-            className="w-full bg-gray-700 text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+            className="w-full bg-lia-bg-inverse text-white px-6 py-2 rounded-md hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
            
           >
             🚀 Demonstração do Onboarding
@@ -324,7 +324,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
             </ul>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-              <div className="flex items-center gap-3 bg-gray-50 rounded-md p-4">
+              <div className="flex items-center gap-3 bg-lia-bg-secondary rounded-md p-4">
                 <Clock className="w-5 h-5 text-lia-text-secondary" />
                 <div>
                   <p className="lia-text-bold text-sm">Tempo estimado</p>
@@ -332,7 +332,7 @@ function SetupIntroModal({ onStartSetup, onSkip }: { onStartSetup: () => void, o
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 bg-gray-50 rounded-md p-4">
+              <div className="flex items-center gap-3 bg-lia-bg-secondary rounded-md p-4">
                 <Lightbulb className="w-5 h-5 text-lia-text-secondary" />
                 <div>
                   <p className="lia-text-bold text-sm">Pode continuar depois</p>

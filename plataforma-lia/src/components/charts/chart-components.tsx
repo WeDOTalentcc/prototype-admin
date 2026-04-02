@@ -11,7 +11,7 @@ interface ChartContainerProps {
 
 export function ChartContainer({ title, description, children, className = "" }: ChartContainerProps) {
   return (
-    <div className={`bg-white dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-6 transition-colors motion-reduce:transition-none duration-200 ${className}`}>
+    <div className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle p-6 transition-colors motion-reduce:transition-none duration-200 ${className}`}>
       <div className="mb-4">
         <h3 className="text-sm font-semibold font-sans text-lia-text-primary">{title}</h3>
         {description && (
@@ -39,10 +39,10 @@ export function BarChart({ data, maxValue }: BarChartProps) {
           <div className="w-20 text-xs text-lia-text-secondary font-medium">
             {item.label}
           </div>
-          <div className="flex-1 bg-gray-100 dark:bg-lia-bg-elevated rounded-full h-2">
+          <div className="flex-1 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-[width,height] duration-500 ${
- item.color || 'bg-gray-400'
+ item.color || 'bg-lia-border-medium'
               }`}
               style={{width: `${(item.value / max) * 100}%`}}
             />
@@ -75,9 +75,9 @@ export function DonutChart({ data, centerText }: DonutChartProps) {
             cy="18"
             r="15.5"
             fill="transparent"
-            stroke="var(--gray-200)"
+            stroke="var(--lia-border-subtle)"
             strokeWidth="3"
-            className="dark:stroke-gray-600"
+            className="dark:stroke-lia-border-medium"
           />
           {data.map((item, index) => {
             const strokeDasharray = `${(item.value / total) * 97.4} 97.4`
@@ -136,7 +136,7 @@ interface LineChartProps {
   color?: string
 }
 
-export function LineChart({ data, color = "var(--gray-500)" }: LineChartProps) {
+export function LineChart({ data, color = "var(--lia-text-secondary)" }: LineChartProps) {
   const maxValue = Math.max(...data.map(d => d.value))
   const minValue = Math.min(...data.map(d => d.value))
   const range = maxValue - minValue || 1

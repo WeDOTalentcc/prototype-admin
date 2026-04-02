@@ -156,7 +156,7 @@ export function CandidatePage({
   const education = _candidate.education || additionalData?.education || []
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-lia-bg-primary z-30 overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-lia-bg-primary dark:bg-lia-bg-primary z-30 overflow-hidden flex flex-col">
       {/* Header Compacto como no Preview */}
       <CandidatePageHeader
         _candidate={_candidate}
@@ -177,7 +177,7 @@ export function CandidatePage({
       />
 
       {/* Tabs exatamente como no preview */}
-      <div className="bg-white dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-6">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-6">
         <div className="flex">
           {tabs.map(tab => (
             <button
@@ -185,7 +185,7 @@ export function CandidatePage({
               onClick={() => setActiveTab(tab.id as 'activities' | 'profile' | 'files' | 'opinions')}
               className={`flex items-center gap-2 px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
-                  ? 'border-b-2 lia-text-secondary border-gray-400'
+                  ? 'border-b-2 lia-text-secondary border-lia-border-medium'
                   : 'text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
               }`}
             >
@@ -202,7 +202,7 @@ export function CandidatePage({
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto bg-white dark:bg-lia-bg-primary">
+      <div className="flex-1 overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary">
         <div className="max-w-7xl mx-auto p-6">
           {activeTab === 'profile' && (
             <CandidatePageProfileTab
@@ -281,7 +281,7 @@ export function CandidatePage({
       {/* Modal de Vídeo */}
       {showVideoModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-lia-bg-secondary rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden">
             <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle flex items-center justify-between">
               <h3 className="text-sm font-semibold">{showVideoModal.title as string}</h3>
               <Button variant="ghost" size="sm" onClick={() => setShowVideoModal(null)} className="h-7 w-7 p-0">
@@ -290,7 +290,7 @@ export function CandidatePage({
             </div>
 
             <div className="p-4">
-              <div className="aspect-video bg-gray-900 rounded-md flex items-center justify-center">
+              <div className="aspect-video bg-lia-btn-primary-bg rounded-md flex items-center justify-center">
                 <Play className="w-16 h-16 text-white opacity-50" />
               </div>
             </div>
@@ -301,7 +301,7 @@ export function CandidatePage({
       {/* LIA Modal exatamente como no preview */}
       {showLiaModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-lia-bg-secondary rounded-md max-w-2xl w-full">
+          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md max-w-2xl w-full">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -326,7 +326,7 @@ export function CandidatePage({
                     setShowLiaModal(false)
                     setLiaCommand('')
                   }}
-                  className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-xs h-8"
+                  className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active text-xs h-8"
                   disabled={!liaCommand.trim()}
                 >
                   <Brain className="w-3.5 h-3.5 mr-1 text-wedo-cyan" />

@@ -143,8 +143,8 @@ export function CompanyHQLocationsInput({
               className={cn(
                 "flex items-center gap-2 px-2.5 py-1 rounded-md border text-xs transition-colors",
                 disabled 
-                  ? "border-lia-border-subtle bg-gray-100 text-lia-text-tertiary cursor-not-allowed" 
-                  : "border-lia-border-subtle hover:bg-gray-50 text-lia-text-primary"
+                  ? "border-lia-border-subtle bg-lia-bg-tertiary text-lia-text-tertiary cursor-not-allowed" 
+                  : "border-lia-border-subtle hover:bg-lia-bg-secondary text-lia-text-primary"
               )}
               disabled={disabled}
             >
@@ -162,14 +162,14 @@ export function CompanyHQLocationsInput({
                     setIsTimeFilterOpen(false)
                   }}
                   className={cn(
-                    "w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors motion-reduce:transition-none",
-                    timeFilter === option.value && "bg-gray-50"
+                    "w-full text-left px-3 py-2 hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none",
+                    timeFilter === option.value && "bg-lia-bg-secondary"
                   )}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-lia-text-primary">{option.label}</span>
                     {timeFilter === option.value && (
-                      <div className="w-2 h-2 rounded-full bg-gray-900" />
+                      <div className="w-2 h-2 rounded-full bg-lia-btn-primary-bg" />
                     )}
                   </div>
                   <p className="text-xs text-lia-text-secondary mt-0.5">{option.description}</p>
@@ -210,8 +210,8 @@ export function CompanyHQLocationsInput({
             placeholder={placeholder}
             disabled={disabled}
             className={cn(
-              "pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400",
-              disabled && "bg-gray-100 cursor-not-allowed"
+              "pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium",
+              disabled && "bg-lia-bg-tertiary cursor-not-allowed"
             )}
           />
         </div>
@@ -223,7 +223,7 @@ export function CompanyHQLocationsInput({
           >
             {filteredCities.length > 0 && (
               <>
-                <div className="px-3 py-1.5 text-xs font-semibold text-wedo-purple uppercase tracking-wide bg-gray-50 border-b border-lia-border-subtle">
+                <div className="px-3 py-1.5 text-xs font-semibold text-wedo-purple uppercase tracking-wide bg-lia-bg-secondary border-b border-lia-border-subtle">
                   Cities
                 </div>
                 {filteredCities.map((location, index) => (
@@ -232,7 +232,7 @@ export function CompanyHQLocationsInput({
                     onClick={() => addLocation(location.name)}
                     className={cn(
                       "w-full text-left px-3 py-2 text-sm transition-colors",
-                      focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50"
+                      focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
                     )}
                   >
                     <span className="text-lia-text-primary">{location.name}</span>
@@ -243,7 +243,7 @@ export function CompanyHQLocationsInput({
             
             {filteredRegions.length > 0 && (
               <>
-                <div className="px-3 py-1.5 text-xs font-semibold text-wedo-purple uppercase tracking-wide bg-gray-50 border-b border-lia-border-subtle border-t">
+                <div className="px-3 py-1.5 text-xs font-semibold text-wedo-purple uppercase tracking-wide bg-lia-bg-secondary border-b border-lia-border-subtle border-t">
                   Regions
                 </div>
                 {filteredRegions.map((location, index) => (
@@ -252,7 +252,7 @@ export function CompanyHQLocationsInput({
                     onClick={() => addLocation(location.name)}
                     className={cn(
                       "w-full text-left px-3 py-2 text-sm transition-colors",
-                      focusedIndex === (filteredCities.length + index) ? "bg-gray-100" : "hover:bg-gray-50"
+                      focusedIndex === (filteredCities.length + index) ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
                     )}
                   >
                     <span className="text-lia-text-primary">{location.name}</span>
@@ -269,12 +269,12 @@ export function CompanyHQLocationsInput({
           {value.map(location => (
             <Badge
               key={location}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
             >
               <span>{location}</span>
               <button
                 onClick={() => removeLocation(location)}
-                className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
+                className="hover:bg-lia-interactive-active rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                 title="Remove"
               >
                 <X className="w-3 h-3" />

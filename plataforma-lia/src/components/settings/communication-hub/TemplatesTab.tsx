@@ -103,8 +103,8 @@ export function TemplatesTab({
                 onClick={() => handleChannelFilterChange(key)}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors motion-reduce:transition-none ${
                   channelFilter === key
-                    ? 'bg-gray-900 text-white'
-                    : 'bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated'
+                    ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
+                    : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated'
                 }`}
               >
                 {Icon && <Icon className="w-3.5 h-3.5" />}
@@ -117,7 +117,7 @@ export function TemplatesTab({
             <select
               value={triggerTypeFilter}
               onChange={(e) => setTriggerTypeFilter(e.target.value as 'all' | 'automatic' | 'manual' | 'both')}
-              className="px-2.5 py-1.5 rounded-full text-xs font-medium border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+              className="px-2.5 py-1.5 rounded-full text-xs font-medium border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
             >
               <option value="all">Todos Tipos</option>
               <option value="automatic">Automático</option>
@@ -136,15 +136,15 @@ export function TemplatesTab({
       {loading ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           <div className="space-y-3">
-            <div className="h-5 w-32 rounded-md animate-pulse motion-reduce:animate-none bg-gray-200 dark:bg-lia-bg-elevated"></div>
+            <div className="h-5 w-32 rounded-md animate-pulse motion-reduce:animate-none bg-lia-interactive-active dark:bg-lia-bg-elevated"></div>
             {[1, 2, 3].map((i) => (
               <Card key={i} className="rounded-md animate-pulse motion-reduce:animate-none backdrop-blur-sm">
                 <CardContent className="p-3">
                   <div className="flex items-start gap-2">
-                    <div className="w-8 h-8 rounded-md bg-gray-200 dark:bg-lia-bg-elevated"></div>
+                    <div className="w-8 h-8 rounded-md bg-lia-interactive-active dark:bg-lia-bg-elevated"></div>
                     <div className="flex-1">
-                      <div className="h-4 w-32 rounded-md mb-2 bg-gray-200 dark:bg-lia-bg-elevated"></div>
-                      <div className="h-3 w-24 rounded-md bg-gray-200 dark:bg-lia-bg-elevated"></div>
+                      <div className="h-4 w-32 rounded-md mb-2 bg-lia-interactive-active dark:bg-lia-bg-elevated"></div>
+                      <div className="h-3 w-24 rounded-md bg-lia-interactive-active dark:bg-lia-bg-elevated"></div>
                     </div>
                   </div>
                 </CardContent>
@@ -153,8 +153,8 @@ export function TemplatesTab({
           </div>
           <Card className="border-dashed border-2 border-lia-border-subtle dark:border-lia-border-subtle rounded-md h-64 flex items-center justify-center animate-pulse motion-reduce:animate-none backdrop-blur-sm">
             <CardContent className="text-center">
-              <div className="w-10 h-10 rounded-full mx-auto mb-3 bg-gray-200 dark:bg-lia-bg-elevated"></div>
-              <div className="h-4 w-40 rounded-md mx-auto bg-gray-200 dark:bg-lia-bg-elevated"></div>
+              <div className="w-10 h-10 rounded-full mx-auto mb-3 bg-lia-interactive-active dark:bg-lia-bg-elevated"></div>
+              <div className="h-4 w-40 rounded-md mx-auto bg-lia-interactive-active dark:bg-lia-bg-elevated"></div>
             </CardContent>
           </Card>
         </div>
@@ -164,7 +164,7 @@ export function TemplatesTab({
             {filteredTemplates.length === 0 ? (
               <Card className="border border-dashed border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <CardContent className="p-4 text-center">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-gray-100 dark:bg-lia-bg-secondary">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <Search className="w-4 h-4 text-lia-text-secondary" />
                   </div>
                   <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">Nenhum template encontrado</p>
@@ -178,7 +178,7 @@ export function TemplatesTab({
                   if (groupTemplates.length === 0) return null
                   return (
                     <AccordionItem key={groupKey} value={groupKey} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
-                      <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                      <AccordionTrigger className="px-3 py-2.5 hover:no-underline hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50">
                         <div className="flex items-center gap-2 text-left">
                           <span className="text-lg">{group.icon}</span>
                           <span className="text-xs font-semibold text-lia-text-primary">{group.label}</span>
@@ -192,7 +192,7 @@ export function TemplatesTab({
                               key={template.id}
                               className={`border cursor-pointer transition-colors motion-reduce:transition-none rounded-md backdrop-blur-sm ${
                                 selectedTemplate?.id === template.id
-                                  ? 'border-gray-900 dark:lia-border-50'
+                                  ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle'
                                   : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default hover:'
                               }`}
                               onClick={() => setSelectedTemplate(template)}
@@ -200,7 +200,7 @@ export function TemplatesTab({
                               <CardContent className="p-2.5">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <div className={`w-7 h-7 rounded-md ${categoryLabels[template.category]?.color || 'bg-gray-50 text-lia-text-secondary'} flex items-center justify-center flex-shrink-0`}>
+                                    <div className={`w-7 h-7 rounded-md ${categoryLabels[template.category]?.color || 'bg-lia-bg-secondary text-lia-text-secondary'} flex items-center justify-center flex-shrink-0`}>
                                       {template.channel === 'whatsapp' ? <MessageSquare className="w-3.5 h-3.5" /> :
                                        template.channel === 'teams' ? <MessageSquare className="w-3.5 h-3.5" /> :
                                        template.channel === 'bell' ? <Bell className="w-3.5 h-3.5" /> :
@@ -228,7 +228,7 @@ export function TemplatesTab({
                                       </div>
                                     </div>
                                   </div>
-                                  <Badge variant={template.isActive ? "default" : "outline"} className="text-micro flex-shrink-0 bg-gray-900 text-white">
+                                  <Badge variant={template.isActive ? "default" : "outline"} className="text-micro flex-shrink-0 bg-lia-btn-primary-bg text-lia-btn-primary-text">
                                     {template.isActive ? 'Ativo' : 'Inativo'}
                                   </Badge>
                                 </div>
@@ -255,7 +255,7 @@ export function TemplatesTab({
                         <Button variant="ghost" size="sm" onClick={() => setEditingTemplate(null)}>
                           <X className="w-3.5 h-3.5" />
                         </Button>
-                        <Button size="sm" className="py-1.5 px-2 text-xs bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200" onClick={handleSaveTemplate}>
+                        <Button size="sm" className="py-1.5 px-2 text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active" onClick={handleSaveTemplate}>
                           <Save className="w-3.5 h-3.5 mr-1" />
                           Salvar
                         </Button>
@@ -264,7 +264,7 @@ export function TemplatesTab({
                       <Button
                         variant="outline" size="sm"
                         onClick={() => setEditingTemplate({ ...selectedTemplate })}
-                        className="rounded-full py-1.5 px-2 text-xs border-gray-900 text-lia-text-primary hover:bg-gray-50 dark:lia-border-50 dark:hover:bg-gray-900"
+                        className="rounded-full py-1.5 px-2 text-xs border-lia-btn-primary-bg text-lia-text-primary hover:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-btn-primary-bg"
                       >
                         <Edit className="w-3.5 h-3.5 mr-1" />
                         Editar
@@ -273,7 +273,7 @@ export function TemplatesTab({
                   </div>
                 </div>
 
-                <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+                <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
                   <CardContent className="p-3 space-y-3">
                     {channelFilter === 'email' && (
                       <div>
@@ -283,10 +283,10 @@ export function TemplatesTab({
                             type="text"
                             value={editingTemplate.subject}
                             onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, subject: e.target.value } : null)}
-                            className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none"
+                            className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none"
                           />
                         ) : (
-                          <p className="text-xs text-lia-text-primary bg-gray-50 rounded-full px-2 py-1.5">{selectedTemplate.subject}</p>
+                          <p className="text-xs text-lia-text-primary bg-lia-bg-secondary rounded-full px-2 py-1.5">{selectedTemplate.subject}</p>
                         )}
                       </div>
                     )}
@@ -305,7 +305,7 @@ export function TemplatesTab({
                           value={editingTemplate.body}
                           onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, body: e.target.value } : null)}
                           rows={10}
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none font-mono"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary focus:ring-2 focus:outline-none font-mono"
                         />
                       ) : channelFilter === 'whatsapp' ? (
                         <div className="rounded-md p-3 bg-whatsapp-bg">
@@ -321,7 +321,7 @@ export function TemplatesTab({
                           </div>
                         </div>
                       ) : (
-                        <div className="text-xs text-lia-text-primary bg-gray-50 rounded-md px-3 py-2.5 whitespace-pre-wrap max-h-content-md overflow-y-auto">
+                        <div className="text-xs text-lia-text-primary bg-lia-bg-secondary rounded-md px-3 py-2.5 whitespace-pre-wrap max-h-content-md overflow-y-auto">
                           {stripHtmlTags(selectedTemplate.body)}
                         </div>
                       )}
@@ -340,10 +340,10 @@ export function TemplatesTab({
                 </Card>
 
                 {editingTemplate && (
-                  <Card className="rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
+                  <Card className="rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+                        <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                           <Brain className="w-4 h-4 text-wedo-cyan" />
                         </div>
                         <div>
@@ -359,12 +359,12 @@ export function TemplatesTab({
                           onKeyDown={(e) => e.key === 'Enter' && !isGenerating && aiPrompt.trim() && handleAdjustWithAI()}
                           placeholder="Ex: Torne mais formal e adicione agradecimento..."
                           disabled={isGenerating}
-                          className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 focus:outline-none disabled:bg-gray-50 disabled:text-lia-text-tertiary dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:focus:ring-gray-50/10 dark:focus:border-gray-50"
+                          className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg focus:outline-none disabled:bg-lia-bg-secondary disabled:text-lia-text-tertiary dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle"
                         />
                         <Button
                           onClick={handleAdjustWithAI}
                           disabled={isGenerating || !aiPrompt.trim()}
-                          className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px] bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-400 dark:hover:bg-gray-200 dark:disabled:bg-gray-600"
+                          className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover disabled:bg-lia-border-medium dark:hover:bg-lia-interactive-active dark:disabled:bg-lia-border-medium"
                         >
                           {isGenerating ? (
                             <><Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />Ajustando...</>
@@ -374,9 +374,9 @@ export function TemplatesTab({
                         </Button>
                       </div>
                       {isGenerating && (
-                        <div className="flex items-center gap-2 p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                        <div className="flex items-center gap-2 p-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                           <div className="flex gap-1">
-                            <ThinkingDots dotClassName="bg-gray-900" size="md" />
+                            <ThinkingDots dotClassName="bg-lia-btn-primary-bg" size="md" />
                           </div>
                           <span className="text-xs text-lia-text-primary">A LIA está analisando e ajustando o template...</span>
                         </div>
@@ -386,12 +386,12 @@ export function TemplatesTab({
                 )}
 
                 {aiResultModal?.show && (
-                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
                     <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-md bg-lia-bg-primary">
                       <CardHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+                            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                               <Brain className="w-5 h-5 text-wedo-cyan" />
                             </div>
                             <div>
@@ -421,12 +421,12 @@ export function TemplatesTab({
                         {aiResultModal.newSubject && (
                           <div>
                             <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">Novo Assunto</label>
-                            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary">{aiResultModal.newSubject}</div>
+                            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary">{aiResultModal.newSubject}</div>
                           </div>
                         )}
                         <div>
                           <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">Novo Conteúdo</label>
-                          <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto font-mono">
+                          <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto font-mono">
                             {aiResultModal.newBody}
                           </div>
                         </div>
@@ -441,7 +441,7 @@ export function TemplatesTab({
                       </CardContent>
                       <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 flex items-center justify-end gap-3">
                         <Button variant="outline" onClick={handleCancelAIAdjustment} className="rounded-md px-4 py-2 text-xs">Cancelar</Button>
-                        <Button onClick={handleConfirmAIAdjustment} className="rounded-md px-4 py-2 text-xs gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200">
+                        <Button onClick={handleConfirmAIAdjustment} className="rounded-md px-4 py-2 text-xs gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active">
                           <Check className="w-3.5 h-3.5" />
                           Aplicar Ajustes
                         </Button>

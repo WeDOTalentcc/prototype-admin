@@ -77,25 +77,25 @@ export function ActivityFilters({
       <div className="flex gap-1 flex-wrap">
         <button
           onClick={() => onActivityFilterChange('all')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'all' ? 'bg-lia-btn-primary-bg text-white' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'all' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           Todas
         </button>
         <button
           onClick={() => onActivityFilterChange('emails')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'emails' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'emails' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           📧 Emails
         </button>
         <button
           onClick={() => onActivityFilterChange('interviews')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'interviews' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'interviews' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           🎤 Entrevistas
         </button>
         <button
           onClick={() => onActivityFilterChange('tests')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'tests' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'tests' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           📝 Testes
         </button>
@@ -109,19 +109,19 @@ export function ActivityFilters({
         </button>
         <button
           onClick={() => onActivityFilterChange('offers')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'offers' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'offers' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           💼 Ofertas
         </button>
         <button
           onClick={() => onActivityFilterChange('applications')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'applications' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'applications' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text font-semibold' : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active'}`}
         >
           📋 Inscrições
         </button>
         <button
           onClick={() => onActivityFilterChange('evaluations')}
-          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'evaluations' ? 'bg-lia-btn-primary-bg text-white font-semibold' : 'text-lia-text-secondary hover:dark:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-bg'}`}
+          className={`px-2 py-1 text-xs rounded-full transition-colors motion-reduce:transition-none ${activityFilter === 'evaluations' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text font-semibold' : 'text-lia-text-secondary hover:dark:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-bg'}`}
         >
           🎯 Avaliações
         </button>

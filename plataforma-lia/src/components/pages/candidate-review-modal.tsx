@@ -220,9 +220,9 @@ const EditCriteriaPopup: React.FC<{
 
   return (
     <div className="fixed inset-0 z-overlay flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-lia-overlay" onClick={onClose} />
       <div 
-        className="relative bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-lg p-6 z-10"
+        className="relative bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md w-full max-w-lg p-6 z-10"
        
       >
         <div className="flex items-center justify-between mb-4">
@@ -231,7 +231,7 @@ const EditCriteriaPopup: React.FC<{
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+            className="p-1 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
           >
             <X className="w-5 h-5 text-lia-text-secondary" />
           </button>
@@ -245,8 +245,8 @@ const EditCriteriaPopup: React.FC<{
               onDragStart={() => handleDragStart(index)}
               onDragOver={(e) => handleDragOver(e, index)}
               onDragEnd={handleDragEnd}
-              className={`flex items-center gap-3 p-3 bg-gray-50 rounded-md border transition-colors motion-reduce:transition-none ${
-                draggedIndex === index ? 'border-gray-900 dark:border-lia-border-medium bg-gray-50 dark:bg-lia-bg-secondary/50' : 'border-lia-border-subtle'
+              className={`flex items-center gap-3 p-3 bg-lia-bg-secondary rounded-md border transition-colors motion-reduce:transition-none ${
+                draggedIndex === index ? 'border-lia-btn-primary-bg dark:border-lia-border-medium bg-lia-bg-secondary dark:bg-lia-bg-secondary/50' : 'border-lia-border-subtle'
               }`}
             >
               <span className="text-sm font-medium text-lia-text-secondary w-6">{index + 1}</span>
@@ -294,7 +294,7 @@ const EditCriteriaPopup: React.FC<{
                   <button
                     key={preset.id}
                     onClick={() => handleSelectPreset(preset)}
-                    className="w-full px-3 py-2 text-left text-sm text-lia-text-primary hover:bg-gray-50 flex items-center justify-between"
+                    className="w-full px-3 py-2 text-left text-sm text-lia-text-primary hover:bg-lia-bg-secondary flex items-center justify-between"
                   >
                     <span>{preset.name}</span>
                     <span className="text-xs text-lia-text-secondary">{preset.criteria.length} criteria</span>
@@ -311,7 +311,7 @@ const EditCriteriaPopup: React.FC<{
                   value={presetName}
                   onChange={(e) => setPresetName(e.target.value)}
                   placeholder="Preset name..."
-                  className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 mb-2 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                  className="w-full px-3 py-2 text-sm border border-lia-border-subtle dark:border-lia-border-subtle rounded-md focus:outline-none focus:border-lia-border-medium dark:focus:border-lia-border-medium mb-2 bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                 />
                 <div className="flex gap-2">
                   <Button
@@ -326,7 +326,7 @@ const EditCriteriaPopup: React.FC<{
                     size="sm"
                     onClick={handleSavePreset}
                     disabled={!presetName.trim()}
-                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
+                    className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
                   >
                     Save
                   </Button>
@@ -345,7 +345,7 @@ const EditCriteriaPopup: React.FC<{
             </Button>
             <Button
               onClick={handleUpdate}
-              className="text-sm bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
+              className="text-sm bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
             >
               Update
               <ChevronRight className="w-4 h-4 ml-1" />
@@ -412,14 +412,14 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
   return (
     <>
       <div className="fixed inset-0 z-50 flex">
-        <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+        <div className="absolute inset-0 bg-lia-overlay" onClick={onClose} />
         
         <div 
-          className="relative flex-1 bg-white dark:bg-lia-bg-primary m-4 rounded-md overflow-hidden flex flex-col"
+          className="relative flex-1 bg-lia-bg-primary dark:bg-lia-bg-primary m-4 rounded-md overflow-hidden flex flex-col"
          
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
             <div className="flex items-center gap-3">
               <button
                 onClick={onClose}
@@ -502,7 +502,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       onClick={() => setActiveProfileTab(tab.toLowerCase().replace(' ', '-'))}
                       className={`px-4 py-3 text-sm font-medium transition-colors motion-reduce:transition-none border-b-2 ${
                         activeProfileTab === tab.toLowerCase().replace(' ', '-')
-                          ? 'text-lia-text-primary border-gray-950 dark:border-lia-border-medium'
+                          ? 'text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-medium'
                           : 'text-lia-text-secondary border-transparent hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
                       }`}
                     >
@@ -528,7 +528,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                         {currentCandidate.highlights.slice(0, 3).map((highlight, idx) => (
                           <div
                             key={`hl-${idx}`}
-                            className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle"
+                            className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle"
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-lg">{highlight.icon}</span>
@@ -562,13 +562,13 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                     <div className="space-y-4">
                       {currentCandidate.experiences.map((exp) => (
                         <div key={exp.id} className="relative pl-6 pb-4 border-l-2 border-lia-border-subtle last:border-l-transparent">
-                          <div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-gray-400" />
+                          <div className="absolute left-[-5px] top-0 w-2 h-2 rounded-full bg-lia-border-medium" />
                           
                           <div className="flex items-start gap-3">
                             {exp.companyLogo ? (
                               <NextImage src={exp.companyLogo} alt={exp.company} width={40} height={40} className="w-10 h-10 rounded-md" />
                             ) : (
-                              <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center">
+                              <div className="w-10 h-10 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
                                 <Building2 className="w-5 h-5 text-lia-text-secondary" />
                               </div>
                             )}
@@ -615,7 +615,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                 {activeProfileTab === 'education' && (
                   <div className="space-y-4">
                     {currentCandidate.education_list?.map((edu, idx) => (
-                      <div key={`edu-${idx}`} className="p-4 bg-gray-50 rounded-md">
+                      <div key={`edu-${idx}`} className="p-4 bg-lia-bg-secondary rounded-md">
                         <h5 className="text-sm font-semibold text-lia-text-primary">{edu.institution}</h5>
                         <p className="text-sm text-lia-text-secondary">{edu.degree}</p>
                         <p className="text-xs text-lia-text-secondary mt-1">{edu.period}</p>
@@ -658,8 +658,8 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
             </div>
 
             {/* CENTER COLUMN - Why We Matched */}
-            <div className="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-lia-bg-secondary">
-              <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
+            <div className="flex-1 flex flex-col overflow-hidden bg-lia-bg-secondary dark:bg-lia-bg-secondary">
+              <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-lia-text-primary">
                     Why we matched this profile
@@ -697,8 +697,8 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                                 key={`dot-${idx}`}
                                 className={`w-2 h-2 rounded-full ${
                                   idx < reason.scores!.current
-                                    ? 'bg-gray-900 dark:bg-lia-btn-primary-bg'
-                                    : 'bg-gray-200'
+                                    ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg'
+                                    : 'bg-lia-interactive-active'
                                 }`}
                               />
                             ))}
@@ -720,14 +720,14 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
             </div>
 
             {/* RIGHT COLUMN - Navigation & Actions */}
-            <div className="w-[220px] border-l border-lia-border-subtle dark:border-lia-border-subtle flex flex-col bg-white dark:bg-lia-bg-primary">
+            <div className="w-[220px] border-l border-lia-border-subtle dark:border-lia-border-subtle flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary">
               {/* Profile Navigation */}
               <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex items-center justify-between">
                   <button
                     onClick={() => onIndexChange(Math.max(0, currentIndex - 1))}
                     disabled={currentIndex === 0}
-                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="w-5 h-5 text-lia-text-secondary" />
                   </button>
@@ -737,7 +737,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   <button
                     onClick={() => onIndexChange(Math.min(candidates.length - 1, currentIndex + 1))}
                     disabled={currentIndex === candidates.length - 1}
-                    className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronRight className="w-5 h-5 text-lia-text-secondary" />
                   </button>
@@ -780,7 +780,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
               </div>
 
               {/* Tips Section */}
-              <div className="mt-auto p-4 bg-gray-50 dark:bg-lia-bg-secondary border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="mt-auto p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <p className="text-xs text-lia-text-secondary leading-relaxed">
  You can <button className="hover:underline">pin criteria</button> if it is a mandatory requirement or <button className="text-lia-text-secondary hover:underline">re-order</button> by importance using{' '}
                   <button 

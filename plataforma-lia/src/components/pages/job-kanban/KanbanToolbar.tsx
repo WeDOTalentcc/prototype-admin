@@ -123,7 +123,7 @@ export function KanbanToolbar({
   const allSelected = selectedCandidates.size === visibleCandidates.length && visibleCandidates.length > 0
 
   return (
-    <div className="flex-shrink-0 bg-white dark:bg-lia-bg-secondary px-4 py-2">
+    <div className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-secondary px-4 py-2">
       <div className="w-full px-4 flex items-center justify-between gap-2">
         {/* Lado Esquerdo: Prompt LIA - Oculto quando prompt expandido está aberto */}
         {!showExpandedLIA && (
@@ -139,14 +139,14 @@ export function KanbanToolbar({
                   value={liaPromptValue}
                   onChange={(e) => setLiaPromptValue(e.target.value)}
                   className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-lia-text-secondary transition-colors motion-reduce:transition-none border"
-                  style={{ backgroundColor: 'var(--gray-50)', color: 'var(--gray-950)' }}
+                  style={{ backgroundColor: 'var(--lia-bg-secondary)', color: 'var(--lia-btn-primary-bg)' }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--gray-800)'
-                    e.currentTarget.style.boxShadow = '0 0 0 2px var(--gray-600-bg-12)'
+                    e.currentTarget.style.borderColor = 'var(--lia-text-primary)'
+                    e.currentTarget.style.boxShadow = '0 0 0 2px var(--lia-bg-tertiary)'
                     setShowExpandedLIA(true)
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--gray-200)'
+                    e.currentTarget.style.borderColor = 'var(--lia-border-subtle)'
                     e.currentTarget.style.boxShadow = 'none'
                   }}
                   onKeyDown={(e) => {
@@ -157,7 +157,7 @@ export function KanbanToolbar({
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                   <button
-                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-gray-100"
+                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary"
                     onClick={() => setShowExpandedLIA(true)}
                     title="Expandir chat"
                     aria-label="Expandir chat da LIA"
@@ -165,7 +165,7 @@ export function KanbanToolbar({
                     <Maximize2 className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
                   </button>
                   <button
-                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-gray-100"
+                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary"
                     onClick={() => {
                       if (liaPromptValue.trim()) {
                         handleAICommand(liaPromptValue)
@@ -197,7 +197,7 @@ export function KanbanToolbar({
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-md"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-lia-bg-tertiary rounded-md"
                 aria-label="Limpar busca"
               >
                 <X className="w-3 h-3 text-lia-text-primary" aria-hidden="true" />
@@ -206,12 +206,12 @@ export function KanbanToolbar({
           </div>
 
           {/* Botões de Alternância de Visualização */}
-          <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-md p-0.5 flex">
+          <div className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md p-0.5 flex">
             <button
               onClick={() => setViewMode("kanban")}
               className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
                 viewMode === "kanban"
-                  ? "bg-white dark:bg-lia-bg-elevated text-lia-text-primary font-bold"
+                  ? "bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary font-bold"
                   : "text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
               }`}
             >
@@ -224,7 +224,7 @@ export function KanbanToolbar({
               onClick={() => setViewMode("table")}
               className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
                 viewMode === "table"
-                  ? "bg-white dark:bg-lia-bg-elevated text-lia-text-primary font-bold"
+                  ? "bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary font-bold"
                   : "text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
               }`}
             >
@@ -238,7 +238,7 @@ export function KanbanToolbar({
           {/* Botão Selecionar Todos */}
           <button
             onClick={handleSelectAll}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
           >
             {allSelected ? (
               <>
@@ -264,8 +264,8 @@ export function KanbanToolbar({
             }}
             className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
               (viewMode === "kanban" ? showKanbanFiltersPanel : showTableFiltersPanel)
-                ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200'
-                : 'text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
+                ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active'
+                : 'text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse'
             }`}
           >
             <Target className="w-4 h-4" />
@@ -278,8 +278,8 @@ export function KanbanToolbar({
               title="Configurar colunas da tabela"
               className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
                 showColumnConfig
-                  ? 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200'
-                  : 'text-lia-text-primary bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active'
+                  : 'text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse'
               }`}
             >
               <ChevronsLeftRight className="w-4 h-4" />

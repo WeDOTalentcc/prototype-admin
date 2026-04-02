@@ -536,17 +536,17 @@ export default function CandidatePortalPage() {
     }
   }
 
-  const primaryColor = portalData?.branding.primary_color || "var(--gray-950)"
-  const primaryBgColor = primaryColor.startsWith('#') ? `${primaryColor}20` : 'var(--gray-bg-12)'
+  const primaryColor = portalData?.branding.primary_color || "var(--lia-btn-primary-bg)"
+  const primaryBgColor = primaryColor.startsWith('#') ? `${primaryColor}20` : 'var(--lia-bg-secondary)'
 
 
 
   if (step === "loading") {
     return (
-      <div className="min-h-screen bg-white dark:lia-bg-900 flex items-center justify-center p-4" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-btn-primary-bg flex items-center justify-center p-4" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-12 h-12 animate-spin motion-reduce:animate-none lia-text-400 dark:lia-text-500 mx-auto mb-4" />
-          <p className="lia-text-500 dark:lia-text-400">Carregando...</p>
+          <Loader2 className="w-12 h-12 animate-spin motion-reduce:animate-none text-lia-text-tertiary dark:text-lia-text-secondary mx-auto mb-4" />
+          <p className="text-lia-text-secondary dark:text-lia-text-tertiary">Carregando...</p>
         </div>
       </div>
     )
@@ -554,12 +554,12 @@ export default function CandidatePortalPage() {
 
   if (step === "error") {
     return (
-      <div className="min-h-screen bg-white dark:lia-bg-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-btn-primary-bg flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 text-status-error mx-auto mb-4" />
-            <h1 className="text-xl font-semibold lia-text-900 dark:lia-text-100 mb-2">Ops!</h1>
-            <p className="lia-text-600 dark:lia-text-300">{errorMessage}</p>
+            <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-disabled mb-2">Ops!</h1>
+            <p className="text-lia-text-secondary dark:text-lia-text-disabled">{errorMessage}</p>
           </CardContent>
         </Card>
       </div>
@@ -568,13 +568,13 @@ export default function CandidatePortalPage() {
 
   if (step === "expired") {
     return (
-      <div className="min-h-screen bg-white dark:lia-bg-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-btn-primary-bg flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-16 h-16 text-status-warning mx-auto mb-4" />
-            <h1 className="text-xl font-semibold lia-text-900 dark:lia-text-100 mb-2">Link Expirado</h1>
-            <p className="lia-text-600 dark:lia-text-300">{errorMessage}</p>
-            <p className="text-sm lia-text-500 dark:lia-text-400 mt-4">
+            <h1 className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-disabled mb-2">Link Expirado</h1>
+            <p className="text-lia-text-secondary dark:text-lia-text-disabled">{errorMessage}</p>
+            <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mt-4">
               Entre em contato com o recrutador para solicitar um novo link.
             </p>
           </CardContent>
@@ -585,7 +585,7 @@ export default function CandidatePortalPage() {
 
   if (step === "otp") {
     return (
-      <div className="min-h-screen bg-white dark:lia-bg-900 flex flex-col">
+      <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-btn-primary-bg flex flex-col">
         {portalData?.branding.logo_url && (
           <div className="p-4 flex justify-center">
             <img
@@ -613,7 +613,7 @@ export default function CandidatePortalPage() {
             <CardContent className="space-y-6">
               {!otpSent ? (
                 <>
-                  <p className="text-sm lia-text-600 dark:lia-text-300 text-center">
+                  <p className="text-sm text-lia-text-secondary dark:text-lia-text-disabled text-center">
                     Enviaremos um código de 6 dígitos para você.
                   </p>
                   
@@ -622,14 +622,14 @@ export default function CandidatePortalPage() {
                       onClick={() => setOtpChannel("email")}
                       className={`w-full p-4 rounded-md border-2 flex items-center gap-3 transition-colors motion-reduce:transition-none ${
                         otpChannel === "email"
-                          ? "border-gray-900 dark:lia-border-500 bg-gray-50 dark:lia-bg-700"
+                          ? "border-lia-btn-primary-bg dark:border-lia-border-medium bg-lia-bg-secondary dark:bg-lia-bg-inverse"
                           : "border-lia-border-subtle hover:border-lia-border-default"
                       }`}
                     >
-                      <Mail className="w-5 h-5 lia-text-600 dark:lia-text-300" />
+                      <Mail className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-disabled" />
                       <div className="text-left">
                         <p className="text-sm font-medium">E-mail</p>
-                        <p className="text-xs lia-text-500 dark:lia-text-400">
+                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                           {portalData?.candidate_info.email_masked}
                         </p>
                       </div>
@@ -651,7 +651,7 @@ export default function CandidatePortalPage() {
                 </>
               ) : (
                 <>
-                  <p className="text-sm lia-text-600 dark:lia-text-300 text-center">
+                  <p className="text-sm text-lia-text-secondary dark:text-lia-text-disabled text-center">
                     Digite o código de 6 dígitos enviado para{" "}
                     <span className="font-medium">
                       {portalData?.candidate_info.email_masked}
@@ -670,7 +670,7 @@ export default function CandidatePortalPage() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={index === 0 ? handleOtpPaste : undefined}
-                        className="w-12 h-14 text-center text-2xl font-semibold border-2 border-lia-border-default dark:lia-border-600 rounded-md focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:lia-bg-800 dark:lia-text-100"
+                        className="w-12 h-14 text-center text-2xl font-semibold border-2 border-lia-border-default dark:border-lia-border-medium rounded-md focus:border-lia-border-medium focus:outline-none focus:ring-2 focus:ring-lia-border-subtle dark:bg-lia-btn-primary-hover dark:text-lia-text-disabled"
                       />
                     ))}
                   </div>
@@ -697,7 +697,7 @@ export default function CandidatePortalPage() {
 
                   <div className="text-center">
                     {otpResendTimer > 0 ? (
-                      <p className="text-sm lia-text-500 dark:lia-text-400">
+                      <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                         Reenviar código em {otpResendTimer}s
                       </p>
                     ) : (
@@ -722,7 +722,7 @@ export default function CandidatePortalPage() {
 
   if (step === "completed") {
     return (
-      <div className="min-h-screen bg-white dark:lia-bg-900 flex flex-col">
+      <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-btn-primary-bg flex flex-col">
         {portalData?.branding.logo_url && (
           <div className="p-4 flex justify-center">
             <img
@@ -742,23 +742,23 @@ export default function CandidatePortalPage() {
               >
                 <CheckCircle2 className="w-10 h-10" style={{color: primaryColor}} />
               </div>
-              <h1 className="text-2xl font-semibold lia-text-900 dark:lia-text-100 mb-3">
+              <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-disabled mb-3">
                 Obrigado!
               </h1>
-              <p className="lia-text-600 dark:lia-text-300 mb-6">
+              <p className="text-lia-text-secondary dark:text-lia-text-disabled mb-6">
                 {portalData?.branding.thank_you_message ||
                   "Seus dados foram enviados com sucesso. Entraremos em contato em breve."}
               </p>
               {portalData?.vacancy_info && (
-                <div className="bg-gray-50 dark:lia-bg-800 rounded-md p-4 text-left">
-                  <p className="text-xs lia-text-500 dark:lia-text-400 uppercase tracking-wider mb-1" aria-live="polite" aria-atomic="true">
+                <div className="bg-lia-bg-secondary dark:bg-lia-btn-primary-hover rounded-md p-4 text-left">
+                  <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary uppercase tracking-wider mb-1" aria-live="polite" aria-atomic="true">
                     Vaga
                   </p>
-                  <p className="text-sm font-medium lia-text-900 dark:lia-text-100">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled">
                     {portalData.vacancy_info.title}
                   </p>
                   {portalData.vacancy_info.department && (
-                    <p className="text-xs lia-text-500 dark:lia-text-400">
+                    <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                       {portalData.vacancy_info.department}
                     </p>
                   )}
@@ -772,9 +772,9 @@ export default function CandidatePortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:lia-bg-900 flex flex-col">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-btn-primary-bg flex flex-col">
       {portalData?.branding.logo_url && (
-        <div className="p-4 flex justify-center bg-white dark:lia-bg-800 border-b dark:lia-border-700">
+        <div className="p-4 flex justify-center bg-lia-bg-primary dark:bg-lia-btn-primary-hover border-b dark:border-lia-border-strong">
           <img
             src={portalData.branding.logo_url}
             alt="Logo"
@@ -783,15 +783,15 @@ export default function CandidatePortalPage() {
         </div>
       )}
 
-      <div className="sticky top-0 z-10 bg-white dark:lia-bg-800 border-b dark:lia-border-700 px-4 py-3">
+      <div className="sticky top-0 z-10 bg-lia-bg-primary dark:bg-lia-btn-primary-hover border-b dark:border-lia-border-strong px-4 py-3">
         <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium lia-text-500 dark:lia-text-400">Progresso</span>
+            <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">Progresso</span>
             <span className="text-xs font-semibold" style={{color: primaryColor}}>
               {Math.round(portalData?.completion_percentage || 0)}%
             </span>
           </div>
-          <div className="relative h-2 bg-gray-200 dark:lia-bg-700 rounded-full overflow-hidden">
+          <div className="relative h-2 bg-lia-interactive-active dark:bg-lia-bg-inverse rounded-full overflow-hidden">
             <div
               className="absolute left-0 top-0 h-full transition-[width,height] duration-500 rounded-full"
               style={{width: `${portalData?.completion_percentage || 0}%`,
@@ -804,21 +804,21 @@ export default function CandidatePortalPage() {
       <div className="flex-1 p-4">
         <div className="max-w-lg mx-auto">
           {portalData?.branding.welcome_message && (
-            <div className="mb-6 p-4 bg-white dark:lia-bg-800 rounded-md border dark:lia-border-700">
-              <p className="text-sm lia-text-600 dark:lia-text-300">{portalData.branding.welcome_message}</p>
+            <div className="mb-6 p-4 bg-lia-bg-primary dark:bg-lia-btn-primary-hover rounded-md border dark:border-lia-border-strong">
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-disabled">{portalData.branding.welcome_message}</p>
             </div>
           )}
 
           {portalData?.vacancy_info && (
-            <div className="mb-6 p-4 bg-white dark:lia-bg-800 rounded-md border dark:lia-border-700">
-              <p className="text-xs lia-text-500 dark:lia-text-400 uppercase tracking-wider mb-1">
+            <div className="mb-6 p-4 bg-lia-bg-primary dark:bg-lia-btn-primary-hover rounded-md border dark:border-lia-border-strong">
+              <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary uppercase tracking-wider mb-1">
                 Preenchendo dados para
               </p>
-              <p className="text-base font-medium lia-text-900 dark:lia-text-100">
+              <p className="text-base font-medium text-lia-text-primary dark:text-lia-text-disabled">
                 {portalData.vacancy_info.title}
               </p>
               {portalData.vacancy_info.department && (
-                <p className="text-sm lia-text-500 dark:lia-text-400">{portalData.vacancy_info.department}</p>
+                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{portalData.vacancy_info.department}</p>
               )}
             </div>
           )}
@@ -875,7 +875,7 @@ export default function CandidatePortalPage() {
             </Button>
 
             {portalData?.branding.privacy_policy_url && (
-              <p className="text-xs text-center lia-text-500 dark:lia-text-400">
+              <p className="text-xs text-center text-lia-text-secondary dark:text-lia-text-tertiary">
                 Ao enviar, você concorda com nossa{" "}
                 <a
                   href={portalData.branding.privacy_policy_url}

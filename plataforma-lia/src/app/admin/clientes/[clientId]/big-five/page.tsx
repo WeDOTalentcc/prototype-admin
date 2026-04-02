@@ -94,7 +94,7 @@ const traits = [
     name: 'Neuroticismo',
     fullName: 'Neuroticismo',
     icon: Shield,
-    bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
+    bgColor: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary',
     borderColor: 'border-lia-border-default dark:border-lia-border-default',
     description: 'Tendência a experienciar emoções negativas. Baixo neuroticismo indica estabilidade emocional e resiliência.'
   }
@@ -184,12 +184,12 @@ export default function ClientBigFivePage({
           <div className="flex items-center gap-3 mb-2">
             <Brain className="w-6 h-6 text-wedo-purple" />
             <h2 
-              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary"
             >
               Configuração Big Five
             </h2>
           </div>
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Avaliação de personalidade e perfil comportamental para o cliente {clientId}
           </p>
         </div>
@@ -204,7 +204,7 @@ export default function ClientBigFivePage({
           </Button>
           <Button 
             size="sm"
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
             onClick={handleSaveProfile}
           >
             <Save className="w-4 h-4 mr-2" />
@@ -215,19 +215,19 @@ export default function ClientBigFivePage({
 
       <Card>
         <CardHeader className="pb-4">
-          <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
+          <CardTitle className="text-base font-medium flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary">
             <Brain className="w-4 h-4 text-wedo-cyan" />
             Configurações Gerais
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-center justify-between p-4 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
+            <div className="flex items-center justify-between p-4 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
               <div>
-                <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                   Big Five Ativo
                 </p>
-                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                   Habilitar avaliação de personalidade
                 </p>
               </div>
@@ -237,12 +237,12 @@ export default function ClientBigFivePage({
               />
             </div>
 
-            <div className="p-4 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
+            <div className="p-4 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                   Threshold de Match
                 </p>
-                <span className="text-sm font-semibold lia-text-900 dark:lia-text-50">{matchThreshold}%</span>
+                <span className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">{matchThreshold}%</span>
               </div>
               <Slider
                 value={[matchThreshold]}
@@ -251,13 +251,13 @@ export default function ClientBigFivePage({
                 max={100}
                 step={5}
               />
-              <p className="text-xs mt-2 lia-text-400 dark:lia-text-500">
+              <p className="text-xs mt-2 text-lia-text-tertiary dark:text-lia-text-secondary">
                 Mínimo para considerar compatível
               </p>
             </div>
 
-            <div className="p-4 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
-              <p className="text-sm font-medium mb-2 lia-text-800 dark:text-lia-text-primary">
+            <div className="p-4 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
+              <p className="text-sm font-medium mb-2 text-lia-text-primary dark:text-lia-text-primary">
                 Modo de Avaliação
               </p>
               <Select value={evaluationMode} onValueChange={(v) => setEvaluationMode(v as 'suggestive' | 'eliminatory')}>
@@ -267,7 +267,7 @@ export default function ClientBigFivePage({
                 <SelectContent>
                   <SelectItem value="suggestive">
                     <div className="flex items-center gap-2">
-                      <Info className="w-3 h-3 lia-text-600 dark:text-lia-text-tertiary" />
+                      <Info className="w-3 h-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
                       <span>Sugestivo</span>
                     </div>
                   </SelectItem>
@@ -279,7 +279,7 @@ export default function ClientBigFivePage({
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs mt-2 lia-text-400 dark:lia-text-500">
+              <p className="text-xs mt-2 text-lia-text-tertiary dark:text-lia-text-secondary">
                 {evaluationMode === 'suggestive' 
                   ? 'Score aparece como sugestão' 
                   : 'Candidatos abaixo do threshold são filtrados'}
@@ -292,7 +292,7 @@ export default function ClientBigFivePage({
       <Card>
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base font-medium flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary">
               <BarChart3 className="w-4 h-4 text-wedo-purple" />
               Perfis por Cargo
             </CardTitle>
@@ -327,10 +327,10 @@ export default function ClientBigFivePage({
                         <Icon className="w-5 h-5" style={{color: trait.color}} />
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                        <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                           {trait.fullName}
                         </h4>
-                        <p className="text-xs mt-1 line-clamp-2 lia-text-400 dark:lia-text-500">
+                        <p className="text-xs mt-1 line-clamp-2 text-lia-text-tertiary dark:text-lia-text-secondary">
                           {trait.description}
                         </p>
                       </div>
@@ -339,7 +339,7 @@ export default function ClientBigFivePage({
                     <div className="space-y-4">
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary">
+                          <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                             Peso/Importância
                           </span>
                           <span className="text-xs font-semibold" style={{color: trait.color}}>
@@ -357,7 +357,7 @@ export default function ClientBigFivePage({
                       
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium lia-text-500 dark:text-lia-text-tertiary">
+                          <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                             Valor Ideal
                           </span>
                           <span className="text-xs font-semibold" style={{color: trait.color}}>
@@ -385,8 +385,8 @@ export default function ClientBigFivePage({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
-                <Eye className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+              <CardTitle className="text-base font-medium flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary">
+                <Eye className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Preview: Visualização do Candidato
               </CardTitle>
             </CardHeader>
@@ -394,22 +394,22 @@ export default function ClientBigFivePage({
               <div className="p-4 rounded-md bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-wedo-purple/30 dark:border-wedo-purple/30">
                 <div className="text-center mb-4">
                   <Brain className="w-10 h-10 mx-auto text-wedo-purple mb-2" />
-                  <h4 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                  <h4 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                     Avaliação de Perfil Comportamental
                   </h4>
-                  <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                  <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                     Responda às perguntas para identificar seu perfil
                   </p>
                 </div>
                 
                 <div className="space-y-3 mt-4">
-                  <div className="p-3 rounded-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
-                    <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mb-2">Exemplo de pergunta:</p>
-                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+                  <div className="p-3 rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-2">Exemplo de pergunta:</p>
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                       "Costumo buscar novas experiências e ideias criativas no meu trabalho"
                     </p>
                     <div className="flex items-center gap-2 mt-3">
-                      <span className="text-xs lia-text-500">Discordo</span>
+                      <span className="text-xs text-lia-text-secondary">Discordo</span>
                       <div className="flex-1 flex gap-1">
                         {[1, 2, 3, 4, 5].map(n => (
                           <button 
@@ -417,14 +417,14 @@ export default function ClientBigFivePage({
                             className={`flex-1 h-8 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
                               n === 4 
                                 ? 'bg-wedo-purple/15 dark:bg-wedo-purple/50 text-wedo-purple dark:text-wedo-purple border-2 border-wedo-purple/30' 
-                                : 'bg-gray-100 dark:bg-lia-bg-elevated hover:bg-gray-200 dark:hover:bg-gray-600'
+                                : 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated hover:bg-lia-interactive-active dark:hover:bg-lia-border-medium'
                             }`}
                           >
                             {n}
                           </button>
                         ))}
                       </div>
-                      <span className="text-xs lia-text-500">Concordo</span>
+                      <span className="text-xs text-lia-text-secondary">Concordo</span>
                     </div>
                   </div>
                 </div>
@@ -434,7 +434,7 @@ export default function ClientBigFivePage({
 
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary">
+              <CardTitle className="text-base font-medium flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary">
                 <BarChart3 className="w-4 h-4 text-wedo-purple" />
                 Preview: Resultado de Análise
               </CardTitle>
@@ -447,10 +447,10 @@ export default function ClientBigFivePage({
                       <CheckCircle2 className="w-6 h-6 text-status-success" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Match de Personalidade
                       </p>
-                      <p className="text-xs lia-text-400 dark:lia-text-500">
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                         Compatibilidade com o perfil do cargo
                       </p>
                     </div>
@@ -480,11 +480,11 @@ export default function ClientBigFivePage({
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium lia-text-800 dark:text-lia-text-primary">
+                            <span className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                               {trait.name}
                             </span>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs lia-text-400 dark:lia-text-500">
+                              <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                                 Ideal: {idealValue}%
                               </span>
                               <span className="text-xs font-semibold" style={{color: trait.color}}>
@@ -492,14 +492,14 @@ export default function ClientBigFivePage({
                               </span>
                             </div>
                           </div>
-                          <div className="relative h-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-full overflow-hidden">
+                          <div className="relative h-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full overflow-hidden">
                             <div 
                               className="absolute h-full rounded-full transition-[width,height]"
                               style={{width: `${candidateScore}%`, 
                                 backgroundColor: trait.color}}
                             />
                             <div 
-                              className="absolute h-full w-1 bg-gray-900 dark:bg-white"
+                              className="absolute h-full w-1 bg-lia-btn-primary-bg dark:bg-lia-bg-primary"
                               // [OPT-052] opacity:0.5=opacity-50, left is dynamic
                               style={{left: `${idealValue}%`, opacity: 0.5}}
                             />

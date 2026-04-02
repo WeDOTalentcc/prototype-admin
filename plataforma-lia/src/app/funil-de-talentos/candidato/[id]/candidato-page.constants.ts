@@ -6,8 +6,8 @@ import type { NoteCategory } from "./candidato-page.types"
 export const CANDIDATE_STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
   active:     { label: "Ativo",         bg: "bg-status-success/10",           text: "text-status-success", border: "border-status-success/30" },
   do_not_use: { label: "Não Utilizar",  bg: "bg-status-error/10",             text: "text-status-error",   border: "border-status-error/30" },
-  hired:      { label: "Contratado",    bg: "bg-gray-50 dark:bg-lia-bg-primary", text: "lia-text-900 dark:lia-text-50", border: "border-lia-border-default dark:border-lia-border-default" },
-  inactive:   { label: "Inativo",       bg: "bg-gray-100",                    text: "lia-text-600",        border: "border-lia-border-default" },
+  hired:      { label: "Contratado",    bg: "bg-lia-bg-secondary dark:bg-lia-bg-primary", text: "text-lia-text-primary dark:text-lia-text-primary", border: "border-lia-border-default dark:border-lia-border-default" },
+  inactive:   { label: "Inativo",       bg: "bg-lia-bg-tertiary",                    text: "text-lia-text-secondary",        border: "border-lia-border-default" },
 }
 
 export const NOTE_CATEGORY_OPTIONS: Array<{ value: NoteCategory; label: string }> = [

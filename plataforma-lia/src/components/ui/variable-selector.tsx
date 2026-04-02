@@ -146,7 +146,7 @@ export function VariableSelector({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar variável..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:border-gray-400 focus:outline-none"
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium focus:outline-none"
              
             />
           </div>
@@ -157,7 +157,7 @@ export function VariableSelector({
               className={cn(
  "px-2 py-0.5 rounded-md text-micro font-medium transition-colors",
                 !activeGroup 
-                  ? "bg-gray-900 text-white" 
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                   : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active"
               )}
             >
@@ -170,7 +170,7 @@ export function VariableSelector({
                 className={cn(
  "px-2 py-0.5 rounded-md text-micro font-medium transition-colors",
                   activeGroup === group.id 
-                    ? "bg-gray-900 text-white" 
+                    ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                     : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active"
                 )}
               >

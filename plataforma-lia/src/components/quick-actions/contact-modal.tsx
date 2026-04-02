@@ -347,7 +347,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
       <div className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-4xl max-h-[90vh] overflow-y-auto`}>
         <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
@@ -364,7 +364,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
+          <button onClick={onClose} className="p-1 rounded-md lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -380,8 +380,8 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 onClick={() => setActiveTab('email')}
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'email'
-                    ? 'bg-gray-100 text-lia-text-primary border border-lia-border-subtle'
-                    : 'hover:bg-gray-50 text-lia-text-primary border border-transparent'
+                    ? 'bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle'
+                    : 'hover:bg-lia-bg-secondary text-lia-text-primary border border-transparent'
                 }`}
               >
                 <Mail className="w-4 h-4" />
@@ -396,7 +396,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'whatsapp'
                     ? 'bg-status-success/10 text-status-success border border-status-success/30'
-                    : 'hover:bg-gray-50 text-lia-text-primary border border-transparent'
+                    : 'hover:bg-lia-bg-secondary text-lia-text-primary border border-transparent'
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -411,7 +411,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 className={`w-full flex items-center gap-3 p-3 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeTab === 'phone'
                     ? 'bg-wedo-purple/10 text-wedo-purple border border-wedo-purple/30'
-                    : 'hover:bg-gray-50 text-lia-text-primary border border-transparent'
+                    : 'hover:bg-lia-bg-secondary text-lia-text-primary border border-transparent'
                 }`}
               >
                 <Phone className="w-4 h-4" />
@@ -443,8 +443,8 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                     onClick={() => handleTemplateSelect(template)}
                     className={`p-3 border rounded-md text-left transition-colors motion-reduce:transition-none ${
  templateType === template.id
-                        ? 'border-lia-border-default bg-gray-100'
-                        : 'border-lia-border-subtle hover:bg-gray-50 hover:border-lia-border-subtle'
+                        ? 'border-lia-border-default bg-lia-bg-tertiary'
+                        : 'border-lia-border-subtle hover:bg-lia-bg-secondary hover:border-lia-border-subtle'
                     }`}
                   >
                     <div className={textStyles.label}>{template.name}</div>
@@ -464,7 +464,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                   <select
                     value={liaContext}
                     onChange={(e) => setLiaContext(e.target.value as 'professional' | 'warm' | 'urgent' | 'follow_up')}
-                    className="text-micro border border-lia-border-subtle rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                    className="text-micro border border-lia-border-subtle rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
                   >
                     <option value="professional">Profissional</option>
                     <option value="warm">Caloroso</option>
@@ -478,7 +478,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 <button
                   onClick={() => generateLiaSuggestions(liaContext)}
                   disabled={isLiaGenerating}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none disabled:opacity-50"
                 >
                   {isLiaGenerating ? (
                     <>
@@ -494,7 +494,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 </button>
                 <button
                   onClick={() => setShowLiaSuggestions(!showLiaSuggestions)}
-                  className="px-3 py-1.5 rounded-md lia-text-secondary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+                  className="px-3 py-1.5 rounded-md lia-text-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
                   title="Ver/Ocultar sugestões"
                 >
                   <Eye className="w-4 h-4" />
@@ -513,7 +513,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                     </div>
                   ) : (
                     liaSuggestions.map((suggestion) => (
-                      <div key={suggestion.id} className="border border-lia-border-subtle rounded-md p-4 bg-gray-50">
+                      <div key={suggestion.id} className="border border-lia-border-subtle rounded-md p-4 bg-lia-bg-secondary">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -523,7 +523,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                           </div>
                           <button
                             onClick={() => applyLiaSuggestion(suggestion)}
-                            className="text-micro h-6 px-2 rounded-full border border-lia-border-subtle text-lia-text-primary hover:bg-gray-50 transition-[width,height]"
+                            className="text-micro h-6 px-2 rounded-full border border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-secondary transition-[width,height]"
                           >
                             Usar Esta
                           </button>
@@ -574,7 +574,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                     type="text"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-gray-900 dark:bg-lia-bg-secondary dark:border-lia-border-default"
+                    className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg dark:bg-lia-bg-secondary dark:border-lia-border-default"
                     placeholder="Assunto do email"
                   />
                 </div>
@@ -588,13 +588,13 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows={activeTab === 'email' ? 8 : 6}
-                  className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+                  className="w-full px-3 py-2 text-xs border border-lia-border-subtle rounded-md placeholder:lia-text-secondary focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
                   placeholder={`Digite sua mensagem...`}
                 />
               </div>
 
               {activeTab === 'phone' && (
-                <div className="bg-gray-50 p-4 rounded-md border border-lia-border-subtle">
+                <div className="bg-lia-bg-secondary p-4 rounded-md border border-lia-border-subtle">
                   <div className="flex items-center gap-2 mb-2">
                     <Phone className="w-4 h-4 text-lia-text-secondary" />
                     <span className="text-xs font-medium text-lia-text-primary">
@@ -611,14 +611,14 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
             <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-lia-border-subtle">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSend}
                 disabled={isSending || !message.trim()}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-gray-900 hover:bg-gray-800 text-white transition-colors motion-reduce:transition-none disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text transition-colors motion-reduce:transition-none disabled:opacity-50"
               >
                 {isSending ? (
                   <>

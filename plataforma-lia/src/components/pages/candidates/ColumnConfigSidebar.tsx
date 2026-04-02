@@ -94,7 +94,7 @@ export function ColumnConfigSidebar({
           </div>
           <button
             onClick={() => setShowColumnConfig(false)}
-            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100"
+            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none text-lia-text-primary hover:text-lia-text-primary hover:bg-lia-bg-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
@@ -109,12 +109,12 @@ export function ColumnConfigSidebar({
               placeholder="Buscar coluna..."
               value={columnSearchTerm}
               onChange={(e) => setColumnSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-gray-50 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-lia-bg-secondary placeholder-lia-text-tertiary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
             />
           </div>
           <div className="flex gap-2">
             <button
-              className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
+              className="flex-1 text-xs h-8 rounded-md bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
               onClick={() => {
                 setTableColumns((prev) =>
                   prev.map((col, idx) => ({
@@ -128,7 +128,7 @@ export function ColumnConfigSidebar({
               Restaurar Padrão
             </button>
             <button
-              className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
+              className="text-xs h-8 px-4 rounded-md bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
               onClick={() => {
                 setTableColumns((prev) => prev.map((col) => ({ ...col, visible: true })))
               }}
@@ -156,9 +156,9 @@ export function ColumnConfigSidebar({
                     className="text-xs px-2 py-0.5 rounded-full"
                     style={{
                       backgroundColor:
-                        visibleCount > 0 ? "var(--gray-100)" : "var(--gray-100)",
+                        visibleCount > 0 ? "var(--lia-bg-tertiary)" : "var(--lia-bg-tertiary)",
                       color:
-                        visibleCount > 0 ? "var(--gray-600)" : "var(--gray-400)",
+                        visibleCount > 0 ? "var(--lia-text-secondary)" : "var(--lia-text-tertiary)",
                     }}
                   >
                     {visibleCount}/{columns.length}
@@ -175,25 +175,25 @@ export function ColumnConfigSidebar({
                           )
                         )
                       }}
-                      className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none hover:bg-gray-100"
+                      className="flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary"
                       style={{
                         backgroundColor: col.visible
-                          ? "var(--gray-50)"
-                          : "var(--gray-50)",
+                          ? "var(--lia-bg-secondary)"
+                          : "var(--lia-bg-secondary)",
                         border: col.visible
-                          ? "1px solid var(--gray-300)"
-                          : "1px solid var(--gray-200)",
+                          ? "1px solid var(--lia-border-default)"
+                          : "1px solid var(--lia-border-subtle)",
                       }}
                     >
                       <div
                         className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors motion-reduce:transition-none"
                         style={{
                           backgroundColor: col.visible
-                            ? "var(--gray-600)"
+                            ? "var(--lia-text-secondary)"
                             : "transparent",
                           border: col.visible
                             ? "none"
-                            : "2px solid var(--gray-300)",
+                            : "2px solid var(--lia-border-default)",
                         }}
                       >
                         {col.visible && (
@@ -204,8 +204,8 @@ export function ColumnConfigSidebar({
                         className="text-xs flex-1 flex items-center gap-1.5"
                         style={{
                           color: col.visible
-                            ? "var(--gray-800)"
-                            : "var(--gray-500)",
+                            ? "var(--lia-text-primary)"
+                            : "var(--lia-text-secondary)",
                           fontWeight: col.visible ? 500 : 400,
                         }}
                       >

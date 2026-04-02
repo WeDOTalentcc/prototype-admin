@@ -121,7 +121,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
       </div>
 
       <div
-        className="bg-white rounded-md border border-lia-border-subtle overflow-hidden min-h-chart-sm"
+        className="bg-lia-bg-primary rounded-md border border-lia-border-subtle overflow-hidden min-h-chart-sm"
         role="status"
         aria-live="polite"
         aria-label="Carregando..."

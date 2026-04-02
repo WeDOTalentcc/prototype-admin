@@ -81,21 +81,21 @@ export const getLiaAlerts = (candidate: KanbanCandidateBase) => {
         type: 'urgent',
         icon: React.createElement(Flag, { className: "w-3.5 h-3.5" }),
         label: 'Aprovar Contato',
-        color: 'bg-gray-200 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-tertiary dark:border-lia-border-default'
+        color: 'bg-lia-interactive-active text-lia-text-primary border-lia-border-default dark:bg-lia-bg-tertiary dark:border-lia-border-default'
       })
     } else if (candidate.liaStatus === 'triagem_completa') {
       alerts.push({
         type: 'urgent',
         icon: React.createElement(CheckCircle, { className: "w-3 h-3" }),
         label: 'Aprovar Entrevista',
-        color: 'bg-gray-900 text-white border-gray-900 dark:bg-gray-50 dark:border-lia-border-medium'
+        color: 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg dark:bg-lia-bg-secondary dark:border-lia-border-medium'
       })
     } else if (candidate.needsAction) {
       alerts.push({
         type: 'urgent',
         icon: React.createElement(AlertCircle, { className: "w-3 h-3" }),
         label: 'Ação Necessária',
-        color: 'bg-gray-400 text-lia-text-primary border-gray-400 dark:bg-lia-bg-elevated dark:border-lia-border-default'
+        color: 'bg-lia-border-medium text-lia-text-primary border-lia-border-medium dark:bg-lia-bg-elevated dark:border-lia-border-default'
       })
     }
   }
@@ -105,7 +105,7 @@ export const getLiaAlerts = (candidate: KanbanCandidateBase) => {
       type: 'action',
       icon: React.createElement(Mail, { className: "w-3 h-3" }),
       label: 'Enviar Feedback',
-      color: 'bg-gray-200 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
+      color: 'bg-lia-interactive-active text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
     })
   }
 
@@ -114,7 +114,7 @@ export const getLiaAlerts = (candidate: KanbanCandidateBase) => {
       type: 'warning',
       icon: React.createElement(Clock, { className: "w-3 h-3" }),
       label: `${candidate.warnings} Alerta${candidate.warnings > 1 ? 's' : ''}`,
-      color: 'bg-gray-300 text-lia-text-primary border-gray-400 dark:bg-lia-bg-tertiary dark:border-lia-border-default'
+      color: 'bg-lia-border-default text-lia-text-primary border-lia-border-medium dark:bg-lia-bg-tertiary dark:border-lia-border-default'
     })
   }
 

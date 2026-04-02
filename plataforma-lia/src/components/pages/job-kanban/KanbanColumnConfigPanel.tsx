@@ -86,7 +86,7 @@ export function KanbanColumnConfigPanel({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-7 w-7 p-0 hover:bg-gray-100"
+              className="h-7 w-7 p-0 hover:bg-lia-bg-tertiary"
             >
               <X className="w-4 h-4 text-lia-text-secondary" />
             </Button>
@@ -100,18 +100,18 @@ export function KanbanColumnConfigPanel({
                 placeholder="Buscar coluna..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-gray-50 dark:bg-lia-bg-secondary placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 text-lia-text-primary"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary placeholder-lia-text-tertiary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 text-lia-text-primary"
               />
             </div>
             <div className="flex gap-2">
               <button
-                className="flex-1 text-xs h-8 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
+                className="flex-1 text-xs h-8 rounded-md bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
                 onClick={onResetColumns}
               >
                 Restaurar Padrão
               </button>
               <button
-                className="text-xs h-8 px-4 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none text-lia-text-secondary"
+                className="text-xs h-8 px-4 rounded-md bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none text-lia-text-secondary"
                 onClick={showAll}
               >
                 Todas
@@ -135,7 +135,7 @@ export function KanbanColumnConfigPanel({
                     {CATEGORY_LABELS[category] || category}
                   </h4>
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${visibleCount > 0 ? 'bg-gray-900/10 text-lia-text-primary' : 'bg-gray-200 text-lia-text-disabled'}`}
+                    className={`text-xs px-2 py-0.5 rounded-full ${visibleCount > 0 ? 'bg-lia-btn-primary-bg/10 text-lia-text-primary' : 'bg-lia-interactive-active text-lia-text-disabled'}`}
                   >
                     {visibleCount}/{columns.length}
                   </span>
@@ -145,12 +145,12 @@ export function KanbanColumnConfigPanel({
                     <div
                       key={col.id}
                       onClick={() => toggleColumn(col.id)}
-                      className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none border ${col.visible ? 'bg-gray-900/5 border-gray-900/20' : 'bg-gray-50 border-lia-border-subtle'}`}
+                      className={`flex items-center gap-3 p-2.5 rounded-md cursor-pointer transition-colors motion-reduce:transition-none border ${col.visible ? 'bg-lia-btn-primary-bg/5 border-lia-btn-primary-bg/20' : 'bg-lia-bg-secondary border-lia-border-subtle'}`}
                     >
                       <div
                         className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors motion-reduce:transition-none"
-                        style={{backgroundColor: col.visible ? 'var(--gray-800)' : 'transparent',
-                          border: col.visible ? 'none' : '2px solid var(--gray-300)'}}
+                        style={{backgroundColor: col.visible ? 'var(--lia-text-primary)' : 'transparent',
+                          border: col.visible ? 'none' : '2px solid var(--lia-border-default)'}}
                       >
                         {col.visible && (
                           <CheckCircle className="w-3 h-3 text-white" strokeWidth={3} />
@@ -158,7 +158,7 @@ export function KanbanColumnConfigPanel({
                       </div>
                       <span
                         className={`text-xs flex-1 ${col.visible ? 'font-medium' : 'font-normal'}`}
-                        style={{color: col.visible ? 'var(--gray-800)' : 'var(--gray-500)'}}
+                        style={{color: col.visible ? 'var(--lia-text-primary)' : 'var(--lia-text-secondary)'}}
                       >
                         {col.label}
                       </span>

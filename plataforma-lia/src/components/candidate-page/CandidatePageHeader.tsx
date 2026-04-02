@@ -68,7 +68,7 @@ export function CandidatePageHeader({
 }: CandidatePageHeaderProps) {
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="bg-white dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-3">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CandidateAvatar
@@ -104,7 +104,7 @@ export function CandidatePageHeader({
                       href={_candidate.linkedin_url || _candidate.linkedinUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
+                      className="p-1.5 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
                     >
                       <Linkedin className="w-4 h-4 text-lia-text-secondary" />
                     </a>
@@ -119,7 +119,7 @@ export function CandidatePageHeader({
                       href={(_candidate.github_url as string | undefined) || (_candidate.githubUrl as string | undefined)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
+                      className="p-1.5 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
                     >
                       <Github className="w-4 h-4 text-lia-text-primary" />
                     </a>
@@ -134,7 +134,7 @@ export function CandidatePageHeader({
                       href={(_candidate.portfolio_url as string | undefined) || (_candidate.portfolioUrl as string | undefined) || (_candidate.website as string | undefined)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
+                      className="p-1.5 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
                     >
                       <Globe className="w-4 h-4 text-lia-text-secondary" />
                     </a>
@@ -151,7 +151,7 @@ export function CandidatePageHeader({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-7 w-7 p-0 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                     onClick={() => onSendEmail ? onSendEmail(candidate) : (_candidate.email && window.open(`mailto:${_candidate.email}`, '_self'))}
                     disabled={!_candidate.email && !onSendEmail}
                   >
@@ -166,7 +166,7 @@ export function CandidatePageHeader({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-7 w-7 p-0 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                     onClick={() => {
                       if (onSendWhatsApp) {
                         onSendWhatsApp(candidate)
@@ -187,7 +187,7 @@ export function CandidatePageHeader({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-7 w-7 p-0 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                     onClick={() => onSendAgendamento?.(candidate)}
                   >
                     <CalendarIcon className="w-4 h-4 text-wedo-orange" />
@@ -201,7 +201,7 @@ export function CandidatePageHeader({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-7 w-7 p-0 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                     onClick={() => onWSIScreening?.(candidate)}
                   >
                     <ClipboardCheck className="w-4 h-4 text-lia-text-secondary" />
@@ -215,7 +215,7 @@ export function CandidatePageHeader({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-7 w-7 p-0 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                     onClick={() => onAddToVacancy?.(candidate)}
                   >
                     <Briefcase className="w-4 h-4 text-lia-text-secondary" />
@@ -229,7 +229,7 @@ export function CandidatePageHeader({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-7 w-7 p-0 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                     onClick={() => onAddToList?.(candidate)}
                   >
                     <Users className="w-4 h-4 text-wedo-green" />
@@ -243,7 +243,7 @@ export function CandidatePageHeader({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-7 w-7 p-0 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                     onClick={() => onSendFeedback?.(candidate)}
                   >
                     <MessageSquare className="w-4 h-4 text-wedo-purple" />
@@ -266,7 +266,7 @@ export function CandidatePageHeader({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 hover:bg-gray-100 border border-lia-border-default rounded-md"
+                    className="h-8 w-8 p-0 hover:bg-lia-bg-tertiary border border-lia-border-default rounded-md"
                   >
                     <Brain className="w-5 h-5 text-wedo-cyan" />
                   </Button>

@@ -63,7 +63,7 @@ interface DisplayTest {
 }
 
 const categoryConfig: Record<TestCategory, { label: string, icon: React.ComponentType<{ className?: string }>, color: string, bgColor: string }> = {
-  coding: { label: 'Coding', icon: Code2, color: 'lia-text-600 dark:text-lia-text-tertiary', bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary' },
+  coding: { label: 'Coding', icon: Code2, color: 'lia-text-600 dark:text-lia-text-tertiary', bgColor: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' },
   logic: { label: 'Lógica/Raciocínio', icon: Brain, color: 'text-wedo-purple', bgColor: 'bg-wedo-purple/15 dark:bg-wedo-purple/30' },
   domain: { label: 'Específico', icon: FileSpreadsheet, color: 'text-status-warning', bgColor: 'bg-status-warning/15 dark:bg-status-warning/30' },
   personality: { label: 'Personalidade/Cultura', icon: Users, color: 'text-status-success', bgColor: 'bg-status-success/15 dark:bg-status-success/30' }
@@ -204,8 +204,8 @@ export default function ClientTestesPage({
     return (
       <div className="flex items-center justify-center min-h-content-lg" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none mx-auto mb-4 lia-text-600 dark:text-lia-text-tertiary" />
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none mx-auto mb-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Carregando testes técnicos...
           </p>
         </div>
@@ -218,7 +218,7 @@ export default function ClientTestesPage({
       <div className="flex items-center justify-center min-h-content-lg">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-status-error" />
-          <p className="text-sm mb-4 lia-text-400 dark:lia-text-500">
+          <p className="text-sm mb-4 text-lia-text-tertiary dark:text-lia-text-secondary">
             Erro ao carregar testes técnicos
           </p>
           <Button onClick={refetch} variant="outline" size="sm">
@@ -235,14 +235,14 @@ export default function ClientTestesPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <FileCode className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <FileCode className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary"
             >
               Testes Técnicos
             </h2>
           </div>
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Biblioteca de testes e avaliações técnicas para este cliente
           </p>
         </div>
@@ -257,7 +257,7 @@ export default function ClientTestesPage({
           </Button>
           <Button 
             size="sm"
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
           >
             <Plus className="w-4 h-4 mr-2" />
             Adicionar Teste
@@ -270,18 +270,18 @@ export default function ClientTestesPage({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                   Total de Testes
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {totalTests}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-                <FileCode className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <div className="w-10 h-10 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
+                <FileCode className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
             </div>
-            <p className="text-xs mt-2 lia-text-400 dark:lia-text-500">
+            <p className="text-xs mt-2 text-lia-text-tertiary dark:text-lia-text-secondary">
               {enabledTests} habilitados para uso
             </p>
           </CardContent>
@@ -291,10 +291,10 @@ export default function ClientTestesPage({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                   Testes Realizados
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {totalTestsTaken.toLocaleString()}
                 </p>
               </div>
@@ -313,10 +313,10 @@ export default function ClientTestesPage({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                   Taxa de Conclusão
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {avgCompletionRate.toFixed(0)}%
                 </p>
               </div>
@@ -324,7 +324,7 @@ export default function ClientTestesPage({
                 <CheckCircle2 className="w-5 h-5 text-status-success" />
               </div>
             </div>
-            <p className="text-xs mt-2 lia-text-400 dark:lia-text-500">
+            <p className="text-xs mt-2 text-lia-text-tertiary dark:text-lia-text-secondary">
               Média geral de conclusão
             </p>
           </CardContent>
@@ -334,18 +334,18 @@ export default function ClientTestesPage({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                   Testes Ativos
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {activeTests}
                 </p>
               </div>
- <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-lia-bg-secondary flex items-center justify-center">
-                <Target className="w-5 h-5 lia-text-900 dark:lia-text-50" />
+ <div className="w-10 h-10 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary flex items-center justify-center">
+                <Target className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary" />
               </div>
             </div>
-            <p className="text-xs mt-2 lia-text-400 dark:lia-text-500">
+            <p className="text-xs mt-2 text-lia-text-tertiary dark:text-lia-text-secondary">
               {stats?.draftTests ?? tests.filter(t => t.status === 'draft').length} em rascunho
             </p>
           </CardContent>
@@ -353,13 +353,13 @@ export default function ClientTestesPage({
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-gray-400 dark:lia-border-l-500">
+        <Card className="border-l-4 border-l-lia-border-medium dark:border-l-lia-border-medium">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Code2 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Code2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               <div>
-                <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">Coding</p>
-                <p className="text-xs lia-text-400 dark:lia-text-500">
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Coding</p>
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                   {codingTests.total} testes ({codingTests.enabled} ativos)
                 </p>
               </div>
@@ -371,8 +371,8 @@ export default function ClientTestesPage({
             <div className="flex items-center gap-3">
               <Brain className="w-5 h-5 text-wedo-purple" />
               <div>
-                <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">Lógica</p>
-                <p className="text-xs lia-text-400 dark:lia-text-500">
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Lógica</p>
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                   {logicTests.total} testes ({logicTests.enabled} ativos)
                 </p>
               </div>
@@ -384,8 +384,8 @@ export default function ClientTestesPage({
             <div className="flex items-center gap-3">
               <FileSpreadsheet className="w-5 h-5 text-status-warning" />
               <div>
-                <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">Específico</p>
-                <p className="text-xs lia-text-400 dark:lia-text-500">
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Específico</p>
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                   {domainTests.total} testes ({domainTests.enabled} ativos)
                 </p>
               </div>
@@ -397,8 +397,8 @@ export default function ClientTestesPage({
             <div className="flex items-center gap-3">
               <Users className="w-5 h-5 text-status-success" />
               <div>
-                <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">Personalidade</p>
-                <p className="text-xs lia-text-400 dark:lia-text-500">
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">Personalidade</p>
+                <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                   {personalityTests.total} testes ({personalityTests.enabled} ativos)
                 </p>
               </div>
@@ -410,12 +410,12 @@ export default function ClientTestesPage({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base text-lia-text-primary dark:text-lia-text-primary">
               Biblioteca de Testes
             </CardTitle>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 lia-text-400" />
+                <Filter className="w-4 h-4 text-lia-text-tertiary" />
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="w-[150px] h-9">
                     <SelectValue placeholder="Categoria" />
@@ -441,7 +441,7 @@ export default function ClientTestesPage({
                 </Select>
               </div>
               <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
                 <Input
                   placeholder="Buscar teste..."
                   value={searchQuery}
@@ -477,8 +477,8 @@ export default function ClientTestesPage({
             <div className="space-y-2">
               {filteredTests.length === 0 ? (
                 <div className="text-center py-8">
-                  <FileCode className="w-12 h-12 mx-auto mb-4 lia-text-300" />
-                  <p className="text-sm mb-4 lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
+                  <FileCode className="w-12 h-12 mx-auto mb-4 text-lia-text-disabled" />
+                  <p className="text-sm mb-4 text-lia-text-tertiary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                     {tests.length === 0 
                       ? 'Nenhum teste configurado para este cliente'
                       : 'Nenhum teste encontrado com os filtros aplicados'
@@ -511,7 +511,7 @@ export default function ClientTestesPage({
                   return (
                     <div 
                       key={test.id}
-                      className={`flex items-center gap-4 p-4 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle ${
+                      className={`flex items-center gap-4 p-4 rounded-md border hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle ${
                         !test.enabled ? 'opacity-60' : ''
                       }`}
                     >
@@ -522,7 +522,7 @@ export default function ClientTestesPage({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <p 
-                            className="font-medium truncate lia-text-800 dark:text-lia-text-primary"
+                            className="font-medium truncate text-lia-text-primary dark:text-lia-text-primary"
                           >
                             {test.name}
                           </p>
@@ -532,7 +532,7 @@ export default function ClientTestesPage({
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-4 text-xs lia-text-400 dark:lia-text-500">
+                        <div className="flex items-center gap-4 text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {test.duration} min
@@ -551,10 +551,10 @@ export default function ClientTestesPage({
 
                       <div className="flex items-center gap-6">
                         <div className="text-center min-w-[70px]">
-                          <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
+                          <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
                             {test.testsTaken}
                           </p>
-                          <p className="text-xs lia-text-400 dark:lia-text-500">
+                          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                             realizados
                           </p>
                         </div>
@@ -562,10 +562,10 @@ export default function ClientTestesPage({
                         {test.testsTaken > 0 && (
                           <>
                             <div className="text-center min-w-[60px]">
-                              <p className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
+                              <p className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
                                 {test.avgScore > 0 ? `${test.avgScore}%` : '-'}
                               </p>
-                              <p className="text-xs lia-text-400 dark:lia-text-500">
+                              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                                 média
                               </p>
                             </div>
@@ -573,7 +573,7 @@ export default function ClientTestesPage({
                               <p className="text-lg font-semibold text-status-success">
                                 {test.completionRate}%
                               </p>
-                              <p className="text-xs lia-text-400 dark:lia-text-500">
+                              <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                                 conclusão
                               </p>
                             </div>
@@ -585,7 +585,7 @@ export default function ClientTestesPage({
                         </Badge>
 
                         <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-                          <span className="text-xs lia-text-400 dark:lia-text-500">
+                          <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                             {test.enabled ? 'Habilitado' : 'Desabilitado'}
                           </span>
                           {isToggling ? (
@@ -649,7 +649,7 @@ export default function ClientTestesPage({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base text-lia-text-primary dark:text-lia-text-primary">
               Testes Mais Utilizados
             </CardTitle>
           </CardHeader>
@@ -665,10 +665,10 @@ export default function ClientTestesPage({
                   return (
                     <div 
                       key={test.id}
-                      className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      className="flex items-center gap-3 p-2 rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50"
                     >
                       <span 
-                        className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center text-xs font-medium lia-text-400 dark:lia-text-500"
+                        className="w-6 h-6 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary"
                       >
                         {index + 1}
                       </span>
@@ -676,18 +676,18 @@ export default function ClientTestesPage({
                         <CategoryIcon className={`w-4 h-4 ${category.color}`} />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                        <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                           {test.name}
                         </p>
-                        <p className="text-xs lia-text-400 dark:lia-text-500">
+                        <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           Último uso: {formatDate(test.lastUsed)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold lia-text-800 dark:text-lia-text-primary">
+                        <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
                           {test.testsTaken}
                         </p>
-                        <p className="text-xs lia-text-400 dark:lia-text-500">
+                        <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           aplicações
                         </p>
                       </div>
@@ -695,7 +695,7 @@ export default function ClientTestesPage({
                   )
                 })}
               {tests.filter(t => t.testsTaken > 0).length === 0 && (
-                <p className="text-center text-sm py-4 lia-text-400 dark:lia-text-500">
+                <p className="text-center text-sm py-4 text-lia-text-tertiary dark:text-lia-text-secondary">
                   Nenhum teste realizado ainda
                 </p>
               )}
@@ -705,7 +705,7 @@ export default function ClientTestesPage({
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base text-lia-text-primary dark:text-lia-text-primary">
               Desempenho por Categoria
             </CardTitle>
           </CardHeader>
@@ -728,24 +728,24 @@ export default function ClientTestesPage({
                         <div className={`w-8 h-8 rounded-md ${config.bgColor} flex items-center justify-center`}>
                           <Icon className={`w-4 h-4 ${config.color}`} />
                         </div>
-                        <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                        <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                           {config.label}
                         </span>
                       </div>
                       <div className="flex items-center gap-4 text-sm">
                         {avgScore > 0 && (
-                          <span className="lia-text-400 dark:lia-text-500">
-                            Média: <span className="font-medium lia-text-800 dark:text-lia-text-primary">{avgScore.toFixed(0)}%</span>
+                          <span className="text-lia-text-tertiary dark:text-lia-text-secondary">
+                            Média: <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{avgScore.toFixed(0)}%</span>
                           </span>
                         )}
-                        <span className="lia-text-400 dark:lia-text-500">
+                        <span className="text-lia-text-tertiary dark:text-lia-text-secondary">
                           Conclusão: <span className="font-medium text-status-success">{avgCompletion.toFixed(0)}%</span>
                         </span>
                       </div>
                     </div>
-                    <div className="w-full h-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gray-900 dark:lia-bg-50 rounded-full transition-[width,height]"
+                        className="h-full bg-lia-btn-primary-bg dark:bg-lia-bg-secondary rounded-full transition-[width,height]"
                         style={{width: `${avgCompletion}%`}}
                       />
                     </div>

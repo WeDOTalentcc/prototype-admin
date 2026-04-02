@@ -44,7 +44,7 @@ export const KanbanCard = React.memo(function KanbanCard({
 
   return (
     <Card
-      className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-gray-600 cursor-pointer transition-colors motion-reduce:transition-none hover:group rounded-md"
+      className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none hover:group rounded-md"
       onClick={onClick}
       data-testid="candidate-card"
       data-candidate-id={candidate.id}
@@ -63,7 +63,7 @@ export const KanbanCard = React.memo(function KanbanCard({
           
           <Avatar className="h-8 w-8 flex-shrink-0">
             <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
-            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary text-xs">
+            <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary text-xs">
               {getInitials(candidate.name)}
             </AvatarFallback>
           </Avatar>

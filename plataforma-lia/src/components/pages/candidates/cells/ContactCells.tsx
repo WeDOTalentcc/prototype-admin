@@ -27,7 +27,7 @@ export function renderEmailCell(
           e.stopPropagation()
           onRevealContact(candidate, "email")
         }}
-        className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-secondary dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
+        className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
         title="Clique para revelar email (2 créditos)"
       >
         <Mail className="w-3 h-3" />
@@ -89,7 +89,7 @@ export function renderLinkedinCell(candidate: Candidate): React.ReactNode {
       href={candidate.linkedin_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+      className="inline-flex items-center justify-center w-6 h-6 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
       title="Ver perfil no LinkedIn"
     >
       <Linkedin className="w-4 h-4 text-lia-text-secondary" />

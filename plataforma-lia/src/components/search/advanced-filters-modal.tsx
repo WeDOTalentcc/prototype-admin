@@ -69,9 +69,9 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" onClick={onClose} />
+      <div className="absolute inset-0 bg-lia-overlay backdrop-blur-[1px]" onClick={onClose} />
 
-      <div className="relative w-full max-w-4xl max-h-[85vh] rounded-md overflow-hidden border border-lia-border-subtle flex flex-col bg-white dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+      <div className="relative w-full max-w-4xl max-h-[85vh] rounded-md overflow-hidden border border-lia-border-subtle flex flex-col bg-lia-bg-primary dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <div className="flex flex-col overflow-hidden flex-1">
 
           {/* Header */}
@@ -84,7 +84,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
               {onSave && (
                 <Popover open={isDestinationOpen} onOpenChange={setIsDestinationOpen}>
                   <PopoverTrigger asChild>
-                    <Button size="sm" variant="outline" className="gap-1.5 border-gray-500 text-lia-text-primary">
+                    <Button size="sm" variant="outline" className="gap-1.5 border-lia-border-medium text-lia-text-primary">
                       <Save className="w-4 h-4" />
                       Salvar
                       <ChevronDown className="w-3 h-3" />
@@ -97,7 +97,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                         <button
                           key={dest.key}
                           onClick={() => { setSaveDestination(dest.key); setIsDestinationOpen(false); onSave(filters, dest.key) }}
-                          className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-colors", saveDestination === dest.key ? "bg-gray-100" : "hover:bg-gray-50")}
+                          className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-colors", saveDestination === dest.key ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary")}
                         >
                           <dest.icon className={cn("w-4 h-4 flex-shrink-0", saveDestination === dest.key ? "text-lia-text-primary" : "text-lia-text-secondary")} />
                           <div className="flex-1 min-w-0">
@@ -111,7 +111,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                   </PopoverContent>
                 </Popover>
               )}
-              <button onClick={onClose} className="p-1.5 rounded-md hover:bg-gray-100 text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none">
+              <button onClick={onClose} className="p-1.5 rounded-md hover:bg-lia-bg-tertiary text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -119,7 +119,7 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
 
           {/* Main Content: Sidebar Nav + Scrollable Sections */}
           <div className="flex flex-1 overflow-hidden">
-            <div className="w-sidebar-content flex-shrink-0 border-r border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/50 overflow-y-auto">
+            <div className="w-sidebar-content flex-shrink-0 border-r border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50 overflow-y-auto">
               <nav className="py-3">
                 {sidebarCategories.map((category) => {
                   const Icon = category.icon
@@ -131,8 +131,8 @@ export function AdvancedFiltersModal(props: AdvancedFiltersModalProps) {
                       className={cn(
                         "w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-xs transition-colors",
                         isActive
-                          ? "bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary border-r-2 border-gray-900 dark:border-lia-border-subtle font-medium"
-                          : "text-lia-text-secondary hover:bg-gray-100 hover:text-lia-text-primary"
+                          ? "bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary border-r-2 border-lia-btn-primary-bg dark:border-lia-border-subtle font-medium"
+                          : "text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
                       )}
                     >
                       <Icon className={cn("w-4 h-4", isActive ? "text-lia-text-primary" : "text-lia-text-tertiary")} />

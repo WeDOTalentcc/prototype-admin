@@ -247,7 +247,7 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
     event.dataTransfer.setData('text/plain', columnId)
     
     const dragImage = document.createElement('div')
-    dragImage.className = 'fixed pointer-events-none bg-white dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-3 py-1.5 text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary z-50'
+    dragImage.className = 'fixed pointer-events-none bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-3 py-1.5 text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary z-50'
     const column = columns.find(c => c.id === columnId)
     dragImage.textContent = column?.label || columnId
     document.body.appendChild(dragImage)

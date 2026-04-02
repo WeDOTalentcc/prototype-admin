@@ -23,7 +23,7 @@ const CandidatesHeader = memo(function CandidatesHeader({
   showFilters,
 }: CandidatesHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-4 bg-white dark:bg-lia-bg-primary">
+    <div className="flex items-center justify-between border-b border-lia-border-subtle dark:border-lia-border-subtle px-6 py-4 bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-lia-text-secondary" />
@@ -35,7 +35,7 @@ const CandidatesHeader = memo(function CandidatesHeader({
         </Badge>
         
         {selectedCount > 0 && (
-          <Badge className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+          <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
             {selectedCount} selecionados
           </Badge>
         )}
@@ -55,7 +55,7 @@ const CandidatesHeader = memo(function CandidatesHeader({
         <Button
           onClick={onAddCandidate}
           size="sm"
-          className="bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200 text-white"
+          className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active text-white"
         >
           <Plus className="h-4 w-4 mr-2" />
           Adicionar

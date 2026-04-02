@@ -12,7 +12,7 @@ interface DeleteConfirmModalProps {
 
 export function DeleteConfirmModal({ goal, isDeleting, onCancel, onConfirm }: DeleteConfirmModalProps) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
       <div className="bg-lia-bg-primary rounded-md w-full max-w-md mx-4 overflow-hidden">
         <div className="bg-status-error/10 px-6 py-4 border-b border-status-error/30">
           <div className="flex items-center gap-3">
@@ -27,7 +27,7 @@ export function DeleteConfirmModal({ goal, isDeleting, onCancel, onConfirm }: De
         </div>
 
         <div className="p-6">
-          <div className="bg-gray-50 rounded-md p-4 mb-4">
+          <div className="bg-lia-bg-secondary rounded-md p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
               {getCategoryIcon(goal.category)}
               <span className="font-medium text-lia-text-primary">{goal.name}</span>

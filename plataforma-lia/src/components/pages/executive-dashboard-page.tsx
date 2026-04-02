@@ -128,7 +128,7 @@ export function ExecutiveDashboardPage() {
               <select
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:ring-gray-50/20/50"
+                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20/50"
               >
                 <option value="week">Esta Semana</option>
                 <option value="month">Este Mês</option>
@@ -139,7 +139,7 @@ export function ExecutiveDashboardPage() {
               <select
                 value={selectedDepartment}
                 onChange={(e) => setSelectedDepartment(e.target.value)}
-                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:ring-gray-50/20/50"
+                className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20/50"
               >
                 <option value="all">Todos Departamentos</option>
                 <option value="tecnologia">Tecnologia</option>
@@ -169,20 +169,20 @@ export function ExecutiveDashboardPage() {
         </div>
 
         <Tabs defaultValue="funnel" className="w-full">
-          <TabsList className="mb-6 bg-gray-100 dark:bg-lia-bg-secondary p-1 rounded-md">
-            <TabsTrigger value="funnel" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700">
+          <TabsList className="mb-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-1 rounded-md">
+            <TabsTrigger value="funnel" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse">
               <BarChart3 className="w-4 h-4" />
               Funil & Performance
             </TabsTrigger>
-            <TabsTrigger value="strategic" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700">
+            <TabsTrigger value="strategic" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse">
               <Award className="w-4 h-4" />
               Visão Estratégica
             </TabsTrigger>
-            <TabsTrigger value="agents" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700">
+            <TabsTrigger value="agents" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse">
               <Activity className="w-4 h-4" />
               Atividades dos Agentes
             </TabsTrigger>
-            <TabsTrigger value="intelligence" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700">
+            <TabsTrigger value="intelligence" className="gap-2 data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               Inteligência LIA
             </TabsTrigger>
@@ -213,7 +213,7 @@ export function ExecutiveDashboardPage() {
                               ? 'bg-status-error/10 dark:bg-status-error/20'
                               : action.priority === 'alta'
                               ? 'bg-status-warning/10 dark:bg-status-warning/20'
-                              : 'bg-gray-50 dark:bg-lia-bg-secondary'
+                              : 'bg-lia-bg-secondary dark:bg-lia-bg-secondary'
                           }`}
                         >
                           <div className="flex items-center justify-between mb-1">
@@ -237,7 +237,7 @@ export function ExecutiveDashboardPage() {
 
               {/* KPIs Principais */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="bg-gray-100 dark:bg-lia-bg-secondary">
+                <Card className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
                       <Briefcase className="w-8 h-8 text-lia-text-secondary" />
@@ -317,15 +317,15 @@ export function ExecutiveDashboardPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {[
-                        { stage: "Candidatos", count: data.recruitmentFunnel.total, color: "bg-gray-700 dark:bg-lia-text-tertiary", pct: 100 },
-                        { stage: "Triagem", count: data.recruitmentFunnel.screening, color: "bg-gray-50 dark:bg-lia-bg-primary0", pct: Math.round((data.recruitmentFunnel.screening / data.recruitmentFunnel.total) * 100) },
+                        { stage: "Candidatos", count: data.recruitmentFunnel.total, color: "bg-lia-bg-inverse dark:bg-lia-text-tertiary", pct: 100 },
+                        { stage: "Triagem", count: data.recruitmentFunnel.screening, color: "bg-lia-bg-secondary dark:bg-lia-bg-primary0", pct: Math.round((data.recruitmentFunnel.screening / data.recruitmentFunnel.total) * 100) },
                         { stage: "Entrevistas", count: data.recruitmentFunnel.interview, color: "bg-status-warning", pct: Math.round((data.recruitmentFunnel.interview / data.recruitmentFunnel.total) * 100) },
                         { stage: "Fase Final", count: data.recruitmentFunnel.final, color: "bg-wedo-orange", pct: Math.round((data.recruitmentFunnel.final / data.recruitmentFunnel.total) * 100) },
                         { stage: "Contratados", count: data.recruitmentFunnel.hired, color: "bg-status-success", pct: Math.round((data.recruitmentFunnel.hired / data.recruitmentFunnel.total) * 100) }
                       ].map((stage, index) => (
                         <div key={stage.stage} className="flex items-center gap-3">
                           <div className="w-20 text-xs font-medium text-lia-text-secondary text-right">{stage.stage}</div>
-                          <div className="flex-1 relative h-7 bg-gray-100 dark:bg-lia-bg-elevated rounded-md overflow-hidden">
+                          <div className="flex-1 relative h-7 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md overflow-hidden">
                             <div
                               className={`h-full ${stage.color} flex items-center px-2`}
                               style={{width: `${Math.max(stage.pct, 8)}%`}}
@@ -357,7 +357,7 @@ export function ExecutiveDashboardPage() {
                   <CardContent>
                     <div className="space-y-3">
                       {data.departmentMetrics.map((dept, index) => (
-                        <div key={dept.department} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <div key={dept.department} className="flex items-center gap-3 p-2 rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover">
                           <div className="w-24 font-medium text-sm text-lia-text-primary">{dept.department}</div>
                           <div className="flex-1 grid grid-cols-4 gap-2 text-center text-xs">
                             <div>
@@ -399,7 +399,7 @@ export function ExecutiveDashboardPage() {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {data.topPerformingJobs.map((job, index) => (
-                      <div key={job.id} className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                      <div key={job.id} className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <div className="font-medium text-lia-text-primary text-sm">{job.title}</div>
@@ -411,15 +411,15 @@ export function ExecutiveDashboardPage() {
                           </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
-                          <div className="p-2 bg-gray-100 dark:bg-lia-bg-elevated rounded-md">
+                          <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md">
                             <div className="font-bold text-lia-text-primary">{job.candidates}</div>
                             <div className="text-lia-text-secondary">candidatos</div>
                           </div>
-                          <div className="p-2 bg-gray-100 dark:bg-lia-bg-elevated rounded-md">
+                          <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md">
                             <div className="font-bold text-lia-text-primary">{job.hires}</div>
                             <div className="text-lia-text-secondary">contratados</div>
                           </div>
-                          <div className="p-2 bg-gray-100 dark:bg-lia-bg-elevated rounded-md">
+                          <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md">
                             <div className="font-bold text-lia-text-primary">{job.avgTime}d</div>
                             <div className="text-lia-text-secondary">tempo</div>
                           </div>
@@ -437,7 +437,7 @@ export function ExecutiveDashboardPage() {
             <div className="space-y-6">
               {/* Métricas Estratégicas + Financeiro */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <Card className="bg-gray-100 dark:bg-lia-bg-secondary">
+                <Card className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-lia-text-secondary">{data.strategicMetrics.employeeSatisfaction}</div>
                     <div className="text-xs text-lia-text-secondary">Satisfação</div>
@@ -465,7 +465,7 @@ export function ExecutiveDashboardPage() {
                     <div className="text-xs text-lia-text-secondary mt-1">mercado: {data.benchmarks.industryAverages.nps}</div>
                   </CardContent>
                 </Card>
- <Card className="bg-gray-50 dark:bg-lia-bg-secondary">
+ <Card className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <CardContent className="p-4 text-center">
                     <div className="text-2xl font-bold text-lia-text-primary">{data.strategicMetrics.marketCompetitiveness}%</div>
                     <div className="text-xs text-lia-text-primary">Competitividade</div>
@@ -486,7 +486,7 @@ export function ExecutiveDashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                      <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                         <div className="flex items-center gap-3">
                           <Clock className="w-5 h-5 text-lia-text-secondary" />
                           <span className="text-sm font-medium">Time to Hire</span>
@@ -500,7 +500,7 @@ export function ExecutiveDashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                      <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                         <div className="flex items-center gap-3">
                           <DollarSign className="w-5 h-5 text-status-success" />
                           <span className="text-sm font-medium">Custo por Hire</span>
@@ -514,7 +514,7 @@ export function ExecutiveDashboardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                      <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                         <div className="flex items-center gap-3">
                           <Percent className="w-5 h-5 text-wedo-purple" />
                           <span className="text-sm font-medium">Taxa de Conversão</span>
@@ -547,13 +547,13 @@ export function ExecutiveDashboardPage() {
                   <CardContent>
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                        <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                           <div className="text-xs text-lia-text-secondary mb-1">Orçamento Total</div>
                           <div className="text-lg font-bold text-lia-text-primary">
                             R$ {data.financialMetrics.totalBudget.toLocaleString()}
                           </div>
                         </div>
-                        <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                        <div className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                           <div className="text-xs text-lia-text-secondary mb-1">Utilizado</div>
                           <div className="text-lg font-bold text-lia-text-secondary">
                             R$ {data.financialMetrics.spentToDate.toLocaleString()}
@@ -568,7 +568,7 @@ export function ExecutiveDashboardPage() {
                             {data.financialMetrics.budgetUtilization}%
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className="w-full bg-lia-interactive-active rounded-full h-3">
                           <div
                             className={`h-3 rounded-full transition-[width,height] ${
                               data.financialMetrics.budgetUtilization > 90 ? 'bg-status-error' :
@@ -610,7 +610,7 @@ export function ExecutiveDashboardPage() {
                         className={`p-4 rounded-md ${
                           risk.impact === 'High' ? 'bg-status-error/10 dark:bg-status-error/20' :
                           risk.impact === 'Medium' ? 'bg-status-warning/10 dark:bg-status-warning/20' :
-                          'bg-gray-100 dark:bg-lia-bg-secondary'
+                          'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -618,12 +618,12 @@ export function ExecutiveDashboardPage() {
                           <Badge className={`text-xs ${
                             risk.impact === 'High' ? 'bg-status-error/15 text-status-error' :
                             risk.impact === 'Medium' ? 'bg-status-warning/15 text-status-warning' :
-                            'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
+                            'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary'
                           }`}>
                             {risk.probability}%
                           </Badge>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div className="w-full bg-lia-interactive-active rounded-full h-2 mb-2">
                           <div
                             className={`h-2 rounded-full ${
                               risk.probability > 50 ? 'bg-status-error' :
@@ -652,7 +652,7 @@ export function ExecutiveDashboardPage() {
           <TabsContent value="intelligence">
             <div className="space-y-6">
               <Tabs defaultValue="predictive" className="w-full">
-                <TabsList className="mb-4 bg-gray-100 dark:bg-lia-bg-secondary">
+                <TabsList className="mb-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                   <TabsTrigger value="predictive" className="gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     Analytics Preditivo

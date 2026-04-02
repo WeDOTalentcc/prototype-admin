@@ -290,7 +290,7 @@ export function SuccessPredictionAnalytics() {
       case 'low': return 'bg-status-success/10 text-status-success border-status-success/30'
       case 'medium': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
       case 'high': return 'bg-status-error/10 text-status-error border-status-error/30'
-      default: return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+      default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -331,7 +331,7 @@ export function SuccessPredictionAnalytics() {
                   </span>
                 </div>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+              <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                 <Users className="w-6 h-6 text-lia-text-secondary" />
               </div>
             </div>
@@ -383,10 +383,10 @@ export function SuccessPredictionAnalytics() {
         <CardContent>
           <div className="space-y-4">
             {candidatePredictions.map(prediction => (
-              <div key={prediction.candidateId} className="p-4 border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none">
+              <div key={prediction.candidateId} className="p-4 border border-lia-border-subtle rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
+                    <div className="w-12 h-12 bg-lia-bg-tertiary rounded-md flex items-center justify-center">
                       <User className="w-6 h-6 text-lia-text-primary" />
                     </div>
                     <div>
@@ -612,7 +612,7 @@ export function SuccessPredictionAnalytics() {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-md w-fit">
+          <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-md w-fit">
             {[
               { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
               { id: 'models', label: 'Modelos ML', icon: Brain },
@@ -683,7 +683,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
       case 'low': return 'bg-status-success/10 text-status-success border-status-success/30'
       case 'medium': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
       case 'high': return 'bg-status-error/10 text-status-error border-status-error/30'
-      default: return 'bg-gray-100 text-lia-text-primary border-lia-border-subtle'
+      default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -756,7 +756,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
 
                   <div>
                     <p className="text-sm font-medium text-lia-text-secondary mb-2">Recomendação Salarial</p>
-                    <div className="bg-gray-50 p-3 rounded-md">
+                    <div className="bg-lia-bg-secondary p-3 rounded-md">
                       <div className="flex justify-between items-center">
                         <span className="text-sm">Faixa:</span>
                         <span className="font-medium">
@@ -826,7 +826,7 @@ function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionMod
                 <CardContent>
                   <div className="space-y-3">
                     {candidate.recommendations.map((rec, index) => (
-                      <div key={`rec-${index}`} className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                      <div key={`rec-${index}`} className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                         <p className="text-sm text-wedo-cyan-dark">{rec}</p>
                       </div>
                     ))}

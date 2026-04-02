@@ -99,11 +99,11 @@ const vendors = [
 const getScoreColor = (score: string) => {
   switch (score) {
     case 'A': return { bg: 'bg-status-success/15', text: 'text-status-success', border: 'border-status-success/30' }
-    case 'B': return { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'lia-text-600 dark:text-lia-text-tertiary', border: 'border-lia-border-default dark:border-lia-border-default' }
+    case 'B': return { bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary', text: 'lia-text-600 dark:text-lia-text-tertiary', border: 'border-lia-border-default dark:border-lia-border-default' }
     case 'C': return { bg: 'bg-status-warning/15', text: 'text-status-warning', border: 'border-status-warning/30' }
     case 'D': return { bg: 'bg-wedo-orange/15', text: 'text-wedo-orange', border: 'border-wedo-orange/30' }
     case 'F': return { bg: 'bg-status-error/15', text: 'text-status-error', border: 'border-status-error/30' }
-    default: return { bg: 'bg-gray-100', text: 'lia-text-800 dark:text-lia-text-primary', border: 'border-lia-border-default' }
+    default: return { bg: 'bg-lia-bg-tertiary', text: 'lia-text-800 dark:text-lia-text-primary', border: 'border-lia-border-default' }
   }
 }
 
@@ -116,7 +116,7 @@ const getStatusConfig = (status: string) => {
     case 'rejected':
       return { icon: AlertTriangle, color: 'text-status-error', bg: 'bg-status-error/15', label: 'Rejeitado' }
     default:
-      return { icon: Clock, color: 'lia-text-600', bg: 'bg-gray-100', label: status }
+      return { icon: Clock, color: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary', label: status }
   }
 }
 
@@ -129,21 +129,21 @@ const getCriticalityColor = (criticality: string) => {
     case 'Baixa':
       return 'bg-status-success/15 text-status-success'
     default:
-      return 'bg-gray-100 lia-text-800 dark:text-lia-text-primary'
+      return 'bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary'
   }
 }
 
 const getServiceTypeColor = (serviceType: string) => {
   const colors: Record<string, string> = {
-    'Cloud Infrastructure': 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary',
+    'Cloud Infrastructure': 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary',
     'AI/LLM Provider': 'bg-wedo-purple/15 text-wedo-purple',
     'Database as a Service': 'bg-status-success/15 text-status-success',
     'Email Service Provider': 'bg-status-warning/15 text-status-warning',
-    'Frontend Hosting': 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-900 dark:lia-text-50',
+    'Frontend Hosting': 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary',
     'Payment Processing': 'bg-wedo-magenta/15 text-wedo-magenta',
     'Talent Search Provider': 'bg-wedo-purple/15 text-wedo-purple',
   }
-  return colors[serviceType] || 'bg-gray-100 lia-text-800 dark:text-lia-text-primary'
+  return colors[serviceType] || 'bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary'
 }
 
 export default function FornecedoresPage() {
@@ -166,18 +166,18 @@ export default function FornecedoresPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
             >
-              <Truck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Truck className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+                className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
                 
               >
                 Due Diligence Supply Chain
               </h1>
-              <p className="text-sm lia-text-400 dark:lia-text-500" >
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                 Avaliação de riscos de fornecedores e terceiros
               </p>
             </div>
@@ -201,7 +201,7 @@ export default function FornecedoresPage() {
                     Obrigatório
                   </Badge>
                 </div>
-                <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+                <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                   A Resolução BCB 498/2025 exige due diligence para todos os fornecedores de serviços de processamento 
                   e armazenamento de dados em nuvem. Todos os fornecedores críticos devem ser avaliados quanto a 
                   certificações de segurança, políticas de privacidade e conformidade regulatória.
@@ -215,12 +215,12 @@ export default function FornecedoresPage() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Building2 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <Building2 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{totalVendors}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Total</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{totalVendors}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Total</p>
                 </div>
               </div>
             </CardContent>
@@ -233,8 +233,8 @@ export default function FornecedoresPage() {
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{approvedVendors}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Aprovados</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{approvedVendors}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Aprovados</p>
                 </div>
               </div>
             </CardContent>
@@ -247,8 +247,8 @@ export default function FornecedoresPage() {
                   <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{highCriticalityVendors}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Alta Criticidade</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{highCriticalityVendors}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Alta Criticidade</p>
                 </div>
               </div>
             </CardContent>
@@ -261,8 +261,8 @@ export default function FornecedoresPage() {
                   <Award className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{scoreAVendors}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Score A</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{scoreAVendors}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Score A</p>
                 </div>
               </div>
             </CardContent>
@@ -271,12 +271,12 @@ export default function FornecedoresPage() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <Shield className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{scoreBVendors}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Score B</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{scoreBVendors}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Score B</p>
                 </div>
               </div>
             </CardContent>
@@ -286,12 +286,12 @@ export default function FornecedoresPage() {
         <Card >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
                 Lista de Fornecedores Avaliados
               </CardTitle>
               <div className="flex items-center gap-2">
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400 dark:lia-text-500"  />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary"  />
                   <Input
                     placeholder="Buscar fornecedores..."
                     value={searchTerm}
@@ -331,10 +331,10 @@ export default function FornecedoresPage() {
                       <TableRow key={vendor.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
-                              <Building2 className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                              <Building2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                             </div>
-                            <span className="font-medium lia-text-800 dark:text-lia-text-primary" >
+                            <span className="font-medium text-lia-text-primary dark:text-lia-text-primary" >
                               {vendor.name}
                             </span>
                           </div>
@@ -356,16 +356,16 @@ export default function FornecedoresPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 lia-text-400 dark:lia-text-500"  />
-                            <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+                            <Calendar className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                            <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                               {new Date(vendor.lastAssessment).toLocaleDateString('pt-BR')}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 lia-text-400 dark:lia-text-500"  />
-                            <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+                            <Calendar className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                            <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                               {new Date(vendor.nextAssessment).toLocaleDateString('pt-BR')}
                             </span>
                           </div>

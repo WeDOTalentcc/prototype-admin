@@ -123,9 +123,9 @@ export function WorkModelAnalyticsPage() {
   const getWorkModelColor = (modelo: string) => {
     switch (modelo) {
       case 'remoto': return 'bg-status-success'
-      case 'híbrido': return 'bg-gray-700 dark:bg-lia-text-tertiary'
-      case 'presencial': return 'bg-gray-500'
-      default: return 'bg-gray-400'
+      case 'híbrido': return 'bg-lia-bg-inverse dark:bg-lia-text-tertiary'
+      case 'presencial': return 'bg-lia-bg-secondary0'
+      default: return 'bg-lia-border-medium'
     }
   }
 
@@ -136,11 +136,11 @@ export function WorkModelAnalyticsPage() {
   }
 
   return (
-    <div className="h-screen bg-white dark:bg-lia-bg-primary overflow-hidden">
+    <div className="h-screen bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       <div className="flex flex-col h-full">
 
         {/* Header */}
-        <div className="p-6 bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <div className="p-6 bg-lia-bg-primary dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-lia-text-primary mb-2 flex items-center gap-3">
@@ -154,14 +154,14 @@ export function WorkModelAnalyticsPage() {
 
             <div className="flex items-center gap-3">
               {/* Filtros de período */}
-              <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
+              <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-1">
                 {(['30d', '90d', '6m', '1y'] as const).map((period) => (
                   <button
                     key={period}
                     onClick={() => setSelectedPeriod(period)}
                     className={`px-3 py-1 text-xs font-medium rounded-md transition-colors motion-reduce:transition-none ${
                       selectedPeriod === period
-                        ? 'bg-gray-900 dark:bg-gray-50 text-white'
+                        ? 'bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white'
                         : 'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse'
                     }`}
                   >
@@ -211,7 +211,7 @@ export function WorkModelAnalyticsPage() {
             {/* KPIs principais */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {workModelDistribution.map((item) => (
-                <Card key={item.modelo} className="border-l-4 border-l-gray-400 dark:border-l-gray-500">
+                <Card key={item.modelo} className="border-l-4 border-l-lia-border-medium dark:border-l-lia-border-medium">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm font-medium text-lia-text-secondary capitalize flex items-center gap-2">
@@ -291,19 +291,19 @@ export function WorkModelAnalyticsPage() {
                             {cargo.total} candidatos
                           </span>
                         </div>
-                        <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-lia-bg-elevated">
+                        <div className="flex rounded-full overflow-hidden h-2 bg-lia-interactive-active dark:bg-lia-bg-elevated">
                           <div
                             className="bg-status-success"
                             style={{width: `${(cargo.remoto / cargo.total) * 100}%`}}
                             title={`Remoto: ${cargo.remoto}`}
                           />
                           <div
-                            className="bg-gray-700 dark:bg-lia-text-tertiary"
+                            className="bg-lia-bg-inverse dark:bg-lia-text-tertiary"
                             style={{width: `${(cargo.hibrido / cargo.total) * 100}%`}}
                             title={`Híbrido: ${cargo.hibrido}`}
                           />
                           <div
-                            className="bg-gray-500"
+                            className="bg-lia-bg-secondary0"
                             style={{width: `${(cargo.presencial / cargo.total) * 100}%`}}
                             title={`Presencial: ${cargo.presencial}`}
                           />
@@ -314,11 +314,11 @@ export function WorkModelAnalyticsPage() {
                             Remoto: {cargo.remoto}
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-gray-700 dark:bg-lia-text-tertiary rounded-full"></div>
+                            <div className="w-2 h-2 bg-lia-bg-inverse dark:bg-lia-text-tertiary rounded-full"></div>
                             Híbrido: {cargo.hibrido}
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                            <div className="w-2 h-2 bg-lia-bg-secondary0 rounded-full"></div>
                             Presencial: {cargo.presencial}
                           </div>
                         </div>
@@ -358,19 +358,19 @@ export function WorkModelAnalyticsPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex rounded-full overflow-hidden h-3 bg-gray-200 dark:bg-lia-bg-elevated">
+                        <div className="flex rounded-full overflow-hidden h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated">
                           <div
                             className="bg-status-success"
                             style={{width: `${(level.remoto / level.total) * 100}%`}}
                             title={`Remoto: ${level.remoto}`}
                           />
                           <div
-                            className="bg-gray-700 dark:bg-lia-text-tertiary"
+                            className="bg-lia-bg-inverse dark:bg-lia-text-tertiary"
                             style={{width: `${(level.hibrido / level.total) * 100}%`}}
                             title={`Híbrido: ${level.hibrido}`}
                           />
                           <div
-                            className="bg-gray-500"
+                            className="bg-lia-bg-secondary0"
                             style={{width: `${(level.presencial / level.total) * 100}%`}}
                             title={`Presencial: ${level.presencial}`}
                           />
@@ -381,11 +381,11 @@ export function WorkModelAnalyticsPage() {
                             {level.remoto} ({Math.round((level.remoto / level.total) * 100)}%)
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-gray-700 dark:bg-lia-text-tertiary rounded-full"></div>
+                            <div className="w-2 h-2 bg-lia-bg-inverse dark:bg-lia-text-tertiary rounded-full"></div>
                             {level.hibrido} ({Math.round((level.hibrido / level.total) * 100)}%)
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                            <div className="w-2 h-2 bg-lia-bg-secondary0 rounded-full"></div>
                             {level.presencial} ({Math.round((level.presencial / level.total) * 100)}%)
                           </div>
                         </div>
@@ -421,17 +421,17 @@ export function WorkModelAnalyticsPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <div className="flex rounded-full overflow-hidden h-2 bg-gray-200 dark:bg-lia-bg-elevated">
+                        <div className="flex rounded-full overflow-hidden h-2 bg-lia-interactive-active dark:bg-lia-bg-elevated">
                           <div
                             className="bg-status-success"
                             style={{width: `${(region.remoto / region.total) * 100}%`}}
                           />
                           <div
-                            className="bg-gray-700 dark:bg-lia-text-tertiary"
+                            className="bg-lia-bg-inverse dark:bg-lia-text-tertiary"
                             style={{width: `${(region.hibrido / region.total) * 100}%`}}
                           />
                           <div
-                            className="bg-gray-500"
+                            className="bg-lia-bg-secondary0"
                             style={{width: `${(region.presencial / region.total) * 100}%`}}
                           />
                         </div>
@@ -479,7 +479,7 @@ export function WorkModelAnalyticsPage() {
                       </p>
                     </div>
 
-                    <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                    <div className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                       <h4 className="text-sm font-medium text-lia-text-secondary mb-1">
                         💰 Salário Remoto vs Híbrido
                       </h4>
@@ -519,7 +519,7 @@ export function WorkModelAnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                    <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                       <h4 className="text-sm font-medium text-lia-text-primary mb-1">
                         🎯 Focar em Modelo Híbrido
                       </h4>
@@ -528,7 +528,7 @@ export function WorkModelAnalyticsPage() {
                       </p>
                     </div>
 
-                    <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                    <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                       <h4 className="text-sm font-medium text-lia-text-primary mb-1">
                         💎 Expandir para Regiões
                       </h4>
@@ -537,7 +537,7 @@ export function WorkModelAnalyticsPage() {
                       </p>
                     </div>
 
-                    <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                    <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                       <h4 className="text-sm font-medium text-lia-text-primary mb-1">
                         📈 Ajustar Estratégia Salarial
                       </h4>
@@ -546,7 +546,7 @@ export function WorkModelAnalyticsPage() {
                       </p>
                     </div>
 
-                    <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                    <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                       <h4 className="text-sm font-medium text-lia-text-primary mb-1">
                         🔄 Revisar Políticas Presenciais
                       </h4>

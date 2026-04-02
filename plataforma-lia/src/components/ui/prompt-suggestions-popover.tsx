@@ -267,7 +267,7 @@ export function PromptSuggestionsPopover({
               className={cn(
  "px-2 py-0.5 rounded-md text-xs font-medium transition-colors",
                 !activeCategory 
-                  ? "bg-gray-900 text-white" 
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                   : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated"
               )}
             >
@@ -280,7 +280,7 @@ export function PromptSuggestionsPopover({
                 className={cn(
  "px-2 py-0.5 rounded-md text-xs font-medium transition-colors",
                   activeCategory === key 
-                    ? "bg-gray-900 text-white" 
+                    ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                     : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated"
                 )}
               >

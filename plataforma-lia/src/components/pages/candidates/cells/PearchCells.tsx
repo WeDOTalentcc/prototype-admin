@@ -25,7 +25,7 @@ export function renderPearchInsightCell(
       )
     case "is_top_universities":
       return candidate.is_top_universities ? (
-        <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
+        <Badge className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
           Top University
         </Badge>
       ) : (
@@ -73,7 +73,7 @@ export function renderPearchInsightCell(
               e.stopPropagation()
               navigator.clipboard.writeText(candidate.outreach_message!)
             }}
-            className="p-0.5 hover:bg-gray-100 rounded-md"
+            className="p-0.5 hover:bg-lia-bg-tertiary rounded-md"
             title="Copiar mensagem"
           >
             <Copy className="w-3 h-3 text-lia-text-tertiary" />
@@ -165,10 +165,10 @@ export function renderPearchInsightCell(
                   insight.match_level === "Exceeds"
                     ? "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success"
                     : insight.match_level === "Meets"
-                      ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
+                      ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
                       : insight.match_level === "Partial"
                         ? "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning"
-                        : "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
+                        : "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
                 }`}
               >
                 {insight.match_level}

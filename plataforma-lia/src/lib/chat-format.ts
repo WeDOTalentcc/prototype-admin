@@ -53,7 +53,7 @@ export function parseChatMarkdown(text: string): string {
     return `%%CODEBLOCK_${codeBlocks.length - 1}%%`
   })
 
-  processed = processed.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded-md bg-gray-200 dark:bg-lia-bg-tertiary text-xs font-mono text-lia-text-primary dark:text-lia-text-primary">$1</code>')
+  processed = processed.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded-md bg-lia-interactive-active dark:bg-lia-bg-tertiary text-xs font-mono text-lia-text-primary dark:text-lia-text-primary">$1</code>')
   processed = processed.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
   processed = processed.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>")
 
@@ -109,7 +109,7 @@ export function parseChatMarkdown(text: string): string {
   let output = result.join("")
 
   output = output.replace(/%%CODEBLOCK_(\d+)%%/g, (_, idx) => {
-    return `<pre class="rounded-md bg-gray-100 dark:bg-lia-bg-primary p-2 my-1.5 overflow-x-auto"><code class="text-micro font-mono text-lia-text-primary dark:text-lia-text-primary">${codeBlocks[parseInt(idx)]}</code></pre>`
+    return `<pre class="rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-primary p-2 my-1.5 overflow-x-auto"><code class="text-micro font-mono text-lia-text-primary dark:text-lia-text-primary">${codeBlocks[parseInt(idx)]}</code></pre>`
   })
 
   output = output.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) => {

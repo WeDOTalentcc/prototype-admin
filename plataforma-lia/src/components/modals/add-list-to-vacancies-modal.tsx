@@ -305,7 +305,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
             variant="outline"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
+            className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
           >
             Cancelar
           </Button>
@@ -313,7 +313,7 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || isLoading || selectedVacancyIds.size === 0}
-            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             {isSubmitting ? (
               <>

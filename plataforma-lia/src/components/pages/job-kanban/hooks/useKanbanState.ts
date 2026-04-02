@@ -51,7 +51,7 @@ export function useKanbanState(options: UseKanbanStateOptions): UseKanbanStateRe
       const response = await liaApi.getJobVacancy(jobId)
       
       const defaultStages: KanbanStage[] = [
-        { id: "applied", name: "Inscritos", color: "var(--gray-400)", order: 0, candidates: [], candidateCount: 0 },
+        { id: "applied", name: "Inscritos", color: "var(--lia-text-tertiary)", order: 0, candidates: [], candidateCount: 0 },
         { id: "screening", name: "Triagem", color: "var(--wedo-blue)", order: 1, candidates: [], candidateCount: 0 },
         { id: "interview", name: "Entrevista", color: "var(--wedo-purple)", order: 2, candidates: [], candidateCount: 0 },
         { id: "technical", name: "Teste Técnico", color: "var(--status-warning)", order: 3, candidates: [], candidateCount: 0 },

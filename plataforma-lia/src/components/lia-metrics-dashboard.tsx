@@ -99,7 +99,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
       avgTime: avgTimeContact,
       icon: <Phone className="w-4 h-4" />,
       color: 'text-lia-text-secondary',
-      bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary'
+      bgColor: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
     },
     {
       stage: 'Triagem Iniciada',
@@ -109,7 +109,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
       avgTime: avgTimeTriage,
       icon: <Target className="w-4 h-4" />,
       color: 'text-lia-text-primary',
- bgColor: 'bg-gray-50 dark:bg-lia-bg-secondary'
+ bgColor: 'bg-lia-bg-secondary dark:bg-lia-bg-secondary'
     },
     {
       stage: 'Triagem Completa',
@@ -306,7 +306,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <CardContent className="p-3">
             <div className="flex items-center justify-between mb-1">
               <Zap className="w-4 h-4 text-lia-text-secondary" />
-              <Badge className="text-xs px-1.5 py-0.5 bg-gray-900 text-white">
+              <Badge className="text-xs px-1.5 py-0.5 bg-lia-btn-primary-bg text-lia-btn-primary-text">
                 {avgLiaScore.toFixed(1)}
               </Badge>
             </div>
@@ -352,7 +352,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                           </Badge>
                         </div>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5">
+                      <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5">
                         <div
                           className={`h-1.5 rounded-full ${
  stage.rate >= 70 ? 'bg-wedo-green' :
@@ -414,7 +414,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               <LiaMetricsChart
                 data={generateTimeSeriesData(contactRate)}
                 title=""
-                color="var(--gray-600)"
+                color="var(--lia-text-secondary)"
               />
             </div>
           </CardContent>
@@ -498,7 +498,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <div className="space-y-2">
             {sourceMetrics.map((source) => (
               <div key={source.source} className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                <div className="w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                   <Users className="w-3 h-3 text-lia-text-secondary" />
                 </div>
                 <div className="flex-1">
@@ -517,7 +517,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                       </Badge>
                     </div>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1">
+                  <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1">
                     <div
                       className={`h-1 rounded-full ${
  source.conversionRate >= 70 ? 'bg-status-success' :
@@ -655,7 +655,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 {(avgLiaScore * 10).toFixed(0)}
               </div>
             </div>
-            <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+            <div className="mt-3 w-full h-2 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full overflow-hidden">
               <div
                 className="h-full bg-wedo-cyan transition-[width,height] duration-500"
                 style={{width: `${avgLiaScore * 10}%`}}
@@ -679,7 +679,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 {avgSkillsMatch.toFixed(0)}
               </div>
             </div>
-            <div className="mt-3 w-full h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+            <div className="mt-3 w-full h-2 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full overflow-hidden">
               <div
                 className="h-full bg-wedo-green transition-[width,height] duration-500"
                 style={{width: `${avgSkillsMatch}%`}}
@@ -702,7 +702,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             <LiaMetricsChart
               data={generateTimeSeriesData(contactRate)}
               title="Taxa de Contato"
-              color="var(--gray-600)"
+              color="var(--lia-text-secondary)"
               targetValue={80}
             />
             <LiaMetricsChart
@@ -739,7 +739,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
           <div className="space-y-4">
             {/* SLA Overview */}
             <div className="grid grid-cols-4 gap-4 mb-4">
- <div className="p-3 bg-gray-100 rounded-md">
+ <div className="p-3 bg-lia-bg-tertiary rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-lia-text-secondary" />
                   <Badge className="bg-status-success text-white text-xs">
@@ -796,7 +796,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
               <div className="p-3 bg-wedo-purple/10 dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <Clock className="w-5 h-5 text-wedo-purple" />
-                  <Badge className="bg-gray-900 text-white text-xs">
+                  <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">
                     Total
                   </Badge>
                 </div>
@@ -813,10 +813,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
             </div>
 
             {/* Tempo Médio até Contratação */}
-            <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+            <div className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-400 rounded-md flex items-center justify-center">
+                  <div className="w-12 h-12 bg-lia-border-medium rounded-md flex items-center justify-center">
                     <Award className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -848,9 +848,9 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                   <span>Seu desempenho</span>
                   <span>Benchmark mercado</span>
                 </div>
-                <div className="relative h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+                <div className="relative h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full overflow-hidden">
                   <div
-                    className="absolute h-full bg-gray-400 rounded-full transition-[width,height] duration-500"
+                    className="absolute h-full bg-lia-border-medium rounded-full transition-[width,height] duration-500"
                     style={{width: `${((avgTimeTotal + 7) / 15) * 100}%`}}
                   />
                   <div
@@ -863,7 +863,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
             {/* Breakdown Detalhado */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md">
                 <div className="text-xs text-lia-text-secondary mb-2">
                   Mais Rápido
                 </div>
@@ -880,7 +880,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 </div>
               </div>
 
-              <div className="p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md">
                 <div className="text-xs text-lia-text-secondary mb-2">
                   Médio
                 </div>
@@ -897,7 +897,7 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
                 </div>
               </div>
 
-              <div className="p-3 bg-white dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md">
                 <div className="text-xs text-lia-text-secondary mb-2">
                   Mais Lento
                 </div>

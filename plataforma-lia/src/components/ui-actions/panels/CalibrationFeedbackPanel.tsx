@@ -214,7 +214,7 @@ export function CalibrationFeedbackPanel({
       <Button
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+        className="w-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
         size="lg"
       >
         {isLoading ? (
@@ -339,8 +339,8 @@ function CandidateCard({
                 variant={status === "approved" ? "default" : "outline"}
                 size="sm"
                 className={status === "approved"
- ? "flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
-                  : "flex-1 dark:border-lia-border-default dark:hover:bg-gray-700"}
+ ? "flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
+                  : "flex-1 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"}
                 style={status === "approved" ? {} : {
                   backgroundColor: 'transparent',
                   color: 'var(--lia-text-secondary)',
@@ -356,8 +356,8 @@ function CandidateCard({
                 variant={status === "maybe" ? "default" : "outline"}
                 size="sm"
                 className={status === "maybe"
- ? "flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
-                  : "flex-1 dark:border-lia-border-default dark:hover:bg-gray-700"}
+ ? "flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
+                  : "flex-1 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"}
                 style={status === "maybe" ? {} : {
                   backgroundColor: 'transparent',
                   color: 'var(--lia-text-secondary)',
@@ -373,8 +373,8 @@ function CandidateCard({
                 variant={status === "rejected" ? "default" : "outline"}
                 size="sm"
                 className={status === "rejected"
- ? "flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
-                  : "flex-1 dark:border-lia-border-default dark:hover:bg-gray-700"}
+ ? "flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
+                  : "flex-1 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"}
                 style={status === "rejected" ? {} : {
                   backgroundColor: 'transparent',
                   color: 'var(--lia-text-secondary)',

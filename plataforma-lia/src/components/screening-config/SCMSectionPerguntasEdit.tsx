@@ -96,7 +96,7 @@ export function SCMSectionPerguntasEdit({
 
         <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <button onClick={handleGenerateWSI('compact')} disabled={isGeneratingWSI}
-            className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors motion-reduce:transition-none disabled:opacity-50 ${wsiGenerationMode === 'compact' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg ring-2 ring-lia-btn-primary-bg/20 ring-offset-1' : 'bg-white text-lia-text-primary border-lia-border-default hover:bg-lia-interactive-hover hover:border-lia-border-medium hover:bg-lia-interactive-hover'}`}>
+            className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors motion-reduce:transition-none disabled:opacity-50 ${wsiGenerationMode === 'compact' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg ring-2 ring-lia-btn-primary-bg/20 ring-offset-1' : 'bg-lia-bg-primary text-lia-text-primary border-lia-border-default hover:bg-lia-interactive-hover hover:border-lia-border-medium hover:bg-lia-interactive-hover'}`}>
             {isGeneratingWSI && wsiGenerationMode === 'compact' ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
             ) : (
@@ -108,7 +108,7 @@ export function SCMSectionPerguntasEdit({
           </button>
           <div className="relative flex-1 group/full">
             <button onClick={handleGenerateWSI('full')} disabled={isGeneratingWSI || techSkillsCount < 5}
-              className={`w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors motion-reduce:transition-none disabled:opacity-50 ${wsiGenerationMode === 'full' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg ring-2 ring-lia-btn-primary-bg/20 ring-offset-1' : 'bg-white text-lia-text-primary border-lia-border-default hover:bg-lia-interactive-hover hover:border-lia-border-medium hover:bg-lia-interactive-hover'}`}>
+              className={`w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md border transition-colors motion-reduce:transition-none disabled:opacity-50 ${wsiGenerationMode === 'full' ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg ring-2 ring-lia-btn-primary-bg/20 ring-offset-1' : 'bg-lia-bg-primary text-lia-text-primary border-lia-border-default hover:bg-lia-interactive-hover hover:border-lia-border-medium hover:bg-lia-interactive-hover'}`}>
               {isGeneratingWSI && wsiGenerationMode === 'full' ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
               ) : (

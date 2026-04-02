@@ -33,7 +33,7 @@ export function AIDecisionsTable({ decisions, formatDateTime }: AIDecisionsTable
     return (
       <div className="text-center py-6">
         <Brain className="w-8 h-8 text-wedo-cyan mx-auto mb-2" />
-        <p className="text-sm lia-text-400 dark:lia-text-500">Nenhuma decisão automatizada registrada</p>
+        <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Nenhuma decisão automatizada registrada</p>
       </div>
     )
   }
@@ -42,28 +42,28 @@ export function AIDecisionsTable({ decisions, formatDateTime }: AIDecisionsTable
       <table className="w-full">
         <thead>
           <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-            <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Data/Hora</th>
-            <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Agente</th>
-            <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Candidato</th>
-            <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Decisão</th>
-            <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Confiança</th>
-            <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Override</th>
-            <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">XAI</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Data/Hora</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Agente</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Candidato</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Decisão</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Confiança</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Override</th>
+            <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">XAI</th>
           </tr>
         </thead>
         <tbody>
           {decisions.map((decision) => (
-            <tr key={decision.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 border-lia-border-subtle dark:border-lia-border-subtle">
-              <td className="py-3 px-2 text-sm lia-text-400 dark:lia-text-500">{formatDateTime(decision.timestamp)}</td>
+            <tr key={decision.id} className="border-b hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 border-lia-border-subtle dark:border-lia-border-subtle">
+              <td className="py-3 px-2 text-sm text-lia-text-tertiary dark:text-lia-text-secondary">{formatDateTime(decision.timestamp)}</td>
               <td className="py-3 px-2">
                 <Badge variant="outline" className="text-xs">{agentLabels[decision.agent] || decision.agent}</Badge>
               </td>
-              <td className="py-3 px-2 text-sm lia-text-800 dark:text-lia-text-primary">{decision.candidateName}</td>
-              <td className="py-3 px-2 text-sm font-medium lia-text-800 dark:text-lia-text-primary">{decision.outcome}</td>
+              <td className="py-3 px-2 text-sm text-lia-text-primary dark:text-lia-text-primary">{decision.candidateName}</td>
+              <td className="py-3 px-2 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{decision.outcome}</td>
               <td className="py-3 px-2">
                 <div className="flex items-center gap-2">
                   <Progress value={decision.confidence * 100} className="h-1.5 w-16" />
-                  <span className="text-xs lia-text-400 dark:lia-text-500">{(decision.confidence * 100).toFixed(0)}%</span>
+                  <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">{(decision.confidence * 100).toFixed(0)}%</span>
                 </div>
               </td>
               <td className="py-3 px-2">
@@ -77,7 +77,7 @@ export function AIDecisionsTable({ decisions, formatDateTime }: AIDecisionsTable
                 {decision.explainability ? (
                   <CheckCircle2 className="w-4 h-4 text-status-success" />
                 ) : (
-                  <XCircle className="w-4 h-4 lia-text-400" />
+                  <XCircle className="w-4 h-4 text-lia-text-tertiary" />
                 )}
               </td>
             </tr>

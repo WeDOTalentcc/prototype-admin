@@ -169,13 +169,13 @@ export function VoiceScreeningDashboard() {
       case 'strong_yes':
         return 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success'
       case 'interview':
- return 'bg-gray-100 text-lia-text-primary'
+ return 'bg-lia-bg-tertiary text-lia-text-primary'
       case 'maybe':
         return 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning'
       case 'reject':
         return 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error'
       default:
- return 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-primary/30'
+ return 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-primary/30'
     }
   }
 
@@ -258,7 +258,7 @@ export function VoiceScreeningDashboard() {
           <CardContent className="space-y-2">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
               {Object.entries(analytics.recommendation_breakdown).map(([rec, count]: [string, number]) => (
-                <div key={rec} className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                <div key={rec} className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                   <p className={`${textStyles.description} mb-1`}>
                     {getRecommendationLabel(rec)}
                   </p>
@@ -296,7 +296,7 @@ export function VoiceScreeningDashboard() {
               {screenings.map((screening) => (
                 <div 
                   key={screening.id}
-                  className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none"
+                  className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle dark:hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -365,7 +365,7 @@ export function VoiceScreeningDashboard() {
                         {new Date(screening.created_at).toLocaleDateString('pt-BR')}
                       </p>
                       {screening.processing_status && (
- <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-primary/30 text-xs tracking-tight">
+ <Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-primary/30 text-xs tracking-tight">
                           {screening.processing_status}
                         </Badge>
                       )}
@@ -379,7 +379,7 @@ export function VoiceScreeningDashboard() {
       </Card>
 
       {/* Integration Info Card */}
- <Card className="bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-subtle">
+ <Card className="bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-subtle">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <Brain className="w-4 h-4 mt-0.5 flex-shrink-0 text-wedo-cyan" />

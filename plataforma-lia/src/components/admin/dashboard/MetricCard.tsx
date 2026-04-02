@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const ACCENT_BG_MAP: Record<string, string> = {
-  "var(--gray-400)": "var(--gray-bg-10)",
+  "var(--lia-text-tertiary)": "var(--lia-bg-secondary)",
   "var(--status-success)": "var(--status-success-bg)",
   "var(--status-error)": "var(--status-error-bg)",
   "var(--wedo-orange)": "var(--wedo-orange-bg-15)",
@@ -96,7 +96,7 @@ const MetricCard = memo(function MetricCard({
   if (variant === "compact") {
     const numericTrend = typeof trend === "number" ? trend : undefined
     return (
-      <div className="p-3 rounded-md border bg-white border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center gap-2 mb-1.5">
           <div style={accentColor ? { color: accentColor } : undefined}>
             {typeof icon === "function" ? React.createElement(icon, { className: "w-4 h-4" }) : icon}
@@ -112,7 +112,7 @@ const MetricCard = memo(function MetricCard({
   }
 
   const bgColor = accentColor
-    ? (ACCENT_BG_MAP[accentColor] ?? "var(--gray-bg-10)")
+    ? (ACCENT_BG_MAP[accentColor] ?? "var(--lia-bg-secondary)")
     : undefined
 
   const renderIcon = () => {

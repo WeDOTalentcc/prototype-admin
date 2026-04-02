@@ -86,9 +86,9 @@ const statusColors = {
   partial: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
   not_implemented: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
   in_progress: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
-  not_started: 'bg-gray-100 lia-text-800 dark:bg-lia-bg-primary/30 dark:text-lia-text-primary',
-  verified: 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary',
-  not_applicable: 'bg-gray-100 lia-text-500 dark:bg-lia-bg-primary/30 dark:lia-text-500' }
+  not_started: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-primary/30 dark:text-lia-text-primary',
+  verified: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary',
+  not_applicable: 'bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-primary/30 dark:text-lia-text-secondary' }
 
 const statusLabels: Record<string, string> = {
   implemented: 'Implementado',
@@ -101,7 +101,7 @@ const statusLabels: Record<string, string> = {
 
 function LoadingSpinner({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
   const sizeClass = size === 'lg' ? 'w-8 h-8' : size === 'md' ? 'w-6 h-6' : 'w-4 h-4'
-  return <Loader2 className={`${sizeClass} animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary`} />
+  return <Loader2 className={`${sizeClass} animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary`} />
 }
 
 function ComplianceTab({ clientId }: { clientId: string }) {
@@ -142,7 +142,7 @@ function ComplianceTab({ clientId }: { clientId: string }) {
     return (
       <div className="flex items-center justify-center py-12">
         <LoadingSpinner size="lg" />
-        <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">Carregando dados de compliance...</span>
+        <span className="ml-3 text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Carregando dados de compliance...</span>
       </div>
     )
   }
@@ -169,10 +169,10 @@ function ComplianceTab({ clientId }: { clientId: string }) {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="font-semibold text-base lia-text-800 dark:text-lia-text-primary">
+                    <h3 className="font-semibold text-base text-lia-text-primary dark:text-lia-text-primary">
                       {framework.name}
                     </h3>
-                    <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                    <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                       {framework.totalControls} controles totais
                     </p>
                   </div>
@@ -201,8 +201,8 @@ function ComplianceTab({ clientId }: { clientId: string }) {
                 {framework.nextReview && (
                   <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="lia-text-400 dark:lia-text-500">Próxima revisão</span>
-                      <span className="font-medium lia-text-800 dark:text-lia-text-primary">
+                      <span className="text-lia-text-tertiary dark:text-lia-text-secondary">Próxima revisão</span>
+                      <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">
                         {formatDate(framework.nextReview)}
                       </span>
                     </div>
@@ -215,8 +215,8 @@ function ComplianceTab({ clientId }: { clientId: string }) {
       ) : (
         <Card>
           <CardContent className="p-6 text-center">
-            <Shield className="w-8 h-8 lia-text-400 mx-auto mb-2" />
-            <p className="text-sm lia-text-400 dark:lia-text-500">Nenhum framework de compliance configurado</p>
+            <Shield className="w-8 h-8 text-lia-text-tertiary mx-auto mb-2" />
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Nenhum framework de compliance configurado</p>
           </CardContent>
         </Card>
       )}
@@ -224,7 +224,7 @@ function ComplianceTab({ clientId }: { clientId: string }) {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
               Controles de Compliance
             </CardTitle>
             <Button variant="outline" size="sm">
@@ -239,19 +239,19 @@ function ComplianceTab({ clientId }: { clientId: string }) {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                    <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Código</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Controle</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Framework</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Status</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Última Verificação</th>
-                    <th className="text-left py-3 px-2 text-xs font-medium lia-text-400 dark:lia-text-500">Responsável</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Código</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Controle</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Framework</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Status</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Última Verificação</th>
+                    <th className="text-left py-3 px-2 text-xs font-medium text-lia-text-tertiary dark:text-lia-text-secondary">Responsável</th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayControls.map((control) => (
-                    <tr key={control.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 border-lia-border-subtle dark:border-lia-border-subtle">
-                      <td className="py-3 px-2 text-sm font-mono lia-text-800 dark:text-lia-text-primary">{control.code}</td>
-                      <td className="py-3 px-2 text-sm lia-text-800 dark:text-lia-text-primary">{control.name}</td>
+                    <tr key={control.id} className="border-b hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 border-lia-border-subtle dark:border-lia-border-subtle">
+                      <td className="py-3 px-2 text-sm font-mono text-lia-text-primary dark:text-lia-text-primary">{control.code}</td>
+                      <td className="py-3 px-2 text-sm text-lia-text-primary dark:text-lia-text-primary">{control.name}</td>
                       <td className="py-3 px-2">
                         <Badge variant="outline" className="text-xs">{control.framework}</Badge>
                       </td>
@@ -263,8 +263,8 @@ function ComplianceTab({ clientId }: { clientId: string }) {
                           {statusLabels[control.status] || control.status}
                         </span>
                       </td>
-                      <td className="py-3 px-2 text-sm lia-text-400 dark:lia-text-500">{formatDate(control.lastChecked)}</td>
-                      <td className="py-3 px-2 text-sm lia-text-500 dark:text-lia-text-tertiary">{control.owner || '-'}</td>
+                      <td className="py-3 px-2 text-sm text-lia-text-tertiary dark:text-lia-text-secondary">{formatDate(control.lastChecked)}</td>
+                      <td className="py-3 px-2 text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{control.owner || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -272,7 +272,7 @@ function ComplianceTab({ clientId }: { clientId: string }) {
             </div>
           ) : (
             <div className="text-center py-6">
-              <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">Nenhum controle encontrado</p>
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">Nenhum controle encontrado</p>
             </div>
           )}
         </CardContent>
@@ -281,16 +281,16 @@ function ComplianceTab({ clientId }: { clientId: string }) {
       {dashboard && dashboard.upcomingReviews > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
               Próximas Revisões Agendadas
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
+            <div className="p-4 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
               <div className="flex items-center gap-3">
-                <Calendar className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <Calendar className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 <div>
-                  <p className="text-sm font-medium lia-text-900 dark:lia-text-50">
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                     {dashboard.upcomingReviews} revisões agendadas
                   </p>
                   {dashboard.overdueReviews > 0 && (
@@ -358,7 +358,7 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
     return (
       <div className="flex items-center justify-center py-12">
         <LoadingSpinner size="lg" />
-        <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">Carregando dados de governança de IA...</span>
+        <span className="ml-3 text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Carregando dados de governança de IA...</span>
       </div>
     )
   }
@@ -370,8 +370,8 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">Total Decisões IA</p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{totalDecisionsCount.toLocaleString()}</p>
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Total Decisões IA</p>
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">{totalDecisionsCount.toLocaleString()}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <TrendingUp className="w-3 h-3 text-status-success" />
                   <span className="text-xs text-status-success">Últimos 30 dias</span>
@@ -388,8 +388,8 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">Taxa de Override</p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{overrideRate}%</p>
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Taxa de Override</p>
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">{overrideRate}%</p>
                 <div className="flex items-center gap-1 mt-1">
                   <ArrowDownRight className="w-3 h-3 text-status-success" />
                   <span className="text-xs text-status-success">Revisão humana</span>
@@ -406,15 +406,15 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">Cobertura Explainability</p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{explainabilityCoverage}%</p>
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Cobertura Explainability</p>
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">{explainabilityCoverage}%</p>
                 <div className="flex items-center gap-1 mt-1">
                   <TrendingUp className="w-3 h-3 text-status-success" />
                   <span className="text-xs text-status-success">Com explicação</span>
                 </div>
               </div>
- <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-lia-bg-secondary flex items-center justify-center">
- <Eye className="w-5 h-5 lia-text-900 dark:text-lia-text-secondary" />
+ <div className="w-10 h-10 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary flex items-center justify-center">
+ <Eye className="w-5 h-5 text-lia-text-primary dark:text-lia-text-secondary" />
               </div>
             </div>
           </CardContent>
@@ -425,7 +425,7 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
         {Object.keys(agentCounts).length > 0 && (
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Decisões por Agente
               </CardTitle>
             </CardHeader>
@@ -442,10 +442,10 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
                   return (
                     <div key={agent}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                        <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                           {agentLabels[agent] || agent}
                         </span>
-                        <span className="text-sm lia-text-400 dark:lia-text-500">
+                        <span className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                           {count} ({percentage}%)
                         </span>
                       </div>
@@ -461,7 +461,7 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
         <Card className={Object.keys(agentCounts).length > 0 ? "lg:col-span-2" : "lg:col-span-3"}>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Alertas de Bias Detectados
               </CardTitle>
               {summary && (
@@ -477,7 +477,7 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
                 {biasAlerts.map((alert) => (
                   <div 
                     key={alert.id} 
-                    className={`p-4 rounded-md border ${alert.resolved ? 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:border-lia-border-subtle' : alert.severity === 'high' ? 'bg-status-error/10 dark:bg-status-error/20 border-status-error/30 dark:border-status-error/30' : 'bg-status-warning/10 dark:bg-status-warning/20 border-status-warning/30 dark:border-status-warning/30'}`}
+                    className={`p-4 rounded-md border ${alert.resolved ? 'bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:border-lia-border-subtle' : alert.severity === 'high' ? 'bg-status-error/10 dark:bg-status-error/20 border-status-error/30 dark:border-status-error/30' : 'bg-status-warning/10 dark:bg-status-warning/20 border-status-warning/30 dark:border-status-warning/30'}`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
@@ -485,13 +485,13 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
                           <AlertTriangle className={`w-4 h-4 ${alert.severity === 'high' ? 'text-status-error dark:text-status-error' : 'text-status-warning dark:text-status-warning'}`} />
                         </div>
                         <div>
-                          <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                          <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                             {alert.type}
                           </p>
-                          <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                          <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                             {alert.description}
                           </p>
-                          <p className="text-xs mt-2 lia-text-400 dark:lia-text-500">
+                          <p className="text-xs mt-2 text-lia-text-tertiary dark:text-lia-text-secondary">
                             Detectado em: {formatDateTime(alert.detectedAt)}
                           </p>
                         </div>
@@ -506,7 +506,7 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
             ) : (
               <div className="text-center py-6">
                 <CheckCircle2 className="w-8 h-8 text-status-success mx-auto mb-2" />
-                <p className="text-sm lia-text-400 dark:lia-text-500">Nenhum alerta de bias detectado</p>
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Nenhum alerta de bias detectado</p>
               </div>
             )}
           </CardContent>
@@ -516,7 +516,7 @@ function AIGovernanceTab({ clientId }: { clientId: string }) {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
               Decisões Recentes
             </CardTitle>
             <Button variant="outline" size="sm">
@@ -567,7 +567,7 @@ function LGPDTab({ clientId }: { clientId: string }) {
     return (
       <div className="flex items-center justify-center py-12">
         <LoadingSpinner size="lg" />
-        <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">Carregando dados LGPD...</span>
+        <span className="ml-3 text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Carregando dados LGPD...</span>
       </div>
     )
   }
@@ -579,18 +579,18 @@ function LGPDTab({ clientId }: { clientId: string }) {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">DPO Registrado</p>
-                <p className="text-lg font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">DPO Registrado</p>
+                <p className="text-lg font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {dpo ? dpo.dpoName : (stats?.dpoRegistered ? 'Sim' : 'Não')}
                 </p>
                 {dpo && (
-                  <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                  <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                     {dpo.dpoEmail}
                   </p>
                 )}
               </div>
-              <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-                <Users className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <div className="w-10 h-10 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
+                <Users className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -600,8 +600,8 @@ function LGPDTab({ clientId }: { clientId: string }) {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">Consentimentos Ativos</p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{activeConsents}</p>
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Consentimentos Ativos</p>
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">{activeConsents}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <TrendingUp className="w-3 h-3 text-status-success" />
                   <span className="text-xs text-status-success">+8 esta semana</span>
@@ -618,8 +618,8 @@ function LGPDTab({ clientId }: { clientId: string }) {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">Incidentes Abertos</p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Incidentes Abertos</p>
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {stats?.openBreaches || breaches.filter(b => b.status !== 'resolved').length || 0}
                 </p>
                 {stats && stats.breachesPendingAnpd > 0 && (
@@ -640,8 +640,8 @@ function LGPDTab({ clientId }: { clientId: string }) {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">Dados Expirados</p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">{expiredData}</p>
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Dados Expirados</p>
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">{expiredData}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <AlertCircle className="w-3 h-3 text-status-error" />
                   <span className="text-xs text-status-error">Requer ação</span>
@@ -659,7 +659,7 @@ function LGPDTab({ clientId }: { clientId: string }) {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Incidentes de Dados (LGPD Art. 48)
               </CardTitle>
               <Badge variant={breaches.some(b => b.status !== 'resolved') ? 'warning' : 'success'}>
@@ -676,7 +676,7 @@ function LGPDTab({ clientId }: { clientId: string }) {
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         {breach.breachDescription}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
@@ -689,7 +689,7 @@ function LGPDTab({ clientId }: { clientId: string }) {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs mt-2 lia-text-400 dark:lia-text-500">
+                      <p className="text-xs mt-2 text-lia-text-tertiary dark:text-lia-text-secondary">
                         Detectado: {formatDate(breach.breachDetectedAt)}
                       </p>
                     </div>
@@ -708,7 +708,7 @@ function LGPDTab({ clientId }: { clientId: string }) {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Consentimentos por Candidato
               </CardTitle>
               <Button variant="outline" size="sm">
@@ -719,11 +719,11 @@ function LGPDTab({ clientId }: { clientId: string }) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <FileText className="w-8 h-8 mb-3 lia-text-400 dark:lia-text-500" />
-              <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+              <FileText className="w-8 h-8 mb-3 text-lia-text-tertiary dark:text-lia-text-secondary" />
+              <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Consentimentos gerenciados centralmente
               </p>
-              <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+              <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                 Acesse a página de Consentimentos para ver e gerenciar os registros.
               </p>
             </div>
@@ -733,7 +733,7 @@ function LGPDTab({ clientId }: { clientId: string }) {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Solicitações DSR
               </CardTitle>
               <Badge variant={pendingDSRs > 0 ? 'warning' : 'success'}>
@@ -743,11 +743,11 @@ function LGPDTab({ clientId }: { clientId: string }) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Clock className="w-8 h-8 mb-3 lia-text-400 dark:lia-text-500" />
-              <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+              <Clock className="w-8 h-8 mb-3 text-lia-text-tertiary dark:text-lia-text-secondary" />
+              <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Solicitações de Titulares (Art. 18 LGPD)
               </p>
-              <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+              <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                 As DSRs são gerenciadas no Portal do Titular.
               </p>
             </div>
@@ -757,7 +757,7 @@ function LGPDTab({ clientId }: { clientId: string }) {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+          <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
             Alertas de Retenção
           </CardTitle>
         </CardHeader>
@@ -795,11 +795,11 @@ function HealthTab() {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">Integrações Online</p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">—</p>
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Integrações Online</p>
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">—</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <Wifi className="w-3 h-3 lia-text-400" />
-                  <span className="text-xs lia-text-400 dark:lia-text-500">Aguardando dados</span>
+                  <Wifi className="w-3 h-3 text-lia-text-tertiary" />
+                  <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">Aguardando dados</span>
                 </div>
               </div>
               <div className="w-10 h-10 rounded-md bg-status-success/10 dark:bg-status-success/20 flex items-center justify-center">
@@ -813,8 +813,8 @@ function HealthTab() {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">Incidentes Abertos</p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">0</p>
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Incidentes Abertos</p>
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">0</p>
                 <div className="flex items-center gap-1 mt-1">
                   <CheckCircle2 className="w-3 h-3 text-status-success" />
                   <span className="text-xs text-status-success">Nenhum incidente</span>
@@ -831,15 +831,15 @@ function HealthTab() {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">Uptime Médio</p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">—</p>
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">Uptime Médio</p>
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">—</p>
                 <div className="flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-3 h-3 lia-text-400" />
-                  <span className="text-xs lia-text-400 dark:lia-text-500">Últimos 30 dias</span>
+                  <TrendingUp className="w-3 h-3 text-lia-text-tertiary" />
+                  <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">Últimos 30 dias</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-lia-bg-secondary flex items-center justify-center">
-                <Activity className="w-5 h-5 lia-text-900 dark:text-lia-text-secondary" />
+              <div className="w-10 h-10 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary flex items-center justify-center">
+                <Activity className="w-5 h-5 text-lia-text-primary dark:text-lia-text-secondary" />
               </div>
             </div>
           </CardContent>
@@ -849,7 +849,7 @@ function HealthTab() {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
               Status das Integrações
             </CardTitle>
             <Button variant="outline" size="sm">
@@ -860,11 +860,11 @@ function HealthTab() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-10 text-center">
-            <Server className="w-8 h-8 mb-3 lia-text-400 dark:lia-text-500" />
-            <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+            <Server className="w-8 h-8 mb-3 text-lia-text-tertiary dark:text-lia-text-secondary" />
+            <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
               Status de integrações em breve
             </p>
-            <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+            <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
               O monitoramento em tempo real das integrações será exibido aqui.
             </p>
           </div>
@@ -874,7 +874,7 @@ function HealthTab() {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
               Timeline de Incidentes
             </CardTitle>
             <Badge variant="success">0 abertos</Badge>
@@ -883,10 +883,10 @@ function HealthTab() {
         <CardContent>
           <div className="flex flex-col items-center justify-center py-10 text-center">
             <CheckCircle2 className="w-8 h-8 mb-3 text-status-success" />
-            <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+            <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
               Nenhum incidente registrado
             </p>
-            <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+            <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
               Os incidentes serão listados aqui quando detectados.
             </p>
           </div>
@@ -913,13 +913,13 @@ export default function ObservabilidadePage({
     return (
       <div className="space-y-6">
         <div>
-          <div className="h-7 w-64 bg-gray-200 rounded-md animate-pulse motion-reduce:animate-none" />
-          <div className="h-5 w-96 bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none mt-2" />
+          <div className="h-7 w-64 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
+          <div className="h-5 w-96 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none mt-2" />
         </div>
-        <div className="h-12 w-full bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none" />
+        <div className="h-12 w-full bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-32 bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none" />
+            <div key={i} className="h-32 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
           ))}
         </div>
       </div>
@@ -930,17 +930,17 @@ export default function ObservabilidadePage({
     <div className="space-y-6">
       <div>
         <h2 
-          className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
+          className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary"
         >
           Observabilidade & Governança
         </h2>
-        <p className="text-sm lia-text-400 dark:lia-text-500">
+        <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
           Monitore compliance, governança de IA, privacidade e saúde do sistema
         </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full justify-start bg-gray-100 dark:bg-lia-bg-secondary p-1 rounded-md">
+        <TabsList className="w-full justify-start bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-1 rounded-md">
           <TabsTrigger value="compliance" className="flex items-center gap-2">
             <Shield className="w-4 h-4" />
             Compliance

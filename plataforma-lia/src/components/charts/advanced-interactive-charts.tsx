@@ -314,10 +314,10 @@ export function AdvancedInteractiveChart({
         },
         tooltip: {
           enabled: chartConfig.showTooltip,
-          backgroundColor: 'var(--gray-50)',
-          titleColor: 'var(--gray-950)',
-          bodyColor: 'var(--gray-600)',
-          borderColor: 'var(--gray-200)',
+          backgroundColor: 'var(--lia-bg-secondary)',
+          titleColor: 'var(--lia-btn-primary-bg)',
+          bodyColor: 'var(--lia-text-secondary)',
+          borderColor: 'var(--lia-border-subtle)',
           borderWidth: 1,
           padding: 12,
           displayColors: true,
@@ -377,7 +377,7 @@ export function AdvancedInteractiveChart({
             beginAtZero: true,
             grid: {
               display: chartConfig.showGrid,
-              color: 'var(--gray-200)',
+              color: 'var(--lia-border-subtle)',
             },
           },
           y: {
@@ -396,7 +396,7 @@ export function AdvancedInteractiveChart({
           x: {
             grid: {
               display: chartConfig.showGrid,
-              color: 'var(--gray-200)',
+              color: 'var(--lia-border-subtle)',
             },
           },
           y: {
@@ -406,7 +406,7 @@ export function AdvancedInteractiveChart({
             beginAtZero: true,
             grid: {
               display: chartConfig.showGrid,
-              color: 'var(--gray-200)',
+              color: 'var(--lia-border-subtle)',
             },
           },
           y1: {
@@ -427,14 +427,14 @@ export function AdvancedInteractiveChart({
         x: {
           grid: {
             display: chartConfig.showGrid,
-            color: 'var(--gray-200)',
+            color: 'var(--lia-border-subtle)',
           },
         },
         y: {
           beginAtZero: true,
           grid: {
             display: chartConfig.showGrid,
-            color: 'var(--gray-200)',
+            color: 'var(--lia-border-subtle)',
           },
         },
       },
@@ -558,7 +558,7 @@ export function AdvancedInteractiveChart({
 
         {/* Drill-down Details */}
         {selectedDataPoint && (
-          <div className="mt-4 p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+          <div className="mt-4 p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
             <h4 className="font-medium text-lia-text-primary mb-3">
               📊 Detalhes - {String(selectedDataPoint[dataKeys[0]] ?? '')}
             </h4>

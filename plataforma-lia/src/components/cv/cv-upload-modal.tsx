@@ -296,7 +296,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-xl rounded-md bg-white dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
+      <DialogContent className="max-w-xl rounded-md bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
         <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
           <DialogTitle className="flex items-center gap-2 text-lia-text-primary">
             <FileUp className="w-5 h-5 text-lia-text-secondary" />
@@ -339,8 +339,8 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
                 className={cn(
  "border-2 border-dashed rounded-md p-8 text-center cursor-pointer transition-colors",
                   isDragging
-                    ? "border-gray-400 bg-gray-50"
-                    : "border-lia-border-default hover:border-gray-400 hover:bg-gray-50"
+                    ? "border-lia-border-medium bg-lia-bg-secondary"
+                    : "border-lia-border-default hover:border-lia-border-medium hover:bg-lia-bg-secondary"
                 )}
               >
                 <Upload className="w-10 h-10 mx-auto mb-3 text-lia-text-secondary" />
@@ -425,15 +425,15 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
           </div>
         )}
 
-        <DialogFooter className="gap-2 sm:gap-0 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
-          <Button variant="outline" onClick={handleClose} disabled={isUploading} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
+        <DialogFooter className="gap-2 sm:gap-0 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary p-4 -mx-6 -mb-6 rounded-b-xl">
+          <Button variant="outline" onClick={handleClose} disabled={isUploading} className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
             Cancelar
           </Button>
           {activeTab === "upload" ? (
             <Button
               onClick={handleUploadFile}
               disabled={!selectedFile || isUploading}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               {isUploading ? (
                 <>
@@ -451,7 +451,7 @@ export function CVUploadModal({ isOpen, onClose, onParsed }: CVUploadModalProps)
             <Button
               onClick={handleParseText}
               disabled={cvText.trim().length < 50 || isUploading}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               {isUploading ? (
                 <>

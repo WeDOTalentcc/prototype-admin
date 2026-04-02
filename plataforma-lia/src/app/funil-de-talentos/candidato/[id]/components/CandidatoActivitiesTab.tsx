@@ -120,7 +120,7 @@ export function CandidatoActivitiesTab({
         <CardContent className="p-0">
           <div className="flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
+            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
                   <Activity className="w-4 h-4 text-lia-text-primary" />
@@ -131,29 +131,29 @@ export function CandidatoActivitiesTab({
                   <select
                     value={periodFilter}
                     onChange={(e) => setPeriodFilter(e.target.value as PeriodFilter)}
-                    className="text-xs px-2 py-1.5 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-100/20 dark:text-lia-text-primary"
+                    className="text-xs px-2 py-1.5 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 dark:text-lia-text-primary"
                   >
                     {PERIOD_FILTER_OPTIONS.map(opt => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
-                  <div className="flex items-center bg-white dark:bg-lia-bg-secondary rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
+                  <div className="flex items-center bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-0.5 border border-lia-border-subtle dark:border-lia-border-default">
                     <button
                       onClick={() => setActivityView("timeline")}
-                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView === "timeline" ? "bg-gray-200 text-lia-text-primary" : "lia-text-600 hover:lia-text-700"}`}
+                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView === "timeline" ? "bg-lia-interactive-active text-lia-text-primary" : "text-lia-text-secondary hover:lia-text-700"}`}
                       title="Visualização Timeline"
                     >
                       <GitBranch className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setActivityView("list")}
-                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView === "list" ? "bg-gray-200 text-lia-text-primary" : "lia-text-600 hover:lia-text-700"}`}
+                      className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${activityView === "list" ? "bg-lia-interactive-active text-lia-text-primary" : "text-lia-text-secondary hover:lia-text-700"}`}
                       title="Visualização Lista"
                     >
                       <List className="w-4 h-4" />
                     </button>
                   </div>
-                  <Button size="sm" className="gap-1.5 px-3 py-1.5 text-xs h-8 bg-gray-100 hover:bg-gray-200 text-lia-text-primary border border-lia-border-subtle">
+                  <Button size="sm" className="gap-1.5 px-3 py-1.5 text-xs h-8 bg-lia-bg-tertiary hover:bg-lia-interactive-active text-lia-text-primary border border-lia-border-subtle">
                     <PlusCircle className="w-3.5 h-3.5" />
                     Nova Atividade
                   </Button>
@@ -169,7 +169,7 @@ export function CandidatoActivitiesTab({
                   let cls = ""
                   if (isLia) cls = isActive ? "bg-status-error text-white" : "bg-status-error/15 text-status-error hover:bg-status-error/20"
                   else if (isNote) cls = isActive ? "bg-status-warning text-white" : "bg-status-warning/15 text-status-warning hover:bg-status-warning/20"
-                  else cls = isActive ? "bg-gray-700 text-white font-semibold" : "bg-gray-100 text-lia-text-primary hover:bg-gray-200"
+                  else cls = isActive ? "bg-lia-bg-inverse text-white font-semibold" : "bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-interactive-active"
                   return (
                     <button
                       key={filter}
@@ -196,7 +196,7 @@ export function CandidatoActivitiesTab({
                       <select
                         value={newNoteCategory}
                         onChange={(e) => setNewNoteCategory(e.target.value as NoteCategory)}
-                        className="text-xs px-2 py-1 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-md focus:outline-none focus:ring-1 focus:ring-amber-400 dark:text-lia-text-primary"
+                        className="text-xs px-2 py-1 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-md focus:outline-none focus:ring-1 focus:ring-amber-400 dark:text-lia-text-primary"
                       >
                         {NOTE_CATEGORY_OPTIONS.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -207,7 +207,7 @@ export function CandidatoActivitiesTab({
                       value={newNoteContent}
                       onChange={(e) => setNewNoteContent(e.target.value)}
                       placeholder="Adicione uma nota sobre este candidato..."
-                      className="w-full text-sm px-3 py-2 border border-lia-border-subtle dark:border-lia-border-default rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-amber-400 bg-white dark:bg-lia-bg-secondary dark:text-lia-text-primary"
+                      className="w-full text-sm px-3 py-2 border border-lia-border-subtle dark:border-lia-border-default rounded-md resize-none focus:outline-none focus:ring-1 focus:ring-amber-400 bg-lia-bg-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary"
                       rows={2}
                     />
                   </div>
@@ -232,11 +232,11 @@ export function CandidatoActivitiesTab({
                 </div>
               ) : filteredItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4">
-                  <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
                     {activityFilter === "notes" ? (
                       <FileText className="w-8 h-8 text-status-warning" />
                     ) : (
-                      <Activity className="w-8 h-8 lia-text-600" />
+                      <Activity className="w-8 h-8 text-lia-text-secondary" />
                     )}
                   </div>
                   <h3 className="text-sm font-semibold text-lia-text-primary mb-2">
@@ -279,9 +279,9 @@ export function CandidatoActivitiesTab({
                     return (
                       <div
                         key={(item.id as string) || index}
-                        className="flex gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none"
+                        className="flex gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none"
                       >
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center">
                           <Activity className="w-4 h-4 text-lia-text-secondary" />
                         </div>
                         <div className="flex-1 min-w-0">

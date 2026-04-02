@@ -140,9 +140,9 @@ export function TechnicalRequirementsPanel({
                           <th className="w-10"></th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y dark:divide-gray-700">
+                      <tbody className="divide-y dark:divide-lia-border-strong">
                         {getRequirementsByCategory(category).map((req) => (
-                          <tr key={req.id} className="hover:bg-muted/30 dark:hover:bg-gray-700/30">
+                          <tr key={req.id} className="hover:bg-muted/30 dark:hover:bg-lia-bg-inverse/30">
                             <td className="px-3 py-2">
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium">{req.name}</span>
@@ -182,7 +182,7 @@ export function TechnicalRequirementsPanel({
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 dark:hover:bg-gray-700"
+                                className="h-7 w-7 dark:hover:bg-lia-bg-inverse"
                                 onClick={() => handleRemoveRequirement(req.id)}
                               >
                                 <X className="h-4 w-4" />
@@ -232,7 +232,7 @@ export function TechnicalRequirementsPanel({
       <Button
         onClick={handleSubmit}
         disabled={isLoading}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+        className="w-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
         size="lg"
       >
         {isLoading ? (
@@ -337,7 +337,7 @@ function TechAutocomplete({
           type="button"
           variant="outline"
           size="icon"
-          className="dark:border-lia-border-default dark:hover:bg-gray-700"
+          className="dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
           onClick={() => {
             if (search.trim()) {
               handleAdd(search.trim())
@@ -359,7 +359,7 @@ function TechAutocomplete({
               <button
                 key={tech}
                 type="button"
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-muted/50 dark:hover:bg-gray-700 ${
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-muted/50 dark:hover:bg-lia-bg-inverse ${
  index === selectedIndex ? "bg-muted dark:bg-lia-bg-elevated" : ""
                 }`}
                 onClick={() => handleAdd(tech)}
@@ -371,7 +371,7 @@ function TechAutocomplete({
           ) : search.trim() ? (
             <button
               type="button"
-              className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 bg-muted dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+              className="w-full text-left px-3 py-2 text-sm hover:bg-muted/50 bg-muted dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
               onClick={() => handleAdd(search.trim())}
             >
               Adicionar "{search.trim()}"

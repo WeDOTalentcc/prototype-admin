@@ -82,7 +82,7 @@ export function ResumeAnalysisResult({
 
   return (
     <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className="bg-gradient-to-r from-lia-bg-tertiary dark:lia-from-800 to-white pb-4">
+      <CardHeader className="bg-gradient-to-r from-lia-bg-tertiary dark:from-lia-btn-primary-hover to-white pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-lia-bg-tertiary rounded-full flex items-center justify-center">

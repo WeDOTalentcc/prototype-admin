@@ -222,7 +222,7 @@ export function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={handleEmailBlur}
                     placeholder="Digite seu email"
-                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
+                    className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                     required
                   />
                   {checkingSSO && (
@@ -235,7 +235,7 @@ export function LoginPage() {
 
               {/* SSO Available Notice */}
               {ssoInfo?.sso_available && (
-                <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
+                <div className="p-4 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
                   <div className="flex items-start gap-3">
                     <Building2 className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                     <div className="flex-1">
@@ -250,7 +250,7 @@ export function LoginPage() {
                   <Button
                     type="button"
                     onClick={handleSSOLogin}
-                    className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
+                    className="w-full mt-3 py-3 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
                   >
                     <Building2 className="w-4 h-4" />
                     Entrar com SSO Corporativo
@@ -269,7 +269,7 @@ export function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Digite sua senha"
-                    className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
+                    className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                     required
                   />
                   <button
@@ -289,7 +289,7 @@ export function LoginPage() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 text-lia-text-primary border-lia-border-default rounded-md focus:ring-gray-900"
+                    className="w-4 h-4 text-lia-text-primary border-lia-border-default rounded-md focus:ring-lia-btn-primary-bg"
                   />
                   <span className="ml-2 text-sm text-lia-text-primary">Lembrar de mim</span>
                 </label>
@@ -309,7 +309,7 @@ export function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md transition-colors motion-reduce:transition-none font-medium"
+                className="w-full py-3 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text rounded-md transition-colors motion-reduce:transition-none font-medium"
               >
                 {isLoading ? (
                   <>
@@ -327,7 +327,7 @@ export function LoginPage() {
                   <div className="w-full border-t border-lia-border-subtle"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white dark:bg-lia-bg-secondary text-lia-text-primary">Ou continue com:</span>
+                  <span className="px-4 bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary">Ou continue com:</span>
                 </div>
               </div>
 
@@ -403,7 +403,7 @@ export function LoginPage() {
                       })
                     }}
                     variant="outline"
- className="w-full py-3 border-2 border-lia-border-default hover:border-lia-border-default rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 hover:bg-gray-100 font-medium text-wedo-cyan-dark"
+ className="w-full py-3 border-2 border-lia-border-default hover:border-lia-border-default rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 hover:bg-lia-bg-tertiary font-medium text-wedo-cyan-dark"
                   >
                     <span className="text-lg">🎯</span>
                     Acesso Demo + Onboarding
@@ -452,7 +452,7 @@ export function LoginPage() {
       </div>
 
       {/* Mobile Layout */}
-      <div className="lg:hidden w-full bg-gray-50 p-6">
+      <div className="lg:hidden w-full bg-lia-bg-secondary p-6">
         {/* Demo Notice */}
         <div className="text-center mb-6">
           <div className="text-xs text-lia-text-primary">
@@ -501,7 +501,7 @@ export function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={handleEmailBlur}
                   placeholder="Digite seu email"
-                  className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
+                  className="w-full px-4 py-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                   required
                 />
                 {checkingSSO && (
@@ -514,7 +514,7 @@ export function LoginPage() {
 
             {/* SSO Available Notice - Mobile */}
             {ssoInfo?.sso_available && (
-              <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
+              <div className="p-4 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
                 <div className="flex items-start gap-3">
                   <Building2 className="w-5 h-5 text-lia-text-secondary mt-0.5" />
                   <div className="flex-1">
@@ -529,7 +529,7 @@ export function LoginPage() {
                 <Button
                   type="button"
                   onClick={handleSSOLogin}
-                  className="w-full mt-3 py-3 bg-gray-900 hover:bg-gray-800 text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
+                  className="w-full mt-3 py-3 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none font-medium flex items-center justify-center gap-2"
                 >
                   <Building2 className="w-4 h-4" />
                   Entrar com SSO Corporativo
@@ -545,7 +545,7 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Digite sua senha"
-                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors motion-reduce:transition-none"
+                  className="w-full px-4 py-3 pr-12 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg transition-colors motion-reduce:transition-none"
                   required
                 />
                 <button
@@ -580,7 +580,7 @@ export function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-md"
+              className="w-full py-3 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text rounded-md"
             >
               {isLoading ? (
                 <>

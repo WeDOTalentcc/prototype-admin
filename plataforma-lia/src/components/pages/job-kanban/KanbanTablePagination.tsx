@@ -28,7 +28,7 @@ export function KanbanTablePagination({
     <>
 {/* Paginação */}
 {getPaginatedCandidates().totalPages > 1 && (
-  <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3">
+  <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-3">
     <div className="flex items-center justify-between">
       <div className="text-sm text-lia-text-secondary">
         Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, getPaginatedCandidates().total)} de {getPaginatedCandidates().total} candidatos

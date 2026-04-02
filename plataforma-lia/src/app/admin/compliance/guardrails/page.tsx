@@ -179,10 +179,10 @@ export default function GuardrailsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Shield className="h-6 w-6 lia-text-700" />
+          <Shield className="h-6 w-6 text-lia-text-primary" />
           <div>
-            <h1 className="text-lg font-semibold lia-text-900">Guardrails de Agentes</h1>
-            <p className="text-xs lia-text-500">
+            <h1 className="text-lg font-semibold text-lia-text-primary">Guardrails de Agentes</h1>
+            <p className="text-xs text-lia-text-secondary">
               Regras de comportamento editáveis em produção sem deploy
             </p>
           </div>
@@ -191,7 +191,7 @@ export default function GuardrailsPage() {
           <Button variant="outline" size="sm" onClick={fetchGuardrails} disabled={loading}>
             {loading ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" /> : <RefreshCw className="h-3 w-3" />}
           </Button>
-          <Button size="sm" onClick={openCreateDialog} className="bg-gray-900 hover:bg-gray-800 text-white">
+          <Button size="sm" onClick={openCreateDialog} className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text">
             <Plus className="h-3 w-3 mr-1" />
             Novo Guardrail
           </Button>
@@ -202,20 +202,20 @@ export default function GuardrailsPage() {
       <div className="grid grid-cols-3 gap-4">
         <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
-            <div className="text-2xl font-semibold lia-text-900">{guardrails.length}</div>
-            <div className="text-xs lia-text-500 mt-0.5">Total de guardrails</div>
+            <div className="text-2xl font-semibold text-lia-text-primary">{guardrails.length}</div>
+            <div className="text-xs text-lia-text-secondary mt-0.5">Total de guardrails</div>
           </CardContent>
         </Card>
         <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
             <div className="text-2xl font-semibold text-status-success">{activeCount}</div>
-            <div className="text-xs lia-text-500 mt-0.5">Ativos</div>
+            <div className="text-xs text-lia-text-secondary mt-0.5">Ativos</div>
           </CardContent>
         </Card>
         <Card className="border border-lia-border-subtle">
           <CardContent className="p-4">
-            <div className="text-2xl font-semibold lia-text-700">{primaryCount}</div>
-            <div className="text-xs lia-text-500 mt-0.5">Primários (todos os agentes)</div>
+            <div className="text-2xl font-semibold text-lia-text-primary">{primaryCount}</div>
+            <div className="text-xs text-lia-text-secondary mt-0.5">Primários (todos os agentes)</div>
           </CardContent>
         </Card>
       </div>
@@ -261,10 +261,10 @@ export default function GuardrailsPage() {
       <div className="space-y-2" role="status" aria-live="polite" aria-label="Carregando...">
         {loading ? (
           <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-            <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none lia-text-400" />
+            <Loader2 className="h-6 w-6 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
           </div>
         ) : guardrails.length === 0 ? (
-          <div className="text-center py-12 lia-text-400 text-sm">
+          <div className="text-center py-12 text-lia-text-tertiary text-sm">
             Nenhum guardrail encontrado
           </div>
         ) : (
@@ -283,7 +283,7 @@ export default function GuardrailsPage() {
                         </Badge>
                       )}
                       {g.tool && (
-                        <span className="text-xs font-mono lia-text-500 bg-gray-50 px-1.5 py-0.5 rounded-md">
+                        <span className="text-xs font-mono text-lia-text-secondary bg-lia-bg-secondary px-1.5 py-0.5 rounded-md">
                           tool: {g.tool}
                         </span>
                       )}
@@ -292,13 +292,13 @@ export default function GuardrailsPage() {
                           <CheckCircle2 className="h-3 w-3" /> Ativo
                         </span>
                       ) : (
-                        <span className="flex items-center gap-0.5 text-xs lia-text-400">
+                        <span className="flex items-center gap-0.5 text-xs text-lia-text-tertiary">
                           <AlertTriangle className="h-3 w-3" /> Inativo
                         </span>
                       )}
                     </div>
-                    <p className="text-xs lia-text-700 leading-relaxed">{g.rule}</p>
-                    <p className="text-xs lia-text-400 mt-1 italic">
+                    <p className="text-xs text-lia-text-primary leading-relaxed">{g.rule}</p>
+                    <p className="text-xs text-lia-text-tertiary mt-1 italic">
                       Mensagem: &ldquo;{g.blocking_message}&rdquo;
                     </p>
                   </div>
@@ -319,7 +319,7 @@ export default function GuardrailsPage() {
                     >
                       {g.is_active
                         ? <ToggleRight className="h-4 w-4 text-status-success" />
-                        : <ToggleLeft className="h-4 w-4 lia-text-400" />
+                        : <ToggleLeft className="h-4 w-4 text-lia-text-tertiary" />
                       }
                     </Button>
                   </div>
@@ -409,7 +409,7 @@ export default function GuardrailsPage() {
             </Button>
             <Button
               size="sm"
-              className="bg-gray-900 hover:bg-gray-800 text-white"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
               onClick={handleSave}
               disabled={saving}
             >

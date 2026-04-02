@@ -385,7 +385,7 @@ export function WSITextScreeningModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col bg-white rounded-md border border-lia-border-subtle"
+        className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col bg-lia-bg-primary rounded-md border border-lia-border-subtle"
        
       >
         <DialogHeader className="flex-shrink-0 border-b border-lia-border-subtle p-5">

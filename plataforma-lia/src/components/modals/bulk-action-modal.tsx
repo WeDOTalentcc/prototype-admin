@@ -398,7 +398,7 @@ export function BulkActionModal({
         <DialogFooter className="border-t border-lia-border-subtle bg-lia-bg-secondary pt-3">
           {!isComplete ? (
             <>
-              <Button variant="outline" onClick={handleClose} disabled={isExecuting} className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg text-lia-text-secondary">
+              <Button variant="outline" onClick={handleClose} disabled={isExecuting} className="h-9 px-4 text-xs font-medium bg-lia-bg-primary border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg text-lia-text-secondary">
                 Cancelar
               </Button>
               <Button
@@ -408,7 +408,7 @@ export function BulkActionModal({
                   "h-9 px-4 text-xs font-medium",
                   actionType === 'reject' 
                     ? "bg-status-error hover:bg-status-error text-white" 
-                    : "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
+                    : "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 )}
               >
                 {isExecuting ? (
@@ -429,7 +429,7 @@ export function BulkActionModal({
               </Button>
             </>
           ) : (
-            <Button onClick={handleClose} className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active">
+            <Button onClick={handleClose} className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">
               Concluído
             </Button>
           )}

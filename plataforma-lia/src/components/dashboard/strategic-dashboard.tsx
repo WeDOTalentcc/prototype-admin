@@ -229,11 +229,11 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
       <div className="space-y-6 animate-pulse motion-reduce:animate-none">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-28 bg-gray-200 rounded-md" />
+            <div key={i} className="h-28 bg-lia-interactive-active rounded-md" />
           ))}
         </div>
-        <div className="h-64 bg-gray-200 rounded-md" />
-        <div className="h-48 bg-gray-200 rounded-md" />
+        <div className="h-64 bg-lia-interactive-active rounded-md" />
+        <div className="h-48 bg-lia-interactive-active rounded-md" />
       </div>
     )
   }
@@ -320,7 +320,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                     )}
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center text-lia-text-secondary">
+                <div className="w-10 h-10 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center text-lia-text-secondary">
                   {getCategoryIcon(indicator.category)}
                 </div>
               </div>
@@ -362,10 +362,10 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
             {funnelStages.map((stage, index) => {
               const widthPercent = (stage.count / maxFunnelCount) * 100
               const colors = [
-                'bg-gray-900',
-                'bg-gray-700',
-                'bg-gray-200 dark:bg-lia-bg-elevated',
-                'bg-gray-200 dark:bg-lia-bg-elevated',
+                'bg-lia-btn-primary-bg',
+                'bg-lia-bg-inverse',
+                'bg-lia-interactive-active dark:bg-lia-bg-elevated',
+                'bg-lia-interactive-active dark:bg-lia-bg-elevated',
                 'bg-status-success'
               ]
               
@@ -381,9 +381,9 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                       <span>{stage.avg_time_in_stage_days}d média</span>
                     </div>
                   </div>
-                  <div className="h-8 bg-gray-100 rounded-md overflow-hidden">
+                  <div className="h-8 bg-lia-bg-tertiary rounded-md overflow-hidden">
                     <div 
-                      className={`h-full ${colors[index] || 'bg-gray-400'} rounded-md transition-[width,height] duration-700 ease-out flex items-center justify-end pr-2`}
+                      className={`h-full ${colors[index] || 'bg-lia-border-medium'} rounded-md transition-[width,height] duration-700 ease-out flex items-center justify-end pr-2`}
                       style={{width: `${widthPercent}%`,
                         animation: `slideIn 0.5s ease-out ${index * 100}ms backwards`}}
                     >
@@ -436,14 +436,14 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                   return (
                     <tr 
                       key={recruiter.recruiter_id} 
-                      className="border-b border-lia-border-subtle hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+                      className="border-b border-lia-border-subtle hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
                     >
                       <td className="py-3 px-2">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
  recruiter.rank === 1 ? 'bg-status-warning/10 text-status-warning' :
-                          recruiter.rank === 2 ? 'bg-gray-300 text-lia-text-primary' :
+                          recruiter.rank === 2 ? 'bg-lia-border-default text-lia-text-primary' :
                           recruiter.rank === 3 ? 'bg-wedo-orange/10 text-wedo-orange' :
-                          'bg-gray-100 text-lia-text-secondary'
+                          'bg-lia-bg-tertiary text-lia-text-secondary'
                         }`}>
                           {recruiter.rank}
                         </div>
@@ -452,7 +452,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                         <div className="flex items-center gap-2">
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={recruiter.avatar_url} alt={recruiter.recruiter_name} />
-                            <AvatarFallback className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
+                            <AvatarFallback className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
                               {recruiter.recruiter_name.split(' ').map(n => n[0]).join('')}
                             </AvatarFallback>
                           </Avatar>
@@ -499,9 +499,9 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
                       </td>
                       <td className="py-3 px-2 text-center">
                         <div className="flex items-center justify-center gap-1">
-                          <div className="w-12 h-2 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="w-12 h-2 bg-lia-interactive-active rounded-full overflow-hidden">
                             <div 
-                              className="h-full bg-gray-900 rounded-full transition-[width,height] duration-500"
+                              className="h-full bg-lia-btn-primary-bg rounded-full transition-[width,height] duration-500"
                               style={{width: `${recruiter.quality_score}%`}}
                             />
                           </div>

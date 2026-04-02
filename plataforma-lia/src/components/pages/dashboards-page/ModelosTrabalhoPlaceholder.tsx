@@ -134,13 +134,13 @@ export function ModelosTrabalhoPlaceholder() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-gray-900"></div>
+                  <div className="w-3 h-3 rounded-full bg-lia-btn-primary-bg"></div>
                   <span className="text-sm font-open-sans text-lia-text-primary">Remoto</span>
                 </div>
                 <span className="text-sm font-inter font-bold text-lia-text-primary">42%</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
-                <div className="h-3 rounded-full bg-gray-900 w-[42%]"></div>
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-3">
+                <div className="h-3 rounded-full bg-lia-btn-primary-bg w-[42%]"></div>
               </div>
             </div>
 
@@ -153,7 +153,7 @@ export function ModelosTrabalhoPlaceholder() {
                 </div>
                 <span className="text-sm font-inter font-bold text-lia-text-primary">35%</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-3">
                 <div className="h-3 rounded-full bg-wedo-green-bright w-[35%]"></div>
               </div>
             </div>
@@ -167,7 +167,7 @@ export function ModelosTrabalhoPlaceholder() {
                 </div>
                 <span className="text-sm font-inter font-bold text-lia-text-primary">23%</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-3">
                 <div className="h-3 rounded-full bg-wedo-orange w-[23%]"></div>
               </div>
             </div>
@@ -207,7 +207,7 @@ export function ModelosTrabalhoPlaceholder() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* São Paulo */}
-            <div className="space-y-3 p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+            <div className="space-y-3 p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
               <div className="flex items-center justify-between">
                 <h4 className="font-open-sans font-semibold text-lia-text-primary">São Paulo</h4>
                 <Badge variant="outline" className="text-xs tracking-tight font-inter">523 vagas</Badge>
@@ -229,7 +229,7 @@ export function ModelosTrabalhoPlaceholder() {
             </div>
 
             {/* Rio de Janeiro */}
-            <div className="space-y-3 p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+            <div className="space-y-3 p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
               <div className="flex items-center justify-between">
                 <h4 className="font-open-sans font-semibold text-lia-text-primary">Rio de Janeiro</h4>
                 <Badge variant="outline" className="text-xs tracking-tight font-inter">287 vagas</Badge>
@@ -251,7 +251,7 @@ export function ModelosTrabalhoPlaceholder() {
             </div>
 
             {/* Minas Gerais */}
-            <div className="space-y-3 p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+            <div className="space-y-3 p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
               <div className="flex items-center justify-between">
                 <h4 className="font-open-sans font-semibold text-lia-text-primary">Minas Gerais</h4>
                 <Badge variant="outline" className="text-xs tracking-tight font-inter">194 vagas</Badge>
@@ -291,8 +291,8 @@ export function ModelosTrabalhoPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-lia-text-primary">Tecnologia</span>
                 <span className="text-xs tracking-tight font-inter text-lia-text-primary">78% Remoto • 18% Híbrido • 4% Presencial</span>
               </div>
-              <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
-                <div className="bg-gray-900 w-[78%]"></div>
+              <div className="flex w-full h-2 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
+                <div className="bg-lia-btn-primary-bg w-[78%]"></div>
                 <div className="bg-wedo-green-bright w-[18%]"></div>
                 <div className="bg-wedo-orange w-[4%]"></div>
               </div>
@@ -304,8 +304,8 @@ export function ModelosTrabalhoPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-lia-text-primary">Vendas</span>
                 <span className="text-xs tracking-tight font-inter text-lia-text-primary">15% Remoto • 62% Híbrido • 23% Presencial</span>
               </div>
-              <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
-                <div className="bg-gray-900 w-[15%]"></div>
+              <div className="flex w-full h-2 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
+                <div className="bg-lia-btn-primary-bg w-[15%]"></div>
                 <div className="bg-wedo-green-bright w-[62%]"></div>
                 <div className="bg-wedo-orange w-[23%]"></div>
               </div>
@@ -317,8 +317,8 @@ export function ModelosTrabalhoPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-lia-text-primary">Financeiro</span>
                 <span className="text-xs tracking-tight font-inter text-lia-text-primary">32% Remoto • 51% Híbrido • 17% Presencial</span>
               </div>
-              <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
-                <div className="bg-gray-900 w-[32%]"></div>
+              <div className="flex w-full h-2 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
+                <div className="bg-lia-btn-primary-bg w-[32%]"></div>
                 <div className="bg-wedo-green-bright w-[51%]"></div>
                 <div className="bg-wedo-orange w-[17%]"></div>
               </div>
@@ -330,8 +330,8 @@ export function ModelosTrabalhoPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-lia-text-primary">Operações</span>
                 <span className="text-xs tracking-tight font-inter text-lia-text-primary">8% Remoto • 25% Híbrido • 67% Presencial</span>
               </div>
-              <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
-                <div className="bg-gray-900 w-[8%]"></div>
+              <div className="flex w-full h-2 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
+                <div className="bg-lia-btn-primary-bg w-[8%]"></div>
                 <div className="bg-wedo-green-bright w-[25%]"></div>
                 <div className="bg-wedo-orange w-[67%]"></div>
               </div>
@@ -343,8 +343,8 @@ export function ModelosTrabalhoPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-lia-text-primary">Marketing</span>
                 <span className="text-xs tracking-tight font-inter text-lia-text-primary">55% Remoto • 38% Híbrido • 7% Presencial</span>
               </div>
-              <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
-                <div className="bg-gray-900 w-[55%]"></div>
+              <div className="flex w-full h-2 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
+                <div className="bg-lia-btn-primary-bg w-[55%]"></div>
                 <div className="bg-wedo-green-bright w-[38%]"></div>
                 <div className="bg-wedo-orange w-[7%]"></div>
               </div>
@@ -356,8 +356,8 @@ export function ModelosTrabalhoPlaceholder() {
                 <span className="text-sm font-open-sans font-medium text-lia-text-primary">Recursos Humanos</span>
                 <span className="text-xs tracking-tight font-inter text-lia-text-primary">42% Remoto • 45% Híbrido • 13% Presencial</span>
               </div>
-              <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
-                <div className="bg-gray-900 w-[42%]"></div>
+              <div className="flex w-full h-2 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
+                <div className="bg-lia-btn-primary-bg w-[42%]"></div>
                 <div className="bg-wedo-green-bright w-[45%]"></div>
                 <div className="bg-wedo-orange w-[13%]"></div>
               </div>

@@ -170,7 +170,7 @@ export function CreateAdhocNoteModal({
           {/* Warning Alert */}
           {selectedJobId && (
             <div
-              className="flex gap-3 rounded-md p-3 text-sm bg-gray-200/30 border border-wedo-cyan/30"
+              className="flex gap-3 rounded-md p-3 text-sm bg-lia-interactive-active/30 border border-wedo-cyan/30"
             >
               <AlertCircle
                 className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary"
@@ -197,14 +197,14 @@ export function CreateAdhocNoteModal({
           </div>
         </div>
 
-        <DialogFooter className="gap-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
-          <Button variant="outline" onClick={onClose} className="dark:border-lia-border-default dark:hover:bg-gray-700">
+        <DialogFooter className="gap-3 border-t border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
+          <Button variant="outline" onClick={onClose} className="dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
             Cancelar
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={!isFormValid}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 disabled:bg-gray-300 disabled:text-lia-text-tertiary"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active disabled:bg-lia-border-default disabled:text-lia-text-tertiary"
           >
             <Plus className="w-4 h-4 mr-2" />
             Criar Nota

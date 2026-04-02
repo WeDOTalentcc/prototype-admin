@@ -61,8 +61,8 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
 
   return (
     <tr
-      className={`border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors motion-reduce:transition-none ${
-        isSelected ? 'bg-gray-100 dark:bg-lia-bg-secondary/10' : ''
+      className={`border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover cursor-pointer transition-colors motion-reduce:transition-none ${
+        isSelected ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary/10' : ''
       }`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
@@ -75,8 +75,8 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
         >
           <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors motion-reduce:transition-none ${
             isSelected
-              ? 'bg-gray-900 border-gray-900 dark:border-lia-border-subtle'
-              : 'bg-white dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default hover:border-gray-500 dark:hover:border-gray-500'
+              ? 'bg-lia-btn-primary-bg border-lia-btn-primary-bg dark:border-lia-border-subtle'
+              : 'bg-lia-bg-primary dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default hover:border-lia-border-medium dark:hover:border-lia-border-medium'
           }`}>
             {isSelected && (
               <CheckCircle className="w-3.5 h-3.5 text-white" fill="currentColor" />
@@ -123,7 +123,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
                 variant="secondary" 
                 className="text-xs px-2 py-0.5 font-semibold border-0 text-lia-text-primary"
                 // @ts-ignore TODO: fix type
-                style={{backgroundColor: 'var(--gray-300)'}}
+                style={{backgroundColor: 'var(--lia-border-default)'}}
               >
                 {formatScorePercent((candidate as any).liaScore ?? (candidate as any).score, 0)}
               </Badge>
@@ -141,7 +141,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
           <Badge 
             variant="secondary" 
             className="text-xs px-2 py-0.5 font-semibold border-0 text-lia-text-primary"
-            style={{backgroundColor: 'var(--gray-400)'}}
+            style={{backgroundColor: 'var(--lia-text-tertiary)'}}
           >
             {formatScorePercent((candidate as any).skillsMatch || (candidate as any).fitScore || 0, 0)}
           </Badge>
@@ -157,8 +157,8 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
               style={{backgroundColor: (candidate as any).technicalTestScore >= 80 ? 'var(--status-success)' :
                                  // @ts-ignore TODO: fix type
                                  (candidate as any).technicalTestScore >= 60 ? 'var(--status-warning)' :
-                                 (candidate as any).technicalTestScore >= 40 ? 'var(--gray-400)' :
-                                 'var(--gray-600)'}}
+                                 (candidate as any).technicalTestScore >= 40 ? 'var(--lia-text-tertiary)' :
+                                 'var(--lia-text-secondary)'}}
               onClick={(e) => {
                 e.stopPropagation()
               }}
@@ -182,8 +182,8 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
               className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none text-lia-text-primary"
               style={{backgroundColor: (candidate as any).englishTestScore >= 80 ? 'var(--status-success)' :
                                  (candidate as any).englishTestScore >= 60 ? 'var(--status-warning)' :
-                                 (candidate as any).englishTestScore >= 40 ? 'var(--gray-400)' :
-                                 'var(--gray-600)'}}
+                                 (candidate as any).englishTestScore >= 40 ? 'var(--lia-text-tertiary)' :
+                                 'var(--lia-text-secondary)'}}
               onClick={(e) => {
                 e.stopPropagation()
               }}
@@ -220,10 +220,10 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
               >
                 <div 
                   className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity motion-reduce:transition-none group-hover:opacity-80 text-lia-text-primary"
-                  style={{backgroundColor: value >= 70 ? (index === 0 ? 'var(--status-success)' : index === 1 ? 'var(--gray-400)' : 'var(--gray-300)') :
-                                     value >= 40 ? (index === 0 ? 'var(--gray-500)' : index === 1 ? 'var(--gray-300)' : 'var(--gray-500)') :
+                  style={{backgroundColor: value >= 70 ? (index === 0 ? 'var(--status-success)' : index === 1 ? 'var(--lia-text-tertiary)' : 'var(--lia-border-default)') :
+                                     value >= 40 ? (index === 0 ? 'var(--lia-text-secondary)' : index === 1 ? 'var(--lia-border-default)' : 'var(--lia-text-secondary)') :
                                      // @ts-ignore TODO: fix type
-                                     'var(--gray-600)'}}
+                                     'var(--lia-text-secondary)'}}
                 >
                   {value}
                 </div>
@@ -241,11 +241,11 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
           <Popover>
             <PopoverTrigger asChild>
               <button 
-                className="relative flex items-center justify-center w-8 h-8 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors motion-reduce:transition-none group"
+                className="relative flex items-center justify-center w-8 h-8 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none group"
                 aria-label={`${alerts.length} alerta${alerts.length > 1 ? 's' : ''} da LIA`}
               >
                 <Bell className="w-4 h-4 text-lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-disabled" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-gray-900 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-bold rounded-full flex items-center justify-center">
                   {alerts.length}
                 </span>
               </button>
@@ -281,7 +281,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
               <AvatarFallback>{candidate.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
             </Avatar>
             {viewedCandidateIds.has(candidate.id) && (
-              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center border border-white" title="Perfil visualizado">
+              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-lia-border-default rounded-full flex items-center justify-center border border-white" title="Perfil visualizado">
                 <Eye className="w-2.5 h-2.5 text-white" />
               </div>
             )}
@@ -308,13 +308,13 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
         <Badge
           className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary"
           style={{backgroundColor: 
-              candidate.stage === 'Funil' ? 'var(--gray-200)' :
-              candidate.stage === 'Triagem' ? 'var(--gray-300)' :
-              candidate.stage === 'Entrevista' ? 'var(--gray-400)' :
-              candidate.stage === 'Final' ? 'var(--gray-500)' :
+              candidate.stage === 'Funil' ? 'var(--lia-border-subtle)' :
+              candidate.stage === 'Triagem' ? 'var(--lia-border-default)' :
+              candidate.stage === 'Entrevista' ? 'var(--lia-text-tertiary)' :
+              candidate.stage === 'Final' ? 'var(--lia-text-secondary)' :
               candidate.stage === 'Aprovados' ? 'var(--status-success)' :
-              candidate.stage === 'Reprovados' ? 'var(--gray-200)' :
-              'var(--gray-200)'}}
+              candidate.stage === 'Reprovados' ? 'var(--lia-border-subtle)' :
+              'var(--lia-border-subtle)'}}
         >
           {candidate.stage}
         </Badge>

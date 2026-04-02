@@ -96,18 +96,18 @@ export default function DPOPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
             >
-              <UserCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <UserCheck className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+                className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
                 
               >
                 Registro de DPOs
               </h1>
-              <p className="text-sm lia-text-400 dark:lia-text-500" >
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                 Encarregados de Proteção de Dados (Data Protection Officers)
               </p>
             </div>
@@ -213,12 +213,12 @@ export default function DPOPage() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <UserCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <UserCheck className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{dpos.length}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Total de DPOs</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{dpos.length}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Total de DPOs</p>
                 </div>
               </div>
             </CardContent>
@@ -231,8 +231,8 @@ export default function DPOPage() {
                   <UserCheck className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{activeDPOs}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >DPOs Ativos</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{activeDPOs}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >DPOs Ativos</p>
                 </div>
               </div>
             </CardContent>
@@ -245,10 +245,10 @@ export default function DPOPage() {
                   <Star className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold truncate lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-sm font-semibold truncate text-lia-text-primary dark:text-lia-text-primary" >
                     {primaryDPO?.name || 'Não definido'}
                   </p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >DPO Principal</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >DPO Principal</p>
                 </div>
               </div>
             </CardContent>
@@ -258,11 +258,11 @@ export default function DPOPage() {
         <Card >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
                 Lista de DPOs Cadastrados
               </CardTitle>
               <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400 dark:lia-text-500"  />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary"  />
                 <Input
                   placeholder="Buscar DPO..."
                   value={searchTerm}
@@ -287,17 +287,17 @@ export default function DPOPage() {
               </TableHeader>
               <TableBody>
                 {filteredDPOs.map((dpo) => (
-                  <TableRow key={dpo.id} className="hover:bg-gray-50">
+                  <TableRow key={dpo.id} className="hover:bg-lia-bg-secondary">
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
-                          <UserCheck className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                          <UserCheck className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium lia-text-800 dark:text-lia-text-primary" >{dpo.name}</span>
+                            <span className="font-medium text-lia-text-primary dark:text-lia-text-primary" >{dpo.name}</span>
                             {dpo.isPrimary && (
- <Badge className="lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100 text-micro px-1.5 py-0">
+ <Badge className="text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-lia-bg-tertiary text-micro px-1.5 py-0">
                                 <Star className="w-3 h-3 mr-0.5" />
                                 Principal
                               </Badge>
@@ -308,26 +308,26 @@ export default function DPOPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Building2 className="w-3 h-3 lia-text-400 dark:lia-text-500"  />
-                        <span className="lia-text-500 dark:text-lia-text-tertiary" >{dpo.company}</span>
+                        <Building2 className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                        <span className="text-lia-text-secondary dark:text-lia-text-tertiary" >{dpo.company}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Mail className="w-3 h-3 lia-text-400 dark:lia-text-500"  />
-                        <span className="lia-text-500 dark:text-lia-text-tertiary" >{dpo.email}</span>
+                        <Mail className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                        <span className="text-lia-text-secondary dark:text-lia-text-tertiary" >{dpo.email}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Phone className="w-3 h-3 lia-text-400 dark:lia-text-500"  />
-                        <span className="lia-text-500 dark:text-lia-text-tertiary" >{dpo.phone}</span>
+                        <Phone className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                        <span className="text-lia-text-secondary dark:text-lia-text-tertiary" >{dpo.phone}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 lia-text-400 dark:lia-text-500"  />
-                        <span className="lia-text-500 dark:text-lia-text-tertiary" >
+                        <Calendar className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                        <span className="text-lia-text-secondary dark:text-lia-text-tertiary" >
                           {new Date(dpo.since).toLocaleDateString('pt-BR')}
                         </span>
                       </div>
@@ -355,8 +355,8 @@ export default function DPOPage() {
 
             {filteredDPOs.length === 0 && (
               <div className="text-center py-8">
-                <UserCheck className="w-12 h-12 mx-auto mb-3 lia-text-400 dark:lia-text-500"  />
-                <p className="text-sm lia-text-400 dark:lia-text-500" >
+                <UserCheck className="w-12 h-12 mx-auto mb-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                   Nenhum DPO encontrado
                 </p>
               </div>

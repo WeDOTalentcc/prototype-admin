@@ -74,7 +74,7 @@ export function CandidatoFilesTab({
         <CardContent className="p-0">
           <div className="flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
+            <div className="p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
                   <FileText className="w-4 h-4 text-lia-text-primary" />
@@ -82,7 +82,7 @@ export function CandidatoFilesTab({
                   <Badge className="text-xs px-1.5 py-0">{candidateFiles.length}</Badge>
                   {isLoadingFiles && (
                     <div
-                      className="animate-spin motion-reduce:animate-none rounded-full h-3.5 w-3.5 border border-gray-400 border-t-gray-700"
+                      className="animate-spin motion-reduce:animate-none rounded-full h-3.5 w-3.5 border border-lia-border-medium border-t-lia-border-strong"
                       role="status"
                       aria-label="Carregando..."
                     />
@@ -90,7 +90,7 @@ export function CandidatoFilesTab({
                 </h4>
                 <Button
                   size="sm"
-                  className="gap-1.5 px-3 py-1.5 text-xs h-8 bg-gray-100 hover:bg-gray-200 text-lia-text-primary border border-lia-border-subtle"
+                  className="gap-1.5 px-3 py-1.5 text-xs h-8 bg-lia-bg-tertiary hover:bg-lia-interactive-active text-lia-text-primary border border-lia-border-subtle"
                   onClick={() => triggerFileInput(isUploading, handleFileUpload)}
                   disabled={isUploading}
                 >
@@ -103,7 +103,7 @@ export function CandidatoFilesTab({
               <div className="flex gap-1.5 flex-wrap">
                 <Badge
                   variant="outline"
-                  className={`text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 ${!selectedCategory ? "bg-gray-100" : ""}`}
+                  className={`text-xs px-2 py-0.5 cursor-pointer hover:bg-lia-bg-tertiary ${!selectedCategory ? "bg-lia-bg-tertiary" : ""}`}
                   onClick={() => setSelectedCategory(null)}
                 >
                   📁 Todos ({candidateFiles.length})
@@ -114,7 +114,7 @@ export function CandidatoFilesTab({
                     <Badge
                       key={String(cat.category)}
                       variant="outline"
-                      className={`text-xs px-2 py-0.5 cursor-pointer hover:bg-gray-100 ${selectedCategory === String(cat.category) ? "bg-gray-100" : ""}`}
+                      className={`text-xs px-2 py-0.5 cursor-pointer hover:bg-lia-bg-tertiary ${selectedCategory === String(cat.category) ? "bg-lia-bg-tertiary" : ""}`}
                       onClick={() => setSelectedCategory(selectedCategory === String(cat.category) ? null : String(cat.category))}
                     >
                       {String(cat.icon)} {String(cat.label)} ({cat.count as number})
@@ -128,7 +128,7 @@ export function CandidatoFilesTab({
               {/* Drag & Drop area */}
               <div
                 className={`border-2 border-dashed rounded-md p-6 text-center transition-colors motion-reduce:transition-none cursor-pointer group ${
-                  isDragging ? "border-gray-400 bg-gray-100" : "border-lia-border-default hover:border-gray-400"
+                  isDragging ? "border-lia-border-medium bg-lia-bg-tertiary" : "border-lia-border-default hover:border-lia-border-medium"
                 }`}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
                 onDragLeave={() => setIsDragging(false)}
@@ -142,21 +142,21 @@ export function CandidatoFilesTab({
                 <div className="flex flex-col items-center" role="status" aria-live="polite">
                   {isUploading ? (
                     <>
-                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-3">
-                        <div className="animate-spin motion-reduce:animate-none rounded-full h-6 w-6 border-2 border-gray-400 border-t-gray-700" />
+                      <div className="w-12 h-12 rounded-full bg-lia-interactive-active flex items-center justify-center mb-3">
+                        <div className="animate-spin motion-reduce:animate-none rounded-full h-6 w-6 border-2 border-lia-border-medium border-t-lia-border-strong" />
                       </div>
                       <p className="text-sm text-lia-text-primary font-medium mb-2">Enviando... {uploadProgress}%</p>
-                      <div className="w-40 h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="w-40 h-2 bg-lia-interactive-active rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gray-600 rounded-full transition-[width] duration-300"
+                          className="h-full bg-lia-border-medium rounded-full transition-[width] duration-300"
                           style={{ width: `${uploadProgress}%` }}
                         />
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors motion-reduce:transition-none ${isDragging ? "bg-gray-200" : "bg-gray-100 group-hover:bg-gray-200"}`}>
-                        <Upload className={`w-6 h-6 ${isDragging ? "text-lia-text-primary" : "lia-text-600 group-hover:lia-text-700"}`} />
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors motion-reduce:transition-none ${isDragging ? "bg-lia-interactive-active" : "bg-lia-bg-tertiary group-hover:bg-lia-interactive-active"}`}>
+                        <Upload className={`w-6 h-6 ${isDragging ? "text-lia-text-primary" : "text-lia-text-secondary group-hover:lia-text-700"}`} />
                       </div>
                       <p className="text-sm text-lia-text-primary mb-1">
                         {isDragging ? "Solte os arquivos aqui" : "Arraste arquivos ou clique para selecionar"}
@@ -174,7 +174,7 @@ export function CandidatoFilesTab({
                   <div key={String(file.id)} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md transition-colors motion-reduce:transition-none">
                     <div className="p-3">
                       <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center flex-shrink-0">
                           {getFileIcon(String(file.file_type || ""), file.mime_type as string | undefined)}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -226,7 +226,7 @@ export function CandidatoFilesTab({
               {/* Empty state */}
               {candidateFiles.length === 0 && !isLoadingFiles && (
                 <div className="text-center py-8 text-lia-text-secondary">
-                  <FileText className="w-10 h-10 mx-auto mb-3 lia-text-300" />
+                  <FileText className="w-10 h-10 mx-auto mb-3 text-lia-text-disabled" />
                   <p className="text-sm">Nenhum arquivo enviado</p>
                   <p className="text-xs text-lia-text-secondary mt-1">Arraste arquivos ou clique acima para enviar</p>
                 </div>

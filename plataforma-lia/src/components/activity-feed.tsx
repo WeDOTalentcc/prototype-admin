@@ -110,11 +110,11 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
       case 'urgent':
         return 'bg-status-error/10 text-status-error border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30'
       case 'normal':
-        return 'bg-gray-100 text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default'
+        return 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default'
       case 'low':
-        return 'bg-gray-50 text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-primary/20'
+        return 'bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-primary/20'
       default:
-        return 'bg-gray-50 text-lia-text-primary border-lia-border-subtle'
+        return 'bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle'
     }
   }
 
@@ -130,32 +130,32 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
   const getActivityCardBackground = (activityType: string) => {
     const typeMap: Record<string, string> = {
-      'interview_scheduled': 'var(--gray-100)',
-      'lia_suggestion': 'var(--gray-100)',
-      'candidate_moved': 'var(--gray-100)',
-      'email_sent': 'var(--gray-100)',
-      'offer_sent': 'var(--gray-100)',
-      'approval_pending': 'var(--gray-100)',
-      'voice_screening': 'var(--gray-100)',
-      'rubric_evaluation': 'var(--gray-100)',
-      'screening_analysis': 'var(--gray-100)',
+      'interview_scheduled': 'var(--lia-bg-tertiary)',
+      'lia_suggestion': 'var(--lia-bg-tertiary)',
+      'candidate_moved': 'var(--lia-bg-tertiary)',
+      'email_sent': 'var(--lia-bg-tertiary)',
+      'offer_sent': 'var(--lia-bg-tertiary)',
+      'approval_pending': 'var(--lia-bg-tertiary)',
+      'voice_screening': 'var(--lia-bg-tertiary)',
+      'rubric_evaluation': 'var(--lia-bg-tertiary)',
+      'screening_analysis': 'var(--lia-bg-tertiary)',
     }
-    return typeMap[activityType] || 'var(--gray-100)'
+    return typeMap[activityType] || 'var(--lia-bg-tertiary)'
   }
 
   const getActivityIconBackground = (activityType: string) => {
     const typeMap: Record<string, string> = {
       'interview_scheduled': 'var(--status-success)',
-      'lia_suggestion': 'var(--gray-400)',
-      'candidate_moved': 'var(--gray-400)',
-      'email_sent': 'var(--gray-400)',
-      'offer_sent': 'var(--gray-400)',
-      'approval_pending': 'var(--gray-400)',
-      'voice_screening': 'var(--gray-400)',
-      'rubric_evaluation': 'var(--gray-400)',
-      'screening_analysis': 'var(--gray-500)',
+      'lia_suggestion': 'var(--lia-text-tertiary)',
+      'candidate_moved': 'var(--lia-text-tertiary)',
+      'email_sent': 'var(--lia-text-tertiary)',
+      'offer_sent': 'var(--lia-text-tertiary)',
+      'approval_pending': 'var(--lia-text-tertiary)',
+      'voice_screening': 'var(--lia-text-tertiary)',
+      'rubric_evaluation': 'var(--lia-text-tertiary)',
+      'screening_analysis': 'var(--lia-text-secondary)',
     }
-    return typeMap[activityType] || 'var(--gray-400)'
+    return typeMap[activityType] || 'var(--lia-text-tertiary)'
   }
 
   const getActivityIconComponent = (activityType: string) => {
@@ -183,7 +183,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
   const getScoreBadge = (score: number) => {
     if (score >= 80) return { label: 'Forte', className: 'bg-status-success/15 text-status-success border-status-success/30' }
-    if (score >= 60) return { label: 'Bom', className: 'bg-gray-100 text-lia-text-secondary border-lia-border-default' }
+    if (score >= 60) return { label: 'Bom', className: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default' }
     if (score >= 40) return { label: 'Moderado', className: 'bg-status-warning/15 text-status-warning border-status-warning/30' }
     return { label: 'Fraco', className: 'bg-status-error/15 text-status-error border-status-error/30' }
   }

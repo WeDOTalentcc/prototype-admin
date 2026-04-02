@@ -176,7 +176,7 @@ const agentsData: AgentInfo[] = [
     actionsToday: 89,
     successRate: 97,
     avgResponseTime: 0.5,
-    color: 'var(--gray-400)'
+    color: 'var(--lia-text-tertiary)'
   },
   {
     id: 'analytics',
@@ -233,9 +233,9 @@ export function AgentActivityDashboard() {
 
   const getStatusColor = (status: AgentInfo['status']) => {
     switch (status) {
-      case 'active': return 'bg-gray-900 dark:bg-gray-50'
+      case 'active': return 'bg-lia-btn-primary-bg dark:bg-lia-bg-secondary'
       case 'busy': return 'bg-wedo-green-bright'
-      case 'idle': return 'bg-gray-400'
+      case 'idle': return 'bg-lia-border-medium'
       case 'error': return 'bg-status-error'
     }
   }
@@ -342,7 +342,7 @@ export function AgentActivityDashboard() {
             {agentsData.map((agent) => (
               <div 
                 key={agent.id}
-                className="p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none"
+                className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle dark:hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none"
               >
                 {/* Header com status */}
                 <div className="flex items-start justify-between mb-2">
@@ -423,14 +423,14 @@ export function AgentActivityDashboard() {
                         <span className="text-sm font-inter font-bold text-lia-text-primary">{agent.actionsToday}</span>
                         <Badge className={`text-xs tracking-tight ${
                           agent.successRate >= 98 ? 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success' :
- agent.successRate >= 95 ? 'bg-gray-100 text-lia-text-primary' :
+ agent.successRate >= 95 ? 'bg-lia-bg-tertiary text-lia-text-primary' :
                           'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning'
                         }`}>
                           {agent.successRate}%
                         </Badge>
                       </div>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+                    <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                       <div 
                         className="h-2 rounded-full transition-[width,height]"
                         style={{width: `${percentage}%`, backgroundColor: agent.color}}
@@ -457,7 +457,7 @@ export function AgentActivityDashboard() {
               <select
                 value={selectedAgentFilter}
                 onChange={(e) => setSelectedAgentFilter(e.target.value)}
-                className="text-xs font-open-sans px-2 py-1 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary text-lia-text-primary"
+                className="text-xs font-open-sans px-2 py-1 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-primary"
               >
                 <option value="all">Todos os Agentes</option>
                 {agentsData.map(agent => (
@@ -468,7 +468,7 @@ export function AgentActivityDashboard() {
               <select
                 value={selectedTypeFilter}
                 onChange={(e) => setSelectedTypeFilter(e.target.value)}
-                className="text-xs font-open-sans px-2 py-1 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary text-lia-text-primary"
+                className="text-xs font-open-sans px-2 py-1 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-primary"
               >
                 <option value="all">Todos os Tipos</option>
                 {actionTypes.map(type => (
@@ -494,13 +494,13 @@ export function AgentActivityDashboard() {
                 {filteredActions.map((action) => {
                   const agent = agentsData.find(a => a.id === action.agentId)
                   return (
-                    <tr key={action.id} className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                    <tr key={action.id} className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-bg/50">
                       <td className="py-2 px-2">
                         <span className="text-xs font-inter font-medium text-lia-text-primary">{action.time}</span>
                       </td>
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full" style={{backgroundColor: agent?.color || 'var(--gray-950)'}}></div>
+                          <div className="w-2 h-2 rounded-full" style={{backgroundColor: agent?.color || 'var(--lia-btn-primary-bg)'}}></div>
                           <span className="text-xs font-open-sans font-medium text-lia-text-primary">{action.agentName}</span>
                         </div>
                       </td>

@@ -38,7 +38,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
       label: 'Híbrido',
       value: 489,
       percentage: 48.9,
-      color: 'bg-gray-700',
+      color: 'bg-lia-bg-inverse',
       icon: <Globe className="w-4 h-4" />
     },
     {
@@ -52,7 +52,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
       label: 'Presencial',
       value: 169,
       percentage: 16.9,
-      color: 'bg-gray-500',
+      color: 'bg-lia-bg-secondary0',
       icon: <Building className="w-4 h-4" />
     }
   ]
@@ -92,7 +92,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
               cy="100"
               r="80"
               fill="none"
-              stroke="var(--gray-200)"
+              stroke="var(--lia-border-subtle)"
               strokeWidth="20"
             />
             {donutData.map((item, index) => {
@@ -108,7 +108,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   cy="100"
                   r="80"
                   fill="none"
-                  stroke={item.color.replace('bg-', '#').replace('500', 'var(--wedo-blue)').replace('green', 'var(--status-success)').replace('gray', 'var(--gray-400)')}
+                  stroke={item.color.replace('bg-', '#').replace('500', 'var(--wedo-blue)').replace('green', 'var(--status-success)').replace('gray', 'var(--lia-text-tertiary)')}
                   strokeWidth="20"
                   strokeDasharray={strokeDasharray}
                   strokeDashoffset={strokeDashoffset}
@@ -178,7 +178,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 <Home className="w-3 h-3 text-status-success" />
                 Remoto
               </div>
-              <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="flex-1 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div
                   className="bg-status-success h-2 rounded-full transition-[width,height] duration-300"
                   style={{width: `${(item.remoto / maxValue) * 100}%`}}
@@ -195,9 +195,9 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 <Globe className="w-3 h-3 text-lia-text-secondary" />
                 Híbrido
               </div>
-              <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="flex-1 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div
-                  className="bg-gray-700 h-2 rounded-full transition-[width,height] duration-300"
+                  className="bg-lia-bg-inverse h-2 rounded-full transition-[width,height] duration-300"
                   style={{width: `${(item.hibrido / maxValue) * 100}%`}}
                 ></div>
               </div>
@@ -212,9 +212,9 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 <Building className="w-3 h-3 text-lia-text-secondary" />
                 Presencial
               </div>
-              <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="flex-1 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div
-                  className="bg-gray-500 h-2 rounded-full transition-[width,height] duration-300"
+                  className="bg-lia-bg-secondary0 h-2 rounded-full transition-[width,height] duration-300"
                   style={{width: `${(item.presencial / maxValue) * 100}%`}}
                 ></div>
               </div>
@@ -250,11 +250,11 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                   minHeight: '4px'}} title={`Remoto: ${item.remoto}`}></div>
 
                 {/* Híbrido */}
-                <div className="w-3 bg-gray-700 rounded-t" style={{height: `${(item.hibrido / maxTrendValue) * 100}%`,
+                <div className="w-3 bg-lia-bg-inverse rounded-t" style={{height: `${(item.hibrido / maxTrendValue) * 100}%`,
                   minHeight: '4px'}} title={`Híbrido: ${item.hibrido}`}></div>
 
                 {/* Presencial */}
-                <div className="w-3 bg-gray-500 rounded-t" style={{height: `${(item.presencial / maxTrendValue) * 100}%`,
+                <div className="w-3 bg-lia-bg-secondary0 rounded-t" style={{height: `${(item.presencial / maxTrendValue) * 100}%`,
                   minHeight: '4px'}} title={`Presencial: ${item.presencial}`}></div>
               </div>
 
@@ -272,11 +272,11 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
             <span className="text-xs text-lia-text-secondary">Remoto</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-gray-700 rounded-md"></div>
+            <div className="w-3 h-3 bg-lia-bg-inverse rounded-md"></div>
             <span className="text-xs text-lia-text-secondary">Híbrido</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-gray-500 rounded-md"></div>
+            <div className="w-3 h-3 bg-lia-bg-secondary0 rounded-md"></div>
             <span className="text-xs text-lia-text-secondary">Presencial</span>
           </div>
         </div>
@@ -303,7 +303,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
         case 'alta': return 'bg-status-error'
         case 'media': return 'bg-status-warning'
         case 'baixa': return 'bg-status-success'
-        default: return 'bg-gray-300'
+        default: return 'bg-lia-border-default'
       }
     }
 
@@ -354,12 +354,12 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
             </CardTitle>
 
             {/* Seletor de tipo de gráfico */}
-            <div className="flex bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-1">
+            <div className="flex bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-1">
               <button
                 onClick={() => setSelectedChart('donut')}
                 className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'donut'
-                    ? 'bg-gray-900 text-white'
+                    ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                     : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
@@ -370,7 +370,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 onClick={() => setSelectedChart('bar')}
                 className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'bar'
-                    ? 'bg-gray-900 text-white'
+                    ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                     : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
@@ -381,7 +381,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 onClick={() => setSelectedChart('trend')}
                 className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'trend'
-                    ? 'bg-gray-900 text-white'
+                    ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                     : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >
@@ -392,7 +392,7 @@ export function WorkModelCharts({ className }: WorkModelChartsProps) {
                 onClick={() => setSelectedChart('heatmap')}
                 className={`px-3 py-1 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center gap-1 ${
  selectedChart === 'heatmap'
-                    ? 'bg-gray-900 text-white'
+                    ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                     : 'text-lia-text-secondary hover:text-lia-text-primary'
                 }`}
               >

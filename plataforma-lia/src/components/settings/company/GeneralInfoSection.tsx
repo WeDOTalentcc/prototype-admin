@@ -10,10 +10,10 @@ import {
 } from "@/lib/industry-constants"
 
 const inputClass = (disabled: boolean) =>
-  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary" : ""}`
+  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary" : ""}`
 
 const selectClass = (disabled: boolean) =>
-  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary" : ""}`
+  `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle transition-colors ${disabled ? "opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary" : ""}`
 
 interface GeneralInfoSectionProps {
   companyData: Record<string, any>
@@ -37,8 +37,8 @@ export function GeneralInfoSection({
       </h3>
       <div className="grid grid-cols-1 gap-3">
         {/* Logo */}
-        <div className="inline-flex items-center gap-3 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 w-fit">
-          <div className="relative w-14 h-14 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors motion-reduce:transition-none hover:border-gray-900 dark:hover:border-gray-50 flex-shrink-0 overflow-hidden">
+        <div className="inline-flex items-center gap-3 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 w-fit">
+          <div className="relative w-14 h-14 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-2 border-dashed border-lia-border-default flex items-center justify-center cursor-pointer hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle flex-shrink-0 overflow-hidden">
             {companyData.logo ? (
               <NextImage src={companyData.logo} alt="Logo" fill className="object-cover rounded-md" />
             ) : (
@@ -50,7 +50,7 @@ export function GeneralInfoSection({
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif]">Logo da Empresa</span>
-            <span className="text-micro text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full font-['Open_Sans',sans-serif]">Identidade Visual</span>
+            <span className="text-micro text-lia-text-secondary bg-lia-bg-tertiary dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full font-['Open_Sans',sans-serif]">Identidade Visual</span>
           </div>
         </div>
 

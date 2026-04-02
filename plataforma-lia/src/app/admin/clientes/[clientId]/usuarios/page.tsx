@@ -57,8 +57,8 @@ interface User {
 const roleLabels: Record<string, { label: string, color: string }> = {
   admin: { label: 'Administrador', color: 'bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple' },
   manager: { label: 'Gestor', color: 'bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning' },
- recruiter: { label: 'Recrutador', color: 'bg-gray-100 lia-text-900 dark:text-lia-text-secondary' },
-  viewer: { label: 'Visualizador', color: 'bg-gray-100 lia-text-800 dark:bg-lia-bg-secondary dark:text-lia-text-primary' }
+ recruiter: { label: 'Recrutador', color: 'bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-secondary' },
+  viewer: { label: 'Visualizador', color: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary' }
 }
 
 const statusConfig: Record<string, { label: string, icon: React.ComponentType<{ className?: string }>, variant: 'success' | 'warning' | 'default' }> = {
@@ -363,14 +363,14 @@ export default function ClientUsuariosPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Users className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <Users className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary"
             >
               Usuários
             </h2>
           </div>
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Gestão de usuários e permissões do cliente
           </p>
         </div>
@@ -383,7 +383,7 @@ export default function ClientUsuariosPage({
             <Button 
               size="sm" 
               onClick={() => setShowAddModal(true)}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
             >
               <Plus className="w-4 h-4 mr-2" />
               Convidar Usuário
@@ -420,10 +420,10 @@ export default function ClientUsuariosPage({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary">
+            <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
               {users.length}
             </p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Total de Usuários
             </p>
           </CardContent>
@@ -431,7 +431,7 @@ export default function ClientUsuariosPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-success">{activeCount}</p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Ativos
             </p>
           </CardContent>
@@ -439,15 +439,15 @@ export default function ClientUsuariosPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-warning">{pendingCount}</p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Pendentes
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-semibold lia-text-400">{inactiveCount}</p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-2xl font-semibold text-lia-text-tertiary">{inactiveCount}</p>
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Inativos
             </p>
           </CardContent>
@@ -457,12 +457,12 @@ export default function ClientUsuariosPage({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base text-lia-text-primary dark:text-lia-text-primary">
               Lista de Usuários
             </CardTitle>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 lia-text-400" />
+                <Filter className="w-4 h-4 text-lia-text-tertiary" />
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
                   <SelectTrigger className="w-[140px] h-9">
                     <SelectValue placeholder="Role" />
@@ -488,7 +488,7 @@ export default function ClientUsuariosPage({
                 </Select>
               </div>
               <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
                 <Input
                   placeholder="Buscar usuário..."
                   value={searchQuery}
@@ -504,8 +504,8 @@ export default function ClientUsuariosPage({
             <TableSkeleton />
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-8">
-              <Users className="w-12 h-12 mx-auto mb-4 lia-text-300" />
-              <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
+              <Users className="w-12 h-12 mx-auto mb-4 text-lia-text-disabled" />
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                 {searchQuery || roleFilter !== 'all' || statusFilter !== 'all' 
                   ? 'Nenhum usuário encontrado com os filtros aplicados' 
                   : 'Nenhum usuário cadastrado'}
@@ -521,25 +521,25 @@ export default function ClientUsuariosPage({
                 return (
                   <div 
                     key={user.id}
-                    className="flex items-center gap-4 p-3 rounded-md border hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle"
+                    className="flex items-center gap-4 p-3 rounded-md border hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle"
                   >
-                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
-                      <span className="text-sm font-medium lia-text-600 dark:text-lia-text-tertiary">
+                    <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
+                      <span className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary">
                         {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p 
-                          className="font-medium truncate lia-text-800 dark:text-lia-text-primary"
+                          className="font-medium truncate text-lia-text-primary dark:text-lia-text-primary"
                         >
                           {user.name}
                         </p>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <Mail className="w-3 h-3 lia-text-400" />
+                        <Mail className="w-3 h-3 text-lia-text-tertiary" />
                         <p 
-                          className="text-sm truncate lia-text-400 dark:lia-text-500"
+                          className="text-sm truncate text-lia-text-tertiary dark:text-lia-text-secondary"
                         >
                           {user.email}
                         </p>
@@ -561,12 +561,12 @@ export default function ClientUsuariosPage({
                       )}
                       <div className="text-right min-w-[100px]">
                         <p 
-                          className="text-xs lia-text-400 dark:lia-text-500"
+                          className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary"
                         >
                           Último acesso
                         </p>
                         <p 
-                          className="text-xs lia-text-500 dark:text-lia-text-tertiary"
+                          className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary"
                         >
                           {formatDateTime(user.lastLogin)}
                         </p>
@@ -683,7 +683,7 @@ export default function ClientUsuariosPage({
             <Button 
               onClick={handleAddUser} 
               disabled={isSaving}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
             >
               {isSaving ? (
                 <>
@@ -752,7 +752,7 @@ export default function ClientUsuariosPage({
             <Button 
               onClick={handleEditUser} 
               disabled={isSaving}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
             >
               {isSaving ? (
                 <>

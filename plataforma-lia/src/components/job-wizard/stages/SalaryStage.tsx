@@ -119,7 +119,7 @@ export function SalaryStage() {
     <div className="space-y-3">
       {/* Market Benchmark Card */}
       {salaryBenchmark && (salaryBenchmark.market || salaryBenchmark.internal) && (
-        <div className="p-3 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-wedo-green-bright/5 rounded-md border border-lia-border-default dark:border-lia-border-default">
+        <div className="p-3 bg-gradient-to-r from-lia-bg-secondary dark:from-lia-bg-primary to-wedo-green-bright/5 rounded-md border border-lia-border-default dark:border-lia-border-default">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
             <span className="text-xs font-medium text-lia-text-primary">
@@ -177,7 +177,7 @@ export function SalaryStage() {
           {salaryBenchmark.combined && (
             <button
               onClick={applySuggestion}
-              className="w-full py-1.5 mt-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-micro font-medium rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-1"
+              className="w-full py-1.5 mt-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active text-micro font-medium rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-1"
             >
               <Brain className="w-3 h-3 text-wedo-cyan" />
               Aplicar sugestão: R$ {salaryBenchmark.combined.min.toLocaleString()} - R$ {salaryBenchmark.combined.max.toLocaleString()}
@@ -192,7 +192,7 @@ export function SalaryStage() {
       
       {/* Loading Benchmark */}
       {isLoadingBenchmark && (
-        <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
           <span className="text-xs lia-text-secondary">Buscando benchmark de mercado...</span>
         </div>
@@ -214,7 +214,7 @@ export function SalaryStage() {
                 value={salaryInfo.minSalary}
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, minSalary: e.target.value }))}
                 placeholder="12.000"
-                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
+                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                
               />
             </div>
@@ -228,7 +228,7 @@ export function SalaryStage() {
                 value={salaryInfo.maxSalary}
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, maxSalary: e.target.value }))}
                 placeholder="18.000"
-                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
+                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                
               />
             </div>
@@ -252,7 +252,7 @@ export function SalaryStage() {
                 value={salaryInfo.minBonus}
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, minBonus: e.target.value }))}
                 placeholder="10.000"
-                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
+                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                
               />
             </div>
@@ -266,7 +266,7 @@ export function SalaryStage() {
                 value={salaryInfo.maxBonus}
                 onChange={(e) => setSalaryInfo(prev => ({ ...prev, maxBonus: e.target.value }))}
                 placeholder="20.000"
-                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
+                className="w-full pl-9 pr-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
                
               />
             </div>
@@ -277,7 +277,7 @@ export function SalaryStage() {
           value={salaryInfo.bonusCriteria}
           onChange={(e) => setSalaryInfo(prev => ({ ...prev, bonusCriteria: e.target.value }))}
           placeholder="Critérios: Desempenho individual + metas da empresa"
-          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-gray-400 transition-colors motion-reduce:transition-none"
+          className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs focus:outline-none focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
          
         />
       </div>
@@ -316,13 +316,13 @@ export function SalaryStage() {
                         className={cn(
  "flex items-center gap-1.5 p-2 rounded-md text-left transition-colors",
                           benefit.enabled 
-                            ? "bg-gray-100 dark:bg-lia-bg-secondary border border-gray-900" 
-                            : "bg-gray-50 border border-transparent hover:border-lia-border-subtle"
+                            ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-btn-primary-bg" 
+                            : "bg-lia-bg-secondary border border-transparent hover:border-lia-border-subtle"
                         )}
                       >
                         <div className={cn(
  "w-3.5 h-3.5 rounded-md flex items-center justify-center flex-shrink-0",
-                          benefit.enabled ? "bg-gray-900" : "border border-lia-border-subtle"
+                          benefit.enabled ? "bg-lia-btn-primary-bg" : "border border-lia-border-subtle"
                         )}>
                           {benefit.enabled && <Check className="w-2.5 h-2.5 text-white" />}
                         </div>
@@ -335,7 +335,7 @@ export function SalaryStage() {
                               <Heart className="w-2.5 h-2.5 text-wedo-magenta fill-pink-500 flex-shrink-0" />
                             )}
                             {benefit.is_mandatory && (
-                              <span className="text-micro px-1 py-0 rounded-md bg-gray-200 text-lia-text-secondary flex-shrink-0">obrig.</span>
+                              <span className="text-micro px-1 py-0 rounded-md bg-lia-interactive-active text-lia-text-secondary flex-shrink-0">obrig.</span>
                             )}
                           </div>
                           {valueDisplay && (
@@ -357,14 +357,14 @@ export function SalaryStage() {
         {/* Add Benefit Button */}
         <button 
           onClick={() => setShowAddBenefitModal(true)}
-          className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
+          className="w-full mt-1.5 py-1.5 border border-dashed border-lia-border-subtle rounded-md text-xs text-lia-text-secondary hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
         >
           <Plus className="w-3.5 h-3.5" /> Adicionar benefício
         </button>
         
         {/* Add Benefit Modal */}
         {showAddBenefitModal && (
-          <div className="mt-2 p-3 bg-gray-50 rounded-md border border-lia-border-subtle space-y-2">
+          <div className="mt-2 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-2">
             <input
               type="text"
               value={newBenefitName}
@@ -408,7 +408,7 @@ export function SalaryStage() {
               <button
                 onClick={addBenefit}
                 disabled={!newBenefitName.trim()}
-                className="flex-1 py-1.5 px-3 rounded-md bg-gray-900 text-white text-xs disabled:opacity-50"
+                className="flex-1 py-1.5 px-3 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs disabled:opacity-50"
               >
                 Adicionar
               </button>
@@ -418,7 +418,7 @@ export function SalaryStage() {
       </div>
 
       {/* Summary */}
-      <div className="p-2 bg-gray-50 rounded-md border border-lia-border-default dark:border-lia-border-default">
+      <div className="p-2 bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
         <div className="flex items-center justify-between text-xs">
           <span className="lia-text-secondary">
             Benefícios selecionados:

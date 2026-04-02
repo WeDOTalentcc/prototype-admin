@@ -386,7 +386,7 @@ export function CreateJobModal({ isOpen, onClose, onCreateWithWizard, onJobCreat
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium rounded-md bg-lia-btn-primary-bg text-white hover:bg-lia-btn-primary-hover active:bg-lia-btn-primary-bg dark:hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 disabled:bg-lia-border-default disabled:text-lia-text-tertiary disabled:cursor-not-allowed font-['Open_Sans',sans-serif] flex items-center gap-2"
+              className="px-4 py-2 text-sm font-medium rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-btn-primary-bg dark:hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none duration-150 focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 disabled:bg-lia-border-default disabled:text-lia-text-tertiary disabled:cursor-not-allowed font-['Open_Sans',sans-serif] flex items-center gap-2"
             >
               {isSubmitting ? (
                 <>

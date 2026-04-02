@@ -57,7 +57,7 @@ export function MultipleChoiceCard({
  "w-full min-h-[44px] px-4 py-3 text-sm text-left rounded-lg font-medium transition-colors duration-200 focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]",
                 isSelected
                   ? "bg-lia-btn-primary-bg text-lia-btn-primary-text border border-lia-btn-primary-bg"
-                  : "bg-white dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated",
+                  : "bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated",
                 (disabled || (!!selectedId && !isSelected)) && "opacity-50 cursor-not-allowed"
               )}
             >

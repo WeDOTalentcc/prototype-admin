@@ -128,18 +128,18 @@ function getStatusLabel(status: string): string {
 
 function getStatusClasses(status: string): string {
   switch (status) {
-    case 'completed': return 'bg-gray-100 text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
-    case 'cancelled': return 'bg-gray-100 text-lia-text-tertiary border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
-    case 'rescheduled': return 'bg-gray-100 text-lia-text-tertiary border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
-    default: return 'bg-gray-100 text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
+    case 'completed': return 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
+    case 'cancelled': return 'bg-lia-bg-tertiary text-lia-text-tertiary border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
+    case 'rescheduled': return 'bg-lia-bg-tertiary text-lia-text-tertiary border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
+    default: return 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle'
   }
 }
 
 function getStatusIcon(status: string) {
   switch (status) {
-    case 'completed': return <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-lia-bg-elevated inline-block" />
-    case 'cancelled': return <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-lia-bg-elevated inline-block" />
-    case 'rescheduled': return <span className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-lia-bg-elevated inline-block" />
+    case 'completed': return <span className="w-1.5 h-1.5 rounded-full bg-lia-border-medium dark:bg-lia-bg-elevated inline-block" />
+    case 'cancelled': return <span className="w-1.5 h-1.5 rounded-full bg-lia-border-medium dark:bg-lia-bg-elevated inline-block" />
+    case 'rescheduled': return <span className="w-1.5 h-1.5 rounded-full bg-lia-border-medium dark:bg-lia-bg-elevated inline-block" />
     default: return null
   }
 }
@@ -462,8 +462,8 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
   )
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-lia-bg-primary overflow-hidden">
-      <div className="flex-shrink-0 px-4 pt-3 pb-0 bg-white dark:bg-lia-bg-primary">
+    <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
+      <div className="flex-shrink-0 px-4 pt-3 pb-0 bg-lia-bg-primary dark:bg-lia-bg-primary">
         <div className="flex items-center justify-between mb-0.5">
           <div className="flex items-center gap-3">
             <div>
@@ -500,16 +500,16 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
 
       <div className="flex-1 overflow-y-auto px-4 pt-3 pb-4">
         <Tabs defaultValue="entrevistas" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-9 bg-gray-100 dark:bg-lia-bg-secondary p-1 rounded-md">
+          <TabsList className="grid w-full grid-cols-2 h-9 bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-1 rounded-md">
             <TabsTrigger
               value="entrevistas"
-              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded-md data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-primary data-[state=active]:shadow-lia-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-lia-text-inverse"
+              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded-md data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-primary data-[state=active]:shadow-lia-sm dark:data-[state=active]:bg-lia-btn-primary-bg dark:data-[state=active]:text-lia-text-inverse"
             >
               Entrevistas ({todayInterviews.length})
             </TabsTrigger>
             <TabsTrigger
               value="historico"
-              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded-md data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-primary data-[state=active]:shadow-lia-sm dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-lia-text-inverse"
+              className="text-sm-ui font-[Open_Sans,sans-serif] h-7 rounded-md data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-primary data-[state=active]:shadow-lia-sm dark:data-[state=active]:bg-lia-btn-primary-bg dark:data-[state=active]:text-lia-text-inverse"
             >
               Histórico ({pastInterviews.length})
             </TabsTrigger>
@@ -548,7 +548,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                 {morningInterviews.map((interview) => (
                   <div
                     key={interview.id}
-                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
+                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-lia-bg-primary dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-lia-border-medium"
                   >
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -590,7 +590,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                             <Button
                               size="sm"
                               onClick={() => handleOpenMeeting(interview)}
-                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md"
+                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md"
                             >
                               <ExternalLink className="w-3 h-3" />
                               Abrir Reunião
@@ -599,7 +599,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               size="sm"
                               variant="outline"
                               onClick={() => handleReschedule(interview)}
-                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-lia-text-secondary border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:border-lia-border-default dark:hover:bg-gray-800 rounded-md"
+                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:border-lia-border-default dark:hover:bg-lia-btn-primary-hover rounded-md"
                             >
                               <CalendarClock className="w-3 h-3" />
                               Alterar Horário
@@ -631,7 +631,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                 {afternoonInterviews.map((interview) => (
                   <div
                     key={interview.id}
-                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
+                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-lia-bg-primary dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-lia-border-medium"
                   >
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -673,7 +673,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                             <Button
                               size="sm"
                               onClick={() => handleOpenMeeting(interview)}
-                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md"
+                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md"
                             >
                               <ExternalLink className="w-3 h-3" />
                               Abrir Reunião
@@ -682,7 +682,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                               size="sm"
                               variant="outline"
                               onClick={() => handleReschedule(interview)}
-                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-lia-text-secondary border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:border-lia-border-default dark:hover:bg-gray-800 rounded-md"
+                              className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:border-lia-border-default dark:hover:bg-lia-btn-primary-hover rounded-md"
                             >
                               <CalendarClock className="w-3 h-3" />
                               Alterar Horário
@@ -720,7 +720,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                       {interviews.map((interview) => (
                         <div
                           key={interview.id}
-                          className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-gray-600"
+                          className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-lia-bg-primary dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150 hover:border-lia-border-default dark:hover:border-lia-border-medium"
                         >
                           <div className="flex gap-3">
                             <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -762,7 +762,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                   <Button
                                     size="sm"
                                     onClick={() => handleOpenMeeting(interview)}
-                                    className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md"
+                                    className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md"
                                   >
                                     <ExternalLink className="w-3 h-3" />
                                     Abrir Reunião
@@ -771,7 +771,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleReschedule(interview)}
-                                    className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-lia-text-secondary border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:border-lia-border-default dark:hover:bg-gray-800 rounded-md"
+                                    className="h-7 px-2.5 text-xs font-[Open_Sans,sans-serif] font-medium gap-1 text-lia-text-secondary border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:border-lia-border-default dark:hover:bg-lia-btn-primary-hover rounded-md"
                                   >
                                     <CalendarClock className="w-3 h-3" />
                                     Alterar Horário
@@ -812,7 +812,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                 {pastInterviews.map((interview) => (
                   <div
                     key={interview.id}
-                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-white dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150"
+                    className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3.5 bg-lia-bg-primary dark:bg-lia-bg-primary transition-colors motion-reduce:transition-none duration-150"
                   >
                     <div className="flex gap-3">
                       <Avatar className="w-10 h-10 flex-shrink-0 mt-0.5">
@@ -856,7 +856,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
                             <Button
                               size="sm"
                               onClick={() => handleOpenMeeting(interview)}
-                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-gray-900 text-white hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md"
+                              className="h-7 px-3 text-xs font-[Open_Sans,sans-serif] font-medium gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-md"
                             >
                               <ExternalLink className="w-3 h-3" />
                               Abrir Reunião

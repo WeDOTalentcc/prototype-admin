@@ -61,7 +61,7 @@ export function Breadcrumbs({
                 className="text-micro font-medium ml-1"
                 style={
                   scope === 'global' 
-                    ? { borderColor: 'var(--gray-200)' }
+                    ? { borderColor: 'var(--lia-border-subtle)' }
                     : { borderColor: 'var(--wedo-purple)', color: 'var(--wedo-purple)' }
                 }
               >

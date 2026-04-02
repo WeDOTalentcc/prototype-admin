@@ -157,7 +157,7 @@ export function BigFiveAnalyticsDashboard() {
       </div>
 
       {/* Distribuição por Traço */}
-      <Card className="border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary">
+      <Card className="border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-primary">
         <CardHeader className="px-4 py-3">
           <CardTitle className="text-xs font-sans font-open-sans font-semibold text-lia-text-primary">
             Distribuição dos Traços de Personalidade
@@ -170,7 +170,7 @@ export function BigFiveAnalyticsDashboard() {
               <span className="text-xs font-open-sans text-lia-text-primary">Abertura</span>
               <span className="text-sm font-inter font-bold text-lia-text-primary">68%</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+            <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
               <div className="h-2 rounded-full bg-wedo-purple w-[68%]"></div>
             </div>
           </div>
@@ -181,7 +181,7 @@ export function BigFiveAnalyticsDashboard() {
               <span className="text-xs font-open-sans text-lia-text-primary">Conscienciosidade</span>
               <span className="text-sm font-inter font-bold text-lia-text-primary">74%</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+            <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
               <div className="h-2 rounded-full bg-wedo-green-bright w-[74%]"></div>
             </div>
           </div>
@@ -192,8 +192,8 @@ export function BigFiveAnalyticsDashboard() {
               <span className="text-xs font-open-sans text-lia-text-primary">Extroversão</span>
               <span className="text-sm font-inter font-bold text-lia-text-primary">61%</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
-              <div className="h-2 rounded-full bg-gray-900 w-[61%]"></div>
+            <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="h-2 rounded-full bg-lia-btn-primary-bg w-[61%]"></div>
             </div>
           </div>
 
@@ -203,7 +203,7 @@ export function BigFiveAnalyticsDashboard() {
               <span className="text-xs font-open-sans text-lia-text-primary">Amabilidade</span>
               <span className="text-sm font-inter font-bold text-lia-text-primary">72%</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+            <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
               <div className="h-2 rounded-full bg-wedo-orange w-[72%]"></div>
             </div>
           </div>
@@ -214,7 +214,7 @@ export function BigFiveAnalyticsDashboard() {
               <span className="text-xs font-open-sans text-lia-text-primary">Estabilidade Emocional</span>
               <span className="text-sm font-inter font-bold text-lia-text-primary">55%</span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+            <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
               <div className="h-2 rounded-full bg-wedo-magenta w-[55%]"></div>
             </div>
           </div>
@@ -222,7 +222,7 @@ export function BigFiveAnalyticsDashboard() {
       </Card>
 
       {/* Correlação com Performance */}
-      <Card className="border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-primary">
+      <Card className="border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-primary">
         <CardHeader className="px-4 py-3">
           <CardTitle className={`${textStyles.subtitle} flex items-center gap-2`}>
             <BarChart3 className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -231,38 +231,38 @@ export function BigFiveAnalyticsDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+            <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
               <span className="text-xs font-open-sans text-lia-text-primary">Conscienciosidade</span>
               <div className="flex items-center gap-2">
                 <Badge className="bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success text-xs tracking-tight">Muito Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.84</span>
               </div>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+            <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
               <span className="text-xs font-open-sans text-lia-text-primary">Estabilidade</span>
               <div className="flex items-center gap-2">
- <Badge className="bg-gray-100 text-lia-text-primary text-xs tracking-tight">Alta</Badge>
+ <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.71</span>
               </div>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+            <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
               <span className="text-xs font-open-sans text-lia-text-primary">Abertura</span>
               <div className="flex items-center gap-2">
                 <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.67</span>
               </div>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+            <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
               <span className="text-xs font-open-sans text-lia-text-primary">Amabilidade</span>
               <div className="flex items-center gap-2">
                 <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange text-xs tracking-tight">Alta</Badge>
                 <span className="text-sm font-inter font-bold">0.63</span>
               </div>
             </div>
-            <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md">
+            <div className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
               <span className="text-xs font-open-sans text-lia-text-primary">Extroversão</span>
               <div className="flex items-center gap-2">
- <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary text-xs tracking-tight">Moderada</Badge>
+ <Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-xs tracking-tight">Moderada</Badge>
                 <span className="text-sm font-inter font-bold">0.51</span>
               </div>
             </div>

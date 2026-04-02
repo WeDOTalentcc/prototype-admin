@@ -1,13 +1,13 @@
 import type { DynamicStage } from "./types"
 
 export const DYNAMIC_STAGE_COLORS = [
-  'var(--gray-600)', // gray-700
-  'var(--gray-600)', // gray-600
-  'var(--gray-400)', // gray-500
-  'var(--gray-400)', // gray-400
-  'var(--gray-400)', // gray-500
-  'var(--gray-600)', // gray-600
-  'var(--gray-600)', // gray-700
+  'var(--lia-text-secondary)', // gray-700
+  'var(--lia-text-secondary)', // gray-600
+  'var(--lia-text-tertiary)', // gray-500
+  'var(--lia-text-tertiary)', // gray-400
+  'var(--lia-text-tertiary)', // gray-500
+  'var(--lia-text-secondary)', // gray-600
+  'var(--lia-text-secondary)', // gray-700
 ] as const
 
 export const SYSTEM_INITIAL_STAGES: DynamicStage[] = [
@@ -16,7 +16,7 @@ export const SYSTEM_INITIAL_STAGES: DynamicStage[] = [
     name: 'sourcing',
     displayName: 'Funil',
     order: 0,
-    color: 'var(--gray-600)',
+    color: 'var(--lia-text-secondary)',
     stageType: 'active',
     isInitial: true,
     actionBehavior: 'intake'
@@ -26,7 +26,7 @@ export const SYSTEM_INITIAL_STAGES: DynamicStage[] = [
     name: 'screening',
     displayName: 'Triagem',
     order: 1,
-    color: 'var(--gray-600)',
+    color: 'var(--lia-text-secondary)',
     stageType: 'active',
     isInitial: false,
     actionBehavior: 'screening'
@@ -39,7 +39,7 @@ export const SYSTEM_FINAL_STAGES: DynamicStage[] = [
     name: 'hired',
     displayName: 'Contratado',
     order: 900,
-    color: 'var(--gray-600)',
+    color: 'var(--lia-text-secondary)',
     stageType: 'final',
     isFinal: true,
     isHired: true,
@@ -50,7 +50,7 @@ export const SYSTEM_FINAL_STAGES: DynamicStage[] = [
     name: 'rejected',
     displayName: 'Reprovado',
     order: 901,
-    color: 'var(--gray-400)',
+    color: 'var(--lia-text-tertiary)',
     stageType: 'final',
     isFinal: true,
     isRejection: true,
@@ -61,7 +61,7 @@ export const SYSTEM_FINAL_STAGES: DynamicStage[] = [
     name: 'offer_declined',
     displayName: 'Proposta Recusada',
     order: 902,
-    color: 'var(--gray-400)',
+    color: 'var(--lia-text-tertiary)',
     stageType: 'final',
     isFinal: true,
     actionBehavior: 'conclusion_declined'

@@ -24,7 +24,7 @@ export function ConfirmationCard({
   return (
     <div
       className={cn(
- "mx-4 my-4 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-5 space-y-4",
+ "mx-4 my-4 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-5 space-y-4",
         className
       )}
       role="dialog"
@@ -56,7 +56,7 @@ export function ConfirmationCard({
           onClick={onReview}
           disabled={isSubmitting}
           aria-label="Quero revisar minhas respostas"
-          className="flex-1 h-10 flex items-center justify-center rounded-lg bg-white dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
+          className="flex-1 h-10 flex items-center justify-center rounded-lg bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
         >
           Quero revisar
         </button>

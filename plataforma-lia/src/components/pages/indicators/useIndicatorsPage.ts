@@ -70,13 +70,13 @@ export function useIndicatorsPage() {
       case "exceeded":
         return "text-status-success bg-status-success/15"
       case "achieved":
-        return "text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary"
+        return "text-lia-text-secondary bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
       case "on_track":
         return "text-status-warning bg-status-warning/15"
       case "behind":
         return "text-status-error bg-status-error/15"
       default:
-        return "text-lia-text-secondary bg-gray-100"
+        return "text-lia-text-secondary bg-lia-bg-tertiary"
     }
   }, [])
 

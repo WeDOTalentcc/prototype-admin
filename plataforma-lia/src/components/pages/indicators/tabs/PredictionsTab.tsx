@@ -120,13 +120,13 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                    <div className="flex-1 bg-lia-interactive-active rounded-full h-2">
                       <div
-                        className="bg-gray-500 h-2 rounded-full"
+                        className="bg-lia-bg-secondary0 h-2 rounded-full"
                         style={{ width: `${(item.current / 70) * 100}%` }}
                       />
                     </div>
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                    <div className="flex-1 bg-lia-interactive-active rounded-full h-2">
                       <div
                         className="bg-wedo-purple h-2 rounded-full"
                         style={{ width: `${(item.predicted / 70) * 100}%` }}
@@ -158,7 +158,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
               ].map((item, index) => (
                 <div
                   key={item.skill}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
+                  className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md"
                 >
                   <div>
                     <div className="font-medium text-lia-text-primary">
@@ -270,7 +270,7 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                       💡 Ação recomendada: {alert.action}
                     </p>
                   </div>
-                  <Badge className="ml-4 bg-gray-100 text-lia-text-primary">
+                  <Badge className="ml-4 bg-lia-bg-tertiary text-lia-text-primary">
                     {alert.confidence}% confiança
                   </Badge>
                 </div>

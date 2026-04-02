@@ -737,7 +737,7 @@ const [currentStep, setCurrentStep] = useState<Step>('input')
       <div className="flex flex-col gap-2">
         <Button
           onClick={handleOpenExistingCandidate}
-          className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
+          className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
         >
           <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
           Abrir Perfil Existente

@@ -157,7 +157,7 @@ export default function WelcomePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-lia-bg-primary" role="status" aria-live="polite" aria-label="Carregando...">
-        <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
+        <Loader2 className="h-8 w-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
       </div>
     )
   }
@@ -175,7 +175,7 @@ export default function WelcomePage() {
       `}</style>
       {(phase === "cyan-screen" || phase === "iris-closing") && (
           <div
-            className="fixed inset-0 bg-gray-900 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-lia-btn-primary-bg flex items-center justify-center z-50"
             style={{
               opacity: phase === "iris-closing" ? 0 : 1,
               transform: phase === "iris-closing" ? "scale(0)" : "scale(1)",
@@ -216,14 +216,14 @@ export default function WelcomePage() {
                     transition: "opacity 0.3s ease",
                   }}
                 >
-                  <p className="text-2xl lia-text-800 font-['Open_Sans',sans-serif] font-light">
+                  <p className="text-2xl text-lia-text-primary font-['Open_Sans',sans-serif] font-light">
                     {typedText1}
                     {typedText1.length < text1.length && (
                       <span className="animate-pulse motion-reduce:animate-none">|</span>
                     )}
                   </p>
                   {typedText2 && (
-                    <p className="text-lg lia-text-600">
+                    <p className="text-lg text-lia-text-secondary">
                       {typedText2}
                       {typedText2.length < text2.length && typedText1.length === text1.length && (
                         <span className="animate-pulse motion-reduce:animate-none">|</span>
@@ -231,7 +231,7 @@ export default function WelcomePage() {
                     </p>
                   )}
                   {typedText3 && (
-                    <p className="text-lg lia-text-600">
+                    <p className="text-lg text-lia-text-secondary">
                       {typedText3}
                       {typedText3.length < text3.length && typedText2.length === text2.length && (
                         <span className="animate-pulse motion-reduce:animate-none">|</span>
@@ -281,13 +281,13 @@ export default function WelcomePage() {
                 <div
                   className="flex flex-col items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-400"
                 >
-                  <h1 className="text-3xl font-['Open_Sans',sans-serif] lia-text-800">
-                    Olá, <span className="lia-text-600 dark:text-lia-text-tertiary font-semibold">{userName}</span>
+                  <h1 className="text-3xl font-['Open_Sans',sans-serif] text-lia-text-primary">
+                    Olá, <span className="text-lia-text-secondary dark:text-lia-text-tertiary font-semibold">{userName}</span>
                   </h1>
-                  <p className="lia-text-800 dark:text-lia-text-primary text-lg max-w-xl leading-relaxed text-center">
+                  <p className="text-lia-text-primary dark:text-lia-text-primary text-lg max-w-xl leading-relaxed text-center">
                     Bem-vindo(a) à nova era do recrutamento inteligente e automatizado.
                   </p>
-                  <p className="lia-text-600 text-base max-w-xl leading-relaxed text-center">
+                  <p className="text-lia-text-secondary text-base max-w-xl leading-relaxed text-center">
                     A partir de agora a WeDOTalent vai te dar superpoderes para otimizar seu trabalho de recrutador(a).
                   </p>
                 </div>
@@ -297,12 +297,12 @@ export default function WelcomePage() {
                 <div
                   className="flex flex-col items-center gap-5 animate-in fade-in slide-in-from-bottom-4 duration-300"
                 >
-                  <p className="lia-text-800 dark:text-lia-text-primary text-lg font-medium">
+                  <p className="text-lia-text-primary dark:text-lia-text-primary text-lg font-medium">
                     Vamos começar?
                   </p>
                   <Button
                     onClick={handleStart}
-                    className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-6 text-lg font-medium rounded-md transition-colors motion-reduce:transition-none duration-300"
+                    className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text px-8 py-6 text-lg font-medium rounded-md transition-colors motion-reduce:transition-none duration-300"
                   >
                     Clique aqui para começar →
                   </Button>
@@ -311,8 +311,8 @@ export default function WelcomePage() {
                     <div 
                       className={`w-4 h-4 rounded-md border-2 transition-colors motion-reduce:transition-none duration-200 flex items-center justify-center ${
                         dontShowAgain 
-                          ? 'bg-gray-900 text-white dark:lia-bg-50 dark:lia-text-900 border-gray-900 dark:lia-border-50' 
-                          : 'border-gray-400 hover:border-gray-500'
+                          ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle' 
+                          : 'border-lia-border-medium hover:border-lia-border-medium'
                       }`}
                       onClick={() => setDontShowAgain(!dontShowAgain)}
                     >
@@ -332,8 +332,8 @@ export default function WelcomePage() {
                     </span>
                   </label>
                   
-                  <p className="lia-text-500 text-sm mt-2">
-                    💡 Dica: Acesse <span className="font-medium lia-text-800 dark:text-lia-text-primary">Configurações</span> para personalizar sua experiência com a LIA.
+                  <p className="text-lia-text-secondary text-sm mt-2">
+                    💡 Dica: Acesse <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">Configurações</span> para personalizar sua experiência com a LIA.
                   </p>
                 </div>
               )}

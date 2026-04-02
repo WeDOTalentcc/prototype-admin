@@ -450,12 +450,12 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         <div className="space-y-6">
           <Card className="border-0 rounded-md backdrop-blur-sm animate-pulse motion-reduce:animate-none">
             <CardHeader className="pb-4">
-              <div className="h-5 w-48 rounded-md bg-gray-400 opacity-30"></div>
+              <div className="h-5 w-48 rounded-md bg-lia-border-medium opacity-30"></div>
             </CardHeader>
             <CardContent>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="w-28 h-16 rounded-md bg-gray-400 opacity-20"></div>
+                  <div key={i} className="w-28 h-16 rounded-md bg-lia-border-medium opacity-20"></div>
                 ))}
               </div>
             </CardContent>
@@ -482,7 +482,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             {isEditingPipeline && hasStageChanges && (
-              <Badge variant="outline" className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
+              <Badge variant="outline" className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                 Alterações não salvas
               </Badge>
             )}
@@ -527,7 +527,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
           </div>
         </div>
 
-        <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+        <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
           <CardContent className="p-6">
             <RecruitmentJourneyConfig
               stages={recruitmentStages}
@@ -556,13 +556,13 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         </div>
       )}
 
-      <div className="px-3 py-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="px-3 py-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-subtle dark:border-lia-border-subtle">
         <p className={`${textStyles.caption} text-lia-text-secondary`}>
           <span className="font-semibold text-lia-text-primary">Perguntas automáticas</span> (modelo de trabalho, localização, idiomas, regime de contratação) são geradas automaticamente pela LIA a partir dos campos de cada vaga — não precisam ser configuradas aqui.
         </p>
       </div>
 
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
@@ -630,7 +630,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {isEditingQuestions && showQuestionBank && (
-            <Card className="border-2 border-dashed border-lia-border-default bg-gray-50/30 dark:bg-lia-bg-secondary/10 rounded-md">
+            <Card className="border-2 border-dashed border-lia-border-default bg-lia-bg-secondary/30 dark:bg-lia-bg-secondary/10 rounded-md">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -659,7 +659,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                     <div key={category} className="border border-lia-border-subtle rounded-md overflow-hidden">
                       <button
                         onClick={() => toggleCategory(category)}
-                        className="w-full flex items-center justify-between p-2.5 bg-gray-50 hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                        className="w-full flex items-center justify-between p-2.5 bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-sm">{categoryInfo.icon}</span>
@@ -688,10 +688,10 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                                 key={q.id}
                                 className={`flex items-start gap-2 p-2 rounded-md border transition-colors motion-reduce:transition-none ${
                                   isAdded 
-                                    ? 'bg-gray-100 border-lia-border-subtle opacity-60 dark:bg-lia-bg-elevated dark:border-lia-border-default' 
+                                    ? 'bg-lia-bg-tertiary border-lia-border-subtle opacity-60 dark:bg-lia-bg-elevated dark:border-lia-border-default' 
                                     : isSelected 
-                                      ? 'bg-gray-100 border-lia-border-default dark:bg-lia-bg-elevated dark:border-lia-border-default' 
-                                      : 'bg-white border-lia-border-subtle hover:border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:border-gray-600'
+                                      ? 'bg-lia-bg-tertiary border-lia-border-default dark:bg-lia-bg-elevated dark:border-lia-border-default' 
+                                      : 'bg-lia-bg-primary border-lia-border-subtle hover:border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:border-lia-border-medium'
                                 }`}
                               >
                                 <input
@@ -729,11 +729,11 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                 })}
                 
                 {selectedBankQuestions.size > 0 && (
-                  <div className="sticky bottom-0 pt-3 bg-gradient-to-t from-gray-50/80 to-transparent dark:lia-from-800/80">
+                  <div className="sticky bottom-0 pt-3 bg-gradient-to-t from-lia-bg-secondary/80 to-transparent dark:from-lia-btn-primary-hover/80">
                     <Button 
                       onClick={handleAddFromBank}
                       size="sm" 
-                      className={`w-full gap-1.5 rounded-md py-2 bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 ${textStyles.label}`}
+                      className={`w-full gap-1.5 rounded-md py-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active ${textStyles.label}`}
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Adicionar {selectedBankQuestions.size} pergunta{selectedBankQuestions.size > 1 ? 's' : ''} selecionada{selectedBankQuestions.size > 1 ? 's' : ''}
@@ -745,7 +745,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
           )}
 
           {isEditingQuestions && showQuestionForm && (
-            <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+            <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
               <CardContent className="p-3 space-y-4">
                 <div>
                   <label className={`block mb-1.5 ${textStyles.labelSmall}`}>Pergunta</label>
@@ -829,7 +829,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                   <Button variant="ghost" size="sm" className={`py-1.5 px-2 ${textStyles.label}`} onClick={() => setShowQuestionForm(false)}>
                     Cancelar
                   </Button>
-                  <Button size="sm" className={`py-1.5 px-2 bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 ${textStyles.label}`} onClick={handleAddQuestion}>
+                  <Button size="sm" className={`py-1.5 px-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active ${textStyles.label}`} onClick={handleAddQuestion}>
                     <Save className="w-3.5 h-3.5 mr-1" />
                     Salvar
                   </Button>
@@ -844,12 +844,12 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                 key={q.id} 
                 className={`flex items-center gap-3 p-3 rounded-md border group transition-colors motion-reduce:transition-none ${
                   isEditingQuestions 
-                    ? 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:border-lia-border-subtle' 
-                    : 'bg-gray-50/60 dark:bg-lia-bg-secondary/30 border-lia-border-subtle/60 dark:border-lia-border-subtle/60'
+                    ? 'bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:border-lia-border-subtle' 
+                    : 'bg-lia-bg-secondary/60 dark:bg-lia-bg-secondary/30 border-lia-border-subtle/60 dark:border-lia-border-subtle/60'
                 }`}
               >
                 <div 
-                  className={`flex items-center justify-center w-6 h-6 rounded-full bg-gray-900 text-white transition-opacity motion-reduce:transition-none ${!isEditingQuestions ? 'opacity-60' : ''} ${textStyles.labelSmall}`}
+                  className={`flex items-center justify-center w-6 h-6 rounded-full bg-lia-btn-primary-bg text-lia-btn-primary-text transition-opacity motion-reduce:transition-none ${!isEditingQuestions ? 'opacity-60' : ''} ${textStyles.labelSmall}`}
                 >
                   {index + 1}
                 </div>
@@ -862,7 +862,7 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
                       {q.type === 'text' ? 'Texto' : q.type === 'yesno' ? 'Sim/Não' : 'Escala'}
                     </Badge>
                     {q.required && (
-                      <Badge className={`text-micro py-0 px-1.5 bg-gray-900 text-white ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
+                      <Badge className={`text-micro py-0 px-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text ${!isEditingQuestions ? 'opacity-60' : ''}`}>Obrigatória</Badge>
                     )}
                     {q.is_eliminatory && (
                       <Badge className={`text-micro py-0 px-1.5 bg-status-error/15 text-status-error border border-status-error/30 ${!isEditingQuestions ? 'opacity-60' : ''}`}>

@@ -102,15 +102,15 @@ export const TabJobDescription = React.memo(function TabJobDescription({
           placeholder="Cole aqui a descri\u00e7\u00e3o da vaga completa..."
           value={jobDescriptionText}
           onChange={(e) => setJobDescriptionText(e.target.value)}
-          className="w-full h-48 p-4 pb-12 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none resize-none bg-white dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
-          onFocus={(e) => e.target.style.borderColor = 'var(--gray-200)'}
-          onBlur={(e) => e.target.style.borderColor = 'var(--gray-50)'}
+          className="w-full h-48 p-4 pb-12 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none resize-none bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
+          onFocus={(e) => e.target.style.borderColor = 'var(--lia-border-subtle)'}
+          onBlur={(e) => e.target.style.borderColor = 'var(--lia-bg-secondary)'}
         />
         <div className="absolute bottom-3 right-3 flex gap-2">
-          <button type="button" className="p-2 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none" title="Anexar documento" onClick={() => {}}>
+          <button type="button" className="p-2 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none" title="Anexar documento" onClick={() => {}}>
             <Paperclip className="w-4 h-4 text-lia-text-primary" />
           </button>
-          <button type="button" className="p-2 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none" title="Gravar \u00e1udio" onClick={() => {}}>
+          <button type="button" className="p-2 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none" title="Gravar \u00e1udio" onClick={() => {}}>
             <Mic className="w-4 h-4 text-lia-text-primary" />
           </button>
         </div>
@@ -122,24 +122,24 @@ export const TabJobDescription = React.memo(function TabJobDescription({
             <span className="text-xs font-medium text-lia-text-primary">Crit\u00e9rios Extra\u00eddos</span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {extractedJDCriteria.job_title && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.job_title}</span>}
-            {extractedJDCriteria.seniority && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.seniority}</span>}
-            {extractedJDCriteria.skills.map((skill, idx) => <span key={idx} className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated">{skill}</span>)}
-            {extractedJDCriteria.experience_years && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.experience_years}+ anos</span>}
-            {extractedJDCriteria.location && <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.location}</span>}
+            {extractedJDCriteria.job_title && <span className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.job_title}</span>}
+            {extractedJDCriteria.seniority && <span className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.seniority}</span>}
+            {extractedJDCriteria.skills.map((skill, idx) => <span key={idx} className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{skill}</span>)}
+            {extractedJDCriteria.experience_years && <span className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.experience_years}+ anos</span>}
+            {extractedJDCriteria.location && <span className="px-2 py-1 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-elevated">{extractedJDCriteria.location}</span>}
           </div>
         </div>
       )}
       <button
         className="w-full h-11 text-sm font-semibold flex items-center justify-center gap-2 rounded-md disabled:opacity-50"
-        style={{backgroundColor: isSearchingJD ? 'var(--gray-400)' : 'var(--gray-950)', color: 'var(--gray-50)'}}
+        style={{backgroundColor: isSearchingJD ? 'var(--lia-text-tertiary)' : 'var(--lia-btn-primary-bg)', color: 'var(--lia-bg-secondary)'}}
         onClick={handleSearch}
         disabled={!jobDescriptionText.trim() || jobDescriptionText.length < 50 || isSearchingJD}
       >
         {isSearchingJD ? (
           <><Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />Analisando...</>
         ) : (
-          <><span className="flex items-center justify-center w-5 h-5 rounded-md bg-gray-900"><Brain className="w-3 h-3 text-white" /></span>Extrair e Buscar</>
+          <><span className="flex items-center justify-center w-5 h-5 rounded-md bg-lia-btn-primary-bg"><Brain className="w-3 h-3 text-white" /></span>Extrair e Buscar</>
         )}
       </button>
       {jobDescriptionText.length > 0 && jobDescriptionText.length < 50 && (

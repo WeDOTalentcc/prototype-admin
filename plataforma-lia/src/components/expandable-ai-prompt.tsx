@@ -86,10 +86,10 @@ const CONTEXT_COLORS: Record<string, {
     headerBg: 'var(--wedo-green-bg-15)'
   },
   jobs: {
-    border: 'var(--gray-400)',
-    bg: 'var(--gray-bg-05)',
-    headerText: 'var(--gray-600)',
-    headerBg: 'var(--gray-bg-10)'
+    border: 'var(--lia-text-tertiary)',
+    bg: 'var(--lia-bg-secondary)',
+    headerText: 'var(--lia-text-secondary)',
+    headerBg: 'var(--lia-bg-secondary)'
   }
 }
 
@@ -208,7 +208,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
 
       {/* Candidatos Selecionados Preview */}
       {!candidateContext && selectedCandidates.length > 0 && (
-        <div className="bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-4 h-4 text-lia-text-secondary" />
             <span className="text-base-ui font-semibold text-lia-text-primary" aria-live="polite" aria-atomic="true">
@@ -220,7 +220,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'Key | null | undefined'.
               <div key={candidate.name || index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
                 <Avatar className="w-4 h-4">
-                  <AvatarFallback className="bg-gray-200 text-lia-text-secondary text-xs">
+                  <AvatarFallback className="bg-lia-interactive-active text-lia-text-secondary text-xs">
                     {(candidate.name as string)?.charAt(0) || 'C'}
                   </AvatarFallback>
                 </Avatar>
@@ -230,7 +230,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               </div>
             ))}
             {selectedCandidates.length > 3 && (
-              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-lia-text-primary">
+              <div className="px-2 py-1 bg-lia-bg-tertiary rounded-full text-xs text-lia-text-primary">
                 +{selectedCandidates.length - 3} mais
               </div>
             )}
@@ -260,7 +260,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               onFocus={() => !isProcessing && setIsExpanded(true)}
               placeholder={isProcessing ? "LIA processando..." : getPlaceholder()}
               disabled={isProcessing}
-              className={`flex-1 bg-transparent text-lia-text-primary placeholder-gray-500 text-xs focus:outline-none ${
+              className={`flex-1 bg-transparent text-lia-text-primary placeholder-lia-text-tertiary text-xs focus:outline-none ${
  isProcessing ? 'opacity-60 cursor-not-allowed' : ''
               }`}
             />
@@ -275,8 +275,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                       onClick={(e) => { e.stopPropagation(); setSearchSource('local'); }}
                       className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  searchSource === 'local' 
-                          ? 'bg-gray-200' 
-                          : 'hover:bg-gray-100'
+                          ? 'bg-lia-interactive-active' 
+                          : 'hover:bg-lia-bg-tertiary'
                       }`}
                     >
                       <Home className={`w-3.5 h-3.5 ${searchSource === 'local' ? 'text-lia-text-secondary' : 'text-lia-text-secondary'}`} />
@@ -297,8 +297,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                         onClick={(e) => { e.stopPropagation(); handleSourceChange('hybrid'); }}
                         className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  searchSource === 'hybrid' 
-                            ? 'bg-gray-200' 
-                            : 'hover:bg-gray-100'
+                            ? 'bg-lia-interactive-active' 
+                            : 'hover:bg-lia-bg-tertiary'
                         }`}
                       >
                         <Zap className={`w-3.5 h-3.5 ${searchSource === 'hybrid' ? 'text-lia-text-secondary' : 'text-lia-text-secondary'}`} />
@@ -320,8 +320,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                         onClick={(e) => { e.stopPropagation(); handleSourceChange('global'); }}
                         className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  searchSource === 'global' 
-                            ? 'bg-gray-200' 
-                            : 'hover:bg-gray-100'
+                            ? 'bg-lia-interactive-active' 
+                            : 'hover:bg-lia-bg-tertiary'
                         }`}
                       >
                         <Globe className={`w-3.5 h-3.5 ${searchSource === 'global' ? 'text-lia-text-secondary' : 'text-lia-text-secondary'}`} />
@@ -335,7 +335,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               )}
               
               {/* Separador visual */}
-              <div className="w-px h-4 bg-gray-200 mx-1" />
+              <div className="w-px h-4 bg-lia-interactive-active mx-1" />
               
               {/* Toggle Email */}
               <TooltipProvider>
@@ -347,7 +347,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                       className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  requireEmails 
                           ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
-                          : 'hover:bg-gray-100'
+                          : 'hover:bg-lia-bg-tertiary'
                       }`}
                     >
                       <Mail className={`w-3.5 h-3.5 ${requireEmails ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
@@ -370,7 +370,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                       className={`p-1.5 rounded-md transition-colors motion-reduce:transition-none ${
  requirePhoneNumbers 
                           ? 'bg-wedo-green-light/15 ring-1 ring-wedo-green-light' 
-                          : 'hover:bg-gray-100'
+                          : 'hover:bg-lia-bg-tertiary'
                       }`}
                     >
                       <Phone className={`w-3.5 h-3.5 ${requirePhoneNumbers ? 'text-wedo-green-light' : 'lia-text-secondary'}`} />
@@ -443,7 +443,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="w-8 h-8 lia-btn-secondary rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none bg-gray-800 text-white" 
+                className="w-8 h-8 lia-btn-secondary rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none bg-lia-btn-primary-hover text-white" 
                 title="Fechar análise do candidato"
               >
                 <X className="w-4 h-4" />
@@ -463,11 +463,11 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
 
         {/* Área Expandida - REORGANIZADA SEM DUPLICAÇÃO */}
         {isExpanded && (
-          <div className="lia-prompt-expanded space-y-4" style={{backgroundColor: 'var(--gray-100)'}}>
+          <div className="lia-prompt-expanded space-y-4" style={{backgroundColor: 'var(--lia-bg-tertiary)'}}>
 
             {/* AI-First Context Pills + Quick Actions */}
             {(contextPill || quickActions.length > 0) && (
-              <div className="p-4 pb-0 border-b border-b-gray-200">
+              <div className="p-4 pb-0 border-b border-b-lia-border-subtle">
                 {contextPill && (
                   <div className="mb-3">
                     <ContextPill
@@ -570,7 +570,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     
                     {/* Tooltip de Detalhes de Créditos */}
                     <div className="absolute right-0 top-full mt-1.5 hidden group-hover:block z-50">
-                      <div className="bg-gray-900 text-white px-3 py-2 rounded-md text-xs min-w-[220px]">
+                      <div className="bg-lia-btn-primary-bg text-lia-btn-primary-text px-3 py-2 rounded-md text-xs min-w-[220px]">
                         <div className="font-semibold mb-2 flex items-center gap-1.5">
                           <Coins className="w-3.5 h-3.5 text-status-warning" />
                           Estimativa de Custo
@@ -583,7 +583,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                           <div className="space-y-1.5">
                             {/* Saldo disponível */}
                             {creditEstimate.availableCredits !== undefined && (
-                              <div className="flex justify-between pb-1.5 border-b border-gray-700">
+                              <div className="flex justify-between pb-1.5 border-b border-lia-border-strong">
                                 <span className="lia-text-muted">Saldo disponível:</span>
                                 <span className={`font-medium ${
  creditEstimate.canAfford ? 'text-status-success' : 'text-status-error'
@@ -600,21 +600,21 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                               <span className="lia-text-muted" aria-live="polite" aria-atomic="true">Por candidato:</span>
                               <span className="font-medium">{creditEstimate.perCandidate} créditos</span>
                             </div>
-                            <div className="flex justify-between pt-1.5 border-t border-gray-700">
+                            <div className="flex justify-between pt-1.5 border-t border-lia-border-strong">
                               <span className="lia-text-muted">Total ({candidateLimit} cand.):</span>
                               <span className={`font-bold ${getCostColor(getCostLevel(creditEstimate.total))}`}>
                                 {creditEstimate.total} créditos
                               </span>
                             </div>
                             {!creditEstimate.canAfford && (
-                              <div className="text-xs text-status-error mt-1.5 pt-1.5 border-t border-gray-700 flex items-center gap-1">
+                              <div className="text-xs text-status-error mt-1.5 pt-1.5 border-t border-lia-border-strong flex items-center gap-1">
                                 <AlertCircle className="w-3 h-3" />
                                 Saldo insuficiente para esta busca
                               </div>
                             )}
                           </div>
                         )}
-                        <div className="absolute bottom-full right-4 border-4 border-transparent border-b-gray-900"></div>
+                        <div className="absolute bottom-full right-4 border-4 border-transparent border-b-lia-btn-primary-bg"></div>
                       </div>
                     </div>
                   </div>
@@ -689,7 +689,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                     <TooltipTrigger asChild>
                       <Link
                         href="/funil?expandedSearch=true"
-                        className="ml-1 p-1.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none border border-lia-border-subtle"
+                        className="ml-1 p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none border border-lia-border-subtle"
                       >
                         <Table2 className="w-3.5 h-3.5 lia-text-secondary" />
                       </Link>
@@ -709,7 +709,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
 
               
               {/* Dica contextual */}
-              <div className="flex items-start gap-2 p-2 bg-gray-50 rounded-md mb-3 border border-lia-border-subtle">
+              <div className="flex items-start gap-2 p-2 bg-lia-bg-secondary rounded-md mb-3 border border-lia-border-subtle">
                 <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
                   {activeSearchTab === 'natural' && 'Dica: Para melhores resultados, seja específico sobre skills, senioridade e localização.'}
@@ -745,7 +745,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
 
               {/* Histórico de Comandos */}
               {showHistory && commandHistory.length > 0 && (
-                <div className="mb-4 p-3 bg-gray-50 rounded-md border">
+                <div className="mb-4 p-3 bg-lia-bg-secondary rounded-md border">
                   <h4 className="text-xs font-medium text-lia-text-primary mb-2">Comandos Recentes</h4>
                   <div className="space-y-1">
                     {commandHistory.map((command, index) => (
@@ -777,7 +777,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
  isProcessing
                         ? 'opacity-50 cursor-not-allowed'
                         // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'ReactNode'.
-                        : 'hover:border-gray-400 hover:'
+                        : 'hover:border-lia-border-medium hover:'
                     }`}
                   >
                     <span className="text-lg flex-shrink-0">{suggestion.icon as React.ReactNode}</span>
@@ -789,7 +789,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                         {(suggestion.description as React.ReactNode)}
                       </div>
                       {!!(suggestion.category) && (
-                        <Badge className="mt-2 text-micro bg-gray-100 text-lia-text-primary border-0">
+                        <Badge className="mt-2 text-micro bg-lia-bg-tertiary text-lia-text-primary border-0">
                           {(suggestion.category as React.ReactNode)}
                         </Badge>
                       )}
@@ -811,8 +811,8 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
 
               {/* Processing Indicator */}
               {isProcessing && (
-                <div className="flex items-center gap-2 text-xs text-lia-text-secondary bg-gray-50 p-2 rounded-md mb-3 border border-lia-border-subtle">
-                  <div className="w-2 h-2 bg-gray-900 rounded-full animate-pulse motion-reduce:animate-none"></div>
+                <div className="flex items-center gap-2 text-xs text-lia-text-secondary bg-lia-bg-secondary p-2 rounded-md mb-3 border border-lia-border-subtle">
+                  <div className="w-2 h-2 bg-lia-btn-primary-bg rounded-full animate-pulse motion-reduce:animate-none"></div>
                   <span>🧠 LIA processando: "{lastCommand}"</span>
                 </div>
               )}

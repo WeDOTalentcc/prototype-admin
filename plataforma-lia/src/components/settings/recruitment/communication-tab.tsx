@@ -123,7 +123,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="Equipe de Recrutamento - Sodexo"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               />
             </div>
             <div>
@@ -134,7 +134,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="email"
                 defaultValue="recrutamento@sodexo.com.br"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               />
             </div>
           </div>
@@ -146,7 +146,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
               rows={4}
               defaultValue="Atenciosamente,&#10;Equipe de Recrutamento&#10;Sodexo Brasil&#10;www.sodexo.com.br"
               onChange={() => onSettingsChange(true)}
-              className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             />
           </div>
         </CardContent>
@@ -172,7 +172,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
             { key: "candidateReply", label: "Resposta do candidato", desc: "Quando candidato responde emails" },
             { key: "processDeadline", label: "Prazo do processo", desc: "Alertar sobre prazos de processos seletivos" }
           ].map((notification) => (
-            <div key={notification.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+            <div key={notification.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <div>
                 <div className="text-sm font-medium text-lia-text-primary">{notification.label}</div>
                 <div className="text-xs text-lia-text-primary">{notification.desc}</div>
@@ -227,7 +227,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 rows={3}
                 defaultValue="Olá! 👋 Obrigado pelo interesse em nossa vaga. Em breve entraremos em contato."
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+                className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               />
             </div>
             <div>
@@ -339,7 +339,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
               <div key={`auto-${index}`} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
-                    automation.status === 'ativo' ? 'bg-status-success/15 dark:bg-status-success/20' : 'bg-gray-100 dark:bg-lia-bg-secondary'
+                    automation.status === 'ativo' ? 'bg-status-success/15 dark:bg-status-success/20' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                   }`}>
                     <Zap className={`w-5 h-5 ${
                       automation.status === 'ativo' ? 'text-status-success' : 'text-lia-text-primary'
@@ -384,8 +384,8 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                 onClick={() => setActiveSubTab(tab.id as Parameters<typeof setActiveSubTab>[0])}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors motion-reduce:transition-none font-crimson ${
                   activeSubTab === tab.id
-                    ? 'bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-primary'
+                    ? 'bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary'
+                    : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover text-lia-text-primary'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />

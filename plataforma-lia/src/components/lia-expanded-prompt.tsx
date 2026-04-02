@@ -33,44 +33,44 @@ const CATEGORY_COLORS: Record<string, {
 }> = {
   // @ts-ignore TODO: fix type — Property 'borderColor' is missing in type '{ backgroundColor: string; iconBg: st
   vagas: {
-    backgroundColor: 'var(--gray-50)',
-    iconBg: 'var(--gray-100)',
-    textColor: 'var(--gray-700)',
+    backgroundColor: 'var(--lia-bg-secondary)',
+    iconBg: 'var(--lia-bg-tertiary)',
+    textColor: 'var(--lia-text-primary)',
     badgeVariant: 'default'
   },
   candidatos: {
-    borderColor: 'var(--gray-200)',
-    backgroundColor: 'var(--gray-50)',
-    iconBg: 'var(--gray-100)',
-    textColor: 'var(--gray-700)',
+    borderColor: 'var(--lia-border-subtle)',
+    backgroundColor: 'var(--lia-bg-secondary)',
+    iconBg: 'var(--lia-bg-tertiary)',
+    textColor: 'var(--lia-text-primary)',
     badgeVariant: 'secondary'
   },
   entrevistas: {
-    borderColor: 'var(--gray-200)',
-    backgroundColor: 'var(--gray-50)',
-    iconBg: 'var(--gray-100)',
-    textColor: 'var(--gray-700)',
+    borderColor: 'var(--lia-border-subtle)',
+    backgroundColor: 'var(--lia-bg-secondary)',
+    iconBg: 'var(--lia-bg-tertiary)',
+    textColor: 'var(--lia-text-primary)',
     badgeVariant: 'default'
   },
   relatorios: {
-    borderColor: 'var(--gray-200)',
-    backgroundColor: 'var(--gray-50)',
-    iconBg: 'var(--gray-100)',
-    textColor: 'var(--gray-700)',
+    borderColor: 'var(--lia-border-subtle)',
+    backgroundColor: 'var(--lia-bg-secondary)',
+    iconBg: 'var(--lia-bg-tertiary)',
+    textColor: 'var(--lia-text-primary)',
     badgeVariant: 'secondary'
   },
   localizacao: {
-    borderColor: 'var(--gray-200)',
-    backgroundColor: 'var(--gray-50)',
-    iconBg: 'var(--gray-100)',
-    textColor: 'var(--gray-700)',
+    borderColor: 'var(--lia-border-subtle)',
+    backgroundColor: 'var(--lia-bg-secondary)',
+    iconBg: 'var(--lia-bg-tertiary)',
+    textColor: 'var(--lia-text-primary)',
     badgeVariant: 'secondary'
   },
   industria: {
-    borderColor: 'var(--gray-200)',
-    backgroundColor: 'var(--gray-50)',
-    iconBg: 'var(--gray-100)',
-    textColor: 'var(--gray-700)',
+    borderColor: 'var(--lia-border-subtle)',
+    backgroundColor: 'var(--lia-bg-secondary)',
+    iconBg: 'var(--lia-bg-tertiary)',
+    textColor: 'var(--lia-text-primary)',
     badgeVariant: 'default'
   }
 }

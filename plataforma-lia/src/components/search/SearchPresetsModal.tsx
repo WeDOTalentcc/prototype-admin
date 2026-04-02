@@ -128,12 +128,12 @@ export function SearchPresetsModal<T>({
     cn(
       "flex-1 px-4 py-2.5 text-sm font-medium transition-colors",
       isActive
-        ? "text-lia-text-primary border-b-2 border-gray-900 dark:border-lia-border-subtle"
+        ? "text-lia-text-primary border-b-2 border-lia-btn-primary-bg dark:border-lia-border-subtle"
         : "text-lia-text-secondary hover:text-lia-text-primary"
     )
 
   const cardClasses =
-    "w-full text-left p-3 rounded-md border border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50 dark:border-lia-border-default dark:hover:border-gray-500 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
+    "w-full text-left p-3 rounded-md border border-lia-border-subtle hover:border-lia-border-medium hover:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:border-lia-border-medium dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
 
   const renderStandardCard = (preset: SearchPreset<T>) => (
     <>
@@ -146,7 +146,7 @@ export function SearchPresetsModal<T>({
             {preset.description}
           </div>
         </div>
-        <Badge className="text-micro bg-gray-100 text-lia-text-secondary">
+        <Badge className="text-micro bg-lia-bg-tertiary text-lia-text-secondary">
           {preset.items.length} {itemLabel}
         </Badge>
       </div>
@@ -180,7 +180,7 @@ export function SearchPresetsModal<T>({
   const savePlaceholder = `My ${title.replace(" Presets", "")} Preset`
 
   const renderInlineSaveForm = () => (
-    <div className="mt-4 p-4 border border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+    <div className="mt-4 p-4 border border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
       <h3 className="text-sm font-medium text-lia-text-primary mb-3">Save as Preset</h3>
       <div className="space-y-3">
         <div>
@@ -209,7 +209,7 @@ export function SearchPresetsModal<T>({
             size="sm"
             onClick={handleSavePreset}
             disabled={!newPresetName.trim()}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             Save Preset
           </Button>
@@ -219,7 +219,7 @@ export function SearchPresetsModal<T>({
   )
 
   const renderFooterSaveForm = () => (
-    <div className="px-4 py-3 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+    <div className="px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary dark:border-lia-border-subtle">
       <Label className="text-xs font-medium text-lia-text-primary">
         Create New Preset
       </Label>
@@ -240,7 +240,7 @@ export function SearchPresetsModal<T>({
           size="sm"
           onClick={handleSavePreset}
           disabled={!newPresetName.trim()}
-          className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+          className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
         >
           Save
         </Button>
@@ -260,15 +260,15 @@ export function SearchPresetsModal<T>({
   )
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-[1px] z-overlay flex items-center justify-center p-4">
-      <div className="bg-white rounded-md w-full max-w-2xl max-h-[80vh] flex flex-col dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+    <div className="fixed inset-0 bg-lia-overlay backdrop-blur-[1px] z-overlay flex items-center justify-center p-4">
+      <div className="bg-lia-bg-primary rounded-md w-full max-w-2xl max-h-[80vh] flex flex-col dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <h2 className="text-base font-semibold text-lia-text-primary">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
+            className="p-1 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
           >
             <X className="w-5 h-5 text-lia-text-secondary" />
           </button>
@@ -340,7 +340,7 @@ export function SearchPresetsModal<T>({
                           </div>
                         </button>
                         <div className="flex items-center gap-2">
-                          <Badge className="text-micro bg-gray-100 text-lia-text-secondary">
+                          <Badge className="text-micro bg-lia-bg-tertiary text-lia-text-secondary">
                             {preset.items.length} {itemLabel}
                           </Badge>
                           <button
@@ -376,7 +376,7 @@ export function SearchPresetsModal<T>({
                   {onSavePreset && !searchQuery && (
                     <Button
                       onClick={() => setShowSaveForm(true)}
-                      className="mt-3 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-2"
+                      className="mt-3 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active gap-2"
                     >
                       <Plus className="w-4 h-4" />
                       Create New Preset

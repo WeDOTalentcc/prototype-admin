@@ -180,12 +180,12 @@ export function JobTemplatesPage() {
       case "alta": return "bg-status-success/15 text-status-success border-status-success/30"
       case "média": return "bg-status-warning/15 text-status-warning border-status-warning/30"
       case "baixa": return "bg-status-error/15 text-status-error border-status-error/30"
-      default: return "bg-gray-100 text-lia-text-primary border-lia-border-subtle"
+      default: return "bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle"
     }
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="max-w-full mx-auto px-6 py-6">
         {/* Header */}
         <div className="mb-6">
@@ -226,7 +226,7 @@ export function JobTemplatesPage() {
                   <p className="text-2xl font-bold text-lia-text-primary">{templates.length}</p>
                   <p className="text-xs text-status-success">+3 este mês</p>
                 </div>
-                <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                   <FileText className="w-5 h-5 text-lia-text-secondary" />
                 </div>
               </div>
@@ -297,7 +297,7 @@ export function JobTemplatesPage() {
                     placeholder="Buscar templates por nome, cargo, tags..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                    className="w-full pl-10 pr-4 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
                   />
                 </div>
               </div>
@@ -306,7 +306,7 @@ export function JobTemplatesPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as Parameters<typeof setSortBy>[0])}
-                  className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                  className="px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 >
                   <option value="usage">Mais Usados</option>
                   <option value="success">Maior Sucesso</option>
@@ -379,7 +379,7 @@ export function JobTemplatesPage() {
                   <span>•</span>
                   <span>{template.level}</span>
                   <Badge variant="outline" className={`text-xs ${
-                    template.workModel === 'remoto' ? 'border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary' :
+                    template.workModel === 'remoto' ? 'border-lia-border-default dark:border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary' :
                     template.workModel === 'híbrido' ? 'border-wedo-purple/30 bg-wedo-purple/10 text-wedo-purple' :
                     'border-status-success/30 bg-status-success/10 text-status-success'
                   }`}>
@@ -412,7 +412,7 @@ export function JobTemplatesPage() {
                 </div>
 
                 {/* AI Insights */}
-                <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-3 mb-4">
+                <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-3 mb-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     <span className="text-sm font-medium text-lia-text-secondary/80">Insights da IA</span>
@@ -444,7 +444,7 @@ export function JobTemplatesPage() {
                       Usar Template
                     </Button>
                   </div>
-                  <Button size="sm" variant={"default" as any} className="w-full gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200">
+                  <Button size="sm" variant={"default" as any} className="w-full gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active">
                     <Wand2 className="w-3 h-3" />
                     Criar Vaga
                   </Button>
@@ -461,7 +461,7 @@ export function JobTemplatesPage() {
         {/* AI Generator Modal */}
         {showAIGenerator && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-2xl p-6">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-2xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-semibold flex items-center gap-2">
                   <Brain className="w-5 h-5 text-wedo-purple" />
@@ -534,7 +534,7 @@ export function JobTemplatesPage() {
                   <Button variant="outline" onClick={() => setShowAIGenerator(false)}>
                     Cancelar
                   </Button>
-                  <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200">
+                  <Button className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     Gerar Template
                   </Button>

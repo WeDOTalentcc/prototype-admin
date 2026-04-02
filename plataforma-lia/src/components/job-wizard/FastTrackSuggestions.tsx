@@ -47,7 +47,7 @@ export function FastTrackSuggestions({
   
   if (isLoading) {
     return (
-      <div className="p-4 border border-lia-border-default dark:border-lia-border-default rounded-md bg-gray-100 dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="p-4 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex items-center gap-2 text-lia-text-secondary" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
           <span className="text-sm" aria-live="polite" aria-atomic="true">Buscando vagas similares...</span>
@@ -82,7 +82,7 @@ export function FastTrackSuggestions({
   
   const getMatchBadgeColor = (score: number) => {
     if (score >= 0.9) return 'bg-status-success/20 text-status-success border-status-success/30/30'
-    if (score >= 0.8) return 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
+    if (score >= 0.8) return 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
     return 'bg-status-warning/20 text-status-warning border-status-warning/30/30'
   }
   
@@ -110,8 +110,8 @@ export function FastTrackSuggestions({
               className={cn(
  "border rounded-md transition-colors duration-200",
                 isSelected 
-                  ? "border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary" 
-                  : "border-lia-border-default bg-gray-800/50 hover:border-lia-border-default"
+                  ? "border-lia-btn-primary-bg bg-lia-bg-tertiary dark:bg-lia-bg-secondary" 
+                  : "border-lia-border-default bg-lia-btn-primary-hover/50 hover:border-lia-border-default"
               )}
             >
               <button
@@ -202,7 +202,7 @@ export function FastTrackSuggestions({
                           <Badge 
                             key={skill} 
                             variant="outline" 
-                            className="text-xs bg-gray-800 border-lia-border-default text-lia-text-disabled"
+                            className="text-xs bg-lia-btn-primary-hover border-lia-border-default text-lia-text-disabled"
                           >
                             {skill}
                           </Badge>
@@ -210,7 +210,7 @@ export function FastTrackSuggestions({
                         {job.skills.length > 5 && (
                           <Badge 
                             variant="outline" 
-                            className="text-xs bg-gray-800 border-lia-border-default text-lia-text-secondary"
+                            className="text-xs bg-lia-btn-primary-hover border-lia-border-default text-lia-text-secondary"
                           >
                             +{job.skills.length - 5}
                           </Badge>
@@ -232,7 +232,7 @@ export function FastTrackSuggestions({
                             <Badge 
                               key={`${compName}-${idx}`}
                               variant="outline" 
-                              className="text-xs bg-gray-800 border-lia-border-default text-lia-text-disabled"
+                              className="text-xs bg-lia-btn-primary-hover border-lia-border-default text-lia-text-disabled"
                             >
                               {compName}
                             </Badge>
@@ -241,7 +241,7 @@ export function FastTrackSuggestions({
                         {job.behavioral_competencies.length > 3 && (
                           <Badge 
                             variant="outline" 
-                            className="text-xs bg-gray-800 border-lia-border-default text-lia-text-secondary"
+                            className="text-xs bg-lia-btn-primary-hover border-lia-border-default text-lia-text-secondary"
                           >
                             +{job.behavioral_competencies.length - 3}
                           </Badge>

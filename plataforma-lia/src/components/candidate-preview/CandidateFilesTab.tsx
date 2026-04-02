@@ -299,7 +299,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           </div>
 
           {expandedActivity === 'cv' && (
-            <div className="px-3 pb-3 border-t border-lia-border-subtle bg-white/50/50">
+            <div className="px-3 pb-3 border-t border-lia-border-subtle bg-lia-bg-primary/50/50">
               <div className="mt-2 space-y-2">
                 {/* Mini Preview do PDF */}
                 <div className="bg-lia-bg-primary p-2 rounded-md">
@@ -470,7 +470,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           </div>
 
           {expandedActivity === 'video1' && (
-            <div className="px-3 pb-3 border-t border-lia-border-subtle bg-white/50/50">
+            <div className="px-3 pb-3 border-t border-lia-border-subtle bg-lia-bg-primary/50/50">
               <div className="mt-2 space-y-2">
                 {/* Preview do vídeo com thumbnail */}
                 <div className="bg-lia-bg-primary p-2 rounded-md">

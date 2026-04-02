@@ -86,7 +86,7 @@ export default function TransferenciasPage() {
       case 'pending_review':
         return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Revisão Pendente</Badge>
       case 'under_review':
- return <Badge className="lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100">Em Análise</Badge>
+ return <Badge className="text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-lia-bg-tertiary">Em Análise</Badge>
       case 'non_compliant':
         return <Badge className="bg-status-error/15 text-status-error hover:bg-status-error/15">Não Conforme</Badge>
       default:
@@ -117,18 +117,18 @@ export default function TransferenciasPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
             >
-              <Globe className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Globe className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+                className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
                 
               >
                 Transferências Internacionais
               </h1>
-              <p className="text-sm lia-text-400 dark:lia-text-500" >
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                 Gestão de transferências internacionais de dados pessoais
               </p>
             </div>
@@ -203,10 +203,10 @@ export default function TransferenciasPage() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-status-warning mt-0.5" />
               <div>
-                <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary" >
                   Aviso sobre Adequação de Países (Art. 33 LGPD)
                 </p>
-                <p className="text-xs mt-1 lia-text-500 dark:text-lia-text-tertiary" >
+                <p className="text-xs mt-1 text-lia-text-secondary dark:text-lia-text-tertiary" >
                   Transferências para países sem decisão de adequação da ANPD exigem mecanismos adicionais 
                   de proteção: Cláusulas Contratuais Padrão (SCCs), Binding Corporate Rules (BCRs), 
                   ou consentimento específico e destacado do titular.
@@ -220,12 +220,12 @@ export default function TransferenciasPage() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Globe className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <Globe className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{transfers.length}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Total de Transferências</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{transfers.length}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Total de Transferências</p>
                 </div>
               </div>
             </CardContent>
@@ -238,8 +238,8 @@ export default function TransferenciasPage() {
                   <Shield className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{compliantTransfers}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Conformes</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{compliantTransfers}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Conformes</p>
                 </div>
               </div>
             </CardContent>
@@ -252,8 +252,8 @@ export default function TransferenciasPage() {
                   <Calendar className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{pendingReviews}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Revisões Pendentes</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{pendingReviews}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Revisões Pendentes</p>
                 </div>
               </div>
             </CardContent>
@@ -262,12 +262,12 @@ export default function TransferenciasPage() {
           <Card >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Database className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <Database className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >{uniqueCountries}</p>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >Países de Destino</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >{uniqueCountries}</p>
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Países de Destino</p>
                 </div>
               </div>
             </CardContent>
@@ -277,11 +277,11 @@ export default function TransferenciasPage() {
         <Card >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
                 Lista de Transferências Internacionais
               </CardTitle>
               <div className="relative w-72">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 lia-text-400 dark:lia-text-500"  />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary"  />
                 <Input
                   placeholder="Buscar por país, destinatário..."
                   value={searchTerm}
@@ -306,13 +306,13 @@ export default function TransferenciasPage() {
               </TableHeader>
               <TableBody>
                 {filteredTransfers.map((transfer) => (
-                  <TableRow key={transfer.id} className="hover:bg-gray-50">
+                  <TableRow key={transfer.id} className="hover:bg-lia-bg-secondary">
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
-                          <Globe className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                        <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                          <Globe className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                         </div>
-                        <span className="font-medium lia-text-800 dark:text-lia-text-primary" >{transfer.country}</span>
+                        <span className="font-medium text-lia-text-primary dark:text-lia-text-primary" >{transfer.country}</span>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -324,20 +324,20 @@ export default function TransferenciasPage() {
                       {transfer.subprocessors.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {transfer.subprocessors.map((sp, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs bg-gray-100">
+                            <Badge key={idx} variant="secondary" className="text-xs bg-lia-bg-tertiary">
                               <Building2 className="w-3 h-3 mr-1" />
                               {sp}
                             </Badge>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-xs lia-text-400 dark:lia-text-500" >Nenhum</span>
+                        <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Nenhum</span>
                       )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Shield className="w-3 h-3 lia-text-400 dark:lia-text-500"  />
-                        <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+                        <Shield className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                        <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                           {transfer.safeguards}
                         </span>
                       </div>
@@ -380,7 +380,7 @@ export default function TransferenciasPage() {
 
         <Card className="mt-6" >
           <CardHeader>
-            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+            <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
               Países com Decisão de Adequação
             </CardTitle>
             <CardDescription>

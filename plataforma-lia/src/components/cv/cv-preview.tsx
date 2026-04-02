@@ -279,7 +279,7 @@ export function CVPreview({
         )}
 
         {editedCV.extraction_notes.length > 0 && (
-          <div className="flex items-start gap-3 p-3 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md">
+          <div className="flex items-start gap-3 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md">
             <AlertCircle className="w-5 h-5 text-lia-text-secondary flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-lia-text-secondary">
@@ -413,7 +413,7 @@ export function CVPreview({
                 ) : (
                   <div className="space-y-3">
                     {editedCV.experiences.map((exp, i) => (
-                      <Card key={i} className="bg-gray-50">
+                      <Card key={i} className="bg-lia-bg-secondary">
                         <CardContent className="p-3">
                           <div className="flex items-start justify-between">
                             <div>
@@ -452,7 +452,7 @@ export function CVPreview({
                 ) : (
                   <div className="space-y-3">
                     {editedCV.education.map((edu, i) => (
-                      <Card key={i} className="bg-gray-50">
+                      <Card key={i} className="bg-lia-bg-secondary">
                         <CardContent className="p-3">
                           <div className="flex items-start justify-between">
                             <div>
@@ -478,7 +478,7 @@ export function CVPreview({
                 <Label>Habilidades</Label>
                 <div className="flex flex-wrap gap-2">
                   {editedCV.skills.map((skill) => (
-                    <Badge key={skill} className="bg-gray-100 text-lia-text-primary px-2 py-1">
+                    <Badge key={skill} className="bg-lia-bg-tertiary text-lia-text-primary px-2 py-1">
                       {skill}
                       <button
                         onClick={() => handleRemoveSkill(skill)}
@@ -535,7 +535,7 @@ export function CVPreview({
                 <Label>Tags</Label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {tags.map((tag) => (
-                    <Badge key={tag} className="bg-gray-100 text-lia-text-primary px-2 py-1">
+                    <Badge key={tag} className="bg-lia-bg-tertiary text-lia-text-primary px-2 py-1">
                       <Tag className="w-3 h-3 mr-1" />
                       {tag}
                       <button
@@ -596,7 +596,7 @@ export function CVPreview({
               )}
 
               {editedCV.file_name && (
-                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md text-xs text-lia-text-secondary mt-4">
+                <div className="flex items-center gap-2 p-3 bg-lia-bg-secondary rounded-md text-xs text-lia-text-secondary mt-4">
                   <FileText className="w-4 h-4" />
                   <span>Arquivo: {editedCV.file_name}</span>
                   {editedCV.file_type && <Badge variant="outline">{editedCV.file_type.toUpperCase()}</Badge>}

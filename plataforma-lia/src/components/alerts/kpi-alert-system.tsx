@@ -524,7 +524,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
     switch (type) {
       case 'critical': return 'bg-status-error/10 text-status-error border-status-error/30'
       case 'warning': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
-      case 'info': return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
+      case 'info': return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default'
       case 'success': return 'bg-status-success/10 text-status-success border-status-success/30'
     }
   }
@@ -534,14 +534,14 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
       case 'urgent': return 'bg-status-error text-white'
       case 'high': return 'bg-wedo-orange text-white'
       case 'medium': return 'bg-status-warning text-white'
-      case 'low': return 'bg-gray-600 text-white'
+      case 'low': return 'bg-lia-border-medium text-white'
     }
   }
 
   return (
     <div className="space-y-6">
       {/* Header com Estatísticas */}
-      <Card className="border-l-4 border-l-gray-400 dark:border-l-gray-500">
+      <Card className="border-l-4 border-l-lia-border-medium dark:border-l-lia-border-medium">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -691,11 +691,11 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                 <div
                   key={alert.id}
                   className={`p-4 border rounded-md transition-colors motion-reduce:transition-none ${
- alert.isRead ? 'bg-gray-50' : 'bg-lia-bg-primary border-l-4'
+ alert.isRead ? 'bg-lia-bg-secondary' : 'bg-lia-bg-primary border-l-4'
                   } ${
                     alert.type === 'critical' ? 'border-l-red-500' :
                     alert.type === 'warning' ? 'border-l-yellow-500' :
-                    alert.type === 'info' ? 'border-l-gray-400 dark:border-l-gray-500' :
+                    alert.type === 'info' ? 'border-l-lia-border-medium dark:border-l-lia-border-medium' :
                     'border-l-green-500'
                   }`}
                 >
@@ -723,7 +723,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                         <p className="text-sm text-lia-text-secondary mb-3">{alert.description}</p>
 
                         {/* Métricas */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3 p-3 bg-gray-50 rounded-md">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3 p-3 bg-lia-bg-secondary rounded-md">
                           <div className="text-center">
                             <div className="text-lg font-bold text-lia-text-primary">{alert.currentValue}</div>
                             <div className="text-xs text-lia-text-secondary">Atual</div>
@@ -856,7 +856,7 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
                   <h4 className="font-medium mb-2">Todas as Ações Sugeridas:</h4>
                   <ul className="space-y-2">
                     {selectedAlert.suggestedActions.map((action, index) => (
-                      <li key={`sel-action-${index}`} className="text-sm text-lia-text-secondary flex items-start gap-2 p-2 bg-gray-50 rounded-md">
+                      <li key={`sel-action-${index}`} className="text-sm text-lia-text-secondary flex items-start gap-2 p-2 bg-lia-bg-secondary rounded-md">
                         <span className="text-lia-text-secondary mt-1">•</span>
                         {action}
                       </li>

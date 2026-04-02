@@ -44,7 +44,7 @@ const traitDescriptions = {
   },
   "Conscienciosidade": {
     icon: "✅",
-    color: "bg-gray-900",
+    color: "bg-lia-btn-primary-bg",
     bgColor: "bg-wedo-cyan/10",
     textColor: "text-wedo-cyan-dark dark:text-wedo-cyan-dark",
     high: {
@@ -197,13 +197,13 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
   if (!hasData) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-lg bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
+        <DialogContent className="max-w-lg bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
           <DialogHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <div className="flex items-center gap-3">
               {/* @ts-ignore TODO: fix type */}
               <Avatar className="w-10 h-10 ring-2 ring-white">
                 <AvatarImage src={candidate?.avatar as string | undefined} />
-                <AvatarFallback className="text-xs bg-gray-100 text-lia-text-secondary">
+                <AvatarFallback className="text-xs bg-lia-bg-tertiary text-lia-text-secondary">
                   {(((candidate?.name as string | undefined)?.split(' ').map((n: string) => n[0]).join('') || '?'))}
                 </AvatarFallback>
               </Avatar>
@@ -220,7 +220,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
           </DialogHeader>
 
           <div className="py-8 flex flex-col items-center justify-center text-center">
-            <div className="w-14 h-14 bg-gray-100 dark:bg-lia-bg-elevated rounded-full flex items-center justify-center mb-4">
+            <div className="w-14 h-14 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-full flex items-center justify-center mb-4">
               <BrainCircuit className="w-7 h-7 lia-text-secondary" />
             </div>
             <h3 className="text-base-ui font-medium text-lia-text-primary mb-2 font-['Open_Sans',sans-serif]">
@@ -234,7 +234,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
           <DialogFooter className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-4">
             <Button
               onClick={onClose}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 h-9 px-4 text-xs font-medium font-['Open_Sans',sans-serif]"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active h-9 px-4 text-xs font-medium font-['Open_Sans',sans-serif]"
             >
               Entendido
             </Button>
@@ -246,13 +246,13 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle max-h-[90vh] overflow-hidden flex flex-col p-0 rounded-md">
+      <DialogContent className="max-w-4xl bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle max-h-[90vh] overflow-hidden flex flex-col p-0 rounded-md">
         <DialogHeader className="px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle flex-shrink-0">
           <div className="flex items-center gap-3">
             {/* @ts-ignore TODO: fix type */}
             <Avatar className="w-10 h-10 ring-2 ring-white">
               <AvatarImage src={(candidate as any).avatar} />
-              <AvatarFallback className="text-xs bg-gray-100 text-lia-text-secondary">
+              <AvatarFallback className="text-xs bg-lia-bg-tertiary text-lia-text-secondary">
                 {(candidate as any).name.split(' ').map((n: string) => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
@@ -268,7 +268,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
           </div>
 
           <div className="mt-4 grid grid-cols-4 gap-3">
-            <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BrainCircuit className="w-4 h-4 text-lia-text-secondary" />
@@ -281,7 +281,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 </div>
               </div>
             </div>
-            <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md p-3 border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-lia-text-secondary" />
@@ -291,7 +291,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 </div>
                 <div 
                   className="text-lg font-semibold"
-                  style={{color: fitScore >= 70 ? 'var(--status-success)' : fitScore >= 50 ? 'var(--gray-950)' : 'var(--status-warning)'}}
+                  style={{color: fitScore >= 70 ? 'var(--status-success)' : fitScore >= 50 ? 'var(--lia-btn-primary-bg)' : 'var(--status-warning)'}}
                 >
                   {fitScore}%
                 </div>
@@ -316,7 +316,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
         <div className="flex-1 overflow-y-auto px-6 py-4">
           <div className="grid grid-cols-2 gap-6">
             <div className="col-span-2 lg:col-span-1">
-              <div className="bg-gray-50 dark:bg-lia-bg-elevated rounded-md p-4 h-full border border-lia-border-subtle dark:border-lia-border-subtle">
+              <div className="bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md p-4 h-full border border-lia-border-subtle dark:border-lia-border-subtle">
                 <h3 className="text-xs font-medium uppercase tracking-wide text-lia-text-primary mb-4 flex items-center gap-2 font-['Open_Sans',sans-serif]">
                   <div className="w-2 h-2 bg-wedo-purple rounded-full"></div>
                   Perfil de Personalidade
@@ -431,7 +431,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
 
             <div className="col-span-2 lg:col-span-1 space-y-3">
               <h3 className="text-xs font-medium uppercase tracking-wide text-lia-text-primary mb-3 flex items-center gap-2 font-['Open_Sans',sans-serif]">
-                <div className="w-2 h-2 bg-gray-900 rounded-full"></div>
+                <div className="w-2 h-2 bg-lia-btn-primary-bg rounded-full"></div>
                 Scores por Traço
               </h3>
               {traits.map((trait) => {
@@ -459,7 +459,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                       </div>
                     </div>
 
-                    <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden mb-2">
+                    <div className="w-full h-1.5 bg-lia-interactive-active rounded-full overflow-hidden mb-2">
                       <div
                         className={`h-full ${info.color} transition-[width,height] duration-500`}
                         style={{width: `${score}%`}}
@@ -488,7 +488,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                 return (
                   <div
                     key={trait}
-                    className="bg-white dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle"
+                    className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle"
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-10 h-10 rounded-md ${info.color} flex items-center justify-center text-lg flex-shrink-0`}>
@@ -526,7 +526,7 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
           </div>
         </div>
 
-        <DialogFooter className="px-6 py-4 bg-gray-50 dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle flex-shrink-0">
+        <DialogFooter className="px-6 py-4 bg-lia-bg-secondary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle flex-shrink-0">
           <div className="flex items-center justify-between w-full">
             <div className="text-xs text-lia-text-secondary">
               Assessment realizado em {new Date().toLocaleDateString('pt-BR')}
@@ -535,12 +535,12 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
               <Button 
                 variant="outline" 
                 onClick={onClose}
-                className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700 text-lia-text-secondary font-['Open_Sans',sans-serif]"
+                className="h-9 px-4 text-xs font-medium bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse text-lia-text-secondary font-['Open_Sans',sans-serif]"
               >
                 Fechar
               </Button>
               <Button 
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 h-9 px-4 text-xs font-medium font-['Open_Sans',sans-serif]"
+                className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active h-9 px-4 text-xs font-medium font-['Open_Sans',sans-serif]"
               >
                 Exportar Relatório
               </Button>

@@ -164,8 +164,8 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-3xl max-h-[90vh] bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle overflow-y-auto">
+    <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
+      <Card className="w-full max-w-3xl max-h-[90vh] bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-wedo-purple/15 dark:bg-wedo-purple/20 rounded-md flex items-center justify-center">
@@ -192,7 +192,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
 
         <CardContent className="space-y-6">
           {/* Comando Original */}
- <div className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-default">
+ <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-default">
             <div className="flex items-center gap-2 mb-2">
               <MessageCircle className="w-4 h-4 text-lia-text-secondary" />
  <span className="text-sm font-medium text-lia-text-secondary">Comando Original:</span>
@@ -208,7 +208,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               variant="outline"
               size="sm"
               onClick={() => setTitle(suggestTitle())}
-              className="gap-2 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
+              className="gap-2 bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
             >
               <Brain className="w-3 h-3 text-wedo-cyan" />
               Sugerir Título
@@ -217,7 +217,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               variant="outline"
               size="sm"
               onClick={() => setSelectedCategory(suggestCategory())}
-              className="gap-2 bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
+              className="gap-2 bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
             >
               <Tag className="w-3 h-3" />
               Sugerir Categoria
@@ -234,7 +234,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Análise Avançada de Candidatos"
-              className="w-full px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </div>
 
@@ -273,7 +273,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descreva o que este comando faz e quando deve ser usado..."
               rows={3}
-              className="w-full px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+              className="w-full px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
             />
           </div>
 
@@ -285,7 +285,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
             <div className="space-y-2">
               {examples.map((example, index) => (
                 <div key={`example-${index}`} className="flex items-center gap-2">
-                  <div className="flex-1 text-sm text-lia-text-primary bg-gray-50 dark:bg-lia-bg-elevated rounded-md px-3 py-2">
+                  <div className="flex-1 text-sm text-lia-text-primary bg-lia-bg-secondary dark:bg-lia-bg-elevated rounded-md px-3 py-2">
                     "{example}"
                   </div>
                   {examples.length > 1 && (
@@ -307,10 +307,10 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                   value={newExample}
                   onChange={(e) => setNewExample(e.target.value)}
                   placeholder="Adicionar outro exemplo..."
-                  className="flex-1 px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   onKeyPress={(e) => e.key === 'Enter' && handleAddExample()}
                 />
-                <Button variant="outline" size="sm" onClick={handleAddExample} disabled={!newExample.trim()} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
+                <Button variant="outline" size="sm" onClick={handleAddExample} disabled={!newExample.trim()} className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -345,10 +345,10 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Adicionar tag..."
-                  className="flex-1 px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-3 py-2 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                   onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
                 />
-                <Button variant="outline" size="sm" onClick={handleAddTag} disabled={!newTag.trim()} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
+                <Button variant="outline" size="sm" onClick={handleAddTag} disabled={!newTag.trim()} className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -369,14 +369,14 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
           )}
 
           {/* Botões */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle -mx-6 px-6 pb-0 mt-6">
-            <Button variant="outline" onClick={onClose} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary dark:border-lia-border-subtle -mx-6 px-6 pb-0 mt-6">
+            <Button variant="outline" onClick={onClose} className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={!title.trim() || !description.trim() || isSaving}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               {isSaving ? (
                 <>

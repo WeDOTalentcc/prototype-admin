@@ -36,7 +36,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
       />
 
       {/* Painel Lateral */}
-      <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-white dark:bg-lia-bg-primary animate-slideInRight">
+      <div className="fixed right-0 top-0 h-full z-50 w-[450px] bg-lia-bg-primary dark:bg-lia-bg-primary animate-slideInRight">
         {/* Header */}
         <div className="bg-wedo-purple p-4 text-white">
           <div className="flex items-center justify-between">
@@ -74,12 +74,12 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
 
           <div className="space-y-3">
             {suggestions.map((pergunta, index) => (
-              <div key={`suggestion-${index}`} className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
+              <div key={`suggestion-${index}`} className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                 <div className="flex items-start justify-between mb-2">
                   <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
                     {pergunta}
                   </h4>
-                  <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs">
+                  <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">
                     {index === 0 ? 'Recomendada' : index === 1 ? 'Popular' : 'Sugerida'}
                   </Badge>
                 </div>
@@ -92,7 +92,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
                   </div>
                   <Button
                     size="sm"
-                    className="text-xs bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200 text-white"
+                    className="text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active text-white"
                     onClick={onClose}
                   >
                     <RefreshCw className="w-3 h-3 mr-1" />
@@ -116,7 +116,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
         </div>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-3 bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-lia-border-subtle dark:border-lia-border-subtle p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <p className="text-xs text-lia-text-primary">
               <Brain className="w-3 h-3 inline mr-1 text-wedo-cyan" />

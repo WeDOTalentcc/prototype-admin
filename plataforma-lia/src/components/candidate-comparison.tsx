@@ -269,8 +269,8 @@ export function CandidateComparison({
   const getVerdictColor = (verdict: 'winner' | 'close' | 'lower') => {
     switch (verdict) {
       case 'winner': return 'bg-status-warning/10 border-status-warning/30 text-status-warning'
-      case 'close': return 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary'
-      case 'lower': return 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary'
+      case 'close': return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary'
+      case 'lower': return 'bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-secondary'
     }
   }
 
@@ -278,7 +278,7 @@ export function CandidateComparison({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl max-h-[95vh] overflow-y-auto">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl max-h-[95vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div>
@@ -327,7 +327,7 @@ export function CandidateComparison({
             ) : liaAnalysis && (
               <div className="space-y-6">
                 {/* Executive Summary */}
-                <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
                   <h5 className="font-semibold text-status-success dark:text-status-success mb-2 flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
                     Recomendação Final da LIA
@@ -349,7 +349,7 @@ export function CandidateComparison({
                 </div>
 
                 {/* Scenario Analysis */}
-                <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
                   <h5 className="font-semibold text-status-success dark:text-status-success mb-4 flex items-center gap-2">
                     <Target className="w-4 h-4" />
                     Análise por Cenário
@@ -363,7 +363,7 @@ export function CandidateComparison({
                         className={`px-3 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
  selectedScenario === key
                             ? 'bg-status-success/15 text-status-success border border-status-success/30'
-                            : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-600'
+                            : 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary hover:bg-lia-interactive-active dark:hover:bg-lia-border-medium'
                         }`}
                       >
                         {key === 'shortTerm' ? 'Curto Prazo' :
@@ -394,7 +394,7 @@ export function CandidateComparison({
                 </div>
 
                 {/* Action Plan */}
-                <div className="bg-white dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md p-4 border border-status-success/30">
                   <h5 className="font-semibold text-status-success dark:text-status-success mb-3 flex items-center gap-2">
                     <Rocket className="w-4 h-4" />
                     Plano de Ação Recomendado
@@ -442,7 +442,7 @@ export function CandidateComparison({
                         {candidate.role} • {candidate.seniority}
                       </p>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
+                        <Badge variant="outline" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
                           {candidate.matchPercentage}% Match
                         </Badge>
                         <Badge variant="outline" className={
@@ -577,7 +577,7 @@ export function CandidateComparison({
             {liaAnalysis && (
               <Button
                 onClick={() => onSelectCandidate(liaAnalysis.winner)}
-                className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
               >
                 <Crown className="w-4 h-4" />
                 Ver Candidato Recomendado

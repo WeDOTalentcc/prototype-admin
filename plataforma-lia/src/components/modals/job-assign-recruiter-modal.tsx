@@ -309,14 +309,14 @@ export function JobAssignRecruiterModal({
           <Button
             variant="outline"
             onClick={handleClose}
-            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg text-lia-text-secondary"
+            className="h-9 px-4 text-xs font-medium bg-lia-bg-primary border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg text-lia-text-secondary"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleAssign}
             disabled={!selectedRecruiterId}
-            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active disabled:opacity-50"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active disabled:opacity-50"
           >
             <UserPlus className="w-3.5 h-3.5 mr-1.5" />
             Atribuir Recrutador

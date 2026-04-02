@@ -148,8 +148,8 @@ export default function ClientIntegracoesPage({
     return (
       <div className="flex items-center justify-center h-64" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex flex-col items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Carregando integrações...
           </p>
         </div>
@@ -162,14 +162,14 @@ export default function ClientIntegracoesPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Plug className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <Plug className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary"
             >
               Integrações
             </h2>
           </div>
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Conexões com sistemas externos
           </p>
         </div>
@@ -223,7 +223,7 @@ export default function ClientIntegracoesPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-success">{connectedCount}</p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Conectadas
             </p>
           </CardContent>
@@ -231,7 +231,7 @@ export default function ClientIntegracoesPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-warning">{pendingCount}</p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Pendentes
             </p>
           </CardContent>
@@ -239,7 +239,7 @@ export default function ClientIntegracoesPage({
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-2xl font-semibold text-status-error">{disconnectedCount}</p>
-            <p className="text-sm lia-text-400 dark:lia-text-500">
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
               Desconectadas
             </p>
           </CardContent>
@@ -249,11 +249,11 @@ export default function ClientIntegracoesPage({
       {integrations.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <Plug className="w-12 h-12 mx-auto mb-4 lia-text-300" />
-            <p className="text-lg font-medium lia-text-800 dark:text-lia-text-primary">
+            <Plug className="w-12 h-12 mx-auto mb-4 text-lia-text-disabled" />
+            <p className="text-lg font-medium text-lia-text-primary dark:text-lia-text-primary">
               Nenhuma integração configurada
             </p>
-            <p className="text-sm mt-2 lia-text-400 dark:lia-text-500">
+            <p className="text-sm mt-2 text-lia-text-tertiary dark:text-lia-text-secondary">
               Este cliente ainda não possui integrações configuradas.
             </p>
           </CardContent>
@@ -263,29 +263,29 @@ export default function ClientIntegracoesPage({
           {integrations.map((integration) => (
             <Card 
               key={integration.id}
-              className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none"
+              className="hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none"
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
-                    <Plug className="w-6 h-6 lia-text-400" />
+                  <div className="w-12 h-12 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
+                    <Plug className="w-6 h-6 text-lia-text-tertiary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 
-                        className="font-medium lia-text-800 dark:text-lia-text-primary"
+                        className="font-medium text-lia-text-primary dark:text-lia-text-primary"
                       >
                         {getIntegrationLabel(integration.name)}
                       </h3>
                       {getStatusBadge(integration.status)}
                     </div>
                     <p 
-                      className="text-sm lia-text-400 dark:lia-text-500"
+                      className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary"
                     >
                       {getIntegrationDescription(integration)}
                     </p>
                     <p 
-                      className="text-xs mt-1 lia-text-400 dark:lia-text-500"
+                      className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary"
                     >
                       Última sincronização: {formatDate(integration.last_sync)}
                     </p>

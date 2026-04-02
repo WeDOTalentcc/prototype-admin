@@ -76,21 +76,21 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
 
   const getHealthTierColor = (tier: string) => {
     switch (tier) {
-      case 'excellent': return 'var(--gray-600)'
+      case 'excellent': return 'var(--lia-text-secondary)'
       case 'good': return 'var(--wedo-green-bright)'
       case 'watch': return 'var(--status-warning)'
       case 'critical': return 'var(--status-error)'
-      default: return 'var(--gray-400)'
+      default: return 'var(--lia-text-tertiary)'
     }
   }
 
   const getHealthTierBgColor = (tier: string) => {
     switch (tier) {
-      case 'excellent': return 'var(--gray-600-bg-10)'
+      case 'excellent': return 'var(--lia-bg-secondary)'
       case 'good': return 'var(--wedo-green-bg-10)'
       case 'watch': return 'var(--status-warning-bg)'
       case 'critical': return 'var(--status-error-bg)'
-      default: return 'var(--gray-bg-10)'
+      default: return 'var(--lia-bg-secondary)'
     }
   }
 
@@ -98,7 +98,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
     switch (impact) {
       case 'positive': return 'var(--wedo-green-bright)'
       case 'negative': return 'var(--status-error)'
-      default: return 'var(--gray-400)'
+      default: return 'var(--lia-text-tertiary)'
     }
   }
 
@@ -116,7 +116,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
 
           {/* Panel — OPT-027: CSS slide-in from right replacing framer-motion spring */}
           <div
-            className="fixed right-0 top-0 h-full w-full max-w-md z-50 overflow-hidden flex flex-col bg-white animate-in slide-in-from-right duration-300"
+            className="fixed right-0 top-0 h-full w-full max-w-md z-50 overflow-hidden flex flex-col bg-lia-bg-primary animate-in slide-in-from-right duration-300"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
@@ -129,7 +129,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   <div className="flex items-center gap-2">
                     <span
                       className="w-2 h-2 rounded-full"
-                      style={{backgroundColor: agent.status === 'online' ? 'var(--gray-950)' : agent.status === 'idle' ? 'var(--status-warning)' : 'var(--status-error)'}}
+                      style={{backgroundColor: agent.status === 'online' ? 'var(--lia-btn-primary-bg)' : agent.status === 'idle' ? 'var(--status-warning)' : 'var(--status-error)'}}
                     />
                     <span className="text-xs text-lia-text-tertiary">
                       {agent.status === 'online' ? 'Online' : agent.status === 'idle' ? 'Idle' : 'Atenção'}
@@ -151,7 +151,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               <div className="text-center">
                 <div
                   className="text-xl font-bold"
-                  style={{color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--gray-950)' : 'var(--status-warning)'}}
+                  style={{color: agent.progress >= 80 ? 'var(--wedo-green-bright)' : agent.progress >= 50 ? 'var(--lia-btn-primary-bg)' : 'var(--status-warning)'}}
                 >
                   {agent.progress}%
                 </div>
@@ -188,7 +188,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 </div>
               </div>
               <div className="h-16">
-                <Sparkline data={agent.sparkline} color="var(--gray-600)" height={64} />
+                <Sparkline data={agent.sparkline} color="var(--lia-text-secondary)" height={64} />
               </div>
             </div>
 
@@ -203,9 +203,9 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as 'activity' | 'health' | 'settings')}
                   className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium transition-colors motion-reduce:transition-none ${activeTab !== tab.id ? 'text-lia-text-tertiary' : ''}`}
-                  style={{color: activeTab === tab.id ? 'var(--gray-950)' : undefined,
-                    backgroundColor: activeTab === tab.id ? 'var(--gray-bg-20)' : 'transparent',
-                    borderBottom: activeTab === tab.id ? '2px solid var(--gray-300)' : '2px solid transparent'}}
+                  style={{color: activeTab === tab.id ? 'var(--lia-btn-primary-bg)' : undefined,
+                    backgroundColor: activeTab === tab.id ? 'var(--lia-bg-tertiary)' : 'transparent',
+                    borderBottom: activeTab === tab.id ? '2px solid var(--lia-border-default)' : '2px solid transparent'}}
                 >
                   <tab.icon className="w-3.5 h-3.5" />
                   {tab.label}
@@ -231,7 +231,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                     activities.map(activity => (
                       <div
                         key={activity.id}
-                        className="flex items-start gap-3 p-3 rounded-md bg-gray-100 dark:bg-lia-bg-secondary"
+                        className="flex items-start gap-3 p-3 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                       >
                         <div className="flex-shrink-0 mt-0.5">
                           {activity.status === 'success' && <CheckCircle className="w-4 h-4 text-status-success" />}
@@ -265,10 +265,10 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                   <div className="flex flex-col items-center py-4">
                     <div
                       className="relative w-24 h-24 rounded-full flex items-center justify-center"
-                      style={{background: `conic-gradient(${getHealthTierColor(healthScore.tier)} ${healthScore.score}%, var(--gray-200) 0)`}}
+                      style={{background: `conic-gradient(${getHealthTierColor(healthScore.tier)} ${healthScore.score}%, var(--lia-border-subtle) 0)`}}
                     >
                       <div
-                        className="w-20 h-20 rounded-full flex flex-col items-center justify-center bg-white"
+                        className="w-20 h-20 rounded-full flex flex-col items-center justify-center bg-lia-bg-primary"
                       >
                         <span className="text-2xl font-bold" style={{color: getHealthTierColor(healthScore.tier)}}>
                           {healthScore.score}
@@ -310,7 +310,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                                 </span>
                               </div>
                             </div>
-                            <div className="h-1.5 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
+                            <div className="h-1.5 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
                               <div
                                 className="h-full rounded-full"
                                 style={{width: `${Math.min(driver.value, 100)}%`,
@@ -334,7 +334,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         {healthScore.recommendations.map((rec, i) => (
                           <div
                             key={i}
-                            className="p-3 rounded-md flex items-start gap-2 bg-gray-200/20"
+                            className="p-3 rounded-md flex items-start gap-2 bg-lia-interactive-active/20"
                           >
                             <ChevronRight className="w-3 h-3 mt-0.5 text-lia-text-secondary flex-shrink-0" />
                             <span className="text-xs text-lia-text-tertiary">
@@ -351,7 +351,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
               {/* Settings Tab */}
               {activeTab === 'settings' && (
                 <div className="p-4 space-y-4">
-                  <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                  <div className="p-4 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <h4 className="text-xs font-medium mb-2 text-lia-text-primary">
                       Configurações do Agente
                     </h4>
@@ -359,7 +359,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                       Em breve: Configure prioridades, limites de ações, e preferências de automação.
                     </p>
                   </div>
-                  <div className="p-4 rounded-md bg-gray-100 dark:bg-lia-bg-secondary">
+                  <div className="p-4 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <h4 className="text-xs font-medium mb-2 text-lia-text-primary">
                       Integrações
                     </h4>
@@ -383,7 +383,7 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                 </Button>
                 <Button 
                   size="sm" 
-                  className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="flex-1 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   Executar Ação
                 </Button>

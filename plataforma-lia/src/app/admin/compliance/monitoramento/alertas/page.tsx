@@ -169,7 +169,7 @@ const getTypeConfig = (type: AlertType) => {
     case 'security':
       return { label: 'Segurança', icon: Shield, color: 'bg-status-error/15 text-status-error', iconBg: 'var(--status-error-bg)', iconColor: 'text-status-error' }
     case 'performance':
- return { label: 'Performance', icon: Activity, color: 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600', iconBg: 'var(--gray-bg-30)', iconColor: 'dark:text-lia-text-tertiary' }
+ return { label: 'Performance', icon: Activity, color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary', iconBg: 'var(--lia-interactive-active)', iconColor: 'dark:text-lia-text-tertiary' }
     case 'compliance':
       return { label: 'Compliance', icon: FileText, color: 'bg-wedo-purple/15 text-wedo-purple', iconBg: 'var(--wedo-purple-bg-10)', iconColor: 'text-wedo-purple' }
     case 'integration':
@@ -193,7 +193,7 @@ const getSeverityConfig = (severity: AlertSeverity) => {
 const getStatusConfig = (status: AlertStatus) => {
   switch (status) {
     case 'new':
-      return { label: 'Novo', color: 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary', icon: Bell }
+      return { label: 'Novo', color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary', icon: Bell }
     case 'acknowledged':
       return { label: 'Reconhecido', color: 'bg-status-warning/15 text-status-warning', icon: Eye }
     case 'resolved':
@@ -235,18 +235,18 @@ export default function AlertasPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
           <div 
-            className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+            className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
           >
-            <Bell className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+            <Bell className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
           </div>
           <div>
             <h1 
-              className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
               
             >
               Alertas Proativos
             </h1>
-            <p className="text-sm lia-text-400 dark:lia-text-500" >
+            <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
               Monitoramento e gestão de alertas do sistema
             </p>
           </div>
@@ -257,15 +257,15 @@ export default function AlertasPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Total de Alertas
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {alerts.length}
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Bell className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <Bell className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
               </div>
             </CardContent>
@@ -275,15 +275,15 @@ export default function AlertasPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Novos
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {newAlerts}
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <AlertTriangle className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <AlertTriangle className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
               </div>
             </CardContent>
@@ -293,10 +293,10 @@ export default function AlertasPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Alta Severidade
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {highSeverityAlerts}
                   </p>
                 </div>
@@ -311,10 +311,10 @@ export default function AlertasPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Canais Ativos
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {channels.filter(c => c.enabled).length}/{channels.length}
                   </p>
                 </div>
@@ -331,7 +331,7 @@ export default function AlertasPage() {
             <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+                  <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
                     Lista de Alertas
                   </CardTitle>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -390,7 +390,7 @@ export default function AlertasPage() {
                       const TypeIcon = typeConfig.icon
                       const StatusIcon = statusConfig.icon
                       return (
-                        <TableRow key={alert.id} className="hover:bg-gray-50">
+                        <TableRow key={alert.id} className="hover:bg-lia-bg-secondary">
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <div 
@@ -406,10 +406,10 @@ export default function AlertasPage() {
                           </TableCell>
                           <TableCell>
                             <div className="max-w-[250px]">
-                              <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
+                              <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary" >
                                 {alert.title}
                               </span>
-                              <p className="text-xs truncate lia-text-400 dark:lia-text-500" >
+                              <p className="text-xs truncate text-lia-text-tertiary dark:text-lia-text-secondary" >
                                 {alert.message}
                               </p>
                             </div>
@@ -421,7 +421,7 @@ export default function AlertasPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+                            <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                               {new Date(alert.createdAt).toLocaleString('pt-BR')}
                             </span>
                           </TableCell>
@@ -465,7 +465,7 @@ export default function AlertasPage() {
                 </Table>
                 {filteredAlerts.length === 0 && (
                   <div className="text-center py-8">
-                    <p className="text-sm lia-text-400 dark:lia-text-500" >
+                    <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                       Nenhum alerta encontrado com os filtros selecionados.
                     </p>
                   </div>
@@ -477,8 +477,8 @@ export default function AlertasPage() {
           <div className="space-y-6">
             <Card >
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
-                  <Settings className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <CardTitle className="text-base font-medium flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary" >
+                  <Settings className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   Canais de Notificação
                 </CardTitle>
               </CardHeader>
@@ -495,15 +495,15 @@ export default function AlertasPage() {
                         <div className="flex items-center gap-3">
                           <div 
                             className="w-8 h-8 rounded-md flex items-center justify-center"
-                            style={{backgroundColor: channel.enabled ? 'var(--status-success-bg)' : 'var(--gray-bg-10)'}}
+                            style={{backgroundColor: channel.enabled ? 'var(--status-success-bg)' : 'var(--lia-bg-secondary)'}}
                           >
-                            <Icon className={`w-4 h-4 ${channel.enabled ? 'text-status-success' : 'lia-text-400'}`} />
+                            <Icon className={`w-4 h-4 ${channel.enabled ? 'text-status-success' : 'text-lia-text-tertiary'}`} />
                           </div>
                           <div>
-                            <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
+                            <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary" >
                               {channel.name}
                             </span>
-                            <p className="text-xs lia-text-400 dark:lia-text-500" >
+                            <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                               {channel.description}
                             </p>
                           </div>
@@ -521,7 +521,7 @@ export default function AlertasPage() {
 
             <Card >
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+                <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
                   Alertas por Tipo
                 </CardTitle>
               </CardHeader>
@@ -534,7 +534,7 @@ export default function AlertasPage() {
                     return (
                       <div 
                         key={type}
-                        className={`flex items-center justify-between p-2 rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none cursor-pointer ${typeFilter === type ? 'bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
+                        className={`flex items-center justify-between p-2 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none cursor-pointer ${typeFilter === type ? 'bg-lia-bg-secondary dark:bg-lia-bg-primary' : ''}`}
                         onClick={() => setTypeFilter(type)}
                       >
                         <div className="flex items-center gap-2">
@@ -544,7 +544,7 @@ export default function AlertasPage() {
                           >
                             <TypeIcon className={`w-3 h-3 ${typeConfig.iconColor}`} />
                           </div>
-                          <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+                          <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                             {typeConfig.label}
                           </span>
                         </div>

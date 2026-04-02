@@ -8,43 +8,43 @@ export function BriefingsSection() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-2 lia-text-800 dark:text-lia-text-primary" >
+        <h3 className="text-lg font-semibold mb-2 text-lia-text-primary dark:text-lia-text-primary" >
           Briefings LIA
         </h3>
-        <p className="text-sm mb-4 lia-text-500 dark:text-lia-text-tertiary" >
+        <p className="text-sm mb-4 text-lia-text-secondary dark:text-lia-text-tertiary" >
           Templates de briefings automáticos da LIA
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer">
+          <Card className="hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center">
- <MessageSquare className="w-5 h-5 lia-text-900 dark:text-lia-text-secondary" />
+ <div className="w-10 h-10 rounded-md bg-lia-bg-tertiary flex items-center justify-center">
+ <MessageSquare className="w-5 h-5 text-lia-text-primary dark:text-lia-text-secondary" />
                 </div>
                 <div>
                   <CardTitle className="text-base">Briefing Diário</CardTitle>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Resumo matinal das atividades
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                 Atualização automática com novos candidatos, entrevistas agendadas e tarefas pendentes do dia.
               </p>
               <div className="flex items-center gap-2 mt-3">
- <Badge className="bg-gray-50 lia-text-900 dark:bg-lia-bg-secondary dark:text-lia-text-secondary">
+ <Badge className="bg-lia-bg-secondary text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-secondary">
                   Automático
                 </Badge>
-                <Badge className="bg-gray-100 lia-text-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
+                <Badge className="bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
                   Diário às 08:00
                 </Badge>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer">
+          <Card className="hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center">
@@ -52,21 +52,21 @@ export function BriefingsSection() {
                 </div>
                 <div>
                   <CardTitle className="text-base">Resumo de Fim de Dia</CardTitle>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Consolidação das atividades do dia
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                 Relatório consolidado com candidatos processados, feedbacks recebidos e próximos passos.
               </p>
               <div className="flex items-center gap-2 mt-3">
- <Badge className="bg-gray-50 lia-text-900 dark:bg-lia-bg-secondary dark:text-lia-text-secondary">
+ <Badge className="bg-lia-bg-secondary text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-secondary">
                   Automático
                 </Badge>
-                <Badge className="bg-gray-100 lia-text-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
+                <Badge className="bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
                   Diário às 18:00
                 </Badge>
               </div>
@@ -76,14 +76,14 @@ export function BriefingsSection() {
       </div>
       
       <div>
-        <h3 className="text-lg font-semibold mb-2 lia-text-800 dark:text-lia-text-primary" >
+        <h3 className="text-lg font-semibold mb-2 text-lia-text-primary dark:text-lia-text-primary" >
           Pareceres LIA
         </h3>
-        <p className="text-sm mb-4 lia-text-500 dark:text-lia-text-tertiary" >
+        <p className="text-sm mb-4 text-lia-text-secondary dark:text-lia-text-tertiary" >
           Estrutura dos pareceres gerados pela LIA
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer">
+          <Card className="hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
@@ -91,28 +91,28 @@ export function BriefingsSection() {
                 </div>
                 <div>
                   <CardTitle className="text-base">Parecer Resumido</CardTitle>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Análise rápida do candidato
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                 Parecer conciso com pontos-chave, score de aderência e recomendação principal.
               </p>
               <div className="flex items-center gap-2 mt-3">
                 <Badge className="bg-status-success/10 text-status-success dark:bg-status-success/20 dark:text-status-success">
                   Sob demanda
                 </Badge>
-                <Badge className="bg-gray-100 lia-text-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
+                <Badge className="bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
                   ~500 caracteres
                 </Badge>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer">
+          <Card className="hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-md bg-wedo-purple/15 dark:bg-wedo-purple/30 flex items-center justify-center">
@@ -120,21 +120,21 @@ export function BriefingsSection() {
                 </div>
                 <div>
                   <CardTitle className="text-base">Parecer Completo</CardTitle>
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Análise detalhada do candidato
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                 Parecer detalhado com análise técnica, comportamental, cultural e histórico profissional.
               </p>
               <div className="flex items-center gap-2 mt-3">
                 <Badge className="bg-wedo-purple/10 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple">
                   Sob demanda
                 </Badge>
-                <Badge className="bg-gray-100 lia-text-600 dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
+                <Badge className="bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-tertiary">
                   ~2000 caracteres
                 </Badge>
               </div>

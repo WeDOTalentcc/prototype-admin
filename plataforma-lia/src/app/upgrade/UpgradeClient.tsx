@@ -54,20 +54,20 @@ const PLANS = [
 
 export default function UpgradePage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary flex flex-col items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col items-center justify-center px-4 py-16">
       <div className="flex items-center gap-2 mb-6">
         <Brain className="h-7 w-7 text-wedo-cyan" />
-        <span className="text-xl font-semibold lia-text-900 dark:text-lia-text-primary">LIA by WeDOTalent</span>
+        <span className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary">LIA by WeDOTalent</span>
       </div>
 
       <div className="text-center mb-10 max-w-xl">
         <Badge variant="outline" className="mb-4 border-status-warning/30 text-status-warning bg-status-warning/10">
           Período de trial encerrado
         </Badge>
-        <h1 className="text-2xl font-bold lia-text-900 dark:text-lia-text-primary mb-3">
+        <h1 className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary mb-3">
           Seu trial expirou
         </h1>
-        <p className="lia-text-500 dark:text-lia-text-tertiary text-sm leading-relaxed">
+        <p className="text-lia-text-secondary dark:text-lia-text-tertiary text-sm leading-relaxed">
           Para continuar usando a plataforma e manter seus dados, selecione um plano abaixo.
           Seus candidatos e vagas ficam preservados ao fazer upgrade.
         </p>
@@ -77,25 +77,25 @@ export default function UpgradePage() {
         {PLANS.map((plan) => (
           <div
             key={plan.name}
-            className={`rounded-md border bg-white dark:bg-lia-bg-secondary p-6 flex flex-col gap-5 ${
-              plan.highlighted ? "border-gray-900 dark:border-lia-border-medium ring-1 ring-gray-900 dark:lia-ring-500" : "border-lia-border-subtle"
+            className={`rounded-md border bg-lia-bg-primary dark:bg-lia-bg-secondary p-6 flex flex-col gap-5 ${
+              plan.highlighted ? "border-lia-btn-primary-bg dark:border-lia-border-medium ring-1 ring-lia-btn-primary-bg dark:ring-lia-border-medium" : "border-lia-border-subtle"
             }`}
           >
             <div>
               {plan.highlighted && (
-                <Badge className="mb-3 bg-gray-900 text-white text-xs">Mais popular</Badge>
+                <Badge className="mb-3 bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">Mais popular</Badge>
               )}
-              <h2 className="text-lg font-semibold lia-text-900 dark:text-lia-text-primary">{plan.name}</h2>
+              <h2 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">{plan.name}</h2>
               <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-2xl font-bold lia-text-900 dark:text-lia-text-primary">{plan.price}</span>
-                <span className="text-sm lia-text-500 dark:text-lia-text-tertiary">{plan.period}</span>
+                <span className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{plan.price}</span>
+                <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{plan.period}</span>
               </div>
             </div>
 
             <ul className="flex flex-col gap-2 flex-1">
               {plan.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 text-sm lia-text-600 dark:text-lia-text-secondary">
-                  <CheckCircle2 className="h-4 w-4 lia-text-400 dark:lia-text-500 mt-0.5 shrink-0" />
+                <li key={feature} className="flex items-start gap-2 text-sm text-lia-text-secondary dark:text-lia-text-secondary">
+                  <CheckCircle2 className="h-4 w-4 text-lia-text-tertiary dark:text-lia-text-secondary mt-0.5 shrink-0" />
                   {feature}
                 </li>
               ))}
@@ -104,8 +104,8 @@ export default function UpgradePage() {
             <Button
               className={`w-full rounded-md text-sm font-medium ${
                 plan.highlighted
-                  ? "bg-gray-900 text-white hover:bg-gray-800"
-                  : "bg-white dark:bg-lia-bg-elevated lia-text-900 dark:text-lia-text-primary border border-lia-border-default hover:bg-gray-50 dark:hover:bg-gray-600"
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+                  : "bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary dark:text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-border-medium"
               }`}
             >
               {plan.cta}
@@ -115,7 +115,7 @@ export default function UpgradePage() {
         ))}
       </div>
 
-      <p className="mt-8 text-xs lia-text-400 dark:lia-text-500">
+      <p className="mt-8 text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
         Dúvidas?{" "}
         <Link href="mailto:contato@wedotalent.com.br" className="underline hover:lia-text-600 dark:hover:lia-text-300">
           Fale com nosso time

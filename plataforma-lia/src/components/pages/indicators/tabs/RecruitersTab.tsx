@@ -124,7 +124,7 @@ export function RecruitersTab({
                 <select
                   value={selectedPeriod}
                   onChange={(e) => setSelectedPeriod(e.target.value)}
-                  className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary"
+                  className="w-full p-2 rounded-md text-sm bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
                 >
                   <option value="current_month">Este Mês</option>
                   <option value="last_month">Mês Passado</option>
@@ -167,7 +167,7 @@ export function RecruitersTab({
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full p-2 rounded-md text-sm mb-2 bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary"
+                  className="w-full p-2 rounded-md text-sm mb-2 bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
                 >
                   <option value="totalScore">Score Total</option>
                   <option value="npsScore">NPS</option>
@@ -178,7 +178,7 @@ export function RecruitersTab({
                 <select
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-                  className="w-full p-2 rounded-md text-sm bg-gray-50 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 text-lia-text-primary"
+                  className="w-full p-2 rounded-md text-sm bg-lia-bg-secondary focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 text-lia-text-primary"
                 >
                   <option value="desc">Maior para Menor</option>
                   <option value="asc">Menor para Maior</option>
@@ -353,7 +353,7 @@ export function RecruitersTab({
               <div className="text-sm text-status-warning">Avisos</div>
               <div className="text-xs text-status-warning mt-1">NPS abaixo da meta</div>
             </div>
-            <div className="text-center p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+            <div className="text-center p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
               <div className="text-2xl font-bold text-lia-text-primary">
                 12
               </div>
@@ -399,7 +399,7 @@ export function RecruitersTab({
                   <div className="flex items-center gap-3">
                     <Avatar className="w-12 h-12">
                       <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                      <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary font-medium">
+                      <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary font-medium">
                         {recruiter.name
                           .split(" ")
                           .map((n) => n[0])
@@ -434,7 +434,7 @@ export function RecruitersTab({
               <CardContent className="space-y-4">
                 {/* KPIs Principais */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div className="text-lg font-bold text-lia-text-primary">
                       {recruiter.totalHires}
                     </div>
@@ -442,7 +442,7 @@ export function RecruitersTab({
                       Contratações
                     </div>
                   </div>
-                  <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div className="text-lg font-bold text-lia-text-primary">
                       {recruiter.avgTimeToFill}d
                     </div>
@@ -450,7 +450,7 @@ export function RecruitersTab({
                       Time to Fill
                     </div>
                   </div>
-                  <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div className="text-lg font-bold text-lia-text-primary">
                       {recruiter.npsScore}%
                     </div>
@@ -458,7 +458,7 @@ export function RecruitersTab({
                       NPS Score
                     </div>
                   </div>
-                  <div className="text-center p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="text-center p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div className="text-lg font-bold text-lia-text-primary">
                       {recruiter.conversionRate}%
                     </div>
@@ -573,7 +573,7 @@ export function RecruitersTab({
                     index === 0
                       ? "bg-status-warning/10 border-status-warning/30"
                       : index === 1
-                      ? "bg-gray-50 border-lia-border-subtle"
+                      ? "bg-lia-bg-secondary border-lia-border-subtle"
                       : index === 2
                       ? "bg-status-warning/10 border-status-warning/30"
                       : "bg-lia-bg-primary border-lia-border-subtle"
@@ -583,7 +583,7 @@ export function RecruitersTab({
                     {getRankingIcon(recruiter.ranking)}
                     <Avatar className="w-10 h-10">
                       <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                      <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary font-medium">
+                      <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary font-medium">
                         {recruiter.name
                           .split(" ")
                           .map((n) => n[0])
@@ -646,7 +646,7 @@ export function RecruitersTab({
                           index === 0
                             ? "bg-status-warning/15 text-status-warning"
                             : index === 1
-                            ? "bg-gray-100 text-lia-text-primary"
+                            ? "bg-lia-bg-tertiary text-lia-text-primary"
                             : "bg-status-warning/15 text-status-warning"
                         }
                       >
@@ -670,7 +670,7 @@ export function RecruitersTab({
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={recruiter.avatar} alt={recruiter.name} />
-                    <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary font-medium">
+                    <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary font-medium">
                       {recruiter.name
                         .split(" ")
                         .map((n) => n[0])
@@ -721,7 +721,7 @@ export function RecruitersTab({
                               </Badge>
                             </div>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-lia-interactive-active rounded-full h-2">
                             <div
                               className={`h-2 rounded-full transition-[width,height] duration-300 ${
                                 goal.status === "exceeded"
@@ -772,7 +772,7 @@ export function RecruitersTab({
                               </Badge>
                             </div>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-lia-interactive-active rounded-full h-2">
                             <div
                               className={`h-2 rounded-full transition-[width,height] duration-300 ${
                                 goal.status === "exceeded"
@@ -836,7 +836,7 @@ export function RecruitersTab({
                       <div key={recruiter.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Avatar className="w-6 h-6">
-                            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">
+                            <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">
                               {recruiter.name
                                 .split(" ")
                                 .map((n) => n[0])
@@ -846,9 +846,9 @@ export function RecruitersTab({
                           <span className="text-sm">{recruiter.name}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div className="w-20 bg-lia-interactive-active rounded-full h-2">
                             <div
-                              className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full"
+                              className="bg-lia-bg-inverse dark:bg-lia-text-tertiary h-2 rounded-full"
                               style={{
                                 width: `${
                                   (recruiter.totalHires /
@@ -876,7 +876,7 @@ export function RecruitersTab({
                       <div key={recruiter.name} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Avatar className="w-6 h-6">
-                            <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">
+                            <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">
                               {recruiter.name
                                 .split(" ")
                                 .map((n) => n[0])
@@ -886,7 +886,7 @@ export function RecruitersTab({
                           <span className="text-sm">{recruiter.name}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div className="w-20 bg-lia-interactive-active rounded-full h-2">
                             <div
                               className="bg-status-success h-2 rounded-full"
                               style={{ width: `${recruiter.npsScore}%` }}
@@ -907,7 +907,7 @@ export function RecruitersTab({
                 <h4 className="font-medium text-lia-text-primary mb-4">
                   Tendências de Performance (Últimos 6 Meses)
                 </h4>
-                <div className="bg-gray-50 p-6 rounded-md text-center">
+                <div className="bg-lia-bg-secondary p-6 rounded-md text-center">
                   <LineChart className="w-12 h-12 text-lia-text-secondary mx-auto mb-2" />
                   <p className="text-lia-text-secondary text-sm">
                     Gráfico interativo de tendências seria exibido aqui

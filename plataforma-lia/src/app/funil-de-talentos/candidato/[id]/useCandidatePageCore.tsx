@@ -400,21 +400,21 @@ const candidateId = params.id as string
   }
 
   const getFileIcon = (fileType: string, mimeType?: string) => {
-    if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 lia-text-800 dark:text-lia-text-primary" />
+    if (fileType === 'cv') return <FileText className="w-3.5 h-3.5 text-lia-text-primary dark:text-lia-text-primary" />
     if (fileType === 'video' || mimeType?.startsWith('video/')) return <FileVideo className="w-3.5 h-3.5 text-status-error" />
     if (fileType === 'certificate') return <Award className="w-3.5 h-3.5 text-status-warning" />
     if (mimeType?.startsWith('image/')) return <Image className="w-3.5 h-3.5 text-status-success" />
-    return <File className="w-3.5 h-3.5 lia-text-600" />
+    return <File className="w-3.5 h-3.5 text-lia-text-secondary" />
   }
 
   const getCategoryColor = (fileType: string) => {
     const colors: Record<string, { bg: string, text: string }> = {
       'cv': { bg: 'var(--status-success-bg)', text: 'var(--status-success)' },
-      'photo': { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
-      'portfolio': { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
+      'photo': { bg: 'var(--lia-border-subtle)', text: 'var(--lia-text-secondary)' },
+      'portfolio': { bg: 'var(--lia-border-subtle)', text: 'var(--lia-text-secondary)' },
       'video': { bg: 'var(--status-error-bg-12)', text: 'var(--status-error)' },
       'certificate': { bg: 'var(--status-warning-bg-12)', text: 'var(--status-warning)' },
-      'document': { bg: 'var(--gray-bg-12)', text: 'var(--gray-400)' },
+      'document': { bg: 'var(--lia-bg-secondary)', text: 'var(--lia-text-tertiary)' },
       'screening': { bg: 'var(--status-warning-bg-12)', text: 'var(--status-warning)' },
       'interview': { bg: 'var(--wedo-purple-bg-10)', text: 'var(--wedo-purple)' },
       'transcript': { bg: 'var(--wedo-purple-bg-10)', text: 'var(--wedo-purple)' },
@@ -476,14 +476,14 @@ const candidateId = params.id as string
       'nativo': { label: 'Nativo', percent: 100, color: 'bg-status-success' },
       'fluent': { label: 'Fluente', percent: 90, color: 'bg-status-success' },
       'fluente': { label: 'Fluente', percent: 90, color: 'bg-status-success' },
-      'advanced': { label: 'Avançado', percent: 75, color: 'bg-gray-700 dark:lia-bg-300' },
-      'avançado': { label: 'Avançado', percent: 75, color: 'bg-gray-700 dark:lia-bg-300' },
+      'advanced': { label: 'Avançado', percent: 75, color: 'bg-lia-bg-inverse dark:bg-lia-interactive-active' },
+      'avançado': { label: 'Avançado', percent: 75, color: 'bg-lia-bg-inverse dark:bg-lia-interactive-active' },
       'intermediate': { label: 'Intermediário', percent: 50, color: 'bg-status-warning' },
       'intermediário': { label: 'Intermediário', percent: 50, color: 'bg-status-warning' },
-      'basic': { label: 'Básico', percent: 25, color: 'bg-gray-400' },
-      'básico': { label: 'Básico', percent: 25, color: 'bg-gray-400' },
+      'basic': { label: 'Básico', percent: 25, color: 'bg-lia-border-medium' },
+      'básico': { label: 'Básico', percent: 25, color: 'bg-lia-border-medium' },
     }
-    return levels[level.toLowerCase()] || { label: level, percent: 50, color: 'bg-gray-400' }
+    return levels[level.toLowerCase()] || { label: level, percent: 50, color: 'bg-lia-border-medium' }
   }
 
   const parseLanguages = (languages: CandidateLocal['languages']) => {

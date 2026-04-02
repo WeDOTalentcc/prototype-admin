@@ -149,7 +149,7 @@ export function ScreeningFeedbackSection({ feedbackStrategy, copiedSection, onCo
               <textarea placeholder="Ex: Aprofundar conhecimentos em TypeScript, ganhar experiência em liderança..." className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md text-sm" rows={3} />
             </div>
             <div className="flex gap-3">
-              <Button className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">Gerar Feedback Personalizado</Button>
+              <Button className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">Gerar Feedback Personalizado</Button>
               <Button variant="outline" className="gap-2">
                 <Brain className="w-4 h-4 text-wedo-cyan" />LIA Sugerir
               </Button>

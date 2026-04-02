@@ -50,8 +50,8 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                   }}
                   className={`p-3 rounded-md border text-center transition-colors motion-reduce:transition-none ${
                     theme === themeOption.id
- ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary'
-                      : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800'
+ ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary'
+                      : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover'
                   }`}
                 >
                   <themeOption.icon className="w-5 h-5 mx-auto mb-1" />
@@ -71,7 +71,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                 setLanguage(e.target.value)
                 onSettingsChange(true)
               }}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             >
               <option value="pt-BR">Português (Brasil)</option>
               <option value="en-US">English (US)</option>
@@ -99,7 +99,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                 setTimezone(e.target.value)
                 onSettingsChange(true)
               }}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             >
               <option value="America/Sao_Paulo">São Paulo (UTC-3)</option>
               <option value="America/New_York">New York (UTC-5)</option>
@@ -151,8 +151,8 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
                   }}
                   className={`p-3 rounded-md border text-left transition-colors motion-reduce:transition-none ${
                     liaSettings.personality === style.id
-                      ? 'border-gray-900 dark:lia-border-50 bg-wedo-cyan/10 dark:bg-wedo-cyan/20'
-                      : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800'
+                      ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-wedo-cyan/10 dark:bg-wedo-cyan/20'
+                      : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover'
                   }`}
                 >
                   <div className="font-medium text-sm">{style.name}</div>
@@ -169,7 +169,7 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
               { key: "proactiveInsights", label: "Insights Proativos", desc: "Análises e alertas automáticos" },
               { key: "learningMode", label: "Modo Aprendizado", desc: "LIA aprende com suas preferências" }
             ].map((setting) => (
-              <div key={setting.key} className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <div key={setting.key} className="flex items-start gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                 <input
                   type="checkbox"
                   checked={liaSettings[setting.key as keyof typeof liaSettings] as boolean}

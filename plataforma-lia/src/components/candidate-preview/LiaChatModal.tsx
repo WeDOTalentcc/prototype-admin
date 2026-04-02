@@ -91,7 +91,7 @@ export function LiaChatModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-lia-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-lia-bg-primary rounded-md max-w-2xl w-full max-h-[85vh] overflow-hidden">
 
         {/* Header */}
@@ -143,7 +143,7 @@ export function LiaChatModal({
         </div>
 
         {/* Ações rápidas */}
-        <div className="px-4 py-2 border-b border-lia-border-subtle bg-white/50/50">
+        <div className="px-4 py-2 border-b border-lia-border-subtle bg-lia-bg-primary/50/50">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-lia-text-secondary">Ações rápidas sugeridas</span>
             <Badge className="bg-status-success/15 text-lia-text-primary dark:bg-status-success text-xs px-1.5 py-0.5">
@@ -206,12 +206,12 @@ export function LiaChatModal({
                   <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     {msg.role === 'lia' && (
                       <Avatar className="w-6 h-6 flex-shrink-0">
-                        <AvatarFallback className="bg-lia-btn-primary-bg text-white text-micro font-medium">LIA</AvatarFallback>
+                        <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-micro font-medium">LIA</AvatarFallback>
                       </Avatar>
                     )}
                     <div className={`max-w-[80%] rounded-md px-3 py-2 ${
  msg.role === 'user'
-                        ? 'bg-lia-btn-primary-bg text-white'
+                        ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                         : 'bg-lia-bg-tertiary text-lia-text-primary'
                     }`}>
                       <p className="text-xs whitespace-pre-wrap">{msg.content}</p>
@@ -221,7 +221,7 @@ export function LiaChatModal({
                 {isLiaChatLoading && (
                   <div className="flex gap-2 justify-start">
                     <Avatar className="w-6 h-6 flex-shrink-0">
-                      <AvatarFallback className="bg-lia-btn-primary-bg text-white text-micro font-medium">LIA</AvatarFallback>
+                      <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-micro font-medium">LIA</AvatarFallback>
                     </Avatar>
                     <div className="bg-lia-bg-tertiary rounded-md px-3 py-2">
                       <div className="flex items-center gap-1">
@@ -239,7 +239,7 @@ export function LiaChatModal({
             <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle p-3">
               <form onSubmit={handleSubmit} className="flex items-center gap-2">
                 <Avatar className="w-8 h-8 flex-shrink-0">
-                  <AvatarFallback className="bg-lia-btn-primary-bg text-white text-xs font-bold">
+                  <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-bold">
                     LIA
                   </AvatarFallback>
                 </Avatar>
@@ -274,7 +274,7 @@ export function LiaChatModal({
                   disabled={!liaConversation.trim() || isLiaChatLoading}
                   className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
  liaConversation.trim() && !isLiaChatLoading
-                      ? 'bg-lia-btn-primary-bg text-white hover:bg-lia-btn-primary-bg'
+                      ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-bg'
                       : 'bg-lia-interactive-active text-lia-text-secondary cursor-not-allowed'
                   }`}
                 >

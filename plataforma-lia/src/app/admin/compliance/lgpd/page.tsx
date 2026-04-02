@@ -36,7 +36,7 @@ export default function LGPDPage() {
       case 'pending':
         return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Pendente</Badge>
       case 'in_progress':
-        return <Badge className="lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100">Em andamento</Badge>
+        return <Badge className="text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-lia-bg-tertiary">Em andamento</Badge>
       case 'completed':
         return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Concluído</Badge>
       default:
@@ -51,7 +51,7 @@ export default function LGPDPage() {
       case 'error':
         return <AlertTriangle className="w-4 h-4 text-status-error" />
       default:
-        return <Shield className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+        return <Shield className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
     }
   }
 
@@ -62,7 +62,7 @@ export default function LGPDPage() {
       case 'error':
         return 'var(--status-error-bg)'
       default:
-        return 'var(--gray-bg-20)'
+        return 'var(--lia-bg-tertiary)'
     }
   }
 
@@ -72,18 +72,18 @@ export default function LGPDPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
             >
-              <Lock className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Lock className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1
-                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+                className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
                 
               >
                 LGPD & Privacidade
               </h1>
-              <p className="text-sm lia-text-400 dark:lia-text-500" >
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                 Gestão de privacidade e conformidade com a Lei Geral de Proteção de Dados
               </p>
             </div>
@@ -101,15 +101,15 @@ export default function LGPDPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between" role="status" aria-live="polite" aria-label="Carregando...">
                 <div role="status" aria-live="polite" aria-label="Carregando...">
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     DPO Registrado
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {isLoading ? <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" /> : (stats?.dpoRegistered ? 'Sim' : 'Não')}
                   </p>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <UserCircle className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <UserCircle className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
               </div>
             </CardContent>
@@ -119,13 +119,13 @@ export default function LGPDPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Consentimentos Ativos
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     —
                   </p>
-                  <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
+                  <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Ver em Consentimentos
                   </p>
                 </div>
@@ -140,13 +140,13 @@ export default function LGPDPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     DSRs Pendentes
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {dsrsPendentes}
                   </p>
-                  <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
+                  <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Ver no Portal do Titular
                   </p>
                 </div>
@@ -161,10 +161,10 @@ export default function LGPDPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between" role="status" aria-live="polite" aria-label="Carregando...">
                 <div role="status" aria-live="polite" aria-label="Carregando...">
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Incidentes LGPD
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" /> : incidentesLGPD}
                   </p>
                   {stats?.breachesPendingAnpd ? (
@@ -183,68 +183,68 @@ export default function LGPDPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Link href="/admin/compliance/lgpd/dpo">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer h-full" >
+            <Card className="hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                    <UserCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                    <UserCheck className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >DPOs</p>
-                    <p className="text-xs lia-text-400 dark:lia-text-500" >Registro de DPOs</p>
+                    <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary" >DPOs</p>
+                    <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Registro de DPOs</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 lia-text-400 dark:lia-text-500"  />
+                  <ChevronRight className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary"  />
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link href="/admin/compliance/lgpd/portal-titular">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer h-full" >
+            <Card className="hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                    <FileText className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                    <FileText className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >Portal Titular</p>
-                    <p className="text-xs lia-text-400 dark:lia-text-500" >Art. 18 LGPD</p>
+                    <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary" >Portal Titular</p>
+                    <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Art. 18 LGPD</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 lia-text-400 dark:lia-text-500"  />
+                  <ChevronRight className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary"  />
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link href="/admin/compliance/lgpd/consentimentos">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer h-full" >
+            <Card className="hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                    <CheckSquare className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                    <CheckSquare className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >Consentimentos</p>
-                    <p className="text-xs lia-text-400 dark:lia-text-500" >Gestão de termos</p>
+                    <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary" >Consentimentos</p>
+                    <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Gestão de termos</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 lia-text-400 dark:lia-text-500"  />
+                  <ChevronRight className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary"  />
                 </div>
               </CardContent>
             </Card>
           </Link>
 
           <Link href="/admin/compliance/lgpd/transferencias">
-            <Card className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer h-full" >
+            <Card className="hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer h-full" >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                    <Globe className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                  <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                    <Globe className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >Transferências</p>
-                    <p className="text-xs lia-text-400 dark:lia-text-500" >Dados internacionais</p>
+                    <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary" >Transferências</p>
+                    <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Dados internacionais</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 lia-text-400 dark:lia-text-500"  />
+                  <ChevronRight className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary"  />
                 </div>
               </CardContent>
             </Card>
@@ -256,7 +256,7 @@ export default function LGPDPage() {
             <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+                  <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
                     DSRs Pendentes
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
@@ -269,11 +269,11 @@ export default function LGPDPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <FileText className="w-8 h-8 mb-3 lia-text-400 dark:lia-text-500"  />
-                  <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
+                  <FileText className="w-8 h-8 mb-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                  <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary" >
                     Gerencie as DSRs no Portal do Titular
                   </p>
-                  <p className="text-xs mt-1 mb-4 lia-text-400 dark:lia-text-500" >
+                  <p className="text-xs mt-1 mb-4 text-lia-text-tertiary dark:text-lia-text-secondary" >
                     As solicitações de titulares (Art. 18 LGPD) são gerenciadas na página dedicada.
                   </p>
                   <Button variant="outline" size="sm" asChild>
@@ -290,14 +290,14 @@ export default function LGPDPage() {
           <div className="space-y-6">
             <Card >
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+                <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
                   DPOs Cadastrados
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center justify-center py-4 text-center">
-                  <UserCheck className="w-6 h-6 mb-2 lia-text-400 dark:lia-text-500"  />
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >
+                  <UserCheck className="w-6 h-6 mb-2 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                     {isLoading ? 'Carregando...' : stats?.dpoRegistered ? 'DPO registrado' : 'Nenhum DPO cadastrado'}
                   </p>
                 </div>
@@ -313,7 +313,7 @@ export default function LGPDPage() {
             <Card >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+                  <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
                     Consentimentos
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
@@ -326,8 +326,8 @@ export default function LGPDPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center justify-center py-4 text-center">
-                  <CheckSquare className="w-6 h-6 mb-2 lia-text-400 dark:lia-text-500"  />
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >
+                  <CheckSquare className="w-6 h-6 mb-2 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Dados de consentimento disponíveis na página dedicada.
                   </p>
                 </div>
@@ -336,7 +336,7 @@ export default function LGPDPage() {
 
             <Card >
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-medium flex items-center gap-2 lia-text-800 dark:text-lia-text-primary" >
+                <CardTitle className="text-base font-medium flex items-center gap-2 text-lia-text-primary dark:text-lia-text-primary" >
                   <AlertTriangle className="w-4 h-4 text-status-warning" />
                   Alertas de Compliance
                 </CardTitle>
@@ -351,10 +351,10 @@ export default function LGPDPage() {
                     >
                       {getAlertIcon(alert.type)}
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs lia-text-500 dark:text-lia-text-tertiary" >
+                        <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" >
                           {alert.message}
                         </p>
-                        <Button variant="link" size="sm" className="h-auto p-0 mt-1 text-xs lia-text-600 dark:text-lia-text-tertiary">
+                        <Button variant="link" size="sm" className="h-auto p-0 mt-1 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                           {alert.action} →
                         </Button>
                       </div>

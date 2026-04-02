@@ -237,7 +237,7 @@ export function InputStep({
           <Button
             onClick={handleSubmitCV}
             disabled={!canSubmitCV || isProcessing}
-            className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
+            className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
           >
             {isProcessing ? (
               <>
@@ -380,7 +380,7 @@ export function InputStep({
           <Button
             onClick={handleSubmitManual}
             disabled={!canSubmitManual || isProcessing}
-            className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
+            className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
           >
             {isProcessing ? (
               <>

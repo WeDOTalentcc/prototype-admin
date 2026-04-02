@@ -109,5 +109,5 @@ export const SOURCE_COLORS: Record<DataSource, string> = {
   'lia_history': 'bg-status-success/15 text-status-success',
   'imported_ats': 'bg-wedo-purple/15 text-wedo-purple',
   'workforce_planning': 'bg-wedo-orange/15 text-wedo-orange',
-  'curated_templates': 'bg-gray-100 text-lia-text-primary'
+  'curated_templates': 'bg-lia-bg-tertiary text-lia-text-primary'
 };

@@ -26,7 +26,7 @@ export const WorkOSLinkCard = React.forwardRef<
       ref={ref}
       className={cn(
  'border-2 border-dashed border-lia-border-default',
-        'hover:border-gray-900 dark:hover:border-gray-50',
+        'hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle',
         'transition-colors duration-200'
       )}
     >

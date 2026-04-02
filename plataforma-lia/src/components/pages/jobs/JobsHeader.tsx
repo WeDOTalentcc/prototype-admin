@@ -53,7 +53,7 @@ const JobsHeader = memo(function JobsHeader({
             <Button
               variant="ghost"
               size="icon"
- className={`h-8 w-8 ${viewMode === 'list' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary'}`}
+ className={`h-8 w-8 ${viewMode === 'list' ? 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary'}`}
               onClick={() => onViewModeChange('list')}
             >
               <List className="h-4 w-4" />
@@ -61,7 +61,7 @@ const JobsHeader = memo(function JobsHeader({
             <Button
               variant="ghost"
               size="icon"
- className={`h-8 w-8 ${viewMode === 'cards' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary'}`}
+ className={`h-8 w-8 ${viewMode === 'cards' ? 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary'}`}
               onClick={() => onViewModeChange('cards')}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -69,7 +69,7 @@ const JobsHeader = memo(function JobsHeader({
             <Button
               variant="ghost"
               size="icon"
- className={`h-8 w-8 ${viewMode === 'kanban' ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary'}`}
+ className={`h-8 w-8 ${viewMode === 'kanban' ? 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary'}`}
               onClick={() => onViewModeChange('kanban')}
             >
               <Kanban className="h-4 w-4" />
@@ -78,7 +78,7 @@ const JobsHeader = memo(function JobsHeader({
           
           <Button
             onClick={onCreateJob}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active"
           >
             <Plus className="h-4 w-4 mr-2" />
             Nova Vaga
@@ -87,28 +87,28 @@ const JobsHeader = memo(function JobsHeader({
       </div>
       
       <Tabs value={currentTab} onValueChange={(v) => onTabChange(v as typeof currentTab)}>
-        <TabsList className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+        <TabsList className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
           <TabsTrigger 
             value="all" 
-            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
+            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             Todas
           </TabsTrigger>
           <TabsTrigger 
             value="active"
-            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
+            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             Ativas
           </TabsTrigger>
           <TabsTrigger 
             value="drafts"
-            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
+            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             Rascunhos
           </TabsTrigger>
           <TabsTrigger 
             value="closed"
-            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-gray-700 data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
+            className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             Encerradas
           </TabsTrigger>

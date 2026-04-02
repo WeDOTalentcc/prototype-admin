@@ -43,7 +43,7 @@ export function AlertsTab({
           <span className="text-xs">{error}</span>
         </div>
       )}
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
@@ -83,17 +83,17 @@ export function AlertsTab({
               key={alert.id}
               className={`p-2.5 rounded-md border transition-colors motion-reduce:transition-none ${
                 alert.enabled
-                  ? 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
-                  : 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:lia-border-800'
+                  ? 'bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
+                  : 'bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:border-lia-border-strong'
               }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-2">
                   <div
                     className="w-7 h-7 rounded-md flex items-center justify-center"
-                    style={{backgroundColor: alert.enabled ? 'var(--gray-600-bg-10)' : undefined, color: alert.enabled ? 'var(--gray-600)' : undefined}}
+                    style={{backgroundColor: alert.enabled ? 'var(--lia-bg-secondary)' : undefined, color: alert.enabled ? 'var(--lia-text-secondary)' : undefined}}
                   >
-                    <Bell className="w-3.5 h-3.5" style={{color: alert.enabled ? 'var(--gray-600)' : undefined}} />
+                    <Bell className="w-3.5 h-3.5" style={{color: alert.enabled ? 'var(--lia-text-secondary)' : undefined}} />
                   </div>
                   <div>
                     <p className={`text-xs font-medium ${alert.enabled ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>
@@ -107,7 +107,7 @@ export function AlertsTab({
                     value={alert.channel}
                     onChange={(e) => handleChangeChannel(alert.id, e.target.value as 'email' | 'teams' | 'both')}
                     disabled={!isEditingAlerts || !alert.enabled}
-                    className="text-micro border border-lia-border-subtle dark:border-lia-border-subtle rounded-full px-1.5 py-1 bg-white dark:bg-lia-bg-secondary text-lia-text-primary disabled:bg-gray-50 disabled:text-lia-text-secondary"
+                    className="text-micro border border-lia-border-subtle dark:border-lia-border-subtle rounded-full px-1.5 py-1 bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary disabled:bg-lia-bg-secondary disabled:text-lia-text-secondary"
                   >
                     <option value="email">Email</option>
                     <option value="teams">Teams</option>
@@ -117,7 +117,7 @@ export function AlertsTab({
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
                     disabled={!isEditingAlerts}
                     className="relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60"
-                    style={{backgroundColor: alert.enabled ? 'var(--gray-600)' : 'var(--gray-200)'}}
+                    style={{backgroundColor: alert.enabled ? 'var(--lia-text-secondary)' : 'var(--lia-border-subtle)'}}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${alert.enabled ? 'left-4' : 'left-0.5'}`} />
                   </button>
@@ -128,7 +128,7 @@ export function AlertsTab({
         </CardContent>
       </Card>
 
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
             <MessageSquare className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -149,12 +149,12 @@ export function AlertsTab({
                 disabled={!isEditingAlerts}
                 className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''}`}
                 style={{
-                  borderColor: briefingFrequency === key ? 'var(--gray-600)' : 'var(--gray-200)',
-                  backgroundColor: briefingFrequency === key ? 'var(--gray-600-bg-10)' : undefined
+                  borderColor: briefingFrequency === key ? 'var(--lia-text-secondary)' : 'var(--lia-border-subtle)',
+                  backgroundColor: briefingFrequency === key ? 'var(--lia-bg-secondary)' : undefined
                 }}
               >
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <Icon className="w-3.5 h-3.5" style={{color: briefingFrequency === key ? 'var(--gray-600)' : undefined}} />
+                  <Icon className="w-3.5 h-3.5" style={{color: briefingFrequency === key ? 'var(--lia-text-secondary)' : undefined}} />
                   <span className="text-xs font-medium">{label}</span>
                 </div>
                 <p className="text-xs text-lia-text-secondary">{desc}</p>
@@ -177,7 +177,7 @@ export function AlertsTab({
         </CardContent>
       </Card>
 
-      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-white/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
+      <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md">
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
             <BarChart3 className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -188,17 +188,17 @@ export function AlertsTab({
           <div
             className={`p-2.5 rounded-md border transition-colors motion-reduce:transition-none ${
               weeklyDigestEnabled
-                ? 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
-                : 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:lia-border-800'
+                ? 'bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
+                : 'bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:border-lia-border-strong'
             }`}
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-2">
                 <div
                   className="w-7 h-7 rounded-md flex items-center justify-center"
-                  style={{backgroundColor: weeklyDigestEnabled ? 'var(--gray-600-bg-10)' : undefined, color: weeklyDigestEnabled ? 'var(--gray-600)' : undefined}}
+                  style={{backgroundColor: weeklyDigestEnabled ? 'var(--lia-bg-secondary)' : undefined, color: weeklyDigestEnabled ? 'var(--lia-text-secondary)' : undefined}}
                 >
-                  <BarChart3 className="w-3.5 h-3.5" style={{color: weeklyDigestEnabled ? 'var(--gray-600)' : undefined}} />
+                  <BarChart3 className="w-3.5 h-3.5" style={{color: weeklyDigestEnabled ? 'var(--lia-text-secondary)' : undefined}} />
                 </div>
                 <div>
                   <p className={`text-xs font-medium ${weeklyDigestEnabled ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>
@@ -216,7 +216,7 @@ export function AlertsTab({
                 aria-checked={weeklyDigestEnabled}
                 aria-label="Ativar ou desativar resumo semanal de insights"
                 className="relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 flex-shrink-0 mt-0.5"
-                style={{backgroundColor: weeklyDigestEnabled ? 'var(--gray-900)' : 'var(--gray-200)'}}
+                style={{backgroundColor: weeklyDigestEnabled ? 'var(--lia-text-primary)' : 'var(--lia-border-subtle)'}}
               >
                 {savingWeeklyDigest ? (
                   <Loader2 className="w-3 h-3 absolute top-1 left-3 animate-spin" />

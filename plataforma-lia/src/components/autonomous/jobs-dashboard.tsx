@@ -104,7 +104,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
       running: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark',
       completed: 'bg-status-success/10 text-status-success dark:text-status-success',
       failed: 'bg-status-error/10 text-status-error dark:text-status-error',
-      cancelled: 'bg-gray-500/10 text-lia-text-secondary'
+      cancelled: 'bg-lia-bg-secondary0/10 text-lia-text-secondary'
     }
     return styles[status] || styles.pending
   }
@@ -165,7 +165,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
           <Button
             size="sm"
             onClick={() => setShowCreateModal(true)}
-            className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             <Plus className="h-4 w-4 mr-1" />
             Novo Job
@@ -205,7 +205,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
       ) : filteredJobs.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
+            <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
               <Calendar className="h-6 w-6 lia-text-secondary" />
             </div>
             <h3 className="text-sm font-medium text-lia-text-primary mb-1">
@@ -219,7 +219,7 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             {!searchTerm && statusFilter === 'all' && (
               <Button
                 size="sm"
-                className="mt-4 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                className="mt-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 onClick={() => setShowCreateModal(true)}
               >
                 <Plus className="h-4 w-4 mr-1" />
@@ -238,13 +238,13 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
             return (
               <Card
                 key={job.id}
-                className="rounded-md hover:border-gray-400 dark:hover:border-gray-500 transition-colors motion-reduce:transition-none cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
+                className="rounded-md hover:border-lia-border-medium dark:hover:border-lia-border-medium transition-colors motion-reduce:transition-none cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
                 onClick={() => onJobSelect?.(job)}
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
                         <TypeIcon className="h-4 w-4 text-lia-text-secondary" />
                       </div>
                       <div className="flex-1 min-w-0">

@@ -57,9 +57,9 @@ interface ErrorFallbackProps {
 
 function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-lia-bg-secondary">
       <div className="max-w-md w-full mx-auto p-8 text-center">
-        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4">
+        <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mx-auto mb-4">
           <svg
             className="w-6 h-6 lia-text-secondary"
             fill="none"
@@ -84,7 +84,7 @@ function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
         </p>
 
         {process.env.NODE_ENV === "development" && error && (
-          <pre className="text-left text-xs bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-3 mb-4 overflow-auto max-h-32 text-status-error dark:text-status-error">
+          <pre className="text-left text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-3 mb-4 overflow-auto max-h-32 text-status-error dark:text-status-error">
             {error.message}
           </pre>
         )}
@@ -93,14 +93,14 @@ function ErrorFallbackScreen({ error, onReset }: ErrorFallbackProps) {
           {onReset && (
             <button
               onClick={onReset}
-              className="px-4 py-2 text-sm font-medium bg-gray-900 text-white rounded-md hover:bg-gray-700 transition-colors motion-reduce:transition-none"
+              className="px-4 py-2 text-sm font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-md hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
             >
               Tentar novamente
             </button>
           )}
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 text-sm font-medium border border-lia-border-default dark:border-lia-border-default text-lia-text-secondary rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+            className="px-4 py-2 text-sm font-medium border border-lia-border-default dark:border-lia-border-default text-lia-text-secondary rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
           >
             Recarregar página
           </button>

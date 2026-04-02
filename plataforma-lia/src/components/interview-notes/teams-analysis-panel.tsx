@@ -32,7 +32,7 @@ const statusConfig: Record<
 > = {
   awaiting_transcript: {
     label: "Aguardando Transcrição",
-    color: "bg-gray-100 text-lia-text-secondary",
+    color: "bg-lia-bg-tertiary text-lia-text-secondary",
     icon: Clock,
   },
   transcript_ready: {
@@ -211,7 +211,7 @@ export function TeamsAnalysisPanel({
 
       <CardContent className="space-y-4">
         {!status && (
-          <div className="text-center py-6 bg-gray-50 rounded-md">
+          <div className="text-center py-6 bg-lia-bg-secondary rounded-md">
             <Video className="h-8 w-8 lia-text-secondary mx-auto mb-2" />
             <p className="text-sm text-lia-text-tertiary">
               Nenhuma análise disponível para esta entrevista.
@@ -227,7 +227,7 @@ export function TeamsAnalysisPanel({
         )}
 
         {status?.status === "awaiting_transcript" && (
-          <div className="text-center py-6 bg-gray-50 rounded-md">
+          <div className="text-center py-6 bg-lia-bg-secondary rounded-md">
             <Clock className="h-8 w-8 lia-text-secondary mx-auto mb-2" />
             <p className="text-sm text-lia-text-secondary mb-1">
               Aguardando transcrição da entrevista Teams
@@ -247,7 +247,7 @@ export function TeamsAnalysisPanel({
             <Button
               onClick={() => handleAnalyze(false)}
               disabled={isAnalyzing}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               {isAnalyzing ? (
                 <>
@@ -274,7 +274,7 @@ export function TeamsAnalysisPanel({
                   size="sm"
                   onClick={() => handleAnalyze(true)}
                   disabled={isAnalyzing}
-                  className="gap-2 dark:border-lia-border-default dark:hover:bg-gray-700"
+                  className="gap-2 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
                 >
                   {isAnalyzing ? (
                     <>

@@ -284,12 +284,12 @@ export function BenefitFormModal({
               </div>
             </div>
 
-            <div className="border-t border-lia-border-subtle dark:lia-border-800 pt-3 space-y-2">
+            <div className="border-t border-lia-border-subtle dark:border-lia-border-strong pt-3 space-y-2">
               <h4 className={`${textStyles.labelSmall} uppercase tracking-wider`}>
                 Configurações
               </h4>
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+                <div className="flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
                     <Label className={textStyles.label}>Ativo</Label>
                     <p className={textStyles.caption}>Disponível para colaboradores</p>
@@ -300,7 +300,7 @@ export function BenefitFormModal({
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+                <div className="flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
                     <Label className={textStyles.label}>Destaque</Label>
                     <p className={textStyles.caption}>Exibir com destaque</p>
@@ -311,7 +311,7 @@ export function BenefitFormModal({
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+                <div className="flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
                     <Label className={textStyles.label}>Obrigatório</Label>
                     <p className={textStyles.caption}>Adesão obrigatória</p>
@@ -322,7 +322,7 @@ export function BenefitFormModal({
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-2.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+                <div className="flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
                     <Label className={textStyles.label}>Desconto em Folha</Label>
                     <p className={textStyles.caption}>Valor descontado do salário</p>
@@ -351,7 +351,7 @@ export function BenefitFormModal({
           <Button
             onClick={() => editingBenefit && onSave(editingBenefit)}
             disabled={isSaving || !editingBenefit?.name}
-            className="rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
+            className="rounded-md text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
           >
             {isSaving ? (
               <>

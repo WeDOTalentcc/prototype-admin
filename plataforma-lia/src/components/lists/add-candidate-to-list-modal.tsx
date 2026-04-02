@@ -254,7 +254,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-white dark:bg-lia-bg-primary border-0 rounded-md">
+      <DialogContent className="sm:max-w-lg bg-lia-bg-primary dark:bg-lia-bg-primary border-0 rounded-md">
         <DialogHeader className="border-b border-lia-border-subtle dark:border-lia-border-subtle pb-4">
           <DialogTitle className="font-['Open_Sans',sans-serif] text-lg text-lia-text-primary">
             Adicionar Candidatos à Lista "{listName}"
@@ -274,7 +274,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                 placeholder="Buscar por nome, email ou ID..."
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="pl-10 bg-gray-50 dark:bg-lia-bg-secondary border-0 focus:ring-1 focus:ring-gray-300"
+                className="pl-10 bg-lia-bg-secondary dark:bg-lia-bg-secondary border-0 focus:ring-1 focus:ring-lia-border-default"
               />
               {searching && (
                 <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
@@ -282,7 +282,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
             </div>
 
             {searchResults.length > 0 && (
-              <div className="max-h-48 overflow-y-auto space-y-1 bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-2">
+              <div className="max-h-48 overflow-y-auto space-y-1 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-2">
                 {searchResults.map((candidate) => {
                   const candidateId = candidate.id || ""
                   const isSelected = selectedCandidates.has(candidateId)
@@ -294,21 +294,21 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                       onClick={() => candidateId && toggleCandidate(candidateId)}
                       className={`w-full flex items-center gap-3 p-2 rounded-md transition-colors motion-reduce:transition-none text-left ${
  isSelected 
-                          ? 'bg-gray-50' 
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                          ? 'bg-lia-bg-secondary' 
+                          : 'hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse'
                       }`}
                     >
                       <div className={`flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
  isSelected 
-                          ? 'bg-gray-800' 
-                          : 'bg-gray-200'
+                          ? 'bg-lia-btn-primary-hover' 
+                          : 'bg-lia-interactive-active'
                       }`}>
                         {isSelected && <Check className="w-3 h-3 text-white" />}
                       </div>
                       
                       <Avatar className="w-8 h-8">
                         <AvatarImage src={undefined} />
-                        <AvatarFallback className="bg-gray-200 text-xs text-lia-text-secondary">
+                        <AvatarFallback className="bg-lia-interactive-active text-xs text-lia-text-secondary">
                           {getInitials(candidate.name)}
                         </AvatarFallback>
                       </Avatar>
@@ -323,7 +323,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                       </div>
 
                       {candidate.match_score && (
-                        <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary">
+                        <span className="flex-shrink-0 text-xs font-medium px-2 py-0.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary">
                           {Math.round(candidate.match_score)}%
                         </span>
                       )}
@@ -348,7 +348,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                   onClick={handleAddCandidates}
                   disabled={adding}
                   size="sm"
-                  className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-1.5"
+                  className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active gap-1.5"
                 >
                   {adding ? (
                     <>
@@ -371,7 +371,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
               <span className="w-full border-t border-lia-border-subtle dark:border-lia-border-subtle" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-lia-bg-primary px-2 lia-text-secondary">ou</span>
+              <span className="bg-lia-bg-primary dark:bg-lia-bg-primary px-2 lia-text-secondary">ou</span>
             </div>
           </div>
 
@@ -389,14 +389,14 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                     placeholder="Colar URL LinkedIn"
                     value={linkedinUrl}
                     onChange={(e) => setLinkedinUrl(e.target.value)}
-                    className="pl-10 pr-10 text-xs bg-gray-50 dark:bg-lia-bg-secondary border-0"
+                    className="pl-10 pr-10 text-xs bg-lia-bg-secondary dark:bg-lia-bg-secondary border-0"
                     disabled={importingLinkedin}
                   />
                   {linkedinUrl && (
                     <button
                       onClick={handleLinkedInImport}
                       disabled={importingLinkedin}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
                     >
                       {importingLinkedin ? (
                         <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none lia-text-secondary" />
@@ -420,7 +420,7 @@ const fileInputRef = useRef<HTMLInputElement>(null)
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full h-10 text-xs border-0 bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="w-full h-10 text-xs border-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingCV}
                 >
@@ -445,16 +445,16 @@ const fileInputRef = useRef<HTMLInputElement>(null)
               <span className="w-full border-t border-lia-border-subtle dark:border-lia-border-subtle" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-lia-bg-primary px-2 lia-text-secondary">ou</span>
+              <span className="bg-lia-bg-primary dark:bg-lia-bg-primary px-2 lia-text-secondary">ou</span>
             </div>
           </div>
 
           <button
             onClick={handleGoToSearch}
-            className="w-full flex items-center justify-between p-4 rounded-md bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none group"
+            className="w-full flex items-center justify-between p-4 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-elevated">
+              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-elevated">
                 <Search className="w-5 h-5 text-lia-text-secondary" />
               </div>
               <div className="text-left">

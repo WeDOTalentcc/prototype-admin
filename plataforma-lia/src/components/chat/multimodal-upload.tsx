@@ -231,7 +231,7 @@ export function MultimodalUpload({
           className={cn(
             "border-2 border-dashed rounded-md p-8 text-center cursor-pointer transition-colors",
             isDragOver 
-              ? "border-lia-btn-primary-bg dark:lia-border-50 bg-lia-bg-secondary/50" 
+              ? "border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary/50" 
               : "border-lia-border-subtle hover:border-lia-btn-primary-bg hover:bg-lia-interactive-hover"
           )}
         >

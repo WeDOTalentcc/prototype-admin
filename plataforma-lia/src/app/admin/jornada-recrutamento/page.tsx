@@ -183,8 +183,8 @@ export default function JornadaRecrutamentoPage() {
     return (
       <div aria-live="polite" aria-busy={isLoading} className="p-8 flex items-center justify-center min-h-content-lg">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary mx-auto mb-4" />
-          <p className="text-sm lia-text-500">Carregando jornada de recrutamento...</p>
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary mx-auto mb-4" />
+          <p className="text-sm text-lia-text-secondary">Carregando jornada de recrutamento...</p>
         </div>
       </div>
     )
@@ -195,9 +195,9 @@ export default function JornadaRecrutamentoPage() {
       <div className="mb-6 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Workflow className="w-7 h-7 lia-text-600 dark:text-lia-text-tertiary" />
+            <Workflow className="w-7 h-7 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <h1
-              className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
               
             >
               Jornada de Recrutamento
@@ -208,7 +208,7 @@ export default function JornadaRecrutamentoPage() {
               </Badge>
             )}
           </div>
-          <p className="text-sm lia-text-500">
+          <p className="text-sm text-lia-text-secondary">
             {isEditMode 
               ? "Arraste para reordenar, ative automações e personalize cada etapa."
               : "Visualize as etapas configuradas do seu processo seletivo."
@@ -223,7 +223,7 @@ export default function JornadaRecrutamentoPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleResetToDefault}
-                className="lia-text-600"
+                className="text-lia-text-secondary"
                 disabled={isSaving}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
@@ -234,7 +234,7 @@ export default function JornadaRecrutamentoPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleCancelEdit}
-                className="lia-text-600"
+                className="text-lia-text-secondary"
                 disabled={isSaving}
               >
                 <X className="w-4 h-4 mr-2" />
@@ -246,7 +246,7 @@ export default function JornadaRecrutamentoPage() {
                 onClick={handleSave}
                 disabled={!hasChanges || isSaving}
                 className="text-white"
-                style={{backgroundColor: hasChanges ? 'var(--gray-950)' : 'var(--gray-200)'}}
+                style={{backgroundColor: hasChanges ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}}
               >
                 {isSaving ? (
                   <>
@@ -275,7 +275,7 @@ export default function JornadaRecrutamentoPage() {
             <Button
               size="sm"
               onClick={handleStartEdit}
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active"
             >
               <Pencil className="w-4 h-4 mr-2" />
               Editar
@@ -301,36 +301,36 @@ export default function JornadaRecrutamentoPage() {
         <div className="space-y-4">
           <Card className="border border-lia-border-subtle">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium lia-text-800 dark:text-lia-text-primary flex items-center gap-2">
+              <CardTitle className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary flex items-center gap-2">
                 <Info className="w-4 h-4" />
                 Resumo do Pipeline
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-xs lia-text-500">Total de etapas</span>
-                <span className="text-sm font-semibold lia-text-800">{stages.length}</span>
+                <span className="text-xs text-lia-text-secondary">Total de etapas</span>
+                <span className="text-sm font-semibold text-lia-text-primary">{stages.length}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs lia-text-500">Etapas ativas</span>
+                <span className="text-xs text-lia-text-secondary">Etapas ativas</span>
                 <span className="text-sm font-semibold text-status-success">{activeStages}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs lia-text-500">Com automação</span>
-                <span className="text-sm font-semibold lia-text-900 dark:lia-text-50">{automatedStages}</span>
+                <span className="text-xs text-lia-text-secondary">Com automação</span>
+                <span className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">{automatedStages}</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary/50">
+          <Card className="border border-lia-border-default dark:border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <Brain className="w-5 h-5 text-wedo-cyan mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium lia-text-800 mb-1">
+                  <p className="text-sm font-medium text-lia-text-primary mb-1">
                     Dica LIA
                   </p>
-                  <p className="text-xs lia-text-600">
+                  <p className="text-xs text-lia-text-secondary">
                     {isEditMode 
                       ? "Arraste as etapas para reordená-las. Ative Email e WhatsApp para manter candidatos engajados."
                       : "Clique em 'Editar' para personalizar as etapas do seu processo seletivo."
@@ -343,20 +343,20 @@ export default function JornadaRecrutamentoPage() {
 
           <Card className="border border-lia-border-subtle">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+              <CardTitle className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Automações Disponíveis
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center gap-2 text-xs lia-text-600">
-                <div className="w-2 h-2 rounded-full bg-gray-700 dark:lia-bg-300" />
+              <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
+                <div className="w-2 h-2 rounded-full bg-lia-bg-inverse dark:bg-lia-interactive-active" />
                 Email de feedback automático
               </div>
-              <div className="flex items-center gap-2 text-xs lia-text-600">
+              <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
                 <div className="w-2 h-2 rounded-full bg-status-success" />
                 Notificação WhatsApp
               </div>
-              <p className="text-micro lia-text-400 pt-2 border-t">
+              <p className="text-micro text-lia-text-tertiary pt-2 border-t">
                 Mais automações em breve: SMS, agendamento, testes automáticos
               </p>
             </CardContent>

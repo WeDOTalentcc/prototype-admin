@@ -127,7 +127,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
               }))
               setShowCustomGoal(true)
             }} 
-            className="gap-2 h-8 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+            className="gap-2 h-8 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             disabled={users.length === 0 || isLoading}
           >
             <Target className="w-3.5 h-3.5" />
@@ -144,8 +144,8 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
         overdue={goalStats.overdue}
       />
 
-      <Card className="border border-lia-border-subtle dark:lia-border-800">
-        <CardHeader className="py-3 border-b border-lia-border-subtle dark:lia-border-800">
+      <Card className="border border-lia-border-subtle dark:border-lia-border-strong">
+        <CardHeader className="py-3 border-b border-lia-border-subtle dark:border-lia-border-strong">
           <CardTitle className={`${textStyles.h4} flex items-center justify-between`}>
             <span>Metas por Categoria</span>
             {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />}
@@ -167,7 +167,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
               </p>
               <Button 
                 onClick={() => setShowTemplates(true)}
-                className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
               >
                 <Plus className="w-4 h-4" />
                 Aplicar Template
@@ -184,7 +184,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                 return (
                   <div key={template.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
                     <div 
-                      className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none bg-gray-50/50"
+                      className="flex items-center justify-between p-3 cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none bg-lia-bg-secondary/50"
                       onClick={() => toggleGoalCollapse(template.id)}
                     >
                       <div className="flex items-center gap-2 flex-1">
@@ -224,12 +224,12 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     </div>
 
                     {!isCollapsed && (
-                      <div className="border-t border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/50">
+                      <div className="border-t border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50">
                         <div className="overflow-x-auto">
                         <table className="w-full text-xs font-['Open_Sans',sans-serif]">
                           <thead>
                             <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                              <th className="text-left p-2 min-w-[140px] sticky left-0 bg-gray-50 dark:bg-lia-bg-secondary font-medium text-lia-text-secondary border-r border-lia-border-subtle dark:border-lia-border-subtle">
+                              <th className="text-left p-2 min-w-[140px] sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary font-medium text-lia-text-secondary border-r border-lia-border-subtle dark:border-lia-border-subtle">
                                 Usuário
                               </th>
                               {MONTHS.map((month) => (
@@ -247,12 +247,12 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                           </thead>
                           <tbody>
                             {assignedUserObjects.map((user) => (
-                              <tr key={user!.id} className="border-b border-lia-border-subtle dark:lia-border-800 hover:bg-lia-bg-primary dark:hover:bg-gray-800">
-                                <td className="p-2 sticky left-0 bg-gray-50 dark:bg-lia-bg-secondary border-r border-lia-border-subtle dark:border-lia-border-subtle">
+                              <tr key={user!.id} className="border-b border-lia-border-subtle dark:border-lia-border-strong hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover">
+                                <td className="p-2 sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary border-r border-lia-border-subtle dark:border-lia-border-subtle">
                                   <div className="flex items-center gap-2">
                                     <Avatar className="w-5 h-5">
                                       <AvatarImage src={user!.avatar} alt={user!.name} />
-                                      <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary font-medium text-micro">
+                                      <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary font-medium text-micro">
                                         {user!.name.split(' ').map((n: string) => n[0]).join('')}
                                       </AvatarFallback>
                                     </Avatar>
@@ -278,8 +278,8 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                                 </td>
                               </tr>
                             ))}
-                            <tr className="border-t-2 border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary">
-                              <td className="p-2 font-semibold text-lia-text-primary sticky left-0 bg-gray-100 border-r border-lia-border-subtle">
+                            <tr className="border-t-2 border-lia-border-default dark:border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+                              <td className="p-2 font-semibold text-lia-text-primary sticky left-0 bg-lia-bg-tertiary border-r border-lia-border-subtle">
                                 TOTAL EQUIPE
                               </td>
                               {MONTHS.map((month) => (
@@ -303,7 +303,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => handleAddUserToTemplate(template.id)}
-                            className="text-micro h-6 gap-1.5 rounded-xl text-lia-text-primary border-lia-border-default hover:bg-gray-100"
+                            className="text-micro h-6 gap-1.5 rounded-xl text-lia-text-primary border-lia-border-default hover:bg-lia-bg-tertiary"
                             disabled={isSaving}
                           >
                             <Plus className="w-3 h-3" />
@@ -336,7 +336,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       )}
 
       {showTemplates && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
           <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -352,7 +352,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
             </div>
 
             {selectedTemplateIds.size > 0 && (
-              <div className="border rounded-md px-2.5 py-1.5 mb-3 flex items-center justify-between bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default">
+              <div className="border rounded-md px-2.5 py-1.5 mb-3 flex items-center justify-between bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle className="w-3 h-3 text-lia-text-primary" />
                   <span className={textStyles.caption}>
@@ -363,7 +363,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                   <select
                     value={templateApplyMode}
                     onChange={(e) => setTemplateApplyMode(e.target.value as 'all' | 'selected')}
-                    className="border rounded-full px-1.5 py-0.5 text-micro bg-white dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-primary font-['Open_Sans',sans-serif]"
+                    className="border rounded-full px-1.5 py-0.5 text-micro bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-primary font-['Open_Sans',sans-serif]"
                   >
                     <option value="all">Aplicar a todos usuários</option>
                     {selectedUser && <option value="selected">Aplicar a {selectedUser.name}</option>}
@@ -372,7 +372,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     size="sm"
                     onClick={handleApplySelectedTemplates}
                     disabled={isSaving}
-                    className="text-micro h-6 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
+                    className="text-micro h-6 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active font-['Open_Sans',sans-serif]"
                   >
                     {isSaving ? <Loader2 className="w-2.5 h-2.5 animate-spin motion-reduce:animate-none mr-1" /> : <Plus className="w-2.5 h-2.5 mr-1" />}
                     Aplicar Selecionados
@@ -398,14 +398,14 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     placeholder="Buscar templates..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-7 pr-2.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white dark:bg-lia-bg-secondary text-lia-text-primary text-micro font-['Open_Sans',sans-serif]"
+                    className="w-full pl-7 pr-2.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-micro font-['Open_Sans',sans-serif]"
                   />
                 </div>
               </div>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-white dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
+                className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
               >
                 <option value="all">Todas Categorias</option>
                 <option value="recruitment">Recrutamento</option>
@@ -416,7 +416,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
               <select
                 value={filterPeriod}
                 onChange={(e) => setFilterPeriod(e.target.value)}
-                className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-white dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
+                className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
               >
                 <option value="all">Todos Períodos</option>
                 <option value="monthly">Mensal</option>
@@ -460,10 +460,10 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                     isAppliedToAll 
                       ? 'border-status-success/30 bg-status-success/10 opacity-60 cursor-not-allowed' 
                       : isSelected
-                        ? 'border-gray-900 bg-gray-50 ring-2 ring-gray-400'
+                        ? 'border-lia-btn-primary-bg bg-lia-bg-secondary ring-2 ring-lia-border-medium'
                         : isPartiallyApplied 
-                          ? 'border-status-warning/30 bg-status-warning/10 hover:border-gray-400' 
-                          : 'border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50'
+                          ? 'border-status-warning/30 bg-status-warning/10 hover:border-lia-border-medium' 
+                          : 'border-lia-border-subtle hover:border-lia-border-medium hover:bg-lia-bg-secondary'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-1.5">
@@ -472,7 +472,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                         isAppliedToAll 
                           ? 'bg-status-success border-status-success/30'
                           : isSelected 
-                            ? 'bg-gray-900 border-gray-900 dark:lia-border-50' 
+                            ? 'bg-lia-btn-primary-bg border-lia-btn-primary-bg dark:border-lia-border-subtle' 
                             : 'border-lia-border-default bg-lia-bg-primary'
                       }`}>
                         {(isSelected || isAppliedToAll) && <CheckCircle className="w-2.5 h-2.5 text-white" />}
@@ -499,14 +499,14 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                         </Badge>
                       )}
                       {selectedUser && isAppliedToSelectedUser && !isAppliedToAll && (
-                        <Badge className="text-micro px-1.5 py-0.5 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle font-['Open_Sans',sans-serif]">
+                        <Badge className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle font-['Open_Sans',sans-serif]">
                           Já aplicado a {selectedUser.name.split(' ')[0]}
                         </Badge>
                       )}
                     </div>
                   </div>
                   
-                  <div className="bg-gray-50 rounded-md px-1.5 py-1 mb-2 border-l-2 border-gray-400 ml-6">
+                  <div className="bg-lia-bg-secondary rounded-md px-1.5 py-1 mb-2 border-l-2 border-lia-border-medium ml-6">
                     <div className="flex items-start gap-1">
                       <BarChart3 className="w-2.5 h-2.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
                       <p className={textStyles.caption}>
@@ -533,7 +533,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             e.stopPropagation()
                             setEditingTemplate(template)
                           }}
-                          className="h-5 w-5 p-0 hover:bg-gray-100 hover:text-lia-text-primary"
+                          className="h-5 w-5 p-0 hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
                           title="Editar template"
                         >
                           <Edit className="w-2.5 h-2.5" />
@@ -561,7 +561,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       )}
 
       {showCustomGoal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
           <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-lg">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold">Nova Meta Customizada</h3>
@@ -752,7 +752,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       )}
 
       {editingGoal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
           <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-lg">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold">Editar Meta</h3>
@@ -855,11 +855,11 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       )}
 
       {editingTemplate && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
           <div className="bg-lia-bg-primary rounded-md w-full max-w-md mx-4 overflow-hidden">
-            <div className="bg-gray-50 px-5 py-3 border-b border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary px-5 py-3 border-b border-lia-border-subtle">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-lia-interactive-active">
                   <Settings className="w-4 h-4 text-lia-text-primary" />
                 </div>
                 <div>
@@ -966,7 +966,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                       setEditingTemplate(null)
                     }
                   }}
-                  className="text-xs h-8 font-['Open_Sans',sans-serif] bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="text-xs h-8 font-['Open_Sans',sans-serif] bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   <Save className="w-3 h-3 mr-1.5" />
                   Salvar Alterações

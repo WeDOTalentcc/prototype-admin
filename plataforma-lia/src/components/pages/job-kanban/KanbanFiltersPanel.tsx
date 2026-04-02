@@ -78,7 +78,7 @@ export function KanbanFiltersPanel({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-7 w-7 p-0 hover:bg-gray-100"
+              className="h-7 w-7 p-0 hover:bg-lia-bg-tertiary"
             >
               <X className="w-4 h-4 text-lia-text-secondary" />
             </Button>
@@ -100,7 +100,7 @@ export function KanbanFiltersPanel({
                 max="100"
                 value={scoreMin}
                 onChange={(e) => onScoreMinChange(Number(e.target.value))}
-                className="flex-1 h-1.5 bg-gray-200 rounded-md appearance-none cursor-pointer accent-gray-900"
+                className="flex-1 h-1.5 bg-lia-interactive-active rounded-md appearance-none cursor-pointer accent-lia-btn-primary-bg"
               />
               <span className="text-xs text-lia-text-secondary w-12 text-right">{scoreMin}%</span>
             </div>
@@ -116,7 +116,7 @@ export function KanbanFiltersPanel({
                     type="checkbox"
                     checked={statusFilter.includes(value)}
                     onChange={() => toggleItem(statusFilter, value, onStatusFilterChange)}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
                   <span className="text-xs text-lia-text-secondary">{label}</span>
                 </label>
@@ -134,7 +134,7 @@ export function KanbanFiltersPanel({
                     type="checkbox"
                     checked={originFilter.includes(value)}
                     onChange={() => toggleItem(originFilter, value, onOriginFilterChange)}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
                   <span className="text-xs text-lia-text-secondary">{label}</span>
                 </label>
@@ -152,7 +152,7 @@ export function KanbanFiltersPanel({
                     type="checkbox"
                     checked={workModelFilter.includes(value)}
                     onChange={() => toggleItem(workModelFilter, value, onWorkModelFilterChange)}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
                   <span className="text-xs text-lia-text-secondary">{label}</span>
                 </label>
@@ -162,17 +162,17 @@ export function KanbanFiltersPanel({
         </div>
 
         {/* Footer */}
-        <div className="flex-shrink-0 p-4 border-t border-lia-border-subtle bg-gray-50">
+        <div className="flex-shrink-0 p-4 border-t border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex gap-2">
             <button
               onClick={handleClear}
-              className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+              className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
             >
               Limpar
             </button>
             <button
               onClick={onClose}
-              className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors motion-reduce:transition-none bg-gray-900 hover:bg-gray-800"
+              className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover"
             >
               Aplicar
             </button>

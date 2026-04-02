@@ -284,7 +284,7 @@ export function CalibrationDashboard() {
           <h2 className="text-lg font-semibold font-sans text-lia-text-primary">
             Calibração do Modelo LIA
           </h2>
-          <Badge variant="outline" className="text-lia-text-secondary border-gray-900">
+          <Badge variant="outline" className="text-lia-text-secondary border-lia-btn-primary-bg">
             Últimos {data.stats.period_days} dias
           </Badge>
         </div>
@@ -301,7 +301,7 @@ export function CalibrationDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-gray-50 dark:bg-lia-bg-secondary/50">
+        <Card className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -368,12 +368,12 @@ export function CalibrationDashboard() {
       </div>
 
       {data.suggestions.length > 0 && (
-        <Card className="bg-gray-50 dark:bg-lia-bg-secondary/50">
+        <Card className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2 font-sans">
               <Lightbulb className="w-5 h-5 text-lia-text-secondary" />
               Sugestões de Calibração
-              <Badge className="bg-gray-900 text-white">
+              <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text">
                 {data.suggestions.length} pendente{data.suggestions.length > 1 ? "s" : ""}
               </Badge>
             </CardTitle>
@@ -383,7 +383,7 @@ export function CalibrationDashboard() {
               {data.suggestions.map((suggestion) => (
                 <div
                   key={suggestion.id}
-                  className="p-4 bg-white dark:bg-lia-bg-secondary rounded-md"
+                  className="p-4 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -421,7 +421,7 @@ export function CalibrationDashboard() {
                       </Button>
                       <Button
                         size="sm"
-                        className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-1"
+                        className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active gap-1"
                         onClick={() => handleApproveSuggestion(suggestion.id)}
                         disabled={actionLoading}
                       >
@@ -457,7 +457,7 @@ export function CalibrationDashboard() {
                 {data.divergences.map((divergence) => (
                   <div
                     key={divergence.id}
-                    className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md"
+                    className="flex items-start gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md"
                   >
                     {getDivergenceIcon(divergence.type)}
                     <div className="flex-1 min-w-0">
@@ -510,9 +510,9 @@ export function CalibrationDashboard() {
                       {(weight.adjusted_weight * 100).toFixed(0)}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+                  <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                     <div
-                      className="bg-gray-700 h-2 rounded-full transition-[width,height]"
+                      className="bg-lia-bg-inverse h-2 rounded-full transition-[width,height]"
                       style={{width: `${weight.adjusted_weight * 100}%`}}
                     />
                   </div>
@@ -547,7 +547,7 @@ export function CalibrationDashboard() {
               </p>
               
               {selectedSuggestion.rationale && (
-                <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                   <p className="text-sm font-medium text-lia-text-primary mb-1">
                     Racional:
                   </p>
@@ -573,7 +573,7 @@ export function CalibrationDashboard() {
               )}
 
               {selectedSuggestion.dimension && (
-                <div className="flex items-center gap-4 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                <div className="flex items-center gap-4 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                   <div>
                     <p className="text-xs text-lia-text-secondary">Peso Atual</p>
                     <p className="text-lg font-bold text-lia-text-primary">
@@ -619,7 +619,7 @@ export function CalibrationDashboard() {
               Rejeitar
             </Button>
             <Button
-              className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 gap-1"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active gap-1"
               onClick={() => {
                 if (selectedSuggestion) {
                   handleApproveSuggestion(selectedSuggestion.id)

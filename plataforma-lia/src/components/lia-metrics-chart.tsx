@@ -14,7 +14,7 @@ interface LiaMetricsChartProps {
   targetValue?: number
 }
 
-export function LiaMetricsChart({ data, title, color = "var(--gray-600)", targetValue }: LiaMetricsChartProps) {
+export function LiaMetricsChart({ data, title, color = "var(--lia-text-secondary)", targetValue }: LiaMetricsChartProps) {
   const width = 400
   const height = 150
   const padding = { top: 20, right: 20, bottom: 30, left: 40 }

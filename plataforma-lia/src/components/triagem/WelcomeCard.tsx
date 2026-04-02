@@ -23,7 +23,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
         className
       )}
     >
-      <div className="w-full max-w-md bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-6 space-y-6">
+      <div className="w-full max-w-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-6 space-y-6">
         <div className="flex flex-col items-center gap-4 text-center">
           {config.companyLogoUrl ? (
             <img

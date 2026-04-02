@@ -193,7 +193,7 @@ const nodeTypes = [
     type: 'condition',
     title: 'Condições',
     icon: GitBranch,
-    color: 'bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary',
+    color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary',
     items: [
       { id: 'department_check', name: 'Verificar Departamento', description: 'Condição baseada no departamento' },
       { id: 'score_check', name: 'Verificar Score', description: 'Condição baseada no score LIA' },
@@ -246,7 +246,7 @@ export function WorkflowAutomationPage() {
                 <p className="text-2xl font-bold text-lia-text-primary">{workflows.filter(w => w.status === 'active').length}</p>
                 <p className="text-xs text-status-success">+2 esta semana</p>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+              <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                 <Workflow className="w-6 h-6 text-lia-text-secondary" />
               </div>
             </div>
@@ -316,12 +316,12 @@ export function WorkflowAutomationPage() {
         <CardContent>
           <div className="space-y-4">
             {workflows.map(workflow => (
-              <div key={workflow.id} className="p-4 border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none">
+              <div key={workflow.id} className="p-4 border border-lia-border-subtle rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-md flex items-center justify-center ${
                       workflow.status === 'active' ? 'bg-status-success/15' :
-                      workflow.status === 'inactive' ? 'bg-gray-100' : 'bg-status-warning/15'
+                      workflow.status === 'inactive' ? 'bg-lia-bg-tertiary' : 'bg-status-warning/15'
                     }`}>
                       <Workflow className={`w-6 h-6 ${
                         workflow.status === 'active' ? 'text-status-success' :
@@ -507,7 +507,7 @@ export function WorkflowAutomationPage() {
                 {nodeType.items.map(item => (
                   <div
                     key={item.id}
-                    className={`p-2 border rounded-md cursor-pointer hover:bg-gray-50 ${nodeType.color}`}
+                    className={`p-2 border rounded-md cursor-pointer hover:bg-lia-bg-secondary ${nodeType.color}`}
                     draggable
                   >
                     <p className="text-xs font-medium">{item.name}</p>
@@ -521,7 +521,7 @@ export function WorkflowAutomationPage() {
 
         {/* Canvas */}
         <div className="lg:col-span-3">
-          <div className="w-full h-full border-2 border-dashed border-lia-border-default rounded-md bg-gray-50 flex items-center justify-center">
+          <div className="w-full h-full border-2 border-dashed border-lia-border-default rounded-md bg-lia-bg-secondary flex items-center justify-center">
             <div className="text-center">
               <Workflow className="w-12 h-12 text-lia-text-secondary mx-auto mb-4" />
               <p className="text-lia-text-secondary">Arraste componentes aqui para começar</p>
@@ -560,7 +560,7 @@ export function WorkflowAutomationPage() {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-md w-fit">
+          <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-md w-fit">
             {[
               { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
               { id: 'builder', label: 'Builder', icon: Code },

@@ -306,12 +306,12 @@ export function EmailTemplateFormModal({
                 <Card className="h-full">
                   <CardContent className="pt-4">
                     <div className="space-y-4">
-                      <div className="p-3 bg-gray-50 rounded-md">
+                      <div className="p-3 bg-lia-bg-secondary rounded-md">
                         <span className="text-sm font-medium text-lia-text-secondary">Assunto:</span>
                         <p className="text-lia-text-primary">{renderPreview(formData.subject)}</p>
                       </div>
                       <div className="border rounded-md overflow-hidden">
-                        <div className="bg-gray-100 px-4 py-2 text-sm font-medium text-lia-text-secondary border-b flex items-center gap-2">
+                        <div className="bg-lia-bg-tertiary px-4 py-2 text-sm font-medium text-lia-text-secondary border-b flex items-center gap-2">
                           <Eye className="w-4 h-4" />
                           Preview com dados de exemplo
                         </div>
@@ -356,7 +356,7 @@ export function EmailTemplateFormModal({
                           <button
                             key={variable.name}
                             onClick={() => insertVariable(variable.name)}
-                            className="flex items-center justify-between p-2 rounded-md border hover:bg-gray-50 transition-colors motion-reduce:transition-none text-left"
+                            className="flex items-center justify-between p-2 rounded-md border hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none text-left"
                           >
                             <div>
                               <code className="text-sm font-mono text-lia-text-primary">
@@ -373,7 +373,7 @@ export function EmailTemplateFormModal({
                     </CardContent>
                   </Card>
 
-                  <Card className="border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary">
+                  <Card className="border-lia-border-default dark:border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <CardContent className="pt-4">
                       <h4 className="font-medium text-lia-text-primary mb-2">
                         Dados de exemplo para preview:
@@ -394,12 +394,12 @@ export function EmailTemplateFormModal({
           </Tabs>
         </div>
 
-        <DialogFooter className="mt-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
-          <Button variant="outline" onClick={onClose} disabled={saving} className="dark:border-lia-border-default dark:hover:bg-gray-700">
+        <DialogFooter className="mt-4 border-t border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary dark:border-lia-border-subtle pt-4">
+          <Button variant="outline" onClick={onClose} disabled={saving} className="dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
             <X className="w-4 h-4 mr-2" />
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={!isValid || saving} className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
+          <Button onClick={handleSubmit} disabled={!isValid || saving} className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">
             {saving ? (
               <>
                 <RefreshCw className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />

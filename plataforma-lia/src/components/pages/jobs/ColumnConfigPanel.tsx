@@ -73,7 +73,7 @@ export function ColumnConfigPanel({
 
   return (
     <div className="flex-shrink-0 w-80 transition-colors motion-reduce:transition-none duration-300">
-      <Card className="h-full flex flex-col overflow-hidden bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="h-full flex flex-col overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex-shrink-0 p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-sm text-lia-text-primary">Configurar Colunas</h3>
@@ -81,7 +81,7 @@ export function ColumnConfigPanel({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-7 w-7 p-0 hover:bg-gray-900/10 dark:hover:bg-gray-100/10 rounded-full"
+              className="h-7 w-7 p-0 hover:bg-lia-btn-primary-bg/10 dark:hover:bg-lia-bg-tertiary/10 rounded-full"
             >
               <X className="w-4 h-4 text-lia-text-primary" />
             </Button>
@@ -99,7 +99,7 @@ export function ColumnConfigPanel({
               </h4>
               <div className="space-y-1">
                 {savedColumnViews.map(view => (
-                  <div key={view.id} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md">
+                  <div key={view.id} className="flex items-center justify-between p-2 hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover rounded-md">
                     <button
                       onClick={() => applyColumnView(view.id)}
                       className="text-xs text-lia-text-primary hover:text-lia-text-primary"
@@ -131,10 +131,10 @@ export function ColumnConfigPanel({
                   </h4>
                   <div className="space-y-1">
                     {categoryColumns.map(col => (
-                      <label key={col.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md cursor-pointer">
+                      <label key={col.id} className="flex items-center gap-2 p-2 hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover rounded-md cursor-pointer">
                         <input
                           type="checkbox"
-                          className="w-3 h-3 accent-gray-900"
+                          className="w-3 h-3 accent-lia-btn-primary-bg"
                           checked={col.visible}
                           onChange={() => toggleColumn(col.id)}
                         />
@@ -148,7 +148,7 @@ export function ColumnConfigPanel({
           </div>
         </div>
 
-        <div className="flex-shrink-0 p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
+        <div className="flex-shrink-0 p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
           <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"

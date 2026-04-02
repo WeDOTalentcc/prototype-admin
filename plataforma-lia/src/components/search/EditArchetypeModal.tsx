@@ -141,7 +141,7 @@ export function EditArchetypeModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-lia-overlay"
       onClick={onClose}
     >
       <div
@@ -156,7 +156,7 @@ export function EditArchetypeModal({
             <Target className="w-5 h-5 text-lia-text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold" style={{color: "var(--gray-950)"}}>
+            <h3 className="text-sm font-semibold" style={{color: "var(--lia-btn-primary-bg)"}}>
               {editingArchetype?.id ? "Editar Arquétipo" : "Criar Arquétipo"}
             </h3>
             <p className="text-xs truncate" aria-live="polite" aria-atomic="true">
@@ -165,7 +165,7 @@ export function EditArchetypeModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+            className="p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
           >
             <X className="w-4 h-4 text-lia-text-secondary" />
           </button>
@@ -189,7 +189,7 @@ export function EditArchetypeModal({
                   value={editArchetypeEmoji}
                   onChange={(e) => onEditArchetypeEmojiChange(e.target.value)}
                   maxLength={4}
-                  className="w-full rounded-md px-2 py-1.5 text-center text-base focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-lia-border-subtle"
+                  className="w-full rounded-md px-2 py-1.5 text-center text-base focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium border border-lia-border-subtle"
                 />
               </div>
               <div className="flex-1">
@@ -201,7 +201,7 @@ export function EditArchetypeModal({
                   value={editArchetypeName}
                   onChange={(e) => onEditArchetypeNameChange(e.target.value)}
                   placeholder="Ex: Tech Lead, Product Manager..."
-                  className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-lia-border-subtle"
+                  className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium border border-lia-border-subtle"
                 />
               </div>
             </div>
@@ -216,7 +216,7 @@ export function EditArchetypeModal({
                 onChange={(e) => onEditArchetypeQueryChange(e.target.value)}
                 placeholder="Ex: Tech Lead com experiência em gestão de equipes, arquitetura de sistemas, 8+ anos em desenvolvimento"
                 rows={2}
-                className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border border-lia-border-subtle"
+                className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium resize-none border border-lia-border-subtle"
               />
             </div>
 
@@ -228,13 +228,13 @@ export function EditArchetypeModal({
                 onChange={(e) => onEditArchetypeDescriptionChange(e.target.value)}
                 placeholder="Líder técnico com experiência em gestão de equipes e arquitetura de sistemas"
                 rows={2}
-                className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 resize-none border border-lia-border-subtle"
+                className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium resize-none border border-lia-border-subtle"
               />
             </div>
           </div>
 
           {/* Seção 2: Requisitos */}
-          <div className="space-y-3 pt-2 border-t border-t-gray-100">
+          <div className="space-y-3 pt-2 border-t border-t-lia-border-subtle">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-base-ui font-semibold text-lia-text-primary">2</span>
               <h4 className="text-xs font-semibold text-lia-text-primary">Requisitos do Perfil</h4>
@@ -249,7 +249,7 @@ export function EditArchetypeModal({
                   <select
                     value={editArchetypeSeniority}
                     onChange={(e) => onEditArchetypeSeniorityChange(e.target.value)}
-                    className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-lia-border-subtle"
+                    className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium border border-lia-border-subtle"
                   >
                     <option value="">-</option>
                     <option value="junior">Júnior</option>
@@ -273,7 +273,7 @@ export function EditArchetypeModal({
                       onEditArchetypeExperienceMinChange(e.target.value ? parseInt(e.target.value) : null)
                     }
                     placeholder="Anos"
-                    className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-lia-border-subtle"
+                    className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium border border-lia-border-subtle"
                   />
                 </div>
               </div>
@@ -284,14 +284,14 @@ export function EditArchetypeModal({
                 <button
                   type="button"
                   onClick={() => onIsIndustryDropdownOpenChange(!isIndustryDropdownOpen)}
-                  className="w-full rounded-md px-2 py-1.5 text-xs text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle"
+                  className="w-full rounded-md px-2 py-1.5 text-xs text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 border border-lia-border-subtle"
                 >
-                  <span style={{color: editArchetypeIndustry ? "var(--gray-950)" : "var(--gray-400)"}}>
+                  <span style={{color: editArchetypeIndustry ? "var(--lia-btn-primary-bg)" : "var(--lia-text-tertiary)"}}>
                     {editArchetypeIndustry
                       ? (INDUSTRIES.find((i) => i.key === editArchetypeIndustry)?.labelPt || editArchetypeIndustry)
                       : "Selecionar..."}
                   </span>
-                  <ChevronDown className="w-3 h-3" style={{color: "var(--gray-400)"}} />
+                  <ChevronDown className="w-3 h-3" style={{color: "var(--lia-text-tertiary)"}} />
                 </button>
                 {isIndustryDropdownOpen && (
                   <div className="absolute z-10 mt-1 w-full bg-lia-bg-primary rounded-md border border-lia-border-subtle max-h-chart-sm overflow-hidden">
@@ -301,7 +301,7 @@ export function EditArchetypeModal({
                         value={industrySearchQuery}
                         onChange={(e) => onIndustrySearchQueryChange(e.target.value)}
                         placeholder="Buscar setor..."
-                        className="w-full rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle"
+                        className="w-full rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 border border-lia-border-subtle"
                         autoFocus
                       />
                     </div>
@@ -313,8 +313,8 @@ export function EditArchetypeModal({
                           onIsIndustryDropdownOpenChange(false)
                           onIndustrySearchQueryChange("")
                         }}
-                        className="w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50"
-                        style={{color: "var(--gray-400)"}}
+                        className="w-full px-3 py-1.5 text-left text-xs hover:bg-lia-bg-secondary"
+                        style={{color: "var(--lia-text-tertiary)"}}
                       >
                         - Nenhum -
                       </button>
@@ -328,7 +328,7 @@ export function EditArchetypeModal({
                         if (categoryIndustries.length === 0) return null
                         return (
                           <div key={catKey}>
-                            <div className="px-3 py-1 text-micro font-semibold uppercase tracking-wide bg-gray-50">
+                            <div className="px-3 py-1 text-micro font-semibold uppercase tracking-wide bg-lia-bg-secondary">
                               {catLabel.labelPt}
                             </div>
                             {categoryIndustries.map((industry) => (
@@ -340,8 +340,8 @@ export function EditArchetypeModal({
                                   onIsIndustryDropdownOpenChange(false)
                                   onIndustrySearchQueryChange("")
                                 }}
-                                className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 ${
-                                  editArchetypeIndustry === industry.key ? "bg-gray-100 dark:bg-lia-bg-secondary" : ""
+                                className={`w-full px-3 py-1.5 text-left text-xs hover:bg-lia-bg-secondary ${
+                                  editArchetypeIndustry === industry.key ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" : ""
                                 }`}
                               >
                                 {industry.labelPt}
@@ -368,7 +368,7 @@ export function EditArchetypeModal({
                   value={editArchetypeLocation}
                   onChange={(e) => onEditArchetypeLocationChange(e.target.value)}
                   placeholder="São Paulo, Brasil..."
-                  className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-lia-border-subtle"
+                  className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium border border-lia-border-subtle"
                 />
               </div>
               <div>
@@ -379,7 +379,7 @@ export function EditArchetypeModal({
                 <select
                   value={editArchetypeWorkModel}
                   onChange={(e) => onEditArchetypeWorkModelChange(e.target.value)}
-                  className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-lia-border-subtle"
+                  className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium border border-lia-border-subtle"
                 >
                   <option value="">Qualquer</option>
                   <option value="remote">Remoto</option>
@@ -408,7 +408,7 @@ export function EditArchetypeModal({
                         onClick={() =>
                           onEditArchetypeLanguagesChange(editArchetypeLanguages.filter((_, i) => i !== idx))
                         }
-                        className="hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full p-0.5"
+                        className="hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full p-0.5"
                       >
                         <X className="w-3 h-3 text-lia-text-primary" />
                       </button>
@@ -429,7 +429,7 @@ export function EditArchetypeModal({
                     }
                   }}
                   placeholder="Inglês, Espanhol..."
-                  className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-lia-border-subtle"
+                  className="w-full rounded-md px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium border border-lia-border-subtle"
                 />
               </div>
               <div>
@@ -440,7 +440,7 @@ export function EditArchetypeModal({
                 <select
                   value={editArchetypeEmploymentType}
                   onChange={(e) => onEditArchetypeEmploymentTypeChange(e.target.value)}
-                  className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400 border border-lia-border-subtle"
+                  className="w-full rounded-md px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium border border-lia-border-subtle"
                 >
                   <option value="">Qualquer</option>
                   <option value="clt">CLT</option>
@@ -454,7 +454,7 @@ export function EditArchetypeModal({
           </div>
 
           {/* Seção 3: Competências */}
-          <div className="space-y-3 pt-2 border-t border-t-gray-100">
+          <div className="space-y-3 pt-2 border-t border-t-lia-border-subtle">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-base-ui font-semibold text-lia-text-primary">3</span>
               <h4 className="text-xs font-semibold text-lia-text-primary">Competências Técnicas</h4>
@@ -481,7 +481,7 @@ export function EditArchetypeModal({
                       onClick={() =>
                         onEditArchetypeSkillsChange(editArchetypeSkills.filter((_, i) => i !== idx))
                       }
-                      className="hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-full p-0.5"
+                      className="hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full p-0.5"
                     >
                       <X className="w-3 h-3 text-lia-text-primary" />
                     </button>
@@ -526,7 +526,7 @@ export function EditArchetypeModal({
                       }
                     }}
                     placeholder="Digite e pressione Enter..."
-                    className="flex-1 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle"
+                    className="flex-1 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 border border-lia-border-subtle"
                   />
                   <button
                     type="button"
@@ -559,7 +559,7 @@ export function EditArchetypeModal({
                       }
                     }}
                     disabled={editArchetypeSkills.length === 0 || isFindingSimilarSkills}
-                    className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeSkills.length > 0 ? "bg-wedo-cyan/15 text-lia-text-primary" : "bg-gray-100 text-lia-text-tertiary"}`}
+                    className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeSkills.length > 0 ? "bg-wedo-cyan/15 text-lia-text-primary" : "bg-lia-bg-tertiary text-lia-text-tertiary"}`}
                     title="Buscar skills similares com IA"
                   >
                     {isFindingSimilarSkills ? (
@@ -581,7 +581,7 @@ export function EditArchetypeModal({
                       <button
                         key={`sem-skill-${idx}`}
                         type="button"
-                        className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 transition-colors motion-reduce:transition-none flex items-center gap-1.5"
+                        className="w-full text-left px-2 py-1.5 text-xs hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none flex items-center gap-1.5"
                         onMouseDown={(e) => {
                           e.preventDefault()
                           if (!editArchetypeSkills.includes(suggestion.term)) {
@@ -593,9 +593,9 @@ export function EditArchetypeModal({
                         }}
                       >
                         <Code className="w-3 h-3 text-lia-text-tertiary" />
-                        <span style={{color: "var(--gray-950)"}}>{suggestion.term}</span>
+                        <span style={{color: "var(--lia-btn-primary-bg)"}}>{suggestion.term}</span>
                         {suggestion.is_synonym && (
-                          <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
+                          <span className="text-micro px-1 py-0.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
                             sinônimo
                           </span>
                         )}
@@ -620,7 +620,7 @@ export function EditArchetypeModal({
                         onAiSuggestedSkillsChange([])
                         onSelectedAiSkillsChange([])
                       }}
-                      className="ml-auto p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                      className="ml-auto p-0.5 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
                     >
                       <X className="w-3 h-3 text-lia-text-primary" />
                     </button>
@@ -641,7 +641,7 @@ export function EditArchetypeModal({
                           }}
                           className={cn(
                             "px-1.5 py-0.5 rounded-full text-micro transition-[width,height] cursor-pointer text-wedo-cyan-dark",
-                            isSelected ? "ring-2 ring-gray-900/20 bg-wedo-cyan/25" : "bg-wedo-cyan/15"
+                            isSelected ? "ring-2 ring-lia-btn-primary-bg/20 bg-wedo-cyan/25" : "bg-wedo-cyan/15"
                           )}
                         >
                           {skill}
@@ -660,7 +660,7 @@ export function EditArchetypeModal({
                         onAiSuggestedSkillsChange(aiSuggestedSkills.filter((s) => !selectedAiSkills.includes(s)))
                         onSelectedAiSkillsChange([])
                       }}
-                      className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors motion-reduce:transition-none bg-gray-900 text-white"
+                      className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg text-lia-btn-primary-text"
                     >
                       Adicionar {selectedAiSkills.length} Selecionado
                       {selectedAiSkills.length > 1 ? "s" : ""}
@@ -691,7 +691,7 @@ export function EditArchetypeModal({
                       onClick={() =>
                         onEditArchetypeTagsChange(editArchetypeTags.filter((_, i) => i !== idx))
                       }
-                      className="hover:bg-gray-300 rounded-full p-0.5"
+                      className="hover:bg-lia-border-default rounded-full p-0.5"
                     >
                       <X className="w-3 h-3 text-lia-text-secondary" />
                     </button>
@@ -736,7 +736,7 @@ export function EditArchetypeModal({
                       }
                     }}
                     placeholder="Digite e pressione Enter..."
-                    className="flex-1 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 border border-lia-border-subtle"
+                    className="flex-1 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 border border-lia-border-subtle"
                   />
                   <button
                     type="button"
@@ -769,7 +769,7 @@ export function EditArchetypeModal({
                       }
                     }}
                     disabled={editArchetypeTags.length === 0 || isFindingSimilarTags}
-                    className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeTags.length > 0 ? "bg-wedo-cyan/15 text-lia-text-primary" : "bg-gray-100 text-lia-text-tertiary"}`}
+                    className={`px-2 py-1 rounded-full flex items-center gap-1 text-micro transition-colors motion-reduce:transition-none disabled:opacity-50 ${editArchetypeTags.length > 0 ? "bg-wedo-cyan/15 text-lia-text-primary" : "bg-lia-bg-tertiary text-lia-text-tertiary"}`}
                     title="Buscar tags similares com IA"
                   >
                     {isFindingSimilarTags ? (
@@ -791,7 +791,7 @@ export function EditArchetypeModal({
                       <button
                         key={`sem-tag-${idx}`}
                         type="button"
-                        className="w-full text-left px-2 py-1.5 text-xs hover:bg-gray-50 transition-colors motion-reduce:transition-none flex items-center gap-1.5"
+                        className="w-full text-left px-2 py-1.5 text-xs hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none flex items-center gap-1.5"
                         onMouseDown={(e) => {
                           e.preventDefault()
                           if (!editArchetypeTags.includes(suggestion.term)) {
@@ -803,9 +803,9 @@ export function EditArchetypeModal({
                         }}
                       >
                         <Tag className="w-3 h-3 text-lia-text-tertiary" />
-                        <span style={{color: "var(--gray-950)"}}>{suggestion.term}</span>
+                        <span style={{color: "var(--lia-btn-primary-bg)"}}>{suggestion.term}</span>
                         {suggestion.is_synonym && (
-                          <span className="text-micro px-1 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
+                          <span className="text-micro px-1 py-0.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
                             sinônimo
                           </span>
                         )}
@@ -830,7 +830,7 @@ export function EditArchetypeModal({
                         onAiSuggestedTagsChange([])
                         onSelectedAiTagsChange([])
                       }}
-                      className="ml-auto p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+                      className="ml-auto p-0.5 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
                     >
                       <X className="w-3 h-3 text-lia-text-primary" />
                     </button>
@@ -851,7 +851,7 @@ export function EditArchetypeModal({
                           }}
                           className={cn(
                             "px-1.5 py-0.5 rounded-full text-micro transition-[width,height] cursor-pointer text-wedo-cyan-dark",
-                            isSelected ? "ring-2 ring-gray-900/20 bg-wedo-cyan/25" : "bg-wedo-cyan/15"
+                            isSelected ? "ring-2 ring-lia-btn-primary-bg/20 bg-wedo-cyan/25" : "bg-wedo-cyan/15"
                           )}
                         >
                           {tag}
@@ -870,7 +870,7 @@ export function EditArchetypeModal({
                         onAiSuggestedTagsChange(aiSuggestedTags.filter((t) => !selectedAiTags.includes(t)))
                         onSelectedAiTagsChange([])
                       }}
-                      className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors motion-reduce:transition-none bg-gray-900 text-white"
+                      className="mt-2 w-full py-1 rounded-md text-micro font-medium transition-colors motion-reduce:transition-none bg-lia-btn-primary-bg text-lia-btn-primary-text"
                     >
                       Adicionar {selectedAiTags.length} Selecionado
                       {selectedAiTags.length > 1 ? "s" : ""}
@@ -883,12 +883,12 @@ export function EditArchetypeModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-4 border-t bg-gray-50">
+        <div className="flex items-center justify-between px-5 py-4 border-t bg-lia-bg-secondary">
           <p className="text-xs text-lia-text-secondary">Campos obrigatórios: Nome e Query</p>
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none hover:bg-gray-200 border border-lia-border-subtle bg-transparent"
+              className="px-4 py-2 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none hover:bg-lia-interactive-active border border-lia-border-subtle bg-transparent"
             >
               Cancelar
             </button>
@@ -897,8 +897,8 @@ export function EditArchetypeModal({
               disabled={isSavingArchetype || !editArchetypeName || !editArchetypeQuery}
               className="px-4 py-2 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors motion-reduce:transition-none disabled:opacity-50"
               style={{backgroundColor:
-                  editArchetypeName && editArchetypeQuery ? "var(--gray-800)" : "var(--gray-200)",
-                color: editArchetypeName && editArchetypeQuery ? "white" : "var(--gray-400)"}}
+                  editArchetypeName && editArchetypeQuery ? "var(--lia-text-primary)" : "var(--lia-border-subtle)",
+                color: editArchetypeName && editArchetypeQuery ? "white" : "var(--lia-text-tertiary)"}}
             >
               {isSavingArchetype ? (
                 <>

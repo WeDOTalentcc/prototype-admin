@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils"
 import { getProactiveActions, acceptProactiveAction, rejectProactiveAction } from "@/services/lia-api"
 
 const PRIORITY_STYLES: Record<string, { badge: string; icon: React.ElementType }> = {
-  low: { badge: 'bg-gray-500/10 lia-text-secondary', icon: Info },
+  low: { badge: 'bg-lia-bg-secondary0/10 lia-text-secondary', icon: Info },
   normal: { badge: 'bg-wedo-cyan/10 text-wedo-cyan-dark dark:text-wedo-cyan-dark', icon: Lightbulb },
   high: { badge: 'bg-wedo-orange/10 text-wedo-orange dark:text-wedo-orange', icon: AlertCircle },
   urgent: { badge: 'bg-status-error/10 text-status-error dark:text-status-error', icon: Bell }
@@ -122,7 +122,7 @@ export function ProactiveActions({
     return (
       <Card className={className}>
         <CardContent className="flex flex-col items-center justify-center py-8">
-          <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
+          <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
             <Brain className="h-6 w-6 text-wedo-cyan" />
           </div>
           <h3 className="text-sm font-medium text-lia-text-primary mb-1">
@@ -147,7 +147,7 @@ export function ProactiveActions({
           return (
             <div
               key={action.id}
- className="flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle bg-white dark:bg-lia-bg-primary hover:border-lia-border-default dark:border-lia-border-default transition-colors motion-reduce:transition-none"
+ className="flex items-start gap-3 p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary hover:border-lia-border-default dark:border-lia-border-default transition-colors motion-reduce:transition-none"
             >
               <div className={cn(
  "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
@@ -254,7 +254,7 @@ export function ProactiveActions({
                       {action.description}
                     </p>
 
-                    <div className="flex items-center gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default">
+                    <div className="flex items-center gap-2 p-2 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default">
                       <ArrowRight className="h-4 w-4 text-lia-text-secondary shrink-0" />
 
                       <span className="text-xs text-lia-text-secondary font-medium">

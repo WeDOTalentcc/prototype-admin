@@ -57,7 +57,7 @@ function SectionHeader({
       {onEdit && (
         <button
           onClick={() => onEdit(fieldName)}
-          className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
+          className="p-1 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
           aria-label={`Editar ${label}`}
         >
           <svg className="w-3.5 h-3.5 lia-text-secondary hover:text-lia-text-secondary dark:hover:lia-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -104,7 +104,7 @@ export function VacancySummaryCard({ jobData, onConfirmPublish, onEdit, classNam
             {percentage}%
           </span>
         </div>
-        <div className="w-full h-1.5 bg-gray-100 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-[width,height] duration-500 ${percentage >= 80 ? 'bg-status-success' : percentage >= 50 ? 'bg-status-warning' : 'bg-status-error'}`}
             style={{width: `${Math.min(percentage, 100)}%`}}
@@ -112,7 +112,7 @@ export function VacancySummaryCard({ jobData, onConfirmPublish, onEdit, classNam
         </div>
       </div>
 
-      <div className="space-y-4 divide-y divide-gray-100 dark:divide-gray-700">
+      <div className="space-y-4 divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
         <div>
           <SectionHeader label="Cargo" filled={hasHeader} onEdit={onEdit} fieldName="header" />
           {hasHeader ? (

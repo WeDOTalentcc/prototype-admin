@@ -16,7 +16,7 @@
  * CORES (v4):
  * - 90% Grayscale (gray-50 a gray-950)
  * - 10% WeDo Accent Colors (cyan, green, orange, purple, magenta)
- * - Botões primários: bg-gray-900 (preto)
+ * - Botões primários: bg-lia-btn-primary-bg (preto)
  * - Cyan reservado para LIA/IA e links
  * 
  * HIERARQUIA DE TEXTO (4 níveis):
@@ -29,7 +29,7 @@
 export const colors = {
   primary: {
     DEFAULT: '#111827', // v4: gray-900 (preto) para ações primárias
-    hover: 'var(--gray-800)',   // v4: gray-800
+    hover: 'var(--lia-text-primary)',   // v4: gray-800
     active: '#030712',  // v4: gray-950
     light: '#F3F4F6',   // v4: gray-100
     // Aliases para compatibilidade com v3
@@ -46,13 +46,13 @@ export const colors = {
   gray: {
     50: '#F9FAFB',
     100: '#F3F4F6',
-    200: 'var(--gray-200)',
-    300: 'var(--gray-300)',
-    400: 'var(--gray-400)',
-    500: 'var(--gray-500)',
-    600: 'var(--gray-600)',
+    200: 'var(--lia-border-subtle)',
+    300: 'var(--lia-border-default)',
+    400: 'var(--lia-text-tertiary)',
+    500: 'var(--lia-text-secondary)',
+    600: 'var(--lia-text-secondary)',
     700: '#374151',
-    800: 'var(--gray-800)',
+    800: 'var(--lia-text-primary)',
     900: '#111827',
     950: '#030712',
   },
@@ -60,15 +60,15 @@ export const colors = {
   text: {
     light: {
       title: '#111827',       // v4: gray-900 - Títulos principais
-      body: 'var(--gray-800)',        // gray-800 - Texto principal, labels
-      secondary: 'var(--gray-600)',   // gray-600 - Descrições, captions
-      muted: 'var(--gray-500)',       // gray-500 - Placeholders, disabled
+      body: 'var(--lia-text-primary)',        // gray-800 - Texto principal, labels
+      secondary: 'var(--lia-text-secondary)',   // gray-600 - Descrições, captions
+      muted: 'var(--lia-text-secondary)',       // gray-500 - Placeholders, disabled
     },
     dark: {
       title: '#F9FAFB',       // gray-50 - Títulos principais
-      body: 'var(--gray-200)',        // gray-200 - Texto principal, labels
-      secondary: 'var(--gray-400)',   // gray-400 - Descrições, captions
-      muted: 'var(--gray-500)',       // gray-500 - Placeholders, disabled
+      body: 'var(--lia-border-subtle)',        // gray-200 - Texto principal, labels
+      secondary: 'var(--lia-text-tertiary)',   // gray-400 - Descrições, captions
+      muted: 'var(--lia-text-secondary)',       // gray-500 - Placeholders, disabled
     },
   },
   
@@ -114,9 +114,9 @@ export const colors = {
   
   border: {
     light: '#F3F4F6',    // gray-100
-    default: 'var(--gray-200)',  // gray-200
-    medium: 'var(--gray-300)',   // gray-300
-    dark: 'var(--gray-400)',     // gray-400
+    default: 'var(--lia-border-subtle)',  // gray-200
+    medium: 'var(--lia-border-default)',   // gray-300
+    dark: 'var(--lia-text-tertiary)',     // gray-400
   },
 } as const
 
@@ -252,13 +252,13 @@ export const textStyles = {
  * Border-radius padrão: 8px (rounded-md) conforme DS v4.1
  */
 export const cardStyles = {
-  default: 'bg-white border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
-  elevated: 'bg-white border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
-  interactive: 'bg-white border border-lia-border-subtle rounded-md hover:border-lia-border-default transition-colors duration-200 cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:border-gray-600',
-  selected: 'bg-white border-2 border-gray-900 rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-medium',
-  flat: 'bg-gray-50 border border-lia-border-subtle rounded-md dark:bg-lia-bg-primary dark:border-lia-border-subtle',
-  compact: 'bg-white border border-lia-border-subtle rounded-md p-3 dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
-  expanded: 'bg-white border border-lia-border-subtle rounded-md p-4 dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
+  default: 'bg-lia-bg-primary border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
+  elevated: 'bg-lia-bg-primary border border-lia-border-subtle rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
+  interactive: 'bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:border-lia-border-default transition-colors duration-200 cursor-pointer dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:border-lia-border-medium',
+  selected: 'bg-lia-bg-primary border-2 border-lia-btn-primary-bg rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-medium',
+  flat: 'bg-lia-bg-secondary border border-lia-border-subtle rounded-md dark:bg-lia-bg-primary dark:border-lia-border-subtle',
+  compact: 'bg-lia-bg-primary border border-lia-border-subtle rounded-md p-3 dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
+  expanded: 'bg-lia-bg-primary border border-lia-border-subtle rounded-md p-4 dark:bg-lia-bg-secondary dark:border-lia-border-subtle',
 } as const
 
 /**
@@ -268,16 +268,16 @@ export const cardStyles = {
  */
 export const buttonStyles = {
   // v4.1: Primário é PRETO (inverte em dark mode) — rounded-md (8px)
-  primary: 'bg-gray-900 hover:bg-gray-800 active:bg-gray-950 text-white font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-900/20 focus:outline-none disabled:bg-gray-400 disabled:cursor-not-allowed dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 dark:active:bg-gray-300',
+  primary: 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover active:bg-lia-btn-primary-bg text-lia-btn-primary-text font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none disabled:bg-lia-border-medium disabled:cursor-not-allowed dark:bg-lia-bg-secondary dark:text-lia-text-disabled dark:hover:bg-lia-interactive-active dark:active:bg-lia-border-default',
   
   // v4.1: Secundário
-  secondary: 'bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-lia-text-secondary font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:bg-lia-bg-tertiary dark:text-lia-text-primary dark:hover:bg-gray-600',
+  secondary: 'bg-lia-bg-tertiary hover:bg-lia-interactive-active active:bg-lia-border-default text-lia-text-secondary font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-lia-border-medium/20 focus:outline-none dark:bg-lia-bg-tertiary dark:text-lia-text-primary dark:hover:bg-lia-border-medium',
   
   // v4.1: Outline
-  outline: 'bg-transparent border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 text-lia-text-secondary font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-800 dark:hover:border-gray-500',
+  outline: 'bg-transparent border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium text-lia-text-secondary font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-lia-border-medium/20 focus:outline-none dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-lia-btn-primary-hover dark:hover:border-lia-border-medium',
   
   // v4.1: Ghost
-  ghost: 'bg-transparent hover:bg-gray-100 text-lia-text-secondary font-medium rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-gray-500/20 focus:outline-none dark:text-lia-text-secondary dark:hover:bg-gray-800 dark:hover:text-lia-text-inverse',
+  ghost: 'bg-transparent hover:bg-lia-bg-tertiary text-lia-text-secondary font-medium rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-lia-border-medium/20 focus:outline-none dark:text-lia-text-secondary dark:hover:bg-lia-btn-primary-hover dark:hover:text-lia-text-inverse',
   
   // v4.1: Destructive
   destructive: 'bg-status-error hover:bg-status-error active:bg-status-error text-white font-semibold rounded-md px-4 py-2 transition-colors focus:ring-2 focus:ring-red-600/20 focus:outline-none',
@@ -287,7 +287,7 @@ export const buttonStyles = {
   
   // Aliases para compatibilidade
   danger: 'bg-status-error hover:bg-status-error text-white font-semibold rounded-md px-4 py-2 transition-colors',
-  success: 'bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 font-semibold rounded-md px-4 py-2 transition-colors',
+  success: 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-disabled dark:hover:bg-lia-interactive-active font-semibold rounded-md px-4 py-2 transition-colors',
 } as const
 
 /**
@@ -295,10 +295,10 @@ export const buttonStyles = {
  * Focus ring usa gray-900 (preto)
  */
 export const inputStyles = {
-  default: 'border border-lia-border-default hover:border-gray-400 rounded-md px-3 py-2 text-base-ui font-normal text-lia-text-primary placeholder:text-lia-text-disabled focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 outline-none transition-colors',
+  default: 'border border-lia-border-default hover:border-lia-border-medium rounded-md px-3 py-2 text-base-ui font-normal text-lia-text-primary placeholder:text-lia-text-disabled focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg outline-none transition-colors',
   error: 'border border-status-error/30 rounded-md px-3 py-2 text-base-ui font-normal text-lia-text-primary focus:ring-2 focus:ring-red-500/10 focus:border-status-error/30 outline-none',
   success: 'border border-status-success/30 rounded-md px-3 py-2 text-base-ui font-normal text-lia-text-primary focus:ring-2 focus:ring-green-500/10 focus:border-status-success/30 outline-none',
-  disabled: 'border border-lia-border-subtle bg-gray-100 rounded-md px-3 py-2 text-base-ui font-normal text-lia-text-disabled cursor-not-allowed',
+  disabled: 'border border-lia-border-subtle bg-lia-bg-tertiary rounded-md px-3 py-2 text-base-ui font-normal text-lia-text-disabled cursor-not-allowed',
 } as const
 
 /**
@@ -307,7 +307,7 @@ export const inputStyles = {
  */
 export const badgeStyles = {
   // v4.1: Neutro/Default — rounded-full (pill) conforme DS v4.1
-  default: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary',
+  default: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary',
   
   // v4.1: Estados semânticos com dark mode
   success: 'inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success',
@@ -339,13 +339,13 @@ export const tabStyles = {
   // Estilo underline (tradicional)
   container: 'flex border-b border-lia-border-subtle dark:border-lia-border-subtle',
   tab: 'px-4 py-2 text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary border-b-2 border-transparent hover:border-lia-border-default transition-colors cursor-pointer dark:text-lia-text-secondary dark:hover:text-lia-text-inverse',
-  tabActive: 'px-4 py-2 text-xs font-semibold text-lia-text-primary border-b-2 border-gray-900 dark:text-lia-text-primary dark:border-lia-border-medium',
+  tabActive: 'px-4 py-2 text-xs font-semibold text-lia-text-primary border-b-2 border-lia-btn-primary-bg dark:text-lia-text-primary dark:border-lia-border-medium',
   tabDisabled: 'px-4 py-2 text-xs font-medium text-lia-text-disabled cursor-not-allowed',
   
   // Estilo pill (badges arredondadas) - PADRÃO para Settings hubs
   pillContainer: 'flex items-center gap-1 flex-wrap',
-  pill: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] text-lia-text-secondary hover:bg-gray-100 dark:text-lia-text-secondary dark:hover:bg-gray-800",
-  pillActive: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] bg-gray-900 text-white dark:bg-gray-50 dark:text-lia-text-disabled",
+  pill: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] text-lia-text-secondary hover:bg-lia-bg-tertiary dark:text-lia-text-secondary dark:hover:bg-lia-btn-primary-hover",
+  pillActive: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-disabled",
   pillIcon: 'w-3.5 h-3.5',
 } as const
 
@@ -356,9 +356,9 @@ export const tabStyles = {
 export const actionButtonStyles = {
   // Botões pequenos para ações inline
   sm: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors",
-  smPrimary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-lia-text-disabled dark:hover:bg-gray-200 disabled:opacity-50",
-  smSecondary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-lia-border-default bg-white text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-gray-700 disabled:opacity-50",
-  smOutline: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-lia-border-default bg-transparent text-lia-text-secondary hover:bg-gray-50 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-800",
+  smPrimary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:text-lia-text-disabled dark:hover:bg-lia-interactive-active disabled:opacity-50",
+  smSecondary: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-secondary dark:border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:hover:bg-lia-bg-inverse disabled:opacity-50",
+  smOutline: "inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-medium rounded-md transition-colors border border-lia-border-default bg-transparent text-lia-text-secondary hover:bg-lia-bg-secondary dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-lia-btn-primary-hover",
   // Ícones padrão para botões de ação
   icon: 'w-3.5 h-3.5',
 } as const
@@ -367,8 +367,8 @@ export const actionButtonStyles = {
  * v4: Classes utilitárias para Modais
  */
 export const modalStyles = {
-  overlay: 'fixed inset-0 bg-black/50 backdrop-blur-[1px] z-50',
-  container: 'bg-white border border-lia-border-subtle rounded-md',
+  overlay: 'fixed inset-0 bg-lia-overlay backdrop-blur-[1px] z-50',
+  container: 'bg-lia-bg-primary border border-lia-border-subtle rounded-md',
   header: 'px-6 py-4 border-b border-lia-border-subtle',
   headerTitle: "font-['Open_Sans',sans-serif] text-base font-semibold text-lia-text-primary",
   body: 'px-6 py-4',
@@ -391,9 +391,9 @@ export const formStyles = {
  */
 export const tailwindToVuetify = {
   colors: {
-    'bg-gray-900': 'color="grey-darken-4"',
-    'bg-gray-100': 'class="bg-grey-lighten-4"',
-    'bg-gray-50': 'class="bg-grey-lighten-5"',
+    'bg-lia-btn-primary-bg': 'color="grey-darken-4"',
+    'bg-lia-bg-tertiary': 'class="bg-grey-lighten-4"',
+    'bg-lia-bg-secondary': 'class="bg-grey-lighten-5"',
     'border-lia-border-subtle': 'class="border-grey-lighten-3"',
     'border-lia-border-default': 'class="border-grey-lighten-2"',
     'text-lia-text-primary': 'class="text-grey-darken-4"',
@@ -588,10 +588,10 @@ export function getStatusStyle(status: string): {
     'pendente': { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'Pendente' },
     'waiting': { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'Aguardando' },
     'aguardando': { text: 'text-status-warning', bg: 'bg-status-warning/10', label: 'Aguardando' },
-    'inactive': { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: 'Inativo' },
-    'inativa': { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: 'Inativa' },
-    'draft': { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: 'Rascunho' },
-    'rascunho': { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: 'Rascunho' },
+    'inactive': { text: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary', label: 'Inativo' },
+    'inativa': { text: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary', label: 'Inativa' },
+    'draft': { text: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary', label: 'Rascunho' },
+    'rascunho': { text: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary', label: 'Rascunho' },
     'error': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Erro' },
     'erro': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Erro' },
     'rejected': { text: 'text-status-error', bg: 'bg-status-error/10', label: 'Rejeitado' },
@@ -601,7 +601,7 @@ export function getStatusStyle(status: string): {
   }
   
   const key = status.toLowerCase()
-  return statusMap[key] || { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: status }
+  return statusMap[key] || { text: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary', label: status }
 }
 
 /**
@@ -624,7 +624,7 @@ export function getRecommendationStyle(recommendation: string): {
     case 'NÃO APROVADO':
       return { text: 'text-status-error', bg: 'bg-status-error/10', label: 'NÃO APROVADO' }
     default:
-      return { text: 'text-lia-text-secondary', bg: 'bg-gray-100', label: recommendation }
+      return { text: 'text-lia-text-secondary', bg: 'bg-lia-bg-tertiary', label: recommendation }
   }
 }
 

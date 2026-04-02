@@ -117,21 +117,21 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
 
   // v4: Cores de categoria em grayscale (90% gray + 10% accent apenas para contexto LIA)
   const categoryColors = {
-    basic: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' },
-    advanced: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' },
-    integrations: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' }
+    basic: { bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' },
+    advanced: { bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' },
+    integrations: { bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', border: 'border-lia-border-subtle dark:border-lia-border-subtle' }
   }
 
   // v4: Cores de prioridade semânticas
   const priorityColors = {
     high: { bg: 'bg-status-error/10 dark:bg-status-error/20', text: 'text-status-error dark:text-status-error', icon: AlertTriangle },
     medium: { bg: 'bg-status-warning/10 dark:bg-status-warning/20', text: 'text-status-warning dark:text-status-warning', icon: Clock },
-    low: { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', icon: Info }
+    low: { bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary', text: 'text-lia-text-primary', icon: Info }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-6xl h-[90vh] overflow-y-auto border border-lia-border-subtle dark:border-lia-border-subtle">
+    <div className="fixed inset-0 bg-lia-overlay z-50 flex items-center justify-center p-4">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md w-full max-w-6xl h-[90vh] overflow-y-auto border border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
@@ -162,7 +162,7 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card className="rounded-md border-lia-border-subtle dark:border-lia-border-subtle">
               <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
                   <Gauge className="w-8 h-8 text-lia-text-primary" />
                 </div>
                 <div className={`${textStyles.metricLarge} mb-1`}>
@@ -257,9 +257,9 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                       </Badge>
                     </div>
 
-                    <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3 mb-3">
+                    <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-3 mb-3">
                       <div
-                        className="h-3 rounded-full transition-[width,height] duration-500 bg-gray-900"
+                        className="h-3 rounded-full transition-[width,height] duration-500 bg-lia-btn-primary-bg"
                         style={{width: `${progress}%`}}
                       />
                     </div>
@@ -296,16 +296,16 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                   return (
                     <div
                       key={section.id}
-                      className="flex items-center gap-4 p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors motion-reduce:transition-none"
+                      className="flex items-center gap-4 p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 cursor-pointer transition-colors motion-reduce:transition-none"
                       onClick={() => onSectionSelect(section.id)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
+                        <div className="w-8 h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
                           <span className={textStyles.metricSmall}>
                             {index + 1}
                           </span>
                         </div>
-                        <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                        <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                           <SectionIcon className="w-5 h-5 text-lia-text-secondary" />
                         </div>
                       </div>
@@ -389,10 +389,10 @@ export function ProgressDashboard({ sections, onClose, onSectionSelect }: Progre
                   return (
                     <div
                       key={section.id}
-                      className="flex items-center gap-4 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors motion-reduce:transition-none"
+                      className="flex items-center gap-4 p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 cursor-pointer transition-colors motion-reduce:transition-none"
                       onClick={() => onSectionSelect(section.id)}
                     >
-                      <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                      <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                         <SectionIcon className="w-5 h-5 text-lia-text-secondary" />
                       </div>
 

@@ -192,7 +192,7 @@ export function IndicadoresEstrategicosPlaceholder() {
               </Badge>
             </div>
 
- <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
+ <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
               <div className="flex-1">
                 <p className={`${textStyles.subtitle} text-lia-text-primary`}>Roberto Costa</p>
                 <p className={`${textStyles.description}`}>19 contratações • 89% taxa de aprovação</p>
@@ -212,7 +212,7 @@ export function IndicadoresEstrategicosPlaceholder() {
               </Badge>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex-1">
                 <p className={`${textStyles.subtitle} text-lia-text-primary`}>Carlos Almeida</p>
                 <p className={`${textStyles.description}`}>15 contratações • 86% taxa de aprovação</p>
@@ -243,7 +243,7 @@ export function IndicadoresEstrategicosPlaceholder() {
                   </Badge>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-green-bright w-[40%]"></div>
               </div>
             </div>
@@ -258,8 +258,8 @@ export function IndicadoresEstrategicosPlaceholder() {
                   </Badge>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-900 w-[60%]"></div>
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
+                <div className="h-2 rounded-full bg-lia-btn-primary-bg w-[60%]"></div>
               </div>
             </div>
 
@@ -273,7 +273,7 @@ export function IndicadoresEstrategicosPlaceholder() {
                   </Badge>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-orange w-[90%]"></div>
               </div>
             </div>
@@ -288,7 +288,7 @@ export function IndicadoresEstrategicosPlaceholder() {
                   </Badge>
                 </div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-purple w-[100%]"></div>
               </div>
             </div>
@@ -398,7 +398,7 @@ export function IndicadoresEstrategicosPlaceholder() {
                   112% ROI
                 </Badge>
               </div>
-              <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
+              <div className="flex w-full h-2 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
                 <div className="bg-wedo-green-bright w-[85%]" title="Performance"></div>
                 <div className="bg-wedo-orange w-[15%]" title="Orçamento não utilizado"></div>
               </div>
@@ -414,8 +414,8 @@ export function IndicadoresEstrategicosPlaceholder() {
                   94% ROI
                 </Badge>
               </div>
-              <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
-                <div className="bg-gray-900 w-[72%]" title="Performance"></div>
+              <div className="flex w-full h-2 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
+                <div className="bg-lia-btn-primary-bg w-[72%]" title="Performance"></div>
                 <div className="bg-wedo-orange w-[28%]" title="Orçamento não utilizado"></div>
               </div>
             </div>
@@ -430,7 +430,7 @@ export function IndicadoresEstrategicosPlaceholder() {
                   87% ROI
                 </Badge>
               </div>
-              <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
+              <div className="flex w-full h-2 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
                 <div className="bg-wedo-purple w-[68%]" title="Performance"></div>
                 <div className="bg-wedo-orange w-[32%]" title="Orçamento não utilizado"></div>
               </div>
@@ -446,7 +446,7 @@ export function IndicadoresEstrategicosPlaceholder() {
                   76% ROI
                 </Badge>
               </div>
-              <div className="flex w-full h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
+              <div className="flex w-full h-2 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
                 <div className="bg-wedo-orange w-[58%]" title="Performance"></div>
                 <div className="bg-wedo-purple w-[42%]" title="Orçamento não utilizado"></div>
               </div>

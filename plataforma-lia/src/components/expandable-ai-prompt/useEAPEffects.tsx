@@ -397,7 +397,7 @@ export function useEAPEffects(params: UseEAPEffectsParams) {
       return {
         text: `${selectedCount} selecionado${selectedCount > 1 ? 's' : ''}`,
         color: 'text-lia-text-secondary',
-        bgColor: 'bg-gray-50 border-lia-border-subtle'
+        bgColor: 'bg-lia-bg-secondary border-lia-border-subtle'
       }
     }
 

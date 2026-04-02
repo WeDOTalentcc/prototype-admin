@@ -37,7 +37,7 @@ export function CompactLIAPrompt({
           onFocus={(e) => {
             const container = e.target.parentElement
             if (container) {
-              container.style.borderColor = 'var(--gray-200)'
+              container.style.borderColor = 'var(--lia-border-subtle)'
               container.style.boxShadow = '0 0 0 2px var(--wedo-cyan-bg-12)'
             }
             if (!isLIAThinking) {
@@ -47,7 +47,7 @@ export function CompactLIAPrompt({
           onBlur={(e) => {
             const container = e.target.parentElement
             if (container) {
-              container.style.borderColor = 'var(--gray-200)'
+              container.style.borderColor = 'var(--lia-border-subtle)'
               container.style.boxShadow = 'none'
             }
           }}
@@ -60,7 +60,7 @@ export function CompactLIAPrompt({
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           <button
-            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+            className="p-1.5 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
             onClick={() => setShowExpandedLIA(true)}
             title="Expandir"
             aria-label="Expandir chat da LIA"
@@ -69,7 +69,7 @@ export function CompactLIAPrompt({
           </button>
           <button
             className={`p-1.5 rounded-full transition-colors motion-reduce:transition-none ${
-              isLIAThinking ? 'cursor-wait opacity-50' : 'hover:bg-gray-100'
+              isLIAThinking ? 'cursor-wait opacity-50' : 'hover:bg-lia-bg-tertiary'
             }`}
             onClick={() => {
               if (liaPromptValue.trim() && !isLIAThinking) {
@@ -82,7 +82,7 @@ export function CompactLIAPrompt({
             aria-label="Enviar mensagem para a LIA"
           >
             {isLIAThinking ? (
-              <div className="w-4 h-4 border-2 border-gray-900 dark:border-lia-border-medium border-t-transparent rounded-full animate-spin motion-reduce:animate-none" aria-hidden="true" />
+              <div className="w-4 h-4 border-2 border-lia-btn-primary-bg dark:border-lia-border-medium border-t-transparent rounded-full animate-spin motion-reduce:animate-none" aria-hidden="true" />
             ) : (
               <Send className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
             )}
@@ -91,11 +91,11 @@ export function CompactLIAPrompt({
       </div>
 
       {isLIAThinking && (
-        <div className="mt-2 flex items-center gap-2 text-xs px-3 py-1.5 rounded-md animate-fade-in bg-gray-200/30 border border-wedo-cyan/20">
+        <div className="mt-2 flex items-center gap-2 text-xs px-3 py-1.5 rounded-md animate-fade-in bg-lia-interactive-active/30 border border-wedo-cyan/20">
           <Brain className="w-3 h-3 animate-pulse motion-reduce:animate-none text-wedo-cyan" />
           <span className="font-medium text-lia-text-primary">LIA está pensando</span>
           <div className="flex gap-0.5">
-            <ThinkingDots dotClassName="bg-gray-600" size="sm" />
+            <ThinkingDots dotClassName="bg-lia-border-medium" size="sm" />
           </div>
         </div>
       )}

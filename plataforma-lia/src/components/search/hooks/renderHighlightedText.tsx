@@ -14,13 +14,13 @@ const getHighlightStyle = (type: string): React.CSSProperties => {
     case 'job_title':
       return { borderRadius: '3px', padding: '0 2px' }
     case 'location':
-      return { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)', borderRadius: '3px', padding: '0 2px' }
+      return { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-purple)', borderRadius: '3px', padding: '0 2px' }
     case 'skills':
-      return { backgroundColor: 'var(--gray-50)', color: 'var(--status-success)', borderRadius: '3px', padding: '0 2px' }
+      return { backgroundColor: 'var(--lia-bg-secondary)', color: 'var(--status-success)', borderRadius: '3px', padding: '0 2px' }
     case 'experience':
       return { backgroundColor: 'var(--status-warning-bg)', color: 'var(--status-warning)', borderRadius: '3px', padding: '0 2px' }
     case 'industry':
-      return { backgroundColor: 'var(--gray-100)', color: 'var(--gray-700)', borderRadius: '3px', padding: '0 2px' }
+      return { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--lia-text-primary)', borderRadius: '3px', padding: '0 2px' }
     default:
       return {}
   }

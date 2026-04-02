@@ -62,7 +62,7 @@ export function ArchetypesList({
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-lia-text-primary">Criar Novo Arquétipo</span>
           {naturalSearchValue && (
-            <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-lia-text-secondary border-gray-900 dark:lia-border-50">
+            <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-lia-text-secondary border-lia-btn-primary-bg dark:border-lia-border-subtle">
               Busca ativa detectada
             </Badge>
           )}
@@ -86,24 +86,24 @@ export function ArchetypesList({
                   </Badge>
                 )}
                 {parsedEntities.location && (
-                  <Badge variant="secondary" className="text-micro bg-gray-50 text-lia-text-primary border-lia-border-subtle">
+                  <Badge variant="secondary" className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
                     <MapPin className="w-2.5 h-2.5 mr-0.5" />
                     {parsedEntities.location}
                   </Badge>
                 )}
                 {parsedEntities.seniority && (
-                  <Badge variant="secondary" className="text-micro bg-gray-50 text-lia-text-primary border-lia-border-subtle">
+                  <Badge variant="secondary" className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
                     {parsedEntities.seniority}
                   </Badge>
                 )}
                 {parsedEntities.industry && (
-                  <Badge variant="secondary" className="text-micro bg-gray-50 text-lia-text-primary border-lia-border-subtle">
+                  <Badge variant="secondary" className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
                     <Building2 className="w-2.5 h-2.5 mr-0.5" />
                     {parsedEntities.industry}
                   </Badge>
                 )}
                 {parsedEntities.skills && parsedEntities.skills.map((skill, idx) => (
-                  <Badge key={idx} variant="secondary" className="text-micro bg-gray-50 text-lia-text-primary border-lia-border-subtle">
+                  <Badge key={idx} variant="secondary" className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
                     {skill}
                   </Badge>
                 ))}
@@ -115,7 +115,7 @@ export function ArchetypesList({
               <button
                 onClick={onCreateFromActiveSearch}
                 disabled={isCreatingFromSearch}
-                className="mt-3 w-full px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-3 w-full px-3 py-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active text-xs rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isCreatingFromSearch ? (
                   <>
@@ -132,7 +132,7 @@ export function ArchetypesList({
             ) : (
               <button
                 onClick={() => onUseAsBase(naturalSearchValue)}
-                className="mt-3 w-full px-3 py-1.5 bg-gray-100 text-lia-text-primary text-xs rounded-md hover:bg-gray-200 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
+                className="mt-3 w-full px-3 py-1.5 bg-lia-bg-tertiary text-lia-text-primary text-xs rounded-md hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
               >
                 <Plus className="w-3 h-3" />
                 Usar como base para novo arquétipo
@@ -144,9 +144,9 @@ export function ArchetypesList({
         {/* Divisor condicional */}
         {naturalSearchValue && hasParsedEntities() && (
           <div className="flex items-center gap-2">
-            <div className="flex-1 h-px bg-gray-200" />
+            <div className="flex-1 h-px bg-lia-interactive-active" />
             <span className="text-micro text-lia-text-tertiary">ou crie do zero com LIA</span>
-            <div className="flex-1 h-px bg-gray-200" />
+            <div className="flex-1 h-px bg-lia-interactive-active" />
           </div>
         )}
 
@@ -156,7 +156,7 @@ export function ArchetypesList({
             value={newArchetypeDescription}
             onChange={(e) => onNewArchetypeDescriptionChange(e.target.value)}
             placeholder="Descreva o perfil ideal: cargo, habilidades, experiência..."
-            className="bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg text-lia-text-primary focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 w-full px-3 py-2.5 text-sm resize-none"
+            className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg text-lia-text-primary focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 w-full px-3 py-2.5 text-sm resize-none"
             rows={2}
           />
         </div>
@@ -164,7 +164,7 @@ export function ArchetypesList({
         <button
           onClick={() => onCreateFromDescription(newArchetypeDescription)}
           disabled={isCreatingArchetype || !newArchetypeDescription.trim()}
-          className="w-full px-3 py-2 bg-gray-900 text-white text-xs rounded-md hover:bg-gray-800 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-3 py-2 bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs rounded-md hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isCreatingArchetype ? (
             <>
@@ -182,9 +182,9 @@ export function ArchetypesList({
 
       {/* Divisor */}
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-px bg-gray-200" />
+        <div className="flex-1 h-px bg-lia-interactive-active" />
         <span className="text-xs text-lia-text-secondary">ou selecione um existente</span>
-        <div className="flex-1 h-px bg-gray-200" />
+        <div className="flex-1 h-px bg-lia-interactive-active" />
       </div>
 
       {/* Lista de Arquétipos Existentes */}
@@ -205,7 +205,7 @@ export function ArchetypesList({
               value={archetypeSearchFilter}
               onChange={(e) => onArchetypeSearchFilterChange(e.target.value)}
               placeholder="Buscar arquétipos..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-lia-border-subtle focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-md border border-lia-border-subtle focus:outline-none focus:ring-2 focus:ring-lia-border-medium focus:border-transparent"
             />
           </div>
         )}
@@ -225,14 +225,14 @@ export function ArchetypesList({
               return (
                 <div
                   key={arch.id}
-                  className="group relative p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary hover:border-gray-400 transition-colors motion-reduce:transition-none cursor-pointer"
+                  className="group relative p-3 rounded-md border border-lia-border-subtle bg-lia-bg-primary hover:border-lia-border-medium transition-colors motion-reduce:transition-none cursor-pointer"
                   onClick={() => onSelectArchetype(arch.id, query)}
                 >
                   {/* Edit/Delete */}
                   <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
                     <button
                       onClick={(e) => onEditArchetype(arch, e)}
-                      className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                      className="p-1 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                       title="Editar arquétipo"
                     >
                       <Pencil className="w-3.5 h-3.5 text-lia-text-tertiary hover:text-lia-text-secondary" />

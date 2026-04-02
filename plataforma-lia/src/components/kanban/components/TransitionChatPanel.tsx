@@ -219,9 +219,9 @@ export function TransitionChatPanel({
 
   return (
     <div className="flex flex-col h-full overflow-hidden p-3">
-      <div className="flex flex-col flex-1 overflow-hidden rounded-xl border border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
+      <div className="flex flex-col flex-1 overflow-hidden rounded-xl border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 py-3 border-b border-lia-border-subtle dark:lia-border-800">
+        <div className="flex-shrink-0 px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-strong">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full flex items-center justify-center">
@@ -237,7 +237,7 @@ export function TransitionChatPanel({
                   onClick={onNewChat}
                   title="Novo chat"
                   aria-label="Iniciar novo chat"
-                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -248,7 +248,7 @@ export function TransitionChatPanel({
                   disabled={messages.length === 0}
                   title="Limpar mensagens"
                   aria-label="Limpar mensagens"
-                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <Eraser className="w-3.5 h-3.5" />
                 </button>
@@ -258,19 +258,19 @@ export function TransitionChatPanel({
                   onClick={onToggleHistory}
                   title="Histórico de conversas"
                   aria-label="Ver histórico de conversas"
-                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                  className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 >
                   <History className="w-3.5 h-3.5" />
                 </button>
               )}
               {onClose && (
                 <>
-                  <div className="w-px h-4 bg-gray-200 mx-0.5" />
+                  <div className="w-px h-4 bg-lia-interactive-active mx-0.5" />
                   <button
                     onClick={onClose}
                     title="Fechar"
                     aria-label="Fechar"
-                    className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                    className="p-1.5 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -298,7 +298,7 @@ export function TransitionChatPanel({
                 return (
                   <div key={`user-msg-${i}`} className="flex justify-end items-start gap-2">
                     <div className="flex flex-col items-end gap-1">
-                      <div className="max-w-[85%] px-3.5 py-2.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-[14px] rounded-br-[4px]">
+                      <div className="max-w-[85%] px-3.5 py-2.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-[14px] rounded-br-[4px]">
                         <p
                           className="text-base-ui whitespace-pre-wrap text-lia-text-primary"
                          
@@ -310,7 +310,7 @@ export function TransitionChatPanel({
                         {formatTime(timestamp)}
                       </span>
                     </div>
-                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-200 dark:bg-lia-bg-elevated flex items-center justify-center mt-0.5">
+                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated flex items-center justify-center mt-0.5">
                       <User className="w-3.5 h-3.5 text-lia-text-secondary" />
                     </div>
                   </div>
@@ -341,7 +341,7 @@ export function TransitionChatPanel({
                       <ConfidenceBadge confidence={meta?.confidence} layer={meta?.layer} />
                     </div>
                     <div
-                      className="max-w-[85%] px-3.5 py-2.5 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px]"
+                      className="max-w-[85%] px-3.5 py-2.5 bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px]"
                     >
                       <RichContent
                         html={liaHtml}
@@ -355,7 +355,7 @@ export function TransitionChatPanel({
                             return (
                               <span
                                 key={key}
-                                className="inline-flex items-center gap-1 text-micro bg-gray-50 rounded-full px-2 py-0.5 text-lia-text-secondary"
+                                className="inline-flex items-center gap-1 text-micro bg-lia-bg-secondary rounded-full px-2 py-0.5 text-lia-text-secondary"
                                 
                               >
                                 <span className="font-medium">{label}:</span> {String(value)}
@@ -412,7 +412,7 @@ export function TransitionChatPanel({
         </div>
 
         {extractedPreferences && Object.keys(extractedPreferences).filter(k => extractedPreferences[k]).length > 0 && (
-          <div className="flex-shrink-0 px-4 py-2 border-t border-lia-border-subtle dark:lia-border-800 bg-gray-50/50">
+          <div className="flex-shrink-0 px-4 py-2 border-t border-lia-border-subtle dark:border-lia-border-strong bg-lia-bg-secondary/50">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Brain className="w-3 h-3 text-chat-cyan" strokeWidth={2.5} />
               <span className="text-xs font-semibold text-lia-text-secondary">
@@ -426,7 +426,7 @@ export function TransitionChatPanel({
                 return (
                   <span
                     key={key}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-default rounded-md text-xs text-lia-text-primary"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-lia-bg-primary dark:bg-lia-bg-elevated border border-lia-border-subtle dark:border-lia-border-default rounded-md text-xs text-lia-text-primary"
                     
                   >
                     <span className="font-medium text-lia-text-primary">{label}:</span> {String(value)}
@@ -438,8 +438,8 @@ export function TransitionChatPanel({
         )}
 
         {/* Input */}
-        <div className="flex-shrink-0 p-3 border-t border-lia-border-subtle dark:lia-border-800">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-[24px] border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary">
+        <div className="flex-shrink-0 p-3 border-t border-lia-border-subtle dark:border-lia-border-strong">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-[24px] border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary">
             <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
               <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
             </div>
@@ -470,7 +470,7 @@ export function TransitionChatPanel({
                 "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors",
                 canSend
                   ? "bg-chat-cyan text-white hover:opacity-90"
-                  : "bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-tertiary cursor-not-allowed"
+                  : "bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-tertiary cursor-not-allowed"
               )}
               type="button"
             >

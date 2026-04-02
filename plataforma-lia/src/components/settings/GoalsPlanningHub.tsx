@@ -551,8 +551,8 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
               key={alert.id}
               className={`p-2.5 rounded-md border transition-colors motion-reduce:transition-none ${
                 alert.enabled 
-                  ? 'bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle' 
-                  : 'bg-gray-50 dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:lia-border-800'
+                  ? 'bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle' 
+                  : 'bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border-lia-border-subtle dark:border-lia-border-strong'
               }`}
             >
               <div className="flex items-start justify-between">
@@ -560,8 +560,8 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                   <div 
                     className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
                       alert.enabled 
-                        ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary' 
-                        : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary'
+                        ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary' 
+                        : 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary'
                     }`}
                   >
                     <Bell className="w-3.5 h-3.5" />
@@ -578,7 +578,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                     value={alert.channel}
                     onChange={(e) => handleChangeChannel(alert.id, e.target.value as 'email' | 'teams' | 'both')}
                     disabled={!isEditingAlerts || !alert.enabled}
-                    className={`${textStyles.caption} border border-lia-border-subtle rounded-md px-2 py-1 bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary dark:disabled:text-lia-text-tertiary dark:border-lia-border-default`}
+                    className={`${textStyles.caption} border border-lia-border-subtle rounded-md px-2 py-1 bg-lia-bg-primary dark:bg-lia-bg-elevated disabled:bg-lia-bg-secondary dark:disabled:bg-lia-btn-primary-hover disabled:text-lia-text-secondary dark:disabled:text-lia-text-tertiary dark:border-lia-border-default`}
                   >
                     <option value="email">Email</option>
                     <option value="teams">Teams</option>
@@ -588,9 +588,9 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
                     disabled={!isEditingAlerts}
                     className="relative w-10 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60"
-                    style={{backgroundColor: alert.enabled ? 'var(--gray-950)' : 'var(--gray-200)'}}
+                    style={{backgroundColor: alert.enabled ? 'var(--lia-btn-primary-bg)' : 'var(--lia-border-subtle)'}}
                   >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform motion-reduce:transition-none ${
+                    <span className={`absolute top-0.5 w-4 h-4 bg-lia-bg-primary rounded-full transition-transform motion-reduce:transition-none ${
                       alert.enabled ? 'left-5' : 'left-0.5'
                     }`} />
                   </button>
@@ -615,8 +615,8 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
                 briefingFrequency === 'twice_daily'
-                  ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-primary'
-                  : 'border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary'
+                  ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary'
+                  : 'border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary'
               }`}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -632,8 +632,8 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
                 briefingFrequency === 'daily'
-                  ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-primary'
-                  : 'border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary'
+                  ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary'
+                  : 'border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary'
               }`}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -649,8 +649,8 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
                 briefingFrequency === 'weekly'
-                  ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-primary'
-                  : 'border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary'
+                  ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary'
+                  : 'border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary'
               }`}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -666,8 +666,8 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
               disabled={!isEditingAlerts}
               className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${
                 briefingFrequency === 'monthly'
-                  ? 'border-gray-900 dark:lia-border-50 bg-gray-50 dark:bg-lia-bg-primary'
-                  : 'border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary'
+                  ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary'
+                  : 'border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary'
               }`}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
@@ -680,7 +680,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
             </button>
           </div>
 
-          <div className="rounded-md p-2.5 bg-gray-100 dark:bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
+          <div className="rounded-md p-2.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default">
             <div className="flex items-start gap-2">
               <Brain className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-wedo-cyan" />
               <div>
@@ -744,7 +744,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
                 disabled={!isEditingWorkforce}
-                className={`${textStyles.caption} border border-lia-border-subtle rounded-md px-2 py-1.5 bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary dark:border-lia-border-default`}
+                className={`${textStyles.caption} border border-lia-border-subtle rounded-md px-2 py-1.5 bg-lia-bg-primary dark:bg-lia-bg-elevated disabled:bg-lia-bg-secondary dark:disabled:bg-lia-btn-primary-hover disabled:text-lia-text-secondary dark:border-lia-border-default`}
               >
                 <option value={2024}>2024</option>
                 <option value={2025}>2025</option>
@@ -802,7 +802,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
             {departments.map((dept) => (
               <div key={dept.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
                 <div 
-                  className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 bg-gray-50/50 dark:bg-lia-bg-secondary/50"
+                  className="flex items-center justify-between p-3 cursor-pointer hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50"
                   onClick={() => toggleDepartmentExpand(dept.id)}
                 >
                   <div className="flex items-center gap-2 flex-1">
@@ -827,12 +827,12 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                 </div>
 
                 {dept.expanded && (
-                  <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50 dark:bg-lia-bg-secondary/50">
+                  <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50">
                     <div className="overflow-x-auto">
                       <table className={`w-full ${textStyles.caption}`}>
                         <thead>
                           <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                            <th className={`text-left p-2 min-w-[140px] sticky left-0 bg-gray-50 dark:bg-lia-bg-secondary ${textStyles.captionBold}`}>Posição</th>
+                            <th className={`text-left p-2 min-w-[140px] sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary ${textStyles.captionBold}`}>Posição</th>
                             <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} text-lia-text-primary`}>Salário Mín.</th>
                             <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} text-lia-text-primary`}>Salário Máx.</th>
                             {monthLabels.map((month, idx) => (
@@ -844,15 +844,15 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                         </thead>
                         <tbody>
                           {dept.positions.map((pos) => (
-                            <tr key={pos.id} className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-primary dark:hover:bg-gray-700/50">
-                              <td className="p-2 sticky left-0 bg-gray-50 dark:bg-lia-bg-secondary">
+                            <tr key={pos.id} className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-primary dark:hover:bg-lia-bg-inverse/50">
+                              <td className="p-2 sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                                 <input
                                   type="text"
                                   value={pos.name}
                                   onChange={(e) => updatePositionName(dept.id, pos.id, e.target.value)}
                                   placeholder="Nome da posição"
                                   disabled={!isEditingWorkforce}
-                                  className={`w-full px-2 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary dark:disabled:text-lia-text-secondary`}
+                                  className={`w-full px-2 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated disabled:bg-lia-bg-secondary dark:disabled:bg-lia-btn-primary-hover disabled:text-lia-text-secondary dark:disabled:text-lia-text-secondary`}
                                 />
                               </td>
                               <td className="p-1 text-center">
@@ -863,7 +863,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                   onChange={(e) => updatePositionSalary(dept.id, pos.id, 'salary_min', e.target.value ? parseInt(e.target.value) : undefined)}
                                   placeholder="R$ 0"
                                   disabled={!isEditingWorkforce}
-                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary`}
+                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-lia-bg-primary dark:bg-lia-bg-elevated disabled:bg-lia-bg-secondary dark:disabled:bg-lia-btn-primary-hover disabled:text-lia-text-secondary`}
                                 />
                               </td>
                               <td className="p-1 text-center">
@@ -874,7 +874,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                   onChange={(e) => updatePositionSalary(dept.id, pos.id, 'salary_max', e.target.value ? parseInt(e.target.value) : undefined)}
                                   placeholder="R$ 0"
                                   disabled={!isEditingWorkforce}
-                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary`}
+                                  className={`w-20 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-lia-bg-primary dark:bg-lia-bg-elevated disabled:bg-lia-bg-secondary dark:disabled:bg-lia-btn-primary-hover disabled:text-lia-text-secondary`}
                                 />
                               </td>
                               {monthKeys.map((monthKey, idx) => (
@@ -885,7 +885,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                     value={pos.monthlyPlanned[monthKey] || 0}
                                     onChange={(e) => updatePositionMonth(dept.id, pos.id, monthKey, parseInt(e.target.value) || 0)}
                                     disabled={!isEditingWorkforce}
-                                    className={`w-10 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-white dark:bg-lia-bg-elevated disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:text-lia-text-secondary`}
+                                    className={`w-10 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-lia-bg-primary dark:bg-lia-bg-elevated disabled:bg-lia-bg-secondary dark:disabled:bg-lia-btn-primary-hover disabled:text-lia-text-secondary`}
                                   />
                                 </td>
                               ))}

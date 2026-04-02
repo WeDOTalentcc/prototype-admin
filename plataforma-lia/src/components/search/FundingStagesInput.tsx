@@ -72,10 +72,10 @@ export function FundingStagesInput({
               className={cn(
                 "px-3 py-1.5 rounded-full text-xs font-medium border transition-[width,height]",
                 disabled
-                  ? "border-lia-border-subtle bg-gray-100 text-lia-text-tertiary cursor-not-allowed"
+                  ? "border-lia-border-subtle bg-lia-bg-tertiary text-lia-text-tertiary cursor-not-allowed"
                   : isSelected 
-                    ? "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary" 
-                    : "border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-lia-border-default hover:bg-gray-50"
+                    ? "border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary" 
+                    : "border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:border-lia-border-default hover:bg-lia-bg-secondary"
               )}
             >
               {stage.label}

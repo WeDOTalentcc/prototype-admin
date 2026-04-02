@@ -15,7 +15,7 @@ export function ProgressBar({ progress, className }: ProgressBarProps) {
   return (
     <div
       className={cn(
- "sticky top-0 z-20 bg-white dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-4 py-3",
+ "sticky top-0 z-20 bg-lia-bg-primary dark:bg-lia-bg-secondary border-b border-lia-border-subtle dark:border-lia-border-subtle px-4 py-3",
         className
       )}
       role="progressbar"

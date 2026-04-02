@@ -178,9 +178,9 @@ export function IndustrySingleSelect({
     <div className={cn("relative", className)}>
       <div
         className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-md border bg-white dark:bg-lia-bg-primary transition-colors cursor-text",
+          "flex items-center gap-2 px-3 py-2 rounded-md border bg-lia-bg-primary dark:bg-lia-bg-primary transition-colors cursor-text",
           error ? "border-status-error/30" : "border-lia-border-subtle dark:border-lia-border-subtle",
-          isOpen && "ring-2 ring-gray-900/20 border-gray-400"
+          isOpen && "ring-2 ring-lia-btn-primary-bg/20 border-lia-border-medium"
         )}
         onClick={() => {
           inputRef.current?.focus()
@@ -196,7 +196,7 @@ export function IndustrySingleSelect({
             </span>
             <button
               onClick={handleClear}
-              className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors motion-reduce:transition-none"
+              className="p-0.5 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse rounded-full transition-colors motion-reduce:transition-none"
             >
               <X className="w-3.5 h-3.5 text-lia-text-tertiary" />
             </button>
@@ -232,7 +232,7 @@ export function IndustrySingleSelect({
       {isOpen && dropdownItems.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 py-1 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 py-1 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md max-h-64 overflow-y-auto"
         >
           {dropdownItems.map((item, idx) => (
             <button
@@ -241,8 +241,8 @@ export function IndustrySingleSelect({
               className={cn(
                 "w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors",
                 focusedIndex === idx
-                  ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
-                  : "hover:bg-gray-50 dark:hover:bg-gray-700 text-lia-text-primary",
+                  ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
+                  : "hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse text-lia-text-primary",
                 item.type === 'ai' && "border-t border-lia-border-subtle dark:border-lia-border-subtle"
               )}
              
@@ -255,7 +255,7 @@ export function IndustrySingleSelect({
               )}
               <span className="truncate">{item.label}</span>
               {item.industry && (
-                <span className="ml-auto text-micro text-lia-text-tertiary px-1.5 py-0.5 bg-gray-100 dark:bg-lia-bg-elevated rounded-full">
+                <span className="ml-auto text-micro text-lia-text-tertiary px-1.5 py-0.5 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-full">
                   {INDUSTRY_CATEGORIES[item.industry.category as IndustryCategory]?.labelPt}
                 </span>
               )}

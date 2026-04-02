@@ -88,7 +88,7 @@ export function TechStackTab({
                     {category.label}
                   </span>
                   {categoryTechs.length > 0 && (
-                    <Badge className="bg-white/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
+                    <Badge className="bg-lia-bg-primary/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
                       {categoryTechs.length}
                     </Badge>
                   )}
@@ -101,7 +101,7 @@ export function TechStackTab({
               </button>
 
               {isExpanded && (
-                <div className="p-3 bg-white dark:bg-lia-bg-secondary space-y-3">
+                <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary space-y-3">
                   {categoryTechs.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {categoryTechs.map((tech, idx) => (
@@ -138,7 +138,7 @@ export function TechStackTab({
                             if (!isEditingCompanyData) return;
                             addTechToCategory(category.key, suggestion);
                           }}
-                          className={`text-micro px-2 py-1 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-full text-lia-text-secondary hover:border-gray-400 hover:text-lia-text-primary dark:hover:border-gray-500 transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          className={`text-micro px-2 py-1 border border-dashed border-lia-border-default dark:border-lia-border-default rounded-full text-lia-text-secondary hover:border-lia-border-medium hover:text-lia-text-primary dark:hover:border-lia-border-medium transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                         >
                           + {suggestion}
                         </button>
@@ -149,7 +149,7 @@ export function TechStackTab({
                     type="text"
                     placeholder={`Adicionar ${category.label.toLowerCase()} personalizada...`}
                     disabled={!isEditingCompanyData}
-                    className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && e.currentTarget.value.trim()) {
                         e.preventDefault();
@@ -174,12 +174,12 @@ export function TechStackTab({
                   outros: !prev.outros,
                 }))
               }
-              className="w-full flex items-center justify-between px-3 py-2.5 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary hover:opacity-90 transition-opacity motion-reduce:transition-none"
+              className="w-full flex items-center justify-between px-3 py-2.5 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary hover:opacity-90 transition-opacity motion-reduce:transition-none"
             >
               <div className="flex items-center gap-2">
                 <Code className="w-4 h-4" />
                 <span className="text-xs font-medium">Outros</span>
-                <Badge className="bg-white/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
+                <Badge className="bg-lia-bg-primary/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
                   {techStackByCategory["outros"].length}
                 </Badge>
               </div>
@@ -191,12 +191,12 @@ export function TechStackTab({
             </button>
 
             {expandedCategories.outros && (
-              <div className="p-3 bg-white dark:bg-lia-bg-secondary space-y-3">
+              <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary space-y-3">
                 <div className="flex flex-wrap gap-1.5">
                   {techStackByCategory["outros"].map((tech, idx) => (
                     <Badge
                       key={idx}
-                      className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary text-xs px-2.5 py-1 rounded-full"
+                      className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary text-xs px-2.5 py-1 rounded-full"
                     >
                       {tech}
                       {isEditingCompanyData && (
@@ -215,7 +215,7 @@ export function TechStackTab({
                   type="text"
                   placeholder="Adicionar tecnologia..."
                   disabled={!isEditingCompanyData}
-                  className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-primary focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && e.currentTarget.value.trim()) {
                       e.preventDefault();
@@ -229,7 +229,7 @@ export function TechStackTab({
           </div>
         )}
 
-        <div className="border-t border-lia-border-subtle dark:lia-border-800 pt-4">
+        <div className="border-t border-lia-border-subtle dark:border-lia-border-strong pt-4">
           <label className="flex items-center gap-3 text-xs font-medium text-lia-text-secondary mb-2">
             <span className="flex items-center gap-1">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -254,7 +254,7 @@ export function TechStackTab({
                 engineering_culture: e.target.value,
               }))
             }
-            className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-200 focus:border-gray-400 dark:focus:ring-gray-700 dark:focus:border-gray-500 transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary' : ''}`}
+            className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary' : ''}`}
             rows={3}
             placeholder="Descreva a cultura de engenharia da empresa (metodologias, práticas de desenvolvimento, ambiente de trabalho técnico)..."
           />

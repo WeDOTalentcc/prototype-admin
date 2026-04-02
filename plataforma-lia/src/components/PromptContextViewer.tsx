@@ -62,7 +62,7 @@ export function PromptContextViewer({
       )}
 
       {!candidateContext && selectedCandidates.length > 0 && (
-        <div className="bg-gray-50 rounded-md p-3 border border-lia-border-subtle">
+        <div className="bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-4 h-4 text-lia-text-secondary" />
             <span className="text-base-ui font-semibold text-lia-text-primary">
@@ -75,7 +75,7 @@ export function PromptContextViewer({
               return (
                 <div key={c.name || index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
                   <Avatar className="w-4 h-4">
-                    <AvatarFallback className="bg-gray-200 text-lia-text-secondary text-xs">
+                    <AvatarFallback className="bg-lia-interactive-active text-lia-text-secondary text-xs">
                       {c.name?.charAt(0) || 'C'}
                     </AvatarFallback>
                   </Avatar>
@@ -86,7 +86,7 @@ export function PromptContextViewer({
               )
             })}
             {selectedCandidates.length > 3 && (
-              <div className="px-2 py-1 bg-gray-100 rounded-full text-xs text-lia-text-primary">
+              <div className="px-2 py-1 bg-lia-bg-tertiary rounded-full text-xs text-lia-text-primary">
                 +{selectedCandidates.length - 3} mais
               </div>
             )}
@@ -104,7 +104,7 @@ export function PromptContextPills({
   if (!contextPill && quickActions.length === 0) return null
 
   return (
-    <div className="p-4 pb-0 border-b border-b-gray-200">
+    <div className="p-4 pb-0 border-b border-b-lia-border-subtle">
       {contextPill && (
         <div className="mb-3">
           <ContextPill

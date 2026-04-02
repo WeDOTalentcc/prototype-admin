@@ -225,7 +225,7 @@ export function PredictiveAnalyticsTab() {
       case "high": return "text-wedo-orange bg-wedo-orange/15"
       case "medium": return "text-status-warning bg-status-warning/15"
       case "low": return "text-status-success bg-status-success/15"
-      default: return "text-lia-text-secondary bg-gray-100"
+      default: return "text-lia-text-secondary bg-lia-bg-tertiary"
     }
   }
 
@@ -244,7 +244,7 @@ export function PredictiveAnalyticsTab() {
           <h2 className="text-lg font-sans font-semibold text-lia-text-primary">
             Analytics Preditivo
           </h2>
-          <Badge variant="outline" className="text-lia-text-secondary border-gray-900">
+          <Badge variant="outline" className="text-lia-text-secondary border-lia-btn-primary-bg">
             Powered by LIA
           </Badge>
         </div>
@@ -261,7 +261,7 @@ export function PredictiveAnalyticsTab() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card className="bg-gray-50 dark:bg-lia-bg-secondary">
+        <Card className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -273,7 +273,7 @@ export function PredictiveAnalyticsTab() {
           </CardContent>
         </Card>
 
- <Card className="bg-gray-50 dark:bg-lia-bg-secondary">
+ <Card className="bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -365,7 +365,7 @@ export function PredictiveAnalyticsTab() {
                   className={`p-3 rounded-md ${
  insight.type === "warning" ? "bg-wedo-orange/10 dark:bg-wedo-orange/10/20" :
                     insight.type === "success" ? "bg-status-success/10 dark:bg-status-success/20" :
-                    "bg-gray-100 dark:bg-lia-bg-secondary"
+                    "bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -434,7 +434,7 @@ export function PredictiveAnalyticsTab() {
               {data.predictions.high_risk_candidates.map((candidate) => (
                 <div
                   key={candidate.candidate_id}
-                  className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50"
+                  className="p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
@@ -475,7 +475,7 @@ export function PredictiveAnalyticsTab() {
               {data.predictions.jobs_at_risk.map((job) => (
                 <div
                   key={job.job_id}
-                  className="p-3 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50"
+                  className="p-3 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
@@ -541,7 +541,7 @@ export function PredictiveAnalyticsTab() {
 
                   <div className="flex items-center justify-between">
                     <p className="text-xs text-lia-text-secondary">{candidate.recommendation}</p>
-                    <Button size="sm" className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200">
+                    <Button size="sm" className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active">
                       Ação <ChevronRight className="w-3 h-3 ml-1" />
                     </Button>
                   </div>

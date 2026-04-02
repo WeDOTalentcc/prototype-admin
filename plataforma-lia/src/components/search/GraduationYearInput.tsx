@@ -31,7 +31,7 @@ export function GraduationYearInput({
           value={minYear?.toString() || "not_selected"}
           onValueChange={(val) => onMinYearChange(val === "not_selected" ? null : parseInt(val))}
         >
-          <SelectTrigger className="border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-lia-bg-secondary text-xs">
+          <SelectTrigger className="border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 bg-lia-bg-secondary text-xs">
             <SelectValue placeholder="Não selecionado" />
           </SelectTrigger>
           <SelectContent className="bg-lia-bg-secondary max-h-64">
@@ -66,7 +66,7 @@ export function GraduationYearInput({
           value={maxYear?.toString() || "not_selected"}
           onValueChange={(val) => onMaxYearChange(val === "not_selected" ? null : parseInt(val))}
         >
-          <SelectTrigger className="border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-lia-bg-secondary text-xs">
+          <SelectTrigger className="border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 bg-lia-bg-secondary text-xs">
             <SelectValue placeholder="Não selecionado" />
           </SelectTrigger>
           <SelectContent className="bg-lia-bg-secondary max-h-64">

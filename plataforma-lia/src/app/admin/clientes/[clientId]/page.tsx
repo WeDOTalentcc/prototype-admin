@@ -237,10 +237,10 @@ export default function ClientOverviewPage({
         <div className="w-16 h-16 rounded-full bg-status-error/10 dark:bg-status-error/20 flex items-center justify-center mb-4">
           <AlertCircle className="w-8 h-8 text-status-error" />
         </div>
-        <h3 className="text-lg font-medium mb-1 lia-text-800 dark:text-lia-text-primary">
+        <h3 className="text-lg font-medium mb-1 text-lia-text-primary dark:text-lia-text-primary">
           Erro ao carregar dados
         </h3>
-        <p className="text-sm mb-4 lia-text-400 dark:lia-text-500">
+        <p className="text-sm mb-4 text-lia-text-tertiary dark:text-lia-text-secondary">
           {error}
         </p>
         <Button variant="outline" onClick={fetchClient}>
@@ -258,11 +258,11 @@ export default function ClientOverviewPage({
       <div className="flex items-center justify-between">
         <div>
           <h2 
-            className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
+            className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary"
           >
             Visão Geral
           </h2>
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Dashboard de métricas e atividades do cliente
           </p>
         </div>
@@ -279,7 +279,7 @@ export default function ClientOverviewPage({
             variant={client?.status === 'suspended' ? 'default' : 'outline'}
             onClick={handleToggleStatus}
             disabled={togglingStatus}
-            className={client?.status === 'suspended' ? 'bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200' : ''}
+            className={client?.status === 'suspended' ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active' : ''}
           >
             {togglingStatus ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin motion-reduce:animate-none" />
@@ -305,12 +305,12 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                   Usuários Ativos
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {metrics.active_users}
-                  <span className="text-sm font-normal lia-text-400 dark:lia-text-500">
+                  <span className="text-sm font-normal text-lia-text-tertiary dark:text-lia-text-secondary">
                     /{client?.user_limit || metrics.total_users}
                   </span>
                 </p>
@@ -319,8 +319,8 @@ export default function ClientOverviewPage({
                   <span className="text-xs text-status-success">+2 este mês</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
-                <Users className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <div className="w-10 h-10 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
+                <Users className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
             </div>
           </CardContent>
@@ -330,10 +330,10 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Vagas Abertas
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {metrics.open_vacancies}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -352,10 +352,10 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500" aria-live="polite" aria-atomic="true">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" aria-live="polite" aria-atomic="true">
                   Candidatos
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {metrics.total_candidates}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
@@ -374,18 +374,18 @@ export default function ClientOverviewPage({
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm lia-text-400 dark:lia-text-500">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                   Créditos IA
                 </p>
-                <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {metrics.ai_credits_used.toLocaleString()}
-                  <span className="text-sm font-normal lia-text-400 dark:lia-text-500">
+                  <span className="text-sm font-normal text-lia-text-tertiary dark:text-lia-text-secondary">
                     /{metrics.ai_credits_limit.toLocaleString()}
                   </span>
                 </p>
                 <Progress value={aiCreditsPercent} className="h-1.5 mt-2" />
               </div>
- <div className="w-10 h-10 rounded-md bg-gray-50 dark:bg-lia-bg-secondary flex items-center justify-center">
+ <div className="w-10 h-10 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary flex items-center justify-center">
                 <Brain className="w-5 h-5 text-wedo-cyan" />
               </div>
             </div>
@@ -396,14 +396,14 @@ export default function ClientOverviewPage({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
               Informações do Contrato
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
+                <p className="text-xs uppercase tracking-wide text-lia-text-tertiary dark:text-lia-text-secondary">
                   Status
                 </p>
                 <div className="mt-1">
@@ -411,26 +411,26 @@ export default function ClientOverviewPage({
                 </div>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
+                <p className="text-xs uppercase tracking-wide text-lia-text-tertiary dark:text-lia-text-secondary">
                   Plano
                 </p>
-                <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-sm font-medium mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {client?.plan_id || 'Starter'}
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
+                <p className="text-xs uppercase tracking-wide text-lia-text-tertiary dark:text-lia-text-secondary">
                   Início do Contrato
                 </p>
-                <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-sm font-medium mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {client?.contract_start_date ? formatDate(client.contract_start_date) : '-'}
                 </p>
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
+                <p className="text-xs uppercase tracking-wide text-lia-text-tertiary dark:text-lia-text-secondary">
                   Fim do Contrato
                 </p>
-                <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
+                <p className="text-sm font-medium mt-1 text-lia-text-primary dark:text-lia-text-primary">
                   {client?.contract_end_date ? formatDate(client.contract_end_date) : '-'}
                 </p>
               </div>
@@ -439,40 +439,40 @@ export default function ClientOverviewPage({
             <div className="mt-6 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
+                  <p className="text-xs uppercase tracking-wide text-lia-text-tertiary dark:text-lia-text-secondary">
                     CNPJ
                   </p>
-                  <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
+                  <p className="text-sm font-medium mt-1 text-lia-text-primary dark:text-lia-text-primary">
                     {client?.cnpj || '-'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
+                  <p className="text-xs uppercase tracking-wide text-lia-text-tertiary dark:text-lia-text-secondary">
                     Email
                   </p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Mail className="w-3 h-3 lia-text-400 dark:lia-text-500" />
-                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+                    <Mail className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary" />
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                       {client?.primary_email || '-'}
                     </p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
+                  <p className="text-xs uppercase tracking-wide text-lia-text-tertiary dark:text-lia-text-secondary">
                     Telefone
                   </p>
                   <div className="flex items-center gap-1 mt-1">
-                    <Phone className="w-3 h-3 lia-text-400 dark:lia-text-500" />
-                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+                    <Phone className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary" />
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                       {client?.primary_phone || '-'}
                     </p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide lia-text-400 dark:lia-text-500">
+                  <p className="text-xs uppercase tracking-wide text-lia-text-tertiary dark:text-lia-text-secondary">
                     Limite Usuários
                   </p>
-                  <p className="text-sm font-medium mt-1 lia-text-800 dark:text-lia-text-primary">
+                  <p className="text-sm font-medium mt-1 text-lia-text-primary dark:text-lia-text-primary">
                     {client?.user_limit || '-'}
                   </p>
                 </div>
@@ -484,10 +484,10 @@ export default function ClientOverviewPage({
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Progresso Onboarding
               </CardTitle>
-              <span className="text-sm font-medium lia-text-900 dark:lia-text-50">{Math.round(onboardingPercent)}%</span>
+              <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{Math.round(onboardingPercent)}%</span>
             </div>
           </CardHeader>
           <CardContent>
@@ -498,16 +498,16 @@ export default function ClientOverviewPage({
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
                     step.completed 
                       ? 'bg-status-success/15 dark:bg-status-success/30' 
-                      : 'bg-gray-100 dark:bg-lia-bg-secondary'
+                      : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                   }`}>
                     {step.completed ? (
                       <CheckCircle2 className="w-3 h-3 text-status-success dark:text-status-success" />
                     ) : (
-                      <Clock className="w-3 h-3 lia-text-400" />
+                      <Clock className="w-3 h-3 text-lia-text-tertiary" />
                     )}
                   </div>
                   <span
-                    className={`text-sm ${step.completed ? 'line-through lia-text-400 dark:lia-text-500' : 'lia-text-800 dark:text-lia-text-primary'}`}
+                    className={`text-sm ${step.completed ? 'line-through text-lia-text-tertiary dark:text-lia-text-secondary' : 'lia-text-800 dark:text-lia-text-primary'}`}
                   >
                     {step.label}
                   </span>
@@ -521,7 +521,7 @@ export default function ClientOverviewPage({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
               Atividades Recentes
             </CardTitle>
             <Button variant="ghost" size="sm">
@@ -536,21 +536,21 @@ export default function ClientOverviewPage({
               const Icon = activityIcons[activity.type] || FileText
               return (
                 <div key={activity.id} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
-                    <Icon className="w-4 h-4 lia-text-400 dark:lia-text-500" />
+                  <div className="w-8 h-8 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
+                    <Icon className="w-4 h-4 text-lia-text-tertiary dark:text-lia-text-secondary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm lia-text-800 dark:text-lia-text-primary">
+                    <p className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                       {activity.description}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs lia-text-400 dark:lia-text-500">
+                      <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                         {formatDateTime(activity.timestamp)}
                       </span>
                       {activity.user && (
                         <>
-                          <span className="lia-text-400 dark:lia-text-500">•</span>
-                          <span className="text-xs lia-text-400 dark:lia-text-500">
+                          <span className="text-lia-text-tertiary dark:text-lia-text-secondary">•</span>
+                          <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                             {activity.user}
                           </span>
                         </>

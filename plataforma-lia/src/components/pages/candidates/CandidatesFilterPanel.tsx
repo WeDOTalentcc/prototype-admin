@@ -63,7 +63,7 @@ export function CandidatesFilterPanel({
           </div>
           <button
             onClick={onClose}
-            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100"
+            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none text-lia-text-primary hover:text-lia-text-primary hover:bg-lia-bg-tertiary"
           >
             <X className="w-4 h-4" />
           </button>
@@ -93,14 +93,14 @@ export function CandidatesFilterPanel({
                   className={cn(
                     "flex items-center gap-2.5 px-3 py-2 rounded-md border cursor-pointer transition-colors text-xs",
                     searchSortBy === option.value
-                      ? "border-gray-900 bg-gray-50 font-medium text-lia-text-primary"
+                      ? "border-lia-btn-primary-bg bg-lia-bg-secondary font-medium text-lia-text-primary"
                       : "border-lia-border-subtle hover:border-lia-border-default text-lia-text-secondary"
                   )}
                  
                 >
                   <RadioGroupItem
                     value={option.value}
-                    className="w-3.5 h-3.5 border-gray-400 data-[state=checked]:border-gray-900 data-[state=checked]:text-lia-text-primary"
+                    className="w-3.5 h-3.5 border-lia-border-medium data-[state=checked]:border-lia-btn-primary-bg data-[state=checked]:text-lia-text-primary"
                   />
                   {option.label}
                 </label>
@@ -733,12 +733,12 @@ export function CandidatesFilterPanel({
                       }
                       className="px-2 py-1.5 text-micro rounded-md transition-colors motion-reduce:transition-none"
                       style={{backgroundColor:
-                          tableFilters.availabilityWindow === opt.value ? "var(--gray-950)" : "var(--gray-50)",
-                        color: tableFilters.availabilityWindow === opt.value ? "white" : "var(--gray-500)",
+                          tableFilters.availabilityWindow === opt.value ? "var(--lia-btn-primary-bg)" : "var(--lia-bg-secondary)",
+                        color: tableFilters.availabilityWindow === opt.value ? "white" : "var(--lia-text-secondary)",
                         border:
                           tableFilters.availabilityWindow === opt.value
                             ? "none"
-                            : "1px solid var(--gray-200)"}}
+                            : "1px solid var(--lia-border-subtle)"}}
                     >
                       {opt.label}
                     </button>

@@ -131,8 +131,8 @@ export default function CoberturaPage() {
     return (
       <div className="p-6" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="max-w-7xl mx-auto flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
-          <span className="ml-3 text-sm lia-text-400 dark:lia-text-500">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <span className="ml-3 text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Carregando mapa de cobertura...
           </span>
         </div>
@@ -152,17 +152,17 @@ export default function CoberturaPage() {
               </Button>
             </Link>
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
             >
-              <Grid3X3 className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Grid3X3 className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+                className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
               >
                 Mapa Cross-Framework
               </h1>
-              <p className="text-sm lia-text-400 dark:lia-text-500">
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                 Cobertura de controles entre frameworks (ISO, SOC 2, SOX, LGPD)
               </p>
             </div>
@@ -178,10 +178,10 @@ export default function CoberturaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500">
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                     Cobertura Global
                   </p>
-                  <p className="text-3xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                  <p className="text-3xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                     {Math.round(overallPercentage)}%
                   </p>
                 </div>
@@ -199,13 +199,13 @@ export default function CoberturaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500">
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                     Controles Implementados
                   </p>
-                  <p className="text-3xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                  <p className="text-3xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                     {totalImplemented}
                   </p>
-                  <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                  <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                     de {totalControls} total
                   </p>
                 </div>
@@ -218,13 +218,13 @@ export default function CoberturaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500">
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                     Gaps Identificados
                   </p>
-                  <p className="text-3xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                  <p className="text-3xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                     {gapsCount}
                   </p>
-                  <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                  <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                     controles pendentes
                   </p>
                 </div>
@@ -237,17 +237,17 @@ export default function CoberturaPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500">
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                     Frameworks Ativos
                   </p>
-                  <p className="text-3xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary">
+                  <p className="text-3xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
                     {frameworks.filter(f => f.stats && f.stats.totalControls > 0).length}
                   </p>
-                  <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                  <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                     de {frameworks.length} configurados
                   </p>
                 </div>
-                <Grid3X3 className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+                <Grid3X3 className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
             </CardContent>
           </Card>
@@ -255,7 +255,7 @@ export default function CoberturaPage() {
 
         <Card >
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
               Cobertura por Framework
             </CardTitle>
           </CardHeader>
@@ -274,24 +274,24 @@ export default function CoberturaPage() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                        <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                           {framework.name}
                         </p>
-                        <p className="text-xs lia-text-400 dark:lia-text-500">
+                        <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           {framework.stats?.totalControls || 0} controles
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold lia-text-800 dark:text-lia-text-primary">
+                      <p className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary">
                         {Math.round(framework.stats?.compliancePercentage || 0)}%
                       </p>
-                      <p className="text-xs lia-text-400 dark:lia-text-500">
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                         {(framework.stats?.implemented || 0) + (framework.stats?.verified || 0)} / {framework.stats?.totalControls || 0}
                       </p>
                     </div>
                   </div>
-                  <div className="relative h-8 rounded-md overflow-hidden bg-gray-100 dark:bg-lia-bg-secondary">
+                  <div className="relative h-8 rounded-md overflow-hidden bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <div 
                       className="absolute inset-y-0 left-0 rounded-md transition-colors motion-reduce:transition-none duration-500"
                       style={{width: `${framework.stats?.compliancePercentage || 0}%`,
@@ -301,19 +301,19 @@ export default function CoberturaPage() {
                       <div className="flex items-center gap-4 text-xs">
                         <span className="flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3 text-status-success" />
-                          <span className="lia-text-500 dark:text-lia-text-tertiary">
+                          <span className="text-lia-text-secondary dark:text-lia-text-tertiary">
                             {(framework.stats?.implemented || 0) + (framework.stats?.verified || 0)} Implementados
                           </span>
                         </span>
                         <span className="flex items-center gap-1">
                           <AlertTriangle className="w-3 h-3 text-status-warning" />
-                          <span className="lia-text-500 dark:text-lia-text-tertiary">
+                          <span className="text-lia-text-secondary dark:text-lia-text-tertiary">
                             {framework.stats?.inProgress || 0} Em Progresso
                           </span>
                         </span>
                         <span className="flex items-center gap-1">
-                          <XCircle className="w-3 h-3 lia-text-400" />
-                          <span className="lia-text-500 dark:text-lia-text-tertiary">
+                          <XCircle className="w-3 h-3 text-lia-text-tertiary" />
+                          <span className="text-lia-text-secondary dark:text-lia-text-tertiary">
                             {framework.stats?.notStarted || 0} Pendentes
                           </span>
                         </span>
@@ -329,7 +329,7 @@ export default function CoberturaPage() {
         <Card >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
                 Principais Gaps
               </CardTitle>
               <Badge variant="warning">{gaps.length} pendentes</Badge>
@@ -340,7 +340,7 @@ export default function CoberturaPage() {
               <div className="rounded-md border overflow-hidden border-lia-border-subtle dark:border-lia-border-subtle">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-gray-50 dark:bg-lia-bg-secondary/50">
+                    <TableRow className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
                       <TableHead className="w-32">ID</TableHead>
                       <TableHead>Controle</TableHead>
                       <TableHead className="w-32">Framework</TableHead>
@@ -351,10 +351,10 @@ export default function CoberturaPage() {
                   <TableBody>
                     {gaps.map((gap, index) => (
                       <TableRow key={`${gap.framework}-${gap.controlId}-${index}`}>
-                        <TableCell className="font-mono text-xs lia-text-400 dark:lia-text-500">
+                        <TableCell className="font-mono text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           {gap.controlId}
                         </TableCell>
-                        <TableCell className="lia-text-800 dark:text-lia-text-primary">
+                        <TableCell className="text-lia-text-primary dark:text-lia-text-primary">
                           {gap.controlName}
                         </TableCell>
                         <TableCell>
@@ -363,7 +363,7 @@ export default function CoberturaPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs lia-text-400 dark:lia-text-500">
+                          <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                             {gap.category}
                           </span>
                         </TableCell>
@@ -383,10 +383,10 @@ export default function CoberturaPage() {
             ) : (
               <div className="text-center py-8">
                 <CheckCircle2 className="w-12 h-12 text-status-success mx-auto mb-3" />
-                <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                   Parabéns! Todos os controles estão implementados.
                 </p>
-                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500">
+                <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary">
                   Sua organização está em conformidade com todos os frameworks configurados.
                 </p>
               </div>
@@ -396,7 +396,7 @@ export default function CoberturaPage() {
 
         <Card >
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">
               Mapeamento Cross-Framework
             </CardTitle>
           </CardHeader>
@@ -405,11 +405,11 @@ export default function CoberturaPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                    <th className="text-left py-3 px-4 font-medium lia-text-400 dark:lia-text-500">
+                    <th className="text-left py-3 px-4 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">
                       Domínio
                     </th>
                     {frameworks.map(fw => (
-                      <th key={fw.key} className="text-center py-3 px-4 font-medium lia-text-400 dark:lia-text-500">
+                      <th key={fw.key} className="text-center py-3 px-4 font-medium text-lia-text-tertiary dark:text-lia-text-secondary">
                         {fw.name}
                       </th>
                     ))}
@@ -431,7 +431,7 @@ export default function CoberturaPage() {
                     { domain: 'Conformidade', coverage: [true, true, true] },
                   ].map((row, idx) => (
                     <tr key={idx} className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                      <td className="py-3 px-4 lia-text-800 dark:text-lia-text-primary">
+                      <td className="py-3 px-4 text-lia-text-primary dark:text-lia-text-primary">
                         {row.domain}
                       </td>
                       {row.coverage.map((covered, fwIdx) => (
@@ -439,7 +439,7 @@ export default function CoberturaPage() {
                           {covered ? (
                             <CheckCircle2 className="w-5 h-5 text-status-success mx-auto" />
                           ) : (
-                            <XCircle className="w-5 h-5 lia-text-300 mx-auto" />
+                            <XCircle className="w-5 h-5 text-lia-text-disabled mx-auto" />
                           )}
                         </td>
                       ))}
@@ -448,7 +448,7 @@ export default function CoberturaPage() {
                 </tbody>
               </table>
             </div>
-            <p className="text-xs mt-4 lia-text-400 dark:lia-text-500">
+            <p className="text-xs mt-4 text-lia-text-tertiary dark:text-lia-text-secondary">
               * Este mapeamento mostra a cobertura de domínios entre os diferentes frameworks de compliance.
             </p>
           </CardContent>

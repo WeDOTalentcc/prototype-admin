@@ -45,11 +45,11 @@ function LoadingSkeleton() {
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="animate-pulse motion-reduce:animate-none">
             <CardHeader className="pb-2">
-              <div className="h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-24" />
+              <div className="h-4 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-24" />
             </CardHeader>
             <CardContent>
-              <div className="h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-32 mb-2" />
-              <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-20" />
+              <div className="h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-32 mb-2" />
+              <div className="h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-20" />
             </CardContent>
           </Card>
         ))}
@@ -58,12 +58,12 @@ function LoadingSkeleton() {
         {Array.from({ length: 2 }).map((_, i) => (
           <Card key={i} className="animate-pulse motion-reduce:animate-none">
             <CardHeader>
-              <div className="h-5 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-40" />
+              <div className="h-5 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-40" />
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, j) => (
-                  <div key={j} className="h-12 bg-gray-200 dark:bg-lia-bg-elevated rounded-md" />
+                  <div key={j} className="h-12 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md" />
                 ))}
               </div>
             </CardContent>
@@ -84,27 +84,27 @@ export default function MetricasPlataformaPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-white dark:bg-lia-bg-primary p-8">
+      <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary p-8">
         <LoadingSkeleton />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-semibold lia-text-950 dark:lia-text-50">
+            <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">
               Métricas da Plataforma
             </h1>
-            <p className="text-sm lia-text-500 dark:text-lia-text-tertiary mt-1">
+            <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
               Visão consolidada de todos os clientes • Atualizado em tempo real
             </p>
           </div>
           <div className="flex items-center gap-3">
             {metrics?.lastUpdated && (
-              <span className="text-xs lia-text-500">
+              <span className="text-xs text-lia-text-secondary">
                 Última atualização:{" "}
                 {new Date(metrics.lastUpdated).toLocaleString("pt-BR")}
               </span>
@@ -135,8 +135,8 @@ export default function MetricasPlataformaPage() {
         ) : metrics ? (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg font-medium lia-text-950 dark:lia-text-50 mb-4 flex items-center gap-2">
-                <DollarSign className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <h2 className="text-lg font-medium text-lia-text-primary dark:text-lia-text-primary mb-4 flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 Métricas de Receita
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -146,14 +146,14 @@ export default function MetricasPlataformaPage() {
                   icon={DollarSign}
                   trend={metrics.revenue.growthRate}
                   trendLabel="vs mês anterior"
-                  accentColor="var(--gray-400)"
+                  accentColor="var(--lia-text-tertiary)"
                 />
                 <MetricCard
                   title="ARR (Receita Recorrente Anual)"
                   value={formatCurrency(metrics.revenue.arr)}
                   icon={DollarSign}
                   subtitle="MRR × 12"
-                  accentColor="var(--gray-400)"
+                  accentColor="var(--lia-text-tertiary)"
                 />
                 <MetricCard
                   title="Crescimento MRR"
@@ -174,7 +174,7 @@ export default function MetricasPlataformaPage() {
             </div>
 
             <div>
-              <h2 className="text-lg font-medium lia-text-950 dark:lia-text-50 mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-medium text-lia-text-primary dark:text-lia-text-primary mb-4 flex items-center gap-2">
                 <Building className="w-5 h-5 text-wedo-orange" />
                 Métricas de Clientes
               </h2>
@@ -215,39 +215,39 @@ export default function MetricasPlataformaPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base font-medium">
-                    <Zap className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                    <Zap className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                     Métricas de Uso
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div>
-                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Consumo Total de IA
                       </p>
-                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                         Claude + Gemini (tokens)
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold lia-text-900 dark:lia-text-50">
+                      <p className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
                         {formatNumber(metrics.usage.totalAITokens)}
                       </p>
                       <Badge variant="info">este mês</Badge>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div>
-                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Usuários Totais
                       </p>
-                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                         Todos os clientes
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold lia-text-900 dark:lia-text-50">
+                      <p className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
                         {metrics.usage.totalUsers}
                       </p>
                       <Badge variant="success">
@@ -256,17 +256,17 @@ export default function MetricasPlataformaPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div>
-                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Sessões Ativas Hoje
                       </p>
-                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                         Usuários conectados
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold lia-text-900 dark:lia-text-50">
+                      <p className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
                         {metrics.usage.activeSessionsToday}
                       </p>
                       <Badge variant="success">online</Badge>
@@ -283,12 +283,12 @@ export default function MetricasPlataformaPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div>
-                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Custo de Infraestrutura
                       </p>
-                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                         Servidores, banco de dados
                       </p>
                     </div>
@@ -300,12 +300,12 @@ export default function MetricasPlataformaPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <div>
-                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Custo de APIs de IA
                       </p>
-                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                         Claude, Gemini, OpenAI
                       </p>
                     </div>
@@ -319,17 +319,17 @@ export default function MetricasPlataformaPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+                  <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
                     <div>
-                      <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Custo Total Mensal
                       </p>
-                      <p className="text-xs lia-text-500 dark:text-lia-text-tertiary">
+                      <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
                         Infra + IA
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold lia-text-900 dark:lia-text-50">
+                      <p className="text-lg font-bold text-lia-text-primary dark:text-lia-text-primary">
                         {formatCurrency(metrics.costs.totalMonthlyCost)}
                       </p>
                       <Badge variant="info">
@@ -361,14 +361,14 @@ export default function MetricasPlataformaPage() {
                       {formatCurrency(metrics.revenue.mrr - metrics.costs.totalMonthlyCost)} lucro bruto
                     </p>
                   </div>
-                  <div className="p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md text-center">
-                    <p className="text-sm font-medium lia-text-900 dark:lia-text-50 mb-1">
+                  <div className="p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md text-center">
+                    <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary mb-1">
                       ARPU (Receita por Cliente)
                     </p>
-                    <p className="text-2xl font-bold lia-text-900 dark:lia-text-50">
+                    <p className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">
                       {formatCurrency(metrics.revenue.mrr / metrics.clients.activeClients)}
                     </p>
-                    <p className="text-xs lia-text-600 dark:text-lia-text-tertiary mt-1">
+                    <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mt-1">
                       média mensal por cliente
                     </p>
                   </div>

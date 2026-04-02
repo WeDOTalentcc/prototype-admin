@@ -174,14 +174,14 @@ export function AiCreditsPage({ companyId }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-lia-bg-secondary">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
               <div
                 className={`h-full rounded-full transition-[width,height] ${
                   usagePct >= 100
                     ? 'bg-status-error'
                     : usagePct >= 80
                     ? 'bg-status-warning'
-                    : 'bg-gray-900'
+                    : 'bg-lia-btn-primary-bg'
                 }`}
                 style={{width: `${Math.min(usagePct, 100)}%`}}
               />
@@ -227,13 +227,13 @@ export function AiCreditsPage({ companyId }: Props) {
                   unit="K"
                 />
                 <Tooltip
-                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--gray-200)' }}
+                  contentStyle={{ fontSize: 11, borderRadius: 6, border: '1px solid var(--lia-border-subtle)' }}
                   formatter={(value: number, name: string) => [
                     name === 'tokens' ? `${value}K tokens` : `$${value}`,
                     name === 'tokens' ? 'Tokens' : 'Custo',
                   ]}
                 />
-                <Bar dataKey="tokens" fill="var(--gray-950)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="tokens" fill="var(--lia-btn-primary-bg)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -249,7 +249,7 @@ export function AiCreditsPage({ companyId }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            <div className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
               {byAgent
                 .sort((a, b) => b.total_tokens - a.total_tokens)
                 .map((agent) => (

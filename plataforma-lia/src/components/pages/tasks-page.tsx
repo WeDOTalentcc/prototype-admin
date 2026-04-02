@@ -58,7 +58,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
   return (
     <>
-    <div className="h-full flex flex-col bg-white dark:bg-lia-bg-primary overflow-hidden">
+    <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       <div className="p-2 max-w-full overflow-x-auto">
 
         {/* Header - Saudação no topo (alinhado com outras páginas) */}
@@ -110,26 +110,26 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
         <div className="space-y-2">
 
             {/* Cards de Status de Tarefas - LINHA HORIZONTAL ULTRA COMPACTA */}
-            <div className="flex items-center gap-2 bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+            <div className="flex items-center gap-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                 <Briefcase className="w-3 h-3 text-lia-text-primary" />
                 <span className="text-sm font-inter font-medium text-lia-text-primary">{metrics.total}</span>
                 <span className={`${textStyles.description}`}>Total</span>
               </div>
-              <div className="w-px h-6 bg-gray-300 dark:bg-lia-bg-elevated"></div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+              <div className="w-px h-6 bg-lia-border-default dark:bg-lia-bg-elevated"></div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                 <CheckCircle2 className="w-3 h-3 text-lia-text-primary font-semibold" />
                 <span className="text-sm font-inter font-medium text-lia-text-primary">{metrics.completed}</span>
                 <span className={`${textStyles.description}`}>Concluídas</span>
               </div>
-              <div className="w-px h-6 bg-gray-300 dark:bg-lia-bg-elevated"></div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+              <div className="w-px h-6 bg-lia-border-default dark:bg-lia-bg-elevated"></div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                 <Clock className="w-3 h-3 text-lia-text-primary" />
                 <span className="text-sm font-inter font-medium text-lia-text-primary">{metrics.pending}</span>
                 <span className={`${textStyles.description}`}>Pendentes</span>
               </div>
-              <div className="w-px h-6 bg-gray-300 dark:bg-lia-bg-elevated"></div>
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+              <div className="w-px h-6 bg-lia-border-default dark:bg-lia-bg-elevated"></div>
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                 <Brain className="w-3 h-3 text-wedo-cyan" />
                 <span className="text-sm font-inter font-medium text-lia-text-primary">{metrics.iaTasks}</span>
                 <span className={`${textStyles.description}`}>IA</span>
@@ -154,11 +154,11 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                 </CardHeader>
                 <CardContent className="pt-0 pb-2">
                   <Tabs defaultValue="tarefas" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 h-8 mb-3 bg-gray-100 dark:bg-lia-bg-secondary p-0.5">
-                      <TabsTrigger value="tarefas" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-primary dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-lia-text-inverse">
+                    <TabsList className="grid w-full grid-cols-2 h-8 mb-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-0.5">
+                      <TabsTrigger value="tarefas" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-primary dark:data-[state=active]:bg-lia-btn-primary-bg dark:data-[state=active]:text-lia-text-inverse">
                         Tarefas ({filteredPendingTasks.length})
                       </TabsTrigger>
-                      <TabsTrigger value="historico" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-primary dark:data-[state=active]:bg-gray-900 dark:data-[state=active]:text-lia-text-inverse">
+                      <TabsTrigger value="historico" className="text-xs font-open-sans h-7 data-[state=active]:font-semibold data-[state=active]:bg-lia-bg-primary data-[state=active]:text-lia-text-primary dark:data-[state=active]:bg-lia-btn-primary-bg dark:data-[state=active]:text-lia-text-inverse">
                         Histórico
                       </TabsTrigger>
                     </TabsList>
@@ -170,8 +170,8 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           onClick={() => setPendingTaskFilter('all')}
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none ${
                             pendingTaskFilter === 'all'
-                              ? 'bg-gray-900 text-white dark:bg-lia-btn-primary-bg font-medium'
-                              : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700'
+                              ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-btn-primary-bg font-medium'
+                              : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse'
                           }`}
                         >
                           Todos ({pendingTasks.length})
@@ -180,8 +180,8 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           onClick={() => setPendingTaskFilter('feedback')}
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                             pendingTaskFilter === 'feedback'
-                              ? 'bg-gray-900 text-white dark:bg-lia-btn-primary-bg font-medium'
-                              : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700'
+                              ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-btn-primary-bg font-medium'
+                              : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse'
                           }`}
                         >
                           <MessageSquare className="w-2.5 h-2.5" />
@@ -191,8 +191,8 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           onClick={() => setPendingTaskFilter('entrevista')}
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                             pendingTaskFilter === 'entrevista'
-                              ? 'bg-gray-900 text-white dark:bg-lia-btn-primary-bg font-medium'
-                              : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700'
+                              ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-btn-primary-bg font-medium'
+                              : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse'
                           }`}
                         >
                           <Calendar className="w-2.5 h-2.5" />
@@ -202,8 +202,8 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           onClick={() => setPendingTaskFilter('sourcing')}
                           className={`px-2 py-1 text-xs font-open-sans rounded-full transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                             pendingTaskFilter === 'sourcing'
-                              ? 'bg-gray-900 text-white dark:bg-lia-btn-primary-bg font-medium'
-                              : 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary hover:bg-gray-200 dark:hover:bg-gray-700'
+                              ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-btn-primary-bg font-medium'
+                              : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse'
                           }`}
                         >
                           <Search className="w-2.5 h-2.5" />
@@ -341,7 +341,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       <SlidersHorizontal className="w-3.5 h-3.5" />
                       Filtros
                       {activeJobFiltersCount > 0 && (
-                        <Badge className="ml-1 bg-white text-lia-text-primary dark:bg-lia-bg-secondary text-xs h-4 px-1 font-semibold">
+                        <Badge className="ml-1 bg-lia-bg-primary text-lia-text-primary dark:bg-lia-bg-secondary text-xs h-4 px-1 font-semibold">
                           {activeJobFiltersCount}
                         </Badge>
                       )}
@@ -359,28 +359,28 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                       </Button>
 
                       {/* Menu de Ordenação */}
-                      <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none duration-200 z-10">
+                      <div className="absolute right-0 top-full mt-1 w-40 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none duration-200 z-10">
                         <div className="py-1">
                           <button
                             onClick={() => setJobSortBy('urgency')}
-                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                              jobSortBy === 'urgency' ? 'bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated font-semibold' : ''
+                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse ${
+                              jobSortBy === 'urgency' ? 'bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated font-semibold' : ''
                             }`}
                           >
                             Por Urgência
                           </button>
                           <button
                             onClick={() => setJobSortBy('daysOpen')}
-                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                              jobSortBy === 'daysOpen' ? 'bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated font-semibold' : ''
+                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse ${
+                              jobSortBy === 'daysOpen' ? 'bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated font-semibold' : ''
                             }`}
                           >
                             Por Dias em Aberto
                           </button>
                           <button
                             onClick={() => setJobSortBy('candidates')}
-                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                              jobSortBy === 'candidates' ? 'bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated font-semibold' : ''
+                            className={`w-full px-3 py-1.5 text-left text-xs hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse ${
+                              jobSortBy === 'candidates' ? 'bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated font-semibold' : ''
                             }`}
                           >
                             Por Nº Candidatos
@@ -392,7 +392,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
                   {/* Painel de Filtros Expandido */}
                   {showJobFilters && (
-                    <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-3 space-y-3 border border-lia-border-subtle dark:border-lia-border-subtle">
+                    <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-3 space-y-3 border border-lia-border-subtle dark:border-lia-border-subtle">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-open-sans font-semibold text-lia-text-primary">Filtros Avançados</span>
                         {activeJobFiltersCount > 0 && (
@@ -425,7 +425,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                       setSelectedDepartments(selectedDepartments.filter(d => d !== dept))
                                     }
                                   }}
-                                  className="w-4 h-4 rounded-sm border-lia-border-default accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
+                                  className="w-4 h-4 rounded-sm border-lia-border-default accent-lia-btn-primary-bg focus:ring-2 focus:ring-lia-btn-primary-bg/20"
                                 />
                                 <span className="text-xs text-lia-text-primary">{dept}</span>
                               </label>
@@ -451,7 +451,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                       setSelectedUrgencies(selectedUrgencies.filter(u => u !== urgency))
                                     }
                                   }}
-                                  className="w-4 h-4 rounded-sm border-lia-border-default accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
+                                  className="w-4 h-4 rounded-sm border-lia-border-default accent-lia-btn-primary-bg focus:ring-2 focus:ring-lia-btn-primary-bg/20"
                                 />
                                 <span className="text-xs text-lia-text-primary capitalize">
                                   {urgency === 'critical' ? 'Crítico' : urgency === 'urgent' ? 'Urgente' : 'Normal'}
@@ -483,7 +483,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                       setSelectedPublications(selectedPublications.filter(p => p !== pub.id))
                                     }
                                   }}
-                                  className="w-4 h-4 rounded-sm border-lia-border-default accent-gray-900 focus:ring-2 focus:ring-gray-900/20"
+                                  className="w-4 h-4 rounded-sm border-lia-border-default accent-lia-btn-primary-bg focus:ring-2 focus:ring-lia-btn-primary-bg/20"
                                 />
                                 <span className="text-xs text-lia-text-primary">{pub.label}</span>
                               </label>
@@ -507,7 +507,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           {dept}
                           <button
                             onClick={() => setSelectedDepartments(selectedDepartments.filter(d => d !== dept))}
-                            className="hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full p-0.5" aria-label="Remover filtro"
+                            className="hover:bg-lia-border-default dark:hover:bg-lia-border-medium rounded-full p-0.5" aria-label="Remover filtro"
                           >
                             <X className="w-2.5 h-2.5" />
                           </button>
@@ -522,7 +522,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           {urgency === 'critical' ? 'Crítico' : urgency === 'urgent' ? 'Urgente' : 'Normal'}
                           <button
                             onClick={() => setSelectedUrgencies(selectedUrgencies.filter(u => u !== urgency))}
-                            className="hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full p-0.5" aria-label="Remover filtro"
+                            className="hover:bg-lia-border-default dark:hover:bg-lia-border-medium rounded-full p-0.5" aria-label="Remover filtro"
                           >
                             <X className="w-2.5 h-2.5" />
                           </button>
@@ -537,7 +537,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                           {pub === 'linkedin' ? 'LinkedIn' : pub === 'site' ? 'Site' : 'Indeed'}
                           <button
                             onClick={() => setSelectedPublications(selectedPublications.filter(p => p !== pub))}
-                            className="hover:bg-gray-300 dark:hover:bg-gray-600 rounded-full p-0.5" aria-label="Remover filtro"
+                            className="hover:bg-lia-border-default dark:hover:bg-lia-border-medium rounded-full p-0.5" aria-label="Remover filtro"
                           >
                             <X className="w-2.5 h-2.5" />
                           </button>
@@ -571,7 +571,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                 ) : (
                   <div className="space-y-3">
                     {filteredAndSortedJobs.map((job) => (
-                      <div key={job.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3 hover:border-gray-400 hover:border-gray-400 dark:hover:border-gray-500 hover:scale-[1.01] transition-[color,background-color,border-color,transform] duration-200 bg-white dark:bg-lia-bg-primary cursor-pointer">
+                      <div key={job.id} className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-3 hover:border-lia-border-medium hover:border-lia-border-medium dark:hover:border-lia-border-medium hover:scale-[1.01] transition-[color,background-color,border-color,transform] duration-200 bg-lia-bg-primary dark:bg-lia-bg-primary cursor-pointer">
                         {/* Header da Vaga - Compacto com publicação inline */}
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1 space-y-1">
@@ -581,19 +581,19 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <Badge variant="outline" className="text-xs">{job.jobId}</Badge>
                               {getUrgencyBadge(job.urgencyLevel, job.daysOpen)}
                               {job.publishedLinkedIn && (
-                                <Badge className="bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
+                                <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
                                   <Linkedin className="w-2.5 h-2.5" />
                                   LI
                                 </Badge>
                               )}
                               {job.publishedWebsite && (
-                                <Badge className="bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
+                                <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
                                   <Globe className="w-2.5 h-2.5" />
                                   Site
                                 </Badge>
                               )}
                               {job.publishedIndeed && (
-                                <Badge className="bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
+                                <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-subtle text-xs flex items-center gap-1 font-medium">
                                   <Briefcase className="w-2.5 h-2.5" />
                                   Indeed
                                 </Badge>
@@ -628,39 +628,39 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                               <MoreVertical className="w-3.5 h-3.5" />
                             </Button>
                             {/* Dropdown Menu */}
-                            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none duration-200 z-10">
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity motion-reduce:transition-none duration-200 z-10">
                               <div className="py-1">
                                 <button
                                   onClick={() => handleLIAAction('kanban', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <Eye className="w-3 h-3" />
                                   Ver Kanban Completo
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('report', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <FileText className="w-3 h-3" />
                                   Gerar Relatório
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('share', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <Share2 className="w-3 h-3" />
                                   Compartilhar Vaga
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('edit', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <Edit className="w-3 h-3" />
                                   Editar Requisitos
                                 </button>
                                 <button
                                   onClick={() => handleLIAAction('duplicate', job)}
-                                  className="w-full px-3 py-2 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
+                                  className="w-full px-3 py-2 text-left text-xs hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none flex items-center gap-2"
                                 >
                                   <Copy className="w-3 h-3" />
                                   Duplicar Vaga
@@ -679,7 +679,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         </div>
 
                         {/* Funil Horizontal Unificado - Ultra Compacto */}
-                        <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-1.5 mb-1.5">
+                        <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-1.5 mb-1.5">
                           <div className="flex items-center justify-between gap-1">
                             {/* Novos */}
                             <div className="flex flex-col items-center">
@@ -777,7 +777,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         <div className="flex items-center gap-1.5">
                           {/* Pendências LIA */}
                           {job.liaPendencies.length > 0 && (
-                            <div className="flex items-center gap-1 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-subtle rounded-md px-1.5 py-1 flex-1">
+                            <div className="flex items-center gap-1 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-subtle rounded-md px-1.5 py-1 flex-1">
                               <Brain className="w-2.5 h-2.5 text-wedo-cyan flex-shrink-0" />
                               <span className="text-xs text-lia-text-primary truncate font-medium">
                                 {job.liaPendencies.length} pendência{job.liaPendencies.length > 1 ? 's' : ''}

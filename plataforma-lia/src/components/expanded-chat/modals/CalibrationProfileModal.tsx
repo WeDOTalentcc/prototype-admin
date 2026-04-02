@@ -113,7 +113,7 @@ export function CalibrationProfileModal({
                         </svg>
                       </a>
                     )}
-                    <button className="px-3 py-1 text-xs font-medium bg-white border border-lia-border-default hover:bg-lia-bg-secondary hover:bg-lia-interactive-hover text-lia-text-primary rounded-md transition-colors motion-reduce:transition-none">
+                    <button className="px-3 py-1 text-xs font-medium bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:bg-lia-interactive-hover text-lia-text-primary rounded-md transition-colors motion-reduce:transition-none">
                       Full Profile ↗
                     </button>
                   </div>

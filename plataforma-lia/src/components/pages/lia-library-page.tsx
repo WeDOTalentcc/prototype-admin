@@ -123,12 +123,12 @@ const commands: Command[] = [
 
 const categories = [
   { value: 'all', label: 'Todos', icon: Brain, color: 'var(--wedo-cyan)', bgColor: 'var(--wedo-cyan-bg-15)' },
-  { value: 'candidates', label: 'Candidatos', icon: Users, color: 'var(--gray-500)', bgColor: 'var(--gray-bg-15)' },
-  { value: 'jobs', label: 'Vagas', icon: Target, color: 'var(--gray-400)', bgColor: 'var(--gray-bg-10)' },
-  { value: 'indicators', label: 'Indicadores', icon: BarChart3, color: 'var(--gray-600)', bgColor: 'var(--gray-600-bg-10)' },
+  { value: 'candidates', label: 'Candidatos', icon: Users, color: 'var(--lia-text-secondary)', bgColor: 'var(--lia-bg-tertiary)' },
+  { value: 'jobs', label: 'Vagas', icon: Target, color: 'var(--lia-text-tertiary)', bgColor: 'var(--lia-bg-secondary)' },
+  { value: 'indicators', label: 'Indicadores', icon: BarChart3, color: 'var(--lia-text-secondary)', bgColor: 'var(--lia-bg-secondary)' },
   { value: 'automations', label: 'Automações', icon: Zap, color: 'var(--wedo-orange)', bgColor: 'var(--wedo-orange-bg-15)' },
-  { value: 'reports', label: 'Relatórios', icon: Calendar, color: 'var(--gray-600)', bgColor: 'var(--gray-600-bg-10)' },
-  { value: 'communication', label: 'Comunicação', icon: Mail, color: 'var(--gray-400)', bgColor: 'var(--gray-bg-10)' }
+  { value: 'reports', label: 'Relatórios', icon: Calendar, color: 'var(--lia-text-secondary)', bgColor: 'var(--lia-bg-secondary)' },
+  { value: 'communication', label: 'Comunicação', icon: Mail, color: 'var(--lia-text-tertiary)', bgColor: 'var(--lia-bg-secondary)' }
 ]
 
 export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
@@ -210,7 +210,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-lia-bg-primary">
+    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="p-2.5 max-w-full">
 
         {/* Header Simplificado */}
@@ -236,9 +236,9 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
         </div>
 
         {/* Prompt AI-First */}
-        <div className="bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-5 mb-5">
+        <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-5 mb-5">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-900">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-lia-btn-primary-bg">
               <Brain className="w-4 h-4 text-white" />
             </div>
             <span className="text-base font-['Open_Sans',sans-serif] font-medium text-lia-text-primary">
@@ -258,13 +258,13 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                   handlePromptSubmit(searchTerm)
                 }
               }}
-              className="w-full pl-12 pr-24 py-3 text-sm font-open-sans border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-transparent"
+              className="w-full pl-12 pr-24 py-3 text-sm font-open-sans border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary placeholder-lia-text-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-transparent"
             />
             {searchTerm.trim() && (
               <Button
                 size="sm"
                 onClick={() => handlePromptSubmit(searchTerm)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 px-3 text-white bg-gray-900"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 px-3 text-white bg-lia-btn-primary-bg"
               >
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -283,7 +283,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-open-sans font-medium transition-[width,height] ${
                     isSelected
                       ? 'text-white'
-                      : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-700'
+                      : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse'
                   }`}
                   style={isSelected ? { backgroundColor: category.color } : undefined}
                 >
@@ -313,7 +313,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
               return (
                 <div
                   key={command.id}
-                  className="group bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-4 hover:border-lia-border-default dark:hover:border-gray-700 transition-colors motion-reduce:transition-none"
+                  className="group bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-4 hover:border-lia-border-default dark:hover:border-lia-border-strong transition-colors motion-reduce:transition-none"
                   style={{borderLeftWidth: '3px', borderLeftColor: categoryInfo.color}}
                 >
                   {/* Header do Card */}
@@ -323,11 +323,11 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     </h3>
                     <button
                       onClick={() => toggleFavorite(command.id)}
-                      className="shrink-0 p-1 -m-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+                      className="shrink-0 p-1 -m-1 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
                     >
                       <Star 
                         className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`}
-                        style={{color: isFavorite ? 'var(--wedo-orange)' : 'var(--gray-400)'}}
+                        style={{color: isFavorite ? 'var(--wedo-orange)' : 'var(--lia-text-tertiary)'}}
                       />
                     </button>
                   </div>
@@ -357,7 +357,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => copyCommand(command.id, command.command)}
-                        className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100"
+                        className="p-1.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100"
                         title="Copiar comando"
                       >
                         <Copy className={`w-3.5 h-3.5 ${isCopied ? 'text-status-success' : 'text-lia-text-primary'}`} />
@@ -378,9 +378,9 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
             })}
           </div>
         ) : (
-          <div className="bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-12">
+          <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-12">
             <div className="text-center">
-              <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-16 h-16 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center mb-4">
                 <Search className="w-6 h-6 text-lia-text-primary" />
               </div>
               <h3 className="text-base font-['Open_Sans',sans-serif] font-medium text-lia-text-primary mb-2">

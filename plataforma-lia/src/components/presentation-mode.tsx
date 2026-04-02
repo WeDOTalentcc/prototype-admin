@@ -53,7 +53,7 @@ const mockData = {
 
 // Componente de KPI memoizado
 const KPICard = React.memo(({ kpi, index }: { kpi: { label: string; value: number; change: number; trend: string; color: string }; index: number }) => (
-  <Card key={kpi.label} className="bg-white dark:bg-lia-bg-secondary border-2 transition-colors motion-reduce:transition-none">
+  <Card key={kpi.label} className="bg-lia-bg-primary dark:bg-lia-bg-secondary border-2 transition-colors motion-reduce:transition-none">
     <CardContent className="p-8 text-center">
       <div className="text-5xl font-bold text-lia-text-primary mb-4">
         {kpi.value}
@@ -104,7 +104,7 @@ KPISlide.displayName = 'KPISlide'
 
 // Componente de departamento memoizado
 const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; efficiency: number; openPositions: number; avgDays: number }; index: number }) => (
-  <Card key={dept.name} className="bg-white dark:bg-lia-bg-secondary border">
+  <Card key={dept.name} className="bg-lia-bg-primary dark:bg-lia-bg-secondary border">
     <CardContent className="p-8">
       <div className="text-center mb-6">
         <h3 className="text-3xl font-bold text-lia-text-primary mb-2">
@@ -177,7 +177,7 @@ const AlertItem = React.memo(({ alert, index }: { alert: { type: string; message
       case "success": return "bg-status-success/10 border-status-success/30"
       case "warning": return "bg-status-warning/10 border-status-warning/30"
       case "error": return "bg-status-error/10 border-status-error/30"
-      default: return "bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default"
+      default: return "bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default"
     }
   }, [alert.type])
 
@@ -330,9 +330,9 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
   const CurrentSlideComponent = slides[currentSlide]?.component
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-lia-bg-primary z-50 flex flex-col">
+    <div className="fixed inset-0 bg-lia-bg-primary dark:bg-lia-bg-primary z-50 flex flex-col">
       {/* Header Controls */}
-      <div className="flex items-center justify-between p-4 bg-gray-100 dark:bg-lia-bg-secondary border-b">
+      <div className="flex items-center justify-between p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-b">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -387,9 +387,9 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1 bg-gray-200 dark:bg-lia-bg-elevated">
+      <div className="h-1 bg-lia-interactive-active dark:bg-lia-bg-elevated">
         <div
-          className="h-full bg-gray-700 transition-[width,height] duration-300"
+          className="h-full bg-lia-bg-inverse transition-[width,height] duration-300"
           style={{width: `${progress}%`}}
         />
       </div>
@@ -402,7 +402,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
       </div>
 
       {/* Footer Navigation */}
-      <div className="p-4 bg-gray-100 dark:bg-lia-bg-secondary border-t">
+      <div className="p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-t">
         <div className="flex items-center justify-center gap-2">
           {slides.map((slide, index) => (
             <Button

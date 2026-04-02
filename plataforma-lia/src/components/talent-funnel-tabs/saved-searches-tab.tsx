@@ -187,12 +187,12 @@ export function SavedSearchesTab({
     const isAIMode = search.mode === 'natural' || search.mode === 'similar'
 
     return (
-      <Card className="group transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500">
+      <Card className="group transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium">
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             <div 
               className={`flex-shrink-0 w-10 h-10 rounded-md flex items-center justify-center ${
- isAIMode ? 'bg-white border border-lia-border-subtle dark:border-lia-border-subtle' : 'bg-gray-100 dark:bg-lia-bg-secondary'
+ isAIMode ? 'bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
  }`}
             >
  <ModeIcon className={`w-5 h-5 ${isAIMode ? 'text-lia-text-secondary' : 'text-lia-text-secondary'}`} />
@@ -214,7 +214,7 @@ export function SavedSearchesTab({
                 </p>
               )}
 
-              <div className="p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md mb-3">
+              <div className="p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md mb-3">
                 <code className="text-xs text-lia-text-secondary line-clamp-2">
                   {search.query}
                 </code>
@@ -250,7 +250,7 @@ export function SavedSearchesTab({
             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
               <Button
                 size="sm"
-                className="h-8 bg-gray-900 hover:bg-gray-800 text-white"
+                className="h-8 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
                 onClick={() => onExecuteSearch(search)}
               >
                 <Play className="w-3.5 h-3.5 mr-1" />
@@ -319,7 +319,7 @@ export function SavedSearchesTab({
         <div className="grid grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+              <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                 <Bookmark className="w-5 h-5 text-lia-text-secondary" />
               </div>
               <div>
@@ -481,7 +481,7 @@ export function SavedSearchesTab({
                         // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                         variant={newSearchMode === mode ? 'default' : 'outline'}
                         size="sm"
-                        className={`h-7 text-xs ${newSearchMode === mode ? 'bg-gray-900 hover:bg-gray-800 text-white' : ''}`}
+                        className={`h-7 text-xs ${newSearchMode === mode ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text' : ''}`}
                         onClick={() => setNewSearchMode(mode)}
                       >
                         <Icon className="w-3 h-3 mr-1" />
@@ -505,7 +505,7 @@ export function SavedSearchesTab({
                         // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                         variant={newSearchSource === source ? 'default' : 'outline'}
                         size="sm"
-                        className={`h-7 text-xs ${newSearchSource === source ? 'bg-gray-900 hover:bg-gray-800 text-white' : ''}`}
+                        className={`h-7 text-xs ${newSearchSource === source ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text' : ''}`}
                         onClick={() => setNewSearchSource(source)}
                       >
                         <Icon className="w-3 h-3 mr-1" />
@@ -525,7 +525,7 @@ export function SavedSearchesTab({
             <Button
               onClick={handleCreateSearch}
               disabled={!newSearchName.trim() || !newSearchQuery.trim()}
-              className="bg-gray-900 hover:bg-gray-800 text-white"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               <Check className="w-4 h-4 mr-2" />
               Salvar Busca
@@ -583,7 +583,7 @@ export function SavedSearchesTab({
             <Button
               onClick={handleEditSearch}
               disabled={!newSearchName.trim()}
-              className="bg-gray-900 hover:bg-gray-800 text-white"
+              className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
             >
               <Check className="w-4 h-4 mr-2" />
               Salvar Alterações

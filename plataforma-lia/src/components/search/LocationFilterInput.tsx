@@ -234,7 +234,7 @@ export function LocationFilterInput({
               onKeyDown={handleKeyDown}
               onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
               placeholder={placeholder}
-              className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+              className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
             />
           </div>
 
@@ -248,7 +248,7 @@ export function LocationFilterInput({
                   return (
                     <div 
                       key={`header-${item.label}`}
-                      className="px-3 py-1.5 text-xs font-semibold text-lia-text-secondary bg-gray-50 border-t border-lia-border-subtle first:border-t-0"
+                      className="px-3 py-1.5 text-xs font-semibold text-lia-text-secondary bg-lia-bg-secondary border-t border-lia-border-subtle first:border-t-0"
                     >
                       {item.label}
                     </div>
@@ -264,7 +264,7 @@ export function LocationFilterInput({
                     onClick={() => item.data && addLocation(item.data)}
                     className={cn(
                       "w-full text-left px-3 py-2 text-sm transition-colors",
-                      focusedIndex === currentSelectableIndex ? "bg-gray-100" : "hover:bg-gray-50"
+                      focusedIndex === currentSelectableIndex ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary"
                     )}
                   >
                     <span className="text-lia-text-primary">{item.label}</span>
@@ -279,7 +279,7 @@ export function LocationFilterInput({
               {value.map(location => (
                 <Badge
                   key={location.value}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
                 >
                   <span className="text-micro font-semibold text-lia-text-secondary uppercase">
                     {getTypeLabel(location.type)}
@@ -287,7 +287,7 @@ export function LocationFilterInput({
                   <span>{location.value.split(',')[0]}</span>
                   <button
                     onClick={() => removeLocation(location.value)}
-                    className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-0.5"
+                    className="hover:bg-lia-interactive-active rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-0.5"
                     title="Remove"
                   >
                     <X className="w-3 h-3" />

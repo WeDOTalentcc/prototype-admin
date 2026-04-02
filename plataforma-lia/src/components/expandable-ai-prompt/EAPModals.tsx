@@ -165,7 +165,7 @@ export function EAPModals({
       {/* Modal de Edição de Arquétipo */}
       {editingArchetype && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-lia-overlay"
           onClick={closeEditArchetype}
         >
           <div
@@ -173,78 +173,78 @@ export function EAPModals({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold" style={{color: "var(--gray-950)"}}>
+              <h3 className="text-lg font-semibold" style={{color: "var(--lia-btn-primary-bg)"}}>
                 Editar Arquétipo
               </h3>
               <button
                 onClick={closeEditArchetype}
-                className="p-1.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                className="p-1.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
               >
-                <X className="w-4 h-4" style={{color: "var(--gray-400)"}} />
+                <X className="w-4 h-4" style={{color: "var(--lia-text-tertiary)"}} />
               </button>
             </div>
 
             <div className="space-y-3">
               <div className="flex gap-2">
                 <div className="w-16">
-                  <label className="text-xs font-medium mb-1 block" style={{color: "var(--gray-400)"}}>Emoji</label>
+                  <label className="text-xs font-medium mb-1 block" style={{color: "var(--lia-text-tertiary)"}}>Emoji</label>
                   <input
                     type="text"
                     value={editArchetypeEmoji}
                     onChange={(e) => setEditArchetypeEmoji(e.target.value)}
                     maxLength={4}
-                    className="w-full rounded-md px-2 py-2 text-center text-lg focus:outline-none focus:ring-2 focus:ring-gray-400 border border-lia-border-subtle"
+                    className="w-full rounded-md px-2 py-2 text-center text-lg focus:outline-none focus:ring-2 focus:ring-lia-border-medium border border-lia-border-subtle"
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs font-medium mb-1 block" style={{color: "var(--gray-400)"}}>Nome</label>
+                  <label className="text-xs font-medium mb-1 block" style={{color: "var(--lia-text-tertiary)"}}>Nome</label>
                   <input
                     type="text"
                     value={editArchetypeName}
                     onChange={(e) => setEditArchetypeName(e.target.value)}
                     placeholder="Nome do arquétipo"
-                    className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 border border-lia-border-subtle"
+                    className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium border border-lia-border-subtle"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{color: "var(--gray-400)"}}>Query de Busca</label>
+                <label className="text-xs font-medium mb-1 block" style={{color: "var(--lia-text-tertiary)"}}>Query de Busca</label>
                 <textarea
                   value={editArchetypeQuery}
                   onChange={(e) => setEditArchetypeQuery(e.target.value)}
                   placeholder="Ex: Desenvolvedor Python Sênior São Paulo"
                   rows={2}
-                  className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none border border-lia-border-subtle"
+                  className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium resize-none border border-lia-border-subtle"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{color: "var(--gray-400)"}}>Descrição (opcional)</label>
+                <label className="text-xs font-medium mb-1 block" style={{color: "var(--lia-text-tertiary)"}}>Descrição (opcional)</label>
                 <textarea
                   value={editArchetypeDescription}
                   onChange={(e) => setEditArchetypeDescription(e.target.value)}
                   placeholder="Breve descrição do perfil ideal..."
                   rows={2}
-                  className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none border border-lia-border-subtle"
+                  className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium resize-none border border-lia-border-subtle"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1 block" style={{color: "var(--gray-400)"}}>Tags</label>
+                <label className="text-xs font-medium mb-1 block" style={{color: "var(--lia-text-tertiary)"}}>Tags</label>
                 {editArchetypeTags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {editArchetypeTags.map((tag, index) => (
                       <Badge
                         key={`tag-${index}`}
                         variant="secondary"
-                        className="text-xs bg-gray-100 text-lia-text-primary pr-1 flex items-center gap-1"
+                        className="text-xs bg-lia-bg-tertiary text-lia-text-primary pr-1 flex items-center gap-1"
                       >
                         {tag}
                         <button
                           type="button"
                           onClick={() => setEditArchetypeTags(prev => prev.filter((_, i) => i !== index))}
-                          className="ml-0.5 rounded-full hover:bg-gray-200 p-0.5 transition-colors motion-reduce:transition-none"
+                          className="ml-0.5 rounded-full hover:bg-lia-interactive-active p-0.5 transition-colors motion-reduce:transition-none"
                         >
                           <X className="w-2.5 h-2.5" />
                         </button>
@@ -267,7 +267,7 @@ export function EAPModals({
                       }
                     }}
                     placeholder="Digite e pressione Enter para adicionar..."
-                    className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 border border-lia-border-subtle"
+                    className="w-full rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-lia-border-medium border border-lia-border-subtle"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-micro lia-text-secondary">
                     Enter ↵
@@ -281,7 +281,7 @@ export function EAPModals({
                 onClick={closeEditArchetype}
                 variant="outline"
                 className="flex-1"
-                style={{color: "var(--gray-400)"}}
+                style={{color: "var(--lia-text-tertiary)"}}
               >
                 Cancelar
               </Button>
@@ -290,8 +290,8 @@ export function EAPModals({
                 disabled={isSavingArchetype || !editArchetypeName}
                 className="flex-1"
                 style={{
-                  backgroundColor: editArchetypeName ? "var(--gray-950)" : "var(--gray-200)",
-                  color: editArchetypeName ? "white" : "var(--gray-400)",
+                  backgroundColor: editArchetypeName ? "var(--lia-btn-primary-bg)" : "var(--lia-border-subtle)",
+                  color: editArchetypeName ? "white" : "var(--lia-text-tertiary)",
                 }}
               >
                 {isSavingArchetype ? (
@@ -315,7 +315,7 @@ export function EAPModals({
       <AlertDialog open={showDeleteArchetypeDialog} onOpenChange={setShowDeleteArchetypeDialog}>
         <AlertDialogContent
           className="sm:max-w-[320px] w-[85vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 rounded-md border"
-          style={{backgroundColor: 'var(--gray-50)'}}
+          style={{backgroundColor: 'var(--lia-bg-secondary)'}}
         >
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-semibold text-lia-text-primary flex items-center gap-2">
@@ -337,7 +337,7 @@ export function EAPModals({
                 setShowDeleteArchetypeDialog(false)
                 setArchetypeToDelete(null)
               }}
-              className="flex-1 h-9 text-sm px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
+              className="flex-1 h-9 text-sm px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
             >
               Cancelar
             </AlertDialogCancel>
@@ -357,7 +357,7 @@ export function EAPModals({
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent
           className="sm:max-w-sidebar-content w-[80vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-3 rounded-md border"
-          style={{backgroundColor: 'var(--gray-100)'}}
+          style={{backgroundColor: 'var(--lia-bg-tertiary)'}}
         >
           <div className="space-y-2 text-xs leading-snug">
             <div className="flex items-center gap-1.5">
@@ -400,13 +400,13 @@ export function EAPModals({
                   setShowSourceChangeModal(false)
                   setPendingSourceChange(null)
                 }}
-                className="flex-1 h-6 text-micro px-2 rounded-full bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50"
+                className="flex-1 h-6 text-micro px-2 rounded-full bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmSourceChange}
-                className="flex-1 h-6 text-micro px-2 rounded-full text-white flex items-center justify-center gap-1 bg-gray-900"
+                className="flex-1 h-6 text-micro px-2 rounded-full text-white flex items-center justify-center gap-1 bg-lia-btn-primary-bg"
               >
                 {pendingSourceChange === 'hybrid' ? (
                   <>

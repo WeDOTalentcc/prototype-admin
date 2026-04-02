@@ -104,7 +104,7 @@ export function LIASearchSidebarInput({
     <div className="flex-shrink-0 p-3 bg-lia-bg-primary rounded-md">
       {/* Banner de criação de arquétipo */}
       {isCreatingArchetype && (
-        <div className="mb-2 p-2 rounded-md bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default flex items-center justify-between">
+        <div className="mb-2 p-2 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-lia-text-secondary" />
             <span className="text-xs font-medium text-lia-text-secondary">
@@ -116,7 +116,7 @@ export function LIASearchSidebarInput({
               setIsCreatingArchetype(false)
               setArchetypeCreationStep('initial')
             }}
-            className="p-1 hover:bg-gray-100 dark:bg-lia-bg-secondary rounded-md"
+            className="p-1 hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md"
             aria-label="Cancelar criação de arquétipo"
           >
             <X className="w-3 h-3 text-lia-text-secondary" aria-hidden="true" />
@@ -154,7 +154,7 @@ export function LIASearchSidebarInput({
           type="button"
           onClick={handleSend}
           disabled={!liaPromptValue.trim() || searchResults.isLoading}
-          className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50 bg-gray-900"
+          className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none disabled:opacity-50 bg-lia-btn-primary-bg"
         >
           <Send className="w-3.5 h-3.5 text-white" />
         </button>
@@ -165,14 +165,14 @@ export function LIASearchSidebarInput({
         <span className="text-micro font-medium text-lia-text-tertiary">Sugestões:</span>
         <button
           onClick={() => onAICommand('Top 5 candidatos')}
-          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary rounded-full hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse"
         >
           <Star className="w-2.5 h-2.5 text-lia-text-tertiary" />
           Top 5
         </button>
         <button
           onClick={() => onAICommand('Resumir esta busca')}
-          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-gray-100 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:hover:bg-gray-700"
+          className="inline-flex items-center gap-1 px-2 py-0.5 text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary rounded-full hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none dark:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse"
         >
           <FileText className="w-2.5 h-2.5 text-lia-text-tertiary" />
           Resumir busca

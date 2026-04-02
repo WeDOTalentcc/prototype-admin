@@ -251,13 +251,13 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
   )
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-lia-overlay z-50 flex items-center justify-center p-4">
       <div 
-        className="bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-3xl max-h-[80vh] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle"
+        className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md w-full max-w-3xl max-h-[80vh] overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle"
        
       >
         {/* Header */}
-        <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-primary">
+        <div className="px-4 py-3 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-md flex items-center justify-center bg-wedo-cyan/15">
@@ -280,7 +280,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
 
         <div className="flex h-[calc(80vh-70px)]">
           {/* Sidebar Categories */}
-          <div className="w-56 bg-gray-50 dark:bg-lia-bg-primary/50 border-r border-lia-border-subtle dark:border-lia-border-subtle overflow-y-auto">
+          <div className="w-56 bg-lia-bg-secondary dark:bg-lia-bg-primary/50 border-r border-lia-border-subtle dark:border-lia-border-subtle overflow-y-auto">
             <div className="p-3">
               <h3 className="text-xs font-medium text-lia-text-primary mb-2 uppercase tracking-wide">Categorias</h3>
               <div className="space-y-0.5">
@@ -290,8 +290,8 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                     onClick={() => setActiveCategory(category.id)}
                     className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-left transition-colors motion-reduce:transition-none ${
  activeCategory === category.id
-                        ? 'bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle'
-                        : 'hover:bg-lia-bg-primary dark:hover:bg-gray-800 border border-transparent'
+                        ? 'bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle'
+                        : 'hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover border border-transparent'
                     }`}
                   >
                     <category.icon className={`w-3.5 h-3.5 ${activeCategory === category.id ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`} />
@@ -305,11 +305,11 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-lia-bg-primary/50">
+          <div className="flex-1 overflow-y-auto bg-lia-bg-secondary dark:bg-lia-bg-primary/50">
             <div className="p-4">
               {/* Context-specific tips for current page */}
               {activeCategory === "general" && (
-                <Card className="mb-4 bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
+                <Card className="mb-4 bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                   <CardHeader className="pb-3 pt-3 px-4">
                     <CardTitle className="text-xs flex items-center gap-2 font-medium text-lia-text-primary">
                       <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -319,7 +319,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                   <CardContent className="px-4 pb-3">
                     <div className="space-y-2">
                       {currentContextTips.map((tip, index) => (
-                        <div key={`ctx-tip-${index}`} className="group p-2.5 bg-gray-50 dark:bg-lia-bg-primary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-white dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none">
+                        <div key={`ctx-tip-${index}`} className="group p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-primary/50 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none">
                           <div className="flex items-start gap-2">
                             <span className="text-lia-text-secondary mt-0.5 text-xs">•</span>
                             <div className="flex-1">
@@ -350,7 +350,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                         {category.tips.map((tip, index) => (
                           <div
                             key={`cat-tip-${index}`}
-                            className="group p-2.5 bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-200"
+                            className="group p-2.5 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-200"
                           >
                             <p className="text-xs text-lia-text-primary">
                               {tip}
@@ -410,7 +410,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
               )}
 
               {/* Actions Help */}
-              <Card className="mt-4 bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
+              <Card className="mt-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                 <CardHeader className="pb-2 pt-3 px-3">
                   <CardTitle className="text-xs flex items-center gap-2 font-medium">
                     <HelpCircle className="w-3.5 h-3.5 text-lia-text-secondary" />

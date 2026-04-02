@@ -401,7 +401,7 @@ export function WizardRightPanel({
       <div className="flex-1 overflow-y-auto p-4 relative">
         {/* Loading Overlay during stage transitions */}
         {stageTransition === 'loading' && (
-          <div className="absolute inset-0 bg-white/90/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
+          <div className="absolute inset-0 bg-lia-bg-primary/90/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
             <div className="relative">
               <div className="w-12 h-12 rounded-full border-3 border-lia-border-default border-t-lia-border-default animate-spin motion-reduce:animate-none" />
               <div className="absolute inset-0 flex items-center justify-center">
@@ -573,7 +573,7 @@ export function WizardRightPanel({
       </div>
 
       {/* Navigation Buttons */}
-      <div className="px-4 py-3 bg-white rounded-b-md">
+      <div className="px-4 py-3 bg-lia-bg-primary rounded-b-md">
         {currentStage === 'search-calibration' ? (
           <SearchCalibrationNavButtons
             calibrationCandidates={calibrationCandidates}

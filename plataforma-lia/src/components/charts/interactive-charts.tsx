@@ -240,10 +240,10 @@ export function InteractiveChart({
         },
         tooltip: {
           enabled: true,
-          backgroundColor: 'var(--gray-50)',
-          titleColor: 'var(--gray-950)',
-          bodyColor: 'var(--gray-600)',
-          borderColor: 'var(--gray-200)',
+          backgroundColor: 'var(--lia-bg-secondary)',
+          titleColor: 'var(--lia-btn-primary-bg)',
+          bodyColor: 'var(--lia-text-secondary)',
+          borderColor: 'var(--lia-border-subtle)',
           borderWidth: 1,
           padding: 12,
           displayColors: true,
@@ -304,14 +304,14 @@ export function InteractiveChart({
         x: {
           grid: {
             display: true,
-            color: 'var(--gray-200)',
+            color: 'var(--lia-border-subtle)',
           },
         },
         y: {
           beginAtZero: true,
           grid: {
             display: true,
-            color: 'var(--gray-200)',
+            color: 'var(--lia-border-subtle)',
           },
         },
       },
@@ -352,7 +352,7 @@ export function InteractiveChart({
           {showControls && (
             <div className="flex items-center gap-2">
               {/* Period Selector */}
-              <div className="flex bg-gray-100 rounded-md p-1">
+              <div className="flex bg-lia-bg-tertiary rounded-md p-1">
                 {(['monthly', 'quarterly', 'yearly'] as const).map((p) => (
                   <Button
                     key={p}
@@ -386,7 +386,7 @@ export function InteractiveChart({
               key={key}
               variant="outline"
               className={`cursor-pointer transition-colors motion-reduce:transition-none ${
- highlightedSeries === key ? 'border-2 bg-gray-100 dark:bg-lia-bg-secondary' : ''
+ highlightedSeries === key ? 'border-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : ''
               }`}
               onClick={() => setHighlightedSeries(highlightedSeries === key ? null : key)}
               style={{borderColor: COLORS[index % COLORS.length]}}
@@ -408,7 +408,7 @@ export function InteractiveChart({
 
         {/* Selected Data Point Details */}
         {selectedDataPoint && (
-          <div className="mt-4 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
+          <div className="mt-4 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
             <h4 className="font-medium text-lia-text-primary mb-2">
               Detalhes - {String(selectedDataPoint.month ?? selectedDataPoint.stage ?? '')}
             </h4>

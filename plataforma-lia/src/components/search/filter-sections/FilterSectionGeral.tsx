@@ -47,7 +47,7 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
               updateFilter("general", "minExperience", e.target.value ? parseInt(e.target.value) : null)
             }
             placeholder="Ex: 3 anos"
-            className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
+            className="border border-lia-border-subtle focus:ring-1 focus:ring-lia-border-medium"
           />
         </div>
         <div>
@@ -60,12 +60,12 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
               updateFilter("general", "maxExperience", e.target.value ? parseInt(e.target.value) : null)
             }
             placeholder="Ex: 10 anos"
-            className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400"
+            className="border border-lia-border-subtle focus:ring-1 focus:ring-lia-border-medium"
           />
         </div>
       </div>
 
-      <div className="space-y-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50/50">
+      <div className="space-y-4 p-4 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary/50">
         <div className="flex items-center gap-2 mb-3">
           <Eye className="w-4 h-4 text-lia-text-secondary" />
           <span className={textStyles.subtitle}>Ocultar Perfis Visualizados ou Shortlistados</span>
@@ -104,7 +104,7 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
                 updateFilter("general", "hideViewedProfiles", value !== "dont_hide")
               }}
             >
-              <SelectTrigger className="border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 bg-lia-bg-secondary text-xs">
+              <SelectTrigger className="border border-lia-border-subtle focus:ring-1 focus:ring-lia-border-medium bg-lia-bg-secondary text-xs">
                 <SelectValue placeholder="Selecione o escopo" />
               </SelectTrigger>
               <SelectContent className="bg-lia-bg-secondary">
@@ -131,7 +131,7 @@ export const FilterSectionGeral = React.memo(function FilterSectionGeral({
             >
               <SelectTrigger
                 className={cn(
-                  "border border-lia-border-subtle focus:ring-1 focus:ring-gray-400 bg-lia-bg-primary text-xs",
+                  "border border-lia-border-subtle focus:ring-1 focus:ring-lia-border-medium bg-lia-bg-primary text-xs",
                   filters.general?.hideViewedScope === "dont_hide" && "opacity-50 cursor-not-allowed"
                 )}
               >

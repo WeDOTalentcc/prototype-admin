@@ -41,7 +41,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
               variant="ghost"
               size="sm"
               onClick={() => onShowTableFiltersPanelChange(false)}
-              className="h-7 w-7 p-0 hover:bg-gray-100"
+              className="h-7 w-7 p-0 hover:bg-lia-bg-tertiary"
             >
               <X className="w-4 h-4 text-lia-text-secondary" />
             </Button>
@@ -71,7 +71,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
                         onTableStageFilterChange(tableStageFilter.filter(s => s !== stage.id))
                       }
                     }}
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
                   <span className="text-xs text-lia-text-secondary">
                     {stage.displayName}
@@ -92,7 +92,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
                 min="0"
                 max="100"
                 defaultValue="0"
-                className="flex-1 h-1.5 bg-gray-200 rounded-md appearance-none cursor-pointer accent-gray-900"
+                className="flex-1 h-1.5 bg-lia-interactive-active rounded-md appearance-none cursor-pointer accent-lia-btn-primary-bg"
               />
               <span className="text-xs text-lia-text-secondary w-8 text-right">0%</span>
             </div>
@@ -108,7 +108,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
                 <label key={status} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
                   <span className="text-xs text-lia-text-secondary">
                     {status}
@@ -128,7 +128,7 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
                 <label key={modelo} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-gray-900/20"
+                    className="w-3.5 h-3.5 rounded-md border-lia-border-default text-lia-text-primary focus:ring-lia-btn-primary-bg/20"
                   />
                   <span className="text-xs text-lia-text-secondary">
                     {modelo}
@@ -140,19 +140,19 @@ export const KanbanTableFiltersPanel = React.memo(function KanbanTableFiltersPan
         </div>
 
         {/* Footer com Ações */}
-        <div className="flex-shrink-0 p-4 border-t border-lia-border-subtle bg-gray-50">
+        <div className="flex-shrink-0 p-4 border-t border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex gap-2">
             <button
               onClick={() => {
                 onTableStageFilterChange([])
               }}
-              className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none"
+              className="flex-1 px-3 py-2 text-xs font-medium text-lia-text-secondary bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
             >
               Limpar
             </button>
             <button
               onClick={() => onShowTableFiltersPanelChange(false)}
-              className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors motion-reduce:transition-none bg-gray-800"
+              className="flex-1 px-3 py-2 text-xs font-medium text-white rounded-md transition-colors motion-reduce:transition-none bg-lia-btn-primary-hover"
             >
               Aplicar
             </button>

@@ -79,7 +79,7 @@ export const FilterSectionPerfil = React.memo(function FilterSectionPerfil({
               <div
                 className={cn(
                   "flex items-center justify-between p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle",
-                  isLocalSearch && "opacity-50 cursor-not-allowed bg-gray-50"
+                  isLocalSearch && "opacity-50 cursor-not-allowed bg-lia-bg-secondary"
                 )}
               >
                 <div className="flex items-center gap-3">

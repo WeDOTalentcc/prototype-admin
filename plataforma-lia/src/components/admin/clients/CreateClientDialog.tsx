@@ -203,7 +203,7 @@ export function CreateClientDialog({ open, onOpenChange, onSuccess }: CreateClie
           <Button 
             onClick={handleCreateClient}
             disabled={creating}
-            className="bg-gray-900 hover:bg-wedo-cyan-dark text-white"
+            className="bg-lia-btn-primary-bg hover:bg-wedo-cyan-dark text-white"
           >
             {creating ? (
               <>

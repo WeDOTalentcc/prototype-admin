@@ -463,7 +463,7 @@ Boa sorte com as triagens! 🚀`,
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs font-medium text-lia-text-primary">Objetivo:</label>
-                    <p className="text-sm text-lia-text-primary bg-gray-50 p-2 rounded-md">
+                    <p className="text-sm text-lia-text-primary bg-lia-bg-secondary p-2 rounded-md">
                       {screeningData.overview.objective}
                     </p>
                   </div>
@@ -690,9 +690,9 @@ Boa sorte com as triagens! 🚀`,
                     { step: "Feedback", time: "24-48h após", desc: "Retorno personalizado" }
 
                   ].map((item, index) => (
-                    <div key={item.step} className="flex items-start gap-3 p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                    <div key={item.step} className="flex items-start gap-3 p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
 
-                      <div className="w-6 h-6 bg-gray-100 dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-xs font-bold">
+                      <div className="w-6 h-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full flex items-center justify-center text-lia-text-secondary text-xs font-bold">
                         {(index + 1 as React.ReactNode)}
                       </div>
                       <div className="flex-1">
@@ -764,7 +764,7 @@ Boa sorte com as triagens! 🚀`,
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl h-[90vh] flex flex-col">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md w-full max-w-7xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-status-success/10 dark:bg-status-success/20">
           <div className="flex items-center gap-3">
@@ -803,8 +803,8 @@ Boa sorte com as triagens! 🚀`,
                 >
                   <div className={`max-w-[80%] ${
  message.sender === 'user'
-                      ? 'bg-gray-900 text-white rounded-l-2xl rounded-tr-2xl'
-                      : 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary rounded-r-2xl rounded-tl-2xl'
+                      ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text rounded-l-2xl rounded-tr-2xl'
+                      : 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary rounded-r-2xl rounded-tl-2xl'
                   } p-3`}>
                     <div className="text-sm whitespace-pre-line">{message.content}</div>
 
@@ -827,7 +827,7 @@ Boa sorte com as triagens! 🚀`,
 
               {isLiaTyping && (
                 <div className="flex justify-start" role="status" aria-live="polite" aria-label="Carregando...">
-                  <div className="bg-gray-100 dark:bg-lia-bg-elevated rounded-r-2xl rounded-tl-2xl p-3" role="status" aria-live="polite" aria-label="Carregando...">
+                  <div className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-r-2xl rounded-tl-2xl p-3" role="status" aria-live="polite" aria-label="Carregando...">
                     <div className="flex items-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
                       <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-status-success" />
                       <span className="text-sm text-lia-text-secondary">LIA está digitando...</span>
@@ -839,7 +839,7 @@ Boa sorte com as triagens! 🚀`,
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary">
+            <div className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
               <div className="flex items-center gap-3">
                 <div className="flex-1 relative">
                   <input
@@ -849,7 +849,7 @@ Boa sorte com as triagens! 🚀`,
                     onChange={(e) => setCurrentInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     placeholder="Digite sua resposta..."
-                    className="w-full p-3 pr-12 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-white dark:bg-lia-bg-elevated text-lia-text-primary"
+                    className="w-full p-3 pr-12 rounded-md focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
                   />
                   <Button
                     onClick={handleSendMessage}
@@ -864,7 +864,7 @@ Boa sorte com as triagens! 🚀`,
           </div>
 
           {/* Right Panel */}
-          <div className="w-96 bg-gray-50 dark:bg-lia-bg-secondary p-4 overflow-y-auto">
+          <div className="w-96 bg-lia-bg-secondary dark:bg-lia-bg-secondary p-4 overflow-y-auto">
             <div className="mb-4">
               <h4 className="font-medium font-sans text-lia-text-primary mb-2">
                 {currentStep === 'overview' && '📋 Configurando Visão Geral'}
@@ -887,7 +887,7 @@ Boa sorte com as triagens! 🚀`,
       {/* Company Settings Modal */}
       {showCompanySettings && (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-60 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-lia-bg-secondary rounded-md max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium">Configurações da Empresa</h4>

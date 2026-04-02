@@ -17,7 +17,7 @@ const getStatusBadge = (status: CommunicationLogEntry['status']) => {
     read: 'bg-status-success/15 text-status-success dark:bg-status-success/30 dark:text-status-success',
     failed: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
     bounced: 'bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error',
-    pending: 'bg-gray-100 lia-text-800 dark:bg-lia-bg-primary/30 dark:text-lia-text-primary'
+    pending: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-primary/30 dark:text-lia-text-primary'
   }
   const labels: Record<string, string> = {
     sent: 'Enviado',
@@ -37,7 +37,7 @@ const getStatusBadge = (status: CommunicationLogEntry['status']) => {
 const getChannelIcon = (channel: CommunicationLogEntry['channel']) => {
   switch (channel) {
     case 'email':
-      return <Mail className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+      return <Mail className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
     case 'whatsapp':
       return (
         <svg className="w-4 h-4 text-status-success" viewBox="0 0 24 24" fill="currentColor">
@@ -113,10 +113,10 @@ export function HistorySection({
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-medium lia-text-500 dark:text-lia-text-tertiary" >
+          <h3 className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >
             Histórico de Comunicações
           </h3>
-          <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
+          <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary" >
             Visualize todas as comunicações enviadas pela plataforma
           </p>
         </div>
@@ -132,8 +132,8 @@ export function HistorySection({
 
       {historyLoading && communicationLogs.length === 0 ? (
         <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-700 dark:text-lia-text-secondary" />
-          <span className="ml-3 text-sm lia-text-500 dark:text-lia-text-tertiary" >
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-primary dark:text-lia-text-secondary" />
+          <span className="ml-3 text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
             Carregando histórico...
           </span>
         </div>
@@ -144,12 +144,12 @@ export function HistorySection({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs lia-text-500 dark:text-lia-text-tertiary" >Total</p>
-                <p className="text-2xl font-semibold lia-text-800 dark:text-lia-text-primary" >
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" >Total</p>
+                <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary" >
                   {historyStats.total.toLocaleString('pt-BR')}
                 </p>
               </div>
-              <Send className="w-8 h-8 lia-text-400 dark:lia-text-500"  />
+              <Send className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-secondary"  />
             </div>
           </CardContent>
         </Card>
@@ -157,7 +157,7 @@ export function HistorySection({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs lia-text-500 dark:text-lia-text-tertiary" >Entregues</p>
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" >Entregues</p>
                 <p className="text-2xl font-semibold text-status-success">
                   {historyStats.delivered.toLocaleString('pt-BR')}
                 </p>
@@ -170,7 +170,7 @@ export function HistorySection({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs lia-text-500 dark:text-lia-text-tertiary" >Falhas</p>
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" >Falhas</p>
                 <p className="text-2xl font-semibold text-status-error">
                   {historyStats.failed.toLocaleString('pt-BR')}
                 </p>
@@ -183,7 +183,7 @@ export function HistorySection({
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs lia-text-500 dark:text-lia-text-tertiary" >Taxa Sucesso</p>
+                <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" >Taxa Sucesso</p>
                 <p className="text-2xl font-semibold" style={{color: successRate >= 90 ? 'var(--status-success)' : successRate >= 70 ? 'var(--status-warning)' : 'var(--status-error)'}}>
                   {successRate}%
                 </p>
@@ -200,7 +200,7 @@ export function HistorySection({
             <CardTitle className="text-base">Comunicações Recentes</CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-2 top-1/2 -translate-y-1/2 lia-text-400 dark:lia-text-500"  />
+                <Search className="w-4 h-4 absolute left-2 top-1/2 -translate-y-1/2 text-lia-text-tertiary dark:text-lia-text-secondary"  />
                 <Input
                   placeholder="Buscar por destinatário ou assunto..."
                   value={historySearch}
@@ -245,11 +245,11 @@ export function HistorySection({
         <CardContent>
           {filteredLogs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <Send className="w-12 h-12 lia-text-300 mb-4" />
-              <p className="text-sm lia-text-400 dark:lia-text-500" >
+              <Send className="w-12 h-12 text-lia-text-disabled mb-4" />
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                 Nenhuma comunicação encontrada
               </p>
-              <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
+              <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary" >
                 Ajuste os filtros ou aguarde novas comunicações
               </p>
             </div>
@@ -258,14 +258,14 @@ export function HistorySection({
               {filteredLogs.map(log => (
                 <div
                   key={log.id}
-                  className="flex items-center justify-between p-3 rounded-md border hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle"
+                  className="flex items-center justify-between p-3 rounded-md border hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none border-lia-border-subtle dark:border-lia-border-subtle"
                   
                 >
                   <div className="flex items-center gap-3">
                     {getChannelIcon(log.channel)}
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm lia-text-800 dark:text-lia-text-primary" >
+                        <span className="font-medium text-sm text-lia-text-primary dark:text-lia-text-primary" >
                           {log.recipientName}
                         </span>
                         {getStatusBadge(log.status)}
@@ -273,18 +273,18 @@ export function HistorySection({
                           <Badge variant="outline" className="text-xs">Inbound</Badge>
                         )}
                       </div>
-                      <p className="text-xs lia-text-400 dark:lia-text-500" >
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                         {log.subject || log.templateName || log.communicationType || 'Sem assunto'}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     {log.jobTitle && (
-                      <span className="text-xs lia-text-500 dark:text-lia-text-tertiary" >
+                      <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary" >
                         {log.jobTitle}
                       </span>
                     )}
-                    <span className="text-xs flex items-center gap-1 lia-text-400 dark:lia-text-500" >
+                    <span className="text-xs flex items-center gap-1 text-lia-text-tertiary dark:text-lia-text-secondary" >
                       <Clock className="w-3 h-3" />
                       {new Date(log.timestamp).toLocaleString('pt-BR', {
                         day: '2-digit',
@@ -309,7 +309,7 @@ export function HistorySection({
               >
                 Anterior
               </Button>
-              <span className="text-sm lia-text-500 dark:text-lia-text-tertiary" >
+              <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary" >
                 Página {historyPage} de {totalPages}
               </span>
               <Button

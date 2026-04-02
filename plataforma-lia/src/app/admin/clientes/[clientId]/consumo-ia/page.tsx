@@ -21,15 +21,15 @@ export default function ConsumoIAPage() {
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">
-        <div className="h-8 w-48 bg-gray-200 rounded-md animate-pulse motion-reduce:animate-none" />
+        <div className="h-8 w-48 bg-lia-interactive-active rounded-md animate-pulse motion-reduce:animate-none" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none" />
+            <div key={i} className="h-32 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="h-64 bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none" />
-          <div className="h-64 bg-gray-100 rounded-md animate-pulse motion-reduce:animate-none" />
+          <div className="h-64 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
+          <div className="h-64 bg-lia-bg-tertiary rounded-md animate-pulse motion-reduce:animate-none" />
         </div>
       </div>
     )
@@ -58,7 +58,7 @@ export default function ConsumoIAPage() {
   if (!summary) {
     return (
       <div className="p-6">
-        <p className="lia-text-400 dark:lia-text-500">Nenhum dado disponível</p>
+        <p className="text-lia-text-tertiary dark:text-lia-text-secondary">Nenhum dado disponível</p>
       </div>
     )
   }
@@ -66,10 +66,10 @@ export default function ConsumoIAPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h2 className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary">
+        <h2 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">
           Consumo de IA
         </h2>
-        <p className="text-sm lia-text-400 dark:lia-text-500">
+        <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
           Acompanhe o uso de tokens e créditos de IA deste cliente
         </p>
       </div>

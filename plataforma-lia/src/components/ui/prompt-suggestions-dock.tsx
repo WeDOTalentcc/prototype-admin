@@ -195,7 +195,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               className="text-sm font-semibold flex items-center gap-2"
               style={{color: 'var(--lia-text-primary)'}}
             >
-              <div className="p-1.5 rounded-md bg-gray-900/[0.08]">
+              <div className="p-1.5 rounded-md bg-lia-btn-primary-bg/[0.08]">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               Tarefas Sugeridas
@@ -271,7 +271,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
             border: '1px solid var(--lia-border-subtle)',
             cursor: isDragging ? 'grabbing' : 'grab'}}
         >
-          <div className="p-1 rounded-md mr-2 bg-gray-900/[0.08]">
+          <div className="p-1 rounded-md mr-2 bg-lia-btn-primary-bg/[0.08]">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           </div>
           <span 
@@ -300,7 +300,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           >
             <div className="flex items-center gap-2">
               <Move className="w-3 h-3 lia-text-muted" />
-              <div className="p-1.5 rounded-md bg-gray-900/[0.08]">
+              <div className="p-1.5 rounded-md bg-lia-btn-primary-bg/[0.08]">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
               </div>
               <h3

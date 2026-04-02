@@ -147,7 +147,7 @@ export function SearchPreviewCard({
                     <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none text-lia-text-primary" />
                   ) : (
                     <span 
-                      className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-lia-text-primary"
+                      className="text-xs font-medium px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-primary"
                     >
                       ~{data.pearchEstimate} estimados
                     </span>
@@ -161,7 +161,7 @@ export function SearchPreviewCard({
                 {hasPearchResults && (
                   <div 
                     className="flex items-center gap-1 mt-2 text-xs"
-                    style={{color: canAffordPearch ? "var(--gray-950)" : "var(--status-error)"}}
+                    style={{color: canAffordPearch ? "var(--lia-btn-primary-bg)" : "var(--status-error)"}}
                   >
                     <Zap className="w-3 h-3" />
                     <span>
@@ -178,7 +178,7 @@ export function SearchPreviewCard({
             <div 
               className="p-3 rounded-md text-sm"
               style={{backgroundColor: "var(--wedo-green-light, #f0fdf4)",
-                color: 'var(--gray-800)'}}
+                color: 'var(--lia-text-primary)'}}
             >
               <div className="flex items-center justify-between mb-2">
                 <span>Custo estimado:</span>
@@ -199,7 +199,7 @@ export function SearchPreviewCard({
               size="sm"
               onClick={onCancel}
               className="flex-1"
-              style={{color: 'var(--gray-500)',
+              style={{color: 'var(--lia-text-secondary)',
                 borderColor: 'var(--lia-border-subtle)'}}
             >
               <X className="w-4 h-4 mr-1" />
@@ -211,7 +211,7 @@ export function SearchPreviewCard({
                 size="sm"
                 onClick={onConfirmHybrid}
                 disabled={!canAffordPearch || isStillSearching}
-                className="flex-1 bg-gray-900 text-white"
+                className="flex-1 bg-lia-btn-primary-bg text-lia-btn-primary-text"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Confirmar Busca
@@ -220,7 +220,7 @@ export function SearchPreviewCard({
               <Button
                 size="sm"
                 onClick={onProceedLocalOnly}
-                className="flex-1 bg-gray-900 text-white"
+                className="flex-1 bg-lia-btn-primary-bg text-lia-btn-primary-text"
               >
                 <Check className="w-4 h-4 mr-1" />
                 Ver {data.localCount} Candidatos
@@ -230,8 +230,8 @@ export function SearchPreviewCard({
                 size="sm"
                 disabled
                 className="flex-1"
-                style={{backgroundColor: 'var(--gray-100)',
-                  color: 'var(--gray-500)'}}
+                style={{backgroundColor: 'var(--lia-bg-tertiary)',
+                  color: 'var(--lia-text-secondary)'}}
               >
                 Selecione uma opção
               </Button>

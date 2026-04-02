@@ -212,7 +212,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
 
       <Select value={selectedPeriod} onValueChange={(v) => handlePeriodChange(v as PeriodOption)}>
         <SelectTrigger 
-          className="w-[160px] h-9 text-sm border-lia-border-subtle focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+          className="w-[160px] h-9 text-sm border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
           
         >
           <SelectValue placeholder="Selecionar período" />
@@ -236,7 +236,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
             <div className="flex items-center justify-between mb-4">
               <button
                 onClick={prevMonth}
-                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
+                className="p-1.5 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
               >
                 <ChevronLeft className="w-4 h-4 text-lia-text-secondary" />
               </button>
@@ -245,7 +245,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
               </span>
               <button
                 onClick={nextMonth}
-                className="p-1.5 hover:bg-gray-100 rounded-md transition-colors motion-reduce:transition-none"
+                className="p-1.5 hover:bg-lia-bg-tertiary rounded-md transition-colors motion-reduce:transition-none"
               >
                 <ChevronRight className="w-4 h-4 text-lia-text-secondary" />
               </button>
@@ -280,12 +280,12 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
                     className={`
  h-8 text-xs rounded-md transition-colors
                       ${isSelected
-                        ? "bg-gray-900 text-white font-medium"
+                        ? "bg-lia-btn-primary-bg text-lia-btn-primary-text font-medium"
                         : isInRange
-                          ? "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
-                          : "hover:bg-gray-100 text-lia-text-primary"
+                          ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
+                          : "hover:bg-lia-bg-tertiary text-lia-text-primary"
                       }
-                      ${isToday && !isSelected ? "ring-1 ring-gray-900/20" : ""}
+                      ${isToday && !isSelected ? "ring-1 ring-lia-btn-primary-bg/20" : ""}
                     `}
                    
                   >
@@ -318,7 +318,7 @@ export function PeriodFilter({ value, onChange, className }: PeriodFilterProps) 
                 size="sm"
                 onClick={handleApplyCustom}
                 disabled={!tempStart || !tempEnd}
-                className="flex-1 text-xs text-white bg-gray-900"
+                className="flex-1 text-xs text-white bg-lia-btn-primary-bg"
               >
                 Aplicar
               </Button>

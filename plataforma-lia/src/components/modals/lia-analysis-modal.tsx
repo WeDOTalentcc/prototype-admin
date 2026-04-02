@@ -246,7 +246,7 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
                   activeTab === tab.id
-                    ? 'bg-lia-btn-primary-bg text-white'
+                    ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
                     : 'text-lia-text-primary hover:bg-lia-interactive-hover'
                 }`}
               >

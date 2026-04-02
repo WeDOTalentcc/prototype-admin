@@ -24,21 +24,21 @@ function ClientSkeleton() {
     <Card className="overflow-hidden animate-pulse motion-reduce:animate-none">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-md bg-gray-200 dark:bg-lia-bg-elevated" />
+          <div className="w-12 h-12 rounded-md bg-lia-interactive-active dark:bg-lia-bg-elevated" />
           <div className="flex-1 space-y-2">
-            <div className="h-4 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-3/4" />
-            <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-1/2" />
+            <div className="h-4 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-3/4" />
+            <div className="h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-1/2" />
           </div>
-          <div className="h-5 w-16 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" />
+          <div className="h-5 w-16 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full" />
         </div>
         <div className="mt-4 grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-1/2" />
-            <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-3/4" />
+            <div className="h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-1/2" />
+            <div className="h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-3/4" />
           </div>
           <div className="space-y-1">
-            <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-1/2" />
-            <div className="h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded-md w-3/4" />
+            <div className="h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-1/2" />
+            <div className="h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md w-3/4" />
           </div>
         </div>
       </CardContent>
@@ -49,7 +49,7 @@ function ClientSkeleton() {
 function EmptyState({ message, onRetry }: { message?: string, onRetry?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
-      <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
+      <div className="w-16 h-16 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mb-4">
         <Building2 className="w-8 h-8 lia-text-secondary" />
       </div>
       <h3 className="text-lg font-medium text-lia-text-primary mb-1">
@@ -160,7 +160,7 @@ export function ClientTable({
                   variant={page === pageNum ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => onPageChange(pageNum)}
-                  className={page === pageNum ? 'bg-gray-900 hover:bg-wedo-cyan-dark' : ''}
+                  className={page === pageNum ? 'bg-lia-btn-primary-bg hover:bg-wedo-cyan-dark' : ''}
                 >
                   {pageNum}
                 </Button>

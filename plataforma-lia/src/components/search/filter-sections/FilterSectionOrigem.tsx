@@ -32,7 +32,7 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
           className={cn(
             "relative flex flex-col p-4 rounded-md border-2 cursor-pointer transition-colors bg-lia-bg-primary",
             searchSource === "local"
-              ? "border-lia-border-default bg-gray-50"
+              ? "border-lia-border-default bg-lia-bg-secondary"
               : "border-lia-border-subtle hover:border-lia-border-default"
           )}
         >
@@ -47,7 +47,7 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
             Candidatos já cadastrados na sua base
           </p>
           {searchSource === "local" && (
-            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900">
+            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-lia-btn-primary-bg">
               <Check className="w-3 h-3 text-white" />
             </div>
           )}
@@ -57,13 +57,13 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
           className={cn(
             "relative flex flex-col p-4 pt-8 rounded-md border-2 cursor-pointer transition-colors bg-lia-bg-primary",
             searchSource === "hybrid"
-              ? "border-lia-border-default bg-gray-50"
+              ? "border-lia-border-default bg-lia-bg-secondary"
               : "border-lia-border-subtle hover:border-lia-border-default"
           )}
         >
           <Badge
             className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
-            style={{ backgroundColor: "var(--gray-100)", border: "none" }}
+            style={{ backgroundColor: "var(--lia-bg-tertiary)", border: "none" }}
           >
             1 CRÉDITO/CAND.
           </Badge>
@@ -76,7 +76,7 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
           </div>
           <p className="text-xs text-lia-text-secondary">Primeiro local, depois expande para global</p>
           {searchSource === "hybrid" && (
-            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900">
+            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-lia-btn-primary-bg">
               <Check className="w-3 h-3 text-white" />
             </div>
           )}
@@ -86,13 +86,13 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
           className={cn(
             "relative flex flex-col p-4 pt-8 rounded-md border-2 cursor-pointer transition-colors bg-lia-bg-primary",
             searchSource === "global"
-              ? "border-lia-border-default bg-gray-50"
+              ? "border-lia-border-default bg-lia-bg-secondary"
               : "border-lia-border-subtle hover:border-lia-border-default"
           )}
         >
           <Badge
             className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
-            style={{ backgroundColor: "var(--gray-100)", border: "none" }}
+            style={{ backgroundColor: "var(--lia-bg-tertiary)", border: "none" }}
           >
             1 CRÉDITO/CAND.
           </Badge>
@@ -105,7 +105,7 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
           </div>
           <p className="text-xs text-lia-text-secondary">Acesso a +800M de perfis profissionais</p>
           {searchSource === "global" && (
-            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-gray-900">
+            <div className="absolute -top-px -right-px w-5 h-5 rounded-tr-lg rounded-bl-lg flex items-center justify-center bg-lia-btn-primary-bg">
               <Check className="w-3 h-3 text-white" />
             </div>
           )}
@@ -128,7 +128,7 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
           <Switch
             checked={filters.searchOptions?.includeDiscovered ?? true}
             onCheckedChange={(checked: boolean) => updateFilter("searchOptions", "includeDiscovered", checked)}
-            className="data-[state=checked]:bg-gray-900 dark:data-[state=checked]:bg-gray-100"
+            className="data-[state=checked]:bg-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-bg-tertiary"
           />
         </div>
       )}

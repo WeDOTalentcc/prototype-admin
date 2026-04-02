@@ -97,7 +97,7 @@ export function TimezoneDropdown({
           <button 
             className={cn(
               "flex items-center justify-between gap-2 px-3 py-2 rounded-md border border-lia-border-subtle",
-              "text-sm text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-lia-border-subtle transition-colors motion-reduce:transition-none w-full",
+              "text-sm text-lia-text-primary hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse dark:border-lia-border-subtle transition-colors motion-reduce:transition-none w-full",
               !selectedOption && "text-lia-text-tertiary"
             )}
           >
@@ -118,7 +118,7 @@ export function TimezoneDropdown({
                   onChange(null)
                   setIsOpen(false)
                 }}
-                className="w-full text-left px-3 py-2 text-xs text-lia-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-lia-border-subtle dark:border-lia-border-subtle"
+                className="w-full text-left px-3 py-2 text-xs text-lia-text-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse border-b border-lia-border-subtle dark:border-lia-border-subtle"
               >
                 Limpar seleção
               </button>
@@ -126,7 +126,7 @@ export function TimezoneDropdown({
             {groupedOptions.map((group, groupIndex) => (
               <div key={group.group}>
                 {group.group !== 'default' && (
-                  <div className="px-3 py-1.5 text-xs font-semibold text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-elevated border-t border-lia-border-subtle dark:border-lia-border-subtle">
+                  <div className="px-3 py-1.5 text-xs font-semibold text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-elevated border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     {group.group}
                   </div>
                 )}
@@ -138,8 +138,8 @@ export function TimezoneDropdown({
                       setIsOpen(false)
                     }}
                     className={cn(
-                      "w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none",
-                      value === option.value && "bg-gray-50 dark:bg-lia-bg-elevated"
+                      "w-full text-left px-3 py-2 hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none",
+                      value === option.value && "bg-lia-bg-secondary dark:bg-lia-bg-elevated"
                     )}
                   >
                     <div className="flex items-center justify-between">

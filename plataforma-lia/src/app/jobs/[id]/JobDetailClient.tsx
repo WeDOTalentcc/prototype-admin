@@ -112,7 +112,7 @@ export default function JobPage() {
 
   if (error || !jobData) {
     return (
-      <div className="flex items-center justify-center h-screen lia-text-500 dark:text-lia-text-tertiary text-sm" role="alert" aria-live="assertive">
+      <div className="flex items-center justify-center h-screen text-lia-text-secondary dark:text-lia-text-tertiary text-sm" role="alert" aria-live="assertive">
         {error || 'Vaga não encontrada'}
       </div>
     )

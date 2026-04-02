@@ -141,7 +141,7 @@ export default function ClientSetupPage({
       case 'partial':
         return <Clock className="w-5 h-5 text-status-warning" />
       case 'pending':
-        return <Clock className="w-5 h-5 lia-text-400" />
+        return <Clock className="w-5 h-5 text-lia-text-tertiary" />
       default:
         return null
     }
@@ -151,8 +151,8 @@ export default function ClientSetupPage({
     return (
       <div className="flex items-center justify-center min-h-content-lg" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="flex flex-col items-center gap-3" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Carregando setup...
           </p>
         </div>
@@ -190,14 +190,14 @@ export default function ClientSetupPage({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Settings className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+            <Settings className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <h2 
-              className="text-lg font-semibold lia-text-800 dark:text-lia-text-primary"
+              className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary"
             >
               Setup da Empresa
             </h2>
           </div>
-          <p className="text-sm lia-text-400 dark:lia-text-500">
+          <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
             Configuração inicial e perfil do cliente
           </p>
         </div>
@@ -229,16 +229,16 @@ export default function ClientSetupPage({
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base lia-text-800 dark:text-lia-text-primary">
+            <CardTitle className="text-base text-lia-text-primary dark:text-lia-text-primary">
               Progresso Geral do Setup
             </CardTitle>
-            <span className="text-sm font-medium lia-text-900 dark:lia-text-50">{overallProgress}%</span>
+            <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{overallProgress}%</span>
           </div>
         </CardHeader>
         <CardContent>
           <Progress value={overallProgress} className="h-2" />
           <div className="flex items-center justify-between mt-2">
-            <span className="text-xs lia-text-400 dark:lia-text-500">
+            <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
               {completedSections} de {sections.length} seções completas
             </span>
           </div>
@@ -251,30 +251,30 @@ export default function ClientSetupPage({
           return (
             <Card 
               key={section.id}
-              className="hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
+              className="hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer"
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
-                    <Icon className="w-6 h-6 lia-text-600 dark:text-lia-text-tertiary" />
+                  <div className="w-12 h-12 rounded-md bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center shrink-0">
+                    <Icon className="w-6 h-6 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h3 
-                        className="font-medium lia-text-800 dark:text-lia-text-primary"
+                        className="font-medium text-lia-text-primary dark:text-lia-text-primary"
                       >
                         {section.title}
                       </h3>
                       {getStatusBadge(section.status)}
                     </div>
                     <p 
-                      className="text-sm mb-2 lia-text-400 dark:lia-text-500"
+                      className="text-sm mb-2 text-lia-text-tertiary dark:text-lia-text-secondary"
                     >
                       {section.description}
                     </p>
                     <div className="flex items-center gap-3">
                       <Progress value={section.progress} className="h-1.5 flex-1" />
-                      <span className="text-xs tabular-nums lia-text-400 dark:lia-text-500">
+                      <span className="text-xs tabular-nums text-lia-text-tertiary dark:text-lia-text-secondary">
                         {section.progress}%
                       </span>
                     </div>

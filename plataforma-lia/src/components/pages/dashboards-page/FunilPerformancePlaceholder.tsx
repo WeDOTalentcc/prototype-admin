@@ -139,7 +139,7 @@ export function FunilPerformancePlaceholder() {
                 </div>
                 <span className="text-lg font-inter font-bold text-lia-text-primary">3.247</span>
               </div>
-              <div className="w-full h-4 rounded-full" style={{background: 'linear-gradient(to right, var(--gray-700), var(--gray-600))'}}></div>
+              <div className="w-full h-4 rounded-full" style={{background: 'linear-gradient(to right, var(--lia-text-primary), var(--lia-text-secondary))'}}></div>
             </div>
 
             {/* Triagem LIA */}
@@ -151,8 +151,8 @@ export function FunilPerformancePlaceholder() {
                 </div>
                 <span className="text-lg font-inter font-bold text-lia-text-primary">2.013</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-4">
-                <div className="h-4 rounded-full bg-gray-900 w-[62%]"></div>
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-4">
+                <div className="h-4 rounded-full bg-lia-btn-primary-bg w-[62%]"></div>
               </div>
             </div>
 
@@ -165,7 +165,7 @@ export function FunilPerformancePlaceholder() {
                 </div>
                 <span className="text-lg font-inter font-bold text-lia-text-primary">1.234</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-4">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-4">
                 <div className="h-4 rounded-full bg-wedo-purple w-[38%]"></div>
               </div>
             </div>
@@ -179,7 +179,7 @@ export function FunilPerformancePlaceholder() {
                 </div>
                 <span className="text-lg font-inter font-bold text-lia-text-primary">585</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-4">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-4">
                 <div className="h-4 rounded-full bg-wedo-orange w-[18%]"></div>
               </div>
             </div>
@@ -193,7 +193,7 @@ export function FunilPerformancePlaceholder() {
                 </div>
                 <span className="text-lg font-inter font-bold text-status-success dark:text-status-success">389</span>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-4">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-4">
                 <div className="h-4 rounded-full bg-wedo-green-bright w-[12%]"></div>
               </div>
             </div>
@@ -213,23 +213,23 @@ export function FunilPerformancePlaceholder() {
           </CardHeader>
           <CardContent className="space-y-3">
             {/* LinkedIn */}
-            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="font-open-sans font-semibold text-lia-text-primary text-sm">LinkedIn Jobs</p>
                   <p className={`${textStyles.description}`}>1.247 candidaturas • 178 contratações</p>
                 </div>
- <Badge className="bg-gray-100 text-lia-text-primary font-inter font-bold">
+ <Badge className="bg-lia-bg-tertiary text-lia-text-primary font-inter font-bold">
                   14.3%
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-900" style={{width: '14.3%'}}></div>
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
+                <div className="h-2 rounded-full bg-lia-btn-primary-bg" style={{width: '14.3%'}}></div>
               </div>
             </div>
 
             {/* Indicações */}
-            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="font-open-sans font-semibold text-lia-text-primary text-sm">Indicações Internas</p>
@@ -239,13 +239,13 @@ export function FunilPerformancePlaceholder() {
                   22.8%
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-green-bright" style={{width: '22.8%'}}></div>
               </div>
             </div>
 
             {/* Site Corporativo */}
-            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="font-open-sans font-semibold text-lia-text-primary text-sm">Site Corporativo</p>
@@ -255,13 +255,13 @@ export function FunilPerformancePlaceholder() {
                   9.7%
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-orange" style={{width: '9.7%'}}></div>
               </div>
             </div>
 
             {/* Job Boards */}
-            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="font-open-sans font-semibold text-lia-text-primary text-sm">Job Boards (Catho, Vagas.com)</p>
@@ -271,13 +271,13 @@ export function FunilPerformancePlaceholder() {
                   4.3%
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-purple" style={{width: '4.3%'}}></div>
               </div>
             </div>
 
             {/* Headhunting */}
-            <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <p className="font-open-sans font-semibold text-lia-text-primary text-sm">Headhunting Especializado</p>
@@ -287,7 +287,7 @@ export function FunilPerformancePlaceholder() {
                   4.5%
                 </Badge>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-magenta" style={{width: '4.5%'}}></div>
               </div>
             </div>
@@ -309,20 +309,20 @@ export function FunilPerformancePlaceholder() {
                 <p className="text-sm font-open-sans font-semibold text-lia-text-primary">Taxa de Aceitação de Ofertas</p>
                 <div className="text-2xl font-inter font-bold text-status-success dark:text-status-success">66%</div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-green-bright w-[66%]"></div>
               </div>
               <p className={`${textStyles.description} mt-2`}>Meta: 60% • +6% vs. meta</p>
             </div>
 
             {/* Tempo Médio de Fechamento */}
- <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+ <div className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-open-sans font-semibold text-lia-text-primary">Tempo Médio de Fechamento</p>
  <div className="text-2xl font-inter font-bold text-lia-text-primary">21<span className="text-sm">d</span></div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
-                <div className="h-2 rounded-full bg-gray-900 w-[70%]"></div>
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
+                <div className="h-2 rounded-full bg-lia-btn-primary-bg w-[70%]"></div>
               </div>
               <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-2`}>-4 dias vs. mês anterior</p>
             </div>
@@ -333,7 +333,7 @@ export function FunilPerformancePlaceholder() {
                 <p className="text-sm font-open-sans font-semibold text-lia-text-primary">Satisfação dos Contratados (30 dias)</p>
                 <div className="text-2xl font-inter font-bold text-wedo-purple dark:text-wedo-purple">8.7<span className="text-sm">/10</span></div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-purple w-[87%]"></div>
               </div>
               <p className={`${textStyles.description} mt-2`}>NPS: +74 (Excelente)</p>
@@ -345,7 +345,7 @@ export function FunilPerformancePlaceholder() {
                 <p className="text-sm font-open-sans font-semibold text-lia-text-primary">Retenção em 90 dias</p>
                 <div className="text-2xl font-inter font-bold text-wedo-orange dark:text-wedo-orange">92%</div>
               </div>
-              <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-2">
+              <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-2">
                 <div className="h-2 rounded-full bg-wedo-orange w-[92%]"></div>
               </div>
               <p className={`${textStyles.description} mt-2`}>Meta: 85% • +7% vs. meta</p>

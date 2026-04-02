@@ -38,9 +38,9 @@ const PRIORITY_STYLES: Record<string, { bg: string; border: string; iconBg: stri
     iconBg: "bg-status-warning/15 text-status-warning",
   },
   low: {
-    bg: "bg-gray-50",
+    bg: "bg-lia-bg-secondary",
     border: "border-lia-border-subtle hover:border-lia-border-default",
-    iconBg: "bg-gray-100 text-lia-text-secondary",
+    iconBg: "bg-lia-bg-tertiary text-lia-text-secondary",
   },
 }
 
@@ -140,7 +140,7 @@ export function LiaSuggestionCards({
                   <div className="flex items-center gap-2 mt-2">
                     <Badge 
                       variant="secondary" 
-                      className="text-micro px-1.5 py-0 h-4 bg-gray-100 text-lia-text-secondary"
+                      className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary"
                     >
                       {suggestion.category}
                     </Badge>

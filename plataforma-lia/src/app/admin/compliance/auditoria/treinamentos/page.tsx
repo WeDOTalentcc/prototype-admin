@@ -70,7 +70,7 @@ const upcomingTrainings = [
 const getCategoryBadge = (category: 'compliance' | 'security' | 'privacy' | 'ethics') => {
   switch (category) {
     case 'compliance':
-      return <Badge className="bg-gray-100 dark:bg-lia-bg-secondary lia-text-600 dark:text-lia-text-tertiary">Compliance</Badge>
+      return <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">Compliance</Badge>
     case 'security':
       return <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/20 dark:text-status-warning">Segurança</Badge>
     case 'privacy':
@@ -122,22 +122,22 @@ export default function TreinamentosPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
             >
-              <GraduationCap className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <GraduationCap className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+                className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
               >
                 Tracking de Treinamentos
               </h1>
-              <p className="text-sm lia-text-400 dark:lia-text-500">
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
                 Acompanhamento de treinamentos de segurança e compliance
               </p>
             </div>
           </div>
-          <Button className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
+          <Button className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active">
             <Plus className="w-4 h-4" />
             Novo Treinamento
           </Button>
@@ -168,12 +168,12 @@ export default function TreinamentosPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
-                  <GraduationCap className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
+                  <GraduationCap className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
                 <div>
-                  <p className="text-sm lia-text-500">Total de Treinamentos</p>
-                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">{trainings.length}</p>
+                  <p className="text-sm text-lia-text-secondary">Total de Treinamentos</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{trainings.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -186,8 +186,8 @@ export default function TreinamentosPage() {
                   <CheckCircle2 className="w-5 h-5 text-status-success" />
                 </div>
                 <div>
-                  <p className="text-sm lia-text-500">Concluídos (100%)</p>
-                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">{completedTrainings}</p>
+                  <p className="text-sm text-lia-text-secondary">Concluídos (100%)</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{completedTrainings}</p>
                 </div>
               </div>
             </CardContent>
@@ -200,8 +200,8 @@ export default function TreinamentosPage() {
                   <Clock className="w-5 h-5 text-status-warning" />
                 </div>
                 <div>
-                  <p className="text-sm lia-text-500">Pendentes</p>
-                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">{totalPending}</p>
+                  <p className="text-sm text-lia-text-secondary">Pendentes</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{totalPending}</p>
                 </div>
               </div>
             </CardContent>
@@ -214,8 +214,8 @@ export default function TreinamentosPage() {
                   <Users className="w-5 h-5 text-wedo-purple" />
                 </div>
                 <div>
-                  <p className="text-sm lia-text-500">Taxa de Conclusão</p>
-                  <p className="text-2xl font-semibold lia-text-950 dark:lia-text-50">{averageCompletion}%</p>
+                  <p className="text-sm text-lia-text-secondary">Taxa de Conclusão</p>
+                  <p className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary">{averageCompletion}%</p>
                 </div>
               </div>
             </CardContent>
@@ -232,33 +232,33 @@ export default function TreinamentosPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
-                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">
+                      <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
+                        <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">
                           Treinamento
                         </th>
-                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">
+                        <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">
                           Categoria
                         </th>
-                        <th className="text-center text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">
+                        <th className="text-center text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">
                           Periodicidade
                         </th>
-                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">
+                        <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">
                           Última Conclusão
                         </th>
-                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">
+                        <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">
                           Próxima Obrigatória
                         </th>
-                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">
+                        <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">
                           Completude
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
+                    <tbody className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
                       {trainings.map((training) => (
-                        <tr key={training.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
+                        <tr key={training.id} className="hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                              <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                                 {training.name}
                               </span>
                               {training.mandatory && (
@@ -270,21 +270,21 @@ export default function TreinamentosPage() {
                             {getCategoryBadge(training.category)}
                           </td>
                           <td className="px-4 py-4 text-center">
-                            <div className="flex items-center justify-center gap-1 text-sm lia-text-600">
+                            <div className="flex items-center justify-center gap-1 text-sm text-lia-text-secondary">
                               <RefreshCw className="w-3 h-3" />
                               {training.periodicity}
                             </div>
                           </td>
                           <td className="px-4 py-4">
                             {training.lastCompletion ? (
-                              <span className="text-sm lia-text-600">{formatDate(training.lastCompletion)}</span>
+                              <span className="text-sm text-lia-text-secondary">{formatDate(training.lastCompletion)}</span>
                             ) : (
-                              <span className="text-sm lia-text-400">-</span>
+                              <span className="text-sm text-lia-text-tertiary">-</span>
                             )}
                           </td>
                           <td className="px-4 py-4">
                             {training.dueDate ? (
-                              <div className="flex items-center gap-1 text-sm lia-text-600">
+                              <div className="flex items-center gap-1 text-sm text-lia-text-secondary">
                                 <Calendar className="w-3 h-3" />
                                 {formatDate(training.dueDate)}
                               </div>
@@ -294,7 +294,7 @@ export default function TreinamentosPage() {
                           </td>
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-2 min-w-[120px]">
-                              <div className="flex-1 h-2 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+                              <div className="flex-1 h-2 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full overflow-hidden">
                                 <div 
                                   className={`h-full rounded-full ${getProgressColor(training.completion)}`}
                                   style={{width: `${training.completion}%`}}
@@ -324,28 +324,28 @@ export default function TreinamentosPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary/50">
-                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-6 py-3">Usuário</th>
-                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Departamento</th>
-                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Treinamento</th>
-                        <th className="text-center text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Status</th>
-                        <th className="text-left text-xs font-medium lia-text-500 uppercase tracking-wider px-4 py-3">Data</th>
+                      <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
+                        <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-6 py-3">Usuário</th>
+                        <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Departamento</th>
+                        <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Treinamento</th>
+                        <th className="text-center text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Status</th>
+                        <th className="text-left text-xs font-medium text-lia-text-secondary uppercase tracking-wider px-4 py-3">Data</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:lia-divide-700">
+                    <tbody className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
                       {userTrainingStatus.map((record) => (
-                        <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none">
+                        <tr key={record.id} className="hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none">
                           <td className="px-6 py-4">
                             <div>
-                              <p className="text-sm font-medium lia-text-950 dark:lia-text-50">{record.user}</p>
-                              <p className="text-xs lia-text-500">{record.userEmail}</p>
+                              <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{record.user}</p>
+                              <p className="text-xs text-lia-text-secondary">{record.userEmail}</p>
                             </div>
                           </td>
                           <td className="px-4 py-4">
-                            <span className="text-sm lia-text-800 dark:text-lia-text-primary">{record.department}</span>
+                            <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{record.department}</span>
                           </td>
                           <td className="px-4 py-4">
-                            <span className="text-sm lia-text-800 dark:text-lia-text-primary">{record.training}</span>
+                            <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">{record.training}</span>
                           </td>
                           <td className="px-4 py-4 text-center">
                             {getStatusBadge(record.status)}
@@ -357,12 +357,12 @@ export default function TreinamentosPage() {
                                 {formatDate(record.completionDate)}
                               </div>
                             ) : record.dueDate ? (
-                              <div className="flex items-center gap-1 text-sm lia-text-600 dark:text-lia-text-tertiary">
+                              <div className="flex items-center gap-1 text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                                 <Calendar className="w-3 h-3" />
                                 {formatDate(record.dueDate)}
                               </div>
                             ) : (
-                              <span className="text-sm lia-text-400">-</span>
+                              <span className="text-sm text-lia-text-tertiary">-</span>
                             )}
                           </td>
                         </tr>
@@ -378,7 +378,7 @@ export default function TreinamentosPage() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base font-medium flex items-center gap-2">
-                  <Calendar className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                  <Calendar className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                   Próximos Treinamentos
                 </CardTitle>
               </CardHeader>
@@ -387,26 +387,26 @@ export default function TreinamentosPage() {
                   {upcomingTrainings.map((training) => (
                     <div 
                       key={training.id} 
-                      className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50 transition-colors motion-reduce:transition-none cursor-pointer"
+                      className="p-3 rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle transition-colors motion-reduce:transition-none cursor-pointer"
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                          <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                             {training.name}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <div className="flex items-center gap-1 text-xs lia-text-500">
+                            <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
                               <Calendar className="w-3 h-3" />
                               {formatDate(training.date)}
                             </div>
-                            <span className="lia-text-300">•</span>
-                            <div className="flex items-center gap-1 text-xs lia-text-500">
+                            <span className="text-lia-text-disabled">•</span>
+                            <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
                               <Users className="w-3 h-3" />
                               {training.participants} participantes
                             </div>
                           </div>
                         </div>
-                        <ArrowRight className="w-4 h-4 lia-text-400" />
+                        <ArrowRight className="w-4 h-4 text-lia-text-tertiary" />
                       </div>
                     </div>
                   ))}
@@ -421,10 +421,10 @@ export default function TreinamentosPage() {
                     <AlertTriangle className="w-5 h-5 text-status-warning" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                    <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                       Atenção
                     </p>
-                    <p className="text-xs lia-text-500 mt-1">
+                    <p className="text-xs text-lia-text-secondary mt-1">
                       {totalPending} funcionários com treinamentos pendentes. 
                       Verifique os prazos para garantir conformidade.
                     </p>
@@ -440,10 +440,10 @@ export default function TreinamentosPage() {
                     <CheckCircle2 className="w-5 h-5 text-status-success" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium lia-text-950 dark:lia-text-50">
+                    <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                       Meta de Compliance
                     </p>
-                    <p className="text-xs lia-text-500 mt-1">
+                    <p className="text-xs text-lia-text-secondary mt-1">
                       Taxa de conclusão atual: <strong className={getCompletionColor(averageCompletion)}>{averageCompletion}%</strong>. 
                       Meta: 85%. {averageCompletion >= 85 ? 'Meta atingida!' : 'Continue incentivando os treinamentos.'}
                     </p>

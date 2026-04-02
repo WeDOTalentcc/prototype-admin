@@ -80,7 +80,7 @@ export function JobsTable({
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
-        <thead className="bg-gray-50 dark:bg-lia-bg-primary/50 border-b border-lia-border-subtle dark:border-lia-border-subtle">
+        <thead className="bg-lia-bg-secondary dark:bg-lia-bg-primary/50 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <tr>
             <th className="text-left p-4">
               <button
@@ -136,7 +136,7 @@ export function JobsTable({
           {jobs.map((job) => (
             <tr
               key={job.id}
-              className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors motion-reduce:transition-none"
+              className="border-b border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 cursor-pointer transition-colors motion-reduce:transition-none"
               onClick={() => onJobClick(job)}
             >
               <td className="p-4">

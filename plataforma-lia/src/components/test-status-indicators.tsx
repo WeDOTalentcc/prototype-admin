@@ -18,7 +18,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
  candidate.technicalTestScore
             ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
-            : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
+            : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary'
         }`}>
           <FileText className="w-4 h-4" />
         </div>
@@ -40,7 +40,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
  candidate.englishTestScore
             ? 'bg-wedo-purple/15 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple'
-            : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
+            : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary'
         }`}>
           <Globe className="w-4 h-4" />
         </div>
@@ -61,7 +61,7 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
         <div className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none ${
  candidate.bigFiveScores
             ? 'bg-wedo-magenta/15 dark:bg-wedo-magenta/30 text-wedo-magenta dark:text-wedo-magenta'
-            : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
+            : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary'
         }`}>
           <User className="w-4 h-4" />
         </div>

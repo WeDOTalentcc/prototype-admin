@@ -44,7 +44,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="Sodexo do Brasil Comercial S.A."
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -55,7 +55,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="Sodexo Brasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -66,7 +66,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="12.345.678/0001-90"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -77,7 +77,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="123.456.789.012"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -88,7 +88,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="date"
                 defaultValue="1966-03-15"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -97,7 +97,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option>1-10 funcionários</option>
                 <option>11-50 funcionários</option>
@@ -118,7 +118,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="url"
                 defaultValue="https://sodexo.com.br"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -129,7 +129,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="email"
                 defaultValue="contato@sodexo.com.br"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -140,7 +140,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="tel"
                 defaultValue="(11) 3049-6300"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -151,7 +151,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="tel"
                 placeholder="(11) 99999-9999"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
           </div>
@@ -164,7 +164,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               rows={4}
               defaultValue="A Sodexo é uma empresa francesa líder mundial em serviços de alimentação e facilities management, presente em 55 países. No Brasil desde 1997, oferece soluções integradas que melhoram a qualidade de vida diária."
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
             />
           </div>
         </CardContent>
@@ -175,7 +175,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
           <CardTitle>Logotipo da Empresa</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md p-6 text-center bg-gray-50 dark:bg-lia-bg-secondary">
+          <div className="rounded-md p-6 text-center bg-lia-bg-secondary dark:bg-lia-bg-secondary">
             <Upload className="w-8 h-8 mx-auto mb-2 text-lia-text-primary" />
             <p className="text-sm text-lia-text-primary mb-2">
               Faça upload do logotipo da empresa
@@ -209,7 +209,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="04571-020"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 placeholder="00000-000"
               />
             </div>
@@ -221,7 +221,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="Rua Dr. Geraldo Campos Moreira"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
           </div>
@@ -235,7 +235,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="375"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div className="md:col-span-2">
@@ -246,7 +246,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 placeholder="Andar, sala, bloco..."
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -257,7 +257,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="Cidade Monções"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
           </div>
@@ -271,7 +271,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="São Paulo"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -281,7 +281,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               <select
                 defaultValue="SP"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="">Selecione o estado</option>
                 <option value="AC">Acre</option>
@@ -322,7 +322,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
             <select
               defaultValue="BR"
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
             >
               <option value="BR">Brasil</option>
               <option value="US">Estados Unidos</option>
@@ -356,19 +356,19 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="url"
                 placeholder="https://instagram.com/sodexobrasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-gray-700 rounded-md"></div>
+                <div className="w-5 h-5 bg-lia-bg-inverse rounded-md"></div>
                 Facebook
               </label>
               <input
                 type="url"
                 placeholder="https://facebook.com/sodexobrasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -380,19 +380,19 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="url"
                 defaultValue="https://linkedin.com/company/sodexo"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-gray-900 rounded-md"></div>
+                <div className="w-5 h-5 bg-lia-btn-primary-bg rounded-md"></div>
                 Twitter/X
               </label>
               <input
                 type="url"
                 placeholder="https://twitter.com/sodexobrasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -404,7 +404,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="url"
                 placeholder="https://youtube.com/@sodexobrasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
@@ -416,7 +416,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="url"
                 placeholder="https://tiktok.com/@sodexobrasil"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
           </div>
@@ -432,7 +432,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                   type="url"
                   placeholder="https://blog.sodexo.com.br"
                   onChange={() => onSettingsChange(true)}
-                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 />
               </div>
               <div>
@@ -443,7 +443,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                   type="url"
                   placeholder="https://carreiras.sodexo.com.br"
                   onChange={() => onSettingsChange(true)}
-                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 />
               </div>
             </div>
@@ -471,7 +471,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               <select
                 defaultValue="servicos"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="">Selecione o setor</option>
                 <option value="servicos">Alimentação e Serviços</option>
@@ -496,7 +496,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="Facilities Management e Food Services"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 placeholder="Ex: SaaS, E-commerce, Consultoria..."
               />
             </div>
@@ -507,7 +507,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               <select
                 defaultValue="grande"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="startup">Startup (até 50 funcionários)</option>
                 <option value="scaleup">Scaleup (51-500 funcionários)</option>
@@ -522,7 +522,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="">Selecione o modelo</option>
                 <option value="b2b">B2B (Business to Business)</option>
@@ -544,7 +544,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="">Selecione a faixa</option>
                 <option value="ate100k">Até R$ 100.000</option>
@@ -563,7 +563,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 type="text"
                 defaultValue="Brasil, França, Estados Unidos, Reino Unido, Alemanha, +50 países"
                 onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 placeholder="Ex: Brasil, Argentina, Chile..."
               />
             </div>
@@ -577,7 +577,7 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
               rows={3}
               defaultValue="Serviços de alimentação corporativa, gestão de facilities, vouchers e cartões alimentação, benefícios para funcionários, gestão de espaços corporativos."
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               placeholder="Descreva os principais produtos ou serviços oferecidos..."
             />
           </div>
@@ -688,8 +688,8 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 onClick={() => setActiveSubTab(tab.id as Parameters<typeof setActiveSubTab>[0])}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors motion-reduce:transition-none font-crimson ${
                   activeSubTab === tab.id
- ? 'bg-gray-50 dark:bg-lia-bg-secondary text-lia-text-primary'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800 text-lia-text-primary'
+ ? 'bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary'
+                    : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover text-lia-text-primary'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -730,7 +730,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
               rows={3}
               defaultValue="Melhorar a qualidade de vida diária de todos os que servimos por meio de serviços de alimentação e facilities únicos e inovadores."
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             />
           </div>
           <div>
@@ -741,7 +741,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
               rows={3}
               defaultValue="Ser a empresa líder mundial em serviços de qualidade de vida, criando valor para todas as partes interessadas."
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             />
           </div>
           <div>
@@ -752,7 +752,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
               rows={3}
               defaultValue="Conectar pessoas, lugares e experiências para criar um mundo melhor através de serviços essenciais que melhoram a vida diária."
               onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             />
           </div>
         </CardContent>
@@ -812,7 +812,7 @@ export function StructureTab({ onSettingsChange }: { onSettingsChange: (changed:
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md p-8 text-center bg-gray-50 dark:bg-lia-bg-secondary">
+          <div className="rounded-md p-8 text-center bg-lia-bg-secondary dark:bg-lia-bg-secondary">
             <Upload className="w-12 h-12 mx-auto mb-4 text-lia-text-primary" />
             <h4 className="text-sm font-medium text-lia-text-primary mb-2">
               Faça upload do organograma da empresa
@@ -832,7 +832,7 @@ export function StructureTab({ onSettingsChange }: { onSettingsChange: (changed:
           <CardTitle>Estrutura de Cargos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md p-6 text-center mb-4 bg-gray-50 dark:bg-lia-bg-secondary">
+          <div className="rounded-md p-6 text-center mb-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
             <FileText className="w-8 h-8 mx-auto mb-2 text-lia-text-primary" />
             <p className="text-sm text-lia-text-primary mb-2">
               Upload da planilha de cargos e descrições

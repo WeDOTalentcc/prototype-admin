@@ -138,10 +138,10 @@ export function CandidateCell({
 
 export function ScoreCell({ score, showIcon = true }: { score: number; showIcon?: boolean }) {
   const getScoreStyle = (score: number): React.CSSProperties => {
-    if (score >= 90) return { backgroundColor: 'var(--gray-100)', color: 'var(--status-success)' }
-    if (score >= 80) return { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-cyan-dark)' }
-    if (score >= 70) return { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-orange)' }
-    return { color: 'var(--gray-800)' }
+    if (score >= 90) return { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--status-success)' }
+    if (score >= 80) return { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-cyan-dark)' }
+    if (score >= 70) return { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-orange)' }
+    return { color: 'var(--lia-text-primary)' }
   }
 
   if (!score || score <= 0) return null
@@ -236,11 +236,11 @@ export function SourceCell({ source }: { source?: string }) {
 
   const getSourceConfig = (src: string): { label: string; style: React.CSSProperties } => {
     const lower = src.toLowerCase()
-    if (lower.includes('linkedin')) return { label: 'LinkedIn', style: { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-cyan-dark)' } }
-    if (lower.includes('pearch')) return { label: 'Pearch', style: { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-purple)' } }
-    if (lower.includes('local') || lower.includes('base')) return { label: 'Base Local', style: { backgroundColor: 'var(--gray-100)', color: 'var(--status-success)' } }
-    if (lower.includes('manual') || lower.includes('recruiter')) return { label: 'Manual', style: { color: 'var(--gray-800)' } }
-    return { label: src, style: { color: 'var(--gray-800)' } }
+    if (lower.includes('linkedin')) return { label: 'LinkedIn', style: { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-cyan-dark)' } }
+    if (lower.includes('pearch')) return { label: 'Pearch', style: { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-purple)' } }
+    if (lower.includes('local') || lower.includes('base')) return { label: 'Base Local', style: { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--status-success)' } }
+    if (lower.includes('manual') || lower.includes('recruiter')) return { label: 'Manual', style: { color: 'var(--lia-text-primary)' } }
+    return { label: src, style: { color: 'var(--lia-text-primary)' } }
   }
 
   const config = getSourceConfig(source)
@@ -319,10 +319,10 @@ export function WorkModelCell({ model }: { model?: string }) {
 
   const getModelConfig = (m: string): { label: string; style: React.CSSProperties } => {
     const lower = m.toLowerCase()
-    if (lower === 'remoto') return { label: 'Remoto', style: { backgroundColor: 'var(--gray-100)', color: 'var(--status-success)' } }
-    if (lower === 'híbrido') return { label: 'Híbrido', style: { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-cyan-dark)' } }
-    if (lower === 'presencial') return { label: 'Presencial', style: { backgroundColor: 'var(--gray-100)', color: 'var(--wedo-orange)' } }
-    return { label: m, style: { color: 'var(--gray-800)' } }
+    if (lower === 'remoto') return { label: 'Remoto', style: { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--status-success)' } }
+    if (lower === 'híbrido') return { label: 'Híbrido', style: { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-cyan-dark)' } }
+    if (lower === 'presencial') return { label: 'Presencial', style: { backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-orange)' } }
+    return { label: m, style: { color: 'var(--lia-text-primary)' } }
   }
 
   const config = getModelConfig(model)
@@ -386,11 +386,11 @@ export function NoteCell({
 
 // Helper to get sub-status color based on properties
 function getSubStatusColors(status?: SubStatus): { bg: string; text: string; bgStyle: string; textStyle: string } {
-  if (!status) return { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary', bgStyle: 'var(--gray-200)', textStyle: 'var(--gray-400)' }
- if (status.isApproval) return { bg: 'bg-gray-100', text: 'text-lia-text-primary', bgStyle: 'var(--wedo-cyan-bg-15)', textStyle: 'var(--gray-600)' }
+  if (!status) return { bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary', bgStyle: 'var(--lia-border-subtle)', textStyle: 'var(--lia-text-tertiary)' }
+ if (status.isApproval) return { bg: 'bg-lia-bg-tertiary', text: 'text-lia-text-primary', bgStyle: 'var(--wedo-cyan-bg-15)', textStyle: 'var(--lia-text-secondary)' }
   if (status.isRejection) return { bg: 'bg-status-error/15 dark:bg-status-error/30', text: 'text-status-error dark:text-status-error', bgStyle: 'var(--status-error-bg-15)', textStyle: 'var(--status-error)' }
   if (status.isWaiting) return { bg: 'bg-status-warning/15 dark:bg-status-warning/30', text: 'text-status-warning dark:text-status-warning', bgStyle: 'var(--status-warning-bg-15)', textStyle: 'var(--status-warning)' }
-  return { bg: 'bg-gray-100 dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary', bgStyle: 'var(--gray-bg-15)', textStyle: 'var(--gray-400)' }
+  return { bg: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary', text: 'text-lia-text-secondary', bgStyle: 'var(--lia-bg-tertiary)', textStyle: 'var(--lia-text-tertiary)' }
 }
 
 export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?: string }) {
@@ -493,8 +493,8 @@ export function InteractiveSubStatusCell({
                 onClick={() => handleStatusChange(status.name)}
                 className={`w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors motion-reduce:transition-none ${
  isSelected 
-                    ? 'bg-gray-100 dark:bg-lia-bg-secondary' 
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                    ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary' 
+                    : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50'
                 }`}
               >
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColors.bg} ${statusColors.text}`}>
@@ -575,7 +575,7 @@ export function InteractiveStageCell({
     return (
       <Badge 
         className="text-micro px-1.5 py-0.5 font-medium"
-        style={{backgroundColor: currentStageInfo?.color || 'var(--gray-200)'}}
+        style={{backgroundColor: currentStageInfo?.color || 'var(--lia-border-subtle)'}}
       >
         {stageDisplayName}
       </Badge>
@@ -593,7 +593,7 @@ export function InteractiveStageCell({
       >
         <Badge 
           className="text-micro px-1.5 py-0.5 flex items-center gap-0.5 font-medium"
-          style={{backgroundColor: currentStageInfo?.color || 'var(--gray-200)'}}
+          style={{backgroundColor: currentStageInfo?.color || 'var(--lia-border-subtle)'}}
         >
           {stageDisplayName}
           <ChevronDown className="w-2.5 h-2.5" />
@@ -604,7 +604,7 @@ export function InteractiveStageCell({
         <DialogContent className="max-w-md" onClick={(e) => e.stopPropagation()}>
           <DialogHeader className="px-6 py-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
             <DialogTitle className="flex items-center gap-3 font-['Open_Sans',sans-serif] text-base font-semibold text-lia-text-primary">
-              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
                 <ArrowRight className="w-5 h-5 text-lia-text-secondary" />
               </div>
               Mover Candidato
@@ -613,7 +613,7 @@ export function InteractiveStageCell({
           
           <div className="space-y-5 py-3">
             {candidateName && (
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-subtle">
+              <div className="flex items-center gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-subtle">
                 {candidateAvatar && (
                   <NextImage src={candidateAvatar} alt={candidateName} width={40} height={40} className="w-10 h-10 rounded-full" />
                 )}
@@ -627,11 +627,11 @@ export function InteractiveStageCell({
             )}
 
             <div className="flex items-center gap-3 justify-center text-sm">
-              <span className="px-3 py-1.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-full text-lia-text-secondary text-xs font-medium">
+              <span className="px-3 py-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full text-lia-text-secondary text-xs font-medium">
                 {stageDisplayName}
               </span>
               <ArrowRight className="w-4 h-4 lia-text-secondary" />
- <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedStage ? 'dark:text-lia-text-tertiary border border-lia-border-default dark:border-lia-border-default' : 'bg-gray-100 lia-text-secondary'}`}>
+ <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedStage ? 'dark:text-lia-text-tertiary border border-lia-border-default dark:border-lia-border-default' : 'bg-lia-bg-tertiary lia-text-secondary'}`}>
                 {selectedStage ? (RECRUITMENT_STAGES.find(s => s.name === selectedStage)?.displayName || selectedStage) : 'Selecione'}
               </span>
             </div>
@@ -667,7 +667,7 @@ export function InteractiveStageCell({
             <div className="flex gap-2 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <Button 
                 variant="outline" 
-                className="flex-1 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-white text-lia-text-primary border border-lia-border-default hover:bg-gray-50 hover:border-gray-400 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700"
+                className="flex-1 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-bg-primary text-lia-text-primary border border-lia-border-default hover:bg-lia-bg-secondary hover:border-lia-border-medium dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
                 onClick={() => {
                   setOpen(false)
                   setSelectedStage('')
@@ -676,7 +676,7 @@ export function InteractiveStageCell({
                 Cancelar
               </Button>
               <Button 
-                className="flex-1 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700 dark:hover:bg-gray-200"
+                className="flex-1 text-xs font-semibold rounded-md transition-colors motion-reduce:transition-none duration-150 font-['Open_Sans'] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover active:bg-lia-bg-inverse dark:hover:bg-lia-interactive-active"
                 disabled={!selectedStage}
                 onClick={handleConfirm}
               >
@@ -700,7 +700,7 @@ export function StageCell({ stage }: { stage?: string }) {
   return (
     <Badge 
       className="text-micro px-1.5 py-0.5"
-      style={{backgroundColor: stageInfo?.color || 'var(--gray-400)', color: 'var(--gray-50)'}}
+      style={{backgroundColor: stageInfo?.color || 'var(--lia-text-tertiary)', color: 'var(--lia-bg-secondary)'}}
     >
       {displayName}
     </Badge>
@@ -728,7 +728,7 @@ export function ActionButtons({
       {needsAction && (
         <div className="absolute inset-0 flex items-center justify-end pr-1 group-hover:opacity-0 group-hover:pointer-events-none transition-opacity motion-reduce:transition-none duration-200">
           <div 
-            className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-800/[.08]"
+            className="flex items-center gap-1 px-2 py-1 rounded-full bg-lia-btn-primary-hover/[.08]"
           >
             <Zap className="w-3 h-3 text-lia-text-primary animate-pulse motion-reduce:animate-none" />
             <span className="text-micro font-semibold text-lia-text-primary">

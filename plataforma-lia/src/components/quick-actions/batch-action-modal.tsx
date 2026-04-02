@@ -96,8 +96,8 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div>
             <h3 className="text-lg font-semibold text-lia-text-primary">
@@ -146,8 +146,8 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
                   onClick={() => setAction(actionItem.id)}
                   className={`p-4 border rounded-md text-left transition-colors motion-reduce:transition-none ${
  action === actionItem.id
-                      ? 'border-lia-border-default bg-gray-100'
-                      : 'border-lia-border-subtle hover:bg-gray-50'
+                      ? 'border-lia-border-default bg-lia-bg-tertiary'
+                      : 'border-lia-border-subtle hover:bg-lia-bg-secondary'
                   }`}
                 >
                   <actionItem.icon className="w-5 h-5 mb-2" />
@@ -167,7 +167,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               <select
                 value={stage}
                 onChange={(e) => setStage(e.target.value)}
-                className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               >
                 <option value="">Selecione a etapa</option>
                 {stages.map((stageOption) => (
@@ -185,7 +185,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               <select
                 value={assignTo}
                 onChange={(e) => setAssignTo(e.target.value)}
-                className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+                className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               >
                 <option value="">Selecione o responsável</option>
                 {recruiters.map((recruiter) => (
@@ -204,7 +204,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={3}
-              className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-gray-900"
+              className="w-full p-3 border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg"
               placeholder="Adicione um comentário sobre esta ação..."
             />
           </div>
@@ -225,13 +225,13 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
 
           {/* Ações */}
           <div className="flex justify-end gap-3 pt-6 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-            <Button variant="outline" onClick={onClose} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
+            <Button variant="outline" onClick={onClose} className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
               Cancelar
             </Button>
             <Button
               onClick={handleExecute}
               disabled={!action || (action === 'move_stage' && !stage) || (action === 'assign' && !assignTo)}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               <Zap className="w-4 h-4" />
               Executar Ação

@@ -222,14 +222,14 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-[width,height]",
                 mode === m.key 
                   ? "" 
-                  : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                  : "hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover"
               )}
               style={mode === m.key 
                 ? { 
-                    backgroundColor: "var(--gray-800)",
+                    backgroundColor: "var(--lia-text-primary)",
                     color: "white",
                   } 
-                : { color: "var(--gray-600)" }
+                : { color: "var(--lia-text-secondary)" }
               }
             >
               <m.icon className="w-3.5 h-3.5" />
@@ -242,17 +242,17 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
             <button
               onClick={onOpenFilters}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-[width,height] hover:bg-gray-100 dark:hover:bg-gray-800",
-                (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-gray-900/20",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-[width,height] hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover",
+                (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-lia-btn-primary-bg/20",
                 (activeFiltersCount > 0 || filledCount > 0) ? "text-lia-text-primary" : "text-lia-text-secondary"
               )}
-              style={{backgroundColor: (activeFiltersCount > 0 || filledCount > 0) ? "var(--gray-bg-30)" : "transparent"}}
+              style={{backgroundColor: (activeFiltersCount > 0 || filledCount > 0) ? "var(--lia-interactive-active)" : "transparent"}}
             >
               <Filter className="w-3.5 h-3.5" />
               Filtros
               {(activeFiltersCount > 0 || filledCount > 0) && (
                 <Badge 
-                  className="ml-1 h-4 min-w-4 px-1 flex items-center justify-center text-xs bg-gray-900 text-white"
+                  className="ml-1 h-4 min-w-4 px-1 flex items-center justify-center text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text"
                 >
                   {Math.max(activeFiltersCount, filledCount)}
                 </Badge>
@@ -267,7 +267,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                 <TooltipTrigger asChild>
                   <button
                     onClick={onGoToResults}
-                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-[width,height] text-lia-text-primary"
+                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-lia-bg-tertiary transition-[width,height] text-lia-text-primary"
                   >
                     <Table2 className="w-4 h-4" />
                   </button>
@@ -362,7 +362,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
       <AlertDialog open={showSourceChangeModal} onOpenChange={setShowSourceChangeModal}>
         <AlertDialogContent 
           className="sm:max-w-[320px] w-[85vw] p-4 rounded-md border" 
-          style={{backgroundColor: 'var(--gray-50)'}}
+          style={{backgroundColor: 'var(--lia-bg-secondary)'}}
         >
           <AlertDialogTitle className="sr-only">
             {pendingSourceChange === 'hybrid' ? 'Ativar Busca Híbrida' : 'Ativar Busca Global'}
@@ -391,7 +391,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
               </div>
             </div>
             
-            <div className="bg-gray-50 rounded-md p-3 space-y-2 border border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary rounded-md p-3 space-y-2 border border-lia-border-subtle">
               {pendingSourceChange === 'hybrid' && (
                 <div className="flex justify-between text-xs">
                   <span className="text-lia-text-secondary">Local:</span>
@@ -414,13 +414,13 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                   setShowSourceChangeModal(false)
                   setPendingSourceChange(null)
                 }}
-                className="flex-1 h-8 text-xs px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-gray-50 font-medium transition-colors motion-reduce:transition-none"
+                className="flex-1 h-8 text-xs px-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary font-medium transition-colors motion-reduce:transition-none"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmSourceChange}
-                className="flex-1 h-8 text-xs px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors motion-reduce:transition-none hover:opacity-90 bg-gray-900"
+                className="flex-1 h-8 text-xs px-3 rounded-md text-white flex items-center justify-center gap-1.5 font-medium transition-colors motion-reduce:transition-none hover:opacity-90 bg-lia-btn-primary-bg"
               >
                 {pendingSourceChange === 'hybrid' ? (
                   <>

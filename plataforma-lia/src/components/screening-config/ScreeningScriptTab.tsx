@@ -531,7 +531,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center justify-between">
             <span className="text-micro lia-text-secondary">Score Mínimo</span>
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-btn-primary-bg text-white">{previewJob.screeningConfig?.settings?.min_score ?? 70}%</Badge>
+            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-btn-primary-bg text-lia-btn-primary-text">{previewJob.screeningConfig?.settings?.min_score ?? 70}%</Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro lia-text-secondary">Timeout Resposta</span>
@@ -568,7 +568,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
             <h5 className="text-xs font-semibold text-lia-text-primary">Agendamento Automático</h5>
           </div>
-          <Badge className={`${(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-lia-btn-primary-bg text-white' : 'bg-lia-border-medium text-white'} text-micro px-1.5 py-0 h-4`}>
+          <Badge className={`${(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text' : 'bg-lia-border-medium text-white'} text-micro px-1.5 py-0 h-4`}>
             {(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
           </Badge>
         </div>

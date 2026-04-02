@@ -121,13 +121,13 @@ interface CompanyDataSectionProps {
 }
 
 const inputClass = (disabled: boolean) => 
- `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary' : ''}`
+ `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle transition-colors ${disabled ? 'opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary' : ''}`
 
 const textareaClass = (disabled: boolean) => 
- `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors resize-none ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary' : ''}`
+ `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle transition-colors resize-none ${disabled ? 'opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary' : ''}`
 
 const selectClass = (disabled: boolean) => 
- `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-white focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 dark:focus:ring-gray-50/10 dark:focus:border-gray-50 transition-colors ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-50 dark:bg-lia-bg-primary' : ''}`
+ `w-full px-3 py-2 text-xs font-['Open_Sans',sans-serif] border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle transition-colors ${disabled ? 'opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary' : ''}`
 
 export function CompanyDataSection({
   companyData,
@@ -167,7 +167,7 @@ export function CompanyDataSection({
     return (
       <div className="space-y-4 animate-pulse motion-reduce:animate-none">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-24 bg-gray-100 rounded-md" />
+          <div key={i} className="h-24 bg-lia-bg-tertiary rounded-md" />
         ))}
       </div>
     )
@@ -189,9 +189,9 @@ export function CompanyDataSection({
       )}
 
       {/* Header com botão Editar/Salvar */}
-      <div className="flex items-center justify-between bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
+      <div className="flex items-center justify-between bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-900">
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-btn-primary-bg">
             <Building className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -204,7 +204,7 @@ export function CompanyDataSection({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated font-['Open_Sans',sans-serif]">
+          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated font-['Open_Sans',sans-serif]">
             {countActiveFields()} de {totalFields} campos ativos
           </span>
           {!isEditingCompanyData ? (
@@ -247,7 +247,7 @@ export function CompanyDataSection({
                 }}
                 disabled={saving}
                 size="sm"
-                className="gap-1.5 text-xs rounded-md bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
+                className="gap-1.5 text-xs rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
               >
                 {saving ? (
                   <>
@@ -397,10 +397,10 @@ export function CompanyDataSection({
       </div>
 
       {/* LIA Analysis Card - CYAN é mantido aqui pois é seção LIA/IA */}
-      <div className="rounded-md border border-lia-border-default dark:border-lia-border-default bg-gradient-to-r from-gray-50 dark:lia-from-900 to-transparent p-5">
+      <div className="rounded-md border border-lia-border-default dark:border-lia-border-default bg-gradient-to-r from-lia-bg-secondary dark:from-lia-bg-primary to-transparent p-5">
         <div className="flex items-start gap-4">
           <div
-            className="w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-900"
+            className="w-12 h-12 rounded-md flex items-center justify-center flex-shrink-0 bg-lia-btn-primary-bg"
           >
             <Brain className="w-6 h-6 text-white" />
           </div>
@@ -422,9 +422,9 @@ export function CompanyDataSection({
                     {Math.round(liaAnalysisProgress)}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-lia-interactive-active rounded-full h-2 overflow-hidden">
                   <div
-                    className="h-2 rounded-full transition-[width,height] duration-500 bg-gray-900" style={{width: `${liaAnalysisProgress}%`}}
+                    className="h-2 rounded-full transition-[width,height] duration-500 bg-lia-btn-primary-bg" style={{width: `${liaAnalysisProgress}%`}}
                   />
                 </div>
               </div>
@@ -432,7 +432,7 @@ export function CompanyDataSection({
               <Button
                 onClick={handleLiaAnalysis}
                 disabled={!isEditingCompanyData || !companyData.website}
-                className="gap-2 text-white hover:opacity-90 transition-opacity motion-reduce:transition-none text-xs bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200"
+                className="gap-2 text-white hover:opacity-90 transition-opacity motion-reduce:transition-none text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
               >
                 <Brain className="w-4 h-4 text-wedo-cyan" />
                 Analisar com LIA
@@ -517,7 +517,7 @@ export function CompanyDataSection({
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 {(companyData.values || []).map((value: string) => (
-                  <Badge key={value} className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
+                  <Badge key={value} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
                     {value}
                     {isEditingCompanyData && (
                       <button
@@ -566,7 +566,7 @@ export function CompanyDataSection({
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 {(companyData.coreCompetencies || []).map((comp: string) => (
-                  <Badge key={comp} className="bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
+                  <Badge key={comp} className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
                     {comp}
                     {isEditingCompanyData && (
                       <button
@@ -750,8 +750,8 @@ export function CompanyDataSection({
                     }}
                     className={`px-2.5 py-1.5 text-micro rounded-full border transition-colors motion-reduce:transition-none ${
                       isSelected
-                        ? 'bg-gray-900 border-gray-900 text-white dark:lia-border-50'
-                        : 'bg-white border-lia-border-subtle text-lia-text-secondary hover:border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default'
+                        ? 'bg-lia-btn-primary-bg border-lia-btn-primary-bg text-white dark:border-lia-border-subtle'
+                        : 'bg-lia-bg-primary border-lia-border-subtle text-lia-text-secondary hover:border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default'
                     } ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                   >
                     {isSelected && <CheckCircle className="w-2.5 h-2.5 inline mr-0.5" />}
@@ -778,7 +778,7 @@ export function CompanyDataSection({
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 {(companyData.seniority_levels || []).map((level: string) => (
-                  <Badge key={level} className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
+                  <Badge key={level} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
                     {level}
                     {isEditingCompanyData && (
                       <button
@@ -914,7 +914,7 @@ export function CompanyDataSection({
             size="sm"
             onClick={handleSaveCultureFields}
             disabled={saving}
-            className="text-micro rounded-md border-lia-border-default hover:bg-gray-100 dark:border-lia-border-default dark:hover:bg-gray-700"
+            className="text-micro rounded-md border-lia-border-default hover:bg-lia-bg-tertiary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
           >
             {saving ? (
               <>
@@ -941,7 +941,7 @@ export function CompanyDataSection({
           onToggleChange={updateLiaToggle}
           onInstructionSave={updateLiaInstruction}
         >
-          <div className="bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md p-4">
+          <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md p-4">
             <BigFiveRadar
               scores={{
                 openness: companyData.openness_score ?? 50,

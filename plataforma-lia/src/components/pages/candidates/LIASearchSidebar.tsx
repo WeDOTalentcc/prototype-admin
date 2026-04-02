@@ -93,12 +93,12 @@ export function LIASearchSidebar({
       className={`transition-colors motion-reduce:transition-none duration-300 relative group ${isLiaSuperChat ? 'flex-1 z-10' : 'flex-shrink-0'}`}
       style={{width: isLiaSuperChat ? 'auto' : `${liaWidth}px`, maxWidth: isLiaSuperChat ? 'none' : `${liaWidth}px`}}
     >
-      <Card className="h-full flex flex-col overflow-hidden border border-lia-border-default bg-white dark:bg-lia-bg-secondary">
+      <Card className="h-full flex flex-col overflow-hidden border border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-secondary">
         {/* Header */}
-        <div className="flex-shrink-0 px-4 py-3 bg-white dark:bg-lia-bg-secondary">
+        <div className="flex-shrink-0 px-4 py-3 bg-lia-bg-primary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-50 dark:bg-lia-bg-primary">
+              <div className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-lia-bg-secondary dark:bg-lia-bg-primary">
                 <Brain className="w-6 h-6 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="min-w-0 flex-1">
@@ -115,7 +115,7 @@ export function LIASearchSidebar({
                     <Button
                       variant="ghost" size="sm"
                       onClick={() => { if (isLiaSuperChat) { setIsLiaSuperChat(false) } else { setIsLiaSuperChat(true); setSuperChatWidth(Math.max(superChatWidth, 600)) } }}
-                      className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0"
+                      className="h-7 w-7 p-0 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none flex-shrink-0"
                     >
                       {isLiaSuperChat ? <PanelLeftClose className="w-4 h-4 text-lia-text-secondary" /> : <Maximize2 className="w-4 h-4 text-lia-text-tertiary" />}
                     </Button>
@@ -123,7 +123,7 @@ export function LIASearchSidebar({
                   <TooltipContent><p className="text-xs">{isLiaSuperChat ? 'Retrair chat' : 'Expandir para Superchat'}</p></TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0 rounded-full hover:bg-gray-100 transition-colors motion-reduce:transition-none flex-shrink-0">
+              <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0 rounded-full hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none flex-shrink-0">
                 <X className="w-4 h-4 text-lia-text-tertiary" />
               </Button>
             </div>
@@ -190,7 +190,7 @@ export function LIASearchSidebar({
           document.addEventListener('mouseup', handleMouseUp)
         }}
       >
-        <div className={`w-1 rounded-full transition-colors motion-reduce:transition-none ${isLiaSuperChat ? 'h-24 bg-gray-900' : 'h-8 dark:bg-lia-bg-elevated hover:dark:hover:bg-gray-800'}`} />
+        <div className={`w-1 rounded-full transition-colors motion-reduce:transition-none ${isLiaSuperChat ? 'h-24 bg-lia-btn-primary-bg' : 'h-8 dark:bg-lia-bg-elevated hover:dark:hover:bg-lia-btn-primary-hover'}`} />
       </div>
     </div>
   )

@@ -477,7 +477,7 @@ export function JobStatusModal({
               <div className={cn(
                 "w-5 h-5 rounded-full flex items-center justify-center text-micro font-medium",
                 step.done 
-                  ? "bg-lia-btn-primary-bg text-white" 
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                   : currentStep === 'options' && index === 0 
                     ? "bg-lia-bg-tertiary text-lia-text-primary border border-lia-btn-primary-bg"
                     : currentStep === 'communication' && index === 1
@@ -529,7 +529,7 @@ export function JobStatusModal({
               className={cn(
                 "h-8 px-3 text-xs gap-1.5",
                 notificationChannel === channel 
-                  ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white" 
+                  ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" 
                   : "border border-lia-border-default text-lia-text-secondary"
               )}
             >

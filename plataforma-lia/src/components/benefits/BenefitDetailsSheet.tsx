@@ -38,12 +38,12 @@ const BENEFIT_CATEGORIES: {
 }[] = [
   { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error", bgColor: "bg-status-error/10 dark:bg-status-error/20" },
   { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10 dark:bg-wedo-orange/10/20" },
-  { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-secondary", bgColor: "bg-gray-100 dark:bg-lia-bg-secondary" },
+  { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10 dark:bg-wedo-purple/20" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success", bgColor: "bg-status-success/10 dark:bg-status-success/20" },
- { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-secondary", bgColor: "bg-gray-50 dark:bg-lia-bg-secondary" },
+ { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-secondary dark:bg-lia-bg-secondary" },
   { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta", bgColor: "bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-  { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-primary", bgColor: "bg-gray-50 dark:bg-lia-bg-secondary/50" },
+  { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-primary", bgColor: "bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
 ]
 
 const SENIORITY_LEVELS: { id: string; name: string }[] = [
@@ -131,7 +131,7 @@ export function BenefitDetailsSheet({
         <SheetHeader className="px-6 pt-6 pb-4 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div 
-              className="p-2.5 rounded-md bg-gray-200/30"
+              className="p-2.5 rounded-md bg-lia-interactive-active/30"
             >
               <Gift className="w-5 h-5 text-lia-text-secondary" />
             </div>
@@ -232,9 +232,9 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
  p-3 rounded-md border transition-colors duration-200
         ${isHighlighted 
           ? 'border-status-warning/30 dark:border-status-warning/30/50 bg-status-warning/10/50' 
-          : 'border-lia-border-subtle bg-white dark:bg-lia-bg-primary/50'
+          : 'border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary/50'
         }
-        hover:hover:border-lia-border-subtle dark:hover:border-gray-700
+        hover:hover:border-lia-border-subtle dark:hover:border-lia-border-strong
       `}
     >
       <div className="flex items-start justify-between gap-3">
@@ -262,19 +262,19 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
 
           <div className="flex flex-wrap items-center gap-2 text-xs text-lia-text-primary">
             {valueDisplay && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                 {benefit.value_type === "monetary" && <DollarSign className="w-3 h-3" />}
                 {benefit.value_type === "percentage" && <Percent className="w-3 h-3" />}
                 {valueDisplay}
               </span>
             )}
             
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
               <Clock className="w-3 h-3" />
               {getWaitingPeriodLabel(benefit.waiting_period_days)}
             </span>
             
-            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-lia-bg-secondary">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary">
               <Users className="w-3 h-3" />
               {getSeniorityLabel(benefit.seniority_levels)}
             </span>

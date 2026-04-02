@@ -78,7 +78,7 @@ export function CandidatesTableArea({
   onLoadMore,
 }: CandidatesTableAreaProps) {
   return (
-    <div className={`bg-white dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 ${
+    <div className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-colors motion-reduce:transition-none duration-300 ${
       isLiaSuperChat
         ? 'w-14 flex-shrink-0'
         : 'flex-1 min-w-0 h-full'
@@ -89,7 +89,7 @@ export function CandidatesTableArea({
             variant="ghost"
             size="sm"
             onClick={() => setIsLiaSuperChat(false)}
-            className="h-10 w-10 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="h-10 w-10 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
             title="Expandir tabela de candidatos"
           >
             <ChevronRight className="w-5 h-5 text-lia-text-primary" />
@@ -108,7 +108,7 @@ export function CandidatesTableArea({
           </div>
 
           {selectedCandidatesForBatch.size > 0 && (
-            <Badge className="bg-gray-900 dark:bg-gray-50 text-white text-xs px-1.5 py-0.5">
+            <Badge className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white text-xs px-1.5 py-0.5">
               {selectedCandidatesForBatch.size}
             </Badge>
           )}
@@ -118,7 +118,7 @@ export function CandidatesTableArea({
           <div ref={tableContainerRef} className="flex-1 relative overflow-auto">
             {isLoading && (
               <div
-                className="flex items-center justify-center h-full absolute inset-0 z-20 bg-white dark:bg-lia-bg-primary"
+                className="flex items-center justify-center h-full absolute inset-0 z-20 bg-lia-bg-primary dark:bg-lia-bg-primary"
                 role="status"
                 aria-live="polite"
                 aria-label="Carregando..."
@@ -185,7 +185,7 @@ export function CandidatesTableArea({
             )}
 
             {!isLoading && !showSearchResults && getPaginatedCandidates().totalPages > 1 && (
-              <div className="bg-white dark:bg-lia-bg-primary rounded-md p-3 mt-2">
+              <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-3 mt-2">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-lia-text-primary">
                     Mostrando {((currentPage - 1) * itemsPerPage) + 1} -{' '}
@@ -256,7 +256,7 @@ export function CandidatesTableArea({
             )}
 
             {!isLoading && sortedCandidates.length === 0 && (
-              <div className="bg-white dark:bg-lia-bg-primary rounded-md p-8 text-center">
+              <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-8 text-center">
                 <Users className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-lia-text-primary mb-2">
                   Nenhum candidato encontrado

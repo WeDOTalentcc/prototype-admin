@@ -31,9 +31,9 @@ import { sanitizeEmailHtml } from "@/lib/sanitize"
 
 const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
   interview: { label: "Entrevista", color: "bg-wedo-cyan/10 text-wedo-cyan-dark dark:bg-wedo-cyan/15 dark:text-wedo-cyan" },
-  rejection: { label: "Rejeição", color: "bg-gray-100 text-lia-text-primary" },
+  rejection: { label: "Rejeição", color: "bg-lia-bg-tertiary text-lia-text-primary" },
   offer: { label: "Proposta", color: "bg-status-success/10 text-status-success" },
-  followup: { label: "Follow-up", color: "bg-gray-100 text-lia-text-primary" },
+  followup: { label: "Follow-up", color: "bg-lia-bg-tertiary text-lia-text-primary" },
   screening: { label: "Triagem", color: "bg-status-warning/10 text-status-warning" },
 }
 
@@ -320,9 +320,9 @@ export function EmailTemplatesManager() {
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse motion-reduce:animate-none">
               <CardContent className="pt-6">
-                <div className="h-4 bg-gray-200 rounded-md w-3/4 mb-3" />
-                <div className="h-3 bg-gray-200 rounded-md w-full mb-2" />
-                <div className="h-3 bg-gray-200 rounded-md w-1/2" />
+                <div className="h-4 bg-lia-interactive-active rounded-md w-3/4 mb-3" />
+                <div className="h-3 bg-lia-interactive-active rounded-md w-full mb-2" />
+                <div className="h-3 bg-lia-interactive-active rounded-md w-1/2" />
               </CardContent>
             </Card>
           ))}
@@ -370,7 +370,7 @@ export function EmailTemplatesManager() {
                     {template.category && (
                       <Badge
                         className={`text-xs ${
- CATEGORY_LABELS[template.category]?.color || "bg-gray-100 text-lia-text-primary"
+ CATEGORY_LABELS[template.category]?.color || "bg-lia-bg-tertiary text-lia-text-primary"
                         }`}
                       >
                         {CATEGORY_LABELS[template.category]?.label || template.category}
@@ -472,12 +472,12 @@ export function EmailTemplatesManager() {
           </DialogHeader>
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-4">
-              <div className="p-3 bg-gray-50 rounded-md">
+              <div className="p-3 bg-lia-bg-secondary rounded-md">
                 <span className="text-sm font-medium text-lia-text-secondary">Assunto:</span>
                 <p className="text-lia-text-primary">{selectedTemplate?.subject}</p>
               </div>
               <div className="border rounded-md overflow-hidden">
-                <div className="bg-gray-100 px-4 py-2 text-sm font-medium text-lia-text-secondary border-b">
+                <div className="bg-lia-bg-tertiary px-4 py-2 text-sm font-medium text-lia-text-secondary border-b">
                   Corpo do Email (HTML)
                 </div>
                 <div
@@ -488,7 +488,7 @@ export function EmailTemplatesManager() {
                 />
               </div>
               {selectedTemplate?.variables && selectedTemplate.variables.length > 0 && (
-                <div className="p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+                <div className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                   <span className="text-sm font-medium text-lia-text-secondary">Variáveis:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedTemplate.variables.map((v) => (

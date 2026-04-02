@@ -50,13 +50,13 @@ export const createStageSlug = (stageName: string): string => {
 }
 
 export const DYNAMIC_STAGE_COLORS = [
-  'var(--gray-600)',
-  'var(--gray-600)',
-  'var(--gray-400)',
-  'var(--gray-400)',
-  'var(--gray-400)',
-  'var(--gray-600)',
-  'var(--gray-600)',
+  'var(--lia-text-secondary)',
+  'var(--lia-text-secondary)',
+  'var(--lia-text-tertiary)',
+  'var(--lia-text-tertiary)',
+  'var(--lia-text-tertiary)',
+  'var(--lia-text-secondary)',
+  'var(--lia-text-secondary)',
 ]
 
 export const inferActionBehavior = (slug: string, stageType?: string): string => {
@@ -99,7 +99,7 @@ export const mapInterviewStagesToKanban = (
         const displayName = stage.stageName || stage.displayName || stage.name || 'Sem nome'
         const stageId = stage.name || createStageSlug(displayName)
         const isIntermediate = !stage.isInitial && !stage.isFinal && stage.stageType === 'active'
-        const color = stage.color || (isIntermediate ? DYNAMIC_STAGE_COLORS[colorIndex++ % DYNAMIC_STAGE_COLORS.length] : 'var(--gray-600)')
+        const color = stage.color || (isIntermediate ? DYNAMIC_STAGE_COLORS[colorIndex++ % DYNAMIC_STAGE_COLORS.length] : 'var(--lia-text-secondary)')
         return {
           id: stageId,
           name: stageId,
@@ -138,7 +138,7 @@ export const mapInterviewStagesToKanban = (
     // @ts-ignore // TODO: fix type
     // @ts-ignore // TODO: fix type
     { id: 'sourcing', name: 'sourcing', displayName: 'Funil', order: 0, stageType: 'active', isInitial: true, actionBehavior: 'intake' },
-    { id: 'screening', name: 'screening', displayName: 'Triagem', order: 1, color: 'var(--gray-600)', stageType: 'active', isInitial: false, actionBehavior: 'screening' }
+    { id: 'screening', name: 'screening', displayName: 'Triagem', order: 1, color: 'var(--lia-text-secondary)', stageType: 'active', isInitial: false, actionBehavior: 'screening' }
   ]
   // @ts-ignore // TODO: fix type
   const systemFinalStages: DynamicStage[] = [

@@ -138,7 +138,7 @@ export function AnaliseCompetenciasPlaceholder() {
               </div>
               <Badge className="bg-status-error/15 text-status-error dark:bg-status-error/30 dark:text-status-error font-inter font-bold">Gap 73%</Badge>
             </div>
-            <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
+            <div className="flex w-full h-3 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
               <div className="bg-wedo-green-bright w-[27%]" title="Disponível"></div>
               <div className="bg-wedo-magenta w-[73%]" title="Gap"></div>
             </div>
@@ -153,7 +153,7 @@ export function AnaliseCompetenciasPlaceholder() {
               </div>
               <Badge className="bg-wedo-orange/15 text-wedo-orange dark:bg-wedo-orange/30 dark:text-wedo-orange font-inter font-bold">Gap 55%</Badge>
             </div>
-            <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
+            <div className="flex w-full h-3 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
               <div className="bg-wedo-green-bright w-[45%]" title="Disponível"></div>
               <div className="bg-wedo-orange w-[55%]" title="Gap"></div>
             </div>
@@ -168,7 +168,7 @@ export function AnaliseCompetenciasPlaceholder() {
               </div>
               <Badge className="bg-status-warning/15 text-status-warning dark:bg-status-warning/30 dark:text-status-warning font-inter font-bold">Gap 31%</Badge>
             </div>
-            <div className="flex w-full h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-lia-bg-elevated">
+            <div className="flex w-full h-3 rounded-full overflow-hidden bg-lia-interactive-active dark:bg-lia-bg-elevated">
               <div className="bg-wedo-green-bright w-[69%]" title="Disponível"></div>
               <div className="bg-wedo-orange w-[31%]" title="Gap"></div>
             </div>
@@ -187,12 +187,12 @@ export function AnaliseCompetenciasPlaceholder() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
- <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
+ <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-subtle">
               <div>
                 <p className="font-open-sans font-semibold text-lia-text-primary text-sm">Prompt Engineering</p>
                 <p className={`${textStyles.description}`}>23 vagas este mês</p>
               </div>
- <Badge className="bg-gray-100 text-lia-text-primary font-inter font-bold">+340%</Badge>
+ <Badge className="bg-lia-bg-tertiary text-lia-text-primary font-inter font-bold">+340%</Badge>
             </div>
 
             <div className="flex items-center justify-between p-3 bg-wedo-purple/10 dark:bg-wedo-purple/20 rounded-md border border-wedo-purple/30 dark:border-wedo-purple/30">

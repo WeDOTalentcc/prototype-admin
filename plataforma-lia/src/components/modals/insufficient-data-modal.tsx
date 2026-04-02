@@ -156,7 +156,7 @@ export function InsufficientDataModal({
           <Button 
             variant="outline" 
             onClick={onClose}
-            className="gap-2 bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
+            className="gap-2 bg-lia-bg-primary border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg"
           >
             <X className="w-4 h-4" />
             {hasEnoughData ? 'Cancelar' : 'Entendi'}
@@ -164,7 +164,7 @@ export function InsufficientDataModal({
           {hasEnoughData && onProceedAnyway && (
             <Button
               onClick={onProceedAnyway}
-              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
+              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               <AlertTriangle className="w-4 h-4" />
               Gerar mesmo assim

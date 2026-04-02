@@ -83,7 +83,7 @@ const SmartSearchInput = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-lg animate-pulse motion-reduce:animate-none" />
+      <div className="h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-lg animate-pulse motion-reduce:animate-none" />
     ),
   }
 )
@@ -788,7 +788,7 @@ user, router,
   }
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30'
-    if (score >= 80) return 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle'
+    if (score >= 80) return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle'
     if (score >= 70) return 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning border-status-warning/30 dark:border-status-warning/30'
     return 'bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30'
   }

@@ -77,8 +77,8 @@ export function CompanyDataCard({
   return (
     <div 
       className={cn(
-        "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 transition-colors",
-        localIsActive ? "border-l-[3px] border-l-gray-900 dark:lia-border-l-50" : "border-l-[3px] border-l-gray-200 dark:lia-border-l-700",
+        "bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 transition-colors",
+        localIsActive ? "border-l-[3px] border-l-lia-btn-primary-bg dark:border-l-lia-border-subtle" : "border-l-[3px] border-l-lia-border-subtle dark:border-l-lia-border-strong",
         !localIsActive && "opacity-60",
         className
       )}
@@ -89,7 +89,7 @@ export function CompanyDataCard({
             {label}
           </span>
           {category && (
-            <span className={cn(textStyles.caption, "bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full")}>
+            <span className={cn(textStyles.caption, "bg-lia-bg-tertiary dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full")}>
               {category}
             </span>
           )}
@@ -108,15 +108,15 @@ export function CompanyDataCard({
                 "inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors flex-shrink-0",
                 (!localIsActive || !isEditing) && "opacity-40 cursor-not-allowed",
                 localIsActive && isEditing && hasInstruction
- ? "text-lia-text-secondary hover:bg-gray-100"
-                  : "bg-gray-50 text-lia-text-secondary hover:bg-gray-100 hover:text-lia-text-secondary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+ ? "text-lia-text-secondary hover:bg-lia-bg-tertiary"
+                  : "bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-secondary dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
               )}
             >
               <Bot className="w-4 h-4" />
             </button>
           </PopoverTrigger>
           <PopoverContent 
-            className="w-80 bg-white dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle p-0"
+            className="w-80 bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle p-0"
             side="left"
             align="start"
           >
@@ -142,11 +142,11 @@ export function CompanyDataCard({
                 value={instruction}
                 onChange={(e) => setInstruction(e.target.value)}
                 placeholder="Adicione instruções que ajudarão a LIA a interpretar melhor este campo..."
-                className="min-h-[100px] text-xs border-lia-border-subtle dark:border-lia-border-default focus:ring-gray-900 focus:border-gray-900 dark:focus:ring-gray-50 dark:focus:border-gray-50 resize-none"
+                className="min-h-[100px] text-xs border-lia-border-subtle dark:border-lia-border-default focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle dark:focus:border-lia-border-subtle resize-none"
               />
 
               {examples.length > 0 && (
-                <div className="space-y-2 p-3 bg-gray-50 dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+                <div className="space-y-2 p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
                   <div className="flex items-center gap-1 text-xs font-medium uppercase text-lia-text-secondary">
                     <Info className="w-3 h-3" />
                     <span>Exemplos</span>
@@ -156,7 +156,7 @@ export function CompanyDataCard({
                       <button
                         key={idx}
                         onClick={() => setInstruction(example)}
-                        className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-md hover:bg-lia-bg-primary dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+                        className="block w-full text-left text-xs text-lia-text-secondary hover:text-lia-text-primary p-1.5 rounded-md hover:bg-lia-bg-primary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
                       >
                         "{example}"
                       </button>
@@ -178,7 +178,7 @@ export function CompanyDataCard({
                   size="sm"
                   onClick={handleSaveInstruction}
                   disabled={isSaving}
-                  className="text-xs h-8 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="text-xs h-8 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   {isSaving ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1" />
@@ -196,12 +196,12 @@ export function CompanyDataCard({
           checked={localIsActive}
           onCheckedChange={handleToggle}
           disabled={!isEditing}
-          className="data-[state=checked]:bg-gray-900 dark:data-[state=checked]:bg-gray-50 flex-shrink-0"
+          className="data-[state=checked]:bg-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-bg-secondary flex-shrink-0"
         />
       </div>
 
       {hasInstruction && (
-        <div className="mt-2 p-2 bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-md">
+        <div className="mt-2 p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default rounded-md">
           <div className="flex items-start gap-2">
             <Bot className="w-3 h-3 text-lia-text-secondary mt-0.5 flex-shrink-0" />
             <p className={cn(textStyles.caption, "leading-relaxed")}>
@@ -234,7 +234,7 @@ export function SimpleDataCard({
   return (
     <div 
       className={cn(
-        "bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 transition-colors",
+        "bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md px-4 py-3 transition-colors",
         className
       )}
     >
@@ -244,7 +244,7 @@ export function SimpleDataCard({
             {label}
           </span>
           {category && (
-            <span className={cn(textStyles.caption, "bg-gray-100 dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full")}>
+            <span className={cn(textStyles.caption, "bg-lia-bg-tertiary dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full")}>
               {category}
             </span>
           )}

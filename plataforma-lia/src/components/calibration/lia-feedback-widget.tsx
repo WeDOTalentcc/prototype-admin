@@ -96,8 +96,8 @@ export function LIAFeedbackWidget({
             size="sm"
             className={cn(
  "h-6 px-2 gap-1 text-xs",
-              feedbackState === "agree" && "text-lia-text-secondary bg-gray-100 dark:bg-lia-bg-secondary",
-              feedbackState === "disagree" && "text-lia-text-primary bg-gray-100",
+              feedbackState === "agree" && "text-lia-text-secondary bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
+              feedbackState === "disagree" && "text-lia-text-primary bg-lia-bg-tertiary",
               className
             )}
           >
@@ -126,7 +126,7 @@ export function LIAFeedbackWidget({
                   variant={feedbackState === "agree" ? "default" : "outline"}
                   className={cn(
  "flex-1 gap-1",
-                    feedbackState === "agree" && "bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                    feedbackState === "agree" && "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                   )}
                   onClick={() => handleFeedback(true)}
                   disabled={isSubmitting}
@@ -140,7 +140,7 @@ export function LIAFeedbackWidget({
                   variant={feedbackState === "disagree" ? "default" : "outline"}
                   className={cn(
  "flex-1 gap-1",
-                    feedbackState === "disagree" && "bg-gray-600 hover:bg-gray-700"
+                    feedbackState === "disagree" && "bg-lia-border-medium hover:bg-lia-bg-inverse"
                   )}
                   onClick={() => handleFeedback(false)}
                   disabled={isSubmitting}
@@ -171,7 +171,7 @@ export function LIAFeedbackWidget({
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                    className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                     onClick={handleReasonSubmit}
                     disabled={isSubmitting}
                   >
@@ -201,7 +201,7 @@ export function LIAFeedbackWidget({
           size="sm"
           className={cn(
  "h-7 w-7 p-0 rounded-full",
-            feedbackState === "agree" && "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary"
+            feedbackState === "agree" && "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
           )}
           onClick={() => handleFeedback(true)}
           disabled={isSubmitting || feedbackState !== "none"}
@@ -217,7 +217,7 @@ export function LIAFeedbackWidget({
               size="sm"
               className={cn(
  "h-7 w-7 p-0 rounded-full",
-                feedbackState === "disagree" && "bg-gray-200 text-lia-text-secondary"
+                feedbackState === "disagree" && "bg-lia-interactive-active text-lia-text-secondary"
               )}
               onClick={() => handleFeedback(false)}
               disabled={isSubmitting || feedbackState !== "none"}
@@ -251,7 +251,7 @@ export function LIAFeedbackWidget({
                 </Button>
                 <Button
                   size="sm"
-                  className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                   onClick={handleReasonSubmit}
                   disabled={isSubmitting}
                 >

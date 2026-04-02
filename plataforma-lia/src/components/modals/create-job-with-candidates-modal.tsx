@@ -141,7 +141,7 @@ export function CreateJobWithCandidatesModal({
       aria-labelledby="create-job-with-candidates-modal-title"
     >
       <div
-        className="absolute inset-0 bg-black/50/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-lia-overlay/70 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -293,7 +293,7 @@ export function CreateJobWithCandidatesModal({
           </Button>
           <Button
             onClick={handleProceed}
-            className="h-9 px-5 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
+            className="h-9 px-5 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             Criar Vaga
             <ChevronRight className="w-4 h-4 ml-1" />

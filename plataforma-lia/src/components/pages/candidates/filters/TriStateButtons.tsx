@@ -20,9 +20,9 @@ export function TriStateButtons({ value, onChange }: TriStateButtonsProps) {
           key={String(opt.value)}
           onClick={() => onChange(opt.value)}
           className="flex-1 px-2 py-1.5 text-micro rounded-md transition-colors motion-reduce:transition-none"
-          style={{backgroundColor: value === opt.value ? "var(--gray-950)" : "var(--gray-50)",
-            color: value === opt.value ? "white" : "var(--gray-500)",
-            border: value === opt.value ? "none" : "1px solid var(--gray-200)"}}
+          style={{backgroundColor: value === opt.value ? "var(--lia-btn-primary-bg)" : "var(--lia-bg-secondary)",
+            color: value === opt.value ? "white" : "var(--lia-text-secondary)",
+            border: value === opt.value ? "none" : "1px solid var(--lia-border-subtle)"}}
         >
           {opt.label}
         </button>

@@ -19,7 +19,7 @@ export function ClearDraftConfirmModal({ open, onClose, onConfirm }: ClearDraftC
   return (
     <>
       {open && (
-        <div className="fixed inset-0 z-overlay flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-overlay flex items-center justify-center bg-lia-overlay">
           <div className="bg-lia-bg-primary rounded-xl w-panel-lg p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-status-error/10 rounded-full flex items-center justify-center">

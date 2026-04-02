@@ -147,11 +147,11 @@ const [isSaving, setIsSaving] = useState(false)
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-xl max-h-[90vh] bg-white overflow-y-auto rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
+    <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
+      <Card className="w-full max-w-xl max-h-[90vh] bg-lia-bg-primary overflow-y-auto rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+            <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
               <Target className="w-5 h-5 text-lia-text-secondary" />
             </div>
             <div>
@@ -199,7 +199,7 @@ const [isSaving, setIsSaving] = useState(false)
                   onClick={() => setSelectedEmoji(emoji)}
                   className={`w-10 h-10 rounded-md border-2 text-xl flex items-center justify-center transition-colors motion-reduce:transition-none ${
                     selectedEmoji === emoji
-                      ? "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary"
+                      ? "border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                       : "border-lia-border-subtle hover:border-lia-border-default"
                   }`}
                 >
@@ -278,14 +278,14 @@ const [isSaving, setIsSaving] = useState(false)
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary dark:border-lia-border-subtle">
-            <Button variant="outline" onClick={onClose} disabled={isSaving} className="bg-white border border-lia-border-default hover:bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-gray-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary dark:border-lia-border-subtle">
+            <Button variant="outline" onClick={onClose} disabled={isSaving} className="bg-lia-bg-primary border border-lia-border-default hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary dark:border-lia-border-default dark:hover:bg-lia-bg-inverse">
               Cancelar
             </Button>
             <Button
               onClick={handleSave}
               disabled={!name.trim() || isSaving}
-              className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               {isSaving ? (
                 <>

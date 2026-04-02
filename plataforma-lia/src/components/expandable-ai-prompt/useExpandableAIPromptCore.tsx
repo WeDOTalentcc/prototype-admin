@@ -103,10 +103,10 @@ export const CONTEXT_COLORS: Record<string, {
     headerBg: 'var(--wedo-green-bg-15)'
   },
   jobs: {
-    border: 'var(--gray-400)',
-    bg: 'var(--gray-bg-05)',
-    headerText: 'var(--gray-600)',
-    headerBg: 'var(--gray-bg-10)'
+    border: 'var(--lia-text-tertiary)',
+    bg: 'var(--lia-bg-secondary)',
+    headerText: 'var(--lia-text-secondary)',
+    headerBg: 'var(--lia-bg-secondary)'
   }
 }
 
@@ -358,20 +358,20 @@ const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalS
   const filledTagsCount = useMemo(() => searchTags.filter(t => t.filled).length, [searchTags])
   
   const getTagColors = React.useCallback((key: string, filled: boolean) => {
-    if (!filled) return { bg: 'var(--gray-50)', text: 'var(--gray-400)', iconBg: 'var(--gray-400)', iconBgLight: 'var(--gray-bg-10)' }
+    if (!filled) return { bg: 'var(--lia-bg-secondary)', text: 'var(--lia-text-tertiary)', iconBg: 'var(--lia-text-tertiary)', iconBgLight: 'var(--lia-bg-secondary)' }
     switch (key) {
       case 'job_title':
-        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)', iconBgLight: 'var(--gray-600-bg-10)' }
+        return { bg: 'var(--lia-bg-secondary)', text: 'var(--lia-text-secondary)', iconBg: 'var(--lia-text-secondary)', iconBgLight: 'var(--lia-bg-secondary)' }
       case 'location':
-        return { bg: 'var(--gray-50)', text: 'var(--wedo-purple)', iconBg: 'var(--wedo-purple)', iconBgLight: 'var(--wedo-purple-bg-10)' }
+        return { bg: 'var(--lia-bg-secondary)', text: 'var(--wedo-purple)', iconBg: 'var(--wedo-purple)', iconBgLight: 'var(--wedo-purple-bg-10)' }
       case 'skills':
-        return { bg: 'var(--gray-50)', text: 'var(--status-success)', iconBg: 'var(--wedo-green-light)', iconBgLight: 'var(--wedo-green-bg-10)' }
+        return { bg: 'var(--lia-bg-secondary)', text: 'var(--status-success)', iconBg: 'var(--wedo-green-light)', iconBgLight: 'var(--wedo-green-bg-10)' }
       case 'years_experience':
-        return { bg: 'var(--gray-50)', text: 'var(--status-warning)', iconBg: 'var(--wedo-orange)', iconBgLight: 'var(--wedo-orange-bg-15)' }
+        return { bg: 'var(--lia-bg-secondary)', text: 'var(--status-warning)', iconBg: 'var(--wedo-orange)', iconBgLight: 'var(--wedo-orange-bg-15)' }
       case 'industry':
-        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)', iconBgLight: 'var(--gray-600-bg-10)' }
+        return { bg: 'var(--lia-bg-secondary)', text: 'var(--lia-text-secondary)', iconBg: 'var(--lia-text-secondary)', iconBgLight: 'var(--lia-bg-secondary)' }
       default:
-        return { bg: 'var(--gray-50)', text: 'var(--gray-600)', iconBg: 'var(--gray-600)', iconBgLight: 'var(--gray-600-bg-10)' }
+        return { bg: 'var(--lia-bg-secondary)', text: 'var(--lia-text-secondary)', iconBg: 'var(--lia-text-secondary)', iconBgLight: 'var(--lia-bg-secondary)' }
     }
   }, [])
 

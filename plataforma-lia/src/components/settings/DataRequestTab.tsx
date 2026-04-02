@@ -62,7 +62,7 @@ const CollapsibleSection = ({
   <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md overflow-hidden">
     <button
       onClick={onToggle}
-      className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none"
+      className="w-full flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
     >
       <div className="flex items-center gap-2">
         <Icon className="w-4 h-4 text-lia-text-primary" />
@@ -77,7 +77,7 @@ const CollapsibleSection = ({
       )} />
     </button>
     {isExpanded && (
-      <div className="p-3 bg-white dark:bg-lia-bg-primary">
+      <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-primary">
         {children}
       </div>
     )}
@@ -90,7 +90,7 @@ const FieldBadges = ({ field }: { field: DataField }) => (
       {field.type}
     </Badge>
     {field.isDefault && (
-      <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary text-micro px-1 py-0 h-4">
+      <Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro px-1 py-0 h-4">
         <Database className="w-2.5 h-2.5 mr-0.5" />
         Banco
       </Badge>
@@ -108,7 +108,7 @@ const FieldBadges = ({ field }: { field: DataField }) => (
       </Badge>
     )}
     {!field.isDefault && (
-      <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary text-micro px-1 py-0 h-4">
+      <Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro px-1 py-0 h-4">
         <Brain className="w-2.5 h-2.5 mr-0.5 text-wedo-cyan" />
         Custom
       </Badge>
@@ -250,7 +250,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     size="sm" 
                     onClick={handleSaveChanges} 
                     disabled={isSaving || !hasChanges}
-                    className="h-8 text-xs px-3 bg-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 text-white"
+                    className="h-8 text-xs px-3 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active text-white"
                   >
                     <Save className="w-3.5 h-3.5 mr-1" />
                     {isSaving ? 'Salvando...' : 'Salvar Alterações'}
@@ -271,7 +271,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
           </div>
         </CardHeader>
         <CardContent className="space-y-4 px-4 pb-4">
-          <div className="flex items-start gap-2 p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+          <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
             <Lightbulb className="w-4 h-4 text-lia-text-primary mt-0.5 flex-shrink-0" />
             <div className={textStyles.description}>
               <p className={`mb-0.5 ${textStyles.subtitle}`}>
@@ -291,7 +291,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
             onToggle={() => toggleSection('general')}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center gap-2">
                   <Shield className="w-3.5 h-3.5 text-lia-text-secondary" />
                   <div>
@@ -311,7 +311,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 )}
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center gap-2">
                   <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
                   <div>
@@ -331,7 +331,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 )}
               </div>
 
-              <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center gap-2 mb-2">
                   <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
                   <Label className="text-xs font-medium text-lia-text-primary">Dias para Expiração</Label>
@@ -357,7 +357,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               </div>
 
               {config.autoReminders && (
-                <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                   <div className="flex items-center gap-2 mb-2">
                     <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
                     <Label className="text-xs font-medium text-lia-text-primary">Enviar Lembrete Após</Label>
@@ -393,7 +393,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
             onToggle={() => toggleSection('collection')}
           >
             <div className="space-y-4">
-              <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                 <Label className="text-xs font-medium text-lia-text-primary mb-2 block">
                   Como o candidato responde?
                 </Label>
@@ -410,7 +410,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         className={cn(
                           "p-3 rounded-md border-2 text-left transition-colors",
                           config.collectionMode === option.value
-                            ? "border-gray-900 bg-gray-50 dark:lia-border-50 dark:bg-lia-bg-secondary"
+                            ? "border-lia-btn-primary-bg bg-lia-bg-secondary dark:border-lia-border-subtle dark:bg-lia-bg-secondary"
                             : "border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default"
                         )}
                       >
@@ -428,14 +428,14 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         </div>
                         <p className="text-micro text-lia-text-secondary">{option.desc}</p>
                         {option.value === 'candidate_choice' && (
-                          <Badge className="mt-1 bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated text-micro h-4">Recomendado</Badge>
+                          <Badge className="mt-1 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated text-micro h-4">Recomendado</Badge>
                         )}
                       </button>
                     ))}
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated text-micro">
+                    <Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated text-micro">
                       {config.collectionMode === 'portal_only' && 'Apenas Portal'}
                       {config.collectionMode === 'chat_only' && 'Apenas Chat'}
                       {config.collectionMode === 'candidate_choice' && 'Candidato Escolhe'}
@@ -474,10 +474,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         value={config.collectionMessages.initialRequest}
                         onChange={(e) => updateCollectionMessages({ initialRequest: e.target.value })}
                         rows={2}
-                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                       />
                     ) : (
-                      <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                      <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                         {config.collectionMessages.initialRequest}
                       </p>
                     )}
@@ -491,10 +491,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           value={config.collectionMessages.choicePrompt}
                           onChange={(e) => updateCollectionMessages({ choicePrompt: e.target.value })}
                           rows={3}
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                          className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                         />
                       ) : (
-                        <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                        <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                           {config.collectionMessages.choicePrompt}
                         </p>
                       )}
@@ -510,10 +510,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                             value={config.collectionMessages.chatStartMessage}
                             onChange={(e) => updateCollectionMessages({ chatStartMessage: e.target.value })}
                             rows={2}
-                            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                           />
                         ) : (
-                          <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                          <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                             {config.collectionMessages.chatStartMessage}
                           </p>
                         )}
@@ -526,10 +526,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                             value={config.collectionMessages.documentReceived}
                             onChange={(e) => updateCollectionMessages({ documentReceived: e.target.value })}
                             rows={1}
-                            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                            className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                           />
                         ) : (
-                          <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                          <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                             {config.collectionMessages.documentReceived}
                           </p>
                         )}
@@ -544,10 +544,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         value={config.collectionMessages.pendingReminder}
                         onChange={(e) => updateCollectionMessages({ pendingReminder: e.target.value })}
                         rows={2}
-                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                       />
                     ) : (
-                      <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                      <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                         {config.collectionMessages.pendingReminder}
                       </p>
                     )}
@@ -560,10 +560,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         value={config.collectionMessages.allComplete}
                         onChange={(e) => updateCollectionMessages({ allComplete: e.target.value })}
                         rows={1}
-                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                        className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                       />
                     ) : (
-                      <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                      <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                         {config.collectionMessages.allComplete}
                       </p>
                     )}
@@ -591,7 +591,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                   <div className="flex items-center justify-between mb-2">
                     <Label className="text-xs font-medium text-lia-text-primary">Exigir Consentimento</Label>
                     {isEditing ? (
@@ -608,7 +608,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                   <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Candidato deve autorizar antes de enviar dados</p>
                 </div>
 
-                <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                   <div className="flex items-center justify-between mb-2">
                     <Label className="text-xs font-medium text-lia-text-primary">Permitir Exclusão</Label>
                     {isEditing ? (
@@ -626,7 +626,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                 </div>
               </div>
 
-              <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                 <Label className="text-xs font-medium text-lia-text-primary mb-2 block">
                   Retenção de Dados
                 </Label>
@@ -638,7 +638,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       onChange={(e) => updateLgpdConfig({ dataRetentionDays: parseInt(e.target.value) || 365 })}
                       min={30}
                       max={1825}
-                      className="w-20 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-primary text-lia-text-primary"
+                      className="w-20 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-primary"
                     />
                     <span className="text-micro text-lia-text-secondary">dias após término do processo</span>
                   </div>
@@ -658,10 +658,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.lgpd.consentMessage}
                     onChange={(e) => updateLgpdConfig({ consentMessage: e.target.value })}
                     rows={4}
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                   />
                 ) : (
-                  <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                  <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                     {config.lgpd.consentMessage}
                   </p>
                 )}
@@ -676,10 +676,10 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.lgpd.disclaimerText}
                     onChange={(e) => updateLgpdConfig({ disclaimerText: e.target.value })}
                     rows={3}
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                   />
                 ) : (
-                  <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
+                  <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md whitespace-pre-wrap">
                     {config.lgpd.disclaimerText}
                   </p>
                 )}
@@ -699,7 +699,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
               {isEditing && (
                 <>
                   {showAddField ? (
-                    <div className="p-3 border border-lia-border-default dark:border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                    <div className="p-3 border border-lia-border-default dark:border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                       <h4 className="text-xs font-medium mb-2 text-lia-text-primary">Novo Campo Customizado</h4>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div>
@@ -709,7 +709,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                             value={newFieldName}
                             onChange={(e) => setNewFieldName(e.target.value)}
                             placeholder="Ex: Número do Passaporte"
-                            className="w-full mt-1 px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                            className="w-full mt-1 px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                           />
                         </div>
                         <div>
@@ -758,8 +758,8 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           className={cn(
                             "flex items-center justify-between p-2 rounded-md border transition-colors",
                             field.enabled
-                              ? "bg-white dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default"
-                              : "bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle opacity-60"
+                              ? "bg-lia-bg-primary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default"
+                              : "bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle opacity-60"
                           )}
                         >
                           <div className="flex-1 min-w-0 mr-2">
@@ -806,8 +806,8 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                         className={cn(
                           "flex items-center justify-between p-2 rounded-md border transition-colors",
                           field.enabled
-                            ? "bg-white dark:bg-lia-bg-primary border-wedo-purple/30/50 dark:border-wedo-purple/30/50"
-                            : "bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle opacity-60"
+                            ? "bg-lia-bg-primary dark:bg-lia-bg-primary border-wedo-purple/30/50 dark:border-wedo-purple/30/50"
+                            : "bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle opacity-60"
                         )}
                       >
                         <div className="flex-1 min-w-0 mr-2">
@@ -862,11 +862,11 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                   <Label className="text-xs font-medium mb-2 block text-lia-text-primary">Logo da Empresa</Label>
                   <div className="flex items-center gap-3">
                     {config.branding.logoUrl ? (
-                      <div className="relative w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md overflow-hidden">
+                      <div className="relative w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md overflow-hidden">
                         <NextImage src={config.branding.logoUrl} alt="Logo" fill className="object-contain" />
                       </div>
                     ) : (
-                      <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+                      <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                         <Upload className="w-4 h-4 text-lia-text-tertiary" />
                       </div>
                     )}
@@ -879,7 +879,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                   </div>
                 </div>
 
-                <div className="p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                   <Label className="text-xs font-medium mb-2 block text-lia-text-primary">Cor Primária</Label>
                   <div className="flex items-center gap-2">
                     {isEditing ? (
@@ -894,7 +894,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                           type="text"
                           value={config.branding.primaryColor}
                           onChange={(e) => updateBranding({ primaryColor: e.target.value })}
-                          className="flex-1 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-full font-mono uppercase bg-white dark:bg-lia-bg-primary text-lia-text-primary"
+                          className="flex-1 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-full font-mono uppercase bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-primary"
                         />
                       </>
                     ) : (
@@ -918,7 +918,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       variant="ghost" 
                       size="sm" 
                       onClick={() => generateLiaSuggestion('welcome')}
-                      className="h-6 text-micro px-2 text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-50"
+                      className="h-6 text-micro px-2 text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-secondary"
                     >
                       <Bot className="w-3 h-3 mr-1" />
                       Sugerir com LIA
@@ -930,11 +930,11 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.branding.welcomeMessage}
                     onChange={(e) => updateBranding({ welcomeMessage: e.target.value })}
                     rows={2}
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                     placeholder="Mensagem exibida no início do formulário..."
                   />
                 ) : (
-                  <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
+                  <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md">
                     {config.branding.welcomeMessage}
                   </p>
                 )}
@@ -948,7 +948,7 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                       variant="ghost" 
                       size="sm" 
                       onClick={() => generateLiaSuggestion('thankYou')}
-                      className="h-6 text-micro px-2 text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-50"
+                      className="h-6 text-micro px-2 text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-secondary"
                     >
                       <Bot className="w-3 h-3 mr-1" />
                       Sugerir com LIA
@@ -960,11 +960,11 @@ export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
                     value={config.branding.thankYouMessage}
                     onChange={(e) => updateBranding({ thankYouMessage: e.target.value })}
                     rows={2}
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-gray-900 dark:focus:border-gray-50 bg-white dark:bg-lia-bg-secondary text-lia-text-primary"
+                    className="w-full px-2 py-1.5 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
                     placeholder="Mensagem exibida após o envio do formulário..."
                   />
                 ) : (
-                  <p className="text-xs text-lia-text-secondary bg-gray-50 dark:bg-lia-bg-secondary p-2 rounded-md">
+                  <p className="text-xs text-lia-text-secondary bg-lia-bg-secondary dark:bg-lia-bg-secondary p-2 rounded-md">
                     {config.branding.thankYouMessage}
                   </p>
                 )}

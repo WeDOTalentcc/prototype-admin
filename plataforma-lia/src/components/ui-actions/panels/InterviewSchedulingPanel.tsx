@@ -207,11 +207,11 @@ export function InterviewSchedulingPanel({
         <CardContent>
           <div className="rounded-md p-3 dark:border-lia-border-subtle border border-lia-border-subtle">
             <div className="flex items-center justify-between mb-4">
-              <Button variant="ghost" size="icon" className="dark:text-lia-text-secondary dark:hover:bg-gray-700" onClick={handlePrevMonth}>
+              <Button variant="ghost" size="icon" className="dark:text-lia-text-secondary dark:hover:bg-lia-bg-inverse" onClick={handlePrevMonth}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <span className="text-sm font-medium capitalize text-lia-text-primary">{monthLabel}</span>
-              <Button variant="ghost" size="icon" className="dark:text-lia-text-secondary dark:hover:bg-gray-700" onClick={handleNextMonth}>
+              <Button variant="ghost" size="icon" className="dark:text-lia-text-secondary dark:hover:bg-lia-bg-inverse" onClick={handleNextMonth}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -400,7 +400,7 @@ export function InterviewSchedulingPanel({
           {MOCK_INTERVIEWERS.map((interviewer) => (
             <div
               key={interviewer.id}
-              className="flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors motion-reduce:transition-none dark:hover:bg-gray-700"
+              className="flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors motion-reduce:transition-none dark:hover:bg-lia-bg-inverse"
               onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'}
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
@@ -486,7 +486,7 @@ export function InterviewSchedulingPanel({
       <Button
         onClick={handleSubmit}
         disabled={isLoading || !selectedTime}
-        className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+        className="w-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
         size="lg"
       >
         {isLoading ? (

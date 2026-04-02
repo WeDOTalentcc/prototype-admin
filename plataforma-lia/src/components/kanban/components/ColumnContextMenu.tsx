@@ -102,7 +102,7 @@ export function ColumnContextMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="p-0.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100">
+          <button className="p-0.5 rounded-md hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100">
             <Settings className="w-3.5 h-3.5 text-lia-text-tertiary" />
           </button>
         </DropdownMenuTrigger>
@@ -165,7 +165,7 @@ export function ColumnContextMenu({
       </DropdownMenu>
 
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
-        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-lia-bg-secondary">
+        <DialogContent className="sm:max-w-panel-lg bg-lia-bg-primary rounded-md dark:bg-lia-bg-secondary">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">
               Renomear Etapa
@@ -188,7 +188,7 @@ export function ColumnContextMenu({
             <Button variant="outline" onClick={() => setRenameOpen(false)} className="text-xs h-8">
               Cancelar
             </Button>
-            <Button onClick={handleRename} className="bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 dark:hover:bg-gray-200">
+            <Button onClick={handleRename} className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text text-xs h-8 dark:hover:bg-lia-interactive-active">
               Salvar
             </Button>
           </DialogFooter>
@@ -196,7 +196,7 @@ export function ColumnContextMenu({
       </Dialog>
 
       <Dialog open={slaOpen} onOpenChange={setSlaOpen}>
-        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-lia-bg-secondary">
+        <DialogContent className="sm:max-w-panel-lg bg-lia-bg-primary rounded-md dark:bg-lia-bg-secondary">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">
               Configurar SLA
@@ -223,7 +223,7 @@ export function ColumnContextMenu({
             <Button variant="outline" onClick={() => setSlaOpen(false)} className="text-xs h-8">
               Cancelar
             </Button>
-            <Button onClick={handleSLAUpdate} className="bg-gray-900 hover:bg-gray-800 text-white text-xs h-8 dark:hover:bg-gray-200">
+            <Button onClick={handleSLAUpdate} className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text text-xs h-8 dark:hover:bg-lia-interactive-active">
               Salvar
             </Button>
           </DialogFooter>
@@ -231,7 +231,7 @@ export function ColumnContextMenu({
       </Dialog>
 
       <Dialog open={confirmRemoveOpen} onOpenChange={setConfirmRemoveOpen}>
-        <DialogContent className="sm:max-w-panel-lg bg-white rounded-md dark:bg-lia-bg-secondary">
+        <DialogContent className="sm:max-w-panel-lg bg-lia-bg-primary rounded-md dark:bg-lia-bg-secondary">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold">
               Remover Coluna

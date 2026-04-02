@@ -66,7 +66,7 @@ const STATUS_CONFIG: Record<DataRequestStatus, {
   cancelled: {
     icon: <XCircle className="w-3 h-3" />,
     label: 'Cancelado',
-    bgColor: 'var(--gray-bg-15)',
+    bgColor: 'var(--lia-bg-tertiary)',
   },
 }
 
@@ -136,7 +136,7 @@ export const DataRequestIndicator = React.memo(function DataRequestIndicator({
         </TooltipTrigger>
         <TooltipContent 
           side="top" 
-          className="w-64 p-0 bg-white dark:bg-lia-bg-primary border border-lia-border-subtle"
+          className="w-64 p-0 bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle"
         >
           <div className="p-3 space-y-3">
             <div className="flex items-center justify-between">

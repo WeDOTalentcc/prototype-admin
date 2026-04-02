@@ -36,7 +36,7 @@ export function ClientFilters({
   mounted = true,
 }: ClientFiltersProps) {
   return (
-    <div className="bg-white dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-4 mb-6">
+    <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle p-4 mb-6">
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 lia-text-secondary" />
@@ -75,9 +75,9 @@ export function ClientFilters({
             </>
           ) : (
             <>
-              <div className="w-full sm:w-[180px] h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
+              <div className="w-full sm:w-[180px] h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               {onPlanFilterChange && (
-                <div className="w-full sm:w-[180px] h-10 bg-gray-100 dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="w-full sm:w-[180px] h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md animate-pulse motion-reduce:animate-none" />
               )}
             </>
           )}

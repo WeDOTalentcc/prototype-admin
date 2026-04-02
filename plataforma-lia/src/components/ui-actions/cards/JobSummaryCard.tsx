@@ -87,7 +87,7 @@ export function JobSummaryCard({
           <Badge
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-900 mr-1.5" />
+            <span className="w-1.5 h-1.5 rounded-full bg-lia-btn-primary-bg mr-1.5" />
             Pausada
           </Badge>
         )

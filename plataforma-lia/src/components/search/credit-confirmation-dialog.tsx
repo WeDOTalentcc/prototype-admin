@@ -44,7 +44,7 @@ export function CreditConfirmationDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent 
         className="sm:max-w-[320px] w-[85vw] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4"
-        style={{backgroundColor: 'var(--gray-50)',
+        style={{backgroundColor: 'var(--lia-bg-secondary)',
           borderRadius: '10px'}}
       >
         <div className="space-y-3">
@@ -69,7 +69,7 @@ export function CreditConfirmationDialog({
           </div>
 
           <div 
-            className="rounded-md p-3 border border-lia-border-subtle bg-gray-50"
+            className="rounded-md p-3 border border-lia-border-subtle bg-lia-bg-secondary"
           >
             <div
               className="text-xs mb-2.5 font-medium text-lia-text-secondary"
@@ -125,7 +125,7 @@ export function CreditConfirmationDialog({
           <Button
             onClick={onConfirm}
             disabled={isLoading}
-            className="text-white h-8 text-xs px-4 bg-gray-900 hover:bg-gray-800 disabled:bg-gray-400 font-medium"
+            className="text-white h-8 text-xs px-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover disabled:bg-lia-border-medium font-medium"
             style={{borderRadius: '6px'}}
           >
             {isLoading ? (

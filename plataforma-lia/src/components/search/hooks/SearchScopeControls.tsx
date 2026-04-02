@@ -52,7 +52,7 @@ export function SearchScopeControls({
                 "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                 searchSource === 'local' 
                   ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
-                  : "hover:bg-gray-100"
+                  : "hover:bg-lia-bg-tertiary"
               , searchSource === 'local' ? "text-wedo-green" : "text-lia-text-tertiary"
               )}
             >
@@ -77,7 +77,7 @@ export function SearchScopeControls({
                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                   searchSource === 'hybrid' 
                     ? "bg-wedo-orange/15 ring-1 ring-wedo-orange" 
-                    : "hover:bg-gray-100"
+                    : "hover:bg-lia-bg-tertiary"
                 , searchSource === 'hybrid' ? "text-wedo-orange" : "text-lia-text-tertiary"
                 )}
               >
@@ -102,8 +102,8 @@ export function SearchScopeControls({
                 className={cn(
                   "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                   searchSource === 'global' 
-                    ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20" 
-                    : "hover:bg-gray-100"
+                    ? "bg-wedo-cyan/15 ring-1 ring-lia-btn-primary-bg/20" 
+                    : "hover:bg-lia-bg-tertiary"
                 , searchSource === 'global' ? "text-lia-text-primary" : "text-lia-text-tertiary"
                 )}
               >
@@ -120,7 +120,7 @@ export function SearchScopeControls({
       
       {(searchSource === 'global' || searchSource === 'hybrid') && onRequireEmailsChange && onRequirePhoneNumbersChange && (
         <>
-          <div className="w-px h-4 bg-gray-200 mx-0.5" />
+          <div className="w-px h-4 bg-lia-interactive-active mx-0.5" />
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -131,7 +131,7 @@ export function SearchScopeControls({
                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                     requireEmails 
                       ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
-                      : "hover:bg-gray-100"
+                      : "hover:bg-lia-bg-tertiary"
                   , requireEmails ? "text-wedo-green" : "text-lia-text-tertiary"
                   )}
                 >
@@ -155,7 +155,7 @@ export function SearchScopeControls({
                     "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                     requirePhoneNumbers 
                       ? "bg-wedo-green/15 ring-1 ring-wedo-green" 
-                      : "hover:bg-gray-100"
+                      : "hover:bg-lia-bg-tertiary"
                   , requirePhoneNumbers ? "text-wedo-green" : "text-lia-text-tertiary"
                   )}
                 >
@@ -173,12 +173,12 @@ export function SearchScopeControls({
       
       {showSearchButton && onSearch && (
         <>
-          <div className="w-px h-4 bg-gray-200 mx-0.5" />
+          <div className="w-px h-4 bg-lia-interactive-active mx-0.5" />
           <Button
             onClick={onSearch}
             disabled={!canSubmit() || isLoading}
             size="sm"
-            className={cn("h-8 w-8 p-0 rounded-md transition-transform motion-reduce:transition-none hover:scale-105", canSubmit() ? "bg-gray-950 text-white" : "bg-gray-100 text-lia-text-secondary")}
+            className={cn("h-8 w-8 p-0 rounded-md transition-transform motion-reduce:transition-none hover:scale-105", canSubmit() ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" : "bg-lia-bg-tertiary text-lia-text-secondary")}
           >
             {isLoading ? <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" /> : <Search className="w-4 h-4" />}
           </Button>

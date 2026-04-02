@@ -428,7 +428,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
     switch (category) {
       case 'required': return badgeStyles.error
       case 'format': return badgeStyles.info
-      case 'business': return 'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary'
+      case 'business': return 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary'
       case 'security': return badgeStyles.warning
       case 'compliance': return badgeStyles.success
       default: return badgeStyles.default

@@ -112,7 +112,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
                   {tag}
                   <button
                     onClick={() => setPreviewTags(prev => prev.filter((_, i) => i !== index))}
-                    className="ml-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-0.5 transition-colors motion-reduce:transition-none"
+                    className="ml-0.5 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse rounded-full p-0.5 transition-colors motion-reduce:transition-none"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -148,7 +148,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
                     setNewPreviewTag("")
                   }
                 }}
-                className="bg-gray-900"
+                className="bg-lia-btn-primary-bg"
               >
                 <Plus className="w-4 h-4" />
               </Button>
@@ -284,7 +284,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
               await onExecuteSearch(queryFromTags, editedFilters, 'natural', { mode: 'natural' }, false)
             }}
             disabled={previewTags.length === 0}
-            className="w-full sm:w-auto order-1 sm:order-3 bg-gray-900"
+            className="w-full sm:w-auto order-1 sm:order-3 bg-lia-btn-primary-bg"
           >
             <Search className="w-4 h-4 mr-2" />
             Usar Busca

@@ -29,10 +29,10 @@ interface TaskCardProps {
 
 export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject }: TaskCardProps) {
   return (
-    <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none bg-white dark:bg-lia-bg-primary">
+    <div className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-2.5 transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2 flex-1">
-          <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-gray-100 dark:bg-lia-bg-secondary">
+          <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
             {getTaskTypeIcon(task.type as any) /* TODO: fix type */}
           </div>
           <div className="flex-1 min-w-0">

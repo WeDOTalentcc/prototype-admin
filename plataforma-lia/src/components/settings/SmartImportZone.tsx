@@ -236,8 +236,8 @@ export function SmartImportZone({
           : 'cursor-pointer'
       } ${
         isDragging && !disabled
-          ? 'border-gray-400 bg-gray-50 dark:bg-lia-bg-secondary/50 scale-[1.01]' 
-          : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 hover:bg-gray-50/50 dark:hover:bg-gray-800/30'
+          ? 'border-lia-border-medium bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 scale-[1.01]' 
+          : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium hover:bg-lia-bg-secondary/50 dark:hover:bg-lia-btn-primary-hover/30'
       }`}
       onDragOver={disabled ? undefined : handleDragOver}
       onDragLeave={disabled ? undefined : handleDragLeave}
@@ -246,7 +246,7 @@ export function SmartImportZone({
     >
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center transition-transform motion-reduce:transition-none duration-200 bg-gray-100 dark:bg-lia-bg-secondary">
+          <div className="w-10 h-10 rounded-md flex items-center justify-center transition-transform motion-reduce:transition-none duration-200 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
           <h3 className={`${textStyles.title}`}>
@@ -305,7 +305,7 @@ export function SmartImportZone({
                   <Badge 
                     key={field} 
                     variant="secondary" 
-                    className="text-micro bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary rounded-md"
+                    className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary rounded-md"
                   >
                     {field}
                   </Badge>
@@ -326,10 +326,10 @@ export function SmartImportZone({
   )
 
   const renderUploadingState = () => (
-    <Card className="border border-lia-border-default dark:border-lia-border-default rounded-md bg-gray-50/50 dark:bg-lia-bg-secondary/30">
+    <Card className="border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/30">
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-primary dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
             <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           </div>
           <h3 className={`${textStyles.title}`}>
@@ -344,10 +344,10 @@ export function SmartImportZone({
   )
 
   const renderAnalyzingState = () => (
-    <Card className="rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default">
+    <Card className="rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border border-lia-border-default dark:border-lia-border-default">
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary animate-pulse motion-reduce:animate-none">
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-primary dark:bg-lia-bg-secondary animate-pulse motion-reduce:animate-none">
             <Brain className="w-4 h-4 text-wedo-cyan" />
           </div>
           <h3 className={`${textStyles.title}`}>
@@ -357,7 +357,7 @@ export function SmartImportZone({
             Identificando campos e validando dados
           </p>
           <div className="flex items-center gap-2 mt-2">
-            <ThinkingDots dotClassName="bg-gray-900" size="md" />
+            <ThinkingDots dotClassName="bg-lia-btn-primary-bg" size="md" />
           </div>
         </div>
       </CardContent>
@@ -366,10 +366,10 @@ export function SmartImportZone({
 
   const renderPreviewState = () => (
     <Card className={`${cardStyles.default} dark:border-lia-border-subtle rounded-md overflow-hidden`}>
-      <div className="px-2 py-1.5 bg-gray-50 dark:bg-lia-bg-secondary/50">
+      <div className="px-2 py-1.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary">
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-primary dark:bg-lia-bg-secondary">
               <Eye className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
@@ -425,11 +425,11 @@ export function SmartImportZone({
             </div>
 
             {previewData.rows.length > 0 && (
-              <div className="border border-lia-border-subtle dark:lia-border-800 rounded-md overflow-hidden mb-3">
+              <div className="border border-lia-border-subtle dark:border-lia-border-strong rounded-md overflow-hidden mb-3">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="bg-gray-50 dark:bg-lia-bg-secondary/50">
+                      <tr className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
                         {previewData.headers.map((header, idx) => (
                           <th 
                             key={idx} 
@@ -442,11 +442,11 @@ export function SmartImportZone({
                     </thead>
                     <tbody>
                       {previewData.rows.map((row, rowIdx) => (
-                        <tr key={rowIdx} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                        <tr key={rowIdx} className="hover:bg-lia-bg-secondary/50 dark:hover:bg-lia-btn-primary-hover/30">
                           {previewData.headers.map((header, colIdx) => (
                             <td 
                               key={colIdx} 
-                              className="px-2 py-1.5 text-xs text-lia-text-primary border-b border-gray-50 dark:lia-border-800 truncate max-w-sidebar-content font-['Open_Sans',sans-serif]"
+                              className="px-2 py-1.5 text-xs text-lia-text-primary border-b border-lia-border-subtle dark:border-lia-border-strong truncate max-w-sidebar-content font-['Open_Sans',sans-serif]"
                             >
                               {row[header] || '-'}
                             </td>
@@ -457,7 +457,7 @@ export function SmartImportZone({
                   </table>
                 </div>
                 {previewData.totalRows > 5 && (
-                  <div className="px-2 py-1.5 text-center text-micro text-lia-text-secondary bg-gray-50/50 dark:bg-lia-bg-secondary/30 font-['Open_Sans',sans-serif]">
+                  <div className="px-2 py-1.5 text-center text-micro text-lia-text-secondary bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/30 font-['Open_Sans',sans-serif]">
                     ... e mais {previewData.totalRows - 5} registros
                   </div>
                 )}
@@ -477,7 +477,7 @@ export function SmartImportZone({
               <Button
                 size="sm"
                 onClick={handleConfirmImport}
-                className="gap-1.5 rounded-md text-xs bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200 font-['Open_Sans',sans-serif]"
+                className="gap-1.5 rounded-md text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active font-['Open_Sans',sans-serif]"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 Confirmar Importação
@@ -490,10 +490,10 @@ export function SmartImportZone({
   )
 
   const renderImportingState = () => (
-    <Card className="border border-lia-border-default dark:border-lia-border-default rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50">
+    <Card className="border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center text-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-white dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-bg-primary dark:bg-lia-bg-secondary" role="status" aria-live="polite" aria-label="Carregando...">
             <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
           </div>
           <h3 className={`${textStyles.title}`}>

@@ -106,7 +106,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
       type: 'teams',
       status: 'active',
       icon: MessageSquare,
-      color: 'bg-gray-50 dark:bg-lia-bg-primary text-lia-text-primary',
+      color: 'bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary',
       webhookUrl: 'https://outlook.office.com/webhook/xxxxx/IncomingWebhook/yyyyy',
       channels: ['RH Geral', 'Aprovações'],
       events: ['aprovacao_lote', 'candidato_final', 'relatorio_semanal'],
@@ -250,9 +250,9 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected': return 'bg-status-success/10 text-status-success border-status-success/30'
-      case 'connecting': return 'bg-gray-50 dark:bg-lia-bg-primary text-lia-text-primary border-gray-900 dark:lia-border-50'
+      case 'connecting': return 'bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle'
       case 'error': return 'bg-status-error/10 text-status-error border-status-error/30'
-      case 'disabled': return 'bg-gray-50 text-lia-text-primary border-lia-border-subtle'
+      case 'disabled': return 'bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle'
       default: return 'bg-status-warning/10 text-status-warning border-status-warning/30'
     }
   }
@@ -348,7 +348,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
             {atsystems.map(system => (
               <div key={system.id} className="flex items-center justify-between p-4 border border-lia-border-subtle rounded-md">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center">
+                  <div className="w-10 h-10 bg-lia-bg-tertiary rounded-md flex items-center justify-center">
                     <Server className="w-5 h-5 text-lia-text-primary" />
                   </div>
                   <div>
@@ -412,7 +412,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
         <CardContent>
           <div className="space-y-3">
             {syncLogs.slice(0, 3).map(log => (
-              <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+              <div key={log.id} className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center gap-3">
                   {getSyncStatusIcon(log.status)}
                   <div>
@@ -460,7 +460,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
       </div>
 
       {/* Integration Type Tabs */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-md w-fit">
+      <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-md w-fit">
         <button
           onClick={() => setSelectedIntegrationType('ats')}
           className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none ${
@@ -498,7 +498,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
           ) : (
             <>
               {/* ATS Navigation Tabs */}
-              <div className="flex space-x-1 bg-gray-100 p-1 rounded-md w-fit">
+              <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-md w-fit">
                 {[
                   { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
                   { id: 'systems', label: 'Sistemas', icon: Server },
@@ -633,7 +633,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                       <Badge className={`${
                         integration.status === 'active' ? 'bg-status-success/15 text-status-success' :
                         integration.status === 'error' ? 'bg-status-error/15 text-status-error' :
-                        'bg-gray-100 text-lia-text-primary'
+                        'bg-lia-bg-tertiary text-lia-text-primary'
                       }`}>
                         {integration.status === 'active' ? 'Ativo' :
                          integration.status === 'error' ? 'Erro' : 'Inativo'}
@@ -677,7 +677,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Badge className={template.active ? 'bg-status-success/15 text-status-success' : 'bg-gray-100 text-lia-text-primary'}>
+                      <Badge className={template.active ? 'bg-status-success/15 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-primary'}>
                         {template.active ? 'Ativo' : 'Inativo'}
                       </Badge>
                       <Button variant="outline" size="sm">
@@ -693,7 +693,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-md w-fit">
+      <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-md w-fit">
         {[
           { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
           { id: 'systems', label: 'Sistemas', icon: Server },

@@ -336,7 +336,7 @@ export function UniversitiesFilterInput({
             onKeyDown={handleKeyDown}
             onFocus={() => inputValue.length > 0 && setIsDropdownOpen(true)}
             placeholder={placeholder}
-            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+            className="pl-9 pr-3 border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
             disabled={isLoadingAI}
           />
           {isLoadingAI && (
@@ -363,7 +363,7 @@ export function UniversitiesFilterInput({
                 }}
                 className={cn(
                   "w-full text-left px-3 py-2 text-sm transition-colors",
-                  focusedIndex === index ? "bg-gray-100" : "hover:bg-gray-50",
+                  focusedIndex === index ? "bg-lia-bg-tertiary" : "hover:bg-lia-bg-secondary",
                   item.type === 'ai' && "border-b border-lia-border-subtle"
                 )}
               >
@@ -387,12 +387,12 @@ export function UniversitiesFilterInput({
             {value.map(university => (
               <Badge
                 key={university}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-lia-text-primary border border-lia-border-subtle"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
               >
                 <span>{university}</span>
                 <button
                   onClick={() => removeUniversity(university)}
-                  className="hover:bg-gray-200 rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
+                  className="hover:bg-lia-interactive-active rounded-md p-0.5 transition-colors motion-reduce:transition-none ml-1"
                   title="Remove"
                 >
                   <X className="w-3 h-3" />
@@ -406,7 +406,7 @@ export function UniversitiesFilterInput({
             size="sm"
             onClick={findSimilarUniversities}
             disabled={isFindingSimilar || value.length === 0}
-            className="text-xs gap-1.5 border-gray-900 dark:lia-border-50 text-lia-text-secondary hover:bg-gray-100 dark:bg-lia-bg-secondary"
+            className="text-xs gap-1.5 border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
           >
             {isFindingSimilar ? (
               <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
@@ -425,7 +425,7 @@ export function UniversitiesFilterInput({
       />
 
       {showSavePresetModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowSavePresetModal(false)}>
+        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50" onClick={() => setShowSavePresetModal(false)}>
           <div className="bg-lia-bg-primary rounded-md p-4 w-80" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-medium text-sm mb-3">Salvar Preset</h3>
             <Input
@@ -442,7 +442,7 @@ export function UniversitiesFilterInput({
                 size="sm" 
                 onClick={handleSaveCustomPreset}
                 disabled={!savePresetName.trim()}
-                className="bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
               >
                 <Save className="w-3.5 h-3.5 mr-1.5" />
                 Salvar

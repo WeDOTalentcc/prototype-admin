@@ -220,7 +220,7 @@ export function OnboardingPage() {
   const getStatusColor = (status: string) => {
     const colors = {
       pending: 'bg-status-warning/15 text-status-warning border-status-warning/30',
-      in_progress: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
+      in_progress: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
       completed: 'bg-status-success/15 text-status-success border-status-success/30',
       delayed: 'bg-status-error/15 text-status-error border-status-error/30'
     }
@@ -249,7 +249,7 @@ export function OnboardingPage() {
                 <p className="text-2xl font-bold text-lia-text-primary">{onboardingCandidates.length}</p>
                 <p className="text-xs text-lia-text-primary">este mês</p>
               </div>
-              <div className="w-12 h-12 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+              <div className="w-12 h-12 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
                 <UserPlus className="w-6 h-6 text-lia-text-secondary" />
               </div>
             </div>
@@ -314,7 +314,7 @@ export function OnboardingPage() {
         <CardContent>
           <div className="space-y-4">
             {onboardingCandidates.filter(c => c.status === 'in_progress' || c.status === 'delayed').map(candidate => (
-              <div key={candidate.id} className="p-4 border border-lia-border-subtle rounded-md hover:bg-gray-50 transition-colors motion-reduce:transition-none">
+              <div key={candidate.id} className="p-4 border border-lia-border-subtle rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar className="w-12 h-12">
@@ -335,9 +335,9 @@ export function OnboardingPage() {
                     </Badge>
                     <p className="text-sm text-lia-text-primary mt-1">{candidate.currentStep}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <div className="w-24 bg-gray-200 rounded-full h-2">
+                      <div className="w-24 bg-lia-interactive-active rounded-full h-2">
                         <div
-                          className="bg-gray-700 dark:bg-lia-text-tertiary h-2 rounded-full"
+                          className="bg-lia-bg-inverse dark:bg-lia-text-tertiary h-2 rounded-full"
                           style={{width: `${candidate.progress}%`}}
                         />
                       </div>
@@ -367,7 +367,7 @@ export function OnboardingPage() {
               { task: 'Treinamento de segurança', candidate: 'Carlos Santos', dueDate: '2 dias', priority: 'medium' },
               { task: 'Entrega de equipamentos', candidate: 'Ana Pereira', dueDate: '3 dias', priority: 'high' }
             ].map((item, index) => (
-              <div key={`${item.task}-${index}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+              <div key={`${item.task}-${index}`} className="flex items-center justify-between p-3 bg-lia-bg-secondary rounded-md">
                 <div className="flex items-center gap-3">
                   <div className={`w-3 h-3 rounded-full ${
                     item.priority === 'high' ? 'bg-status-error' :
@@ -404,14 +404,14 @@ export function OnboardingPage() {
               placeholder="Buscar colaboradores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 w-80"
+              className="pl-10 pr-4 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 w-80"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20"
+            className="px-3 py-2 border border-lia-border-default rounded-md bg-lia-bg-primary text-lia-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20"
           >
             <option value="all">Todos os Status</option>
             <option value="pending">Pendente</option>
@@ -476,11 +476,11 @@ export function OnboardingPage() {
                     <span className="text-lia-text-primary">Progresso:</span>
                     <span className="font-medium">{candidate.progress}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-lia-interactive-active rounded-full h-2">
                     <div
                       className={`h-2 rounded-full ${
                         candidate.status === 'completed' ? 'bg-status-success' :
-                        candidate.status === 'delayed' ? 'bg-status-error' : 'bg-gray-700 dark:bg-lia-text-tertiary'
+                        candidate.status === 'delayed' ? 'bg-status-error' : 'bg-lia-bg-inverse dark:bg-lia-text-tertiary'
                       }`}
                       style={{width: `${candidate.progress}%`}}
                     />
@@ -626,7 +626,7 @@ export function OnboardingPage() {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-md w-fit">
+          <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-md w-fit">
             {[
               { id: 'overview', label: 'Visão Geral', icon: BarChart3 },
               { id: 'candidates', label: 'Colaboradores', icon: Users },
@@ -683,7 +683,7 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
   const getStatusColor = (status: string) => {
     const colors = {
       pending: 'bg-status-warning/15 text-status-warning border-status-warning/30',
-      in_progress: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
+      in_progress: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default',
       completed: 'bg-status-success/15 text-status-success border-status-success/30',
       delayed: 'bg-status-error/15 text-status-error border-status-error/30'
     }
@@ -762,9 +762,9 @@ function CandidateDetailModal({ candidate, onClose }: CandidateDetailModalProps)
                       <span className="text-sm text-lia-text-secondary">Progresso Geral</span>
                       <span className="text-sm font-medium">{candidate.progress}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="w-full bg-lia-interactive-active rounded-full h-3">
                       <div
-                        className="bg-gray-700 dark:bg-lia-text-tertiary h-3 rounded-full"
+                        className="bg-lia-bg-inverse dark:bg-lia-text-tertiary h-3 rounded-full"
                         style={{width: `${candidate.progress}%`}}
                       />
                     </div>

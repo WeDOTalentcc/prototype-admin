@@ -358,7 +358,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       <Button
                         size="sm"
                         variant="outline"
-                        className="p-2 h-8 w-8 rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active border-0"
+                        className="p-2 h-8 w-8 rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active border-0"
                         onClick={() => setAudioPlaying(!audioPlaying)}
                       >
                         {audioPlaying ? <Pause className="w-4 h-4 text-white" /> : <Play className="w-4 h-4 text-white" />}
@@ -476,7 +476,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                   {/* Indicador do tipo de áudio */}
                   <div className="mb-3 p-2 bg-lia-bg-secondary border border-lia-border-subtle rounded-md">
                     <div className="flex items-center gap-2">
-                      <Badge className="text-xs px-1.5 py-0.5 bg-lia-btn-primary-bg text-white border-0">
+                      <Badge className="text-xs px-1.5 py-0.5 bg-lia-btn-primary-bg text-lia-btn-primary-text border-0">
                         {selectedFile.audioType === 'interview' ? 'Entrevista Gravada' : 'Áudio de Triagem'}
                       </Badge>
                       <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '4:32'}</span>

@@ -66,11 +66,11 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
           placeholder={index === 0 ? "Cole a URL do LinkedIn ou ID do candidato..." : "Cole outra URL para combinar perfis..."}
           className="w-full rounded-md pl-9 pr-20 py-2.5 text-base-ui focus:outline-none transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = "var(--gray-300)"
+            e.currentTarget.style.borderColor = "var(--lia-border-default)"
             e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = "var(--gray-200)"
+            e.currentTarget.style.borderColor = "var(--lia-border-subtle)"
             e.currentTarget.style.boxShadow = "none"
           }}
           disabled={isLoading}
@@ -90,7 +90,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
                 <TooltipTrigger asChild>
                   <button
                     onClick={addSimilarUrl}
-                    className="px-2 py-1 rounded-full text-xs font-medium hover:bg-gray-900 hover:text-white dark:hover:bg-gray-100 transition-colors motion-reduce:transition-none bg-gray-200/30"
+                    className="px-2 py-1 rounded-full text-xs font-medium hover:bg-lia-btn-primary-bg hover:text-white dark:hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none bg-lia-interactive-active/30"
                   >
                     + URL
                   </button>
@@ -106,9 +106,9 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
     ))}
 
     <div className="flex items-center gap-3">
-      <div className="flex-1 h-px bg-gray-200" />
+      <div className="flex-1 h-px bg-lia-interactive-active" />
       <span className="text-micro text-lia-text-tertiary uppercase tracking-wider">ou</span>
-      <div className="flex-1 h-px bg-gray-200" />
+      <div className="flex-1 h-px bg-lia-interactive-active" />
     </div>
 
     <div className="relative">
@@ -123,7 +123,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
       {similarCvFiles.length > 0 ? (
         <div className="flex flex-wrap gap-2">
           {similarCvFiles.map((file, index) => (
-            <div key={file.name} className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs bg-gray-50">
+            <div key={file.name} className="flex items-center gap-2 px-2.5 py-1.5 rounded-full text-xs bg-lia-bg-secondary">
               <FileText className="w-3 h-3 text-lia-text-secondary" />
               <span className="max-w-[150px] truncate text-lia-text-primary">{file.name}</span>
               <button onClick={() => removeCvFile(index)} className="hover:text-status-error">
@@ -134,7 +134,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
           {similarCvFiles.length < MAX_CV_FILES && (
             <button
               onClick={() => cvFileInputRef.current?.click()}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium hover:bg-gray-100 transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)]"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-medium hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)]"
             >
               <Upload className="w-3 h-3" />
               + CV
@@ -144,7 +144,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
       ) : (
         <button
           onClick={() => cvFileInputRef.current?.click()}
-          className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-50 transition-colors motion-reduce:transition-none border border-dashed"
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-md text-xs text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none border border-dashed"
         >
           <Upload className="w-3.5 h-3.5" />
           Arraste CVs aqui ou clique para upload (máx. 2)
@@ -153,13 +153,13 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
     </div>
 
     {hasMultipleSources() && !showCombinedSuggestions && (
-      <Button onClick={analyzeProfiles} disabled={isAnalyzingProfiles} className="w-full text-xs h-9 bg-gray-900">
+      <Button onClick={analyzeProfiles} disabled={isAnalyzingProfiles} className="w-full text-xs h-9 bg-lia-btn-primary-bg">
         {isAnalyzingProfiles ? (<><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin motion-reduce:animate-none" />Analisando perfis...</>) : (<><Wand2 className="w-3.5 h-3.5 mr-2" />Analisar e combinar perfis com LIA</>)}
       </Button>
     )}
 
     {showCombinedSuggestions && combinedSuggestions.length > 0 && (
-      <div className="p-3 rounded-md space-y-2 border border-lia-border-subtle bg-gray-50">
+      <div className="p-3 rounded-md space-y-2 border border-lia-border-subtle bg-lia-bg-secondary">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
@@ -203,8 +203,8 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
             onChange={(e) => setSimilarSearchPrompt(e.target.value)}
             placeholder="Descreva o perfil que deseja buscar..."
             className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[60px] transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--gray-300)"; e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)" }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--gray-200)"; e.currentTarget.style.boxShadow = "none" }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--lia-border-default)"; e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)" }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--lia-border-subtle)"; e.currentTarget.style.boxShadow = "none" }}
             rows={2}
           />
           {onSearchSourceChange && (
@@ -223,7 +223,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button type="button" onClick={handleSubmit} disabled={!canSubmit() || isLoading}
-                        className={cn("flex items-center justify-center p-1.5 rounded-md transition-colors motion-reduce:transition-none", canSubmit() ? "hover:bg-gray-100 text-lia-text-tertiary" : "opacity-50 cursor-not-allowed text-lia-text-disabled")}>
+                        className={cn("flex items-center justify-center p-1.5 rounded-md transition-colors motion-reduce:transition-none", canSubmit() ? "hover:bg-lia-bg-tertiary text-lia-text-tertiary" : "opacity-50 cursor-not-allowed text-lia-text-disabled")}>
                         {isLoading ? <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" /> : <Search className="w-4 h-4" />}
                       </button>
                     </TooltipTrigger>
@@ -248,8 +248,8 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
           onChange={(e) => setSimilarSearchPrompt(e.target.value)}
           placeholder="Edite o prompt de busca ou adicione perfis acima..."
           className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors motion-reduce:transition-none border bg-[var(--lia-bg-primary)] text-lia-text-primary"
-          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--gray-300)"; e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)" }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = "var(--gray-200)"; e.currentTarget.style.boxShadow = "none" }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "var(--lia-border-default)"; e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)" }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "var(--lia-border-subtle)"; e.currentTarget.style.boxShadow = "none" }}
           rows={2}
         />
         {onSearchSourceChange && (
@@ -268,7 +268,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button type="button" onClick={handleSubmit} disabled={!canSubmit() || isLoading}
-                      className={cn("flex items-center justify-center p-1.5 rounded-md transition-colors motion-reduce:transition-none", canSubmit() ? "hover:bg-gray-100 text-lia-text-tertiary" : "opacity-50 cursor-not-allowed text-lia-text-disabled")}>
+                      className={cn("flex items-center justify-center p-1.5 rounded-md transition-colors motion-reduce:transition-none", canSubmit() ? "hover:bg-lia-bg-tertiary text-lia-text-tertiary" : "opacity-50 cursor-not-allowed text-lia-text-disabled")}>
                       {isLoading ? <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" /> : <Search className="w-4 h-4" />}
                     </button>
                   </TooltipTrigger>
@@ -285,7 +285,7 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
       </div>
     )}
 
-    <div className="p-2 rounded-md border border-lia-border-subtle bg-gray-50/50">
+    <div className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary/50">
       <div className="flex items-start gap-2">
         <Wand2 className="w-3 h-3 text-wedo-cyan mt-0.5 flex-shrink-0" />
         <p className="text-xs text-lia-text-primary">
@@ -303,7 +303,7 @@ function ScopeButton({ icon: Icon, active, activeColor, onClick, label, sublabel
   const size = small ? "w-3.5 h-3.5" : "w-4 h-4"
   const ringClass = activeColor === 'wedo-green' ? 'bg-wedo-green/15 ring-1 ring-wedo-green' 
     : activeColor === 'wedo-orange' ? 'bg-wedo-orange/15 ring-1 ring-wedo-orange'
-    : activeColor === 'wedo-cyan' ? 'bg-wedo-cyan/15 ring-1 ring-gray-900/20'
+    : activeColor === 'wedo-cyan' ? 'bg-wedo-cyan/15 ring-1 ring-lia-btn-primary-bg/20'
     : ''
   const textClass = activeColor === 'wedo-green' ? 'text-wedo-green'
     : activeColor === 'wedo-orange' ? 'text-wedo-orange'
@@ -314,7 +314,7 @@ function ScopeButton({ icon: Icon, active, activeColor, onClick, label, sublabel
       <Tooltip>
         <TooltipTrigger asChild>
           <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick() }}
-            className={cn("flex items-center justify-center p-1.5 rounded-md text-xs transition-colors motion-reduce:transition-none", active ? ringClass : "hover:bg-gray-100", active ? textClass : "text-lia-text-tertiary")}>
+            className={cn("flex items-center justify-center p-1.5 rounded-md text-xs transition-colors motion-reduce:transition-none", active ? ringClass : "hover:bg-lia-bg-tertiary", active ? textClass : "text-lia-text-tertiary")}>
             <Icon className={size} />
           </button>
         </TooltipTrigger>

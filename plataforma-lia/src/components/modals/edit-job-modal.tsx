@@ -131,7 +131,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div 
-        className="absolute inset-0 bg-black/50/70 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-lia-overlay/70 backdrop-blur-[2px]"
         onClick={onClose}
       />
       
@@ -562,14 +562,14 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
           <Button
             variant="outline"
             onClick={onClose}
-            className="h-9 px-4 text-xs font-medium bg-white border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg text-lia-text-secondary"
+            className="h-9 px-4 text-xs font-medium bg-lia-bg-primary border border-lia-border-default hover:bg-lia-interactive-hover dark:hover:bg-lia-btn-primary-bg text-lia-text-secondary"
           >
             Cancelar
           </Button>
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:hover:bg-lia-interactive-active"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             {isSaving ? (
               <>
@@ -587,7 +587,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
       </div>
 
       {showImportQuestionsModal && (
-        <div className="fixed inset-0 bg-black/50/70 flex items-center justify-center z-overlay p-4">
+        <div className="fixed inset-0 bg-lia-overlay/70 flex items-center justify-center z-overlay p-4">
           <div className="bg-lia-bg-primary rounded-md max-w-lg w-full max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between px-5 py-4 border-b border-lia-border-subtle">
               <div className="flex items-center gap-2">

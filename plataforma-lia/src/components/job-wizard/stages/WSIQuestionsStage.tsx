@@ -124,7 +124,7 @@ export function WSIQuestionsStage() {
         className={cn(
  "p-3 rounded-md border transition-colors",
           question.selected
-            ? "bg-gray-50 dark:bg-lia-bg-secondary/50 border-gray-900"
+            ? "bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border-lia-btn-primary-bg"
             : "bg-lia-bg-primary border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-default"
         )}
       >
@@ -136,10 +136,10 @@ export function WSIQuestionsStage() {
             className={cn(
  "w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors",
               question.selected
-                ? "bg-gray-900 text-white"
+                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
                 : selectedCount >= 5
                   ? "border border-lia-border-subtle cursor-not-allowed"
-                  : "border-2 border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50"
+                  : "border-2 border-lia-border-subtle hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle"
             )}
           >
             {question.selected && <Check className="w-3 h-3" strokeWidth={3} />}
@@ -159,14 +159,14 @@ export function WSIQuestionsStage() {
                 question.category === 'technical' ? "bg-wedo-cyan/10 text-wedo-cyan-dark" :
                 question.category === 'behavioral' ? "bg-wedo-purple/10 text-wedo-purple" :
                 question.category === 'situacional' ? "bg-status-warning/10 text-status-warning" :
-                "bg-gray-50 text-lia-text-secondary"
+                "bg-lia-bg-secondary text-lia-text-secondary"
               )}>
                 <CategoryIcon className="w-2.5 h-2.5" />
                 {QUESTION_CATEGORIES.find(c => c.id === question.category)?.label || 'Geral'}
               </span>
               
               {/* Type badge */}
-              <span className="px-1.5 py-0.5 bg-gray-100 lia-text-secondary rounded-full text-micro">
+              <span className="px-1.5 py-0.5 bg-lia-bg-tertiary lia-text-secondary rounded-full text-micro">
                 {question.type === 'yes-no' ? 'Sim/Não' :
                  question.type === 'numeric' ? 'Numérica' :
                  question.type === 'multiple-choice' ? 'Múltipla escolha' :
@@ -180,7 +180,7 @@ export function WSIQuestionsStage() {
  "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-micro font-medium transition-colors",
                   question.isWSI
                     ? "bg-status-success/10 text-status-success"
-                    : "bg-gray-100 lia-text-secondary hover:bg-status-success/10"
+                    : "bg-lia-bg-tertiary lia-text-secondary hover:bg-status-success/10"
                 )}
               >
                 <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
@@ -230,12 +230,12 @@ export function WSIQuestionsStage() {
       </div>
 
       {/* Progress bar */}
-      <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+      <div className="w-full h-1 bg-lia-interactive-active rounded-full overflow-hidden">
         <div 
           className={cn(
  "h-full transition-[width,height] duration-300",
             selectedCount >= 5 ? "bg-status-success" : 
-            selectedCount >= 3 ? "bg-gray-900" : "bg-status-warning"
+            selectedCount >= 3 ? "bg-lia-btn-primary-bg" : "bg-status-warning"
           )}
           style={{width: `${(selectedCount / 5) * 100}%`}}
         />
@@ -243,7 +243,7 @@ export function WSIQuestionsStage() {
 
       {/* Company Default Questions Section */}
       {companyDefaultQuestions.length > 0 && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-md border border-lia-border-subtle">
+        <div className="mb-4 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Settings className="w-3.5 h-3.5 text-lia-text-secondary" />
@@ -276,8 +276,8 @@ export function WSIQuestionsStage() {
                     className={cn(
  "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 transition-colors",
                       q.enabled 
-                        ? "bg-gray-900 text-white" 
-                        : "border-2 border-lia-border-subtle hover:border-gray-900 dark:hover:border-gray-50"
+                        ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
+                        : "border-2 border-lia-border-subtle hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle"
                     )}
                   >
                     {q.enabled && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
@@ -289,7 +289,7 @@ export function WSIQuestionsStage() {
                     {q.question}
                   </span>
                 </div>
-                <span className="px-1.5 py-0.5 bg-gray-100 lia-text-secondary rounded-full text-micro">
+                <span className="px-1.5 py-0.5 bg-lia-bg-tertiary lia-text-secondary rounded-full text-micro">
                   {q.type === 'yes-no' ? 'Sim/Não' : q.type === 'numeric' ? 'Numérica' : q.type === 'multiple-choice' ? 'Múltipla' : 'Aberta'}
                 </span>
               </div>
@@ -300,7 +300,7 @@ export function WSIQuestionsStage() {
 
       {/* Loading indicator */}
       {isGeneratingWSI && (
-        <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default flex items-center justify-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md border border-lia-border-default dark:border-lia-border-default flex items-center justify-center gap-2" role="status" aria-live="polite" aria-label="Carregando...">
           <Loader2 className="w-4 h-4 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
           <span className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
             Gerando perguntas personalizadas para esta vaga...
@@ -324,7 +324,7 @@ export function WSIQuestionsStage() {
       {/* Add Custom Question Button */}
       <button
         onClick={() => setShowCustomQuestionForm(true)}
-        className="w-full py-2 px-3 rounded-md border border-dashed border-gray-900 text-lia-text-secondary text-xs font-medium hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
+        className="w-full py-2 px-3 rounded-md border border-dashed border-lia-btn-primary-bg text-lia-text-secondary text-xs font-medium hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-1.5"
       >
         <Plus className="w-3.5 h-3.5" />
         Adicionar Pergunta Personalizada
@@ -332,7 +332,7 @@ export function WSIQuestionsStage() {
 
       {/* Custom Question Form */}
       {showCustomQuestionForm && (
-        <div className="p-3 bg-gray-50 rounded-md border border-lia-border-subtle space-y-2">
+        <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle space-y-2">
           <textarea
             value={customQuestionText}
             onChange={(e) => setCustomQuestionText(e.target.value)}
@@ -375,7 +375,7 @@ export function WSIQuestionsStage() {
             <button
               onClick={addCustomQuestion}
               disabled={!customQuestionText.trim()}
-              className="flex-1 py-1.5 px-3 rounded-md bg-gray-900 text-white text-xs disabled:opacity-50"
+              className="flex-1 py-1.5 px-3 rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs disabled:opacity-50"
             >
               Adicionar
             </button>

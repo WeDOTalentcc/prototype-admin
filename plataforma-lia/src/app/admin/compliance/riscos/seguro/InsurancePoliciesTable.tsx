@@ -20,7 +20,7 @@ const getStatusBadge = (status: string) => {
     case 'active':
       return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15"><span className="mr-1">✓</span>Ativo</Badge>
     case 'expired':
-      return <Badge className="bg-gray-100 lia-text-600 hover:bg-gray-100">Expirado</Badge>
+      return <Badge className="bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-bg-tertiary">Expirado</Badge>
     case 'pending':
       return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Pendente</Badge>
     case 'cancelled':
@@ -33,7 +33,7 @@ const getStatusBadge = (status: string) => {
 const getClaimStatusBadge = (status: string) => {
   switch (status) {
     case 'open':
-      return <Badge className="lia-text-600 dark:text-lia-text-tertiary hover:bg-gray-100">Aberto</Badge>
+      return <Badge className="text-lia-text-secondary dark:text-lia-text-tertiary hover:bg-lia-bg-tertiary">Aberto</Badge>
     case 'under_review':
       return <Badge className="bg-status-warning/15 text-status-warning hover:bg-status-warning/15">Em Análise</Badge>
     case 'approved':
@@ -43,7 +43,7 @@ const getClaimStatusBadge = (status: string) => {
     case 'paid':
       return <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Pago</Badge>
     case 'closed':
-      return <Badge className="bg-gray-100 lia-text-600 hover:bg-gray-100">Encerrado</Badge>
+      return <Badge className="bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-bg-tertiary">Encerrado</Badge>
     default:
       return <Badge variant="secondary">{status}</Badge>
   }
@@ -58,7 +58,7 @@ interface InsurancePoliciesTableProps {
 export function InsurancePoliciesTable({ policies, onEdit, onDelete }: InsurancePoliciesTableProps) {
   if (policies.length === 0) {
     return (
-      <div className="text-center py-8 text-sm lia-text-400 dark:lia-text-500">
+      <div className="text-center py-8 text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
         Nenhuma apólice cadastrada
       </div>
     )
@@ -82,13 +82,13 @@ export function InsurancePoliciesTable({ policies, onEdit, onDelete }: Insurance
               <Badge variant="outline" className="font-mono text-xs">{policy.policyNumber}</Badge>
             </TableCell>
             <TableCell>
-              <span className="font-medium lia-text-800 dark:text-lia-text-primary">{policy.insurer}</span>
+              <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">{policy.insurer}</span>
             </TableCell>
             <TableCell>
               <span className="text-sm text-status-success font-medium">{formatCurrency(policy.coverage)}</span>
             </TableCell>
             <TableCell>
-              <span className="text-sm lia-text-500 dark:text-lia-text-tertiary">
+              <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                 {new Date(policy.startDate).toLocaleDateString('pt-BR')} - {new Date(policy.endDate).toLocaleDateString('pt-BR')}
               </span>
             </TableCell>
@@ -124,7 +124,7 @@ interface InsuranceClaimsTableProps {
 export function InsuranceClaimsTable({ claims }: InsuranceClaimsTableProps) {
   if (claims.length === 0) {
     return (
-      <div className="text-center py-8 text-sm lia-text-400 dark:lia-text-500">
+      <div className="text-center py-8 text-sm text-lia-text-tertiary dark:text-lia-text-secondary">
         Nenhum sinistro registrado
       </div>
     )
@@ -147,12 +147,12 @@ export function InsuranceClaimsTable({ claims }: InsuranceClaimsTableProps) {
               <Badge variant="outline" className="font-mono text-xs">{claim.claimNumber}</Badge>
             </TableCell>
             <TableCell>
-              <span className="text-sm lia-text-500 dark:text-lia-text-tertiary">
+              <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                 {new Date(claim.incidentDate).toLocaleDateString('pt-BR')}
               </span>
             </TableCell>
             <TableCell>
-              <span className="text-sm lia-text-800 dark:text-lia-text-primary">
+              <span className="text-sm text-lia-text-primary dark:text-lia-text-primary">
                 {claim.description.length > 50 ? `${claim.description.substring(0, 50)}...` : claim.description}
               </span>
             </TableCell>
@@ -160,7 +160,7 @@ export function InsuranceClaimsTable({ claims }: InsuranceClaimsTableProps) {
               {claim.claimAmount ? (
                 <span className="text-sm text-status-warning font-medium">{formatCurrency(claim.claimAmount)}</span>
               ) : (
-                <span className="text-sm lia-text-400 dark:lia-text-500">-</span>
+                <span className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">-</span>
               )}
             </TableCell>
             <TableCell>{getClaimStatusBadge(claim.status)}</TableCell>

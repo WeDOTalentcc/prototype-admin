@@ -164,13 +164,13 @@ export function SearchResultsCard({
           </div>
           <div className="flex items-center gap-2 text-sm text-lia-text-primary">
             {localCount > 0 && (
-              <Badge variant="outline" className="border-lia-border-default bg-gray-50">
+              <Badge variant="outline" className="border-lia-border-default bg-lia-bg-secondary">
                 <Database className="h-3 w-3 mr-1" />
                 {localCount} local
               </Badge>
             )}
             {pearchCount > 0 && (
-              <Badge variant="outline" className="border-lia-border-default bg-gray-50 text-lia-text-primary">
+              <Badge variant="outline" className="border-lia-border-default bg-lia-bg-secondary text-lia-text-primary">
                 <Globe className="h-3 w-3 mr-1" />
                 {pearchCount} Pearch
               </Badge>
@@ -189,7 +189,7 @@ export function SearchResultsCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 text-xs gap-1.5 text-lia-text-primary hover:text-lia-text-primary hover:bg-gray-100"
+                    className="h-7 text-xs gap-1.5 text-lia-text-primary hover:text-lia-text-primary hover:bg-lia-bg-tertiary"
                     onClick={() => onSaveAsArchetype(query)}
                   >
                     <Target className="h-3.5 w-3.5" />
@@ -210,7 +210,7 @@ export function SearchResultsCard({
 
       <CardContent className="pt-0">
         {selectedIds.size > 0 && (
-          <div className="flex items-center gap-2 mb-3 p-2 bg-gray-50 rounded-md border border-lia-border-subtle">
+          <div className="flex items-center gap-2 mb-3 p-2 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
             <span className="text-sm text-lia-text-secondary">
               {selectedIds.size} selecionado(s)
             </span>
@@ -219,7 +219,7 @@ export function SearchResultsCard({
               <Button 
                 size="sm" 
                 variant="outline"
-                className="border-lia-border-subtle text-lia-text-primary hover:bg-gray-100"
+                className="border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-tertiary"
                 onClick={() => onAddToJob(Array.from(selectedIds))}
               >
                 <UserPlus className="h-4 w-4 mr-1" />
@@ -246,8 +246,8 @@ export function SearchResultsCard({
               <div 
                 className={`flex items-center gap-3 p-3 rounded-md border transition-colors motion-reduce:transition-none cursor-pointer
                   ${selectedIds.has(candidate.id) 
-                    ? "bg-gray-50 border-lia-border-default" 
-                    : "bg-lia-bg-primary border-lia-border-subtle hover:bg-gray-50"
+                    ? "bg-lia-bg-secondary border-lia-border-default" 
+                    : "bg-lia-bg-primary border-lia-border-subtle hover:bg-lia-bg-secondary"
                   }`}
                 onClick={() => onSelectCandidate?.(candidate)}
               >
@@ -255,14 +255,14 @@ export function SearchResultsCard({
                   checked={selectedIds.has(candidate.id)}
                   onCheckedChange={() => toggleSelection(candidate.id)}
                   onClick={(e) => e.stopPropagation()}
-                  className="data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900 dark:data-[state=checked]:bg-gray-50 dark:data-[state=checked]:border-gray-50"
+                  className="data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-bg-secondary dark:data-[state=checked]:border-lia-border-subtle"
                 />
 
                 <Avatar className="h-10 w-10 flex-shrink-0">
                   {candidate.picture_url ? (
                     <AvatarImage src={candidate.picture_url} alt={candidate.name} />
                   ) : null}
-                  <AvatarFallback className="bg-gray-100 text-lia-text-secondary text-sm">
+                  <AvatarFallback className="bg-lia-bg-tertiary text-lia-text-secondary text-sm">
                     {getInitials(candidate.name)}
                   </AvatarFallback>
                 </Avatar>
@@ -286,8 +286,8 @@ export function SearchResultsCard({
                           variant="outline" 
                           className={`text-xs ${
                             candidate.source === "local" 
-                              ? "border-lia-border-default bg-gray-50 text-lia-text-secondary" 
-                              : "border-lia-border-default dark:border-lia-border-default bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
+                              ? "border-lia-border-default bg-lia-bg-secondary text-lia-text-secondary" 
+                              : "border-lia-border-default dark:border-lia-border-default bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
                           }`}
                         >
                           {candidate.source === "local" ? (
@@ -349,7 +349,7 @@ export function SearchResultsCard({
                         <Badge 
                           key={idx} 
                           variant="secondary" 
-                          className="text-xs bg-gray-100 text-lia-text-secondary font-normal"
+                          className="text-xs bg-lia-bg-tertiary text-lia-text-secondary font-normal"
                         >
                           {skill}
                         </Badge>
@@ -357,7 +357,7 @@ export function SearchResultsCard({
                       {candidate.skills.length > 4 && (
                         <Badge 
                           variant="secondary" 
-                          className="text-xs bg-gray-100 text-lia-text-primary font-normal"
+                          className="text-xs bg-lia-bg-tertiary text-lia-text-primary font-normal"
                         >
                           +{candidate.skills.length - 4}
                         </Badge>
@@ -408,7 +408,7 @@ export function SearchResultsCard({
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 px-2 text-xs border-gray-900 dark:lia-border-50 text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
+                          className="h-7 px-2 text-xs border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover"
                           onClick={(e) => {
                             e.stopPropagation()
                             onSaveToBase(candidate.id)
@@ -468,7 +468,7 @@ export function SearchResultsCard({
           <div className="mt-3 pt-3 border-t border-lia-border-subtle">
             <Button 
               variant="outline" 
-              className="w-full border-lia-border-subtle text-lia-text-primary hover:bg-gray-100"
+              className="w-full border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-tertiary"
               onClick={onLoadMore}
             >
               <Globe className="h-4 w-4 mr-2" />
@@ -483,7 +483,7 @@ export function SearchResultsCard({
         )}
 
         {selectedIds.size > 0 && (
-          <div className="mt-3 p-2 bg-gray-50 rounded-md text-center">
+          <div className="mt-3 p-2 bg-lia-bg-secondary rounded-md text-center">
             <p className="text-sm text-lia-text-secondary">
               Dica: Diga "adicione os selecionados à vaga X" ou "compare os candidatos selecionados"
             </p>

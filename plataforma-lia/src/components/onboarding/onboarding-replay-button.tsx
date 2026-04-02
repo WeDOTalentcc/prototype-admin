@@ -80,7 +80,7 @@ export function OnboardingReplayButton({
         </DropdownMenuItem>
 
         <DropdownMenuItem className="gap-3 cursor-pointer">
-          <div className="w-8 h-8 bg-gray-100 dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
+          <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md flex items-center justify-center">
             <Video className="w-4 h-4 text-wedo-purple" />
           </div>
           <div className="flex-1">

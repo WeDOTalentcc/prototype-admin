@@ -321,7 +321,7 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'email' 
-            ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover' 
+            ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover' 
             : 'border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover'
         )}
       >
@@ -338,7 +338,7 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'whatsapp' 
-            ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover' 
+            ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover' 
             : 'border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover'
         )}
       >
@@ -355,7 +355,7 @@ export function CloseVacancyModal({
         className={cn(
           'flex items-center gap-2 h-9 px-4 text-xs font-medium',
           channel === 'both' 
-            ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover' 
+            ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover' 
             : 'border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover'
         )}
       >
@@ -593,7 +593,7 @@ export function CloseVacancyModal({
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
                 currentStep === 1
-                  ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-white'
+                  ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text'
                   : 'bg-lia-bg-tertiary text-lia-text-secondary'
               )}
             >
@@ -605,7 +605,7 @@ export function CloseVacancyModal({
               className={cn(
                 'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
                 currentStep === 2
-                  ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-white'
+                  ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text'
                   : 'bg-lia-bg-tertiary text-lia-text-secondary'
               )}
             >
@@ -650,7 +650,7 @@ export function CloseVacancyModal({
               type="button"
               onClick={handleNextStep}
               disabled={!hiredTemplateId || templatesLoading}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
             >
               Próximo
               <ArrowRight className="w-3.5 h-3.5" />
@@ -660,7 +660,7 @@ export function CloseVacancyModal({
               type="button"
               onClick={handleConfirm}
               disabled={isSubmitting || (selectedCandidateIds.length > 0 && !othersTemplateId)}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
+              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
             >
               {isSubmitting ? (
                 <>

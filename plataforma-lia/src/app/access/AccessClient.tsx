@@ -8,16 +8,16 @@ import Link from "next/link"
 
 export default function AccessPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-8 bg-gray-900 dark:bg-white">
+    <div className="min-h-screen flex items-center justify-center p-8 bg-lia-btn-primary-bg dark:bg-lia-bg-primary">
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="text-center mb-12">
           <h1
-            className="text-4xl font-bold mb-3 lia-text-800 dark:text-lia-text-primary"
+            className="text-4xl font-bold mb-3 text-lia-text-primary dark:text-lia-text-primary"
           >
             WedoTalent
           </h1>
-          <p className="text-lg lia-text-500 dark:text-lia-text-tertiary">
+          <p className="text-lg text-lia-text-secondary dark:text-lia-text-tertiary">
             Selecione sua área de acesso
           </p>
         </div>
@@ -25,22 +25,22 @@ export default function AccessPage() {
         {/* Access Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Client Portal */}
-          <Card className="group hover:border-gray-400 dark:hover:border-gray-500 transition-colors motion-reduce:transition-none duration-300 cursor-pointer">
+          <Card className="group hover:border-lia-border-medium dark:hover:border-lia-border-medium transition-colors motion-reduce:transition-none duration-300 cursor-pointer">
             <CardContent className="p-8">
               <div className="flex flex-col items-center text-center space-y-6">
                 {/* Icon */}
-                <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center group-hover:bg-gray-800 dark:hover:bg-gray-200/20 transition-colors motion-reduce:transition-none">
-                  <Users className="w-10 h-10 lia-text-700 dark:text-lia-text-secondary" />
+                <div className="w-20 h-20 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center group-hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active/20 transition-colors motion-reduce:transition-none">
+                  <Users className="w-10 h-10 text-lia-text-primary dark:text-lia-text-secondary" />
                 </div>
 
                 {/* Title */}
                 <div>
                   <h2
-                    className="text-2xl font-semibold mb-2 lia-text-800 dark:text-lia-text-primary"
+                    className="text-2xl font-semibold mb-2 text-lia-text-primary dark:text-lia-text-primary"
                   >
                     WedoTalent
                   </h2>
-                  <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">
+                  <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                     Plataforma de Recrutamento
                   </p>
                 </div>
@@ -48,36 +48,36 @@ export default function AccessPage() {
                 {/* Features */}
                 <div className="space-y-3 w-full text-left">
                   <div className="flex items-start gap-3">
-                    <Zap className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
+                    <Zap className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Assistente LIA
                       </p>
-                      <p className="text-xs lia-text-400 dark:lia-text-500">
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                         Busca inteligente de candidatos
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <Building className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
+                    <Building className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Gestão de Vagas
                       </p>
-                      <p className="text-xs lia-text-400 dark:lia-text-500">
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                         Funil de talentos e pipeline
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3">
-                    <ArrowRight className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
+                    <ArrowRight className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Análise de Dados
                       </p>
-                      <p className="text-xs lia-text-400 dark:lia-text-500">
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                         KPIs e indicadores estratégicos
                       </p>
                     </div>
@@ -86,7 +86,7 @@ export default function AccessPage() {
 
                 {/* CTA */}
                 <Link href="/" className="w-full">
-                  <Button className="w-full bg-gray-900 dark:lia-bg-50 hover:bg-gray-800 dark:hover:bg-gray-200">
+                  <Button className="w-full bg-lia-btn-primary-bg dark:bg-lia-bg-secondary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active">
                     Acessar Plataforma
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -107,11 +107,11 @@ export default function AccessPage() {
                 {/* Title */}
                 <div>
                   <h2
-                    className="text-2xl font-semibold mb-2 lia-text-800 dark:text-lia-text-primary"
+                    className="text-2xl font-semibold mb-2 text-lia-text-primary dark:text-lia-text-primary"
                   >
                     Admin Portal
                   </h2>
-                  <p className="text-sm lia-text-500 dark:text-lia-text-tertiary">
+                  <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                     Gestão SaaS e Configurações
                   </p>
                 </div>
@@ -121,10 +121,10 @@ export default function AccessPage() {
                   <div className="flex items-start gap-3">
                     <Building className="w-4 h-4 text-wedo-purple mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Gestão de Clientes
                       </p>
-                      <p className="text-xs lia-text-400 dark:lia-text-500">
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                         Organizações, usuários e acesso
                       </p>
                     </div>
@@ -133,10 +133,10 @@ export default function AccessPage() {
                   <div className="flex items-start gap-3">
                     <Zap className="w-4 h-4 text-wedo-purple mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Configurações
                       </p>
-                      <p className="text-xs lia-text-400 dark:lia-text-500">
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                         Integrações, APIs e limites
                       </p>
                     </div>
@@ -145,10 +145,10 @@ export default function AccessPage() {
                   <div className="flex items-start gap-3">
                     <ArrowRight className="w-4 h-4 text-wedo-purple mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium lia-text-800 dark:text-lia-text-primary">
+                      <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
                         Métricas SaaS
                       </p>
-                      <p className="text-xs lia-text-400 dark:lia-text-500">
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                         MRR, ARR, consumo e analytics
                       </p>
                     </div>
@@ -157,7 +157,7 @@ export default function AccessPage() {
 
                 {/* CTA */}
                 <Link href="/admin" className="w-full">
-                  <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white dark:lia-bg-50 dark:lia-text-900 dark:hover:bg-gray-200">
+                  <Button className="w-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active">
                     Acessar Admin
                     <Shield className="w-4 h-4 ml-2" />
                   </Button>
@@ -169,7 +169,7 @@ export default function AccessPage() {
 
         {/* Footer */}
         <div className="text-center mt-12">
-          <p className="text-xs lia-text-400 dark:lia-text-500">
+          <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
             Powered by LIA (Learning Intelligence Assistant) • WedoTalent © 2024
           </p>
         </div>

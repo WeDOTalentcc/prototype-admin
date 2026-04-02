@@ -105,7 +105,7 @@ export function CandidatePageProfileTab({
           <div className="p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center">
+                <div className="w-7 h-7 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center">
                   <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 </div>
                 <div>
@@ -117,12 +117,12 @@ export function CandidatePageProfileTab({
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {opinionsHistory[0]?.job_vacancy_id ? (
-                      <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
+                      <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
                         <Briefcase className="w-2.5 h-2.5" />
                         #{String(opinionsHistory[0].job_vacancy_id).slice(0, 6)} - {opinionsHistory[0].job_vacancy_title || 'Vaga vinculada'}
                       </Badge>
                     ) : (
-                      <Badge className="text-micro px-1.5 py-0 h-4 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">
+                      <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
                         Sem vaga vinculada
                       </Badge>
                     )}
@@ -187,7 +187,7 @@ export function CandidatePageProfileTab({
 
         {candidate.certifications && candidate.certifications.length > 0 && (
           <Card>
-            <CardHeader className="py-3 bg-gray-50 dark:bg-lia-bg-secondary">
+            <CardHeader className="py-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
               <div className="flex items-center gap-2">
                 <Award className="w-4 h-4 text-status-success" />
                 <CardTitle className="text-sm font-semibold text-lia-text-primary">
@@ -219,7 +219,7 @@ export function CandidatePageProfileTab({
           if (langs.length === 0) return null
           return (
             <Card>
-              <CardHeader className="py-3 bg-gray-50 dark:bg-lia-bg-secondary">
+              <CardHeader className="py-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                 <div className="flex items-center gap-2">
                   <Languages className="w-4 h-4 text-wedo-purple" />
                   <CardTitle className="text-sm font-semibold text-lia-text-primary">
@@ -231,7 +231,7 @@ export function CandidatePageProfileTab({
                 {langs.map(({ language, level }) => (
                   <div key={language} className="flex items-center justify-between">
                     <span className="text-sm font-medium text-lia-text-primary">{language}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle">
                       {level}
                     </span>
                   </div>
@@ -242,7 +242,7 @@ export function CandidatePageProfileTab({
         })()}
 
         <Card>
-          <CardHeader className="py-3 bg-gray-50 dark:bg-lia-bg-secondary">
+          <CardHeader className="py-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
             <div className="flex items-center gap-2">
               <Home className="w-4 h-4 text-lia-text-secondary" />
               <CardTitle className="text-sm font-semibold text-lia-text-primary">
@@ -269,7 +269,7 @@ export function CandidatePageProfileTab({
               <h5 className="text-xs font-medium text-lia-text-primary mb-1.5">Preferências de Trabalho</h5>
               <div className="flex flex-wrap gap-1.5">
                 {candidate.is_remote && (
-                  <Badge variant="outline" className="text-xs bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default">Remoto</Badge>
+                  <Badge variant="outline" className="text-xs bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default">Remoto</Badge>
                 )}
                 {candidate.willing_to_relocate && (
                   <Badge variant="outline" className="text-xs bg-status-success/10 text-status-success border-status-success/30">Aceita Relocação</Badge>
@@ -296,7 +296,7 @@ export function CandidatePageProfileTab({
             <div>
               <h5 className="text-xs font-medium text-lia-text-primary mb-1.5">Status</h5>
               <div className="flex flex-wrap gap-1.5">
-                <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-status-success/10 text-status-success dark:text-status-success' : 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'}`}>
+                <Badge variant="outline" className={`text-xs ${candidate.is_active ? 'bg-status-success/10 text-status-success dark:text-status-success' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary'}`}>
                   {candidate.is_active ? 'Ativo' : 'Inativo'}
                 </Badge>
                 {candidate.source && (
@@ -310,7 +310,7 @@ export function CandidatePageProfileTab({
                 <h5 className="text-xs font-medium text-lia-text-primary mb-1.5">Tags</h5>
                 <div className="flex flex-wrap gap-1">
                   {candidate.tags.map((tag: string) => (
-                    <Badge key={tag} className="text-xs bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default">
+                    <Badge key={tag} className="text-xs bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default">
                       {tag}
                     </Badge>
                   ))}
@@ -322,7 +322,7 @@ export function CandidatePageProfileTab({
 
         {hasPersonalData(candidate as unknown as Record<string, unknown>) && (
           <Card>
-            <CardHeader className="py-3 bg-gray-50 dark:bg-lia-bg-secondary">
+            <CardHeader className="py-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-lia-text-secondary" />
                 <CardTitle className="text-sm font-semibold text-lia-text-primary">
@@ -370,15 +370,15 @@ export function CandidatePageProfileTab({
         )}
 
         {hasPearchData(candidate as unknown as Record<string, unknown>) && (
-          <Card className="border-l-4 border-l-gray-400">
-            <CardHeader className="py-3 bg-gray-50 dark:bg-lia-bg-secondary">
+          <Card className="border-l-4 border-l-lia-border-medium">
+            <CardHeader className="py-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
               <div className="flex items-center gap-2">
                 <Linkedin className="w-4 h-4 text-lia-text-secondary" />
                 <CardTitle className="text-sm font-semibold text-lia-text-primary">
                   LinkedIn Insights
                 </CardTitle>
                 {candidate.pearch_profile_id && (
-                  <Badge className="text-micro px-1.5 py-0 bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary">Pearch</Badge>
+                  <Badge className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary">Pearch</Badge>
                 )}
               </div>
             </CardHeader>
@@ -406,7 +406,7 @@ export function CandidatePageProfileTab({
                   </Badge>
                 )}
                 {candidate.is_hiring && (
-                  <Badge className="text-xs bg-gray-100 text-lia-text-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default">
+                  <Badge className="text-xs bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default">
                     📢 Hiring
                   </Badge>
                 )}

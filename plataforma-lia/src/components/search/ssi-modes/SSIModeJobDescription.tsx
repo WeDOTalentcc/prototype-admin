@@ -74,7 +74,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
           >
             <div className="flex items-center gap-2">
               <div
-                className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-200"
+                className="w-6 h-6 rounded-full flex items-center justify-center bg-lia-interactive-active"
               >
                 <Briefcase className="w-3 h-3 text-lia-text-secondary" />
               </div>
@@ -87,7 +87,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
             </div>
             <button
               onClick={clearSelectedVacancy}
-              className="p-1 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+              className="p-1 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
             >
               <X className="w-3.5 h-3.5 text-lia-text-tertiary" />
             </button>
@@ -106,13 +106,13 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
               value={jdVacancySearch}
               onChange={(e) => setJdVacancySearch(e.target.value)}
               placeholder="Digite o nome ou ID da vaga..."
-              className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-gray-50 text-lia-text-primary"
+              className="w-full pl-9 pr-4 py-2.5 text-base-ui rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary"
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "var(--gray-300)"
+                e.currentTarget.style.borderColor = "var(--lia-border-default)"
                 e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = "var(--gray-200)"
+                e.currentTarget.style.borderColor = "var(--lia-border-subtle)"
                 e.currentTarget.style.boxShadow = "none"
               }}
             />
@@ -121,13 +121,13 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
             {showVacancyResults && jdVacancyResults.length > 0 && (
               <div
                 className="absolute z-50 top-full left-0 right-0 mt-1 rounded-md border overflow-hidden"
-                style={{backgroundColor: 'var(--gray-50)'}}
+                style={{backgroundColor: 'var(--lia-bg-secondary)'}}
               >
                 {jdVacancyResults.map((vacancy) => (
                   <button
                     key={vacancy.id}
                     onClick={() => handleSelectVacancy(vacancy)}
-                    className="w-full p-2.5 text-left hover:bg-gray-50 transition-colors motion-reduce:transition-none border-b last:border-b-0 border border-lia-border-subtle"
+                    className="w-full p-2.5 text-left hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none border-b last:border-b-0 border border-lia-border-subtle"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
@@ -136,8 +136,8 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                           <Badge
                             variant="outline"
                             className="text-micro px-1.5 py-0 h-4 flex-shrink-0"
-                            style={{borderColor: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--gray-400)',
-                              color: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--gray-500)'}}
+                            style={{borderColor: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--lia-text-tertiary)',
+                              color: vacancy.status === 'Ativa' ? 'var(--status-success)' : 'var(--lia-text-secondary)'}}
                           >
                             {vacancy.status}
                           </Badge>
@@ -164,7 +164,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
             {showVacancyResults && jdVacancySearch.length >= 2 && jdVacancyResults.length === 0 && !isSearchingVacancies && (
               <div
                 className="absolute z-50 top-full left-0 right-0 mt-1 p-2.5 rounded-md border text-center"
-                style={{backgroundColor: 'var(--gray-50)'}}
+                style={{backgroundColor: 'var(--lia-bg-secondary)'}}
               >
                 <p className="text-base-ui text-lia-text-secondary" aria-live="polite" aria-atomic="true">Nenhuma vaga encontrada</p>
               </div>
@@ -175,9 +175,9 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
 
       {/* Divisor */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-gray-200" />
+        <div className="flex-1 h-px bg-lia-interactive-active" />
         <span className="text-micro text-lia-text-tertiary uppercase tracking-wider">ou</span>
-        <div className="flex-1 h-px bg-gray-200" />
+        <div className="flex-1 h-px bg-lia-interactive-active" />
       </div>
 
       {/* Cole a descrição da vaga */}
@@ -217,13 +217,13 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
           }}
           placeholder={getPlaceholder()}
           className="w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-[100px] transition-colors motion-reduce:transition-none border bg-lia-bg-primary"
-          style={{color: "var(--gray-950)"}}
+          style={{color: "var(--lia-btn-primary-bg)"}}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = "var(--gray-300)"
+            e.currentTarget.style.borderColor = "var(--lia-border-default)"
             e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = "var(--gray-200)"
+            e.currentTarget.style.borderColor = "var(--lia-border-subtle)"
             e.currentTarget.style.boxShadow = "none"
           }}
           disabled={isLoading}
@@ -242,7 +242,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                         "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                         searchSource === 'local'
                           ? "bg-wedo-green/15 ring-1 ring-wedo-green"
-                          : "hover:bg-gray-100"
+                          : "hover:bg-lia-bg-tertiary"
                       , searchSource === 'local' ? "text-wedo-green" : "text-lia-text-tertiary"
                       )}
                     >
@@ -267,7 +267,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                           "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                           searchSource === 'hybrid'
                             ? "bg-wedo-orange/15 ring-1 ring-wedo-orange"
-                            : "hover:bg-gray-100"
+                            : "hover:bg-lia-bg-tertiary"
                         , searchSource === 'hybrid' ? "text-wedo-orange" : "text-lia-text-tertiary"
                         )}
                       >
@@ -292,8 +292,8 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                         className={cn(
                           "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                           searchSource === 'global'
-                            ? "bg-wedo-cyan/15 ring-1 ring-gray-900/20"
-                            : "hover:bg-gray-100"
+                            ? "bg-wedo-cyan/15 ring-1 ring-lia-btn-primary-bg/20"
+                            : "hover:bg-lia-bg-tertiary"
                         , searchSource === 'global' ? "text-lia-text-primary" : "text-lia-text-tertiary"
                         )}
                       >
@@ -321,7 +321,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                             "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                             requireEmails
                               ? "bg-wedo-green/15 ring-1 ring-wedo-green"
-                              : "hover:bg-gray-100"
+                              : "hover:bg-lia-bg-tertiary"
                           , requireEmails ? "text-wedo-green" : "text-lia-text-tertiary"
                           )}
                         >
@@ -345,7 +345,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                             "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
                             requirePhoneNumbers
                               ? "bg-wedo-green/15 ring-1 ring-wedo-green"
-                              : "hover:bg-gray-100"
+                              : "hover:bg-lia-bg-tertiary"
                           , requirePhoneNumbers ? "text-wedo-green" : "text-lia-text-tertiary"
                           )}
                         >
@@ -371,7 +371,7 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                       disabled={!canSubmit() || isLoading}
                       className={cn(
                         "flex items-center justify-center p-1.5 rounded-md transition-colors",
-                        canSubmit() ? "hover:bg-gray-100" : "opacity-50 cursor-not-allowed"
+                        canSubmit() ? "hover:bg-lia-bg-tertiary" : "opacity-50 cursor-not-allowed"
                       , canSubmit() ? "text-lia-text-tertiary" : "text-lia-text-disabled"
                       )}
                     >
@@ -411,17 +411,17 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
             value={jdSearchPrompt}
             onChange={(e) => setJdSearchPrompt(e.target.value)}
             placeholder="O prompt será gerado a partir da descrição da vaga..."
-            className="w-full resize-none rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 min-h-[60px]"
-            style={{border: "1px solid var(--gray-300)",
-              backgroundColor: "var(--gray-50)",
-              color: 'var(--gray-800)'}}
+            className="w-full resize-none rounded-md px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 min-h-[60px]"
+            style={{border: "1px solid var(--lia-border-default)",
+              backgroundColor: "var(--lia-bg-secondary)",
+              color: 'var(--lia-text-primary)'}}
             rows={2}
           />
         </div>
       )}
 
       {/* Dica contextual padronizada */}
-      <div className="p-2.5 rounded-md bg-gray-50 border border-lia-border-subtle">
+      <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
           <p className="text-xs text-lia-text-primary">

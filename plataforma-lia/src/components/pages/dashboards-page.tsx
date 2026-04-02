@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 const BigFiveDashboardPage = dynamic(() => import("./big-five-dashboard-page").then(m => ({ default: m.BigFiveDashboardPage })), {
   ssr: false,
-  loading: () => <div className="h-64 bg-gray-100 animate-pulse motion-reduce:animate-none rounded-lg" />,
+  loading: () => <div className="h-64 bg-lia-bg-tertiary animate-pulse motion-reduce:animate-none rounded-lg" />,
 })
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"
@@ -207,10 +207,10 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
   }
 
   return (
-    <div className="flex gap-3 h-full px-3 pt-3 pb-6 bg-white dark:bg-lia-bg-primary overflow-hidden">
+    <div className="flex gap-3 h-full px-3 pt-3 pb-6 bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       {/* Menu Lateral de Dashboards - Retrátil com Auto-Expand */}
       <div 
-        className={`bg-gray-50 dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 space-y-4 shrink-0 transition-colors motion-reduce:transition-none duration-300 ${
+        className={`bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md p-4 space-y-4 shrink-0 transition-colors motion-reduce:transition-none duration-300 ${
           shouldExpand ? 'w-64' : 'w-16'
         }`}
         onMouseEnter={handleMouseEnter}
@@ -232,7 +232,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
               )}
               <button
                 onClick={toggleLock}
-                className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+                className="p-1.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
                 title={isMenuLocked ? "Destravar menu (auto-expand habilitado)" : "Travar menu expandido"}
               >
                 {isMenuLocked ? (
@@ -255,16 +255,16 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                     title={!shouldExpand ? item.label : undefined}
                     className={`w-full ${!shouldExpand ? 'flex justify-center' : 'text-left'} p-2 rounded-md transition-colors motion-reduce:transition-none ${
                       isActive
-                        ? 'bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-800/50 border border-transparent'
+                        ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default'
+                        : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 border border-transparent'
                     }`}
                   >
                     {!shouldExpand ? (
                       // Modo colapsado: apenas ícone
                       <div className={`p-1.5 rounded-md ${
                         isActive
-                          ? 'bg-white dark:bg-lia-bg-primary'
-                          : 'bg-gray-100 dark:bg-lia-bg-secondary'
+                          ? 'bg-lia-bg-primary dark:bg-lia-bg-primary'
+                          : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                       }`}>
                         <Icon 
                           className="w-3.5 h-3.5" 
@@ -277,8 +277,8 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
                         <div className="flex items-start gap-2 flex-1 min-w-0">
                           <div className={`p-1.5 rounded-md ${
                             isActive
-                              ? 'bg-white dark:bg-lia-bg-primary'
-                              : 'bg-gray-100 dark:bg-lia-bg-secondary'
+                              ? 'bg-lia-bg-primary dark:bg-lia-bg-primary'
+                              : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                           }`}>
                             <Icon 
                               className="w-3.5 h-3.5" 

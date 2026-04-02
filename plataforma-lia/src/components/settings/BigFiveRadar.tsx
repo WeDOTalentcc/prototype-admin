@@ -119,14 +119,14 @@ export function BigFiveRadar({
 
           <defs>
             <linearGradient id="radarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="var(--gray-600)" stopOpacity="0.4" />
+              <stop offset="0%" stopColor="var(--lia-text-secondary)" stopOpacity="0.4" />
               <stop offset="100%" stopColor="var(--wedo-cyan)" stopOpacity="0.4" />
             </linearGradient>
           </defs>
           <polygon
             points={polygonPoints}
             fill="url(#radarGradient)"
-            stroke="var(--gray-600)"
+            stroke="var(--lia-text-secondary)"
             strokeWidth="2"
             className="transition-colors motion-reduce:transition-none duration-300"
           />
@@ -139,7 +139,7 @@ export function BigFiveRadar({
                 cx={point.x}
                 cy={point.y}
                 r="4"
-                fill="var(--gray-600)"
+                fill="var(--lia-text-secondary)"
                 stroke="white"
                 strokeWidth="2"
                 className="transition-colors motion-reduce:transition-none duration-300"
@@ -160,7 +160,7 @@ export function BigFiveRadar({
                 x={labelPoint.x}
                 y={labelPoint.y + dy}
                 textAnchor={textAnchor}
-                className="text-xs font-medium fill-gray-600 dark:lia-fill-400 font-['Open_Sans',sans-serif]"
+                className="text-xs font-medium fill-lia-text-secondary dark:fill-lia-text-tertiary font-['Open_Sans',sans-serif]"
               >
                 {trait.label}
               </text>
@@ -190,7 +190,7 @@ export function BigFiveRadar({
                 max="100"
                 value={scores[trait.key]}
                 onChange={(e) => handleSliderChange(trait.key, parseInt(e.target.value))}
-                className="w-full h-1.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-md appearance-none cursor-pointer accent-gray-900 dark:lia-accent-100"
+                className="w-full h-1.5 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-md appearance-none cursor-pointer accent-lia-btn-primary-bg dark:accent-lia-bg-tertiary"
               />
             </div>
           ))}

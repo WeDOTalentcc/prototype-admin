@@ -96,7 +96,7 @@ export function CompanyBenefitsSummaryCard({
               <Badge
                 key={benefit.id || index}
                 variant="outline"
-                className="flex items-center gap-1 py-1 px-2 text-xs bg-white dark:bg-lia-bg-secondary"
+                className="flex items-center gap-1 py-1 px-2 text-xs bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 title={benefit.description}
               >
                 <CategoryIcon className={`w-3 h-3 ${categoryInfo.color}`} />
@@ -110,7 +110,7 @@ export function CompanyBenefitsSummaryCard({
                   <Star className="w-2.5 h-2.5 text-status-warning fill-current" />
                 )}
                 {benefit.is_mandatory && (
-                  <span className="text-micro px-0.5 rounded-md bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary">obr.</span>
+                  <span className="text-micro px-0.5 rounded-md bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">obr.</span>
                 )}
                 {benefit.is_discount && (
                   <span className="text-micro px-0.5 rounded-md bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error">desc.</span>

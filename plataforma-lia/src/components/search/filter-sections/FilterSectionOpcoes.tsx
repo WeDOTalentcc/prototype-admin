@@ -23,13 +23,13 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
   return (
     <div className="space-y-6">
       {(searchSource === "global" || searchSource === "hybrid") && (
-        <div className="p-4 rounded-md border bg-gray-50 border-lia-border-subtle">
+        <div className="p-4 rounded-md border bg-lia-bg-secondary border-lia-border-subtle">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="font-medium text-xs">Custo Estimado</span>
             </div>
-            <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-gray-500 text-lia-text-primary">
+            <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-lia-border-medium text-lia-text-primary">
               Tempo Real
             </Badge>
           </div>

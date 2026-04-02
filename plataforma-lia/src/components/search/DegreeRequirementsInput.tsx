@@ -51,7 +51,7 @@ export function DegreeRequirementsInput({
             "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-[width,height]",
             mode === 'regular'
               ? "border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
-              : "border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary"
+              : "border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary"
           )}
         >
           {mode === 'regular' ? 'Regular' : 'Nested'}
@@ -66,15 +66,15 @@ export function DegreeRequirementsInput({
                 setIsDropdownOpen(false)
               }}
               className={cn(
-                "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-50 rounded-t-lg",
-                mode === 'regular' && "bg-gray-50"
+                "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary rounded-t-lg",
+                mode === 'regular' && "bg-lia-bg-secondary"
               )}
             >
               <div className="flex items-center gap-2">
                 <div className={cn(
                   "w-3 h-3 rounded-full border-2",
                   mode === 'regular' 
-                    ? "border-gray-700 bg-gray-700" 
+                    ? "border-lia-border-strong bg-lia-bg-inverse" 
                     : "border-lia-border-default"
                 )}>
                   {mode === 'regular' && (
@@ -94,15 +94,15 @@ export function DegreeRequirementsInput({
                 setIsDropdownOpen(false)
               }}
               className={cn(
-                "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-gray-50 rounded-b-lg border-t border-lia-border-subtle",
-                mode === 'nested' && "bg-gray-50 dark:bg-lia-bg-secondary/50"
+                "w-full text-left px-4 py-3 transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary rounded-b-lg border-t border-lia-border-subtle",
+                mode === 'nested' && "bg-lia-bg-secondary dark:bg-lia-bg-secondary/50"
               )}
             >
               <div className="flex items-center gap-2">
                 <div className={cn(
                   "w-3 h-3 rounded-full border-2",
                   mode === 'nested' 
-                    ? "border-gray-900 bg-gray-900 dark:lia-border-50" 
+                    ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg dark:border-lia-border-subtle" 
                     : "border-lia-border-default"
                 )}>
                   {mode === 'nested' && (
@@ -141,7 +141,7 @@ export function DegreeRequirementsInput({
         value={value || "not_selected"}
         onValueChange={(val) => onChange(val === "not_selected" ? null : val)}
       >
-        <SelectTrigger className="border-lia-border-subtle focus:ring-1 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 bg-lia-bg-secondary text-xs">
+        <SelectTrigger className="border-lia-border-subtle focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 bg-lia-bg-secondary text-xs">
           <SelectValue placeholder="Selecione o grau" />
         </SelectTrigger>
         <SelectContent className="bg-lia-bg-secondary">

@@ -311,7 +311,7 @@ export function JobDuplicateModal({
           <Button
             onClick={handleDuplicate}
             disabled={!newTitle.trim() || !recruiterId}
-            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white"
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
           >
             <Copy className="w-3.5 h-3.5 mr-1.5" />
             Criar Duplicata

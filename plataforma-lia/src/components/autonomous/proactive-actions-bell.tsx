@@ -160,14 +160,14 @@ export function ProactiveActionsBell({
     return (
       <div
         key={action.id}
-        className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none"
+        className="p-3 hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50 transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-start gap-2">
           {candidate ? (
             // @ts-ignore TODO: fix type
             <Avatar className="h-8 w-8 flex-shrink-0">
               <AvatarImage src={(candidate as any).avatar_url} alt={(candidate as any).name} />
-              <AvatarFallback className="text-micro bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary">
+              <AvatarFallback className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary">
                 {(((candidate as any).name?.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() || '??') as React.ReactNode)}
               </AvatarFallback>
             </Avatar>
@@ -178,7 +178,7 @@ export function ProactiveActionsBell({
               action.priority === 'urgent' && "bg-status-error",
               action.priority === 'high' && "bg-wedo-orange",
               action.priority === 'normal' && "bg-wedo-cyan",
-              action.priority === 'low' && "bg-gray-400"
+              action.priority === 'low' && "bg-lia-border-medium"
             )} />
           )}
           <div className="flex-1 min-w-0">
@@ -244,7 +244,7 @@ export function ProactiveActionsBell({
                 // @ts-ignore TODO: fix type
                 variant="default"
                 size="sm"
-                className="h-6 px-2 text-micro bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
+                className="h-6 px-2 text-micro bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
                 onClick={() => handleAccept(action.id)}
                 disabled={isProcessing}
               >
@@ -283,7 +283,7 @@ export function ProactiveActionsBell({
           {pendingCount > 0 && (
             <span className={cn(
  "absolute -top-0.5 -right-0.5 h-4 min-w-4 rounded-full flex items-center justify-center text-micro font-bold text-white px-1",
-              hasUrgent ? "bg-status-error" : "bg-gray-900"
+              hasUrgent ? "bg-status-error" : "bg-lia-btn-primary-bg"
             )}>
               {pendingCount > 9 ? '9+' : pendingCount}
             </span>
@@ -318,7 +318,7 @@ export function ProactiveActionsBell({
             </div>
           ) : visibleActions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 px-4">
-              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-lia-bg-secondary flex items-center justify-center mb-3">
+              <div className="w-10 h-10 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex items-center justify-center mb-3">
                 <Brain className="h-5 w-5 text-wedo-cyan" />
               </div>
               <p className="text-xs text-lia-text-tertiary text-center">
@@ -339,7 +339,7 @@ export function ProactiveActionsBell({
             <div>
               {groupedByVacancy.map((group) => (
                 <div key={group.vacancyId}>
-                  <div className="px-3 py-1.5 bg-gray-50 dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle">
+                  <div className="px-3 py-1.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 border-b border-lia-border-subtle">
                     <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
                       {group.vacancyTitle}
                     </span>
@@ -347,14 +347,14 @@ export function ProactiveActionsBell({
                       {group.actions.length}
                     </Badge>
                   </div>
-                  <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <div className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
                     {group.actions.map(renderActionCard)}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
               {visibleActions.map(renderActionCard)}
             </div>
           )}

@@ -21,8 +21,8 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay backdrop-blur-sm">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden animate-fadeIn">
         {/* Header do Modal */}
         <div className="bg-wedo-purple p-6 text-white">
           <div className="flex items-center justify-between">
@@ -68,7 +68,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
             </div>
 
             {/* Instruções */}
-            <div className="bg-gray-100 dark:bg-lia-bg-secondary/20 rounded-md p-4">
+            <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 rounded-md p-4">
               <h3 className="text-sm font-semibold text-lia-text-primary mb-2 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
                 Instruções Importantes
@@ -86,10 +86,10 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
           {/* Questões do Teste - Visão do Candidato */}
           <div className="p-6 space-y-6">
             {/* Questão 1 */}
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-5">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-3">
-                  <div className="bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                  <div className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
                     1
                   </div>
                   <div className="flex-1">
@@ -101,13 +101,13 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                         <Clock className="w-3 h-3" />
                         <span className="font-medium">Tempo limite: 3:00</span>
                       </div>
-                      <div className="flex-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5 max-w-sidebar-content">
-                        <div className="bg-gray-700 dark:bg-lia-text-secondary h-1.5 rounded-full animate-pulse motion-reduce:animate-none" style={{width: '75%'}}></div>
+                      <div className="flex-1 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5 max-w-sidebar-content">
+                        <div className="bg-lia-bg-inverse dark:bg-lia-text-secondary h-1.5 rounded-full animate-pulse motion-reduce:animate-none" style={{width: '75%'}}></div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <Badge className="bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary">10 pontos</Badge>
+                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">10 pontos</Badge>
               </div>
               <div className="ml-11 space-y-2">
                 {[
@@ -116,11 +116,11 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   'Visibilidade do status do sistema',
                   'Consistência e padrões'
                 ].map((option, idx) => (
-                  <label key={idx} className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
+                  <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
                       type="radio"
                       name="candidate-q1"
-                      className="w-4 h-4 text-lia-text-primary border-lia-border-default focus:ring-gray-500"
+                      className="w-4 h-4 text-lia-text-primary border-lia-border-default focus:ring-lia-border-medium"
                     />
                     <span className="text-sm text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
                       {option}
@@ -131,10 +131,10 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
             </div>
 
             {/* Questão 2 */}
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-5">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-3">
-                  <div className="bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                  <div className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
                     2
                   </div>
                   <div className="flex-1">
@@ -149,7 +149,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                     </div>
                   </div>
                 </div>
-                <Badge className="bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary">10 pontos</Badge>
+                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">10 pontos</Badge>
               </div>
               <div className="ml-11 space-y-2">
                 {[
@@ -158,11 +158,11 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   'Prototipar',
                   'Testar'
                 ].map((option, idx) => (
-                  <label key={idx} className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
+                  <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
                       type="radio"
                       name="candidate-q2"
-                      className="w-4 h-4 text-lia-text-primary border-lia-border-default focus:ring-gray-500"
+                      className="w-4 h-4 text-lia-text-primary border-lia-border-default focus:ring-lia-border-medium"
                     />
                     <span className="text-sm text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
                       {option}
@@ -173,10 +173,10 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
             </div>
 
             {/* Questão 3 */}
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-5">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-5">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-3">
-                  <div className="bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
+                  <div className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary rounded-full w-8 h-8 flex items-center justify-center font-semibold text-sm">
                     3
                   </div>
                   <div className="flex-1">
@@ -191,7 +191,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                     </div>
                   </div>
                 </div>
-                <Badge className="bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary">10 pontos</Badge>
+                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">10 pontos</Badge>
               </div>
               <div className="ml-11 space-y-2">
                 {[
@@ -200,11 +200,11 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                   'System Usability Scale (SUS)',
                   'Net Promoter Score (NPS)'
                 ].map((option, idx) => (
-                  <label key={idx} className="flex items-center gap-3 p-3 bg-white dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-gray-400 dark:hover:border-gray-500 cursor-pointer transition-colors motion-reduce:transition-none group">
+                  <label key={idx} className="flex items-center gap-3 p-3 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none group">
                     <input
                       type="radio"
                       name="candidate-q3"
-                      className="w-4 h-4 text-lia-text-primary border-lia-border-default focus:ring-gray-500"
+                      className="w-4 h-4 text-lia-text-primary border-lia-border-default focus:ring-lia-border-medium"
                     />
                     <span className="text-sm text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
                       {option}
@@ -223,7 +223,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                     <div
                       key={num}
                       className={`w-8 h-1 rounded-full ${
-                        num <= 3 ? 'bg-gray-900' : 'bg-gray-300 dark:bg-lia-bg-elevated'
+                        num <= 3 ? 'bg-lia-btn-primary-bg' : 'bg-lia-border-default dark:bg-lia-bg-elevated'
                       }`}
                     />
                   ))}
@@ -235,10 +235,10 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
         </div>
 
         {/* Footer do Modal */}
-        <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 bg-gray-100 dark:bg-lia-bg-secondary/20 px-3 py-1.5 rounded-md">
+              <div className="flex items-center gap-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 px-3 py-1.5 rounded-md">
                 <Clock className="w-4 h-4 text-lia-text-primary" />
                 <div>
                   <span className="text-xs text-lia-text-secondary">Tempo total:</span>
@@ -260,7 +260,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
               >
                 Fechar Preview
               </Button>
-              <Button className="bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:hover:bg-gray-200 text-white">
+              <Button className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active text-white">
                 <Send className="w-4 h-4 mr-2" />
                 Enviar Teste
               </Button>

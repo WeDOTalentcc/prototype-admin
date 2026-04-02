@@ -27,16 +27,16 @@ const DIMENSION_LABELS: Record<string, string> = {
 }
 
 const DIMENSION_COLORS: Record<string, string> = {
-  technical: "bg-gray-800",
-  behavioral: "bg-gray-600",
-  cultural_fit: "bg-gray-500",
-  experience: "bg-gray-700",
+  technical: "bg-lia-btn-primary-hover",
+  behavioral: "bg-lia-border-medium",
+  cultural_fit: "bg-lia-bg-secondary0",
+  experience: "bg-lia-bg-inverse",
 }
 
 function ScoreBar({ value, color }: { value: number; color: string }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-lia-bg-tertiary rounded-full overflow-hidden">
         <div
           className={`h-full ${color} rounded-full transition-[width,height] duration-500`}
           style={{width: `${Math.min(100, Math.max(0, value))}%`}}
@@ -93,7 +93,7 @@ export function LIAScoreCard({
           {hasBreakdown && (
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="p-0.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+              className="p-0.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
               aria-expanded={expanded}
               aria-label={expanded ? "Recolher detalhes do score" : "Ver detalhes do score"}
             >
@@ -117,7 +117,7 @@ export function LIAScoreCard({
           {Object.entries(breakdown!).map(([key, value]) => {
             if (value === undefined || value === null) return null
             const label = DIMENSION_LABELS[key] ?? key
-            const color = DIMENSION_COLORS[key] ?? "bg-gray-500"
+            const color = DIMENSION_COLORS[key] ?? "bg-lia-bg-secondary0"
             return (
               <div key={key} role="listitem">
                 <div className="flex items-center justify-between mb-0.5">

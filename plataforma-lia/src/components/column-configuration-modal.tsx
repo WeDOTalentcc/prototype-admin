@@ -206,7 +206,7 @@ export function ColumnConfigurationModal({
               <h4 className="text-sm font-medium text-lia-text-primary mb-2">Visualizações Salvas</h4>
               <div className="space-y-1">
                 {savedViews.map(view => (
-                  <div key={view.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+                  <div key={view.id} className="flex items-center justify-between p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                     <button
                       onClick={() => onLoadView(view)}
                       className="flex-1 text-left text-sm text-lia-text-primary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
@@ -275,9 +275,9 @@ export function ColumnConfigurationModal({
                   onDrop={(e) => handleDrop(e, column)}
                   className={`flex items-center gap-3 p-2 rounded-md border-2 transition-colors motion-reduce:transition-none cursor-move ${
  column.visible
-                      ? 'bg-gray-100 dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default'
-                      : 'bg-gray-50 dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
-                  } hover:bg-gray-100 dark:hover:bg-gray-700`}
+                      ? 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated border-lia-border-default dark:border-lia-border-default'
+                      : 'bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle'
+                  } hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse`}
                 >
                   <GripVertical className="w-4 h-4 text-lia-text-disabled" />
 
@@ -287,7 +287,7 @@ export function ColumnConfigurationModal({
                   >
                     <div className={`w-4 h-4 rounded-md border flex items-center justify-center ${
  column.visible
-                        ? 'bg-gray-900 border-gray-900'
+                        ? 'bg-lia-btn-primary-bg border-lia-btn-primary-bg'
                         : 'border-lia-border-default dark:border-lia-border-default'
                     }`}>
                       {column.visible && (
@@ -315,7 +315,7 @@ export function ColumnConfigurationModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-primary">
+          <div className="p-4 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-primary">
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -333,7 +333,7 @@ export function ColumnConfigurationModal({
               </Button>
               <Button
                 onClick={handleSave}
-                className="flex-1 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                className="flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
               >
                 SAVE
               </Button>

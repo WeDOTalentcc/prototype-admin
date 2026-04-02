@@ -48,24 +48,24 @@ export function ConsentVersionsTable({ versions, onNewVersion }: ConsentVersions
       </TableHeader>
       <TableBody>
         {versions.map((version) => (
-          <TableRow key={version.id} className="hover:bg-gray-50">
+          <TableRow key={version.id} className="hover:bg-lia-bg-secondary">
             <TableCell>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <FileText className="w-4 h-4 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <FileText className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
-                <span className="font-medium lia-text-800 dark:text-lia-text-primary">
+                <span className="font-medium text-lia-text-primary dark:text-lia-text-primary">
                   {CONSENT_TYPE_LABELS[version.consentType] || version.consentType}
                 </span>
               </div>
             </TableCell>
             <TableCell className="text-center">
-              <Badge variant={version.isCurrent ? "default" : "outline"} className={version.isCurrent ? "bg-gray-900 dark:lia-bg-50" : ""}>
+              <Badge variant={version.isCurrent ? "default" : "outline"} className={version.isCurrent ? "bg-lia-btn-primary-bg dark:bg-lia-bg-secondary" : ""}>
                 v{version.version}
               </Badge>
             </TableCell>
             <TableCell>
-              <span className="lia-text-500 dark:text-lia-text-tertiary">{version.title}</span>
+              <span className="text-lia-text-secondary dark:text-lia-text-tertiary">{version.title}</span>
             </TableCell>
             <TableCell className="text-center">
               <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">
@@ -83,7 +83,7 @@ export function ConsentVersionsTable({ versions, onNewVersion }: ConsentVersions
               </Badge>
             </TableCell>
             <TableCell>
-              <span className="lia-text-500 dark:text-lia-text-tertiary">
+              <span className="text-lia-text-secondary dark:text-lia-text-tertiary">
                 {new Date(version.createdAt).toLocaleDateString('pt-BR')}
               </span>
             </TableCell>
@@ -91,9 +91,9 @@ export function ConsentVersionsTable({ versions, onNewVersion }: ConsentVersions
               {version.isCurrent ? (
                 <Badge className="bg-status-success/15 text-status-success hover:bg-status-success/15">Atual</Badge>
               ) : version.isActive ? (
-                <Badge className="lia-text-900 dark:lia-text-50 hover:bg-gray-100">Ativo</Badge>
+                <Badge className="text-lia-text-primary dark:text-lia-text-primary hover:bg-lia-bg-tertiary">Ativo</Badge>
               ) : (
-                <Badge className="bg-gray-100 lia-text-800 dark:text-lia-text-primary hover:bg-gray-100">Inativo</Badge>
+                <Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary hover:bg-lia-bg-tertiary">Inativo</Badge>
               )}
             </TableCell>
             <TableCell className="text-right">

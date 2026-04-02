@@ -471,7 +471,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                   placeholder="Ex: Relatório Semanal da Diretoria"
                   required
                 />
@@ -484,7 +484,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                   placeholder="Descreva o propósito deste relatório..."
                   rows={3}
                 />
@@ -497,7 +497,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                 <select
                   value={formData.frequency}
                   onChange={(e) => setFormData(prev => ({ ...prev, frequency: e.target.value as typeof prev.frequency }))}
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                 >
                   <option value="daily">Diário</option>
                   <option value="weekly">Semanal</option>
@@ -514,7 +514,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                   <select
                     value={formData.dayOfWeek}
                     onChange={(e) => setFormData(prev => ({ ...prev, dayOfWeek: Number(e.target.value) }))}
-                    className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                    className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                   >
                     <option value={1}>Segunda-feira</option>
                     <option value={2}>Terça-feira</option>
@@ -538,7 +538,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                     max="31"
                     value={formData.dayOfMonth}
                     onChange={(e) => setFormData(prev => ({ ...prev, dayOfMonth: Number(e.target.value) }))}
-                    className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                    className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                   />
                 </div>
               )}
@@ -551,7 +551,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                 />
               </div>
             </div>
@@ -565,7 +565,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                 <textarea
                   value={formData.recipients}
                   onChange={(e) => setFormData(prev => ({ ...prev, recipients: e.target.value }))}
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                   placeholder="ana.silva@empresa.com, carlos.santos@empresa.com"
                   rows={3}
                   required
@@ -579,7 +579,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                 <select
                   value={formData.reportType}
                   onChange={(e) => setFormData(prev => ({ ...prev, reportType: e.target.value as typeof prev.reportType }))}
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                 >
                   <option value="summary">Resumo</option>
                   <option value="detailed">Detalhado</option>
@@ -596,7 +596,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                   type="text"
                   value={formData.jobIds}
                   onChange={(e) => setFormData(prev => ({ ...prev, jobIds: e.target.value }))}
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                   placeholder="WDT-2025-001, WDT-2025-002"
                 />
               </div>
@@ -608,7 +608,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                 <select
                   value={formData.template}
                   onChange={(e) => setFormData(prev => ({ ...prev, template: e.target.value }))}
-                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20 focus:border-gray-400"
+                  className="w-full p-3 border border-lia-border-default rounded-md focus:ring-2 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium"
                 >
                   <option value="">Template padrão</option>
                   <option value="executive-summary">Resumo Executivo</option>
@@ -617,7 +617,7 @@ function CreateScheduleForm({ report, onSave, onCancel }: CreateScheduleFormProp
                 </select>
               </div>
 
-              <div className="bg-gray-100 dark:bg-lia-bg-secondary p-4 rounded-md">
+              <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary p-4 rounded-md">
                 <h4 className="font-medium text-wedo-cyan-dark mb-2">📋 Prévia do Próximo Envio</h4>
                 <div className="text-sm text-wedo-cyan-dark">
                   <div>Data: {calculateNextSend(formData.frequency, formData.dayOfWeek, formData.dayOfMonth, formData.time) && new Date(calculateNextSend(formData.frequency, formData.dayOfWeek, formData.dayOfMonth, formData.time)).toLocaleDateString('pt-BR')}</div>

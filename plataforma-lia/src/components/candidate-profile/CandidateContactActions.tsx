@@ -121,7 +121,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
               size="sm"
               className={cn(
                 buttonSize,
-                "hover:bg-gray-100 dark:hover:bg-gray-700"
+                "hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
               )}
               onClick={handleLinkedIn}
             >

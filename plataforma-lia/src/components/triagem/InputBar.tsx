@@ -84,7 +84,7 @@ export function InputBar({
   return (
     <div
       className={cn(
- "sticky bottom-0 z-10 bg-white dark:bg-lia-bg-secondary border-t border-lia-border-subtle dark:border-lia-border-subtle px-4 py-3",
+ "sticky bottom-0 z-10 bg-lia-bg-primary dark:bg-lia-bg-secondary border-t border-lia-border-subtle dark:border-lia-border-subtle px-4 py-3",
         className
       )}
     >
@@ -132,7 +132,7 @@ export function InputBar({
           disabled={isDisabled}
           rows={1}
           aria-label="Campo de resposta"
-          className="flex-1 resize-none w-full px-3 py-2 text-sm border border-lia-border-default dark:border-lia-border-default rounded-lg bg-white dark:bg-lia-bg-primary text-lia-text-primary placeholder-lia-input-placeholder dark:placeholder-lia-input-placeholder focus:border-lia-input-border-focus dark:focus:border-lia-input-border-focus focus:ring-2 focus:ring-wedo-cyan/20 focus:outline-none disabled:opacity-50 font-['Open_Sans',sans-serif]"
+          className="flex-1 resize-none w-full px-3 py-2 text-sm border border-lia-border-default dark:border-lia-border-default rounded-lg bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-primary placeholder-lia-input-placeholder dark:placeholder-lia-input-placeholder focus:border-lia-input-border-focus dark:focus:border-lia-input-border-focus focus:ring-2 focus:ring-wedo-cyan/20 focus:outline-none disabled:opacity-50 font-['Open_Sans',sans-serif]"
         />
 
         {audioEnabled && (

@@ -30,12 +30,12 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
       case "high": return "border-status-error/30 bg-status-error/10 text-status-error"
       case "medium": return "border-status-warning/30 bg-status-warning/10 text-status-warning"
       case "low": return "border-status-success/30 bg-status-success/10 text-status-success"
-      default: return "border-lia-border-subtle bg-gray-50 text-lia-text-primary"
+      default: return "border-lia-border-subtle bg-lia-bg-secondary text-lia-text-primary"
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
       <Card className="w-full max-w-md mx-4 rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between">
@@ -70,7 +70,7 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
           <div className="flex gap-2 pt-4">
             <Button
               onClick={handleComplete}
-              className="flex-1 gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+              className="flex-1 gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
             >
               <CheckCircle className="w-4 h-4" />
               Marcar como Concluída
@@ -78,7 +78,7 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
             <Button
               variant="outline"
               onClick={onClose}
-              className="dark:border-lia-border-default dark:hover:bg-gray-700"
+              className="dark:border-lia-border-default dark:hover:bg-lia-bg-inverse"
             >
               Fechar
             </Button>

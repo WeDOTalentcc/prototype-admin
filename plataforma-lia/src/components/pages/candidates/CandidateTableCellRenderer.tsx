@@ -165,7 +165,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   }
                   alt={candidate.name}
                 />
-                <AvatarFallback className="text-sm font-medium bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-secondary">
+                <AvatarFallback className="text-sm font-medium bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary">
                   {candidate.name
                     .split(" ")
                     .map((n) => n[0])
@@ -176,7 +176,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
               </Avatar>
               {isCandidateViewed && (
                 <div
-                  className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center border border-white"
+                  className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-lia-border-default rounded-full flex items-center justify-center border border-white"
                   title="Perfil visualizado"
                 >
                   <Eye className="w-2.5 h-2.5 text-white" />
@@ -283,7 +283,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   e.stopPropagation()
                   onToggleExpandedRow(candidate.id)
                 }}
-                className="flex-shrink-0 p-0.5 rounded-md hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                className="flex-shrink-0 p-0.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 title={isRowExpanded ? "Recolher texto" : "Expandir texto"}
               >
                 <ChevronsLeftRight
@@ -433,7 +433,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         return (
           <Badge
             className="text-xs"
-            style={{backgroundColor: "var(--gray-200)", color: "var(--gray-600)"}}
+            style={{backgroundColor: "var(--lia-border-subtle)", color: "var(--lia-text-secondary)"}}
           >
             {workModel === "remoto"
               ? "🏠 Remoto"
@@ -545,7 +545,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
       // Status
       case "status": {
         const statusColors: Record<string, string> = {
-          novo: "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary",
+          novo: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary",
           triagem:
             "bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning",
           entrevista:
@@ -557,7 +557,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         }
         return (
           <Badge
-            className={`text-xs ${statusColors[candidate.status || ""] || "bg-gray-100 text-lia-text-primary"}`}
+            className={`text-xs ${statusColors[candidate.status || ""] || "bg-lia-bg-tertiary text-lia-text-primary"}`}
           >
             {candidate.status || ""}
           </Badge>

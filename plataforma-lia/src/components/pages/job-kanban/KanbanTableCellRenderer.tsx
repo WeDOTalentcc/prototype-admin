@@ -183,7 +183,7 @@ switch (columnId) {
         }}
         title={hasNotaGeral ? 'Clique para ver detalhes' : 'Não avaliado'}
       >
-        <Gauge className="w-3.5 h-3.5" style={{color: hasNotaGeral ? 'var(--gray-950)' : 'var(--gray-400)'}} strokeWidth={2} />
+        <Gauge className="w-3.5 h-3.5" style={{color: hasNotaGeral ? 'var(--lia-btn-primary-bg)' : 'var(--lia-text-tertiary)'}} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasNotaGeral ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
           {hasNotaGeral ? ranking : '—'}
         </span>
@@ -225,7 +225,7 @@ switch (columnId) {
         }}
         title={hasFitScore ? 'Clique para ver Análise CV vs Vaga' : 'Não avaliado'}
       >
-        <Target className="w-3.5 h-3.5" style={{color: hasFitScore ? 'var(--gray-950)' : 'var(--gray-400)'}} strokeWidth={2} />
+        <Target className="w-3.5 h-3.5" style={{color: hasFitScore ? 'var(--lia-btn-primary-bg)' : 'var(--lia-text-tertiary)'}} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasFitScore ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
           {hasFitScore ? formatScorePercent(fitValue as number, 0) : '—'}
         </span>
@@ -246,7 +246,7 @@ switch (columnId) {
         }}
         title={hasTechnical ? 'Clique para ver detalhes' : 'Não realizado'}
       >
-        <Code className="w-3.5 h-3.5" style={{color: hasTechnical ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
+        <Code className="w-3.5 h-3.5" style={{color: hasTechnical ? 'var(--lia-text-secondary)' : 'var(--lia-text-tertiary)'}} strokeWidth={2} />
         {hasTechnical && (
           <span className="text-xs font-semibold text-lia-text-primary">
             {formatScorePercent(candidate.technicalTestScore as number, 0)}
@@ -269,7 +269,7 @@ switch (columnId) {
         }}
         title={hasEnglish ? 'Clique para ver detalhes' : 'Não realizado'}
       >
-        <Globe className="w-3.5 h-3.5" style={{color: hasEnglish ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
+        <Globe className="w-3.5 h-3.5" style={{color: hasEnglish ? 'var(--lia-text-secondary)' : 'var(--lia-text-tertiary)'}} strokeWidth={2} />
         {hasEnglish && (
           <span className="text-xs font-semibold text-lia-text-primary">
             {formatScorePercent(candidate.englishTestScore as number, 0)}
@@ -295,7 +295,7 @@ switch (columnId) {
         }}
         title={hasBigFive ? 'Clique para ver relatório Big Five completo' : 'Não realizado'}
       >
-        <Fingerprint className="w-3.5 h-3.5" style={{color: hasBigFive ? 'var(--gray-600)' : 'var(--gray-400)'}} strokeWidth={2} />
+        <Fingerprint className="w-3.5 h-3.5" style={{color: hasBigFive ? 'var(--lia-text-secondary)' : 'var(--lia-text-tertiary)'}} strokeWidth={2} />
  <span className={`text-xs font-semibold ${hasBigFive ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
           {hasBigFive && bigFiveAvg !== null ? bigFiveAvg : '—'}
         </span>
@@ -330,7 +330,7 @@ switch (columnId) {
                 openDecisionFlowModal(candidate, 'approve')
               }
             }}
-            className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none bg-gray-800"
+            className="w-7 h-7 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity motion-reduce:transition-none bg-lia-btn-primary-hover"
             title="Aprovar candidato"
           >
             <ThumbsUp className="w-3.5 h-3.5 text-white" strokeWidth={2} />
@@ -376,7 +376,7 @@ switch (columnId) {
             <AvatarFallback>{(candidate.name as string || '').split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
           </Avatar>
           {viewedCandidateIds.has(candidate.id) && (
-            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center border border-white" title="Perfil visualizado">
+            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-lia-border-default rounded-full flex items-center justify-center border border-white" title="Perfil visualizado">
               <Eye className="w-2.5 h-2.5 text-white" />
             </div>
           )}
@@ -431,7 +431,7 @@ switch (columnId) {
           <button className="inline-flex items-center gap-1 group/stage" onClick={(e) => e.stopPropagation()}>
             <Badge
               className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary cursor-pointer"
-              style={{backgroundColor: currentStageObj?.color || 'var(--gray-200)'}}
+              style={{backgroundColor: currentStageObj?.color || 'var(--lia-border-subtle)'}}
             >
               {currentStageObj?.displayName || (candidate.stage as string | undefined)}
             </Badge>
@@ -447,8 +447,8 @@ switch (columnId) {
                   key={stage.id}
                   className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs transition-colors motion-reduce:transition-none ${
                     isCurrent
-                      ? 'bg-gray-100 dark:bg-lia-bg-secondary font-bold'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                      ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary font-bold'
+                      : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover/50'
                   }`}
 
                   onClick={() => {
@@ -521,7 +521,7 @@ switch (columnId) {
 
   case 'is_top_universities':
     return candidate.is_top_universities ? (
-      <Badge className="text-xs bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary">Top University</Badge>
+      <Badge className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">Top University</Badge>
     ) : <span className="text-xs text-lia-text-disabled">—</span>
 
   case 'is_hiring':
@@ -555,7 +555,7 @@ switch (columnId) {
             e.stopPropagation()
             navigator.clipboard.writeText(candidate.outreach_message as string)
           }}
-          className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+          className="p-0.5 hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
           title="Copiar mensagem"
         >
           <Copy className="w-3 h-3 text-lia-text-tertiary" />
@@ -678,7 +678,7 @@ switch (columnId) {
     return (
       <div className="flex flex-wrap gap-1">
         {companyKeywords.slice(0, 3).map((keyword: string, idx: number) => (
-          <Badge key={idx} variant="outline" className="text-micro px-1 py-0 bg-gray-50 text-lia-text-secondary dark:bg-lia-bg-elevated">
+          <Badge key={idx} variant="outline" className="text-micro px-1 py-0 bg-lia-bg-secondary text-lia-text-secondary dark:bg-lia-bg-elevated">
             {keyword}
           </Badge>
         ))}
@@ -697,7 +697,7 @@ switch (columnId) {
         <Button
           variant="ghost"
           size="sm"
-          className={`h-7 w-7 p-0 ${hasAnalysisData ? 'text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100' : 'text-lia-text-disabled cursor-not-allowed'}`}
+          className={`h-7 w-7 p-0 ${hasAnalysisData ? 'text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary' : 'text-lia-text-disabled cursor-not-allowed'}`}
           title={hasAnalysisData ? "Ver Análise CV vs Vaga" : "Análise pendente"}
           onClick={(e) => {
             e.stopPropagation()
@@ -710,7 +710,7 @@ switch (columnId) {
         <Button
           variant="ghost"
           size="sm"
-          className={`h-7 w-7 p-0 ${hasTriagemData ? 'text-lia-text-secondary hover:text-lia-text-primary hover:bg-gray-100' : 'text-lia-text-disabled cursor-not-allowed'}`}
+          className={`h-7 w-7 p-0 ${hasTriagemData ? 'text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary' : 'text-lia-text-disabled cursor-not-allowed'}`}
           title={hasTriagemData ? "Ver Detalhes da Triagem" : "Triagem pendente"}
           onClick={(e) => {
             e.stopPropagation()
@@ -731,7 +731,7 @@ switch (columnId) {
           <PopoverTrigger asChild>
             <button
               onClick={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+              className="p-1.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
               title="Mais ações"
             >
               <MoreVertical className="w-4 h-4 text-lia-text-tertiary" />
@@ -743,7 +743,7 @@ switch (columnId) {
                 e.stopPropagation()
                 onOpenAnalysis(candidate)
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
             >
               <Eye className="w-4 h-4" />
               Ver perfil completo
@@ -753,7 +753,7 @@ switch (columnId) {
                 e.stopPropagation()
                 onOpenTriagem(candidate)
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
             >
               <Brain className="w-4 h-4 text-wedo-cyan" />
               Ver triagem LIA
@@ -765,7 +765,7 @@ switch (columnId) {
                 onSetScoreModalCandidate(candidate)
                 onSetShowBigFiveModal(true)
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
             >
               <Fingerprint className="w-4 h-4 text-lia-text-secondary" />
               Ver BigFive
@@ -781,7 +781,7 @@ switch (columnId) {
                   openDecisionFlowModal(candidate, 'approve')
                 }
               }}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md"
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover rounded-md"
             >
               <ThumbsUp className="w-4 h-4" />
               Aprovar

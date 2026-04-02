@@ -35,7 +35,7 @@ interface JobDescriptionPreviewProps {
 function SuggestionBadge({ isNew }: { isNew: boolean }) {
   if (!isNew) return null;
   return (
-    <Badge variant="outline" className="ml-2 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default text-xs">
+    <Badge variant="outline" className="ml-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default text-xs">
       <Lightbulb className="w-3 h-3 mr-1" />
       Sugerido pela LIA
     </Badge>
@@ -141,7 +141,7 @@ export function JobDescriptionPreview({
           <div className="flex flex-col items-end gap-2">
             <CompletenessIndicator score={data.completeness_score} />
             {data.suggestions_count > 0 && (
-              <Badge variant="outline" className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
+              <Badge variant="outline" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
                 <Lightbulb className="w-3 h-3 mr-1" />
                 {data.suggestions_count} sugestões
               </Badge>

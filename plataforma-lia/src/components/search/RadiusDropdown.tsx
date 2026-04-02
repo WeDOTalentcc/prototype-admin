@@ -61,7 +61,7 @@ export function RadiusDropdown({
         <button 
           className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-lia-border-subtle",
-            "text-xs font-medium text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-lia-border-subtle transition-colors motion-reduce:transition-none",
+            "text-xs font-medium text-lia-text-primary hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse dark:border-lia-border-subtle transition-colors motion-reduce:transition-none",
             className
           )}
         >
@@ -82,8 +82,8 @@ export function RadiusDropdown({
                   setIsOpen(false)
                 }}
                 className={cn(
-                  "w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors motion-reduce:transition-none",
-                  value === option.value && "bg-gray-50 dark:bg-lia-bg-elevated"
+                  "w-full text-left px-3 py-2 hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none",
+                  value === option.value && "bg-lia-bg-secondary dark:bg-lia-bg-elevated"
                 )}
               >
                 <div className="flex items-center justify-between">

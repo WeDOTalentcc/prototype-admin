@@ -119,7 +119,7 @@ export function WorkModelsTab() {
                   </div>
                   <div className="flex w-full h-3 rounded-full overflow-hidden">
                     <div
-                      className="bg-gray-700 dark:bg-lia-text-tertiary"
+                      className="bg-lia-bg-inverse dark:bg-lia-text-tertiary"
                       style={{ width: `${item.remote}%` }}
                     />
                     <div className="bg-wedo-purple" style={{ width: `${item.hybrid}%` }} />
@@ -165,7 +165,7 @@ export function WorkModelsTab() {
       </div>
 
       {/* Insights e Recomendações */}
-      <Card className="border-l-4 border-l-gray-400 dark:border-l-gray-500">
+      <Card className="border-l-4 border-l-lia-border-medium dark:border-l-lia-border-medium">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Lightbulb className="w-5 h-5 text-status-warning" />
@@ -174,7 +174,7 @@ export function WorkModelsTab() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md">
+            <div className="p-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
               <h4 className="font-medium text-lia-text-secondary mb-2">
                 🚀 Tendência Crescente
               </h4>

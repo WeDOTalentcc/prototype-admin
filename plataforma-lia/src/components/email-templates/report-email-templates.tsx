@@ -470,7 +470,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
               onClick={() => setActiveTab(tab.id as EmailTemplate['category'])}
               className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
-                  ? 'text-lia-text-secondary border-b-2 border-gray-900 bg-gray-100 dark:bg-lia-bg-secondary'
+                  ? 'text-lia-text-secondary border-b-2 border-lia-btn-primary-bg bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                   : 'text-lia-text-secondary hover:text-lia-text-primary'
               }`}
             >
@@ -493,7 +493,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                 <Card
                   key={template.id}
                   className={`cursor-pointer transition-colors motion-reduce:transition-none hover:${
- selectedTemplate.id === template.id ? 'ring-2 ring-gray-900/20 dark:ring-gray-50/20 bg-gray-100 dark:bg-lia-bg-secondary' : ''
+ selectedTemplate.id === template.id ? 'ring-2 ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20 bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : ''
                   }`}
                   onClick={() => setSelectedTemplate(template)}
                 >
@@ -511,9 +511,9 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                       <Badge
                         className={`text-xs ${
  template.type === 'executive' ? 'bg-wedo-purple/10 text-wedo-purple' :
-                          template.type === 'detailed' ? 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary' :
+                          template.type === 'detailed' ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary' :
                           template.type === 'weekly' ? 'bg-status-success/10 text-status-success' :
-                          'bg-gray-100 text-lia-text-primary'
+                          'bg-lia-bg-tertiary text-lia-text-primary'
                         }`}
                       >
                         {template.type}
@@ -538,11 +538,11 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                   {suggestedRecipients.map((person) => (
                     <div
                       key={person.email}
-                      className="flex items-center justify-between p-3 rounded-md hover:bg-gray-50"
+                      className="flex items-center justify-between p-3 rounded-md hover:bg-lia-bg-secondary"
                     >
                       <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8">
-                          <AvatarFallback className="bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">
+                          <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">
                             {person.name.split(' ').map(n => n[0]).join('')}
                           </AvatarFallback>
                         </Avatar>
@@ -611,7 +611,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                   </h3>
                   <div className="space-y-2">
                     {recipients.map((email) => (
-                      <div key={email} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                      <div key={email} className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md">
                         <span className="text-sm text-lia-text-primary">{email}</span>
                         <Button
                           variant="ghost"
@@ -671,7 +671,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                 </div>
               </div>
 
-              <div className="bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md p-4">
+              <div className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md p-4">
                 <h4 className="font-medium text-wedo-cyan-dark mb-2">💡 Dicas de Personalização</h4>
                 <ul className="text-sm text-lia-text-secondary space-y-1">
                   <li>• Use variáveis para tornar o email mais relevante</li>
@@ -685,7 +685,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
 
           {activeTab === 'preview' && (
             <div className="space-y-4">
-              <div className="bg-gray-50 rounded-md p-4 border">
+              <div className="bg-lia-bg-secondary rounded-md p-4 border">
                 <div className="flex items-center gap-2 mb-2">
                   <Mail className="w-4 h-4 text-lia-text-secondary" />
                   <strong className="text-sm">Assunto:</strong>
@@ -714,7 +714,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
 
               <div className="border border-lia-border-subtle rounded-md overflow-hidden">
                 {showPreview ? (
-                  <div className="p-4 bg-gray-50 font-mono text-sm whitespace-pre-wrap">
+                  <div className="p-4 bg-lia-bg-secondary font-mono text-sm whitespace-pre-wrap">
                     {processTemplate(selectedTemplate.textContent, getTemplateVariables() as Record<string, string>)}
                   </div>
                 ) : (

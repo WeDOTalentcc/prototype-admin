@@ -202,12 +202,12 @@ export function WSIQuestionsPanel({
   return (
     <div className="space-y-6">
       <Card 
-        className="border-2 border-dashed rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle border-gray-400 bg-gray-200/20"
+        className="border-2 border-dashed rounded-md dark:bg-lia-bg-secondary dark:border-lia-border-subtle border-lia-border-medium bg-lia-interactive-active/20"
       >
         <CardHeader className="pb-3 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div 
-              className="p-2 rounded-md bg-gray-300"
+              className="p-2 rounded-md bg-lia-border-default"
             >
               <Brain className="h-5 w-5 text-wedo-cyan" />
             </div>
@@ -272,7 +272,7 @@ export function WSIQuestionsPanel({
           <Button
             onClick={handleGenerateWithAI}
             disabled={isGenerating}
-            className="w-full h-11 text-base font-medium bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+            className="w-full h-11 text-base font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
           >
             {isGenerating ? (
               <>
@@ -350,7 +350,7 @@ export function WSIQuestionsPanel({
         <button
           type="button"
           onClick={() => setShowTemplates(!showTemplates)}
-          className="w-full flex items-center justify-between p-3 transition-colors motion-reduce:transition-none dark:hover:bg-gray-700 bg-[var(--lia-bg-secondary)] text-lia-text-secondary"
+          className="w-full flex items-center justify-between p-3 transition-colors motion-reduce:transition-none dark:hover:bg-lia-bg-inverse bg-[var(--lia-bg-secondary)] text-lia-text-secondary"
         >
           <div className="flex items-center gap-2">
             <Lightbulb className="h-4 w-4" />
@@ -438,7 +438,7 @@ export function WSIQuestionsPanel({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="shrink-0 dark:border-lia-border-default dark:hover:bg-gray-700 border-[var(--lia-border-default)]"
+                          className="shrink-0 dark:border-lia-border-default dark:hover:bg-lia-bg-inverse border-[var(--lia-border-default)]"
                           onClick={() => handleAddTemplate(template)}
                           disabled={isTemplateAdded(template)}
                           style={{color: isTemplateAdded(template) 
@@ -552,7 +552,7 @@ export function WSIQuestionsPanel({
             <Button
               onClick={handleAddCustomQuestion}
               disabled={!newQuestion.question.trim() || !newQuestion.competency.trim()}
-              className="w-full dark:border-lia-border-default dark:hover:bg-gray-700 border-[var(--lia-border-default)] text-lia-text-primary"
+              className="w-full dark:border-lia-border-default dark:hover:bg-lia-bg-inverse border-[var(--lia-border-default)] text-lia-text-primary"
               variant="outline"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -565,7 +565,7 @@ export function WSIQuestionsPanel({
       <Button
         onClick={handleSubmit}
         disabled={isLoading || questions.length === 0}
-        className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+        className="w-full h-11 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
         size="lg"
       >
         {isLoading ? (
@@ -602,7 +602,7 @@ function QuestionCard({
     >
       <button
         type="button"
-        className="w-full text-left p-3 transition-colors motion-reduce:transition-none dark:hover:bg-gray-700/50 bg-[var(--lia-bg-primary)]"
+        className="w-full text-left p-3 transition-colors motion-reduce:transition-none dark:hover:bg-lia-bg-inverse/50 bg-[var(--lia-bg-primary)]"
         onClick={onToggleExpand}
       >
         <div className="flex items-start gap-3">
@@ -652,7 +652,7 @@ function QuestionCard({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 shrink-0 dark:hover:bg-gray-700 text-lia-text-tertiary"
+            className="h-7 w-7 shrink-0 dark:hover:bg-lia-bg-inverse text-lia-text-tertiary"
             onClick={(e) => {
               e.stopPropagation()
               onRemove()

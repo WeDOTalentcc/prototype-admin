@@ -210,7 +210,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card className="border-l-4 border-l-gray-300">
+      <Card className="border-l-4 border-l-lia-border-default">
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-xl font-medium">
             <Map className="w-5 h-5 text-lia-text-primary" />
@@ -241,10 +241,10 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 border-2 transition-[width,height] ${
                       currentStep === step.id
-                        ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary'
+                        ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                         : currentStep > step.id
                         ? 'border-status-success/30 bg-status-success text-white'
-                        : 'border-lia-border-default bg-gray-50 dark:bg-lia-bg-secondary'
+                        : 'border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary'
                     }`}
                   >
                     {currentStep > step.id ? (
@@ -260,7 +260,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                 {index < steps.length - 1 && (
                   <div
                     className={`w-16 h-0.5 mx-2 ${
-                      currentStep > step.id ? 'bg-status-success' : 'bg-gray-200 dark:bg-lia-bg-elevated'
+                      currentStep > step.id ? 'bg-status-success' : 'bg-lia-interactive-active dark:bg-lia-bg-elevated'
                     }`}
                   />
                 )}
@@ -291,7 +291,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
               }}
               placeholder="Ex: As vagas são abertas pelo gestor da área através de um formulário no sistema interno. Após aprovação do RH e do budget, a vaga é publicada..."
               rows={6}
-              className="w-full p-4 border border-lia-border-default dark:border-lia-border-default rounded-md bg-white dark:bg-lia-bg-secondary text-sm"
+              className="w-full p-4 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
              
             />
 
@@ -307,7 +307,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                     setWizardData(prev => ({ ...prev, vagasAbertura: option.label + ': ' + option.desc }))
                     onSettingsChange(true)
                   }}
-                  className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none text-left"
+                  className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md hover:border-lia-btn-primary-bg dark:hover:border-lia-border-subtle hover:bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 transition-colors motion-reduce:transition-none text-left"
                 >
                   <div className="font-medium text-sm">{option.label}</div>
                   <div className="text-xs text-lia-text-secondary mt-1">{option.desc}</div>
@@ -343,7 +343,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                       onClick={() => toggleSistema(sistema.id)}
                       className={`p-3 border rounded-md transition-colors motion-reduce:transition-none ${
                         wizardData.sistemasUsados.includes(sistema.id)
-                          ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary'
+                          ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary'
                           : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
                       }`}
                     >
@@ -382,14 +382,14 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   onClick={() => toggleEtapa(etapa)}
                   className={`p-3 border rounded-md transition-colors motion-reduce:transition-none text-left ${
                     wizardData.etapasProcesso.includes(etapa)
-                      ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary'
+                      ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                       : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <div className={`w-5 h-5 rounded-md border flex items-center justify-center ${
                       wizardData.etapasProcesso.includes(etapa)
-                        ? 'bg-gray-900 text-white border-gray-900 dark:lia-border-50'
+                        ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg dark:border-lia-border-subtle'
                         : 'border-lia-border-default'
                     }`}>
                       {wizardData.etapasProcesso.includes(etapa) && <Check className="w-3 h-3" />}
@@ -401,7 +401,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
             </div>
 
             {wizardData.etapasProcesso.length > 0 && (
-              <div className="mt-6 p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <div className="mt-6 p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                 <h4 className="text-sm font-semibold mb-3">
                   Ordem das etapas selecionadas:
                 </h4>
@@ -439,14 +439,14 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                     onClick={() => toggleAutomacao(automacao.id)}
                     className={`p-4 border rounded-md transition-colors motion-reduce:transition-none text-left ${
                       wizardData.automacoesDesejadas.includes(automacao.id)
-                        ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary'
+                        ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                         : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 ${
                         wizardData.automacoesDesejadas.includes(automacao.id)
-                          ? 'bg-gray-900 text-white border-gray-900 dark:lia-border-50'
+                          ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg dark:border-lia-border-subtle'
                           : 'border-lia-border-default'
                       }`}>
                         {wizardData.automacoesDesejadas.includes(automacao.id) && <Check className="w-3 h-3" />}
@@ -481,15 +481,15 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                     onClick={() => toggleCanalComunicacaoCandidato(canal.id)}
                     className={`p-4 border rounded-md transition-colors motion-reduce:transition-none text-left ${
                       wizardData.canaisComunicacaoCandidatos.includes(canal.id)
-                        ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary'
+                        ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                         : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
                     }`}
                   >
                     <div className="flex flex-col items-center gap-2 text-center">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         wizardData.canaisComunicacaoCandidatos.includes(canal.id)
-                          ? 'bg-gray-900 text-white'
-                          : 'bg-gray-100 text-lia-text-secondary'
+                          ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
+                          : 'bg-lia-bg-tertiary text-lia-text-secondary'
                       }`}>
                         {canal.id === 'whatsapp' && <MessageSquare className="w-5 h-5" />}
                         {canal.id === 'email' && <Mail className="w-5 h-5" />}
@@ -546,14 +546,14 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
                   onClick={() => toggleCanal(canal.id)}
                   className={`p-4 border rounded-md transition-colors motion-reduce:transition-none text-left ${
                     wizardData.canaisPublicacao.includes(canal.id)
-                      ? 'border-gray-900 dark:lia-border-50 bg-gray-100 dark:bg-lia-bg-secondary'
+                      ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                       : 'border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 mt-0.5 ${
                       wizardData.canaisPublicacao.includes(canal.id)
-                        ? 'bg-gray-900 text-white border-gray-900 dark:lia-border-50'
+                        ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text border-lia-btn-primary-bg dark:border-lia-border-subtle'
                         : 'border-lia-border-default'
                     }`}>
                       {wizardData.canaisPublicacao.includes(canal.id) && <Check className="w-3 h-3" />}
@@ -568,7 +568,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
             </div>
 
             {wizardData.canaisPublicacao.includes('site_proprio') && (
-              <div className="mt-4 p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+              <div className="mt-4 p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                 <label className="text-sm font-medium">
                   URL da página de carreiras:
                 </label>
@@ -644,7 +644,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
         {currentStep < 5 ? (
           <Button
             onClick={() => setCurrentStep(prev => Math.min(5, prev + 1))}
-            className="bg-gray-900"
+            className="bg-lia-btn-primary-bg"
           >
             Próximo
             <ArrowRight className="w-4 h-4 ml-2" />
@@ -653,7 +653,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
           <Button
             onClick={submitWizard}
             disabled={isSubmitting || submitSuccess}
-            style={{backgroundColor: isSubmitting ? 'var(--gray-400)' : 'var(--gray-600)'}}
+            style={{backgroundColor: isSubmitting ? 'var(--lia-text-tertiary)' : 'var(--lia-text-secondary)'}}
           >
             {isSubmitting ? (
               <>
@@ -684,14 +684,14 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-6">
+          <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-6">
             {wizardData.etapasProcesso.length > 0 ? (
               <div className="flex items-center gap-2 overflow-x-auto pb-4">
                 {wizardData.etapasProcesso.map((etapa, index) => (
                   <div key={etapa} className="flex items-center">
                     <div className="flex flex-col items-center">
                       <div
-                        className="w-32 h-20 rounded-md border flex items-center justify-center p-2 text-center bg-white"
+                        className="w-32 h-20 rounded-md border flex items-center justify-center p-2 text-center bg-lia-bg-primary"
                       >
                         <span className="text-xs font-medium">
                           {etapa}

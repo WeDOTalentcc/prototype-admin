@@ -37,7 +37,7 @@ export function CandidatesPageHeader({
   onSaveCurrentSearch,
 }: CandidatesPageHeaderProps) {
   return (
-    <div className="flex-shrink-0 px-4 pt-3 pb-0 bg-white dark:bg-lia-bg-primary">
+    <div className="flex-shrink-0 px-4 pt-3 pb-0 bg-lia-bg-primary dark:bg-lia-bg-primary">
       {/* Header Principal - Padrão Gestão de Vagas */}
       <div className="flex items-center justify-between mb-0.5">
         <div className="flex items-center gap-3">

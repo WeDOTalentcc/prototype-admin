@@ -409,7 +409,7 @@ export default function SettingsPageEnhanced() {
       default:
         return (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-xl flex items-center justify-center mx-auto mb-4">
               <Settings className="w-8 h-8 text-lia-text-primary" />
             </div>
             <h3 className={`${textStyles.subtitle} mb-2`}>
@@ -427,7 +427,7 @@ export default function SettingsPageEnhanced() {
 
   return (
     <>
-    <div className="flex h-screen bg-white dark:bg-lia-bg-primary overflow-hidden">
+    <div className="flex h-screen bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       <aside 
         className={`
           ${isCollapsed && !isLocked ? 'w-16' : 'w-64'}
@@ -437,10 +437,10 @@ export default function SettingsPageEnhanced() {
         onMouseEnter={() => !isLocked && setIsCollapsed(false)}
         onMouseLeave={() => !isLocked && setIsCollapsed(true)}
       >
-        <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-white dark:bg-lia-bg-secondary backdrop-blur-sm rounded-md overflow-hidden flex flex-col">
+        <Card className="h-full m-3 border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary backdrop-blur-sm rounded-md overflow-hidden flex flex-col">
           <div className={`p-4 border-b border-lia-border-subtle dark:border-lia-border-subtle ${isCollapsed && !isLocked ? 'px-2' : ''}`}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary rounded-md flex items-center justify-center flex-shrink-0">
                 <Settings className="w-5 h-5" />
               </div>
               {shouldShowContent && (
@@ -477,18 +477,18 @@ export default function SettingsPageEnhanced() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setShowProgressDashboard(true)}
-                      className="h-5 w-5 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="h-5 w-5 p-0 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                       title="Ver Dashboard Detalhado"
                     >
                       <BarChart3 className="w-3 h-3" />
                     </Button>
                   </div>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-1.5 mb-3 cursor-pointer"
+                <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5 mb-3 cursor-pointer"
                      onClick={() => setShowProgressDashboard(true)}
                      title="Clique para ver detalhes">
                   <div
-                    className="bg-gray-900 dark:bg-gray-50 h-1.5 rounded-full transition-[width,height] duration-500"
+                    className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary h-1.5 rounded-full transition-[width,height] duration-500"
                     style={{width: `${progressMetrics.overall}%`}}
                   />
                 </div>
@@ -517,8 +517,8 @@ export default function SettingsPageEnhanced() {
                       }}
                       className={`w-full flex items-center gap-2 p-2.5 rounded-md text-left transition-colors motion-reduce:transition-none ${
                         isActive && !activeSubsection
-                          ? 'bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 text-lia-text-secondary'
+                          ? 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary'
+                          : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 text-lia-text-secondary'
                       } ${isCollapsed && !isLocked ? 'justify-center' : ''}`}
                       title={isCollapsed && !isLocked ? section.title : ''}
                     >
@@ -555,8 +555,8 @@ export default function SettingsPageEnhanced() {
                               onClick={() => handleSelectSubsection(section.id, subsection.id)}
                               className={`w-full text-left px-2 py-1.5 rounded-md transition-colors motion-reduce:transition-none ${
                                 activeSubsection === subsection.id
-                                  ? 'bg-gray-100 dark:bg-lia-bg-elevated'
-                                  : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                                  ? 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated'
+                                  : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50'
                               }`}
                             >
                               <div className="flex items-center gap-1.5">

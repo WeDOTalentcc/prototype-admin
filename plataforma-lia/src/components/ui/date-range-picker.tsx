@@ -241,12 +241,12 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                       className={`
  h-8 text-xs font-['Open_Sans'] rounded-md transition-colors
                         ${isSelected 
-                          ? 'bg-gray-900 text-white font-medium' 
+                          ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text font-medium' 
                           : isInRange 
                             ? 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary' 
                             : 'hover:bg-lia-interactive-hover text-lia-text-primary'
                         }
-                        ${isToday && !isSelected ? 'ring-1 ring-gray-400' : ''}
+                        ${isToday && !isSelected ? 'ring-1 ring-lia-border-medium' : ''}
                       `}
                     >
                       {date.getDate()}
@@ -268,7 +268,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                   size="sm" 
                   onClick={handleApply}
                   disabled={!tempStart || !tempEnd}
-                  className="flex-1 text-xs bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="flex-1 text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   Aplicar
                 </Button>

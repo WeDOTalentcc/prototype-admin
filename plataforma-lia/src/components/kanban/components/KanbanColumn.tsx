@@ -38,32 +38,32 @@ export interface KanbanColumnProps {
 const getColumnStyle = (columnId: string, stageColor?: string): ColumnStyle => {
   const fixedStyles: Record<string, ColumnStyle> = {
     sourcing: {
-      bg: 'bg-white dark:bg-lia-bg-primary',
+      bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-gray-700',
+      dot: 'bg-lia-bg-inverse',
       header: 'text-lia-text-primary',
-      accentColor: 'var(--gray-600)'
+      accentColor: 'var(--lia-text-secondary)'
     },
     hired: {
-      bg: 'bg-white dark:bg-lia-bg-primary',
+      bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-gray-700',
+      dot: 'bg-lia-bg-inverse',
       header: 'text-lia-text-primary',
-      accentColor: 'var(--gray-600)'
+      accentColor: 'var(--lia-text-secondary)'
     },
     rejected: {
-      bg: 'bg-white dark:bg-lia-bg-primary',
+      bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-gray-300',
+      dot: 'bg-lia-border-default',
       header: 'text-lia-text-primary',
-      accentColor: 'var(--gray-200)'
+      accentColor: 'var(--lia-border-subtle)'
     },
     offer_declined: {
-      bg: 'bg-white dark:bg-lia-bg-primary',
+      bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
       border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-      dot: 'bg-gray-300',
+      dot: 'bg-lia-border-default',
       header: 'text-lia-text-primary',
-      accentColor: 'var(--gray-200)'
+      accentColor: 'var(--lia-border-subtle)'
     }
   }
 
@@ -72,11 +72,11 @@ const getColumnStyle = (columnId: string, stageColor?: string): ColumnStyle => {
   }
 
   return {
-    bg: 'bg-white dark:bg-lia-bg-primary',
+    bg: 'bg-lia-bg-primary dark:bg-lia-bg-primary',
     border: 'border-lia-border-subtle dark:border-lia-border-subtle',
-    dot: 'bg-gray-500',
+    dot: 'bg-lia-bg-secondary0',
     header: 'text-lia-text-primary',
-    accentColor: stageColor || 'var(--gray-400)'
+    accentColor: stageColor || 'var(--lia-text-tertiary)'
   }
 }
 
@@ -146,8 +146,8 @@ const KanbanColumn = memo(function KanbanColumn({
 
   return (
     <div
-      className={`flex flex-col flex-1 bg-white dark:bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
-        isDropTarget ? 'ring-2 ring-gray-400 bg-gray-50 dark:bg-lia-bg-secondary' : ''
+      className={`flex flex-col flex-1 bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md min-w-[275px] max-w-[368px] border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
+        isDropTarget ? 'ring-2 ring-lia-border-medium bg-lia-bg-secondary dark:bg-lia-bg-secondary' : ''
       } h-[calc(100vh-16rem)]`}
       onDragOver={handleDragOver}
       onDragLeave={onDragLeave}
@@ -164,7 +164,7 @@ const KanbanColumn = memo(function KanbanColumn({
             <h3 className={`font-medium text-xs ${columnStyle.header}`}>
               {stage.displayName}
             </h3>
-            <span className="text-micro text-lia-text-primary bg-gray-100 dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
+            <span className="text-micro text-lia-text-primary bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
               {sortedCandidates.length}
             </span>
           </div>
@@ -172,7 +172,7 @@ const KanbanColumn = memo(function KanbanColumn({
             <Checkbox
               checked={allSelected}
               onCheckedChange={handleSelectAllChange}
-              className="w-3.5 h-3.5 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900 dark:data-[state=checked]:bg-gray-200 dark:data-[state=checked]:border-lia-border-subtle"
+              className="w-3.5 h-3.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg dark:data-[state=checked]:bg-lia-interactive-active dark:data-[state=checked]:border-lia-border-subtle"
               title={`Selecionar todos da etapa ${stage.displayName}`}
             />
           )}

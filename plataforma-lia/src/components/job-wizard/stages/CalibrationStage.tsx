@@ -130,9 +130,9 @@ export function CalibrationStage() {
         <span className="text-micro lia-text-secondary">
           Calibração: {processedCount}/{Math.min(5, totalCandidates)}
         </span>
-        <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+        <div className="flex-1 h-1 bg-lia-interactive-active rounded-full overflow-hidden">
           <div 
-            className="h-full bg-gray-900 transition-[width,height] duration-300"
+            className="h-full bg-lia-btn-primary-bg transition-[width,height] duration-300"
             style={{width: `${(processedCount / Math.min(5, totalCandidates)) * 100}%`}}
           />
         </div>
@@ -151,7 +151,7 @@ export function CalibrationStage() {
                 i === currentCalibrationIndex && "w-4",
                 cStatus === 'approved' ? "bg-status-success" :
                 cStatus === 'rejected' ? "bg-status-error" :
-                i === currentCalibrationIndex ? "bg-gray-900" : "bg-gray-300"
+                i === currentCalibrationIndex ? "bg-lia-btn-primary-bg" : "bg-lia-border-default"
               )}
             />
           )
@@ -167,7 +167,7 @@ export function CalibrationStage() {
       )}>
         {/* Header */}
         <div className="p-3 bg-lia-bg-primary border-b border-lia-border-subtle flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-100 dark:from-gray-800 to-wedo-cyan-dark flex items-center justify-center text-white font-semibold text-lg">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-lia-bg-tertiary dark:from-lia-btn-primary-hover to-wedo-cyan-dark flex items-center justify-center text-white font-semibold text-lg">
             {currentCandidate.name?.charAt(0) || 'C'}
           </div>
           <div className="flex-1 min-w-0">
@@ -199,7 +199,7 @@ export function CalibrationStage() {
           {currentCandidate.highlights && currentCandidate.highlights.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {currentCandidate.highlights.map((h, i) => (
-                <div key={i} className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-md">
+                <div key={i} className="flex items-center gap-1 px-2 py-1 bg-lia-bg-secondary rounded-md">
                   <span className="text-micro">{h.icon}</span>
                   <span className="text-micro lia-text-secondary">{h.label}:</span>
                   <span className="text-micro font-medium text-lia-text-primary">{h.value}</span>
@@ -264,7 +264,7 @@ export function CalibrationStage() {
         </div>
 
         {/* Actions */}
-        <div className="p-3 bg-gray-50 border-t border-lia-border-subtle flex items-center gap-2">
+        <div className="p-3 bg-lia-bg-secondary border-t border-lia-border-subtle flex items-center gap-2">
           <button
             onClick={goToPrevious}
             disabled={currentCalibrationIndex === 0}
@@ -292,7 +292,7 @@ export function CalibrationStage() {
  "flex-1 py-2 px-4 rounded-md text-xs font-medium transition-colors flex items-center justify-center gap-1.5",
               status === 'approved'
                 ? "bg-status-success text-white"
-                : "bg-gray-900 text-white hover:bg-gray-800 dark:hover:bg-gray-200"
+                : "bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
             )}
           >
             <CheckCircle2 className="w-4 h-4" />

@@ -43,7 +43,7 @@ interface RubricEvaluationCardProps {
   onScheduleInterview?: () => void
 }
 
-const ACCENT_COLOR = 'var(--gray-600)'
+const ACCENT_COLOR = 'var(--lia-text-secondary)'
 
 export function RubricEvaluationCard({
   data,
@@ -63,14 +63,14 @@ export function RubricEvaluationCard({
 
   const getScoreBadge = (scoreValue: number) => {
     if (scoreValue >= 80) return { label: 'Forte', className: 'bg-status-success/15 text-status-success border-status-success/30' }
-    if (scoreValue >= 60) return { label: 'Bom', className: 'bg-gray-100 dark:bg-lia-bg-secondary text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default' }
+    if (scoreValue >= 60) return { label: 'Bom', className: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-wedo-cyan-dark border-lia-border-default dark:border-lia-border-default' }
     if (scoreValue >= 40) return { label: 'Moderado', className: 'bg-status-warning/15 text-status-warning border-status-warning/30' }
     return { label: 'Fraco', className: 'bg-status-error/15 text-status-error border-status-error/30' }
   }
 
   const getScoreColor = (scoreValue: number) => {
     if (scoreValue >= 80) return 'var(--status-success)'
-    if (scoreValue >= 60) return 'var(--gray-600)'
+    if (scoreValue >= 60) return 'var(--lia-text-secondary)'
     if (scoreValue >= 40) return 'var(--status-warning)'
     return 'var(--status-error)'
   }
@@ -114,13 +114,13 @@ export function RubricEvaluationCard({
       case 'exceeds':
         return 'bg-status-success/10'
       case 'meets':
-        return 'bg-gray-50 dark:bg-lia-bg-primary'
+        return 'bg-lia-bg-secondary dark:bg-lia-bg-primary'
       case 'partial':
         return 'bg-status-warning/10'
       case 'missing':
         return 'bg-status-error/10'
       default:
-        return 'bg-gray-50'
+        return 'bg-lia-bg-secondary'
     }
   }
 
@@ -204,7 +204,7 @@ export function RubricEvaluationCard({
       <div className="space-y-1.5">
         <div className="flex items-center gap-3">
           <span className={`${textStyles.label} text-lia-text-secondary min-w-[45px]`}>Score:</span>
-          <div className="flex-1 h-2.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden max-w-[160px]">
+          <div className="flex-1 h-2.5 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full overflow-hidden max-w-[160px]">
             <div 
               className="h-full rounded-full transition-[width,height] duration-500 ease-out"
               style={{width: `${score}%`,
@@ -279,7 +279,7 @@ export function RubricEvaluationCard({
       )}
 
       {displaySummary && (
-        <div className="flex items-start gap-2 pt-1 bg-gray-50/50 p-2 rounded-md">
+        <div className="flex items-start gap-2 pt-1 bg-lia-bg-secondary/50 p-2 rounded-md">
           <FileText className="w-3.5 h-3.5 lia-text-secondary mt-0.5 flex-shrink-0" />
           <div>
             <span className={`${textStyles.caption} lia-text-secondary font-medium block mb-0.5`}>
@@ -332,7 +332,7 @@ export function RubricEvaluationCard({
         <Button
           variant="ghost"
           size="sm"
-          className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 dark:hover:bg-gray-700 border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary`}
+          className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} bg-lia-bg-primary dark:bg-lia-bg-secondary hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse border border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary`}
           onClick={(e) => {
             e.stopPropagation()
             onViewAnalysis?.()
@@ -345,8 +345,8 @@ export function RubricEvaluationCard({
           variant="ghost"
           size="sm"
           className={`h-7 px-3 gap-1.5 ${textStyles.bodySmall} hover:bg-opacity-20 border`}
-          style={{backgroundColor: 'var(--gray-600-bg-10)',
-            borderColor: 'var(--gray-border)',
+          style={{backgroundColor: 'var(--lia-bg-secondary)',
+            borderColor: 'var(--lia-border-default)',
             color: ACCENT_COLOR}}
           onClick={(e) => {
             e.stopPropagation()

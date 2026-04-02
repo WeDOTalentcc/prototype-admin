@@ -82,7 +82,7 @@ function CollapsibleSection({
     <div className="border border-lia-border-default rounded-md overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 bg-gray-800/50 hover:bg-gray-800 transition-colors motion-reduce:transition-none"
+        className="w-full flex items-center justify-between p-3 bg-lia-btn-primary-hover/50 hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
       >
         <div className="flex items-center gap-2">
           <span className="text-lia-text-tertiary">{icon}</span>
@@ -157,7 +157,7 @@ export function FastTrackReviewPanel({
   
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 p-3 bg-gray-100 dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md">
+      <div className="flex items-center gap-2 p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md">
         <Zap className="w-4 h-4 text-lia-text-secondary" />
         <div>
           <span className="text-sm font-medium text-lia-text-secondary">Vaga criada com Fast Track</span>
@@ -185,7 +185,7 @@ export function FastTrackReviewPanel({
               value={sensitiveFields.gestor}
               onChange={(e) => handleFieldChange('gestor', e.target.value)}
               placeholder="Nome do gestor"
-              className="bg-gray-800 border-lia-border-default text-white"
+              className="bg-lia-btn-primary-hover border-lia-border-default text-white"
             />
           </div>
           
@@ -198,7 +198,7 @@ export function FastTrackReviewPanel({
               value={sensitiveFields.localidade}
               onChange={(e) => handleFieldChange('localidade', e.target.value)}
               placeholder="Cidade, Estado"
-              className="bg-gray-800 border-lia-border-default text-white"
+              className="bg-lia-btn-primary-hover border-lia-border-default text-white"
             />
           </div>
           
@@ -213,7 +213,7 @@ export function FastTrackReviewPanel({
                 min="1"
                 value={sensitiveFields.numeroVagas}
                 onChange={(e) => handleFieldChange('numeroVagas', e.target.value)}
-                className="bg-gray-800 border-lia-border-default text-white"
+                className="bg-lia-btn-primary-hover border-lia-border-default text-white"
               />
             </div>
             
@@ -226,7 +226,7 @@ export function FastTrackReviewPanel({
                 type="date"
                 value={sensitiveFields.dataLimite}
                 onChange={(e) => handleFieldChange('dataLimite', e.target.value)}
-                className="bg-gray-800 border-lia-border-default text-white"
+                className="bg-lia-btn-primary-hover border-lia-border-default text-white"
               />
             </div>
           </div>
@@ -303,7 +303,7 @@ export function FastTrackReviewPanel({
               {jobData.basicInfo.tipoContrato || '-'}
             </div>
             {jobData.generatedDescription && (
-              <div className="mt-2 p-2 bg-gray-800 rounded-md text-xs text-lia-text-tertiary max-h-24 overflow-y-auto">
+              <div className="mt-2 p-2 bg-lia-btn-primary-hover rounded-md text-xs text-lia-text-tertiary max-h-24 overflow-y-auto">
                 {jobData.generatedDescription.slice(0, 200)}...
               </div>
             )}
@@ -324,8 +324,8 @@ export function FastTrackReviewPanel({
                 className={cn(
  "text-xs",
                   skill.required 
-                    ? "bg-gray-100 dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary" 
-                    : "bg-gray-800 border-lia-border-default text-lia-text-disabled"
+                    ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary" 
+                    : "bg-lia-btn-primary-hover border-lia-border-default text-lia-text-disabled"
                 )}
               >
                 {skill.name}
@@ -354,7 +354,7 @@ export function FastTrackReviewPanel({
                       key={i}
                       className={cn(
  "w-2 h-2 rounded-full",
-                        i < comp.weight ? "bg-gray-400" : "bg-neutral-700"
+                        i < comp.weight ? "bg-lia-border-medium" : "bg-neutral-700"
                       )}
                     />
                   ))}
@@ -382,7 +382,7 @@ export function FastTrackReviewPanel({
                   <Badge 
                     key={benefit.id}
                     variant="outline" 
-                    className="text-xs bg-gray-800 border-lia-border-default text-lia-text-tertiary"
+                    className="text-xs bg-lia-btn-primary-hover border-lia-border-default text-lia-text-tertiary"
                   >
                     {benefit.name}
                   </Badge>
@@ -427,7 +427,7 @@ export function FastTrackReviewPanel({
         className={cn(
  "w-full",
           canPublish 
-            ? "bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200" 
+            ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active" 
             : "bg-neutral-700 text-lia-text-secondary cursor-not-allowed"
         )}
       >

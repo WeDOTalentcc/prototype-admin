@@ -107,9 +107,9 @@ export function JobsPage(props: JobsPageProps) {
   }
   if (state.showKanban && !state.selectedJob) {
     return (
-      <div className="h-full flex items-center justify-center bg-white dark:bg-lia-bg-primary">
+      <div className="h-full flex items-center justify-center bg-lia-bg-primary dark:bg-lia-bg-primary">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-lia-border-default border-t-gray-600 rounded-full animate-spin motion-reduce:animate-none mx-auto mb-3" />
+          <div className="w-8 h-8 border-2 border-lia-border-default border-t-lia-border-medium rounded-full animate-spin motion-reduce:animate-none mx-auto mb-3" />
           <p className="text-base-ui text-lia-text-tertiary">Carregando vaga...</p>
         </div>
       </div>
@@ -156,19 +156,19 @@ export function JobsPage(props: JobsPageProps) {
 
   if (!hasMounted) {
     return (
-      <div className="h-full flex flex-col bg-white dark:bg-lia-bg-primary overflow-hidden">
+      <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
         <div className="flex-1 overflow-hidden">
           <div className="p-2.5 max-w-full overflow-x-auto">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="h-6 w-48 bg-gray-200 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
-                <div className="h-4 w-64 bg-gray-200 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mt-2" />
+                <div className="h-6 w-48 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                <div className="h-4 w-64 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none mt-2" />
               </div>
-              <div className="h-8 w-24 bg-gray-200 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+              <div className="h-8 w-24 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
             </div>
             <div className="space-y-2 mt-6">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-12 bg-gray-200 dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
+                <div key={i} className="h-12 bg-lia-interactive-active dark:bg-lia-bg-secondary rounded-md animate-pulse motion-reduce:animate-none" />
               ))}
             </div>
           </div>
@@ -178,10 +178,10 @@ export function JobsPage(props: JobsPageProps) {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-lia-bg-primary overflow-hidden relative">
+    <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden relative">
       {/* Super Chat Fullscreen Mode - Cobre toda a área de conteúdo */}
       {chatMode ==='job-creation' && isChatFullscreen && showInlineChat && (
-        <div className="absolute inset-0 z-50 bg-white dark:bg-lia-bg-primary flex flex-col">
+        <div className="absolute inset-0 z-50 bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col">
           <ExpandedChatModal
             isOpen={true}
             onClose={closeChat}
@@ -201,7 +201,7 @@ export function JobsPage(props: JobsPageProps) {
       )}
       
       {/* Header Fixo - Título e Tabs (oculto em fullscreen) */}
-      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-white dark:bg-lia-bg-primary ${chatMode ==='job-creation' && isChatFullscreen ?'hidden' :''}`}>
+      <div className={`flex-shrink-0 px-4 pt-3 pb-0 bg-lia-bg-primary dark:bg-lia-bg-primary ${chatMode ==='job-creation' && isChatFullscreen ?'hidden' :''}`}>
         {/* Header Principal - Padrão Funil de Talentos */}
         <div className="flex items-center justify-between mb-0.5">
             <div className="flex items-center gap-3">
@@ -215,7 +215,7 @@ export function JobsPage(props: JobsPageProps) {
 
             <div className="flex items-center gap-2">
               <Button 
-                className="gap-2 h-8 px-3 bg-gray-800"
+                className="gap-2 h-8 px-3 bg-lia-btn-primary-hover"
                 onClick={() => setShowCreateJobModal(true)}
               >
                 <Plus className="w-4 h-4" />
@@ -237,19 +237,19 @@ export function JobsPage(props: JobsPageProps) {
                 aria-selected={activeFilter === filter.id}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
                   activeFilter === filter.id
-                    ? 'bg-gray-100 text-gray-900 dark:bg-gray-800'
-                    : 'text-lia-text-secondary hover:bg-gray-100 dark:hover:bg-gray-800'
+                    ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-btn-primary-hover'
+                    : 'text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover'
                 }`}
               >
                 <span>{filter.label}</span>
                 {!filter.isDashboard && (
                   <span className={`text-[10px] font-semibold ${
                     activeFilter === filter.id
-                      ? 'text-gray-500'
+                      ? 'text-lia-text-secondary'
                       : 'text-lia-text-tertiary'
                   }`}>
                     {isLoadingJobs ? (
-                      <span className="inline-block w-4 h-3 bg-gray-200 dark:bg-lia-bg-elevated rounded animate-pulse motion-reduce:animate-none" />
+                      <span className="inline-block w-4 h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded animate-pulse motion-reduce:animate-none" />
                     ) : (
                       filter.count
                     )}
@@ -272,7 +272,7 @@ export function JobsPage(props: JobsPageProps) {
               {/* Container externo - Background branco como funil de talentos */}
               <div className="rounded-xl overflow-hidden bg-lia-bg-primary border border-lia-border-subtle">
                 {/* Área de Tags - Linha superior */}
-                <div className="px-4 pt-4 pb-4 border-b border-b-gray-200">
+                <div className="px-4 pt-4 pb-4 border-b border-b-lia-border-subtle">
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Tag 1: Criar nova vaga */}
                     <button
@@ -280,7 +280,7 @@ export function JobsPage(props: JobsPageProps) {
                         setActiveFilter('todas')
                         setTimeout(() => openJobCreationChat('Criar nova vaga'), 100)
                       }}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
                     >
                       <Plus className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                       Criar nova vaga
@@ -288,7 +288,7 @@ export function JobsPage(props: JobsPageProps) {
                     {/* Tag 2: Ver minhas vagas */}
                     <button
                       onClick={() => setActiveFilter('ativas')}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
                     >
                       <Briefcase className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                       Ver minhas vagas
@@ -296,7 +296,7 @@ export function JobsPage(props: JobsPageProps) {
                     {/* Tag 3: Ver todas as vagas */}
                     <button
                       onClick={() => setActiveFilter('todas')}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
                     >
                       <Building2 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                       Ver todas as vagas
@@ -307,7 +307,7 @@ export function JobsPage(props: JobsPageProps) {
                         setActiveFilter('todas')
                         setTimeout(() => openGeneralChat('Resumo das minhas vagas ativas'), 100)
                       }}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-gray-100 text-lia-text-primary hover:bg-gray-900 hover:text-white font-open-sans"
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
                     >
                       <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                       Resumo das vagas
@@ -324,7 +324,7 @@ export function JobsPage(props: JobsPageProps) {
 
                 {/* Input - Estilo Funil de Talentos */}
                 <div className="px-4 pt-4 pb-4">
-                  <div className="flex items-center gap-3 px-4 py-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle transition-colors motion-reduce:transition-none focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-900/20">
+                  <div className="flex items-center gap-3 px-4 py-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle transition-colors motion-reduce:transition-none focus-within:border-lia-border-medium focus-within:ring-1 focus-within:ring-lia-btn-primary-bg/20">
                     {/* Input */}
                     <input
                       type="text"
@@ -332,7 +332,7 @@ export function JobsPage(props: JobsPageProps) {
                       value={liaPromptValue}
                       onChange={(e) => setLiaPromptValue(e.target.value)}
                      
-                      className="flex-1 bg-transparent placeholder-gray-400 text-sm focus:outline-none text-lia-text-primary"
+                      className="flex-1 bg-transparent placeholder-lia-text-tertiary text-sm focus:outline-none text-lia-text-primary"
                       onKeyDown={(e) => {
                         if (e.key ==='Enter' && liaPromptValue.trim()) {
                           setActiveFilter('todas')
@@ -350,7 +350,7 @@ export function JobsPage(props: JobsPageProps) {
                       <AudioRecordButton
                         // @ts-ignore TODO: fix type
                         onTranscription={(text) => setLiaPromptValue(prev => prev ? `${prev} ${text}` : text)}
-                        className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-gray-100 transition-colors motion-reduce:transition-none"
+                        className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                       />
                     </div>
                     
@@ -388,7 +388,7 @@ export function JobsPage(props: JobsPageProps) {
                           setActiveFilter('todas')
                           setTimeout(() => openGeneralChat(suggestion), 100)
                         }}
-                        className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-gray-50 text-lia-text-primary border border-lia-border-subtle hover:text-lia-text-primary hover:bg-gray-100"
+                        className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle hover:text-lia-text-primary hover:bg-lia-bg-tertiary"
                        
                       >
                         {suggestion}
@@ -418,14 +418,14 @@ export function JobsPage(props: JobsPageProps) {
                   value={liaPromptValue}
                   onChange={(e) => setLiaPromptValue(e.target.value)}
                   className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-lia-text-secondary transition-colors motion-reduce:transition-none border bg-lia-bg-primary"
-                  style={{color:"var(--gray-950)"}}
+                  style={{color:"var(--lia-btn-primary-bg)"}}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor ="var(--gray-800)"
-                    e.currentTarget.style.boxShadow ="0 0 0 2px var(--gray-600-bg-12)"
+                    e.currentTarget.style.borderColor ="var(--lia-text-primary)"
+                    e.currentTarget.style.boxShadow ="0 0 0 2px var(--lia-bg-tertiary)"
                     setShowExpandedLIA(true)
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor ="var(--gray-200)"
+                    e.currentTarget.style.borderColor ="var(--lia-border-subtle)"
                     e.currentTarget.style.boxShadow ="none"
                   }}
                   onKeyDown={(e) => {
@@ -437,14 +437,14 @@ export function JobsPage(props: JobsPageProps) {
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                   <button
-                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-gray-100"
+                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary"
                     onClick={() => openGeneralChat()}
                     title="Expandir chat"
                   >
                     <Maximize2 className="w-4 h-4 text-lia-text-secondary" />
                   </button>
                   <button
-                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-gray-100"
+                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary"
                     onClick={() => {
                       if (liaPromptValue.trim()) {
                         openGeneralChat(liaPromptValue.trim())
@@ -463,7 +463,7 @@ export function JobsPage(props: JobsPageProps) {
             <div className="flex items-center gap-3">
               {/* Badge de seleção */}
               {selectedJobsForBatch.size > 0 && (
-                <Badge className="bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs font-bold">
+                <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs font-bold">
                   🎯 {selectedJobsForBatch.size}
                 </Badge>
               )}
@@ -486,14 +486,14 @@ export function JobsPage(props: JobsPageProps) {
                 // @ts-ignore TODO: fix type
                 variant={showTableFiltersPanel ?"default" :"outline"}
                 size="sm"
-                className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' :''}`}
+                className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' :''}`}
                 onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
                 title="Filtrar resultados da tabela"
               >
                 <Target className="w-3 h-3" />
                 Filtros
                 {getActiveJobFiltersCount() > 0 && (
-                  <Badge variant="secondary" className="bg-gray-900 text-white dark:bg-lia-btn-primary-bg ml-1 text-xs font-bold">
+                  <Badge variant="secondary" className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-btn-primary-bg ml-1 text-xs font-bold">
                     {getActiveJobFiltersCount()}
                   </Badge>
                 )}
@@ -503,7 +503,7 @@ export function JobsPage(props: JobsPageProps) {
                 // @ts-ignore TODO: fix type
                 variant={showColumnConfig ?"default" :"outline"}
                 size="sm"
-                className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-gray-900 hover:bg-black dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' :''}`}
+                className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-lia-btn-primary-bg hover:bg-black dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' :''}`}
                 onClick={handleToggleColumnConfig}
                 title="Configurar colunas da tabela"
               >
@@ -513,8 +513,8 @@ export function JobsPage(props: JobsPageProps) {
                   variant="secondary"
                   className={`ml-1 text-xs ${
                     showColumnConfig
-                      ?'bg-gray-800 text-white dark:bg-lia-bg-tertiary font-bold'
-                      :'bg-gray-100 text-lia-text-primary dark:bg-lia-bg-elevated'
+                      ?'bg-lia-btn-primary-hover text-white dark:bg-lia-bg-tertiary font-bold'
+                      :'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated'
                   }`}
                 >
                   6
@@ -528,7 +528,7 @@ export function JobsPage(props: JobsPageProps) {
           <div className="flex-shrink-0 flex items-center justify-between mb-2">
             <div className="text-xs text-lia-text-primary flex items-center gap-3">
               {(searchTerm || selectedDaysFilter !=='todas') && (
-                <Badge variant="outline" className="text-xs bg-gray-100 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default font-medium">
+                <Badge variant="outline" className="text-xs bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default font-medium">
                   filtros ativos
                 </Badge>
               )}
@@ -639,7 +639,7 @@ export function JobsPage(props: JobsPageProps) {
 
             {/* Tabela de Vagas - Com suporte a contração e ocultação em fullscreen */}
             {!(chatMode ==='job-creation' && isChatFullscreen) && (
-            <div className={`h-full bg-white dark:bg-lia-bg-secondary rounded-md transition-[width,height] duration-300 min-w-0 overflow-hidden ${
+            <div className={`h-full bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md transition-[width,height] duration-300 min-w-0 overflow-hidden ${
               isTableCollapsed 
                 ?'w-14 flex-shrink-0' 
                 : showJobPreview ?'flex-1' :'flex-1'
@@ -652,7 +652,7 @@ export function JobsPage(props: JobsPageProps) {
                     variant="ghost"
                     size="sm"
                     onClick={toggleTableExpansion}
-                    className="h-10 w-10 p-0 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                    className="h-10 w-10 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
                     title="Expandir tabela de vagas"
                   >
                     <ChevronRight className="w-5 h-5 text-lia-text-primary" />
@@ -668,7 +668,7 @@ export function JobsPage(props: JobsPageProps) {
                   
                   {/* Indicador de vagas selecionadas */}
                   {selectedJobsForBatch.size > 0 && (
-                    <Badge className="bg-gray-900 text-white text-xs px-1.5 py-0.5">
+                    <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs px-1.5 py-0.5">
                       {selectedJobsForBatch.size}
                     </Badge>
                   )}
@@ -678,7 +678,7 @@ export function JobsPage(props: JobsPageProps) {
                 <div className="h-full flex flex-col">
                   {/* Header da tabela com botão de contrair */}
                   {showInlineChat && (
-                    <div className="flex-shrink-0 px-3 py-2 bg-gray-50 dark:bg-lia-bg-secondary flex items-center justify-between">
+                    <div className="flex-shrink-0 px-3 py-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-lia-text-primary" />
                         <span className="text-xs font-medium text-lia-text-primary" aria-live="polite" aria-atomic="true">
@@ -689,7 +689,7 @@ export function JobsPage(props: JobsPageProps) {
                         variant="ghost"
                         size="sm"
                         onClick={toggleTableExpansion}
-                        className="h-7 w-7 p-0 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+                        className="h-7 w-7 p-0 rounded-md hover:bg-lia-interactive-active dark:hover:bg-lia-bg-inverse"
                         title="Contrair tabela"
                       >
                         <ChevronLeft className="w-4 h-4 text-lia-text-primary" />

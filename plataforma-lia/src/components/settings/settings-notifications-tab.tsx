@@ -36,7 +36,7 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
             { key: "whatsapp", label: "WhatsApp", icon: MessageSquare, desc: "Mensagens WhatsApp" },
             { key: "slack", label: "Slack", icon: MessageSquare, desc: "Mensagens Slack" }
           ].map((channel) => (
-            <div key={channel.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+            <div key={channel.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center gap-3">
                 <channel.icon className="w-4 h-4 text-lia-text-primary" />
                 <div>
@@ -68,7 +68,7 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
             { key: "deadlines", label: "Prazos", desc: "Deadlines de feedback e processos" },
             { key: "liaInsights", label: "Insights da LIA", desc: "Análises e sugestões da IA" }
           ].map((type) => (
-            <div key={type.key} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-lia-bg-secondary rounded-md">
+            <div key={type.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <div>
                 <div className="text-sm font-medium text-lia-text-primary">{type.label}</div>
                 <div className="text-xs text-lia-text-primary">{type.desc}</div>

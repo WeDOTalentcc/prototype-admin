@@ -354,10 +354,10 @@ export function CultureAnalyzer({
 
   if (status === "idle") {
     return (
-      <Card className="rounded-xl bg-gray-50/50 dark:bg-lia-bg-primary/20 backdrop-blur-sm border border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl bg-lia-bg-secondary/50 dark:bg-lia-bg-primary/20 backdrop-blur-sm border border-lia-border-subtle dark:border-lia-border-subtle">
         <CardContent className="p-6 text-center">
           <div 
-            className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 bg-gray-900"
+            className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 bg-lia-btn-primary-bg"
           >
             <Brain className="w-7 h-7 text-white" />
           </div>
@@ -371,7 +371,7 @@ export function CultureAnalyzer({
           <Button
             onClick={() => startAnalysis(false)}
             disabled={!websiteUrl}
-            className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200 transition-colors motion-reduce:transition-none disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none disabled:bg-lia-border-medium disabled:cursor-not-allowed"
           >
             <Brain className="w-4 h-4 text-wedo-cyan" />
             Analisar Empresa com IA
@@ -392,10 +392,10 @@ export function CultureAnalyzer({
     const isLiaStep = (stepKey: string) => stepKey === "analyzing" || stepKey === "completed"
 
     return (
-      <Card className="rounded-xl bg-gray-50/50 dark:bg-lia-bg-primary/20 backdrop-blur-sm border border-lia-border-subtle dark:border-lia-border-subtle">
+      <Card className="rounded-xl bg-lia-bg-secondary/50 dark:bg-lia-bg-primary/20 backdrop-blur-sm border border-lia-border-subtle dark:border-lia-border-subtle">
         <CardContent className="p-6">
           <div className="flex items-center gap-4 mb-6" role="status" aria-live="polite" aria-label="Carregando...">
-            <div className="w-12 h-12 rounded-md flex items-center justify-center relative overflow-hidden bg-gray-900" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="w-12 h-12 rounded-md flex items-center justify-center relative overflow-hidden bg-lia-btn-primary-bg" role="status" aria-live="polite" aria-label="Carregando...">
               <Loader2 className="w-6 h-6 text-white animate-spin motion-reduce:animate-none" />
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
             </div>
@@ -414,9 +414,9 @@ export function CultureAnalyzer({
             </div>
           </div>
 
-          <div className="w-full bg-gray-200 dark:bg-lia-bg-elevated rounded-full h-3 mb-6 overflow-hidden shadow-inner">
+          <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-3 mb-6 overflow-hidden shadow-inner">
             <div
-              className="h-3 rounded-full transition-[width,height] duration-700 ease-out relative bg-gray-900"
+              className="h-3 rounded-full transition-[width,height] duration-700 ease-out relative bg-lia-btn-primary-bg"
               style={{width: `${displayProgress}%`}}
             >
               <div 
@@ -441,11 +441,11 @@ export function CultureAnalyzer({
                   className={`flex flex-col items-center p-2 rounded-md transition-colors motion-reduce:transition-none duration-300 ${
                     isActive
                       ? isLia 
-                        ? "bg-gray-100 dark:bg-lia-bg-secondary ring-2 ring-gray-900/20 scale-105"
-                        : "bg-gray-100 dark:bg-lia-bg-secondary ring-2 ring-gray-400 scale-105"
+                        ? "bg-lia-bg-tertiary dark:bg-lia-bg-secondary ring-2 ring-lia-btn-primary-bg/20 scale-105"
+                        : "bg-lia-bg-tertiary dark:bg-lia-bg-secondary ring-2 ring-lia-border-medium scale-105"
                       : isCompleted
                         ? "bg-status-success/10 dark:bg-status-success/30"
-                        : "bg-gray-50 dark:bg-lia-bg-secondary/50 opacity-60"
+                        : "bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 opacity-60"
                   }`}
                 >
                   <div 
@@ -454,9 +454,9 @@ export function CultureAnalyzer({
                         ? "bg-status-success text-white"
                         : isActive
                           ? isLia
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-700 text-white"
-                          : "bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-secondary"
+                            ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                            : "bg-lia-bg-inverse text-white"
+                          : "bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary"
                     }`}
                   >
                     {isCompleted ? (
@@ -540,7 +540,7 @@ export function CultureAnalyzer({
                     setShowErrorDialog(false)
                     onManualEdit()
                   }}
-                  className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   <Edit className="w-4 h-4" />
                   Preencher Manualmente
@@ -576,7 +576,7 @@ export function CultureAnalyzer({
               {onManualEdit && (
                 <Button
                   onClick={onManualEdit}
-                  className="gap-2 bg-gray-900 hover:bg-gray-800 text-white dark:hover:bg-gray-200"
+                  className="gap-2 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   <Edit className="w-4 h-4" />
                   Preencher Manualmente

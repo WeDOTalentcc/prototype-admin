@@ -194,7 +194,7 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
                   {data.organic.count}/{data.organic.threshold}
                 </span>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-1.5">
+              <div className="w-full bg-lia-bg-tertiary rounded-full h-1.5">
                 <div
                   className={`h-1.5 rounded-full transition-[width,height] ${data.organic.is_saturated ? 'bg-status-error' : organicPercent >= 90 ? 'bg-status-warning' : 'bg-wedo-cyan'}`}
                   style={{width: `${organicPercent}%`}}
@@ -212,9 +212,9 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
                   {data.sourcing.count}/{data.sourcing.threshold}
                 </span>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-1.5">
+              <div className="w-full bg-lia-bg-tertiary rounded-full h-1.5">
                 <div
-                  className={`h-1.5 rounded-full transition-[width,height] ${data.sourcing.is_saturated ? 'bg-status-error' : sourcingPercent >= 90 ? 'bg-status-warning' : 'bg-gray-500'}`}
+                  className={`h-1.5 rounded-full transition-[width,height] ${data.sourcing.is_saturated ? 'bg-status-error' : sourcingPercent >= 90 ? 'bg-status-warning' : 'bg-lia-bg-secondary0'}`}
                   style={{width: `${sourcingPercent}%`}}
                 />
               </div>
@@ -242,14 +242,14 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
           <button
             onClick={() => handleUnlock("increase_threshold")}
             disabled={actionLoading}
-            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-lia-text-primary bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Aumentar limite (+{data.unlock_increment})
           </button>
           <button
             onClick={() => handleUnlock("disable_temporarily")}
             disabled={actionLoading}
-            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-lia-text-primary bg-gray-50 border border-lia-border-subtle hover:bg-gray-100 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-3 py-1.5 rounded-md text-xs font-medium font-['Open_Sans'] text-lia-text-primary bg-lia-bg-secondary border border-lia-border-subtle hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Desbloquear por {data.unlock_hours}h
           </button>

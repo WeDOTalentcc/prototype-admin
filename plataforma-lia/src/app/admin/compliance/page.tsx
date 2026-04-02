@@ -67,7 +67,7 @@ function getSeverityColor(severity: string): string {
     case 'low':
       return 'text-status-success dark:text-status-success'
     default:
-      return 'lia-text-500'
+      return 'text-lia-text-secondary'
   }
 }
 
@@ -204,8 +204,8 @@ export default function ComplianceDashboardPage() {
     return (
       <div className="p-6" role="status" aria-live="polite" aria-label="Carregando...">
         <div className="max-w-7xl mx-auto flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none lia-text-600 dark:text-lia-text-tertiary" />
-          <span className="ml-3 text-sm lia-text-400 dark:lia-text-500" >
+          <Loader2 className="w-8 h-8 animate-spin motion-reduce:animate-none text-lia-text-secondary dark:text-lia-text-tertiary" />
+          <span className="ml-3 text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
             Carregando dados de compliance...
           </span>
         </div>
@@ -219,18 +219,18 @@ export default function ComplianceDashboardPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div 
-              className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30"
+              className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30"
             >
-              <Shield className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+              <Shield className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             </div>
             <div>
               <h1 
-                className="text-xl font-semibold lia-text-800 dark:text-lia-text-primary"
+                className="text-xl font-semibold text-lia-text-primary dark:text-lia-text-primary"
                 
               >
                 Dashboard de Compliance Global
               </h1>
-              <p className="text-sm lia-text-400 dark:lia-text-500" >
+              <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                 Visão consolidada de conformidade, riscos e controles
               </p>
             </div>
@@ -246,10 +246,10 @@ export default function ComplianceDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Total de Controles
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {totalControls}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -257,13 +257,13 @@ export default function ComplianceDashboardPage() {
                     <span className="text-xs text-status-success">{implementedControls} implementados</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <FileCheck className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <FileCheck className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
               </div>
               <div className="mt-3">
                 <Progress value={(implementedControls / totalControls) * 100} className="h-1.5" />
-                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
+                <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary" >
                   {Math.round((implementedControls / totalControls) * 100)}% de cobertura
                 </p>
               </div>
@@ -274,10 +274,10 @@ export default function ComplianceDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     LGPD Compliance
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {lgpdStatus}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -304,10 +304,10 @@ export default function ComplianceDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Auditorias de Bias
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {biasAlertCount} alertas
                   </p>
                   <div className="flex items-center gap-2 mt-1">
@@ -325,7 +325,7 @@ export default function ComplianceDashboardPage() {
               </div>
               {latestBiasAudit && (
                 <div className="mt-3">
-                  <p className="text-xs lia-text-400 dark:lia-text-500" >
+                  <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Última auditoria: {new Date(latestBiasAudit.auditDate).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
@@ -337,19 +337,19 @@ export default function ComplianceDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm lia-text-400 dark:lia-text-500" >
+                  <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                     Próximas Revisões
                   </p>
-                  <p className="text-2xl font-semibold mt-1 lia-text-800 dark:text-lia-text-primary" >
+                  <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary" >
                     {upcomingReviews}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Clock className="w-3 h-3 lia-text-400 dark:lia-text-500"  />
-                    <span className="text-xs lia-text-400 dark:lia-text-500" >Próximos 30 dias</span>
+                    <Clock className="w-3 h-3 text-lia-text-tertiary dark:text-lia-text-secondary"  />
+                    <span className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Próximos 30 dias</span>
                   </div>
                 </div>
-                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-gray-200/30">
-                  <Calendar className="w-5 h-5 lia-text-600 dark:text-lia-text-tertiary" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-lia-interactive-active/30">
+                  <Calendar className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />
                 </div>
               </div>
               {overdueReviews > 0 && (
@@ -364,7 +364,7 @@ export default function ComplianceDashboardPage() {
         </div>
 
         <div>
-          <h2 className="text-base font-semibold mb-4 lia-text-800 dark:text-lia-text-primary" >
+          <h2 className="text-base font-semibold mb-4 text-lia-text-primary dark:text-lia-text-primary" >
             Conformidade por Framework
           </h2>
           {displayFrameworks.length > 0 ? (
@@ -373,12 +373,12 @@ export default function ComplianceDashboardPage() {
                 <Card key={fw.key} >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-medium lia-text-800 dark:text-lia-text-primary" >
+                      <h3 className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary" >
                         {fw.name}
                       </h3>
                       <Badge 
                         variant={fw.status === 'active' ? (fw.progress >= 70 ? 'success' : 'warning') : 'default'}
-                        className={`text-micro ${fw.status === 'implementing' ? 'bg-gray-100 dark:bg-lia-bg-secondary lia-text-400 dark:lia-text-500' : ''}`}
+                        className={`text-micro ${fw.status === 'implementing' ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-tertiary dark:text-lia-text-secondary' : ''}`}
                       >
                         {fw.status === 'active' ? `${Math.round(fw.progress)}%` : 'Em impl.'}
                       </Badge>
@@ -388,13 +388,13 @@ export default function ComplianceDashboardPage() {
                       className="h-2 mb-2" 
                     />
                     <div className="flex items-center justify-between">
-                      <p className="text-xs lia-text-400 dark:lia-text-500" >
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                         {fw.controls > 0 ? `${fw.implemented}/${fw.controls} controles` : 'Configurando...'}
                       </p>
                       {fw.status === 'active' && (
                         <Link 
                           href={`/admin/compliance/controles/${fw.key.toLowerCase().replace(/\s+/g, '-')}`}
-                          className="text-xs lia-text-600 dark:text-lia-text-tertiary hover:underline"
+                          className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary hover:underline"
                         >
                           Ver detalhes
                         </Link>
@@ -407,11 +407,11 @@ export default function ComplianceDashboardPage() {
           ) : (
             <Card >
               <CardContent className="p-6 text-center">
-                <FileCheck className="w-8 h-8 lia-text-400 mx-auto mb-2" />
-                <p className="text-sm lia-text-400 dark:lia-text-500" >
+                <FileCheck className="w-8 h-8 text-lia-text-tertiary mx-auto mb-2" />
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary" >
                   Nenhum framework configurado ainda
                 </p>
-                <p className="text-xs mt-1 lia-text-400 dark:lia-text-500" >
+                <p className="text-xs mt-1 text-lia-text-tertiary dark:text-lia-text-secondary" >
                   Configure seus frameworks de compliance para começar
                 </p>
               </CardContent>
@@ -439,7 +439,7 @@ export default function ComplianceDashboardPage() {
         <Card >
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-medium lia-text-800 dark:text-lia-text-primary" >
+              <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary" >
                 Alertas Recentes
               </CardTitle>
               <Button variant="ghost" size="sm" asChild>
@@ -456,15 +456,15 @@ export default function ComplianceDashboardPage() {
                 {alerts.slice(0, 5).map((alert) => (
                   <div 
                     key={alert.id}
-                    className="flex items-center gap-3 p-3 rounded-md transition-colors motion-reduce:transition-none hover:opacity-90 bg-gray-100 dark:bg-lia-bg-secondary"
+                    className="flex items-center gap-3 p-3 rounded-md transition-colors motion-reduce:transition-none hover:opacity-90 bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                     
                   >
                     {getAlertIcon(alert)}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate lia-text-800 dark:text-lia-text-primary" >
+                      <p className="text-sm font-medium truncate text-lia-text-primary dark:text-lia-text-primary" >
                         {alert.title}
                       </p>
-                      <p className="text-xs lia-text-400 dark:lia-text-500" >
+                      <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >
                         {formatTimeAgo(alert.timestamp)} • {alert.type === 'compliance' ? 'Compliance' : alert.type === 'bias' ? 'Bias' : 'LGPD'}
                       </p>
                     </div>
@@ -491,7 +491,7 @@ export default function ComplianceDashboardPage() {
             ) : (
               <div className="text-center py-6">
                 <CheckCircle2 className="w-8 h-8 text-status-success mx-auto mb-2" />
-                <p className="text-sm lia-text-400 dark:lia-text-500"  aria-live="polite" aria-atomic="true">
+                <p className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary"  aria-live="polite" aria-atomic="true">
                   Nenhum alerta encontrado
                 </p>
               </div>

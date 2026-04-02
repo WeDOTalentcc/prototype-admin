@@ -51,7 +51,7 @@ export const ScoreIconButton = React.memo(function ScoreIconButton({
       onClick={isClickable ? onClick : undefined}
       disabled={isDisabled}
       className={cn(
-        "flex items-center gap-1 transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-400 rounded-full",
+        "flex items-center gap-1 transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-lia-border-medium rounded-full",
         isClickable
           ? "cursor-pointer hover:scale-105 hover:drop-active:scale-95"
           : "cursor-default opacity-25"

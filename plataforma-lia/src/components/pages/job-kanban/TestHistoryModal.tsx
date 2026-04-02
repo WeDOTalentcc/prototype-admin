@@ -32,10 +32,10 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white dark:bg-lia-bg-primary rounded-md w-full max-w-5xl max-h-[90vh] overflow-hidden animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay backdrop-blur-sm">
+      <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md w-full max-w-5xl max-h-[90vh] overflow-hidden animate-fadeIn">
         {/* Header */}
-        <div className="bg-gray-900 dark:bg-lia-bg-secondary p-5 text-white">
+        <div className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary p-5 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-lia-bg-primary/20 rounded-md">
@@ -56,7 +56,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
         </div>
 
         {/* Estatísticas Gerais */}
-        <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           {/* Nota Média Destacada */}
           <div className="bg-wedo-purple rounded-md p-4 mb-4 text-white">
             <div className="flex items-center justify-between">
@@ -100,7 +100,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
           </div>
 
           <div className="grid grid-cols-5 gap-4">
-            <div className="bg-white dark:bg-lia-bg-primary rounded-md p-4">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-4">
               <div className="flex items-center gap-2 mb-2">
                 <BarChart3 className="w-4 h-4 text-lia-text-primary" />
                 <span className="text-xs text-lia-text-primary">Total de Aplicações</span>
@@ -109,7 +109,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <p className="text-xs text-lia-text-primary mt-1">↑ 12% este mês</p>
             </div>
 
-            <div className="bg-white dark:bg-lia-bg-primary rounded-md p-4">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Target className="w-4 h-4 text-lia-text-primary" />
                 <span className="text-xs text-lia-text-primary">Taxa de Sucesso</span>
@@ -118,7 +118,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <p className="text-xs text-lia-text-primary mt-1">Nota ≥ 7.0</p>
             </div>
 
-            <div className="bg-white dark:bg-lia-bg-primary rounded-md p-4">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-4">
               <div className="flex items-center gap-2 mb-2">
                 <UserCheck className="w-4 h-4 text-lia-text-primary" />
                 <span className="text-xs text-lia-text-primary">Taxa de Conclusão</span>
@@ -127,7 +127,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <p className="text-xs text-lia-text-primary mt-1">Candidatos finalizam</p>
             </div>
 
-            <div className="bg-white dark:bg-lia-bg-primary rounded-md p-4">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Timer className="w-4 h-4 text-lia-text-primary" />
                 <span className="text-xs text-lia-text-primary">Tempo Médio</span>
@@ -136,7 +136,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <p className="text-xs text-lia-text-primary mt-1">De 15min esperados</p>
             </div>
 
-            <div className="bg-white dark:bg-lia-bg-primary rounded-md p-4">
+            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary rounded-md p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Gauge className="w-4 h-4 text-status-error" />
                 <span className="text-xs text-lia-text-primary">Dificuldade Percebida</span>
@@ -155,12 +155,12 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
 
           <div className="space-y-3">
             {/* Vaga 1 */}
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-medium text-lia-text-primary">UX Designer Sênior</h4>
-                    <Badge className="bg-gray-900 text-white dark:bg-lia-bg-tertiary text-xs">Finalizada</Badge>
+                    <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-tertiary text-xs">Finalizada</Badge>
                     <span className="text-xs text-lia-text-primary">Sodexo • São Paulo</span>
                   </div>
                   <div className="flex items-center gap-6 text-xs text-lia-text-secondary">
@@ -192,7 +192,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex items-center justify-between mb-1">
                   <span className={textStyles.description}>Distribuição de Notas</span>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
+                    <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
                       <Trophy className="w-2.5 h-2.5 mr-0.5" />
                       Nota Média: 7.8/10
                     </Badge>
@@ -202,7 +202,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                   {[2, 3, 5, 8, 12, 10, 5].map((height, i) => (
                     <div
                       key={i}
-                      className="flex-1 bg-gray-600 dark:bg-lia-bg-elevated rounded-t opacity-80"
+                      className="flex-1 bg-lia-border-medium dark:bg-lia-bg-elevated rounded-t opacity-80"
                       style={{height: `${(height / 12) * 100}%`}}
                     />
                   ))}
@@ -211,12 +211,12 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
             </div>
 
             {/* Vaga 2 */}
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-medium text-lia-text-primary">Product Designer</h4>
-                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs">Em Andamento</Badge>
+                    <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">Em Andamento</Badge>
                     <span className="text-xs text-lia-text-primary">Nubank • Remoto</span>
                   </div>
                   <div className="flex items-center gap-6 text-xs text-lia-text-secondary">
@@ -248,7 +248,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex items-center justify-between mb-1">
                   <span className={textStyles.description}>Distribuição de Notas</span>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
+                    <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
                       <Trophy className="w-2.5 h-2.5 mr-0.5" />
                       Nota Média: 7.2/10
                     </Badge>
@@ -258,7 +258,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                   {[3, 4, 6, 7, 8, 4, 2].map((height, i) => (
                     <div
                       key={i}
-                      className="flex-1 bg-gray-600 dark:bg-lia-bg-elevated rounded-t opacity-80"
+                      className="flex-1 bg-lia-border-medium dark:bg-lia-bg-elevated rounded-t opacity-80"
                       style={{height: `${(height / 8) * 100}%`}}
                     />
                   ))}
@@ -267,12 +267,12 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
             </div>
 
             {/* Vaga 3 */}
-            <div className="bg-gray-50 dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
+            <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-medium text-lia-text-primary">UI/UX Designer</h4>
-                    <Badge className="bg-gray-100 text-lia-text-primary text-xs">Cancelada</Badge>
+                    <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">Cancelada</Badge>
                     <span className="text-xs text-lia-text-primary">iFood • Campinas</span>
                   </div>
                   <div className="flex items-center gap-6 text-xs text-lia-text-secondary">
@@ -304,7 +304,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex items-center justify-between mb-1">
                   <span className={textStyles.description}>Distribuição de Notas</span>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-gray-200 text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
+                    <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
                       <Trophy className="w-2.5 h-2.5 mr-0.5" />
                       Nota Média: 6.5/10
                     </Badge>
@@ -314,7 +314,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                   {[4, 5, 6, 5, 3, 2, 1].map((height, i) => (
                     <div
                       key={i}
-                      className="flex-1 bg-gray-400 rounded-t opacity-60"
+                      className="flex-1 bg-lia-border-medium rounded-t opacity-60"
                       style={{height: `${(height / 6) * 100}%`}}
                     />
                   ))}
@@ -324,7 +324,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
           </div>
 
           {/* Insights e Recomendações */}
-          <div className="mt-6 bg-gray-100 dark:bg-lia-bg-secondary/20 rounded-md p-4 border border-lia-border-default dark:border-lia-border-subtle">
+          <div className="mt-6 bg-lia-bg-tertiary dark:bg-lia-bg-secondary/20 rounded-md p-4 border border-lia-border-default dark:border-lia-border-subtle">
             <div className="flex items-start gap-3">
               <Brain className="w-5 h-5 text-wedo-cyan mt-0.5" />
               <div>
@@ -343,7 +343,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
         </div>
 
         {/* Footer */}
-        <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 bg-gray-50 dark:bg-lia-bg-secondary">
+        <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4 text-xs text-lia-text-primary">
               <span className="flex items-center gap-1">
@@ -359,7 +359,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
               <Button variant="outline" onClick={onClose}>
                 Fechar
               </Button>
-              <Button className="bg-gray-900 hover:bg-gray-800 text-white dark:bg-gray-50 dark:hover:bg-gray-200">
+              <Button className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active">
                 <Download className="w-4 h-4 mr-2" />
                 Exportar Relatório
               </Button>

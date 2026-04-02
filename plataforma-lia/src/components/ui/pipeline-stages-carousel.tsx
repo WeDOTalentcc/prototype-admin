@@ -120,7 +120,7 @@ export function PipelineStagesCarousel({
                   onClick={() => onStageClick?.(stage.id)}
                   className={cn(
  'relative flex-shrink-0 group transition-colors duration-200',
-                    'focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2',
+                    'focus:outline-none focus:ring-2 focus:ring-lia-border-medium focus:ring-offset-2',
                     isSelected ? 'scale-[1.02]' : 'hover:scale-[1.01]'
                   )}
                   title={displayName}

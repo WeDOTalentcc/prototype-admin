@@ -106,7 +106,7 @@ export function ExpandedChatInput({
   ]
 
   return (
-    <div className="px-4 py-4 flex-shrink-0 bg-white mt-auto">
+    <div className="px-4 py-4 flex-shrink-0 bg-lia-bg-primary mt-auto">
       <div className="flex justify-center">
         <div className="w-full max-w-lg">
           <div className="flex items-center gap-2 px-3 py-2 bg-lia-bg-primary border border-lia-border-subtle rounded-full">
