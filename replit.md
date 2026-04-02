@@ -56,6 +56,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **BiasAuditService + API**: Calculates adverse impact using the Four-Fifths Rule across demographic dimensions.
 - **Proactive Predictive Briefing**: LIA proactively presents a briefing with pipeline stats, candidate alerts, and ML predictions instead of a separate widget.
 - **Polling Optimization**: Frontend polling intervals reduced to prevent 429 cascading.
+- **SearchPresetsModal Unification (T004)**: 3 modal components (CompanyPresetsModal, LocationPresetsModal, UniversityPresetsModal) unified into a single generic `SearchPresetsModal<T>` component at `plataforma-lia/src/components/search/SearchPresetsModal.tsx`. Original files retained as thin wrappers preserving exact consumer APIs and preset data. Config-driven via `SearchPresetsModalConfig<T>` supporting custom tabs, localStorage, inline/footer save forms, and preview renderers.
 - **Super Prompt Flutuante (LiaSuperPrompt)**: Expanding the mini chat opens a ~95% viewport overlay with tabs, dynamic contextual suggestions, and controls.
 - **HTTP Chat Fallback**: When WebSocket is unavailable, floating LIA chat falls back to HTTP.
 - **ReAct JSON Strip (`_strip_react_json`)**: Defense-in-depth against raw ReAct JSON leaking to users, extracting only the `response` field.
