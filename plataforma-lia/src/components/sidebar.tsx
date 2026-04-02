@@ -483,7 +483,7 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
 
       {/* Indicador de largura durante redimensionamento */}
       {isResizing && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-lia-text-primary text-white dark:text-black text-sm px-3 py-2 rounded-md z-50 pointer-events-none">
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-lia-text-primary text-lia-text-inverse text-sm px-3 py-2 rounded-md z-50 pointer-events-none">
           {sidebarWidth}px
         </div>
       )}
