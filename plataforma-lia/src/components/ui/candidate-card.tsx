@@ -269,7 +269,7 @@ export function CandidateCard({
                   <div className="mt-2 space-y-2">
                     {isLoading ? (
                       <div className="flex items-center justify-center py-4">
-                        <div className="animate-spin motion-reduce:animate-none rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
+                        <div className="animate-spin motion-reduce:animate-none rounded-full h-5 w-5 border-b-2 border-lia-border-medium"></div>
                       </div>
                     ) : communications.length === 0 ? (
                       <div className="text-center py-3 text-xs text-lia-text-disabled">
@@ -280,7 +280,7 @@ export function CandidateCard({
                         {communications.map((comm) => (
                           <div
                             key={comm.id}
-                            className="flex items-start gap-2 p-2 rounded-md bg-gray-50 dark:bg-lia-bg-secondary/50"
+                            className="flex items-start gap-2 p-2 rounded-md bg-lia-bg-secondary"
                           >
                             <div className="shrink-0 mt-0.5">
                               {getChannelIcon(comm.channel)}

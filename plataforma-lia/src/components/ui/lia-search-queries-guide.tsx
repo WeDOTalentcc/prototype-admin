@@ -124,11 +124,11 @@ export function LiaSearchQueriesGuide({
         <button
           className={cn(
  "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-[width,height]",
-            "hover:border-gray-900 dark:hover:border-gray-50 hover:bg-gray-50 dark:bg-lia-bg-secondary/50",
-            isOpen && "border-gray-900 bg-gray-50 dark:bg-lia-bg-secondary/50",
+            "hover:border-lia-text-primary hover:bg-lia-bg-secondary",
+            isOpen && "border-lia-text-primary bg-lia-bg-secondary",
             className
           )}
-          style={{borderColor: isOpen ? 'var(--gray-950)' : 'var(--gray-200)', 
+          style={{borderColor: isOpen ? 'var(--lia-text-primary)' : 'var(--lia-border-subtle)', 
             
             fontWeight: 500}}
         >
@@ -140,16 +140,16 @@ export function LiaSearchQueriesGuide({
         className="w-[340px] p-0 border-0" 
         align="start" 
         sideOffset={6}
-        style={{backgroundColor: 'var(--gray-50)',
+        style={{backgroundColor: 'var(--lia-bg-secondary)',
           borderRadius: '12px',
-          border: '1px solid var(--gray-200)'}}
+          border: '1px solid var(--lia-border-subtle)'}}
       >
         {/* Header com busca */}
-        <div className="px-3 py-2.5 border-b" style={{borderColor: 'var(--gray-200)'}}>
+        <div className="px-3 py-2.5 border-b" style={{borderColor: 'var(--lia-border-subtle)'}}>
           <div 
             className="flex items-center gap-2 px-2.5 py-2 rounded-md"
-            style={{backgroundColor: 'var(--gray-100)',
-              border: '1px solid var(--gray-200)'}}
+            style={{backgroundColor: 'var(--lia-bg-tertiary)',
+              border: '1px solid var(--lia-border-subtle)'}}
           >
             <Search className="w-3.5 h-3.5 lia-text-secondary flex-shrink-0" />
             <input
@@ -158,13 +158,13 @@ export function LiaSearchQueriesGuide({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 bg-transparent text-xs outline-none placeholder:lia-text-secondary"
-              style={{color: 'var(--gray-800)'}}
+              style={{color: 'var(--lia-text-primary)'}}
               autoFocus
             />
             {searchTerm && (
               <button 
                 onClick={() => setSearchTerm('')} 
-                className="p-0.5 rounded-full hover:bg-gray-200 transition-colors motion-reduce:transition-none"
+                className="p-0.5 rounded-full hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
               >
                 <X className="w-3 h-3 lia-text-secondary" />
               </button>
@@ -173,14 +173,14 @@ export function LiaSearchQueriesGuide({
         </div>
 
         {/* Filtros de categoria */}
-        <div className="px-3 py-2 border-b flex gap-1.5 overflow-x-auto" style={{borderColor: 'var(--gray-200)'}}>
+        <div className="px-3 py-2 border-b flex gap-1.5 overflow-x-auto" style={{borderColor: 'var(--lia-border-subtle)'}}>
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
  "px-2 py-1 rounded-full text-micro font-medium transition-[width,height] whitespace-nowrap",
               !activeCategory 
                 ? "bg-gray-900 text-white" 
-                : "bg-gray-100 lia-text-secondary hover:bg-gray-200 border border-lia-border-subtle"
+                : "bg-lia-bg-tertiary lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
             )}
            
           >
@@ -194,7 +194,7 @@ export function LiaSearchQueriesGuide({
  "inline-flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium transition-[width,height] whitespace-nowrap",
                 activeCategory === key 
                   ? "bg-gray-900 text-white" 
-                  : "bg-gray-100 lia-text-secondary hover:bg-gray-200 border border-lia-border-subtle"
+                  : "bg-lia-bg-tertiary lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
               )}
              
             >
@@ -208,7 +208,7 @@ export function LiaSearchQueriesGuide({
         {selectedCount > 0 && (
           <div 
             className="px-3 py-2 border-b flex items-center gap-2"
-            style={{borderColor: 'var(--gray-200)', backgroundColor: 'var(--gray-50)'}}
+            style={{borderColor: 'var(--lia-border-subtle)', backgroundColor: 'var(--lia-bg-secondary)'}}
           >
             <UserCheck className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
             <span 
@@ -228,15 +228,15 @@ export function LiaSearchQueriesGuide({
                 key={query.id}
                 onClick={() => handleSelectQuery(query.question)}
                 className="w-full px-2.5 py-2 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-center gap-2"
-                style={{backgroundColor: 'var(--gray-50)',
-                  border: '1px solid var(--gray-100)'}}
+                style={{backgroundColor: 'var(--lia-bg-secondary)',
+                  border: '1px solid var(--lia-bg-tertiary)'}}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--gray-50)'
-                  e.currentTarget.style.borderColor = 'var(--gray-200)'
+                  e.currentTarget.style.backgroundColor = 'var(--lia-bg-secondary)'
+                  e.currentTarget.style.borderColor = 'var(--lia-border-subtle)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--gray-50)'
-                  e.currentTarget.style.borderColor = 'var(--gray-200)'
+                  e.currentTarget.style.backgroundColor = 'var(--lia-bg-secondary)'
+                  e.currentTarget.style.borderColor = 'var(--lia-border-subtle)'
                 }}
               >
                 <div 
@@ -246,7 +246,7 @@ export function LiaSearchQueriesGuide({
                 </div>
                 <span 
                   className="text-xs leading-snug font-medium"
-                  style={{color: 'var(--gray-800)'}}
+                  style={{color: 'var(--lia-text-primary)'}}
                 >
                   {query.question}
                 </span>
@@ -257,13 +257,13 @@ export function LiaSearchQueriesGuide({
               <div className="py-8 text-center">
                 <div 
                   className="w-8 h-8 mx-auto mb-2 rounded-full flex items-center justify-center"
-                  style={{backgroundColor: 'var(--gray-50)'}}
+                  style={{backgroundColor: 'var(--lia-bg-secondary)'}}
                 >
                   <Search className="w-3.5 h-3.5 lia-text-muted" />
                 </div>
                 <p 
                   className="text-xs"
-                  style={{color: 'var(--gray-400)'}}
+                  style={{color: 'var(--lia-text-tertiary)'}}
                 >
                   Nenhuma análise encontrada
                 </p>
@@ -275,12 +275,12 @@ export function LiaSearchQueriesGuide({
         {/* Footer */}
         <div 
           className="px-3 py-2 border-t rounded-b-xl"
-          style={{borderColor: 'var(--gray-200)',
-            backgroundColor: 'var(--gray-50)'}}
+          style={{borderColor: 'var(--lia-border-subtle)',
+            backgroundColor: 'var(--lia-bg-secondary)'}}
         >
           <p 
             className="text-micro text-center"
-            style={{color: 'var(--gray-400)'}}
+            style={{color: 'var(--lia-text-tertiary)'}}
           >
             Clique para inserir no prompt
           </p>

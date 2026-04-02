@@ -13,10 +13,10 @@ const buttonVariants = cva(
         destructive:
           "bg-status-error text-white hover:bg-status-error dark:bg-status-error dark:hover:bg-status-error focus:ring-2 focus:ring-red-600/20",
         outline:
-          "border border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-lia-text-primary dark:hover:lia-text-subtle focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
+          "border border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary hover:bg-lia-interactive-hover hover:text-lia-text-primary focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
         secondary:
-          "bg-gray-100 dark:bg-lia-bg-elevated text-lia-text-primary hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
-        ghost: "text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-lia-text-primary dark:hover:lia-text-subtle focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
+          "bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary hover:bg-lia-interactive-active focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
+        ghost: "text-lia-text-primary hover:bg-lia-interactive-hover hover:text-lia-text-primary focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-gray-50/20",
         link: "text-lia-text-secondary dark:text-lia-text-secondary underline-offset-4 hover:underline hover:text-lia-text-primary dark:hover:lia-text-subtle focus:text-lia-text-primary dark:focus:text-lia-text-inverse",
       },
       size: {

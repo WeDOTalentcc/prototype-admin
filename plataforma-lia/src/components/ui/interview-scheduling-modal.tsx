@@ -179,7 +179,7 @@ export function InterviewSchedulingModal({
                   <Label className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary">
                     Email de Convite
                   </Label>
-                  <Badge className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-0">
+                  <Badge className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-0">
                     <Brain className="w-3 h-3 mr-1 text-wedo-cyan" />
                     Gerado por LIA
                   </Badge>
@@ -199,7 +199,7 @@ export function InterviewSchedulingModal({
                       className="h-9 text-xs font-medium border-lia-border-subtle focus:ring-gray-400 focus:border-gray-400 bg-gray-50 lia-text-strong"
                     />
                     <div
-                      className="p-3 rounded-md border border-lia-border-subtle text-xs overflow-y-auto max-h-chart-sm bg-gray-50 lia-text-base"
+                      className="p-3 rounded-md border border-lia-border-subtle text-xs overflow-y-auto max-h-chart-sm bg-lia-bg-secondary lia-text-base"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(emailTemplate.body) }}
                     />
                   </div>
@@ -251,7 +251,7 @@ export function InterviewSchedulingModal({
                   variant="outline"
                   onClick={() => onOpenChange(false)}
                   disabled={isScheduling}
-                  className="h-9 px-4 text-xs font-medium border-lia-border-subtle lia-text-base hover:bg-gray-50"
+                  className="h-9 px-4 text-xs font-medium border-lia-border-subtle lia-text-base hover:bg-lia-interactive-hover"
                 >
                   Cancelar
                 </Button>

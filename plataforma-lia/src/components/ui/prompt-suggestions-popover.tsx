@@ -42,7 +42,7 @@ const CATEGORY_LABELS = {
   candidatos: { label: 'Candidatos', color: 'bg-status-success/15 text-status-success' },
   comunicacao: { label: 'Comunicação', color: 'bg-wedo-purple/15 text-wedo-purple' },
   analytics: { label: 'Analytics', color: 'bg-wedo-orange/15 text-wedo-orange' },
-  automacao: { label: 'Automação', color: 'bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-primary' }
+  automacao: { label: 'Automação', color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary' }
 }
 
 const BASE_SUGGESTIONS: PromptSuggestion[] = [
@@ -233,9 +233,9 @@ export function PromptSuggestionsPopover({
           size="sm"
           className={cn(
  "h-7 px-2 gap-1.5 text-xs font-medium transition-colors",
-            "hover:bg-gray-100 dark:bg-lia-bg-secondary hover:lia-text-strong dark:hover:lia-text-subtle",
-            "border border-transparent hover:border-lia-border-default dark:border-lia-border-default",
-            isOpen && "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default",
+            "hover:bg-lia-interactive-hover hover:lia-text-strong dark:hover:lia-text-subtle",
+            "border border-transparent hover:border-lia-border-default",
+            isOpen && "bg-lia-interactive-hover text-lia-text-secondary border-lia-border-default",
             className
           )}
         >
@@ -268,7 +268,7 @@ export function PromptSuggestionsPopover({
  "px-2 py-0.5 rounded-md text-xs font-medium transition-colors",
                 !activeCategory 
                   ? "bg-gray-900 text-white" 
-                  : "bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:hover:bg-gray-600"
+                  : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated"
               )}
             >
               Todas
@@ -281,7 +281,7 @@ export function PromptSuggestionsPopover({
  "px-2 py-0.5 rounded-md text-xs font-medium transition-colors",
                   activeCategory === key 
                     ? "bg-gray-900 text-white" 
-                    : "bg-gray-100 text-lia-text-secondary hover:bg-gray-200 dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:hover:bg-gray-600"
+                    : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated"
                 )}
               >
                 {label}
@@ -307,10 +307,10 @@ export function PromptSuggestionsPopover({
                 <button
                   key={suggestion.id}
                   onClick={() => handleSelect(suggestion.command)}
-                  className="w-full p-2 rounded-md text-left transition-colors motion-reduce:transition-none group hover:bg-gray-50 dark:bg-lia-bg-secondary/50 border border-transparent hover:border-lia-border-default dark:border-lia-border-default"
+                  className="w-full p-2 rounded-md text-left transition-colors motion-reduce:transition-none group hover:bg-lia-interactive-hover border border-transparent hover:border-lia-border-default"
                 >
                   <div className="flex items-start gap-2.5">
-                    <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-100 dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none">
+                    <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 group-hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none">
                       <Icon className="w-3.5 h-3.5 lia-text-base group-hover:lia-text-strong dark:group-hover:lia-text-subtle" />
                     </div>
                     <div className="flex-1 min-w-0">

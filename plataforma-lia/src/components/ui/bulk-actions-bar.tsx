@@ -33,7 +33,7 @@ interface BulkActionsBarProps {
   className?: string
 }
 
-const INLINE_BUTTON = "h-8 px-3 text-xs gap-2 bg-white hover:bg-gray-50 border-lia-border-subtle text-lia-text-primary dark:text-lia-text-primary dark:bg-lia-bg-elevated dark:hover:bg-gray-600"
+const INLINE_BUTTON = "h-8 px-3 text-xs gap-2 bg-lia-bg-primary hover:bg-lia-interactive-hover border-lia-border-subtle text-lia-text-primary dark:bg-lia-bg-elevated"
 const INLINE_DESTRUCTIVE = "h-8 px-3 text-xs gap-2 border-status-error/30 text-status-error hover:bg-status-error/10 dark:text-status-error dark:bg-lia-bg-elevated dark:hover:bg-status-error/20"
 const FIXED_BUTTON = "h-8 px-3 text-xs gap-2 border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
 const FIXED_DESTRUCTIVE = "h-8 px-3 text-xs gap-2 bg-status-error text-white hover:bg-status-error/90"
@@ -83,7 +83,7 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
                 className={cn(
                   isFixed
                     ? "border-gray-600 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
-                    : "data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900 dark:data-[state=checked]:bg-gray-100 dark:data-[state=checked]:border-lia-border-subtle"
+                    : "data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900 dark:data-[state=checked]:bg-lia-bg-tertiary dark:data-[state=checked]:border-lia-border-subtle"
                 )}
               />
               <span className={cn(
@@ -99,12 +99,12 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
 
           <div className="flex items-center gap-2">
             {isFixed ? (
-              <Badge className="bg-gray-200 text-lia-text-secondary border-lia-border-default hover:bg-gray-300 dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:border-lia-border-default">
+              <Badge className="bg-lia-interactive-active text-lia-text-secondary border-lia-border-default hover:bg-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-secondary dark:border-lia-border-default">
                 {entityIcon || <Users className="w-3 h-3 mr-1" />}
                 {selectedCount}
               </Badge>
             ) : (
-              <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
+              <div className="w-6 h-6 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
                 {entityIcon || <Users className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />}
               </div>
             )}

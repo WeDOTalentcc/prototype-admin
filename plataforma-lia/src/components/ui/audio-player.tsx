@@ -114,7 +114,7 @@ export function AudioPlayer({
   return (
     <div
       className={cn(
- "flex items-center gap-2 px-3 py-2 rounded-md bg-gray-50 dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle min-w-sidebar-content max-w-[280px] font-['Open_Sans',sans-serif]",
+ "flex items-center gap-2 px-3 py-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle min-w-sidebar-content max-w-[280px] font-['Open_Sans',sans-serif]",
         className
       )}
     >
@@ -125,8 +125,8 @@ export function AudioPlayer({
         className={cn(
  "flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center transition-colors",
           isLoaded
-            ? "bg-gray-900 text-white hover:bg-gray-700 dark:hover:bg-gray-300"
-            : "bg-gray-300 text-lia-text-tertiary dark:text-lia-text-tertiary cursor-not-allowed"
+            ? "bg-gray-900 text-white hover:bg-gray-800"
+            : "bg-lia-border-default text-lia-text-tertiary cursor-not-allowed"
         )}
         aria-label={isPlaying ? "Pausar áudio" : "Reproduzir áudio"}
       >
@@ -141,7 +141,7 @@ export function AudioPlayer({
         <div
           ref={progressBarRef}
           onClick={handleProgressClick}
-          className="h-1.5 bg-gray-200 dark:bg-lia-bg-elevated rounded-full cursor-pointer relative overflow-hidden"
+          className="h-1.5 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full cursor-pointer relative overflow-hidden"
           role="progressbar"
           aria-valuenow={currentTime}
           aria-valuemin={0}

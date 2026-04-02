@@ -93,9 +93,9 @@ const getUrgencyStyles = (urgency: string) => {
       }
     default:
       return {
-        bg: "bg-gray-50 dark:bg-lia-bg-secondary/50",
-        border: "border-lia-border-subtle dark:border-lia-border-subtle",
-        badge: "bg-gray-100 text-lia-text-primary dark:bg-lia-bg-secondary dark:text-lia-text-primary",
+        bg: "bg-lia-bg-secondary",
+        border: "border-lia-border-subtle",
+        badge: "bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary",
         icon: "text-lia-text-primary dark:text-lia-text-primary"
       }
   }
@@ -119,7 +119,7 @@ const CandidateCard = ({
               {candidate.name}
             </h4>
             {candidate.lia_score && (
-              <Badge variant="outline" className="text-xs shrink-0 border-gray-900 text-lia-text-secondary dark:text-lia-text-tertiary">
+              <Badge variant="outline" className="text-xs shrink-0 border-lia-text-primary text-lia-text-secondary dark:text-lia-text-tertiary">
                 LIA {candidate.lia_score}%
               </Badge>
             )}
@@ -158,7 +158,7 @@ const CandidateCard = ({
               className={`h-8 text-xs ${
  isDestructive 
                   ? "border-status-error/30 text-status-error hover:bg-status-error/10 dark:border-status-error/30 dark:text-status-error dark:hover:bg-status-error/30" 
-                  : "bg-gray-100 dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700 border-0"
+                  : "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-interactive-active border-0"
               }`}
               onClick={() => onAction(candidate.id, action.id, candidate.name)}
             >
@@ -187,7 +187,7 @@ const JobGroup = ({
     <div className="border rounded-md overflow-hidden border-lia-border-subtle dark:border-lia-border-subtle">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors motion-reduce:transition-none bg-gray-100 dark:bg-lia-bg-secondary"
+        className="w-full flex items-center justify-between p-4 hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
       >
         <div className="flex items-center gap-3">
           <Briefcase className="w-5 h-5 text-lia-text-secondary dark:text-lia-text-tertiary" />

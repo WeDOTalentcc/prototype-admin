@@ -16,28 +16,28 @@ interface PromptSuggestion {
 
 const CATEGORY_COLORS = {
   vagas: {
-    icon: 'var(--gray-600)',
-    bg: 'var(--gray-50)',
-    border: 'var(--gray-200)',
-    hoverBg: 'var(--gray-100)'
+    icon: 'var(--lia-text-secondary)',
+    bg: 'var(--lia-bg-secondary)',
+    border: 'var(--lia-border-subtle)',
+    hoverBg: 'var(--lia-bg-tertiary)'
   },
   candidatos: {
     icon: 'var(--status-success)',
-    bg: 'var(--gray-50)',
+    bg: 'var(--lia-bg-secondary)',
     border: 'var(--status-success)',
-    hoverBg: 'var(--gray-100)'
+    hoverBg: 'var(--lia-bg-tertiary)'
   },
   entrevistas: {
     icon: 'var(--wedo-orange)',
-    bg: 'var(--gray-50)',
+    bg: 'var(--lia-bg-secondary)',
     border: 'var(--wedo-orange)',
-    hoverBg: 'var(--gray-100)'
+    hoverBg: 'var(--lia-bg-tertiary)'
   },
   relatorios: {
     icon: 'var(--wedo-purple)',
-    bg: 'var(--gray-50)',
+    bg: 'var(--lia-bg-secondary)',
     border: 'var(--wedo-purple)',
-    hoverBg: 'var(--gray-100)'
+    hoverBg: 'var(--lia-bg-tertiary)'
   }
 }
 
@@ -193,7 +193,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           <div>
             <h3 
               className="text-sm font-semibold flex items-center gap-2"
-              style={{color: 'var(--gray-800)'}}
+              style={{color: 'var(--lia-text-primary)'}}
             >
               <div className="p-1.5 rounded-md bg-gray-900/[0.08]">
                 <Brain className="w-4 h-4 text-wedo-cyan" />
@@ -213,7 +213,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                 onClick={() => onSelect(suggestion.command)}
                 className="p-4 rounded-md transition-colors motion-reduce:transition-none text-left group"
                 style={{border: `1px solid ${colors.bg}`,
-                  backgroundColor: 'var(--gray-50)'}}
+                  backgroundColor: 'var(--lia-bg-secondary)'}}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = colors.hoverBg
                   e.currentTarget.style.borderColor = colors.border
@@ -235,13 +235,13 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                   <div className="flex-1 min-w-0">
                     <h3 
                       className="font-semibold text-sm leading-tight mb-1"
-                      style={{color: 'var(--gray-800)'}}
+                      style={{color: 'var(--lia-text-primary)'}}
                     >
                       {suggestion.title}
                     </h3>
                     <p 
                       className="text-xs leading-snug line-clamp-2"
-                      style={{color: 'var(--gray-500)'}}
+                      style={{color: 'var(--lia-text-secondary)'}}
                     >
                       {suggestion.description}
                     </p>
@@ -267,8 +267,8 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           className="fixed h-9 px-4 rounded-md transition-transform motion-reduce:transition-none hover:scale-105 z-50 select-none opacity-80 hover:opacity-100 dark:text-lia-text-secondary"
           style={{top: `${position.top}px`,
             right: `${position.right}px`,
-            backgroundColor: 'var(--gray-50)',
-            border: '1px solid var(--gray-200)',
+            backgroundColor: 'var(--lia-bg-secondary)',
+            border: '1px solid var(--lia-border-subtle)',
             cursor: isDragging ? 'grabbing' : 'grab'}}
         >
           <div className="p-1 rounded-md mr-2 bg-gray-900/[0.08]">
@@ -276,7 +276,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           </div>
           <span 
             className="text-xs font-medium dark:text-lia-text-secondary"
-            style={{color: 'var(--gray-500)'}}
+            style={{color: 'var(--lia-text-secondary)'}}
           >
             Sugestões
           </span>
@@ -286,7 +286,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
       {isExpanded && (
         <Card
           ref={cardRef}
-          className="fixed w-80 max-h-[480px] overflow-hidden z-50 select-none rounded-md border border-lia-border-subtle bg-gray-50 dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
+          className="fixed w-80 max-h-[480px] overflow-hidden z-50 select-none rounded-md border border-lia-border-subtle bg-lia-bg-secondary"
           style={{top: `${position.top}px`,
             right: `${position.right}px`}}
         >
@@ -294,8 +294,8 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           <div
             className="px-4 py-3 flex items-center justify-between border-b rounded-t-md"
             onMouseDown={handleMouseDown}
-            style={{backgroundColor: 'var(--gray-50)',
-              borderColor: 'var(--gray-200)',
+            style={{backgroundColor: 'var(--lia-bg-secondary)',
+              borderColor: 'var(--lia-border-subtle)',
               cursor: isDragging ? 'grabbing' : 'grab'}}
           >
             <div className="flex items-center gap-2">
@@ -305,7 +305,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               </div>
               <h3
                 className="text-sm font-semibold dark:text-lia-text-primary"
-                style={{color: 'var(--gray-800)'}}
+                style={{color: 'var(--lia-text-primary)'}}
               >
                 Tarefas Sugeridas
               </h3>
@@ -314,7 +314,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(false)}
-              className="h-7 w-7 p-0 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+              className="h-7 w-7 p-0 rounded-md hover:bg-lia-interactive-active"
             >
               <X className="w-4 h-4 lia-text-secondary" />
             </Button>
@@ -333,7 +333,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     setIsExpanded(false)
                   }}
                   className="w-full p-3 rounded-md transition-colors motion-reduce:transition-none text-left group"
-                  style={{backgroundColor: 'var(--gray-50)',
+                  style={{backgroundColor: 'var(--lia-bg-secondary)',
                     border: `1px solid ${colors.bg}`}}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = colors.hoverBg
@@ -354,7 +354,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     <div className="flex-1 min-w-0">
                       <h4 
                         className="font-medium text-sm leading-tight"
-                        style={{color: 'var(--gray-800)'}}
+                        style={{color: 'var(--lia-text-primary)'}}
                       >
                         {suggestion.title}
                       </h4>

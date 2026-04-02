@@ -128,7 +128,7 @@ const LikertRating = React.forwardRef<HTMLDivElement, LikertRatingProps>(
               buttonSizeClasses[size],
               value === option.value
                 ? "bg-gray-900 text-white border-gray-900"
-                : "border-lia-border-default dark:border-lia-border-default bg-white dark:bg-lia-bg-secondary text-lia-text-primary dark:text-lia-text-primary hover:border-gray-900 dark:hover:border-gray-50 dark:hover:border-gray-900 dark:hover:border-gray-50"
+                : "border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary hover:border-lia-text-primary"
             )}
           >
             {option.label}

@@ -137,7 +137,7 @@ export function SetupAlertBadge() {
   }
 
   const getProgressColor = () => {
-    if (overallCompletion >= 80) return 'var(--gray-600)'
+    if (overallCompletion >= 80) return 'var(--lia-text-secondary)'
     if (overallCompletion >= 50) return 'var(--wedo-cyan)'
     return 'var(--status-warning)'
   }
@@ -151,7 +151,7 @@ export function SetupAlertBadge() {
     <button
       ref={badgeRef}
       onClick={handleClick}
-      className="fixed z-50 flex items-center gap-2 px-3 py-2 bg-white dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-md select-none"
+      className="fixed z-50 flex items-center gap-2 px-3 py-2 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-md select-none"
       style={{left: `${position.x}px`,
         top: `${position.y}px`,
         cursor: isDragging ? 'grabbing' : 'pointer',
@@ -160,7 +160,7 @@ export function SetupAlertBadge() {
     >
       <div
         onMouseDown={handleMouseDown}
-        className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 rounded-md hover:bg-lia-interactive-hover"
         title="Arraste para mover"
       >
         <GripVertical className="w-3 h-3 lia-text-secondary" />
@@ -195,7 +195,7 @@ export function SetupAlertBadge() {
           >
             {overallCompletion}%
           </span>
-          <div className="w-12 h-1 bg-gray-200 dark:bg-lia-bg-elevated rounded-full overflow-hidden">
+          <div className="w-12 h-1 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-[width,height] duration-300"
               style={{width: `${overallCompletion}%`,

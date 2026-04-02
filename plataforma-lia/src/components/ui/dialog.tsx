@@ -39,14 +39,14 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
- "relative z-modal grid w-full max-w-lg gap-4 border border-lia-border-subtle bg-white dark:border-lia-border-subtle dark:bg-lia-bg-secondary p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
+ "relative z-modal grid w-full max-w-lg gap-4 border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
           className
         )}
         style={style}
         {...props}
       >
         {children}
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 lia-text-secondary transition-colors motion-reduce:transition-none hover:text-lia-text-primary hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-lia-text-inverse">
+        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-lia-text-secondary transition-colors motion-reduce:transition-none hover:text-lia-text-primary hover:bg-lia-interactive-hover focus:outline-none focus:ring-1 focus:ring-lia-border-medium disabled:pointer-events-none data-[state=open]:bg-lia-bg-tertiary data-[state=open]:text-lia-text-primary">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
@@ -121,7 +121,7 @@ const DraggableDialogContent = React.forwardRef<
             dialogRef.current = node
           }}
           className={cn(
- "relative z-modal grid w-full max-w-lg gap-4 border border-lia-border-subtle bg-white dark:border-lia-border-subtle dark:bg-lia-bg-secondary p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
+ "relative z-modal grid w-full max-w-lg gap-4 border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary p-6 rounded-md duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 pointer-events-auto",
             className
           )}
           style={{...style,
@@ -133,7 +133,7 @@ const DraggableDialogContent = React.forwardRef<
             onMouseDown={handleMouseDown}
           />
           {children}
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 lia-text-secondary transition-colors motion-reduce:transition-none hover:text-lia-text-primary hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-400 disabled:pointer-events-none data-[state=open]:bg-gray-100 data-[state=open]:text-lia-text-primary dark:text-lia-text-tertiary dark:hover:text-lia-text-inverse dark:hover:bg-gray-700 dark:focus:ring-gray-600 dark:data-[state=open]:bg-gray-700 dark:data-[state=open]:text-lia-text-inverse z-10" data-dialog-close>
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-lia-text-secondary transition-colors motion-reduce:transition-none hover:text-lia-text-primary hover:bg-lia-interactive-hover focus:outline-none focus:ring-1 focus:ring-lia-border-medium disabled:pointer-events-none data-[state=open]:bg-lia-bg-tertiary data-[state=open]:text-lia-text-primary z-10" data-dialog-close>
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>

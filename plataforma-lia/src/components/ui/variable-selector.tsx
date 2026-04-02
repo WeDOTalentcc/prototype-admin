@@ -127,14 +127,14 @@ export function VariableSelector({
         <div className="p-3 border-b border-lia-border-subtle">
           <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-gray-100 dark:bg-lia-bg-secondary">
+              <div className="w-7 h-7 rounded-md flex items-center justify-center bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                 <Variable className="w-3.5 h-3.5 text-lia-text-secondary dark:text-lia-text-tertiary" />
               </div>
               <h3 className="text-xs font-semibold lia-text-strong">
                 Variáveis Disponíveis
               </h3>
             </div>
-            <Badge variant="secondary" className="text-micro px-1.5 py-0.5 bg-gray-100 lia-text-base">
+            <Badge variant="secondary" className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary lia-text-base">
               {totalVariables} variáveis
             </Badge>
           </div>
@@ -158,7 +158,7 @@ export function VariableSelector({
  "px-2 py-0.5 rounded-md text-micro font-medium transition-colors",
                 !activeGroup 
                   ? "bg-gray-900 text-white" 
-                  : "bg-gray-100 lia-text-base hover:bg-gray-200"
+                  : "bg-lia-bg-tertiary lia-text-base hover:bg-lia-interactive-active"
               )}
             >
               Todas
@@ -171,7 +171,7 @@ export function VariableSelector({
  "px-2 py-0.5 rounded-md text-micro font-medium transition-colors",
                   activeGroup === group.id 
                     ? "bg-gray-900 text-white" 
-                    : "bg-gray-100 lia-text-base hover:bg-gray-200"
+                    : "bg-lia-bg-tertiary lia-text-base hover:bg-lia-interactive-active"
                 )}
               >
                 {group.label}
@@ -230,17 +230,17 @@ function VariableGroupComponent({ group, onSelect }: VariableGroupComponentProps
           <button
             key={variable.key}
             onClick={() => onSelect(variable)}
-            className="w-full p-2 rounded-md text-left transition-colors motion-reduce:transition-none group hover:bg-gray-50 dark:hover:bg-gray-800 border border-transparent hover:border-lia-border-subtle dark:hover:border-gray-700"
+            className="w-full p-2 rounded-md text-left transition-colors motion-reduce:transition-none group hover:bg-lia-interactive-hover border border-transparent hover:border-lia-border-subtle"
           >
             <div className="flex items-start gap-2.5">
-              <div className="w-7 h-7 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors motion-reduce:transition-none">
+              <div className="w-7 h-7 rounded-md bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 group-hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none">
                 <code className="text-micro font-mono text-lia-text-secondary dark:text-lia-text-tertiary">
                   {"{{}}"}
                 </code>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <code className="text-micro font-mono px-1.5 py-0.5 rounded-md bg-gray-100 group-hover:bg-gray-200 dark:group-hover:bg-gray-700 text-lia-text-secondary dark:text-lia-text-secondary">
+                  <code className="text-micro font-mono px-1.5 py-0.5 rounded-md bg-lia-bg-tertiary group-hover:bg-lia-interactive-active text-lia-text-secondary">
                     {`{{${variable.key}}}`}
                   </code>
                   <span className="text-xs font-medium lia-text-strong truncate">

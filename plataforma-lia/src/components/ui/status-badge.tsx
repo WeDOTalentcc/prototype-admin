@@ -460,7 +460,7 @@ export function SourceBadge({ source, isApplication, className }: SourceBadgePro
     <div
       className={cn(
  'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
-        'bg-gray-50 dark:bg-lia-bg-elevated',
+        'bg-lia-bg-secondary dark:bg-lia-bg-elevated',
         'border border-lia-border-subtle dark:border-lia-border-default',
         className
       )}
@@ -489,7 +489,7 @@ export function WarningBadge({ days, message, className }: WarningBadgeProps) {
     <div
       className={cn(
  'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
-        'bg-gray-100',
+        'bg-lia-bg-tertiary',
         'border border-lia-border-default dark:border-lia-border-medium',
         className
       )}
@@ -549,7 +549,7 @@ export interface OriginBadgeProps {
 const originConfig: Record<string, { label: string; bg: string; border: string; text: string; icon: React.ElementType }> = {
   web: { label: 'Web', bg: 'bg-wedo-cyan/10 dark:bg-wedo-cyan/15', border: 'border-wedo-cyan/30', text: 'text-wedo-cyan-dark dark:text-wedo-cyan', icon: Globe },
   whatsapp: { label: 'WhatsApp', bg: 'bg-wedo-green/15 dark:bg-wedo-green/20', border: 'border-wedo-green/30', text: 'text-wedo-green', icon: MessageCircle },
-  sourcing: { label: 'Busca', bg: 'bg-gray-50 dark:bg-lia-bg-elevated', border: 'border-lia-border-subtle dark:border-lia-border-default', text: 'text-lia-text-secondary dark:text-lia-text-secondary', icon: Search },
+  sourcing: { label: 'Busca', bg: 'bg-lia-bg-secondary dark:bg-lia-bg-elevated', border: 'border-lia-border-subtle dark:border-lia-border-default', text: 'text-lia-text-secondary', icon: Search },
   ats: { label: 'ATS', bg: 'bg-wedo-purple/15 dark:bg-wedo-purple/20', border: 'border-wedo-purple/30', text: 'text-wedo-purple', icon: Briefcase },
 }
 

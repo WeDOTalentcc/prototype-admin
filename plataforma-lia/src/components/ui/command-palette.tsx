@@ -104,7 +104,7 @@ export function CommandPalette({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-2xl p-0 gap-0 overflow-hidden bg-gray-50 dark:bg-lia-bg-primary"
+        className="max-w-2xl p-0 gap-0 overflow-hidden bg-lia-bg-secondary"
       >
         <div className="flex items-center px-4 py-3 border-b border-lia-border-default dark:border-lia-border-default">
           <Search className="w-4 h-4 mr-3 text-lia-text-secondary dark:text-lia-text-tertiary" />
@@ -139,7 +139,7 @@ export function CommandPalette({
                       onClose()
                     }}
                     onMouseEnter={() => setSelectedIndex(globalIndex)}
-                    className={`w-full px-4 py-3 flex items-center gap-3 transition-colors motion-reduce:transition-none text-left lia-text-strong ${isSelected ? 'bg-gray-100' : 'bg-transparent'}`}
+                    className={`w-full px-4 py-3 flex items-center gap-3 transition-colors motion-reduce:transition-none text-left lia-text-strong ${isSelected ? 'bg-lia-interactive-hover' : 'bg-transparent'}`}
                   >
                     <span className="text-lia-text-secondary dark:text-lia-text-tertiary flex-shrink-0">
                       {cmd.icon}

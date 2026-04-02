@@ -33,7 +33,7 @@ export const Loading = React.memo(function Loading({
       <div className={cn('flex items-center gap-2', className)}>
         <div
           className={cn(
- 'rounded-full border-2 border-lia-border-subtle border-t-gray-400 dark:border-t-gray-500 animate-spin motion-reduce:animate-none',
+ 'rounded-full border-2 border-lia-border-subtle border-t-lia-border-medium animate-spin motion-reduce:animate-none',
             sizeClasses[size]
           )}
         />
@@ -54,7 +54,7 @@ export const Loading = React.memo(function Loading({
             <div
               key={i}
               className={cn(
- 'rounded-full bg-gray-700',
+ 'rounded-full bg-lia-text-secondary',
                 size === 'sm' ? 'w-1 h-1' : size === 'md' ? 'w-2 h-2' : 'w-3 h-3'
               )}
               style={{animation: `dotsPulse 0.8s infinite ${i * 0.2}s`}}
@@ -85,7 +85,7 @@ export const Loading = React.memo(function Loading({
       <div className={cn('flex items-center gap-2', className)}>
         <div
           className={cn(
- 'rounded-full bg-gray-700 animate-pulse motion-reduce:animate-none',
+ 'rounded-full bg-lia-text-secondary animate-pulse motion-reduce:animate-none',
             sizeClasses[size]
           )}
         />

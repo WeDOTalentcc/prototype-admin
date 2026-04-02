@@ -27,7 +27,7 @@ const CATEGORY_CONFIG = {
     label: "Recentes",
     icon: Clock,
     color: "text-lia-text-secondary dark:text-lia-text-tertiary",
-    bgColor: "bg-gray-100 dark:bg-lia-bg-secondary",
+    bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
   },
   popular: {
     label: "Populares na empresa",
@@ -194,8 +194,8 @@ export function PremiumAutocomplete({
                   className={cn(
  "w-full flex items-center justify-between px-3 py-2 text-left text-sm transition-colors",
                     isSelected
-                      ? "bg-gray-100 text-lia-text-primary"
-                      : "text-lia-text-primary dark:text-lia-text-primary hover:bg-gray-50"
+                      ? "bg-lia-interactive-hover text-lia-text-primary"
+                      : "text-lia-text-primary hover:bg-lia-interactive-hover"
                   )}
                 >
                   <div className="flex items-center gap-2">

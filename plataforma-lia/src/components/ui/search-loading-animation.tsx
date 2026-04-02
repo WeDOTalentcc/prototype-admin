@@ -12,7 +12,7 @@ export const SearchLoadingAnimation = React.memo(function SearchLoadingAnimation
 
   return (
     <div 
-      className="mb-6 p-4 rounded-md bg-white dark:bg-lia-bg-secondary max-w-md border-l-[3px] border-l-gray-300"
+      className="mb-6 p-4 rounded-md bg-lia-bg-primary max-w-md border-l-[3px] border-l-lia-border-default"
     >
       <style jsx>{`
         @keyframes ping-custom {
@@ -79,7 +79,7 @@ export const SearchLoadingAnimation = React.memo(function SearchLoadingAnimation
         <span className="lia-text-secondary text-xs">•</span>
         <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
           <div 
-            className="spin-animation w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-900"
+            className="spin-animation w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-lia-text-primary"
           >
             <div className="w-2 h-2 border-2 border-white border-t-transparent rounded-full" />
           </div>
@@ -87,7 +87,7 @@ export const SearchLoadingAnimation = React.memo(function SearchLoadingAnimation
         </div>
         <span className="lia-text-secondary text-xs">•</span>
         <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
-          <div className="w-4 h-4 rounded-full bg-gray-200 flex-shrink-0" />
+          <div className="w-4 h-4 rounded-full bg-lia-interactive-active flex-shrink-0" />
           <span>Rankeando</span>
         </div>
       </div>

@@ -201,7 +201,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
               <div className="flex items-center justify-between mb-4">
                 <button 
                   onClick={prevMonth}
-                  className="p-1 hover:bg-gray-100 rounded-md"
+                  className="p-1 hover:bg-lia-interactive-hover rounded-md"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -210,7 +210,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                 </span>
                 <button 
                   onClick={nextMonth}
-                  className="p-1 hover:bg-gray-100 rounded-md"
+                  className="p-1 hover:bg-lia-interactive-hover rounded-md"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -243,8 +243,8 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                         ${isSelected 
                           ? 'bg-gray-900 text-white font-medium' 
                           : isInRange 
-                            ? 'bg-gray-200 dark:bg-lia-bg-elevated text-lia-text-primary' 
-                            : 'hover:bg-gray-100 text-lia-text-primary dark:text-lia-text-primary'
+                            ? 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary' 
+                            : 'hover:bg-lia-interactive-hover text-lia-text-primary'
                         }
                         ${isToday && !isSelected ? 'ring-1 ring-gray-400' : ''}
                       `}
@@ -282,7 +282,7 @@ export function DateRangePicker({ value, onChange, className, placeholder = "Sel
                   <button
                     key={preset.label}
                     onClick={() => handlePreset(preset)}
-                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans'] transition-colors motion-reduce:transition-none"
+                    className="w-full text-left text-xs py-1.5 px-2 rounded-md hover:bg-lia-interactive-hover text-lia-text-primary font-['Open_Sans'] transition-colors motion-reduce:transition-none"
                   >
                     {preset.label}
                   </button>

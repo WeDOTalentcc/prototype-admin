@@ -62,9 +62,9 @@ export const ResizableTableHeader = React.memo(function ResizableTableHeader({
       className={cn(
  "relative py-1.5 px-3 font-medium text-lia-text-primary dark:text-lia-text-primary text-xs uppercase tracking-wide select-none transition-colors",
         alignClass,
-        isDragging && !isFixed && "opacity-50 bg-gray-100 dark:bg-lia-bg-secondary",
-        isDragOver && !isFixed && "bg-gray-100 dark:bg-lia-bg-secondary border-l-2 border-gray-400",
-        isResizing && "bg-gray-100 dark:bg-lia-bg-secondary",
+        isDragging && !isFixed && "opacity-50 bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
+        isDragOver && !isFixed && "bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-l-2 border-lia-border-medium",
+        isResizing && "bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
         className
       )}
       style={{width: `${safeWidth}px`, 
@@ -108,12 +108,12 @@ export const ResizableTableHeader = React.memo(function ResizableTableHeader({
 
       {!isFixed && onResizeStart && (
         <div
-          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gray-400 transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100"
+          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-lia-border-medium transition-colors motion-reduce:transition-none opacity-0 group-hover:opacity-100"
           onMouseDown={onResizeStart}
           onClick={(e) => e.stopPropagation()}
           title="Arraste para redimensionar"
         >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-gray-300 hover:bg-gray-400 transition-colors motion-reduce:transition-none" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-lia-border-default hover:bg-lia-border-medium transition-colors motion-reduce:transition-none" />
         </div>
       )}
     </th>
@@ -128,7 +128,7 @@ ResizableTableHeader.displayName = 'ResizableTableHeader'
 
 export const TableHeaderRow = React.memo(function TableHeaderRow({ children, className }: TableHeaderRowProps) {
   return (
-    <thead className={cn("bg-white dark:bg-lia-bg-primary border-b border-lia-border-subtle dark:border-lia-border-subtle sticky top-0 z-10", className)}>
+    <thead className={cn("bg-lia-bg-primary border-b border-lia-border-subtle sticky top-0 z-10", className)}>
       <tr>{children}</tr>
     </thead>
   )

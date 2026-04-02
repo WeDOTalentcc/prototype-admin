@@ -45,7 +45,7 @@ export const ContextPill = React.memo(function ContextPill({
           variant="ghost"
           size="sm"
           onClick={onDismiss}
-          className="h-5 w-5 p-0 ml-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="h-5 w-5 p-0 ml-1 rounded-full hover:bg-lia-interactive-hover"
         >
           <X className="w-3 h-3" />
         </Button>

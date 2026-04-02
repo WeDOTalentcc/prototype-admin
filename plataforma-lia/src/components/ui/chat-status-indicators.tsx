@@ -21,9 +21,9 @@ export const ThinkingIndicator = ({ message }: { message?: string }) => {
 
   return (
     <div
-      className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle mb-3 animate-fade-in-up"
+      className="flex items-center gap-3 p-3 bg-lia-bg-tertiary rounded-md border border-lia-border-subtle mb-3 animate-fade-in-up"
     >
-      <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full">
+      <div className="flex items-center justify-center w-8 h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full">
         <Brain className="w-4 h-4 text-wedo-cyan animate-pulse motion-reduce:animate-none" />
       </div>
       <div className="flex-1">
@@ -57,7 +57,7 @@ export const ProgressSteps = ({ steps, currentStep }: {
 }) => {
   return (
     <div
-      className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-4 mb-3 border border-lia-border-subtle dark:border-lia-border-subtle animate-fade-in-up"
+      className="bg-lia-bg-tertiary rounded-md p-4 mb-3 border border-lia-border-subtle animate-fade-in-up"
     >
       <div className="space-y-3">
         {steps.map((step, index) => {
@@ -71,15 +71,15 @@ export const ProgressSteps = ({ steps, currentStep }: {
             <div
               key={step.id}
               className={`flex items-center gap-3 p-2 rounded-md transition-colors motion-reduce:transition-none ${
- isActive ? 'bg-gray-200 dark:bg-lia-bg-elevated' : ''
+ isActive ? 'bg-lia-interactive-active dark:bg-lia-bg-elevated' : ''
               }`}
               style={{animation: `fadeInRight 0.3s ease-out ${index * 0.1}s backwards`}}
             >
               <div className={`flex items-center justify-center w-6 h-6 rounded-full transition-colors motion-reduce:transition-none ${
- isCompleted ? 'bg-gray-700 text-white' :
-                isProcessing ? 'bg-gray-600 text-white' :
-                isError ? 'bg-gray-500 text-white dark:text-white' :
-                'bg-gray-300 text-lia-text-secondary dark:text-lia-text-secondary'
+ isCompleted ? 'bg-lia-text-secondary text-white' :
+                isProcessing ? 'bg-lia-text-secondary text-white' :
+                isError ? 'bg-lia-border-medium text-white' :
+                'bg-lia-border-default text-lia-text-secondary'
               }`}>
                 {isCompleted ? (
                   <CheckCircle className="w-4 h-4" />
@@ -101,7 +101,7 @@ export const ProgressSteps = ({ steps, currentStep }: {
                     {step.label}
                   </span>
                   {isProcessing && (
-                    <Badge variant="outline" className="text-xs bg-gray-200 text-lia-text-primary border-lia-border-default dark:bg-lia-bg-elevated dark:text-lia-text-primary dark:border-lia-border-default">
+                    <Badge variant="outline" className="text-xs bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary border-lia-border-default">
                       Em andamento
                     </Badge>
                   )}
@@ -132,13 +132,13 @@ export const CommandExecution = ({
 }) => {
   return (
     <div
-      className="bg-gray-100 dark:bg-lia-bg-secondary rounded-md p-3 mb-3 font-mono text-sm border border-lia-border-subtle dark:border-lia-border-subtle animate-scale-in-delayed"
+      className="bg-lia-bg-tertiary rounded-md p-3 mb-3 font-mono text-sm border border-lia-border-subtle animate-scale-in-delayed"
     >
       <div className="flex items-center gap-2 mb-2">
         <div className={`w-2 h-2 rounded-full ${
- status === "executing" ? 'bg-gray-500 animate-pulse motion-reduce:animate-none' :
-          status === "completed" ? 'bg-gray-700' :
-          'bg-gray-600'
+ status === "executing" ? 'bg-lia-border-medium animate-pulse motion-reduce:animate-none' :
+          status === "completed" ? 'bg-lia-text-secondary' :
+          'bg-lia-text-secondary'
         }`} />
         <span className="text-lia-text-primary dark:text-lia-text-primary text-xs">Executando comando:</span>
       </div>
@@ -175,9 +175,9 @@ export const FileCreationIndicator = ({
 }) => {
   return (
     <div
-      className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle mb-3 animate-fade-in-up"
+      className="flex items-center gap-3 p-3 bg-lia-bg-tertiary rounded-md border border-lia-border-subtle mb-3 animate-fade-in-up"
     >
-      <div className="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-lia-bg-elevated rounded-full" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="flex items-center justify-center w-8 h-8 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full" role="status" aria-live="polite" aria-label="Carregando...">
         {status === "creating" ? (
           <Loader2 className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary animate-spin motion-reduce:animate-none" />
         ) : (
@@ -230,7 +230,7 @@ export const CompletionMessage = ({
       className="space-y-3 animate-fade-in-up"
     >
       {/* Completion Message */}
-      <div className="flex items-start gap-3 p-4 bg-gray-100 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="flex items-start gap-3 p-4 bg-lia-bg-tertiary rounded-md border border-lia-border-subtle">
         <CheckCircle className="w-5 h-5 text-lia-text-primary dark:text-lia-text-primary mt-0.5" />
         <div className="flex-1">
           <p className="text-sm font-medium text-lia-text-primary">
@@ -240,7 +240,7 @@ export const CompletionMessage = ({
       </div>
 
       {/* Rating System */}
-      <div className="p-4 bg-gray-50 dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle">
+      <div className="p-4 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
         <p className="text-sm font-medium text-lia-text-primary mb-3" aria-live="polite" aria-atomic="true">
           Como você avalia este resultado?
         </p>
@@ -275,7 +275,7 @@ export const CompletionMessage = ({
                 <button
                   key={action.id}
                   onClick={() => onFollowUp?.(action.id)}
-                  className="w-full flex items-center gap-3 p-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors motion-reduce:transition-none group"
+                  className="w-full flex items-center gap-3 p-3 text-left hover:bg-lia-interactive-hover rounded-md transition-colors motion-reduce:transition-none group"
                 >
                   <Icon className="w-4 h-4 text-lia-text-secondary dark:text-lia-text-tertiary group-hover:text-lia-text-secondary dark:group-hover:text-lia-text-disabled" />
                   <span className="text-sm text-lia-text-primary dark:text-lia-text-primary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse">
@@ -308,7 +308,7 @@ export const ProgressiveDisclosure = ({
     <div className="mb-4">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 w-full p-3 bg-gray-100 dark:bg-lia-bg-elevated rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors motion-reduce:transition-none"
+        className="flex items-center gap-2 w-full p-3 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md hover:bg-lia-interactive-active transition-colors motion-reduce:transition-none"
       >
         <ChevronRight className={`w-4 h-4 transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-90' : ''}`} />
         <span className="text-sm font-medium text-lia-text-primary">

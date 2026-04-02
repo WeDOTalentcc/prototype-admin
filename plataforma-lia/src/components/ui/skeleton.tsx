@@ -7,7 +7,7 @@ const Skeleton = React.memo(function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("animate-pulse motion-reduce:animate-none rounded-md bg-gray-200 dark:bg-lia-bg-elevated", className)}
+      className={cn("animate-pulse motion-reduce:animate-none rounded-md bg-lia-interactive-active", className)}
       {...props}
     />
   )

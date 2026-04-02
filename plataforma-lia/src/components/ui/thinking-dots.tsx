@@ -12,10 +12,10 @@ interface ThinkingDotsProps {
  *
  * Usage:
  *   <ThinkingDots dotClassName="bg-chat-cyan" />           // LIA chat contexts
- *   <ThinkingDots dotClassName="bg-gray-400" />            // neutral contexts
- *   <ThinkingDots dotClassName="bg-gray-900 dark:bg-white" size="sm" /> // settings
+ *   <ThinkingDots dotClassName="bg-lia-text-tertiary" />    // neutral contexts
+ *   <ThinkingDots dotClassName="bg-lia-text-primary" size="sm" /> // settings
  */
-export function ThinkingDots({ dotClassName = "bg-gray-400", size = "md", className }: ThinkingDotsProps) {
+export function ThinkingDots({ dotClassName = "bg-lia-text-tertiary", size = "md", className }: ThinkingDotsProps) {
   const sizeClass = size === "sm" ? "w-1 h-1" : size === "lg" ? "w-2 h-2" : "w-1.5 h-1.5"
   return (
     <div className={cn("flex items-center gap-1", className)}>

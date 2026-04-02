@@ -118,7 +118,7 @@ const AlertDialogCancel = React.forwardRef<
     ref={ref}
     className={cn(
  buttonVariants({ variant: "outline" }),
-      "mt-2 sm:mt-0 dark:border-lia-border-default dark:text-lia-text-secondary dark:hover:bg-gray-700",
+      "mt-2 sm:mt-0 dark:border-lia-border-default dark:text-lia-text-secondary",
       className
     )}
     {...props}

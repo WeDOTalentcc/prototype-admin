@@ -36,8 +36,8 @@ export const ScoreIconButton = React.memo(function ScoreIconButton({
   const displayValue = formattedValue || (hasScore ? String(value) : null)
 
   const isLiaScore = LIA_SCORE_IDS.includes(id)
-  const activeColor = isLiaScore ? "var(--gray-950)" : "var(--gray-600)"
-  const inactiveColor = "var(--gray-400)"
+  const activeColor = isLiaScore ? "var(--lia-text-primary)" : "var(--lia-text-secondary)"
+  const inactiveColor = "var(--lia-border-medium)"
 
   const tooltipText = hasScore
     ? `${label}: ${displayValue}`

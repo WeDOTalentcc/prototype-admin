@@ -62,10 +62,10 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
       name: 'Neuroticismo',
       shortName: 'Neuroticismo',
       icon: Shield,
-      color: 'var(--gray-600)', // Azul royal
+      color: 'var(--lia-text-secondary)',
       colorName: 'gray',
-      bgColor: 'bg-gray-100 dark:bg-lia-bg-secondary',
-      barColor: 'bg-gray-700',
+      bgColor: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary',
+      barColor: 'bg-lia-text-secondary',
       description: 'Neuroticismo: tendência a sentir emoções negativas.',
       detailedDescription: 'Estabilidade emocional, resiliência ao estresse e capacidade de lidar com pressão.',
       traits: {
@@ -225,7 +225,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
                 </div>
 
                 {/* Barra ultra compacta */}
-                <div className="h-1.5 bg-gray-100 dark:bg-lia-bg-secondary rounded-full overflow-hidden">
+                <div className="h-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-full overflow-hidden">
                   <div
                     className="h-full transition-[width,height] duration-500 rounded-full"
                     style={{width: `${score}%`,
@@ -294,7 +294,7 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
                 </Badge>
               )}
               {scores.neuroticism < 30 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--lia-border-subtle)', color: 'var(--gray-600)'}}>
+                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4" style={{borderColor: 'var(--lia-border-subtle)', color: 'var(--lia-text-secondary)'}}>
                   Alta Pressão
                 </Badge>
               )}
