@@ -13,6 +13,12 @@ const ACCENT_BG_MAP: Record<string, string> = {
   "var(--wedo-cyan)": "var(--wedo-cyan-bg-10)",
 }
 
+function isComponentType(icon: unknown): icon is React.ElementType {
+  if (typeof icon === "function") return true
+  if (typeof icon === "object" && icon !== null && "$$typeof" in icon && "render" in icon) return true
+  return false
+}
+
 export interface MetricCardProps {
   title: string
   value: React.ReactNode
@@ -99,7 +105,7 @@ const MetricCard = memo(function MetricCard({
       <div className="p-3 rounded-md border bg-lia-bg-primary border-lia-border-subtle dark:border-lia-border-subtle">
         <div className="flex items-center gap-2 mb-1.5">
           <div style={accentColor ? { color: accentColor } : undefined}>
-            {typeof icon === "function" ? React.createElement(icon, { className: "w-4 h-4" }) : icon}
+            {isComponentType(icon) ? React.createElement(icon as React.ElementType, { className: "w-4 h-4" }) : icon}
           </div>
           <span className="text-xs text-lia-text-disabled">{title}</span>
         </div>
@@ -116,7 +122,7 @@ const MetricCard = memo(function MetricCard({
     : undefined
 
   const renderIcon = () => {
-    if (typeof icon === "function") {
+    if (isComponentType(icon)) {
       const Icon = icon as React.ElementType
       return <Icon className="w-4 h-4" style={accentColor ? { color: accentColor } : undefined} />
     }
