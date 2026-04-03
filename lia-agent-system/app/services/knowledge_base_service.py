@@ -353,6 +353,276 @@ O Fast Track permite criar uma nova vaga baseada em uma anterior.
             ),
             
             KnowledgeEntry(
+                id="module_pipeline",
+                category=KnowledgeCategory.SYSTEM,
+                keywords=["funil", "pipeline", "módulo", "etapas", "kanban", "triagem", "como funciona"],
+                question_patterns=[
+                    r"como funciona.*funil",
+                    r"como funciona.*pipeline",
+                    r"como funciona.*triagem",
+                    r"m[oó]dulo.*funil",
+                    r"m[oó]dulo.*pipeline",
+                    r"o que [eé].*funil",
+                    r"como usar.*funil",
+                    r"como usar.*pipeline",
+                    r"explica.*funil",
+                    r"explica.*pipeline",
+                ],
+                answer="""📋 **Módulo Funil de Talentos:**
+
+O Funil de Talentos centraliza toda a gestão de candidatos em processo seletivo.
+
+**Funcionalidades principais:**
+- **Kanban visual** — Arraste candidatos entre etapas (Triagem → Entrevista → Proposta → Contratado)
+- **Triagem automática WSI** — A LIA avalia CVs e gera pontuação 0-100
+- **Pipeline analytics** — Identifique gargalos e candidatos em risco
+- **Ações em lote** — Mova, reprove ou comunique múltiplos candidatos de uma vez
+- **Atualização de cadastro** — Edite campos do candidato diretamente pelo chat
+
+**Etapas padrão:**
+Novo → Triagem → Entrevista RH → Entrevista Técnica → Proposta → Contratado / Reprovado
+
+💡 *Diga "mover [candidato] para [etapa]" e eu faço direto pelo chat!*""",
+                follow_up_suggestions=[
+                    "Como mover um candidato de etapa?",
+                    "Como iniciar a triagem automática?",
+                    "Como ver candidatos em risco?",
+                ]
+            ),
+
+            KnowledgeEntry(
+                id="module_sourcing",
+                category=KnowledgeCategory.SYSTEM,
+                keywords=["sourcing", "busca", "candidatos", "módulo", "talent pool", "como funciona"],
+                question_patterns=[
+                    r"como funciona.*sourcing",
+                    r"m[oó]dulo.*sourcing",
+                    r"o que [eé].*sourcing",
+                    r"como usar.*sourcing",
+                    r"como buscar candidatos",
+                    r"talent pool",
+                    r"busca booleana",
+                ],
+                answer="""🔍 **Módulo Sourcing:**
+
+O Sourcing permite encontrar e atrair candidatos qualificados com inteligência artificial.
+
+**Funcionalidades:**
+- **Busca semântica** — Encontre talentos por habilidades, experiência e perfil
+- **Boolean Search** — Crie strings avançadas para busca precisa
+- **Talent Pool** — Banco de talentos da empresa e candidatos históricos
+- **Ranking automático** — A LIA prioriza os candidatos mais aderentes
+- **Shortlist** — Salve os melhores perfis para análise posterior
+- **Abordagem inteligente** — Gere mensagens personalizadas de contato
+
+**Como usar:**
+1. Diga "buscar candidatos para [vaga]"
+2. A LIA sugere critérios de busca com base nos requisitos
+3. Revise e refine os resultados
+4. Adicione os melhores ao shortlist
+
+💡 *Posso buscar candidatos no pool da empresa ou sugerir fontes externas!*""",
+                follow_up_suggestions=[
+                    "Buscar candidatos para minha vaga",
+                    "Como usar o talent pool?",
+                    "Gerar string booleana para [cargo]",
+                ]
+            ),
+
+            KnowledgeEntry(
+                id="module_tasks",
+                category=KnowledgeCategory.SYSTEM,
+                keywords=["tarefas", "lembretes", "painel", "módulo", "to do", "pendências", "como funciona"],
+                question_patterns=[
+                    r"como funciona.*tarefa",
+                    r"como funciona.*lembrete",
+                    r"m[oó]dulo.*tarefa",
+                    r"m[oó]dulo.*painel",
+                    r"o que [eé].*painel de controle",
+                    r"como criar tarefa",
+                    r"como criar lembrete",
+                ],
+                answer="""✅ **Módulo Tarefas & Lembretes:**
+
+Gerencie suas atividades de recrutamento diretamente pelo chat da LIA.
+
+**O que você pode fazer:**
+- **Criar tarefas** — "cria uma tarefa: ligar para o gestor da vaga de Dev"
+- **Criar lembretes** — "me lembra de ligar para Maria amanhã às 10h"
+- **Vincular candidatos/vagas** — A tarefa fica ligada ao contexto relevante
+- **Prazo (due date)** — Defina quando a tarefa deve ser concluída
+- **Resumo do dia** — "qual minha agenda de hoje?" lista tudo consolidado
+
+**Como usar pelo chat:**
+- "me lembra de [ação] [quando]"
+- "cria uma tarefa: [título]"
+- "quais minhas tarefas pendentes?"
+- "resumo do meu dia"
+
+💡 *Digo tudo isso direto aqui no chat e salvo automaticamente!*""",
+                follow_up_suggestions=[
+                    "Criar um lembrete para hoje",
+                    "Quais minhas tarefas pendentes?",
+                    "Ver minha agenda de hoje",
+                ]
+            ),
+
+            KnowledgeEntry(
+                id="module_calendar",
+                category=KnowledgeCategory.SYSTEM,
+                keywords=["calendário", "agenda", "compromisso", "reunião", "módulo", "como funciona"],
+                question_patterns=[
+                    r"como funciona.*calend[aá]rio",
+                    r"m[oó]dulo.*calend[aá]rio",
+                    r"como criar.*compromisso",
+                    r"como agendar.*reuni[aã]o",
+                    r"integra[çc][aã]o.*calend[aá]rio",
+                    r"como funciona.*agenda",
+                ],
+                answer="""📅 **Calendário & Compromissos:**
+
+A LIA integra com seu calendário (Microsoft Outlook/Google Calendar) para gestão completa de agenda.
+
+**Funcionalidades:**
+- **Agendar entrevistas** — Integração automática com Teams/Meet
+- **Compromissos genéricos** — Crie reuniões, alinhamentos e calls sem vincular candidato
+- **Verificar disponibilidade** — A LIA consulta slots livres do entrevistador
+- **Resumo diário** — Veja entrevistas + compromissos do dia em uma resposta
+- **Reagendamento** — Cancele ou mude horários direto pelo chat
+
+**Como usar:**
+- "agendar entrevista com [candidato] [data/hora]"
+- "cria um compromisso: alinhamento com gestor amanhã 14h"
+- "resumo da minha agenda de hoje"
+
+⚙️ *Requer integração com Microsoft 365 ou Google Workspace configurada!*""",
+                follow_up_suggestions=[
+                    "Como configurar integração com calendário?",
+                    "Agendar entrevista para amanhã",
+                    "Ver minha agenda de hoje",
+                ]
+            ),
+
+            KnowledgeEntry(
+                id="module_notes",
+                category=KnowledgeCategory.SYSTEM,
+                keywords=["nota", "anotação", "anotar", "registrar", "módulo", "como funciona"],
+                question_patterns=[
+                    r"como funciona.*nota",
+                    r"como.*anotar",
+                    r"como salvar.*nota",
+                    r"como registrar.*observa[çc][aã]o",
+                    r"criar.*nota",
+                ],
+                answer="""📝 **Notas & Observações:**
+
+Registre informações importantes sobre candidatos e vagas diretamente pelo chat.
+
+**Como usar:**
+- "anota que o gestor quer candidatos com inglês fluente na vaga X"
+- "salva uma nota sobre a Maria: excelente comunicação, avançar"
+- "registra: candidato pediu salário acima da faixa"
+
+**Vinculação automática:**
+- Se mencionar um candidato → nota fica vinculada ao candidato
+- Se mencionar uma vaga → nota fica vinculada à vaga
+- Sem contexto → nota geral do recrutador
+
+**Acesso às notas:**
+- No perfil do candidato (aba Notas)
+- Na página da vaga
+- Pelo Painel de Controle
+
+💡 *Basta dizer "anota que..." e eu salvo automaticamente!*""",
+                follow_up_suggestions=[
+                    "Anotar observação sobre candidato",
+                    "Ver notas de um candidato",
+                    "Anotar preferência do gestor para a vaga",
+                ]
+            ),
+
+            KnowledgeEntry(
+                id="module_upload_cv",
+                category=KnowledgeCategory.SYSTEM,
+                keywords=["upload", "cv", "currículo", "arquivo", "enviar arquivo", "importar cv", "analisar arquivo"],
+                question_patterns=[
+                    r"como enviar.*arquivo",
+                    r"como.*upload",
+                    r"como importar.*cv",
+                    r"como analisar.*arquivo",
+                    r"enviar cv pelo chat",
+                    r"como usar.*upload",
+                ],
+                answer="""📎 **Upload de Arquivo / CV pelo Chat:**
+
+Você pode enviar arquivos (CV, planilhas) diretamente no chat flutuante da LIA.
+
+**Como funciona:**
+1. Clique no ícone de anexo (📎) no chat
+2. Selecione o arquivo (PDF, DOCX, XLS, XLSX — até 10MB)
+3. A LIA extrai automaticamente os dados do documento
+4. Para CVs: a LIA apresenta os campos encontrados (nome, email, cargo, skills, etc.)
+5. Confirme para preencher/atualizar o cadastro do candidato automaticamente
+
+**Dados extraídos de CVs:**
+- Informações de contato (email, telefone, LinkedIn)
+- Cargo atual e empresa
+- Histórico profissional e formação
+- Skills técnicas e comportamentais
+- Idiomas
+
+**Formatos suportados:** PDF, DOC, DOCX, TXT, XLS, XLSX
+
+💡 *Arraste e solte o arquivo no chat ou use o botão de anexo!*""",
+                follow_up_suggestions=[
+                    "Enviar CV de um candidato",
+                    "Atualizar cadastro do candidato",
+                    "Extrair dados de planilha",
+                ]
+            ),
+
+            KnowledgeEntry(
+                id="daily_agenda_summary",
+                category=KnowledgeCategory.PROCESS,
+                keywords=["agenda", "resumo diário", "agenda do dia", "compromissos de hoje", "tarefas de hoje",
+                          "o que tenho hoje", "minha agenda", "resumo", "entrevistas de hoje", "dia"],
+                question_patterns=[
+                    r"(o que|quais?|me mostre?|veja?)\s+(tenho|tem|são|estão).{0,30}(hoje|amanhã|essa semana)",
+                    r"(minha|meus?)\s+(agenda|compromissos?|tarefas?|entrevistas?)",
+                    r"(resumo|sumário)\s+(do\s+dia|diário|de hoje)",
+                    r"(agenda|entrevistas?|compromissos?)\s+(de\s+)?(hoje|amanhã|esta semana|essa semana)",
+                    r"(o que|quem)\s+(tenho|tenho que|preciso)\s+(fazer|entrevistar|atender)\s+(hoje|amanhã)",
+                ],
+                answer="""📅 **Resumo Diário — Como funciona:**
+
+Peça à LIA um resumo consolidado do seu dia diretamente no chat:
+
+**Exemplos de perguntas:**
+- "O que tenho hoje?"
+- "Quais entrevistas tenho amanhã?"
+- "Resumo do dia"
+- "Minha agenda desta semana"
+
+**O resumo inclui:**
+1. 📋 **Entrevistas agendadas** — candidatos, horários e vagas
+2. ✅ **Tarefas pendentes** — prazos e prioridades
+3. 📌 **Compromissos e reuniões** — eventos genéricos do calendário
+4. 🔔 **Lembretes ativos** — avisos e pendências
+
+**Criar itens de agenda pelo chat:**
+- `"Cria uma tarefa para revisar os CVs amanhã"`
+- `"Adiciona um lembrete de ligar para o gestor na sexta"`
+- `"Agenda um compromisso com o time de produto amanhã"`
+
+💡 *A LIA cruza dados de entrevistas, tarefas e eventos para dar uma visão consolidada do seu dia!*""",
+                follow_up_suggestions=[
+                    "Quais entrevistas tenho hoje?",
+                    "Criar tarefa para amanhã",
+                    "Ver minhas tarefas pendentes",
+                ]
+            ),
+
+            KnowledgeEntry(
                 id="lgpd_compliance",
                 category=KnowledgeCategory.LEGAL,
                 keywords=["lgpd", "privacidade", "dados", "compliance"],

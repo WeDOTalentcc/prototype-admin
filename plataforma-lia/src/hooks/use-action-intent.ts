@@ -15,7 +15,7 @@
 
 import { useCallback } from "react"
 
-export type ActionType = "wizard" | "wsi" | "analytics" | "communication" | "ats_integration" | null
+export type ActionType = "wizard" | "wsi" | "analytics" | "communication" | "ats_integration" | "task_reminder" | "note" | "calendar" | "candidate_field" | null
 
 export interface ActionIntentResult {
   actionType: ActionType
@@ -68,6 +68,38 @@ const ATS_KEYWORDS = [
   "exportar para ats", "integração ats", "gupy", "pandapé", "pandape",
   "merge ats", "conectar ats", "atualizar ats", "sync ats",
   "candidatos do ats", "vagas do ats",
+]
+
+const TASK_REMINDER_KEYWORDS = [
+  "me lembra", "me avisa", "lembrete", "criar lembrete", "cria um lembrete",
+  "criar tarefa", "cria uma tarefa", "nova tarefa", "adicionar tarefa",
+  "to do", "to-do", "lista de tarefas", "tarefa para",
+  "me lembra de", "não esquece", "não me deixa esquecer",
+]
+
+const NOTE_KEYWORDS = [
+  "anota", "anotar", "anote", "salva uma nota", "registra", "cria uma nota",
+  "nota sobre", "nota para", "anotação", "salvar observação",
+  "registrar observação", "observação sobre", "adicionar nota",
+  "quero registrar", "quero anotar",
+]
+
+const CALENDAR_KEYWORDS = [
+  "criar compromisso", "novo compromisso", "agendar reunião", "agendar call",
+  "agendar alinhamento", "criar evento", "compromisso no calendário",
+  "reunião no calendário", "marcar reunião", "nova reunião",
+  "minha agenda", "agenda de hoje", "resumo da agenda", "o que tenho hoje",
+  "compromissos de hoje",
+]
+
+const CANDIDATE_FIELD_KEYWORDS = [
+  "atualiza o email", "atualiza o telefone", "atualiza o celular",
+  "atualiza o linkedin", "atualiza o cargo", "atualiza a empresa",
+  "atualiza a cidade", "atualiza o estado", "atualiza o salário",
+  "muda o email", "muda o telefone", "muda o celular",
+  "muda o linkedin", "muda o cargo", "muda a empresa",
+  "troca o email", "troca o telefone", "troca o celular",
+  "atualizar campo", "atualizar cadastro do candidato",
 ]
 
 // ─── Scoring ──────────────────────────────────────────────────────────────────
@@ -124,6 +156,30 @@ function detectActionType(message: string): ActionIntentResult {
       confidence: 0,
       label: "Modo: Integração ATS",
     },
+    {
+      actionType: "task_reminder",
+      score: scoreKeywords(message, TASK_REMINDER_KEYWORDS),
+      confidence: 0,
+      label: "Modo: Tarefas & Lembretes",
+    },
+    {
+      actionType: "note",
+      score: scoreKeywords(message, NOTE_KEYWORDS),
+      confidence: 0,
+      label: "Modo: Anotações",
+    },
+    {
+      actionType: "calendar",
+      score: scoreKeywords(message, CALENDAR_KEYWORDS),
+      confidence: 0,
+      label: "Modo: Agenda & Compromissos",
+    },
+    {
+      actionType: "candidate_field",
+      score: scoreKeywords(message, CANDIDATE_FIELD_KEYWORDS),
+      confidence: 0,
+      label: "Modo: Atualizar Candidato",
+    },
   ]
 
   // Calcular confidence para cada candidato
@@ -162,11 +218,15 @@ export function useActionIntent(): UseActionIntentResult {
 /** Mapeia ActionType para o domain string que o WebSocket backend espera. */
 export function actionTypeToDomain(actionType: ActionType): string {
   switch (actionType) {
-    case "wizard":        return "wizard"
-    case "wsi":           return "talent"          // WSI usa o TalentReActAgent
-    case "analytics":     return "analytics"
-    case "communication": return "communication"
+    case "wizard":          return "wizard"
+    case "wsi":             return "talent"
+    case "analytics":       return "analytics"
+    case "communication":   return "communication"
     case "ats_integration": return "ats_integration"
-    default:              return "general"
+    case "task_reminder":   return "task_planning"
+    case "note":            return "task_planning"
+    case "calendar":        return "interview_scheduling"
+    case "candidate_field": return "pipeline_action"
+    default:                return "general"
   }
 }

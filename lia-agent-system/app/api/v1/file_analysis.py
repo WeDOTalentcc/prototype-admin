@@ -22,6 +22,7 @@ class FileAnalysisResponse(BaseModel):
     keywords: List[str] = []
     summary: Optional[str] = None
     entities: Optional[dict] = None
+    candidate_id: Optional[str] = None
     error: Optional[str] = None
 
 
@@ -65,17 +66,56 @@ async def analyze_file(file: UploadFile = File(...)):
                         seen.add(k.lower())
                         unique_keywords.append(k)
                 
+                # Extract candidate_id if already in DB
+                candidate_id_found = getattr(parsed, 'candidate_id', None)
+
+                # Parse location into city/state if available
+                location_city = None
+                location_state = None
+                if parsed.location:
+                    parts = [p.strip() for p in str(parsed.location).split(",")]
+                    if len(parts) >= 2:
+                        location_city = parts[0]
+                        location_state = parts[1]
+                    else:
+                        location_city = parts[0]
+
+                # Derive education_level from education list
+                education_level = None
+                if parsed.education:
+                    edu = parsed.education[0]
+                    education_level = getattr(edu, 'degree', None) or getattr(edu, 'level', None)
+
+                # Derive current_company from most recent experience
+                current_company = None
+                if parsed.experiences:
+                    current_company = getattr(parsed.experiences[0], 'company', None)
+
                 entities = {
+                    # Contact/profile fields mapped to frontend expected keys
+                    "email": parsed.email,
+                    "phone": parsed.phone,
+                    "current_title": parsed.current_title,
+                    "current_company": current_company,
+                    "location_city": location_city,
+                    "location_state": location_state,
+                    "linkedin_url": parsed.linkedin,
+                    "education_level": education_level,
+                    "languages": ", ".join(parsed.languages) if parsed.languages else None,
+                    # Legacy fields kept for backward compat
                     "skills": parsed.skills or [],
                     "job_titles": [parsed.current_title] if parsed.current_title else [],
                     "companies": [exp.company for exp in (parsed.experiences or []) if hasattr(exp, 'company') and exp.company][:5],
                     "locations": [parsed.location] if parsed.location else [],
-                    "experience_years": parsed.years_of_experience,
+                    "experience_years": getattr(parsed, 'years_of_experience', None),
                 }
+                # Remove None values so frontend hasFields check works correctly
+                entities = {k: v for k, v in entities.items() if v is not None and v != [] and v != ""}
                 
+                years_exp = getattr(parsed, 'years_of_experience', None)
                 summary = f"Documento analisado: {parsed.current_title or 'Profissional'}"
-                if parsed.years_of_experience:
-                    summary += f" com {parsed.years_of_experience} anos de experiência"
+                if years_exp:
+                    summary += f" com {years_exp} anos de experiência"
                 if parsed.location:
                     summary += f" em {parsed.location}"
                 
@@ -86,6 +126,7 @@ async def analyze_file(file: UploadFile = File(...)):
                     keywords=unique_keywords[:15],
                     summary=summary,
                     entities=entities,
+                    candidate_id=candidate_id_found,
                 )
         
         elif filename.endswith('.txt'):

@@ -454,108 +454,64 @@ async def create_and_screen_candidate(
 
 def register_cv_upload_tools() -> None:
     """Register CV upload tools with the global tool registry."""
-    from app.tools.registry import tool_registry
+    from app.tools.registry import tool_registry, ToolDefinition
 
-    tool_registry.register(
+    tool_registry.register(ToolDefinition(
         name="parse_and_create_candidate",
-        func=parse_and_create_candidate,
+        handler=parse_and_create_candidate,
         description=(
             "Parseia texto de um CV com IA e cria um registro de Candidato no banco de dados. "
             "Retorna candidate_id para uso em fluxos subsequentes."
         ),
-        parameters={
-            "cv_text": {
-                "type": "string",
-                "description": "Texto completo do currículo",
-                "required": True,
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "cv_text": {"type": "string", "description": "Texto completo do currículo"},
+                "vacancy_title": {"type": "string", "description": "Título da vaga de interesse (opcional)"},
+                "vacancy_id": {"type": "string", "description": "UUID da vaga de interesse (opcional)"},
+                "source": {"type": "string", "description": "Origem do candidato", "default": "cv_upload"},
             },
-            "vacancy_title": {
-                "type": "string",
-                "description": "Título da vaga de interesse (opcional)",
-                "required": False,
-            },
-            "vacancy_id": {
-                "type": "string",
-                "description": "UUID da vaga de interesse (opcional)",
-                "required": False,
-            },
-            "source": {
-                "type": "string",
-                "description": "Origem do candidato (cv_upload, referral, etc.)",
-                "default": "cv_upload",
-                "required": False,
-            },
+            "required": ["cv_text"],
         },
-    )
+    ))
 
-    tool_registry.register(
+    tool_registry.register(ToolDefinition(
         name="add_to_vacancy",
-        func=add_to_vacancy,
+        handler=add_to_vacancy,
         description=(
             "Adiciona um candidato existente ao pipeline de uma vaga. "
             "Resolve a vaga por ID ou por título. Retorna vacancy_candidate_id."
         ),
-        parameters={
-            "candidate_id": {
-                "type": "string",
-                "description": "UUID do candidato",
-                "required": True,
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "candidate_id": {"type": "string", "description": "UUID do candidato"},
+                "vacancy_id": {"type": "string", "description": "UUID da vaga"},
+                "vacancy_title": {"type": "string", "description": "Título da vaga (busca por nome)"},
+                "initial_stage": {"type": "string", "description": "Etapa inicial do candidato na vaga", "default": "Triagem"},
             },
-            "vacancy_id": {
-                "type": "string",
-                "description": "UUID da vaga",
-                "required": False,
-            },
-            "vacancy_title": {
-                "type": "string",
-                "description": "Título da vaga (busca por nome)",
-                "required": False,
-            },
-            "initial_stage": {
-                "type": "string",
-                "description": "Etapa inicial do candidato na vaga",
-                "default": "Triagem",
-                "required": False,
-            },
+            "required": ["candidate_id"],
         },
-    )
+    ))
 
-    tool_registry.register(
+    tool_registry.register(ToolDefinition(
         name="create_and_screen_candidate",
-        func=create_and_screen_candidate,
+        handler=create_and_screen_candidate,
         description=(
             "Fluxo completo de CV: parseia texto → cria Candidato → adiciona à vaga → "
             "avalia com BARS → (opcionalmente) dispara triagem WSI."
         ),
-        parameters={
-            "cv_text": {
-                "type": "string",
-                "description": "Texto completo do currículo",
-                "required": True,
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "cv_text": {"type": "string", "description": "Texto completo do currículo"},
+                "vacancy_title": {"type": "string", "description": "Título da vaga"},
+                "vacancy_id": {"type": "string", "description": "UUID da vaga"},
+                "run_bars": {"type": "boolean", "description": "Se deve rodar avaliação BARS", "default": True},
+                "run_wsi": {"type": "boolean", "description": "Se deve disparar triagem WSI", "default": False},
             },
-            "vacancy_title": {
-                "type": "string",
-                "description": "Título da vaga",
-                "required": False,
-            },
-            "vacancy_id": {
-                "type": "string",
-                "description": "UUID da vaga",
-                "required": False,
-            },
-            "run_bars": {
-                "type": "boolean",
-                "description": "Se deve rodar avaliação BARS",
-                "default": True,
-                "required": False,
-            },
-            "run_wsi": {
-                "type": "boolean",
-                "description": "Se deve disparar triagem WSI",
-                "default": False,
-                "required": False,
-            },
+            "required": ["cv_text"],
         },
-    )
+    ))
 
     logger.info("✅ CV upload tools registered: parse_and_create_candidate, add_to_vacancy, create_and_screen_candidate")

@@ -327,6 +327,41 @@ class BriefingService:
         except Exception as e:
             logger.warning(f"Error fetching scheduled tasks: {e}")
         
+        try:
+            from sqlalchemy import text as sql_text
+            events_result = await db.execute(
+                sql_text("""
+                    SELECT id, title, description, location, start_time, duration_minutes
+                    FROM calendar_events
+                    WHERE organizer_id = CAST(:uid AS uuid)
+                      AND event_type = 'generic'
+                      AND start_time >= :today_start
+                      AND start_time <= :today_end
+                    ORDER BY start_time ASC
+                    LIMIT 20
+                """),
+                {
+                    "uid": user_id,
+                    "today_start": today_start,
+                    "today_end": today_end,
+                },
+            )
+            for row in events_result.fetchall():
+                start_dt = row[4]
+                schedule.append({
+                    "id": str(row[0]),
+                    "type": "commitment",
+                    "title": row[1] or "Compromisso",
+                    "description": row[2],
+                    "time": start_dt.strftime("%H:%M") if start_dt else None,
+                    "datetime": start_dt.isoformat() if start_dt else None,
+                    "duration_minutes": row[5] or 60,
+                    "location": row[3] or "",
+                    "action_label": "Ver Compromisso",
+                })
+        except Exception as e:
+            logger.warning(f"Error fetching calendar events for briefing: {e}")
+
         schedule.sort(key=lambda x: x.get("datetime") or "")
         
         return schedule

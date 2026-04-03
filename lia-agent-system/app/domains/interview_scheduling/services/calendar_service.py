@@ -419,5 +419,70 @@ class CalendarService:
         return updated_event
 
 
+    async def create_generic_event(
+        self,
+        title: str,
+        start_time: str,
+        organizer_id: str,
+        description: str = "",
+        location: str = "",
+        duration_minutes: int = 60,
+    ) -> Dict[str, Any]:
+        """
+        Persist a generic calendar commitment (non-interview) to calendar_events table.
+        Returns the created event data or raises on failure.
+        """
+        import uuid as uuid_mod
+        from datetime import datetime
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+
+        event_id = str(uuid_mod.uuid4())
+
+        start_dt = None
+        if start_time:
+            try:
+                from app.orchestrator.action_executor import _resolve_ptbr_datetime
+                resolved = _resolve_ptbr_datetime(start_time)
+                start_dt = resolved.isoformat() if resolved else start_time
+            except Exception:
+                try:
+                    from dateutil import parser as dt_parser
+                    start_dt = dt_parser.parse(start_time, dayfirst=True).isoformat()
+                except Exception:
+                    start_dt = start_time
+
+        async with AsyncSessionLocal() as db:
+            await db.execute(
+                text("""
+                    INSERT INTO calendar_events
+                        (id, title, description, location, start_time,
+                         duration_minutes, organizer_id, event_type, created_at, updated_at)
+                    VALUES
+                        (:id, :title, :description, :location, :start_time,
+                         :duration, CAST(:organizer_id AS uuid), 'generic', NOW(), NOW())
+                """),
+                {
+                    "id": event_id,
+                    "title": title,
+                    "description": description,
+                    "location": location,
+                    "start_time": start_dt,
+                    "duration": duration_minutes,
+                    "organizer_id": organizer_id,
+                },
+            )
+            await db.commit()
+
+        return {
+            "event_id": event_id,
+            "title": title,
+            "datetime": start_dt or start_time,
+            "location": location,
+            "duration_minutes": duration_minutes,
+            "created_at": datetime.utcnow().isoformat(),
+        }
+
+
 # Global calendar service instance
 calendar_service = CalendarService()

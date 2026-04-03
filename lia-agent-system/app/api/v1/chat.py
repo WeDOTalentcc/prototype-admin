@@ -1243,3 +1243,107 @@ async def stream_message(
             "Connection": "keep-alive",
         },
     )
+
+
+@router.post("/actions/candidate-field-update")
+async def direct_candidate_field_update(
+    request: Request,
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Structured endpoint to update one or more candidate fields directly.
+    Used by the CV upload closed-loop confirmation flow to avoid
+    reconstructing actions from natural language text.
+    """
+    body = await request.json()
+    candidate_id: str = body.get("candidate_id", "")
+    candidate_name: str = body.get("candidate_name", "").strip()
+    fields: dict = body.get("fields", {})
+
+    if not fields:
+        raise HTTPException(status_code=400, detail="fields are required")
+
+    # Resolve candidate_id by name if not provided directly
+    if not candidate_id and candidate_name:
+        try:
+            name_result = await db.execute(
+                text("SELECT id FROM candidates WHERE LOWER(name) LIKE LOWER(:name) LIMIT 1"),
+                {"name": f"%{candidate_name}%"},
+            )
+            row = name_result.fetchone()
+            if row:
+                candidate_id = str(row[0])
+            else:
+                raise HTTPException(status_code=404, detail=f"Candidato '{candidate_name}' não encontrado.")
+        except HTTPException:
+            raise
+        except Exception as lookup_err:
+            logger.warning(f"Candidate name lookup failed: {lookup_err}")
+            raise HTTPException(status_code=400, detail="Não foi possível localizar o candidato pelo nome.")
+
+    if not candidate_id:
+        raise HTTPException(status_code=400, detail="candidate_id or candidate_name is required")
+
+    intent_key = "atualizar_campo_candidato"
+    action_config = ACTIONABLE_INTENTS.get(intent_key)
+    if not action_config:
+        raise HTTPException(status_code=500, detail="Action config not found for atualizar_campo_candidato")
+
+    company_id = getattr(current_user, "company_id", None)
+
+    # Authorization: verify the candidate belongs to the requester's company.
+    # Uses vacancy_candidates join table which has both company_id and candidate_id.
+    # If the user has no company_id (e.g. demo mode), skip the check and allow update.
+    if company_id:
+        try:
+            ownership_result = await db.execute(
+                text("SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"),
+                {"cid": candidate_id, "co": str(company_id)},
+            )
+            if ownership_result.fetchone() is None:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Candidate does not belong to your company or does not exist.",
+                )
+        except HTTPException:
+            raise
+        except Exception as authz_err:
+            logger.warning(f"Authz check failed, proceeding cautiously: {authz_err}")
+            # If vacancy_candidates table doesn't exist or query fails, reject
+            raise HTTPException(status_code=403, detail="Unable to verify candidate ownership.")
+
+    ctx = {
+        "user_id": str(current_user.id),
+        "company_id": company_id,
+        "tenant_id": str(company_id or "default"),
+    }
+
+    results = []
+    for field_name, field_value in fields.items():
+        result: ActionResult = await action_executor._execute_action(
+            intent=intent_key,
+            config=action_config,
+            params={
+                "candidate_id": candidate_id,
+                "field_name": field_name,
+                "field_value": str(field_value),
+            },
+            context=ctx,
+        )
+        results.append({
+            "field": field_name,
+            "value": field_value,
+            "status": result.status,
+            "message": result.message,
+            "error": getattr(result, "error_detail", None),
+        })
+
+    all_ok = all(r["status"] in ("executed", "success") for r in results)
+    updated_count = sum(1 for r in results if r["status"] in ("executed", "success"))
+    return {
+        "success": all_ok,
+        "updated_count": updated_count,
+        "total": len(results),
+        "results": results,
+    }

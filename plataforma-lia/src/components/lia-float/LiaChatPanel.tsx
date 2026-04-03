@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
-import { Brain, X, Maximize2, Loader2, Send, ArrowRight, Plus, Eraser, History, Clock, User, Paperclip, FileText, XCircle } from "lucide-react"
+import { Brain, X, Maximize2, Loader2, Send, ArrowRight, Plus, Eraser, History, Clock, User, Paperclip, FileText, XCircle, CheckCircle2, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useNavigationIntent } from "@/hooks/use-navigation-intent"
@@ -74,8 +74,13 @@ export function LiaChatPanel() {
   const [inputText, setInputText] = useState("")
   const [showHistory, setShowHistory] = useState(false)
   const [recentChats, setRecentChats] = useState<Array<{ id: string; title: string; timestamp: number }>>([])
+  const [isUploadingFile, setIsUploadingFile] = useState(false)
+  const [uploadedFileInfo, setUploadedFileInfo] = useState<{ name: string; fields: Record<string, string>; candidateId?: string } | null>(null)
+  const [pendingCvFields, setPendingCvFields] = useState<Record<string, string> | null>(null)
+  const [awaitingCandidateName, setAwaitingCandidateName] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const wsSessionId = conversationId ?? "float-pending"
 
@@ -165,6 +170,130 @@ export function LiaChatPanel() {
       timestamp: formatMessageTime(),
     })
 
+    // CV upload closed-loop: candidate name resolution phase (after user confirms with no candidate_id)
+    if (awaitingCandidateName && pendingCvFields && Object.keys(pendingCvFields).length > 0) {
+      const normalized = text.toLowerCase().trim()
+      const isCancel = /^(não|nao|no|cancelar|cancela|n)/.test(normalized)
+      if (isCancel) {
+        setAwaitingCandidateName(false)
+        setPendingCvFields(null)
+        setUploadedFileInfo(null)
+        addMessage({
+          id: `lia-cv-cancel-${Date.now()}`,
+          sender: "lia",
+          content: "Ok, atualização cancelada. Como posso te ajudar?",
+          timestamp: formatMessageTime(),
+        })
+        return
+      }
+      // Treat any non-cancel message as the candidate name — search and update
+      const candidateName = text.trim()
+      const fieldsToUpdate = { ...pendingCvFields }
+      const updates = Object.entries(fieldsToUpdate)
+      setAwaitingCandidateName(false)
+      setPendingCvFields(null)
+      addMessage({
+        id: `lia-cv-name-${Date.now()}`,
+        sender: "lia",
+        content: `Procurando "${candidateName}" e atualizando ${updates.length} campo(s)...`,
+        timestamp: formatMessageTime(),
+      })
+      try {
+        const resp = await fetch("/api/backend-proxy/chat/actions/candidate-field-update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ candidate_name: candidateName, fields: fieldsToUpdate }),
+        })
+        const data = await resp.json()
+        const count = data.updated_count ?? 0
+        addMessage({
+          id: `lia-cv-done-${Date.now()}`,
+          sender: "lia",
+          content: data.success
+            ? `${count} campo(s) atualizados para "${candidateName}" com sucesso!`
+            : data.error || `Não foi possível encontrar ou atualizar o candidato "${candidateName}".`,
+          timestamp: formatMessageTime(),
+        })
+      } catch {
+        addMessage({
+          id: `lia-cv-err-${Date.now()}`,
+          sender: "lia",
+          content: "Não foi possível atualizar os campos. Tente novamente.",
+          timestamp: formatMessageTime(),
+        })
+      }
+      return
+    }
+
+    if (pendingCvFields && Object.keys(pendingCvFields).length > 0) {
+      const normalized = text.toLowerCase().trim()
+      const isConfirm = /^(sim|yes|confirma|confirmar|ok|s|yep|claro|pode)/.test(normalized)
+      const isReject = /^(não|nao|no|cancelar|cancela|n)/.test(normalized)
+
+      if (isConfirm) {
+        const candidateId = uploadedFileInfo?.candidateId
+        const fieldsToUpdate = { ...pendingCvFields }
+
+        if (candidateId) {
+          setPendingCvFields(null)
+          // Use structured endpoint — candidate_id passed explicitly, not reconstructed from text
+          const updates = Object.entries(fieldsToUpdate)
+          addMessage({
+            id: `lia-cv-confirm-${Date.now()}`,
+            sender: "lia",
+            content: `Perfeito! Atualizando ${updates.length} campo(s) do candidato...`,
+            timestamp: formatMessageTime(),
+          })
+          try {
+            const resp = await fetch("/api/backend-proxy/chat/actions/candidate-field-update", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ candidate_id: candidateId, fields: fieldsToUpdate }),
+            })
+            const data = await resp.json()
+            const count = data.updated_count ?? updates.length
+            addMessage({
+              id: `lia-cv-done-${Date.now()}`,
+              sender: "lia",
+              content: data.success
+                ? `${count} campo(s) atualizados com sucesso!`
+                : `Alguns campos não puderam ser atualizados (${count}/${updates.length}).`,
+              timestamp: formatMessageTime(),
+            })
+          } catch {
+            addMessage({
+              id: `lia-cv-err-${Date.now()}`,
+              sender: "lia",
+              content: "Não foi possível atualizar os campos. Tente novamente.",
+              timestamp: formatMessageTime(),
+            })
+          }
+        } else {
+          // No candidate_id from CV analysis — ask user for name, keep fields
+          setAwaitingCandidateName(true)
+          addMessage({
+            id: `lia-cv-ask-name-${Date.now()}`,
+            sender: "lia",
+            content: "Qual candidato devo atualizar? Informe o nome completo (ou 'cancelar' para desistir).",
+            timestamp: formatMessageTime(),
+          })
+        }
+        return
+      }
+
+      if (isReject) {
+        setPendingCvFields(null)
+        setUploadedFileInfo(null)
+        addMessage({
+          id: `lia-cv-cancel-${Date.now()}`,
+          sender: "lia",
+          content: "Ok, atualização cancelada. Como posso te ajudar?",
+          timestamp: formatMessageTime(),
+        })
+        return
+      }
+    }
+
     const actionResult = detectAction(text)
 
     if (actionResult.actionType === "wizard") {
@@ -229,6 +358,7 @@ export function LiaChatPanel() {
     inputText, conversationId, isCreating, isStreaming,
     addMessage, initConversation, detectAction, detectIntent,
     openSplitView, wsSend, wsConnect, setSharedConversationId, currentScope,
+    pendingCvFields, uploadedFileInfo, setPendingCvFields, setUploadedFileInfo,
   ])
 
   const handleKeyDown = useCallback(
@@ -283,6 +413,146 @@ export function LiaChatPanel() {
     setShowHistory(false)
     loadHistory(id)
   }, [setMessages, setConversationId, loadHistory])
+
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ]
+    const maxSizeBytes = 10 * 1024 * 1024
+
+    if (!allowedTypes.includes(file.type) && !file.name.match(/\.(pdf|doc|docx|txt|xls|xlsx)$/i)) {
+      addMessage({
+        id: `err-${Date.now()}`,
+        sender: "lia",
+        content: "Formato de arquivo não suportado. Use PDF, DOC, DOCX, TXT, XLS ou XLSX.",
+        timestamp: formatMessageTime(),
+      })
+      return
+    }
+
+    if (file.size > maxSizeBytes) {
+      addMessage({
+        id: `err-${Date.now()}`,
+        sender: "lia",
+        content: "Arquivo muito grande. O limite é 10MB.",
+        timestamp: formatMessageTime(),
+      })
+      return
+    }
+
+    setIsUploadingFile(true)
+
+    addMessage({
+      id: `user-file-${Date.now()}`,
+      sender: "user",
+      content: `📎 Arquivo enviado: **${file.name}**`,
+      timestamp: formatMessageTime(),
+    })
+
+    addMessage({
+      id: `lia-analyzing-${Date.now()}`,
+      sender: "lia",
+      content: `Analisando o arquivo **${file.name}**...`,
+      timestamp: formatMessageTime(),
+    })
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const res = await fetch("/api/backend-proxy/analysis/file", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+
+      if (data.success && data.entities) {
+        const FIELD_API_KEYS: Record<string, string> = {
+          email: "email",
+          phone: "telefone",
+          current_title: "cargo atual",
+          current_company: "empresa atual",
+          location_city: "cidade",
+          location_state: "estado",
+          linkedin_url: "linkedin",
+          education_level: "formação",
+          languages: "idiomas",
+        }
+        const fieldLabels: Record<string, string> = {
+          email: "Email",
+          phone: "Telefone",
+          current_title: "Cargo atual",
+          current_company: "Empresa atual",
+          location_city: "Cidade",
+          location_state: "Estado",
+          linkedin_url: "LinkedIn",
+          education_level: "Formação",
+          languages: "Idiomas",
+        }
+        const entityMap = data.entities as Record<string, unknown>
+        const fields: Record<string, string> = {}
+        const fieldApiMap: Record<string, string> = {}
+
+        for (const [key, label] of Object.entries(fieldLabels)) {
+          const val = entityMap[key]
+          if (val && typeof val === "string" && val.trim()) {
+            fields[label] = val.trim()
+            fieldApiMap[FIELD_API_KEYS[key]] = val.trim()
+          }
+        }
+
+        const hasFields = Object.keys(fields).length > 0
+        setUploadedFileInfo({ name: file.name, fields, candidateId: data.candidate_id as string | undefined })
+
+        if (hasFields) {
+          setPendingCvFields(fieldApiMap)
+          const fieldsList = Object.entries(fields)
+            .map(([k, v]) => `- **${k}:** ${v}`)
+            .join("\n")
+          addMessage({
+            id: `lia-file-result-${Date.now()}`,
+            sender: "lia",
+            content: `Encontrei os seguintes dados no arquivo **${file.name}**:\n\n${fieldsList}\n\nDeseja que eu atualize o cadastro do candidato com essas informações? Responda **sim** para confirmar ou **não** para cancelar.`,
+            timestamp: formatMessageTime(),
+          })
+        } else {
+          addMessage({
+            id: `lia-file-result-${Date.now()}`,
+            sender: "lia",
+            content: `Analisei o arquivo **${file.name}** mas não encontrei dados estruturados de CV.${data.summary ? ` Resumo: ${data.summary}` : ""}`,
+            timestamp: formatMessageTime(),
+          })
+        }
+      } else {
+        addMessage({
+          id: `lia-file-err-${Date.now()}`,
+          sender: "lia",
+          content: `Não consegui extrair dados do arquivo **${file.name}**. ${data.error ?? ""}`.trim(),
+          timestamp: formatMessageTime(),
+        })
+      }
+    } catch (err) {
+      addMessage({
+        id: `lia-file-err-${Date.now()}`,
+        sender: "lia",
+        content: "Erro ao processar o arquivo. Verifique o formato e tente novamente.",
+        timestamp: formatMessageTime(),
+      })
+    } finally {
+      setIsUploadingFile(false)
+      if (fileInputRef.current) fileInputRef.current.value = ""
+    }
+  }, [addMessage])
 
   const canSend = inputText.trim().length > 0 && !isCreating && !isStreaming
   const isEmpty = messages.length === 0 && !isStreaming && !isFetchingHistory
@@ -530,7 +800,7 @@ export function LiaChatPanel() {
           <input
             ref={cvFileInputRef}
             type="file"
-            accept=".pdf,.docx,.doc,.txt"
+            accept=".pdf,.docx,.doc,.txt,.xls,.xlsx"
             onChange={handleCvFileAttach}
             className="hidden"
             aria-hidden="true"
@@ -539,12 +809,20 @@ export function LiaChatPanel() {
           <button
             type="button"
             onClick={handleCvFileButtonClick}
-            disabled={isCreating || isStreaming || isScreening}
-            title="Anexar CV"
+            disabled={isCreating || isStreaming || isScreening || !!hitlPending}
+            title="Anexar CV (PDF, DOCX, XLS — máx 10MB)"
             aria-label="Anexar currículo"
-            className="flex-shrink-0 p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
+            className={cn(
+              "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none",
+              isScreening
+                ? "text-chat-cyan animate-pulse"
+                : "text-lia-text-disabled hover:text-lia-text-secondary disabled:opacity-40"
+            )}
           >
-            <Paperclip className="w-3.5 h-3.5" />
+            {isScreening
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : <Paperclip className="w-3.5 h-3.5" />
+            }
           </button>
           <AudioRecordButton
             onTranscription={(text) => setInputText(prev => prev ? `${prev} ${text}` : text)}

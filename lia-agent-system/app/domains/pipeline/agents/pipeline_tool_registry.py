@@ -175,6 +175,7 @@ async def _wrap_update_candidate_field(**kwargs: Any) -> Dict[str, Any]:
         "current_company", "location_city", "location_state",
         "salary_expectation_clt", "salary_expectation_pj",
         "work_model_preference",
+        "education_level", "languages", "availability_date",
     }
 
     if not candidate_id or not field_name:
