@@ -1,9 +1,14 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
+
+const routeParamsSchema = z.object({
+  jobId: z.string().min(1, 'jobId is required'),
+})
+
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +16,8 @@ export async function GET(
 ) {
   try {
     const { jobId } = await params
+    const paramValidation = validateParams({ jobId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/job-vacancies/${jobId}`
     
@@ -48,6 +55,8 @@ export async function PUT(
 ) {
   try {
     const { jobId } = await params
+    const paramValidation = validateParams({ jobId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response

@@ -1,9 +1,14 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
+
+const routeParamsSchema = z.object({
+  token: z.string().min(1, 'token is required'),
+})
+
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
@@ -13,6 +18,8 @@ export async function POST(
 ) {
   try {
     const { token } = await params
+    const paramValidation = validateParams({ token }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     let body: Record<string, unknown> = {}
     const parseResult = _bodySchema.safeParse(await request.json().catch(() => ({}))); body = parseResult.success ? parseResult.data : {}
     

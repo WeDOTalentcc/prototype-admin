@@ -1,9 +1,14 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  departmentId: z.string().min(1, 'departmentId is required'),
+})
+
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +16,8 @@ export async function GET(
 ) {
   try {
     const { departmentId } = await params
+    const paramValidation = validateParams({ departmentId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/company/departments/${departmentId}/members`
     
@@ -47,6 +54,8 @@ export async function POST(
 ) {
   try {
     const { departmentId } = await params
+    const paramValidation = validateParams({ departmentId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response

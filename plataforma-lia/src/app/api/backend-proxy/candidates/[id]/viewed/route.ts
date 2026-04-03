@@ -1,8 +1,14 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { validateParams } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  id: z.string().min(1, 'id is required'),
+})
+
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
@@ -12,6 +18,8 @@ export async function POST(
 ) {
   try {
     const { id } = await params
+    const paramValidation = validateParams({ id }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     let body = {}
     try {
       body = await request.json()
@@ -53,6 +61,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    const paramValidation = validateParams({ id }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const backendUrl = `${BACKEND_URL}/api/v1/candidates/${id}/viewed`
     
     const response = await fetch(backendUrl, {

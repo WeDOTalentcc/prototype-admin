@@ -1,10 +1,15 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  listId: z.string().min(1, 'listId is required'),
+})
+
 
 export async function GET(
   request: NextRequest,
@@ -12,6 +17,8 @@ export async function GET(
 ) {
   try {
     const { listId } = await params
+    const paramValidation = validateParams({ listId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
     
@@ -51,6 +58,8 @@ export async function PATCH(
 ) {
   try {
     const { listId } = await params
+    const paramValidation = validateParams({ listId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response
@@ -89,6 +98,8 @@ export async function DELETE(
 ) {
   try {
     const { listId } = await params
+    const paramValidation = validateParams({ listId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/candidate-lists/${listId}`
     

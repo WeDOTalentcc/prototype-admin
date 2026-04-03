@@ -1,9 +1,15 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  companyId: z.string().min(1, 'companyId is required'),
+  fieldKey: z.string().min(1, 'fieldKey is required'),
+})
+
 
 function getAuthHeaders(request: NextRequest): HeadersInit {
   const headers: HeadersInit = {
@@ -24,6 +30,8 @@ export async function POST(
 ) {
   try {
     const { companyId, fieldKey } = await params
+    const paramValidation = validateParams({ companyId, fieldKey }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response

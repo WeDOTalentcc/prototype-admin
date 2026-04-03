@@ -1,9 +1,14 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  planId: z.string().min(1, 'planId is required'),
+})
+
 
 function getHeaders(request: NextRequest) {
   const headers: Record<string, string> = {
@@ -34,6 +39,8 @@ export async function GET(
 ) {
   try {
     const { planId } = await params
+    const paramValidation = validateParams({ planId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const backendUrl = `${BACKEND_URL}/api/v1/workforce-planning/${planId}`
     
     const response = await fetch(backendUrl, {
@@ -67,6 +74,8 @@ export async function PUT(
 ) {
   try {
     const { planId } = await params
+    const paramValidation = validateParams({ planId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response
@@ -105,6 +114,8 @@ export async function DELETE(
 ) {
   try {
     const { planId } = await params
+    const paramValidation = validateParams({ planId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const backendUrl = `${BACKEND_URL}/api/v1/workforce-planning/${planId}`
     
     const response = await fetch(backendUrl, {

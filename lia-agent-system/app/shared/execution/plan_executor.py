@@ -1,5 +1,7 @@
+import ast
 import asyncio
 import logging
+import operator
 import re
 from typing import Dict, Any, Optional, List, Callable, Awaitable
 from datetime import datetime
@@ -13,8 +15,64 @@ logger = logging.getLogger(__name__)
 
 TASK_TIMEOUT_SECONDS = 15
 
-# Type alias for progress callback
 ProgressCallback = Callable[[str, Dict[str, Any]], Awaitable[None]]
+
+_SAFE_OPS = {
+    ast.Gt: operator.gt,
+    ast.GtE: operator.ge,
+    ast.Lt: operator.lt,
+    ast.LtE: operator.le,
+    ast.Eq: operator.eq,
+    ast.NotEq: operator.ne,
+}
+
+
+def _resolve_name(node: ast.AST, ctx: Dict[str, Any]) -> Any:
+    if isinstance(node, ast.Name):
+        if node.id not in ctx:
+            raise ValueError(f"Unknown variable: {node.id}")
+        return ctx[node.id]
+    if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name):
+        obj = ctx.get(node.value.id)
+        if obj is None:
+            raise ValueError(f"Unknown variable: {node.value.id}")
+        if isinstance(obj, dict):
+            return obj.get(node.attr)
+        raise ValueError(f"Cannot access attribute on non-dict: {node.value.id}")
+    if isinstance(node, ast.Constant):
+        return node.value
+    raise ValueError(f"Unsupported expression node: {type(node).__name__}")
+
+
+def _safe_eval_condition(expr: str, ctx: Dict[str, Any]) -> bool:
+    tree = ast.parse(expr.strip(), mode="eval")
+    body = tree.body
+
+    if isinstance(body, ast.BoolOp):
+        if isinstance(body.op, ast.And):
+            return all(_eval_compare(v, ctx) for v in body.values)
+        if isinstance(body.op, ast.Or):
+            return any(_eval_compare(v, ctx) for v in body.values)
+
+    return _eval_compare(body, ctx)
+
+
+def _eval_compare(node: ast.AST, ctx: Dict[str, Any]) -> bool:
+    if isinstance(node, ast.Compare) and len(node.ops) == 1:
+        left = _resolve_name(node.left, ctx)
+        right = _resolve_name(node.comparators[0], ctx)
+        op_func = _SAFE_OPS.get(type(node.ops[0]))
+        if op_func is None:
+            raise ValueError(f"Unsupported operator: {type(node.ops[0]).__name__}")
+        return op_func(left, right)
+
+    if isinstance(node, ast.Name):
+        return bool(_resolve_name(node, ctx))
+
+    if isinstance(node, ast.Constant):
+        return bool(node.value)
+
+    raise ValueError(f"Unsupported condition expression: {ast.dump(node)}")
 
 
 class PlanExecutor:
@@ -140,14 +198,9 @@ class PlanExecutor:
             return False, None
 
         try:
-            # Build local eval context from plan context data
             local_vars = dict(plan.context_data)
-
-            # Support simple expressions like "task_0.match_score >= 40"
-            # Replace dotted paths with underscored keys if needed
             expr = task.condition
-            # Allow direct evaluation with plan context keys
-            result = eval(expr, {"__builtins__": {}}, local_vars)
+            result = _safe_eval_condition(expr, local_vars)
 
             if not result:
                 threshold_info = f" (threshold: {task.condition_threshold})" if task.condition_threshold else ""

@@ -1,10 +1,15 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  subStatusId: z.string().min(1, 'subStatusId is required'),
+})
+
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
@@ -14,6 +19,8 @@ export async function PATCH(
 ) {
   try {
     const { subStatusId } = await params
+    const paramValidation = validateParams({ subStatusId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response
@@ -46,6 +53,8 @@ export async function PUT(
 ) {
   try {
     const { subStatusId } = await params
+    const paramValidation = validateParams({ subStatusId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response
@@ -78,6 +87,8 @@ export async function DELETE(
 ) {
   try {
     const { subStatusId } = await params
+    const paramValidation = validateParams({ subStatusId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
 
     const response = await fetch(
       `${BACKEND_URL}/api/v1/recruitment-stages/sub-statuses/${subStatusId}`,

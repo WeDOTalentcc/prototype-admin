@@ -1,0 +1,561 @@
+"""
+CV Upload Tool — Phase 2
+
+Provides tools for:
+  1. parse_and_create_candidate  — AI-parse raw CV text → create Candidate in DB
+  2. add_to_vacancy              — add existing Candidate to a JobVacancy pipeline
+  3. create_and_screen_candidate — end-to-end: parse CV text → create → add to vacancy → BARS score
+"""
+import logging
+import uuid
+from datetime import datetime, date
+from typing import Any, Dict, List, Optional
+from uuid import UUID
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _extract_context(kwargs: Dict[str, Any]):
+    return kwargs.get("context") or kwargs.get("_context")
+
+
+def _parse_date(raw: Optional[str]) -> Optional[date]:
+    if not raw:
+        return None
+    for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%m/%Y", "%Y"):
+        try:
+            return datetime.strptime(raw, fmt).date()
+        except (ValueError, TypeError):
+            pass
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Tool: parse_and_create_candidate
+# ---------------------------------------------------------------------------
+
+async def parse_and_create_candidate(
+    cv_text: str,
+    vacancy_title: Optional[str] = None,
+    vacancy_id: Optional[str] = None,
+    source: str = "cv_upload",
+    **kwargs,
+) -> Dict[str, Any]:
+    """
+    Parse raw CV text with AI and create a new Candidate record in the database.
+
+    Returns candidate_id on success so downstream tasks can use it.
+    """
+    context = _extract_context(kwargs)
+    company_id = getattr(context, "company_id", None) if context else None
+    user_id = getattr(context, "user_id", "system") if context else "system"
+
+    if not cv_text or len(cv_text.strip()) < 30:
+        return {
+            "success": False,
+            "message": "Texto do CV muito curto ou vazio.",
+            "error": "cv_text_too_short",
+        }
+
+    logger.info(f"📄 Parsing CV for create (company={company_id}, user={user_id})")
+
+    try:
+        from app.domains.cv_screening.services.cv_parser import CVParserService
+
+        # Build a mock UploadFile-compatible object
+        import io
+
+        class _FakeUpload:
+            filename = "cv_from_chat.txt"
+            content_type = "text/plain"
+            _content = cv_text.encode("utf-8", errors="ignore")
+
+            async def read(self):
+                return self._content
+
+        parser = CVParserService()
+        parsed = await parser.extract_with_ai(cv_text)
+
+        # ----------------------------------------------------------------
+        # Create Candidate in DB
+        # ----------------------------------------------------------------
+        from app.core.database import AsyncSessionLocal
+        from app.models.candidate import Candidate
+        from sqlalchemy import select, func
+
+        async with AsyncSessionLocal() as db:
+            # Duplicate check — skip creation if email already exists
+            if parsed.email:
+                dup = await db.execute(
+                    select(Candidate).where(
+                        func.lower(Candidate.email) == parsed.email.lower()
+                    )
+                )
+                existing = dup.scalar_one_or_none()
+                if existing:
+                    cand_id = str(existing.id)
+                    logger.info(f"Duplicate candidate found by email: {cand_id}")
+                    return {
+                        "success": True,
+                        "duplicate": True,
+                        "candidate_id": cand_id,
+                        "candidate_name": getattr(existing, "name", parsed.full_name),
+                        "message": (
+                            f"⚠️ Candidato já cadastrado com este e-mail: "
+                            f"**{getattr(existing, 'name', parsed.full_name)}** (id: `{cand_id[:8]}...`). "
+                            f"Usando cadastro existente."
+                        ),
+                        "parsed": {
+                            "name": parsed.full_name,
+                            "email": parsed.email,
+                            "skills": parsed.skills[:10],
+                        },
+                    }
+
+            new_candidate = Candidate(
+                id=uuid.uuid4(),
+                name=parsed.full_name or "Candidato sem nome",
+                email=parsed.email,
+                phone=parsed.phone,
+                linkedin_url=parsed.linkedin,
+                github_url=parsed.github,
+                portfolio_url=parsed.portfolio,
+                current_title=parsed.current_title,
+                seniority_level=parsed.seniority_level,
+                technical_skills=parsed.skills or [],
+                soft_skills=parsed.soft_skills or [],
+                certifications=parsed.certifications or [],
+                interests=parsed.interests or [],
+                date_of_birth=_parse_date(parsed.date_of_birth),
+                is_active=True,
+                source=source,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+            )
+
+            # Parse location if available
+            if parsed.location:
+                parts = [p.strip() for p in parsed.location.split(",")]
+                if len(parts) >= 1:
+                    new_candidate.city = parts[0]
+                if len(parts) >= 2:
+                    new_candidate.state = parts[1]
+                if len(parts) >= 3:
+                    new_candidate.country = parts[2]
+
+            db.add(new_candidate)
+            await db.commit()
+            await db.refresh(new_candidate)
+
+            cand_id = str(new_candidate.id)
+            cand_name = getattr(new_candidate, "name", parsed.full_name)
+            logger.info(f"✅ Candidate created: {cand_id} ({cand_name})")
+
+            skills_preview = ", ".join(parsed.skills[:5]) if parsed.skills else "Não identificadas"
+            vacancy_info = f" para a vaga **{vacancy_title}**" if vacancy_title else ""
+
+            return {
+                "success": True,
+                "duplicate": False,
+                "candidate_id": cand_id,
+                "candidate_name": cand_name,
+                "vacancy_id": vacancy_id,
+                "vacancy_title": vacancy_title,
+                "message": (
+                    f"✅ Candidato **{cand_name}** cadastrado com sucesso{vacancy_info}.\n"
+                    f"- **Cargo atual:** {parsed.current_title or 'Não identificado'}\n"
+                    f"- **Senioridade:** {parsed.seniority_level or 'Não identificado'}\n"
+                    f"- **Skills:** {skills_preview}\n"
+                    f"- **Confiança da extração:** {int((parsed.confidence_score or 0.7) * 100)}%"
+                ),
+                "parsed": {
+                    "name": parsed.full_name,
+                    "email": parsed.email,
+                    "phone": parsed.phone,
+                    "current_title": parsed.current_title,
+                    "seniority_level": parsed.seniority_level,
+                    "skills": parsed.skills[:10],
+                    "confidence_score": parsed.confidence_score,
+                },
+            }
+
+    except Exception as e:
+        logger.error(f"❌ parse_and_create_candidate error: {e}", exc_info=True)
+        return {
+            "success": False,
+            "message": f"❌ Erro ao cadastrar candidato a partir do CV: {str(e)}",
+            "error": str(e),
+        }
+
+
+# ---------------------------------------------------------------------------
+# Tool: add_to_vacancy  (thin wrapper for plan pipelines)
+# ---------------------------------------------------------------------------
+
+async def add_to_vacancy(
+    candidate_id: str,
+    vacancy_id: Optional[str] = None,
+    vacancy_title: Optional[str] = None,
+    initial_stage: str = "Triagem",
+    source: str = "cv_upload",
+    **kwargs,
+) -> Dict[str, Any]:
+    """
+    Add a candidate to a vacancy pipeline.
+
+    Resolves the vacancy by ID or by title if ID is not provided.
+    Returns vacancy_candidate_id for downstream WSI triggering.
+    """
+    context = _extract_context(kwargs)
+    company_id = getattr(context, "company_id", None) if context else None
+    user_id = getattr(context, "user_id", "system") if context else "system"
+
+    logger.info(
+        f"➕ add_to_vacancy: cand={candidate_id[:8]}... "
+        f"vacancy_id={vacancy_id} vacancy_title={vacancy_title}"
+    )
+
+    try:
+        from app.core.database import AsyncSessionLocal
+        from app.models.candidate import Candidate, VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
+        from sqlalchemy import select, and_, func
+
+        async with AsyncSessionLocal() as db:
+            # Resolve candidate
+            cand_res = await db.execute(select(Candidate).where(Candidate.id == UUID(candidate_id)))
+            candidate = cand_res.scalar_one_or_none()
+            if not candidate:
+                return {
+                    "success": False,
+                    "message": f"Candidato não encontrado: {candidate_id}",
+                    "error": "candidate_not_found",
+                }
+
+            # Resolve vacancy
+            job = None
+            if vacancy_id:
+                q = select(JobVacancy).where(JobVacancy.id == UUID(vacancy_id))
+                if company_id:
+                    q = q.where(JobVacancy.company_id == company_id)
+                res = await db.execute(q)
+                job = res.scalar_one_or_none()
+
+            if not job and vacancy_title:
+                q = (
+                    select(JobVacancy)
+                    .where(func.lower(JobVacancy.title).contains(vacancy_title.strip().lower()))
+                )
+                if company_id:
+                    q = q.where(JobVacancy.company_id == company_id)
+                q = q.limit(1)
+                res = await db.execute(q)
+                job = res.scalar_one_or_none()
+
+            if not job:
+                return {
+                    "success": False,
+                    "message": f"Vaga não encontrada: {vacancy_title or vacancy_id}",
+                    "error": "vacancy_not_found",
+                }
+
+            job_id = str(job.id)
+            job_title_str = getattr(job, "title", "Vaga")
+
+            # Duplicate check
+            dup = await db.execute(
+                select(VacancyCandidate).where(
+                    and_(
+                        VacancyCandidate.vacancy_id == UUID(job_id),
+                        VacancyCandidate.candidate_id == UUID(candidate_id),
+                    )
+                )
+            )
+            existing_vc = dup.scalar_one_or_none()
+            if existing_vc:
+                vc_id = str(existing_vc.id)
+                return {
+                    "success": True,
+                    "duplicate": True,
+                    "vacancy_candidate_id": vc_id,
+                    "candidate_id": candidate_id,
+                    "job_id": job_id,
+                    "job_title": job_title_str,
+                    "message": (
+                        f"⚠️ **{getattr(candidate, 'name', 'Candidato')}** já está associado "
+                        f"à vaga **{job_title_str}**. Continuando com o cadastro existente."
+                    ),
+                }
+
+            vc = VacancyCandidate(
+                id=uuid.uuid4(),
+                vacancy_id=UUID(job_id),
+                candidate_id=UUID(candidate_id),
+                company_id=company_id or "demo_company",
+                source=source,
+                stage=initial_stage,
+                status="sourced",
+                added_by=user_id,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+            )
+            db.add(vc)
+            await db.commit()
+            await db.refresh(vc)
+
+            vc_id = str(vc.id)
+            cand_name = getattr(candidate, "name", "Candidato")
+            logger.info(f"✅ VacancyCandidate created: {vc_id}")
+
+            return {
+                "success": True,
+                "duplicate": False,
+                "vacancy_candidate_id": vc_id,
+                "candidate_id": candidate_id,
+                "candidate_name": cand_name,
+                "job_id": job_id,
+                "job_title": job_title_str,
+                "message": (
+                    f"✅ **{cand_name}** adicionado à vaga **{job_title_str}** "
+                    f"na etapa **{initial_stage}**."
+                ),
+            }
+
+    except Exception as e:
+        logger.error(f"❌ add_to_vacancy error: {e}", exc_info=True)
+        return {
+            "success": False,
+            "message": f"❌ Erro ao adicionar candidato à vaga: {str(e)}",
+            "error": str(e),
+        }
+
+
+# ---------------------------------------------------------------------------
+# Tool: create_and_screen_candidate  (Opção C — full flow)
+# ---------------------------------------------------------------------------
+
+async def create_and_screen_candidate(
+    cv_text: str,
+    vacancy_title: Optional[str] = None,
+    vacancy_id: Optional[str] = None,
+    run_bars: bool = True,
+    run_wsi: bool = False,
+    initial_stage: str = "Triagem",
+    **kwargs,
+) -> Dict[str, Any]:
+    """
+    End-to-end CV flow:
+      1. AI-parse CV text → extract structured candidate data
+      2. Create Candidate in DB (or reuse if duplicate)
+      3. Add to JobVacancy pipeline
+      4. Run BARS rubric scoring (if run_bars=True and vacancy has requirements)
+      5. Optionally trigger WSI screening (if run_wsi=True)
+
+    This is the single-call version for simple interactions.
+    The multi-step PlanDetector flow calls the individual tools above.
+    """
+    context = _extract_context(kwargs)
+
+    # Step 1 + 2: Parse & create
+    create_result = await parse_and_create_candidate(
+        cv_text=cv_text,
+        vacancy_title=vacancy_title,
+        vacancy_id=vacancy_id,
+        **kwargs,
+    )
+
+    if not create_result.get("success"):
+        return create_result
+
+    candidate_id = create_result["candidate_id"]
+    candidate_name = create_result.get("candidate_name", "Candidato")
+    sections = [create_result["message"]]
+
+    # Step 3: Add to vacancy (if provided)
+    vc_result = None
+    job_id = vacancy_id
+    job_title = vacancy_title
+
+    if vacancy_title or vacancy_id:
+        vc_result = await add_to_vacancy(
+            candidate_id=candidate_id,
+            vacancy_id=vacancy_id,
+            vacancy_title=vacancy_title,
+            initial_stage=initial_stage,
+            **kwargs,
+        )
+        sections.append(vc_result["message"])
+        if vc_result.get("success"):
+            job_id = vc_result.get("job_id", vacancy_id)
+            job_title = vc_result.get("job_title", vacancy_title)
+
+    # Step 4: BARS scoring
+    bars_result = None
+    if run_bars and candidate_id and job_id:
+        try:
+            from app.domains.cv_screening.tools.cv_match_tool import analyze_cv_match
+
+            bars_result = await analyze_cv_match(
+                candidate_id=candidate_id,
+                vacancy_id=job_id,
+                **kwargs,
+            )
+            if bars_result.get("success"):
+                sections.append(
+                    f"\n📊 **Avaliação BARS:**\n{bars_result.get('message', '')}"
+                )
+        except Exception as e:
+            logger.warning(f"BARS scoring skipped: {e}")
+            sections.append(f"\n⚠️ Avaliação BARS não disponível: {e}")
+
+    # Step 5: WSI (optional)
+    wsi_result = None
+    if run_wsi and candidate_id and job_id:
+        try:
+            from app.domains.cv_screening.tools.candidate_tools import wsi_screening
+
+            wsi_result = await wsi_screening(
+                candidate_id=candidate_id,
+                job_id=job_id,
+                screening_type="complete",
+                **kwargs,
+            )
+            if wsi_result.get("success"):
+                sections.append(f"\n🎯 {wsi_result.get('message', '')}")
+        except Exception as e:
+            logger.warning(f"WSI skipped: {e}")
+
+    full_message = "\n\n".join(s for s in sections if s)
+
+    return {
+        "success": True,
+        "candidate_id": candidate_id,
+        "candidate_name": candidate_name,
+        "job_id": job_id,
+        "job_title": job_title,
+        "match_score": bars_result.get("match_score") if bars_result else None,
+        "recommendation": bars_result.get("recommendation") if bars_result else None,
+        "message": full_message,
+        "steps": {
+            "parse_create": create_result,
+            "add_to_vacancy": vc_result,
+            "bars_scoring": bars_result,
+            "wsi_screening": wsi_result,
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# Registration
+# ---------------------------------------------------------------------------
+
+def register_cv_upload_tools() -> None:
+    """Register CV upload tools with the global tool registry."""
+    from app.tools.registry import tool_registry
+
+    tool_registry.register(
+        name="parse_and_create_candidate",
+        func=parse_and_create_candidate,
+        description=(
+            "Parseia texto de um CV com IA e cria um registro de Candidato no banco de dados. "
+            "Retorna candidate_id para uso em fluxos subsequentes."
+        ),
+        parameters={
+            "cv_text": {
+                "type": "string",
+                "description": "Texto completo do currículo",
+                "required": True,
+            },
+            "vacancy_title": {
+                "type": "string",
+                "description": "Título da vaga de interesse (opcional)",
+                "required": False,
+            },
+            "vacancy_id": {
+                "type": "string",
+                "description": "UUID da vaga de interesse (opcional)",
+                "required": False,
+            },
+            "source": {
+                "type": "string",
+                "description": "Origem do candidato (cv_upload, referral, etc.)",
+                "default": "cv_upload",
+                "required": False,
+            },
+        },
+    )
+
+    tool_registry.register(
+        name="add_to_vacancy",
+        func=add_to_vacancy,
+        description=(
+            "Adiciona um candidato existente ao pipeline de uma vaga. "
+            "Resolve a vaga por ID ou por título. Retorna vacancy_candidate_id."
+        ),
+        parameters={
+            "candidate_id": {
+                "type": "string",
+                "description": "UUID do candidato",
+                "required": True,
+            },
+            "vacancy_id": {
+                "type": "string",
+                "description": "UUID da vaga",
+                "required": False,
+            },
+            "vacancy_title": {
+                "type": "string",
+                "description": "Título da vaga (busca por nome)",
+                "required": False,
+            },
+            "initial_stage": {
+                "type": "string",
+                "description": "Etapa inicial do candidato na vaga",
+                "default": "Triagem",
+                "required": False,
+            },
+        },
+    )
+
+    tool_registry.register(
+        name="create_and_screen_candidate",
+        func=create_and_screen_candidate,
+        description=(
+            "Fluxo completo de CV: parseia texto → cria Candidato → adiciona à vaga → "
+            "avalia com BARS → (opcionalmente) dispara triagem WSI."
+        ),
+        parameters={
+            "cv_text": {
+                "type": "string",
+                "description": "Texto completo do currículo",
+                "required": True,
+            },
+            "vacancy_title": {
+                "type": "string",
+                "description": "Título da vaga",
+                "required": False,
+            },
+            "vacancy_id": {
+                "type": "string",
+                "description": "UUID da vaga",
+                "required": False,
+            },
+            "run_bars": {
+                "type": "boolean",
+                "description": "Se deve rodar avaliação BARS",
+                "default": True,
+                "required": False,
+            },
+            "run_wsi": {
+                "type": "boolean",
+                "description": "Se deve disparar triagem WSI",
+                "default": False,
+                "required": False,
+            },
+        },
+    )
+
+    logger.info("✅ CV upload tools registered: parse_and_create_candidate, add_to_vacancy, create_and_screen_candidate")

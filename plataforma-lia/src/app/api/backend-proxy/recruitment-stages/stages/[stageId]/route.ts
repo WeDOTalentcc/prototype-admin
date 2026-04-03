@@ -1,9 +1,14 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  stageId: z.string().min(1, 'stageId is required'),
+})
+
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +16,8 @@ export async function GET(
 ) {
   try {
     const { stageId } = await params
+    const paramValidation = validateParams({ stageId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/recruitment-stages/stages/${stageId}`
     
@@ -48,6 +55,8 @@ export async function PUT(
 ) {
   try {
     const { stageId } = await params
+    const paramValidation = validateParams({ stageId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response
@@ -88,6 +97,8 @@ export async function DELETE(
 ) {
   try {
     const { stageId } = await params
+    const paramValidation = validateParams({ stageId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/recruitment-stages/stages/${stageId}`
     

@@ -1,10 +1,15 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  listId: z.string().min(1, 'listId is required'),
+})
+
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
@@ -14,6 +19,8 @@ export async function POST(
 ) {
   try {
     const { listId } = await params
+    const paramValidation = validateParams({ listId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response

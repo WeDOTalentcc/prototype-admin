@@ -1,11 +1,16 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { cookies } from 'next/headers'
 import { verifyAndDecodeSession, SessionPayload } from '@/lib/session-crypto'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  id: z.string().min(1, 'id is required'),
+})
+
 const WORKOS_SESSION_COOKIE = 'workos_session'
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'development'
 
@@ -97,6 +102,8 @@ export async function GET(
     }
 
     const { id } = await params
+    const paramValidation = validateParams({ id }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const { searchParams } = new URL(request.url)
     
     const queryString = searchParams.toString()
@@ -138,6 +145,8 @@ export async function POST(
     }
 
     const { id } = await params
+    const paramValidation = validateParams({ id }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response

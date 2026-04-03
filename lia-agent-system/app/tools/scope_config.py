@@ -106,7 +106,10 @@ IN_JOB_ACTION_TOOLS: Set[str] = {
 GLOBAL_TOOLS: Set[str] = {
     "generate_report",
     "schedule_report",
-    "analyze_cv_match",  # Opção B: BARS rubric from any context
+    "analyze_cv_match",         # Opção B: BARS rubric from any context
+    "create_and_screen_candidate",  # Opção C: CV upload → create → score
+    "parse_and_create_candidate",   # Step 1 of upload flow
+    "add_to_vacancy",               # Step 2 of upload flow
 }
 
 

@@ -1,9 +1,14 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  id: z.string().min(1, 'id is required'),
+})
+
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
@@ -13,6 +18,8 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
+    const paramValidation = validateParams({ id }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const { searchParams } = new URL(request.url)
     const rejectedBy = searchParams.get('rejected_by')
     const bodyResult = await validateBody(request, _bodySchema)

@@ -255,6 +255,29 @@ def is_field_active(field_name: str, context: Dict[str, Any]) -> bool:
         return True
     
     try:
-        return eval(field_def.condition, {"__builtins__": {}}, context)
+        import ast as _ast
+        import operator as _op
+        _ops = {
+            _ast.Gt: _op.gt, _ast.GtE: _op.ge,
+            _ast.Lt: _op.lt, _ast.LtE: _op.le,
+            _ast.Eq: _op.eq, _ast.NotEq: _op.ne,
+        }
+        tree = _ast.parse(field_def.condition.strip(), mode="eval")
+        body = tree.body
+        if isinstance(body, _ast.Compare) and len(body.ops) == 1:
+            def _val(n):
+                if isinstance(n, _ast.Name):
+                    return context.get(n.id)
+                if isinstance(n, _ast.Constant):
+                    return n.value
+                raise ValueError("unsupported")
+            left = _val(body.left)
+            right = _val(body.comparators[0])
+            op_fn = _ops.get(type(body.ops[0]))
+            if op_fn:
+                return op_fn(left, right)
+        if isinstance(body, _ast.Name):
+            return bool(context.get(body.id))
+        return False
     except Exception:
         return False

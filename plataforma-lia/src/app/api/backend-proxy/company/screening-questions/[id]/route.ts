@@ -1,10 +1,15 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { getWorkOSSession } from '@/lib/workos-session'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  id: z.string().min(1, 'id is required'),
+})
+
 
 async function getAuthHeaders(request: NextRequest) {
   const session = await getWorkOSSession()
@@ -29,6 +34,8 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
+    const paramValidation = validateParams({ id }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response
@@ -68,6 +75,8 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    const paramValidation = validateParams({ id }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const headers = await getAuthHeaders(request)
     
     const backendUrl = `${BACKEND_URL}/api/v1/company/screening-questions/${id}`

@@ -98,6 +98,7 @@ def initialize_tools() -> None:
     from app.domains.analytics.tools.query_tools import register_query_tools
     from app.domains.recruiter_assistant.tools.pipeline_tools import register_pipeline_tools
     from app.domains.cv_screening.tools.cv_match_tool import register_cv_match_tool
+    from app.domains.cv_screening.tools.cv_upload_tool import register_cv_upload_tools
     
     register_job_wizard_tools()
     register_candidate_tools()
@@ -107,6 +108,7 @@ def initialize_tools() -> None:
     register_query_tools()
     register_pipeline_tools()
     register_cv_match_tool()
+    register_cv_upload_tools()
     
     import logging
     logger = logging.getLogger(__name__)

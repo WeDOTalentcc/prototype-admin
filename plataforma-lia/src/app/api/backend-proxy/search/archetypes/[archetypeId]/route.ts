@@ -1,9 +1,14 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
-import { validateBody } from '@/lib/api/validate'
+import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  archetypeId: z.string().min(1, 'archetypeId is required'),
+})
+
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +16,8 @@ export async function GET(
 ) {
   try {
     const { archetypeId } = await params
+    const paramValidation = validateParams({ archetypeId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/search/archetypes/${encodeURIComponent(archetypeId)}`
     
@@ -47,6 +54,8 @@ export async function PUT(
 ) {
   try {
     const { archetypeId } = await params
+    const paramValidation = validateParams({ archetypeId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
 
     if (!bodyResult.success) return bodyResult.response
@@ -87,6 +96,8 @@ export async function DELETE(
 ) {
   try {
     const { archetypeId } = await params
+    const paramValidation = validateParams({ archetypeId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/search/archetypes/${encodeURIComponent(archetypeId)}`
     
