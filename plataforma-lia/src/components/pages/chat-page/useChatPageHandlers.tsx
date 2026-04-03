@@ -568,9 +568,15 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
   }, [messages.length, contextData, setContextData, setIsSchedulingModalOpen, setMessages, setSelectedCandidateForScheduling])
 
 
+  const handleSmartSearchCancel = useCallback(() => {
+    setIsSmartSearchMode(false)
+    setSmartSearchQuery("")
+    searchFlow.reset()
+    setSearchPreviewData(null)
+  }, [searchFlow, setIsSmartSearchMode, setSmartSearchQuery, setSearchPreviewData])
+
   return {
     handleSmartSearchSubmit,
-    // @ts-ignore TODO: fix type
     handleSmartSearchCancel,
     handleSendMessage,
     handlePipelineAction,

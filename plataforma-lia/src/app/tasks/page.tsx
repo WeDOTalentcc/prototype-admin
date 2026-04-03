@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function Tasks() {
-  return <DashboardApp initialPage="Configurações" />
+  return <DashboardApp initialPage="Painel de Controle" />
 }
