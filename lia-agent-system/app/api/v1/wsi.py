@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 import uuid
+import asyncio
 import json
 import logging
 import os
@@ -135,7 +136,10 @@ class AnalyzeResponseOutput(BaseModel):
     dreyfus_level: int = Field(ge=1, le=5)
     dreyfus_level_name: str
     big_five_indicators: BigFiveIndicators
-    score: float = Field(ge=0, le=5)
+    score: float = Field(ge=0, le=5)  # Escala 0.0 – 5.0
+    score_max: float = 5.0
+    score_normalized: float = 0.0
+    star_completeness: Optional[float] = None
     feedback: str
     evidences: List[str]
     red_flags: List[str]
@@ -210,6 +214,35 @@ def parse_json_response(content: str, fallback: Dict) -> Dict:
         return fallback
 
 
+async def _run_anthropic_sync(client, model: str, max_tokens: int, messages: list, timeout: float = 30.0):
+    """
+    Wraps synchronous Anthropic client.messages.create() in a thread pool executor
+    to avoid blocking the FastAPI async event loop.
+    Applies a hard timeout to prevent indefinite hangs.
+    """
+    loop = asyncio.get_event_loop()
+    try:
+        response = await asyncio.wait_for(
+            loop.run_in_executor(
+                None,
+                lambda: client.messages.create(
+                    model=model,
+                    max_tokens=max_tokens,
+                    messages=messages
+                )
+            ),
+            timeout=timeout
+        )
+        return response
+    except asyncio.TimeoutError:
+        logger.warning(f"Anthropic call timed out after {timeout}s (model={model})")
+        return None
+    except Exception as e:
+        logger.error(f"Anthropic call failed: {type(e).__name__}: {e}")
+        return None
+
+
+
 @router.post("/generate-questions", response_model=GenerateQuestionsResponse)
 async def generate_questions(
     request: GenerateQuestionsRequest,
@@ -275,12 +308,16 @@ Retorne APENAS JSON válido:
   ]
 }}"""
         
+        response = await _run_anthropic_sync(
+            client,
+            model="claude-sonnet-4-6",
+            max_tokens=2048,
+            messages=[{"role": "user", "content": prompt}],
+            timeout=30.0
+        )
         try:
-            response = client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=2048,
-                messages=[{"role": "user", "content": prompt}]
-            )
+            if response is None:
+                raise ValueError("Anthropic call timed out or failed")
             data = parse_json_response(response.content[0].text, {"questions": []})
             questions_data = data.get("questions", [])
         except Exception as e:
@@ -897,12 +934,16 @@ Retorne APENAS JSON válido:
 }}"""
 
     if client:
+        response = await _run_anthropic_sync(
+            client,
+            model="claude-sonnet-4-6",
+            max_tokens=512,
+            messages=[{"role": "user", "content": prompt}],
+            timeout=30.0
+        )
         try:
-            response = client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=512,
-                messages=[{"role": "user", "content": prompt}]
-            )
+            if response is None:
+                raise ValueError("Anthropic call timed out or failed")
             data = parse_json_response(response.content[0].text, {})
             if data.get("question"):
                 return {
@@ -994,12 +1035,16 @@ Return ONLY valid JSON:
   "red_flags": []
 }}"""
 
+        response = await _run_anthropic_sync(
+            client,
+            model="claude-sonnet-4-6",
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}],
+            timeout=30.0
+        )
         try:
-            response = client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=1024,
-                messages=[{"role": "user", "content": prompt}]
-            )
+            if response is None:
+                raise ValueError("Anthropic call timed out or failed")
             data = parse_json_response(response.content[0].text, {})
         except Exception as e:
             logger.error(f"AI analysis failed: {e}")
@@ -1045,6 +1090,19 @@ Return ONLY valid JSON:
     except Exception as e:
         logger.warning(f"Failed to save analysis: {e}")
     
+    # Compute star_completeness: proportion of STAR elements present in response
+    _star_keywords = [
+        ["situação", "situacao", "situation", "contexto", "context"],
+        ["tarefa", "task", "objetivo", "objetivo", "responsabilidade"],
+        ["ação", "acao", "action", "fiz", "implementei", "desenvolvi", "criei"],
+        ["resultado", "result", "outcome", "conquista", "entregamos", "consegui"],
+    ]
+    _resp_lower = request.response_text.lower()
+    _found = sum(1 for group in _star_keywords if any(kw in _resp_lower for kw in group))
+    star_completeness = round(_found / 4.0, 2)
+
+    _score = data.get("score", 3.0)
+
     return AnalyzeResponseOutput(
         question_id=request.question_id,
         bloom_score=bloom_score,
@@ -1058,7 +1116,10 @@ Return ONLY valid JSON:
             agreeableness=big_five.get("agreeableness", 50),
             neuroticism=big_five.get("neuroticism", 50)
         ),
-        score=data.get("score", 3.0),
+        score=_score,
+        score_max=5.0,
+        score_normalized=round(_score / 5.0 * 10.0, 1),
+        star_completeness=star_completeness,
         feedback=data.get("feedback", "Análise em processamento"),
         evidences=data.get("evidences", []),
         red_flags=data.get("red_flags", [])

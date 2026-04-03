@@ -29,6 +29,11 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json()
+    // Strip internal reasoning field — prevent chain-of-thought leak to client (fix B-02)
+    if (data && typeof data === "object" && "thought" in data) {
+      const { thought: _thought, ...safeData } = data
+      return NextResponse.json(safeData)
+    }
     return NextResponse.json(data)
   } catch (error) {
     return NextResponse.json(

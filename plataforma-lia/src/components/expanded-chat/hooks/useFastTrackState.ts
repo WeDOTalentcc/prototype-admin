@@ -7,7 +7,7 @@
  * Padrão { state, actions } compatível com Pinia stores (Vue 3).
  */
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import type { WizardMode, FastTrackState } from '../types'
 import type { VacancySummary } from '../../job-creation/vacancy-search-results'
 import type { VacancyFullDetails } from '../../job-creation/vacancy-full-summary'
@@ -89,8 +89,7 @@ export function useFastTrackState(): UseFastTrackStateReturn {
   const [wsiRegenerationPrompted, setWsiRegenerationPrompted] = useState(false)
   const [awaitingWSIRegenerationConfirmation, setAwaitingWSIRegenerationConfirmation] = useState(false)
 
-  // Resets conversation-scoped flags (when modal closes or mode changes)
-  const resetFastTrackConversationState = () => {
+  const resetFastTrackConversationState = useCallback(() => {
     setFastTrackMessageSent(false)
     setFastTrackSuggestionsShownTracked(false)
     setAwaitingFastTrackSelection(false)
@@ -99,10 +98,9 @@ export function useFastTrackState(): UseFastTrackStateReturn {
     setFastTrackOriginalCompetencies(null)
     setWsiRegenerationPrompted(false)
     setAwaitingWSIRegenerationConfirmation(false)
-  }
+  }, [])
 
-  // Full reset including search results and wizard mode
-  const resetFastTrackFullState = () => {
+  const resetFastTrackFullState = useCallback(() => {
     resetFastTrackConversationState()
     setWizardMode('pre_wizard')
     setFastTrackState('initial')
@@ -112,7 +110,7 @@ export function useFastTrackState(): UseFastTrackStateReturn {
     setFastTrackSearchCriteria({})
     setIsSearchingVacancies(false)
     setWizardFastTrackSourceJobId(null)
-  }
+  }, [resetFastTrackConversationState])
 
   return {
     state: {
