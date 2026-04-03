@@ -280,25 +280,25 @@ export function JobsPage(props: JobsPageProps) {
                         setActiveFilter('todas')
                         setTimeout(() => openJobCreationChat('Criar nova vaga'), 100)
                       }}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary font-open-sans"
                     >
-                      <Plus className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
+                      <Plus className="w-3 h-3" />
                       Criar nova vaga
                     </button>
                     {/* Tag 2: Ver minhas vagas */}
                     <button
                       onClick={() => setActiveFilter('ativas')}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary font-open-sans"
                     >
-                      <Briefcase className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
+                      <Briefcase className="w-3 h-3" />
                       Ver minhas vagas
                     </button>
                     {/* Tag 3: Ver todas as vagas */}
                     <button
                       onClick={() => setActiveFilter('todas')}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary font-open-sans"
                     >
-                      <Building2 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
+                      <Building2 className="w-3 h-3" />
                       Ver todas as vagas
                     </button>
                     {/* Tag 4: Resumo das vagas */}
@@ -307,9 +307,9 @@ export function JobsPage(props: JobsPageProps) {
                         setActiveFilter('todas')
                         setTimeout(() => openGeneralChat('Resumo das minhas vagas ativas'), 100)
                       }}
-                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary font-open-sans"
                     >
-                      <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
+                      <BarChart3 className="w-3 h-3" />
                       Resumo das vagas
                     </button>
                     {/* Botão Mais ideias - Modal com tabs igual ao prompt expandido */}
@@ -388,7 +388,7 @@ export function JobsPage(props: JobsPageProps) {
                           setActiveFilter('todas')
                           setTimeout(() => openGeneralChat(suggestion), 100)
                         }}
-                        className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle hover:text-lia-text-primary hover:bg-lia-bg-tertiary"
+                        className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-lg transition-colors motion-reduce:transition-none bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle hover:text-lia-text-primary hover:bg-lia-bg-tertiary"
                        
                       >
                         {suggestion}
