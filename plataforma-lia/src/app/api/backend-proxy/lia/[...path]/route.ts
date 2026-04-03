@@ -1,7 +1,13 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+const MAX_BODY_SIZE = 2 * 1024 * 1024
+
+const catchAllPathSchema = z.object({
+  path: z.array(z.string().min(1)).min(1, 'Path is required'),
+})
 
 function getHeaders(request: NextRequest): HeadersInit {
   const headers: HeadersInit = {
@@ -33,6 +39,10 @@ async function proxyRequest(
 ): Promise<NextResponse> {
   try {
     const { path } = await params
+    const pathValidation = catchAllPathSchema.safeParse({ path })
+    if (!pathValidation.success) {
+      return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+    }
     const pathStr = path.join('/')
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
@@ -45,6 +55,9 @@ async function proxyRequest(
     if (method !== 'GET' && method !== 'HEAD') {
       try {
         const body = await request.text()
+        if (body.length > MAX_BODY_SIZE) {
+          return NextResponse.json({ error: 'Request body too large' }, { status: 413 })
+        }
         if (body) fetchOptions.body = body
       } catch { /* ignore empty body */ }
     }

@@ -1,7 +1,14 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateParams } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  id: z.string().min(1, 'id is required'),
+  automationId: z.string().min(1, 'automationId is required'),
+})
 
 function getAuthHeaders(): Record<string, string> {
   return {
@@ -18,6 +25,8 @@ export async function PATCH(
 ) {
   try {
     const { id, automationId } = await params
+    const paramValidation = validateParams(await Promise.resolve({ id, automationId }), routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/clients/${id}/automations/${automationId}/toggle`
     

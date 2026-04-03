@@ -1,17 +1,27 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { z } from 'zod'
+import { validateParams } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000'
 
+const routeParamsSchema = z.object({
+  listId: z.string().min(1, 'listId is required'),
+  candidateId: z.string().min(1, 'candidateId is required'),
+})
+
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { listId: string; candidateId: string } }
+  { params }: { params: Promise<{ listId: string; candidateId: string }> }
 ) {
   try {
+    const { listId, candidateId } = await params
+    const paramValidation = validateParams({ listId, candidateId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
-    const backendUrl = `${BACKEND_URL}/api/v1/short-lists/${params.listId}/candidates/${params.candidateId}${queryString ? `?${queryString}` : ''}`
+    const backendUrl = `${BACKEND_URL}/api/v1/short-lists/${listId}/candidates/${candidateId}${queryString ? `?${queryString}` : ''}`
 
     const response = await fetch(backendUrl, {
       method: 'DELETE',

@@ -1,7 +1,13 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateParams } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  method_id: z.string().min(1, 'method_id is required'),
+})
 
 function getAuthHeaders(): Record<string, string> {
   return {
@@ -18,6 +24,8 @@ export async function DELETE(
 ) {
   try {
     const { method_id } = await params
+    const paramValidation = validateParams(await Promise.resolve({ method_id }), routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const backendUrl = `${BACKEND_URL}/api/v1/billing/my-payment-methods/${method_id}`
     
     const response = await fetch(backendUrl, {

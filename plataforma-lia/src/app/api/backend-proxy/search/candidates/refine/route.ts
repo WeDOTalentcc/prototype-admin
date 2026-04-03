@@ -1,27 +1,27 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateQuery } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
+const refineQuerySchema = z.object({
+  thread_id: z.string().min(1, 'thread_id is required'),
+  additional_query: z.string().min(1, 'additional_query is required'),
+  limit: z.string().optional(),
+})
+
 export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const thread_id = searchParams.get('thread_id')
-    const additional_query = searchParams.get('additional_query')
-    const limit = searchParams.get('limit')
-    
-    if (!thread_id || !additional_query) {
-      return NextResponse.json(
-        { error: 'thread_id e additional_query são obrigatórios' },
-        { status: 400 }
-      )
-    }
-    
+    const queryValidation = validateQuery(request, refineQuerySchema)
+    if (!queryValidation.success) return queryValidation.response
+    const { thread_id, additional_query, limit } = queryValidation.data
+
     let backendUrl = `${BACKEND_URL}/api/v1/search/candidates/refine?thread_id=${encodeURIComponent(thread_id)}&additional_query=${encodeURIComponent(additional_query)}`
     if (limit) {
       backendUrl += `&limit=${limit}`
     }
-    
+
     const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {

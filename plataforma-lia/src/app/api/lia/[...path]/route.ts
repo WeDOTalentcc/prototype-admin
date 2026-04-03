@@ -1,24 +1,27 @@
 export const dynamic = "force-dynamic"
-/**
- * LIA Backend API Proxy
- * 
- * Encaminha todas as requisições de /api/lia/* para o backend FastAPI (porta 8000)
- * Necessário porque apenas a porta 5000 é exposta publicamente no Replit
- */
-
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
+const MAX_BODY_SIZE = 2 * 1024 * 1024
+
+const catchAllPathSchema = z.object({
+  path: z.array(z.string().min(1)).min(1, 'Path is required'),
+})
 
 async function proxyRequest(
   request: NextRequest,
   path: string[]
 ): Promise<NextResponse> {
   try {
+    const pathValidation = catchAllPathSchema.safeParse({ path })
+    if (!pathValidation.success) {
+      return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+    }
+
     const pathname = path.join('/')
     const searchParams = request.nextUrl.searchParams.toString()
     const backendUrl = `${BACKEND_URL}/${pathname}${searchParams ? `?${searchParams}` : ''}`
-
 
     const contentType = request.headers.get('content-type')
     const isMultipart = contentType?.includes('multipart/form-data')
@@ -40,6 +43,9 @@ async function proxyRequest(
         options.body = formData
       } else {
         const body = await request.text()
+        if (body.length > MAX_BODY_SIZE) {
+          return NextResponse.json({ error: 'Request body too large' }, { status: 413 })
+        }
         if (body) {
           options.body = body
           if (!contentType) {

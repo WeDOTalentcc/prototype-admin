@@ -1,7 +1,13 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000"
+const MAX_BODY_SIZE = 5 * 1024 * 1024
+
+const catchAllPathSchema = z.object({
+  path: z.array(z.string().min(1)).min(1, 'Path is required'),
+})
 
 export async function GET(
   request: NextRequest,
@@ -9,6 +15,10 @@ export async function GET(
 ) {
   try {
     const { path } = await params
+    const pathValidation = catchAllPathSchema.safeParse({ path })
+    if (!pathValidation.success) {
+      return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+    }
     const pathStr = path.join("/")
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
@@ -50,6 +60,10 @@ export async function POST(
 ) {
   try {
     const { path } = await params
+    const pathValidation2 = catchAllPathSchema.safeParse({ path })
+    if (!pathValidation2.success) {
+      return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+    }
     const pathStr = path.join("/")
     const contentType = request.headers.get("content-type") || ""
     const backendUrl = `${BACKEND_URL}/api/v1/triagem/${pathStr}`

@@ -1,8 +1,16 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { z } from 'zod'
+import { validateBody } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const digestPreferencesSchema = z.object({
+  weekly_report_enabled: z.boolean().optional(),
+  email: z.string().email().optional(),
+  frequency: z.string().optional(),
+}).passthrough()
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,7 +41,8 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json()
+    const bodyValidation = await validateBody(request, digestPreferencesSchema)
+    if (!bodyValidation.success) return bodyValidation.response
 
     const response = await fetch(
       `${BACKEND_URL}/api/v1/digest/weekly/preferences`,
@@ -43,7 +52,7 @@ export async function PUT(request: NextRequest) {
           ...getAuthHeaders(request),
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(bodyValidation.data),
       }
     )
 

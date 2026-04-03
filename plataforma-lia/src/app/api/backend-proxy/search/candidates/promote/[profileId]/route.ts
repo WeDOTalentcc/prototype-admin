@@ -1,24 +1,25 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateParams } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
+const routeParamsSchema = z.object({
+  profileId: z.string().min(1, 'profileId is required'),
+})
+
 export async function POST(
   request: NextRequest,
-  { params }: { params: { profileId: string } }
+  { params }: { params: Promise<{ profileId: string }> }
 ) {
   try {
-    const { profileId } = params
-    
-    if (!profileId) {
-      return NextResponse.json(
-        { error: 'Profile ID is required' },
-        { status: 400 }
-      )
-    }
-    
+    const { profileId } = await params
+    const paramValidation = validateParams({ profileId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
+
     const backendUrl = `${BACKEND_URL}/api/v1/search/candidates/promote/${profileId}`
-    
+
     const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {

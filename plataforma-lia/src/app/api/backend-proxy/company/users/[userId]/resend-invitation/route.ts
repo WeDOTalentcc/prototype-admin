@@ -1,7 +1,13 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateParams } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  userId: z.string().min(1, 'userId is required'),
+})
 
 export async function POST(
   request: NextRequest,
@@ -9,6 +15,8 @@ export async function POST(
 ) {
   try {
     const { userId } = await params
+    const paramValidation = validateParams(await Promise.resolve({ userId }), routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/company/users/${userId}/resend-invitation`
     

@@ -1,7 +1,13 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateParams } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  planId: z.string().min(1, 'planId is required'),
+})
 
 function getHeaders(request: NextRequest) {
   const headers: Record<string, string> = {
@@ -32,6 +38,8 @@ export async function POST(
 ) {
   try {
     const { planId } = await params
+    const paramValidation = validateParams(await Promise.resolve({ planId }), routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const backendUrl = `${BACKEND_URL}/api/v1/workforce-planning/${planId}/calculate`
     
     const response = await fetch(backendUrl, {

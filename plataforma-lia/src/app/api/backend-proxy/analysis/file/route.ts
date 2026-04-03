@@ -1,17 +1,26 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000"
+const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File
 
-    if (!file) {
+    if (!file || !(file instanceof File)) {
       return NextResponse.json(
         { success: false, error: "No file provided" },
         { status: 400 }
+      )
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { success: false, error: "File too large (max 10MB)" },
+        { status: 413 }
       )
     }
 

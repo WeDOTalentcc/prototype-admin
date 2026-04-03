@@ -1,3 +1,4 @@
+// @validated: webhook — signature-verified by workos SDK (constructEvent)
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { workos } from '@/lib/workos'

@@ -1,7 +1,13 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateParams } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  candidateId: z.string().min(1, 'candidateId is required'),
+})
 
 export async function GET(
   request: NextRequest,
@@ -9,6 +15,8 @@ export async function GET(
 ) {
   try {
     const { candidateId } = await params
+    const paramValidation = validateParams({ candidateId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const searchParams = request.nextUrl.searchParams
     const companyId = searchParams.get('company_id') || 'demo_company'
 
@@ -52,6 +60,8 @@ export async function DELETE(
 ) {
   try {
     const { candidateId } = await params
+    const paramValidation = validateParams({ candidateId }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const searchParams = request.nextUrl.searchParams
     const companyId = searchParams.get('company_id') || 'demo_company'
 

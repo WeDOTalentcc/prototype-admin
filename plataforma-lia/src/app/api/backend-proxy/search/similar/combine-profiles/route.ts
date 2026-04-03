@@ -1,7 +1,9 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000"
+const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +17,15 @@ export async function POST(request: NextRequest) {
         urls.push(value as string)
       } else if (key.startsWith("cvs[") || key === "cvs") {
         cvFiles.push(value as File)
+      }
+    }
+
+    for (const file of cvFiles) {
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: "CV file too large (max 10MB)" },
+          { status: 413 }
+        )
       }
     }
 

@@ -1,20 +1,29 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     
-    if (!file) {
+    if (!file || !(file instanceof File)) {
       return NextResponse.json(
         { error: 'Arquivo CV é obrigatório' },
         { status: 400 }
       )
     }
     
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: 'File too large (max 10MB)' },
+        { status: 413 }
+      )
+    }
+
     const { searchParams } = new URL(request.url)
     const limit = searchParams.get('limit') || '20'
     const searchPearch = searchParams.get('search_pearch') !== 'false'

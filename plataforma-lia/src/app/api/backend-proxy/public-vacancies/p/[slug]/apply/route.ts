@@ -1,7 +1,20 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateParams } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  slug: z.string().min(1, 'slug is required'),
+})
+
+const applyFieldsSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Valid email is required'),
+  phone: z.string().min(1, 'Phone is required'),
+  lgpd_consent: z.string().min(1, 'LGPD consent is required'),
+})
 
 export async function POST(
   request: NextRequest,
@@ -9,13 +22,30 @@ export async function POST(
 ) {
   try {
     const { slug } = await params
+    const paramValidation = validateParams({ slug }, routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     const formData = await request.formData()
 
+    const fields = {
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      lgpd_consent: formData.get('lgpd_consent') as string,
+    }
+
+    const fieldValidation = applyFieldsSchema.safeParse(fields)
+    if (!fieldValidation.success) {
+      return NextResponse.json(
+        { error: 'Validation error', details: fieldValidation.error.flatten() },
+        { status: 422 }
+      )
+    }
+
     const backendForm = new FormData()
-    backendForm.append('name', formData.get('name') as string)
-    backendForm.append('email', formData.get('email') as string)
-    backendForm.append('phone', formData.get('phone') as string)
-    backendForm.append('lgpd_consent', formData.get('lgpd_consent') as string)
+    backendForm.append('name', fields.name)
+    backendForm.append('email', fields.email)
+    backendForm.append('phone', fields.phone)
+    backendForm.append('lgpd_consent', fields.lgpd_consent)
 
     const cvFile = formData.get('cv_file') as File
     if (cvFile) {

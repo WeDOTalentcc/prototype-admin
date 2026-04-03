@@ -1,7 +1,13 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateParams } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const routeParamsSchema = z.object({
+  profileId: z.string().min(1, 'profileId is required'),
+})
 
 export async function POST(
   request: NextRequest,
@@ -9,6 +15,8 @@ export async function POST(
 ) {
   try {
     const { profileId } = await params
+    const paramValidation = validateParams(await Promise.resolve({ profileId }), routeParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/company/profile/${profileId}/generate-evp`
     

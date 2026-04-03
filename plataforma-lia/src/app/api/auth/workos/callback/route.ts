@@ -1,3 +1,4 @@
+// @validated: auth route — reads from cookies/query params, no user body to validate
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'

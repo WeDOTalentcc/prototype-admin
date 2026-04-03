@@ -1,7 +1,12 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+
+const catchAllPathSchema = z.object({
+  path: z.array(z.string().min(1)).min(1, 'Path is required'),
+})
 function getHeaders(request: NextRequest): HeadersInit {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -36,6 +41,10 @@ export async function GET(
 ) {
   try {
     const { path } = await params
+    const pathValidation = catchAllPathSchema.safeParse({ path })
+    if (!pathValidation.success) {
+      return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+    }
     const pathStr = path.join('/')
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
@@ -74,6 +83,10 @@ export async function DELETE(
 ) {
   try {
     const { path } = await params
+    const pathValidation = catchAllPathSchema.safeParse({ path })
+    if (!pathValidation.success) {
+      return NextResponse.json({ error: 'Invalid path' }, { status: 400 })
+    }
     const pathStr = path.join('/')
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()

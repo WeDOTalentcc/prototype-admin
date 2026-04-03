@@ -2,6 +2,13 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { z } from 'zod'
+
+const sessionBodySchema = z.object({
+  access_token: z.string().min(1, 'access_token is required'),
+  refresh_token: z.string().optional(),
+  auth_method: z.string().optional(),
+})
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -35,15 +42,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const body = await request.json()
-    const { access_token, refresh_token, auth_method } = body
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
 
-    if (!access_token) {
+    const parsed = sessionBodySchema.safeParse(body)
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'access_token is required' },
-        { status: 400 }
+        { error: 'Validation error', details: parsed.error.flatten() },
+        { status: 422 }
       )
     }
+    const { access_token, refresh_token, auth_method } = parsed.data
 
     const cookieStore = await cookies()
 

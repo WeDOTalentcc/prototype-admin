@@ -1,3 +1,4 @@
+// @validated: no-body action route (no user input to validate)
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { getWorkOSSession } from '@/lib/workos-session'

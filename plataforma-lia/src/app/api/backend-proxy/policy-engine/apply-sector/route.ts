@@ -1,26 +1,20 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
+import { validateQuery } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://127.0.0.1:8000"
 
-/**
- * POST /api/backend-proxy/policy-engine/apply-sector
- *
- * Proxy para aplicar templates de política por setor.
- * Mapeia para: POST /api/v1/policy-engine/apply-sector/{companyId}?sector=
- */
+const applySectorQuerySchema = z.object({
+  companyId: z.string().min(1, 'companyId is required'),
+  sector: z.string().optional(),
+})
+
 export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const companyId = searchParams.get("companyId") || ""
-    const sector = searchParams.get("sector") || ""
-
-    if (!companyId) {
-      return NextResponse.json(
-        { success: false, error: "companyId é obrigatório" },
-        { status: 400 },
-      )
-    }
+    const queryValidation = validateQuery(request, applySectorQuerySchema)
+    if (!queryValidation.success) return queryValidation.response
+    const { companyId, sector } = queryValidation.data
 
     const url = new URL(
       `${BACKEND_URL}/api/v1/policy-engine/apply-sector/${companyId}`,

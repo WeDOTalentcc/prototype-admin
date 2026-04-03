@@ -1,17 +1,26 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000"
+const MAX_AUDIO_SIZE = 25 * 1024 * 1024
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const audio = formData.get("audio") as Blob
 
-    if (!audio) {
+    if (!audio || !(audio instanceof Blob)) {
       return NextResponse.json(
         { error: "No audio provided" },
         { status: 400 }
+      )
+    }
+
+    if (audio.size > MAX_AUDIO_SIZE) {
+      return NextResponse.json(
+        { error: "Audio file too large (max 25MB)" },
+        { status: 413 }
       )
     }
 

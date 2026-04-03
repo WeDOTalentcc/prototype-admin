@@ -83,11 +83,10 @@ async def analyze_cv_match(
             resolved_candidate_name = candidate_name
 
             if not resolved_candidate_id and candidate_name:
+                # Candidate is a platform-wide table (no company_id column)
                 q = select(Candidate).where(
                     func.lower(Candidate.name).contains(candidate_name.strip().lower())
                 )
-                if company_id:
-                    q = q.where(Candidate.company_id == company_id)
                 row = await db.execute(q.limit(1))
                 found = row.scalar_one_or_none()
                 if found:
