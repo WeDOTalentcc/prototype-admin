@@ -29,6 +29,7 @@ import {
 } from"@/components/ui/popover"
 import { LiaQueriesGuide } from"@/components/ui/lia-queries-guide"
 import { LiaVacancyQueriesGuide } from"@/components/ui/lia-vacancy-queries-guide"
+import { LIAToolbarBrainButton } from"@/components/ui/lia-toolbar-brain-button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
 import { Label } from"@/components/ui/label"
 import { Textarea } from"@/components/ui/textarea"
@@ -124,7 +125,7 @@ export function JobsPage(props: JobsPageProps) {
     handleCloseReport, handleDeleteSavedSearch, handleJobAssignRecruiter, handleJobClick, handleJobDuplicate, handleJobInsights,
     handleJobPublish, handleJobToggleStatus, handleRenameSavedSearch, handleToggleColumnConfig, hasActiveFilters, inlineChatInitialMessage,
     isChatFullscreen, isLoadingJobMetrics, isLoadingJobs, isLoadingScreeningConfig, isResizingLIA, isTableCollapsed,
-    jobFilters, jobMetrics, liaInlineLoading, liaInlineMessages, liaInlineMessagesEndRef, liaInputRef,
+    jobFilters, jobMetrics, liaInlineLoading, liaInlineMessages, liaInlineMessagesEndRef,
     liaPromptValue, liaWidth, navigationFilters, openGeneralChat, openJobCreationChat, orchestratorSuggestions,
     previewJob, previewWidth, reactivateEndDate, reactivateScreeningJobs,
     reportJob, resetColumnsToDefault, returnToGeneralChat, returnToLateralPrompt, saveColumnView, saveSearchAsTemplate,
@@ -404,60 +405,13 @@ export function JobsPage(props: JobsPageProps) {
         {/* Conteúdo Principal - Lista de Vagas (quando não é visão geral) */}
         {activeFilter !=='visao-geral' && (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          {/* Toolbar Compacto - Prompt LIA + Controles - Padrão Funil de Talentos */}
-          {/* Esconde o prompt compacto e botões quando qualquer chat expandido está ativo */}
+          {/* Toolbar Compacto - Botão LIA Brain + Controles */}
           {!showExpandedLIA && !showInlineChat && (
             <div className="flex-shrink-0 flex items-center justify-between gap-4 mt-3 mb-2">
-              {/* Prompt LIA - Compacto (max 300px) - Estilo Funil de Talentos */}
-              <div className="flex-1 max-w-panel-sm">
-              <div className="relative">
-                <input
-                  ref={liaInputRef}
-                  type="text"
-                  placeholder="Ex: Desenvolvedores Python com 5+ anos em São Paulo..."
-                  value={liaPromptValue}
-                  onChange={(e) => setLiaPromptValue(e.target.value)}
-                  className="w-full h-10 pl-4 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-lia-text-secondary transition-colors motion-reduce:transition-none border bg-lia-bg-primary"
-                  style={{color:"var(--lia-btn-primary-bg)"}}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor ="var(--lia-text-primary)"
-                    e.currentTarget.style.boxShadow ="0 0 0 2px var(--lia-bg-tertiary)"
-                    setShowExpandedLIA(true)
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor ="var(--lia-border-subtle)"
-                    e.currentTarget.style.boxShadow ="none"
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key ==='Enter' && liaPromptValue.trim()) {
-                      openGeneralChat(liaPromptValue.trim())
-                      setLiaPromptValue('')
-                    }
-                  }}
-                />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  <button
-                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary"
-                    onClick={() => openGeneralChat()}
-                    title="Expandir chat"
-                  >
-                    <Maximize2 className="w-4 h-4 text-lia-text-secondary" />
-                  </button>
-                  <button
-                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary"
-                    onClick={() => {
-                      if (liaPromptValue.trim()) {
-                        openGeneralChat(liaPromptValue.trim())
-                        setLiaPromptValue('')
-                      }
-                    }}
-                  >
-                    <Send className="w-4 h-4 text-lia-text-secondary" />
-                  </button>
-                </div>
-              </div>
-
-            </div>
+              <LIAToolbarBrainButton
+                isOpen={showExpandedLIA}
+                onClick={() => setShowExpandedLIA(true)}
+              />
 
             {/* Controles e Info - Sempre visíveis à direita */}
             <div className="flex items-center gap-3">

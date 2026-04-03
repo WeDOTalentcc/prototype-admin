@@ -25,6 +25,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **UI/UX Design**: Adheres to an "ElevenLabs pattern" with a monochromatic palette, cyan accents, a 3-font system, interactive pipeline flows, sortable columns, advanced pagination, and a command palette, all aligned with Design System v4.2.1.
 - **WSI Screening**: A 6-block (0-5) AI-powered methodology for comprehensive candidate evaluation.
 - **Compliance (3-Pillar Architecture)**: Designed to comply with LGPD, SOX, and EU AI Act, incorporating FairnessGuard and FactChecker for bias detection and factual accuracy.
+- **LIA Toolbar Brain Button**: All toolbar LIA prompt inputs (candidates, jobs, kanban) have been replaced with a compact Brain icon button (`LIAToolbarBrainButton`) that opens the expanded LIA chat. The shared component lives at `src/components/ui/lia-toolbar-brain-button.tsx`.
 - **Job Creation Flow**: Supports both conversational ("Criar com a LIA") and manual entry ("Criar manualmente").
 - **Kanban Candidate Movement System**: Features AI-powered sub-status prediction and WSI score integration.
 - **5-Chat + 2-Channel Architecture**: Comprises dedicated chats for Job Creation, Talent, Jobs Management, Pipeline/Kanban, and Policy, integrated with WhatsApp and MS Teams.

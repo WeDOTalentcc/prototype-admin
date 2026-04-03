@@ -2,11 +2,12 @@
 
 import React from "react"
 import {
-  Layers3, ListChecks, Brain, Send, Search,
-  Target, X, ChevronsLeftRight, CheckCircle, XCircle, Maximize2
+  Layers3, ListChecks, Search,
+  Target, X, ChevronsLeftRight, CheckCircle, XCircle
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { LIAToolbarBrainButton } from "@/components/ui/lia-toolbar-brain-button"
 
 interface KanbanToolbarProps {
   showExpandedLIA: boolean
@@ -39,9 +40,6 @@ interface KanbanToolbarProps {
 export function KanbanToolbar({
   showExpandedLIA,
   setShowExpandedLIA,
-  liaPromptValue,
-  setLiaPromptValue,
-  handleAICommand,
   searchQuery,
   setSearchQuery,
   viewMode,
@@ -125,60 +123,12 @@ export function KanbanToolbar({
   return (
     <div className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-secondary px-4 py-2">
       <div className="w-full px-4 flex items-center justify-between gap-2">
-        {/* Lado Esquerdo: Prompt LIA - Oculto quando prompt expandido está aberto */}
+        {/* Lado Esquerdo: Botão LIA Brain - Oculto quando prompt expandido está aberto */}
         {!showExpandedLIA && (
-          <div className="flex items-center gap-2">
-            <div className="flex-shrink-0 flex-1 max-w-panel-sm">
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10 cursor-pointer" onClick={() => setShowExpandedLIA(!showExpandedLIA)}>
-                  <Brain className="w-4 h-4 text-wedo-cyan" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Ex: Analisar candidatos com maior fit..."
-                  value={liaPromptValue}
-                  onChange={(e) => setLiaPromptValue(e.target.value)}
-                  className="w-full h-10 pl-10 pr-20 text-base-ui rounded-md focus:outline-none placeholder:text-lia-text-secondary transition-colors motion-reduce:transition-none border"
-                  style={{ backgroundColor: 'var(--lia-bg-secondary)', color: 'var(--lia-btn-primary-bg)' }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--lia-text-primary)'
-                    e.currentTarget.style.boxShadow = '0 0 0 2px var(--lia-bg-tertiary)'
-                    setShowExpandedLIA(true)
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--lia-border-subtle)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && liaPromptValue.trim()) {
-                      handleAICommand(liaPromptValue)
-                    }
-                  }}
-                />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  <button
-                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary"
-                    onClick={() => setShowExpandedLIA(true)}
-                    title="Expandir chat"
-                    aria-label="Expandir chat da LIA"
-                  >
-                    <Maximize2 className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
-                  </button>
-                  <button
-                    className="p-1.5 rounded-md transition-colors motion-reduce:transition-none hover:bg-lia-bg-tertiary"
-                    onClick={() => {
-                      if (liaPromptValue.trim()) {
-                        handleAICommand(liaPromptValue)
-                      }
-                    }}
-                    aria-label="Enviar mensagem para a LIA"
-                  >
-                    <Send className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <LIAToolbarBrainButton
+            isOpen={showExpandedLIA}
+            onClick={() => setShowExpandedLIA(true)}
+          />
         )}
 
         {/* Ações do lado direito */}
