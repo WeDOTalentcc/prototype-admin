@@ -78,7 +78,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
         {ghostTextSuffix && !showAutocomplete && (
           <div
             ref={ghostOverlayRef}
-            className="absolute inset-0 pointer-events-none rounded-md px-4 py-3 pr-28 text-base-ui min-h-14 overflow-hidden whitespace-pre-wrap break-words z-[1]"
+            className="absolute inset-0 pointer-events-none rounded-md px-4 py-3 pr-28 text-xs min-h-14 overflow-hidden whitespace-pre-wrap break-words z-[1]"
             aria-hidden="true"
           >
             <span className="text-transparent">{value}</span>
@@ -97,7 +97,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
             }
           }}
           placeholder={getPlaceholder()}
-          className={cn("w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors motion-reduce:transition-none border relative text-lia-text-primary caret-lia-text-primary z-[2]", ghostTextSuffix && !showAutocomplete ? "bg-transparent" : "bg-lia-bg-primary")}
+          className={cn("w-full resize-none rounded-md px-4 py-3 pr-28 text-xs focus:outline-none min-h-14 transition-colors motion-reduce:transition-none border relative text-lia-text-primary caret-lia-text-primary z-[2]", ghostTextSuffix && !showAutocomplete ? "bg-transparent" : "bg-lia-bg-primary")}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = "var(--lia-border-default)"
             e.currentTarget.style.boxShadow = "0 0 0 2px rgba(0, 0, 0, 0.06)"
