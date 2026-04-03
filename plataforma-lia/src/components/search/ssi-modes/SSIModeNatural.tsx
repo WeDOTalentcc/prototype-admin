@@ -100,7 +100,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
           className={cn("w-full resize-none rounded-md px-4 py-3 pr-28 text-base-ui focus:outline-none min-h-14 transition-colors motion-reduce:transition-none border relative text-lia-text-primary caret-lia-text-primary z-[2]", ghostTextSuffix && !showAutocomplete ? "bg-transparent" : "bg-lia-bg-primary")}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = "var(--lia-border-default)"
-            e.currentTarget.style.boxShadow = "0 0 0 2px var(--wedo-cyan-bg-12)"
+            e.currentTarget.style.boxShadow = "0 0 0 2px rgba(0, 0, 0, 0.06)"
           }}
           onBlur={(e) => {
             e.currentTarget.style.borderColor = "var(--lia-border-subtle)"
