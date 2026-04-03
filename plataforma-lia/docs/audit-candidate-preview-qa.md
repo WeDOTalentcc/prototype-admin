@@ -13,7 +13,7 @@
 
 1. **Tab Atividades do React usa dados DEMO.** O `CandidateActivitiesTab.tsx` usa `getDemoActivities()` com flag `NEXT_PUBLIC_USE_DEMO_DATA`. Os 15+ tipos de atividade sao UI pronta para backend futuro, nao dados reais. O Vue `applies.vue` usa `AppliesTable` com dados **reais** de candidaturas.
 2. **Endpoints React usam proxy.** URLs como `/api/backend-proxy/opinions/...` sao proxy Next.js. O endpoint real e o FastAPI em `BACKEND_URL`. Tab Arquivos do React usa `BACKEND_URL` diretamente, causando CORS em producao.
-3. **Vue tem features superiores ao React em 2 areas:** Remuneracao detalhada (`remunerations.vue`, 191 linhas com calculo anualizado 13.33x) e Score Analysis (`score_analysis.vue`, 692 linhas com requisitos expandiveis). Essas devem ser PRESERVADAS.
+3. **Vue tem features superiores ao React em 4 areas:** Remuneracao detalhada (`remunerations.vue`, 191 linhas com calculo anualizado 13.33x), Score Analysis (`score_analysis.vue`, 692 linhas com requisitos expandiveis), Insights da Query com evidencias reais do curriculo, e Perguntas Sugeridas geradas pela IA. Essas devem ser PRESERVADAS e backportadas para o React (FIX-R01, R02, R08, R09).
 4. **Fixes nao sao 100% drop-in.** Cada correcao requer verificacao de imports, props e event contracts no contexto real do componente.
 
 ---
@@ -51,11 +51,11 @@
 | **Remuneracao** | 191L com calculo 13.33x + beneficios | ~80L simplificado | VUE SUPERIOR |
 | **Score Analysis** | 692L com requisitos expandiveis e confianca | Embutido no Parecer LIA (~150L) | VUE SUPERIOR |
 
-**Total de problemas catalogados: 88** (63 Vue originais + 4 bugs React + 5 detalhes visuais + 9 bugs Vue Sessao 2 + 2 features Vue positivas + 5 cards backport novos)
+**Total de problemas catalogados: 88** (63 Vue originais + 4 bugs React + 5 detalhes visuais + 8 bugs Vue Sessao 2 + 2 itens Vue INFO/BAIXO + 2 features Vue positivas + 4 cards backport novos)
 **Criticos: 15 | Altos: 26 | Medios: 30 | Baixos: 16 | INFO: 1**
 **Screenshots documentados: 48** (23 React + 7 Vue Sessao 1 + 18 Vue Sessao 2)
 **Features Vue SUPERIORES ao React: 4** (Remuneracao 13.33x, Score Analysis 692L, Insights da Query com evidencias, Perguntas Sugeridas IA)
-**Cards Jira prontos: 43** (FIX-01..31 Vue original + FIX-V01..V09 Vue hotfix + FIX-R01..R09 React backport - sobreposicoes)
+**Cards Jira prontos: ~50 brutos / ~44 unicos** (FIX-01..31 + FIX-12b Vue original + FIX-V01..V09 Vue hotfix + FIX-R01..R09 React — desconto ~6 sobreposicoes layout/atividades)
 
 ## Verificacao Funcional (Playwright e2e)
 
@@ -115,8 +115,9 @@
 | V13 | `3.32.04_PM` | Candidato Davi Guides (DG, ID 4701, Score 88%, Alta Confianca, Baseado em Rubrica). Resumo: "Candidato experiente em Python backend, AWS e SQL, com ingles avancado e vivencia em microservicos." Pontos Positivos (2): progressao carreira + experiencia diversas tecnologias. Skills Principais: python/sql/aws/docker/kubernetes/restful webservices/ci-cd. Skills Nao Encontradas: php/as3/flex. Resumo Prioridade: Essencial 3 (3/0/0), Importante 2 (2/0/0), Desejavel 1 (1/0/0) | — |
 | V14 | `3.32.16_PM` | Davi Guides — Avaliacao por Requisitos (6) colapsado, Insights da Query (6) EXPANDIDO: "Experiencia em desenvolvimento Python" (Essencial, evidencias: Senior python backend developer Dataart 2022-presente, Staff python backend engineer Facily 2022), "Experiencia em desenvolvimento backend" (Essencial, evidencias: Microservices oriented architecture, Wordpress plug-in postgresql+php), "Experiencia com AWS" (Importante, evidencias: docker containers on aws, fastapi k8s rancher), "Experiencia com SQL" (Importante) | VUE-GOOD-01 |
 | V15 | `3.32.36_PM` | Davi Guides — Perguntas Sugeridas (3) EXPANDIDO: 1) "Pode detalhar sua experiencia com otimizacao de queries SQL?", 2) "Quais servicos AWS voce utilizou em seus projetos?", 3) "Como voce aplicou metodologias ageis em seus projetos?". Mapa de Skills 7 itens (python/sql/aws/docker/kubernetes/restful webservices/ci-cd). Experiencia Profissional: staff python backend engineer Jan/2022-Set/2022 Facily, senior python backend developer Out/2018-Dez/2021 Quiteja, senior python backend developer Jan/2017-Set/20.. Freelancer | VUE-GOOD-02 |
-| V16 | `3.36.14_PM` | Davi Guides — **LAYOUT: Preview ocupa 100% da altura** da viewport, colado ao topo da tela (sem margem superior). Header do preview (avatar DG, Score 88, icones) inicia direto abaixo da barra do browser. Sem espacamento entre preview e tabela de candidatos a esquerda. Perguntas Sugeridas + Mapa de Skills + Experiencia Profissional visiveis. Ausencia de controle de largura do painel | VUE-BUG-06, VUE-BUG-07, VUE-BUG-08 |
-| V17 | `3.36.31_PM` | Carolina Mendez (CM, CA8749, senior, 5.0 anos, LGPD) — **LAYOUT: Preview inicia ACIMA dos filtros** (Selecionar Todos, Filtros, Colunas), empurrando header "Novo Candidato" + "Nova Busca" para fora. Nenhum gap/espacamento entre borda esquerda da tabela e borda direita do preview. Painel de preview nao tem handle de resize. Datas raw "2016-02-01 - 2020-12-01" na Formacao Academica. Cursos e Certificacoes + Idiomas: "Nao informado" | VUE-BUG-06, VUE-BUG-07, VUE-BUG-08 |
+| V16 | `image_1775241260428` | Davi Guides — Tooltip "Adicionar a vaga" visivel no hover do icone. **Unico icone com tooltip funcional** dos 9 icones de acao no header. Os outros 8 nao mostram tooltip | VUE-BUG-05 |
+| V17 | `3.36.14_PM` | Davi Guides — **LAYOUT: Preview ocupa 100% da altura** da viewport, colado ao topo da tela (sem margem superior). Header do preview (avatar DG, Score 88, icones) inicia direto abaixo da barra do browser. Sem espacamento entre preview e tabela de candidatos a esquerda. Perguntas Sugeridas + Mapa de Skills + Experiencia Profissional visiveis. Ausencia de controle de largura do painel | VUE-BUG-06, VUE-BUG-07, VUE-BUG-08 |
+| V18 | `3.36.31_PM` | Carolina Mendez (CM, CA8749, senior, 5.0 anos, LGPD) — **LAYOUT: Preview inicia ACIMA dos filtros** (Selecionar Todos, Filtros, Colunas), empurrando header "Novo Candidato" + "Nova Busca" para fora. Nenhum gap/espacamento entre borda esquerda da tabela e borda direita do preview. Painel de preview nao tem handle de resize. Datas raw "2016-02-01 - 2020-12-01" na Formacao Academica. Cursos e Certificacoes + Idiomas: "Nao informado" | VUE-BUG-06, VUE-BUG-07, VUE-BUG-08 |
 
 ### Replit Referencia (em `plataforma-lia/docs/screenshots/` e `attached_assets/`)
 
@@ -146,7 +147,7 @@
 | R22 | `Screen_Shot_2.54.09_PM` | Atividades — Triagem por Voz expandida: 4/4 perguntas, Duracao 4:32, Completude 100%, Confianca 97%, Destaques |
 | R23 | `Screen_Shot_2.54.23_PM` | Atividades — Triagem por Voz: Destaques (5 bullets) + Impressao Geral + botao "Ouvir Triagem" |
 
-**Total:** 23 screenshots React + 7 screenshots Vue Sessao 1 + 18 screenshots Vue Sessao 2 (Lucas Campos + Davi Guides + Carolina Mendez) = **48 screenshots documentados.**
+**Total:** 23 screenshots React + 7 screenshots Vue Sessao 1 (P1-P7) + 18 screenshots Vue Sessao 2 (V1-V18: Lucas Campos V1-V12, Davi Guides V13-V17, Carolina Mendez V18) = **48 screenshots documentados.**
 
 ### Bugs Vue NOVOS descobertos na Sessao 2
 
@@ -158,10 +159,10 @@
 | VUE-BUG-04 | **CRITICO** | **HTML RAW na Tab Curriculo** — Tags HTML visiveis ao usuario (`<p>`, `&amp;`) em vez de conteudo renderizado. Mostra "1 linhas, 2903 caracteres" indicando que o curriculo e armazenado como HTML mas exibido como texto | V12 |
 | VUE-NEW-01 | INFO | **Parecer LIA "Aguardando triagem"** — Card Parecer LIA mostra loading state permanente. Pode indicar falta de processamento ou timeout | V1 |
 | VUE-NEW-02 | BAIXO | **Remuneracao BRL 0,00** — Remuneracao Total Anual mostra BRL 0,00 com multiplicador 13,33x aplicado a zero. Deveria ocultar quando nao informado | V4 |
-| VUE-BUG-05 | MEDIO | **Tooltips ausentes nos icones de acao** — Dos 9 icones de acao no header do candidato (email, telefone, agenda, copiar, adicionar vaga, comparar, favoritar, desabilitar, notas), apenas "Adicionar a vaga" tem tooltip funcional. Os outros 8 nao mostram tooltip no hover, dificultando a descoberta de funcionalidade | V16 (image_1775241260428) |
-| VUE-BUG-06 | **ALTO** | **Preview colado ao topo da viewport** — Painel de preview ocupa 100% da altura da tela, comecando direto abaixo da barra do browser sem nenhuma margem/padding superior. Header do candidato (avatar, nome, score) colado ao topo absoluto. No React (Replit), o preview e um drawer/overlay que respeita o header da aplicacao e inicia abaixo dos controles ("Novo Candidato", filtros). | V16, V17 |
-| VUE-BUG-07 | **ALTO** | **Sem espacamento entre preview e tabela** — Zero gap/margem entre a borda esquerda da tabela de candidatos e a borda direita do painel de preview. O preview "cola" diretamente na tabela, prejudicando a legibilidade e a separacao visual. No React (Replit), o drawer tem sombra + gap explicito separando-o da lista. | V16, V17 |
-| VUE-BUG-08 | MEDIO | **Ausencia de controle de largura (resize handle)** — Painel de preview nao oferece nenhum mecanismo para o usuario ajustar a largura (drag handle, snapping, ou presets). O preview empurra a tabela e os botoes de acao ("Novo Candidato", "Nova Busca", "Selecionar Todos", "Filtros", "Colunas") para fora da area visivel. No React (Replit), a largura e fixa em overlay sem alterar o layout da tabela. | V16, V17 |
+| VUE-BUG-05 | MEDIO | **Tooltips ausentes nos icones de acao** — Dos 9 icones de acao no header do candidato (email, telefone, agenda, copiar, adicionar vaga, comparar, favoritar, desabilitar, notas), apenas "Adicionar a vaga" tem tooltip funcional. Os outros 8 nao mostram tooltip no hover, dificultando a descoberta de funcionalidade | V16 |
+| VUE-BUG-06 | **ALTO** | **Preview colado ao topo da viewport** — Painel de preview ocupa 100% da altura da tela, comecando direto abaixo da barra do browser sem nenhuma margem/padding superior. Header do candidato (avatar, nome, score) colado ao topo absoluto. No React (Replit), o preview e um drawer/overlay que respeita o header da aplicacao e inicia abaixo dos controles ("Novo Candidato", filtros). Sobreposicao parcial com D01/D03 (FIX-01). | V17, V18 |
+| VUE-BUG-07 | **ALTO** | **Sem espacamento entre preview e tabela** — Zero gap/margem entre a borda esquerda da tabela de candidatos e a borda direita do painel de preview. O preview "cola" diretamente na tabela, prejudicando a legibilidade e a separacao visual. No React (Replit), o drawer tem sombra + gap explicito separando-o da lista. Sobreposicao parcial com D01/D02 (FIX-01). | V17, V18 |
+| VUE-BUG-08 | MEDIO | **Ausencia de controle de largura (resize handle)** — Painel de preview nao oferece nenhum mecanismo para o usuario ajustar a largura (drag handle, snapping, ou presets). O preview empurra a tabela e os botoes de acao ("Novo Candidato", "Nova Busca", "Selecionar Todos", "Filtros", "Colunas") para fora da area visivel. No React (Replit), a largura e fixa em overlay sem alterar o layout da tabela. Sobreposicao parcial com D02 (FIX-01). | V17, V18 |
 | VUE-GOOD-01 | POSITIVO | **Insights da Query funcional** — 6 insights com evidencias reais, tags Essencial/Importante, citacoes do curriculo. Feature ausente no React | V14 |
 | VUE-GOOD-02 | POSITIVO | **Perguntas Sugeridas funcional** — 3 perguntas contextuais geradas pela IA. Feature ausente no React | V15 |
 
@@ -1507,9 +1508,11 @@ CandidateAnalysisResult -> Frontend
 | FIX-V04 | **HTML RAW na Tab Curriculo** — renderizar HTML do curriculo em vez de exibir como texto plano com tags visiveis. Usar `v-html` com sanitizacao (DOMPurify) | VUE-BUG-04 | `curriculum_text.vue` | 4h | **CRITICO** |
 | FIX-V05 | **Tooltips ausentes nos icones de acao** — adicionar `v-tooltip` nos 8 icones sem tooltip (email, telefone, agenda, copiar, comparar, favoritar, desabilitar, notas) | VUE-BUG-05 | `preview.vue` | 2h | MEDIO |
 | FIX-V06 | **Remuneracao BRL 0,00** — ocultar secao de remuneracao ou mostrar "Nao informado" quando Salario Mensal = 0 em vez de calcular 13.33x * 0 | VUE-NEW-02 | `remunerations.vue` | 1h | BAIXO |
-| FIX-V07 | **Preview colado ao topo** — adicionar `top: <header-height>px` ou `margin-top` para que o painel de preview inicie abaixo do header da aplicacao (toolbar "Novo Candidato" + filtros), respeitando a hierarquia de layout | VUE-BUG-06 | `preview.vue` / CSS layout | 4h | **ALTO** |
-| FIX-V08 | **Espacamento preview-tabela** — adicionar gap/margem entre borda esquerda da tabela e borda direita do preview. Incluir `box-shadow` ou `border-left` para separacao visual clara. Garantir que a tabela nao seja "esmagada" | VUE-BUG-07 | `preview.vue` / CSS layout | 2h | **ALTO** |
-| FIX-V09 | **Resize handle para largura do preview** — implementar drag handle ou botoes de preset (33%/50%/66%) para o usuario controlar a largura do painel de preview. Alternativa: converter para drawer overlay como no React, sem empurrar a tabela | VUE-BUG-08 | `preview.vue` / `[id].vue` | 1 dia | MEDIO |
+| FIX-V07 | **Preview colado ao topo** — adicionar `top: <header-height>px` ou `margin-top` para que o painel de preview inicie abaixo do header da aplicacao (toolbar "Novo Candidato" + filtros), respeitando a hierarquia de layout. *Sobreposicao parcial com FIX-01 (D01/D03) — consolidar na implementacao* | VUE-BUG-06 | `preview.vue` / CSS layout | 4h | **ALTO** |
+| FIX-V08 | **Espacamento preview-tabela** — adicionar gap/margem entre borda esquerda da tabela e borda direita do preview. Incluir `box-shadow` ou `border-left` para separacao visual clara. Garantir que a tabela nao seja "esmagada". *Sobreposicao parcial com FIX-01 (D01/D02) — consolidar na implementacao* | VUE-BUG-07 | `preview.vue` / CSS layout | 2h | **ALTO** |
+| FIX-V09 | **Resize handle para largura do preview** — implementar drag handle ou botoes de preset (33%/50%/66%) para o usuario controlar a largura do painel de preview. Alternativa: converter para drawer overlay como no React, sem empurrar a tabela. *Sobreposicao parcial com FIX-01 (D02) — consolidar na implementacao* | VUE-BUG-08 | `preview.vue` / `[id].vue` | 1 dia | MEDIO |
+
+> **Nota de sobreposicao:** FIX-V01/V02/V03 detalham bugs especificos da Sessao 2 que se sobrepoe parcialmente ao FIX-02 (atividades). FIX-V07/V08/V09 detalham bugs de layout da Sessao 2 que se sobrepoe parcialmente ao FIX-01 (layout). Na implementacao Jira, recomenda-se consolidar como sub-tasks dos FIX originais ou manter como cards separados com link "is related to". **Cards unicos descontando sobreposicoes: ~44.**
 
 ## Sprint Backport React — Adaptar features superiores do Vue
 
@@ -1727,4 +1730,4 @@ DESCRICAO:
 ---
 
 *Documento gerado a partir de: analise de codigo Vue real (GitHub API, 30+ arquivos), inspecao de codigo React (13 arquivos), testes Playwright e2e, e 48 screenshots de producao (3 candidatos: Lucas Campos, Davi Guides, Carolina Mendez).*
-*Revisao FINALIZADA em 2026-04-03. 88 problemas catalogados, 43 cards Jira prontos, 4 features superiores Vue identificadas para backport.*
+*Revisao FINALIZADA em 2026-04-03. 88 problemas catalogados, ~44 cards Jira unicos, 4 features superiores Vue identificadas para backport.*

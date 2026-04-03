@@ -146,21 +146,23 @@ GOLDEN_CASES = [
         "id": "wsi_001",
         "agent": "wsi",
         "name": "WSI — Resposta STAR completa (deve score >= 7)",
-        "endpoint": "/api/lia/api/wsi/analyze-response/",
+        "endpoint": "http://localhost:8000/api/v1/wsi/analyze-response",
         "method": "POST",
         "body": {
-            "job_id": BENCHMARK_JOB_ID,
-            "question": "Descreva uma situação em que você liderou um projeto complexo de dados",
-            "candidate_answer": (
-                "\nSituação: Em 2023, nossa empresa precisava migrar 500GB de dados legados "
+            "session_id": f"benchmark-wsi-{BENCHMARK_JOB_ID}",
+            "question_id": "q-benchmark-001",
+            "candidate_id": "candidate-benchmark-001",
+            "job_vacancy_id": BENCHMARK_JOB_ID,
+            "question_text": "Descreva uma situação em que você liderou um projeto complexo de dados",
+            "response_text": ("\nSituação: Em 2023, nossa empresa precisava migrar 500GB de dados legados "
                 "para um novo data warehouse em 3 meses.\n"
                 "Tarefa: Fui designado como tech lead do projeto, responsável pela arquitetura e execução.\n"
                 "Ação: Dividi o projeto em 4 sprints, criei pipelines ETL com Python e Airflow, "
                 "implementei testes automatizados de qualidade de dados.\n"
                 "Resultado: Entregamos em 2,5 meses com 99.8% de integridade dos dados "
-                "e redução de 40% no tempo de queries.\n"
-            ),
-            "evaluation_criteria": "Liderança técnica, gestão de projeto, entrega de resultado",
+                "e redução de 40% no tempo de queries.\n"),
+            "competency": "lideranca_tecnica",
+            "framework": "STAR",
         },
         "description": "Resposta STAR completa deve receber score alto (>=7) com star_completeness >= 0.8",
         "quality_checks": {
@@ -175,16 +177,18 @@ GOLDEN_CASES = [
         "id": "wsi_002",
         "agent": "wsi",
         "name": "WSI — Resposta vaga (deve score <= 4)",
-        "endpoint": "/api/lia/api/wsi/analyze-response/",
+        "endpoint": "http://localhost:8000/api/v1/wsi/analyze-response",
         "method": "POST",
         "body": {
-            "job_id": BENCHMARK_JOB_ID,
-            "question": "Descreva uma situação em que você liderou um projeto complexo de dados",
-            "candidate_answer": (
-                "Sim, já trabalhei com projetos de dados. "
-                "Foi uma experiência muito boa e aprendi bastante."
-            ),
-            "evaluation_criteria": "Liderança técnica, gestão de projeto, entrega de resultado",
+            "session_id": f"benchmark-wsi-{BENCHMARK_JOB_ID}",
+            "question_id": "q-benchmark-001",
+            "candidate_id": "candidate-benchmark-001",
+            "job_vacancy_id": BENCHMARK_JOB_ID,
+            "question_text": "Descreva uma situação em que você liderou um projeto complexo de dados",
+            "response_text": ("Sim, já trabalhei com projetos de dados. "
+                "Foi uma experiência muito boa e aprendi bastante."),
+            "competency": "lideranca_tecnica",
+            "framework": "STAR",
         },
         "description": "Resposta vaga deve receber score baixo (<=4) sem elementos STAR claros",
         "quality_checks": {
@@ -198,16 +202,18 @@ GOLDEN_CASES = [
         "id": "wsi_003",
         "agent": "wsi",
         "name": "WSI — Resposta parcial STAR (deve score 4-7)",
-        "endpoint": "/api/lia/api/wsi/analyze-response/",
+        "endpoint": "http://localhost:8000/api/v1/wsi/analyze-response",
         "method": "POST",
         "body": {
-            "job_id": BENCHMARK_JOB_ID,
-            "question": "Descreva uma situação em que você liderou um projeto complexo de dados",
-            "candidate_answer": (
-                "Trabalhei num projeto de migração de dados onde precisávamos mover o banco da empresa. "
-                "Fiz o ETL com Python e o projeto foi concluído com sucesso."
-            ),
-            "evaluation_criteria": "Liderança técnica, gestão de projeto, entrega de resultado",
+            "session_id": f"benchmark-wsi-{BENCHMARK_JOB_ID}",
+            "question_id": "q-benchmark-001",
+            "candidate_id": "candidate-benchmark-001",
+            "job_vacancy_id": BENCHMARK_JOB_ID,
+            "question_text": "Descreva uma situação em que você liderou um projeto complexo de dados",
+            "response_text": ("Trabalhei num projeto de migração de dados onde precisávamos mover o banco da empresa. "
+                "Fiz o ETL com Python e o projeto foi concluído com sucesso."),
+            "competency": "lideranca_tecnica",
+            "framework": "STAR",
         },
         "description": "Resposta parcial deve receber score médio (4-7) com alguns elementos STAR",
         "quality_checks": {
@@ -221,16 +227,18 @@ GOLDEN_CASES = [
         "id": "wsi_004",
         "agent": "wsi",
         "name": "WSI — Resposta irrelevante/off-topic (deve score <= 3)",
-        "endpoint": "/api/lia/api/wsi/analyze-response/",
+        "endpoint": "http://localhost:8000/api/v1/wsi/analyze-response",
         "method": "POST",
         "body": {
-            "job_id": BENCHMARK_JOB_ID,
-            "question": "Descreva uma situação em que você liderou um projeto complexo de dados",
-            "candidate_answer": (
-                "Eu gosto muito de trabalhar em equipe e sempre fui muito dedicado "
-                "nos meus trabalhos anteriores."
-            ),
-            "evaluation_criteria": "Liderança técnica, gestão de projeto, entrega de resultado",
+            "session_id": f"benchmark-wsi-{BENCHMARK_JOB_ID}",
+            "question_id": "q-benchmark-001",
+            "candidate_id": "candidate-benchmark-001",
+            "job_vacancy_id": BENCHMARK_JOB_ID,
+            "question_text": "Descreva uma situação em que você liderou um projeto complexo de dados",
+            "response_text": ("Eu gosto muito de trabalhar em equipe e sempre fui muito dedicado "
+                "nos meus trabalhos anteriores."),
+            "competency": "lideranca_tecnica",
+            "framework": "STAR",
         },
         "description": "Resposta off-topic deve receber score muito baixo (<=3)",
         "quality_checks": {
@@ -874,7 +882,11 @@ async def call_endpoint(
     """
     Call endpoint (primary, then optional fallback). Returns (status, data, elapsed_ms, used_endpoint).
     """
-    url = base_url.rstrip("/") + endpoint
+    # Support absolute endpoint URLs (e.g., for direct backend access)
+    if endpoint.startswith("http://") or endpoint.startswith("https://"):
+        url = endpoint
+    else:
+        url = base_url.rstrip("/") + endpoint
     try:
         if HAS_HTTPX:
             status, data, elapsed = await post_async(url, payload, headers, timeout)
@@ -882,7 +894,7 @@ async def call_endpoint(
             status, data, elapsed = post_sync(url, payload, headers, timeout)
     except Exception as exc:
         if fallback_endpoint:
-            fallback_url = base_url.rstrip("/") + fallback_endpoint
+            fallback_url = fallback_endpoint if fallback_endpoint.startswith("http") else base_url.rstrip("/") + fallback_endpoint
             fb_payload = fallback_payload or payload
             try:
                 if HAS_HTTPX:
@@ -900,7 +912,7 @@ async def call_endpoint(
 
     # Se primário retornou 4xx/5xx e há fallback, tenta fallback
     if status >= 400 and fallback_endpoint:
-        fallback_url = base_url.rstrip("/") + fallback_endpoint
+        fallback_url = fallback_endpoint if fallback_endpoint.startswith("http") else base_url.rstrip("/") + fallback_endpoint
         fb_payload = fallback_payload or payload
         try:
             if HAS_HTTPX:
