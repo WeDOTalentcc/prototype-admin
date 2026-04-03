@@ -12,7 +12,7 @@ export async function GET(
     const { id } = await params
 
     if (!id) {
-      return NextResponse.json({ error: 'candidateId é obrigatório' }, { status: 422 })
+      return NextResponse.json({ error: 'candidateId é obrigatório' }, { status: 400 })
     }
 
     const { searchParams } = request.nextUrl

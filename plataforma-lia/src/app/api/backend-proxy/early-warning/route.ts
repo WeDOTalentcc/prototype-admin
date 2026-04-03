@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const minRiskLevel = searchParams.get('min_risk_level') || 'medium'
 
     if (!companyId) {
-      return NextResponse.json({ error: 'company_id é obrigatório' }, { status: 422 })
+      return NextResponse.json({ error: 'company_id é obrigatório' }, { status: 400 })
     }
 
     const url = new URL(`${BACKEND_URL}/api/v1/early-warning`)

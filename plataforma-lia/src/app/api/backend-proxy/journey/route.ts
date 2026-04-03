@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const vacancyId = searchParams.get('vacancy_id')
 
     if (!companyId) {
-      return NextResponse.json({ error: 'company_id é obrigatório' }, { status: 422 })
+      return NextResponse.json({ error: 'company_id é obrigatório' }, { status: 400 })
     }
 
     let backendPath: string

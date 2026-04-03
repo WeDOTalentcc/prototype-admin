@@ -1,15 +1,21 @@
-// @validated: no-body action route (no user input to validate)
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateQuery } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
-// POST /api/backend-proxy/admin/guardrails/seed-defaults → POST /api/v1/guardrails/seed-defaults
+const seedQuerySchema = z.object({
+  company_id: z.string().optional(),
+})
+
 export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const companyId = searchParams.get('company_id')
-    const url = `${BACKEND_URL}/api/v1/guardrails/seed-defaults${companyId ? `?company_id=${companyId}` : ''}`
+    const queryValidation = validateQuery(request, seedQuerySchema)
+    if (!queryValidation.success) return queryValidation.response
+    const { company_id } = queryValidation.data
+
+    const url = `${BACKEND_URL}/api/v1/guardrails/seed-defaults${company_id ? `?company_id=${company_id}` : ''}`
 
     const response = await fetch(url, {
       method: 'POST',

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const companyId = searchParams.get('company_id')
 
     if (!companyId) {
-      return NextResponse.json({ error: 'company_id é obrigatório' }, { status: 422 })
+      return NextResponse.json({ error: 'company_id é obrigatório' }, { status: 400 })
     }
 
     const response = await fetch(

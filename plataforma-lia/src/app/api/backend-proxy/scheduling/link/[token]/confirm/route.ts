@@ -26,7 +26,7 @@ export async function POST(
     if (!body.start || !body.end) {
       return NextResponse.json(
         { error: 'Os campos start e end são obrigatórios' },
-        { status: 422 }
+        { status: 400 }
       )
     }
 

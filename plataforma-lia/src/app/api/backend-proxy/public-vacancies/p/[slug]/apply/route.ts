@@ -37,7 +37,7 @@ export async function POST(
     if (!fieldValidation.success) {
       return NextResponse.json(
         { error: 'Validation error', details: fieldValidation.error.flatten() },
-        { status: 422 }
+        { status: 400 }
       )
     }
 

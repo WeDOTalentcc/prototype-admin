@@ -17,7 +17,7 @@ export async function GET(
     const companyId = searchParams.get('company_id')
 
     if (!companyId) {
-      return NextResponse.json({ error: 'company_id é obrigatório' }, { status: 422 })
+      return NextResponse.json({ error: 'company_id é obrigatório' }, { status: 400 })
     }
 
     const url = new URL(`${BACKEND_URL}/api/v1/recruiter-metrics/${recruiter_id}/benchmark`)

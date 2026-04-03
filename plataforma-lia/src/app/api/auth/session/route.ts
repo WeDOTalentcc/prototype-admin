@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Validation error', details: parsed.error.flatten() },
-        { status: 422 }
+        { status: 400 }
       )
     }
     const { access_token, refresh_token, auth_method } = parsed.data

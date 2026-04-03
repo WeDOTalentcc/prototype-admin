@@ -1,13 +1,20 @@
-// @validated: no-body action route (no user input to validate)
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { z } from 'zod'
+import { validateQuery } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://localhost:8000"
 
+const seedQuerySchema = z.object({
+  force: z.enum(['true', 'false']).optional(),
+})
+
 export async function POST(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const force = searchParams.get("force") === "true"
+    const queryValidation = validateQuery(request, seedQuerySchema)
+    if (!queryValidation.success) return queryValidation.response
+
+    const force = queryValidation.data.force === "true"
     const url = `${BACKEND_URL}/api/v1/company/pipeline-templates/seed-defaults${force ? "?force=true" : ""}`
     
     const response = await fetch(url, {

@@ -47,7 +47,7 @@ export async function validateFormData<T>(
       success: false,
       response: NextResponse.json(
         { error: 'Validation error', details: result.error.flatten() },
-        { status: 422 }
+        { status: 400 }
       ),
     }
   }
@@ -77,7 +77,7 @@ export async function validateBody<T>(
       success: false,
       response: NextResponse.json(
         { error: 'Validation error', details: result.error.flatten() },
-        { status: 422 }
+        { status: 400 }
       ),
     }
   }

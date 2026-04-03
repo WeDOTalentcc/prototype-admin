@@ -1,19 +1,27 @@
-// @validated: no-body action route (no user input to validate)
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { validateQuery } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
+const initQuerySchema = z.object({
+  company_id: z.string().optional(),
+}).passthrough()
+
 export async function POST(request: NextRequest) {
   try {
+    const queryValidation = validateQuery(request, initQuerySchema)
+    if (!queryValidation.success) return queryValidation.response
+
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()
-    
+
     let backendUrl = `${BACKEND_URL}/api/v1/recruitment-stages/initialize`
     if (queryString) {
       backendUrl = `${backendUrl}?${queryString}`
     }
-    
+
     const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {

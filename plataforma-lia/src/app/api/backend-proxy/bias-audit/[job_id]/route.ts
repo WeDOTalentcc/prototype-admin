@@ -15,7 +15,7 @@ export async function GET(
     const { job_id } = params
 
     if (!job_id) {
-      return NextResponse.json({ error: 'job_id é obrigatório' }, { status: 422 })
+      return NextResponse.json({ error: 'job_id é obrigatório' }, { status: 400 })
     }
 
     const response = await fetch(
