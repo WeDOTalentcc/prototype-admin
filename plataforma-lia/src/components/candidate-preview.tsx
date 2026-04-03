@@ -235,7 +235,7 @@ const {
                 <h3 className={`${textStyles.title} truncate`}>
                   {c.name as string}
                 </h3>
-                <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default">
+                <Badge className="text-[0.625rem] leading-none px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default">
                   {generateShortId(c.name as string, (c.id as string | undefined) || (c.candidateId as string | undefined) || (c.pearch_id as string | undefined))}
                 </Badge>
                 {(c.seniority_level || c.seniorityLevel) && (
@@ -252,7 +252,7 @@ const {
                   </Badge>
                 ) : null}
                 {(c.communication_consent !== undefined || c.communicationConsent !== undefined) && (
-                  <Badge className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(c.communication_consent ?? c.communicationConsent) ? 'bg-status-success/10 text-status-success' : 'bg-status-error/10 text-status-error'}`}>
+                  <Badge className={`text-[0.625rem] leading-none px-1.5 py-0 h-4 flex items-center gap-0.5 ${(c.communication_consent ?? c.communicationConsent) ? 'bg-status-success/10 text-status-success' : 'bg-status-error/10 text-status-error'}`}>
                     {(c.communication_consent ?? c.communicationConsent) ? <CheckCircle className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
                     LGPD
                   </Badge>
@@ -624,7 +624,7 @@ const {
               <tab.icon className="w-3 h-3" />
               {tab.label}
               {'badge' in tab && tab.badge! > 0 && (
-                <Badge className="text-micro px-1 py-0 h-4 ml-1 bg-wedo-cyan/15">
+                <Badge className="text-[0.625rem] leading-none px-1 py-0 h-4 ml-1 bg-wedo-cyan/15">
                   {tab.badge}
                 </Badge>
               )}

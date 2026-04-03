@@ -131,7 +131,6 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                         setJobEditForm((prev: Record<string, unknown>) => ({ ...prev, screeningStatus: newStatus }))
                         toast.success(`Triagem ${newStatus === 'active' ? 'ativada' : newStatus === 'paused' ? 'pausada' : 'atualizada'}`)
                       } catch {
-                        // @ts-ignore TODO: fix type
                         toast.error('Erro ao atualizar triagem')
                       }
                     }
@@ -307,8 +306,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                 if (selectedCandidates.size > 0) {
                   setShowShareGestorModal(true)
                 } else {
-                  // @ts-ignore TODO: fix type
-                  setSelectedCandidates(new Set(allTableCandidates.map(c => c.id as string)))
+                  setSelectedCandidates(new Set((allTableCandidates as Array<Record<string, unknown>>).map(c => String(c.id))))
                   toast.success("Modo Compartilhamento", { description: "Todos os candidatos foram selecionados. Ajuste a seleção e clique em Compartilhar na barra de ações." })
                 }
               }}>

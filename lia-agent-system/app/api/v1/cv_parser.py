@@ -13,7 +13,7 @@ from app.models.candidate import Candidate, CandidateExperience, CandidateEducat
 from app.services.cv_parser import cv_parser_service
 from app.utils.skill_classifier import classify_skills
 import re
-from typing import Tuple, Optional as Opt
+from typing import Tuple, Optional, Optional as Opt
 from app.schemas.cv_parser import (
     ParsedCV,
     CVUploadResponse,

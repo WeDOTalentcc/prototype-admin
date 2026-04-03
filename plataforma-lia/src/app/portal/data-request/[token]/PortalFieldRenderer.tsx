@@ -103,6 +103,7 @@ export function PortalFieldRenderer({
                 type="button"
                 onClick={() => onFileChange(field.name, null)}
                 className="absolute top-2 right-2 p-1 bg-status-error text-white rounded-full hover:bg-status-error"
+                aria-label="Remover arquivo"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -117,7 +118,7 @@ export function PortalFieldRenderer({
                 <p className="text-sm font-medium text-lia-text-primary dark:text-lia-text-disabled truncate">{upload.file.name}</p>
                 <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">{(upload.file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
-              <button type="button" onClick={() => onFileChange(field.name, null)} className="p-1 text-lia-text-tertiary dark:text-lia-text-secondary hover:text-status-error">
+              <button type="button" onClick={() => onFileChange(field.name, null)} className="p-1 text-lia-text-tertiary dark:text-lia-text-secondary hover:text-status-error" aria-label="Remover arquivo">
                 <X className="w-5 h-5" />
               </button>
             </div>
