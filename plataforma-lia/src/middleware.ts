@@ -15,6 +15,8 @@ const PUBLIC_API_PATHS = [
   '/api/auth',
   '/api/backend-proxy/auth/login',
   '/api/backend-proxy/auth/register',
+  '/api/public-proxy',
+  '/api/portal',
 ]
 
 const STATIC_PATHS = [
@@ -64,11 +66,6 @@ export function middleware(request: NextRequest) {
   const workosSession = request.cookies.get('workos_session')
 
   if (workosSession) {
-    if (pathname.startsWith('/admin')) {
-      const loginUrl = new URL('/login', request.url)
-      loginUrl.searchParams.set('next', pathname)
-      return NextResponse.redirect(loginUrl)
-    }
     return NextResponse.next()
   }
 
