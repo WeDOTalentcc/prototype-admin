@@ -6,7 +6,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { JWTAuthProvider } from "@/contexts/auth-context"
 import { ErrorBoundary } from "@/components/error-boundary"
-import { SetupAlertBadge } from "@/components/ui/setup-alert-badge"
+
 import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
 import { LiaFloatConditional } from "@/components/lia-float/LiaFloatConditional"
@@ -112,7 +112,7 @@ export default function RootLayout({
             <LiaFloatProvider>
               <ErrorBoundary>
                 {children}
-                <SetupAlertBadge />
+
                 <SonnerToaster position="top-right" richColors />
                 <LiaFloatConditional />
               </ErrorBoundary>
