@@ -65,7 +65,9 @@ export function middleware(request: NextRequest) {
 
   if (workosSession) {
     if (pathname.startsWith('/admin')) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(loginUrl)
     }
     return NextResponse.next()
   }
@@ -76,7 +78,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  const payload = decodeJwtPayload(accessTokenCookie.value)
+  const token = accessTokenCookie.value
+  const payload = decodeJwtPayload(token)
   if (!payload || isTokenExpired(payload)) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('next', pathname)
@@ -86,11 +89,20 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/admin')) {
     const role = payload.role || payload.user_role
     if (role !== 'admin') {
-      return NextResponse.redirect(new URL('/', request.url))
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(loginUrl)
     }
   }
 
-  return NextResponse.next()
+  const requestHeaders = new Headers(request.headers)
+  if (!requestHeaders.get('Authorization')) {
+    requestHeaders.set('Authorization', `Bearer ${token}`)
+  }
+
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  })
 }
 
 export const config = {
