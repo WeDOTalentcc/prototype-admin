@@ -3,15 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
-import { z } from 'zod'
 
 const client = new Anthropic()
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
-const _bodySchema = z.object({
-  description: z.unknown(),
-})
 
 export async function POST(request: NextRequest) {
   try {

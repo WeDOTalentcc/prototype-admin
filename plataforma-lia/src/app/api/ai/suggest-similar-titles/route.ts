@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
-import { z } from 'zod'
 
 const anthropic = new Anthropic({
   apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY,
@@ -12,9 +11,6 @@ const anthropic = new Anthropic({
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
-const _bodySchema = z.object({
-  titles: z.unknown(),
-})
 
 export async function POST(request: NextRequest) {
   try {
