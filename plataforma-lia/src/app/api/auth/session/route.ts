@@ -23,11 +23,16 @@ export async function POST(request: NextRequest) {
   try {
     const origin = request.headers.get('origin')
     const host = request.headers.get('host')
-    if (origin && host && !origin.includes(host.split(':')[0])) {
-      return NextResponse.json(
-        { error: 'Invalid origin' },
-        { status: 403 }
-      )
+    if (origin && host) {
+      let originHost: string
+      try {
+        originHost = new URL(origin).host
+      } catch {
+        return NextResponse.json({ error: 'Invalid origin' }, { status: 403 })
+      }
+      if (originHost !== host) {
+        return NextResponse.json({ error: 'Invalid origin' }, { status: 403 })
+      }
     }
 
     const body = await request.json()

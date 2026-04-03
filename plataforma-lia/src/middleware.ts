@@ -48,13 +48,28 @@ function redirectToLogin(request: NextRequest, pathname: string): NextResponse {
 
 async function verifyJwt(token: string): Promise<Record<string, unknown> | null> {
   const secret = process.env.SECRET_KEY || process.env.JWT_SECRET
-  if (!secret) return null
+  if (secret) {
+    try {
+      const secretKey = new TextEncoder().encode(secret)
+      const { payload } = await jwtVerify(token, secretKey, {
+        algorithms: ['HS256'],
+      })
+      return payload as Record<string, unknown>
+    } catch {
+      return null
+    }
+  }
+
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
   try {
-    const secretKey = new TextEncoder().encode(secret)
-    const { payload } = await jwtVerify(token, secretKey, {
-      algorithms: ['HS256'],
+    const response = await fetch(`${backendUrl}/api/v1/auth/me`, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` },
+      signal: AbortSignal.timeout(3000),
     })
-    return payload as Record<string, unknown>
+    if (!response.ok) return null
+    const data = await response.json()
+    return { sub: data.id || data.sub, role: data.role || data.user_role, verified_by_backend: true }
   } catch {
     return null
   }
@@ -77,7 +92,27 @@ export async function middleware(request: NextRequest) {
     }
 
     if (pathname.startsWith('/admin')) {
-      return redirectToLogin(request, pathname)
+      const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      try {
+        const meResponse = await fetch(`${backendUrl}/api/v1/auth/me`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${sessionData.accessToken}`,
+            'X-Auth-Method': 'workos',
+          },
+          signal: AbortSignal.timeout(3000),
+        })
+        if (!meResponse.ok) {
+          return redirectToLogin(request, pathname)
+        }
+        const meData = await meResponse.json()
+        const userRole = meData.role || meData.user_role
+        if (userRole !== 'admin') {
+          return redirectToLogin(request, pathname)
+        }
+      } catch {
+        return redirectToLogin(request, pathname)
+      }
     }
 
     const requestHeaders = new Headers(request.headers)

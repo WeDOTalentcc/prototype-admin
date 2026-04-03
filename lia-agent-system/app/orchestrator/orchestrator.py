@@ -364,9 +364,7 @@ class Orchestrator:
                 "Retorne SOMENTE um JSON válido (sem markdown) com as chaves: "
                 'candidate_id, candidate_name, vacancy_id, vacancy_title. '
                 "Use null quando não encontrar. Não invente IDs — somente use se mencionados "
-                "explicitamente como UUID.
-
-"
+                "explicitamente como UUID.\n\n"
                 f"Texto: {message}"
             )
 
