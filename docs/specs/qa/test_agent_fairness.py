@@ -1311,15 +1311,16 @@ async def score_candidate_wsi(client, base_url: str, token: str, candidate: dict
     endpoint = "http://localhost:8000/api/v1/wsi/analyze-response"
     payload = {
         "session_id": f"fairness-{candidate['id']}",
-            "question_id": "q-fairness-001",
-        "question": (
+        "question_id": "q-fairness-001",
+        "candidate_id": candidate["id"],
+        "job_vacancy_id": f"fairness-job-{candidate['role'].lower().replace(' ', '-')}",
+        "question_text": (
             "Descreva uma situação em que você enfrentou um desafio técnico complexo "
             "e como o resolveu. Use o método STAR (Situação, Tarefa, Ação, Resultado)."
         ),
         "response_text": candidate["wsi_answer"],
-            "competency": "resolucao_problemas",
-            "framework": "STAR",
-        "candidate_id": candidate["id"],
+        "competency": "resolucao_problemas",
+        "framework": "STAR",
     }
 
     result = {
@@ -1418,15 +1419,16 @@ def _sync_score(client: dict, base_url: str, token: str, candidate: dict) -> dic
     endpoint = "http://localhost:8000/api/v1/wsi/analyze-response"
     payload = {
         "session_id": f"fairness-{candidate['id']}",
-            "question_id": "q-fairness-001",
-        "question": (
+        "question_id": "q-fairness-001",
+        "candidate_id": candidate["id"],
+        "job_vacancy_id": f"fairness-job-{candidate['role'].lower().replace(' ', '-')}",
+        "question_text": (
             "Descreva uma situação em que você enfrentou um desafio técnico complexo "
             "e como o resolveu. Use o método STAR (Situação, Tarefa, Ação, Resultado)."
         ),
         "response_text": candidate["wsi_answer"],
-            "competency": "resolucao_problemas",
-            "framework": "STAR",
-        "candidate_id": candidate["id"],
+        "competency": "resolucao_problemas",
+        "framework": "STAR",
     }
 
     result = {
