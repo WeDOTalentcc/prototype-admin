@@ -3,15 +3,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
-const SERVICE_API_TOKEN = process.env.SERVICE_API_TOKEN || ''
-
 function getHeaders(request: NextRequest): HeadersInit {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   }
-  
-  if (SERVICE_API_TOKEN) {
-    headers['Authorization'] = `Bearer ${SERVICE_API_TOKEN}`
+
+  const authHeader = request.headers.get('Authorization')
+  if (authHeader) {
+    headers['Authorization'] = authHeader
   }
 
   const companyId = request.headers.get('X-Company-ID')

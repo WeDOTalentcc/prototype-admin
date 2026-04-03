@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
-const SERVICE_API_TOKEN = process.env.SERVICE_API_TOKEN || ''
 
 export async function GET(
   request: NextRequest,
@@ -23,8 +22,9 @@ export async function GET(
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     }
-    if (SERVICE_API_TOKEN) {
-      headers['Authorization'] = `Bearer ${SERVICE_API_TOKEN}`
+    const authHeader = request.headers.get('Authorization')
+    if (authHeader) {
+      headers['Authorization'] = authHeader
     }
     
     const response = await fetch(backendUrl, {
@@ -62,6 +62,7 @@ export async function POST(
     const backendUrl = `${BACKEND_URL}/api/v1/cv/${pathStr}`
     
     const contentType = request.headers.get('content-type') || ''
+    const authHeader = request.headers.get('Authorization')
     
     const fetchOptions: RequestInit = {
       method: 'POST',
@@ -70,9 +71,9 @@ export async function POST(
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData()
       fetchOptions.body = formData
-      if (SERVICE_API_TOKEN) {
+      if (authHeader) {
         fetchOptions.headers = {
-          'Authorization': `Bearer ${SERVICE_API_TOKEN}`
+          'Authorization': authHeader
         }
       }
     } else {
@@ -80,8 +81,8 @@ export async function POST(
       fetchOptions.headers = {
         'Content-Type': 'application/json',
       }
-      if (SERVICE_API_TOKEN) {
-        fetchOptions.headers['Authorization'] = `Bearer ${SERVICE_API_TOKEN}`
+      if (authHeader) {
+        fetchOptions.headers['Authorization'] = authHeader
       }
       fetchOptions.body = JSON.stringify(body)
     }

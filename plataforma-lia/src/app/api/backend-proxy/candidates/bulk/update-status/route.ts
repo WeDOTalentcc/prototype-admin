@@ -4,7 +4,6 @@ import { validateBody } from '@/lib/api/validate'
 import { bulkUpdateStatusSchema } from '@/lib/schemas'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
-const SERVICE_API_TOKEN = process.env.SERVICE_API_TOKEN || 'dev-service-token'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +14,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SERVICE_API_TOKEN}`,
+        ...(request.headers.get('Authorization') ? { 'Authorization': request.headers.get('Authorization')! } : {}),
       },
       body: JSON.stringify(bodyResult.data),
     })
