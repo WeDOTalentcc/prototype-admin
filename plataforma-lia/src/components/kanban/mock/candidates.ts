@@ -1174,7 +1174,7 @@ export const mockCandidates: Record<string, unknown[]> = {
       interviewDate: 'Amanhã às 10h',
       interviewer: 'Roberto Santos - Diretor Design',
       typeOfInterview: 'Teams',
-      teamsLink: 'https://teams.microsoft.com/l/meetup-join/19%3ameeting_example',
+      teamsLink: undefined,
       bigFive: {
         openness: 86,
         conscientiousness: 84,

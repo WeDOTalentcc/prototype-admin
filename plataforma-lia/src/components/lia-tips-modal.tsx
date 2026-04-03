@@ -390,7 +390,10 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                         size="sm"
                         variant="outline"
                         className="gap-1.5 h-7 text-xs"
-                        onClick={() => window.open('https://teams.microsoft.com', '_blank')}
+                        onClick={() => {
+                          const teamsUrl = process.env.NEXT_PUBLIC_TEAMS_URL || 'https://teams.microsoft.com'
+                          window.open(teamsUrl, '_blank')
+                        }}
                       >
                         <Video className="w-3 h-3" />
                         Teams
