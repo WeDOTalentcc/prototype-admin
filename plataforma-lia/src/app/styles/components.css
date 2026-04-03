@@ -251,6 +251,15 @@
   border-color: var(--lia-border-subtle);
 }
 
+.dark .wedo-card:hover {
+  border-color: hsl(var(--ai-aqua) / 0.3);
+  box-shadow: 0 4px 12px 0 hsl(var(--ai-aqua) / 0.08);
+}
+
+.dark .wedo-card-elevated:hover {
+  box-shadow: 0 4px 16px 0 hsl(var(--ai-aqua) / 0.12);
+}
+
 .dark .wedo-surface {
   background-color: var(--lia-bg-secondary);
   border-color: var(--lia-border-subtle);
@@ -285,6 +294,10 @@
   border-color: var(--lia-border-medium);
 }
 
+.dark .wedo-button-secondary:focus {
+  --tw-ring-color: var(--lia-border-medium);
+}
+
 .dark .wedo-button-ghost {
   color: var(--lia-text-secondary);
 }
@@ -292,6 +305,10 @@
 .dark .wedo-button-ghost:hover {
   background-color: var(--lia-bg-tertiary);
   color: var(--lia-text-primary);
+}
+
+.dark .wedo-button-ghost:focus {
+  --tw-ring-color: var(--lia-border-medium);
 }
 
 .dark .wedo-badge-success {

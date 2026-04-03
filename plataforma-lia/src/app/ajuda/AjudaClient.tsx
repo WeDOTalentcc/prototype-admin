@@ -1,4 +1,3 @@
-// TODO: Sprint 4 Dark Mode — File exceeds 400 lines. Needs manual dark: class review.
 "use client"
 
 import { Brain, BookOpen, Users, Code, FileText, Clock, ChevronLeft, HelpCircle, Lightbulb, Target, CheckCircle, Fingerprint, AlertTriangle, MessageSquare, TrendingUp, Shield } from "lucide-react"
@@ -19,7 +18,7 @@ export default function AjudaPage() {
 
   const seniorityLevels = [
     { level: "Júnior", description: "0-2 anos de experiência OU títulos com \"Junior/Jr\"", color: "#4CAF50" },
-    { level: "Pleno", description: "2-5 anos de experiência OU sem prefixo de senioridade" },
+    { level: "Pleno", description: "2-5 anos de experiência OU sem prefixo de senioridade", color: "#2196F3" },
     { level: "Sênior", description: "5-8 anos de experiência OU títulos com \"Senior/Sr\"", color: "#9C27B0" },
     { level: "Tech Lead", description: "Liderança técnica de equipes", color: "#FF9800" },
     { level: "Manager", description: "Gestão de pessoas e processos", color: "#E91E63" },
@@ -37,13 +36,13 @@ export default function AjudaPage() {
 
   const archetypes = [
     { name: "Catalisador Visionário", profile: "Alto O/E", description: "Inovador, inspirador, busca mudanças", roles: "Fundador, Product Manager, Diretor de Inovação", color: "#FF6B6B" },
-    { name: "Executor Confiável", profile: "Alto C/A", description: "Metódico, colaborativo, entrega consistente", roles: "Gerente de Projetos, Analista Sênior, Ops Manager", color: "#4ECDC4" },
-    { name: "Guardião de Clientes", profile: "Alto A/E", description: "Empático, comunicativo, orientado ao cliente", roles: "Customer Success, Account Manager, Suporte Sênior", color: "#45B7D1" },
-    { name: "Estrategista Analítico", profile: "Alto O/C", description: "Pensador profundo, orientado a dados", roles: "Data Scientist, Arquiteto, Pesquisador", color: "#96CEB4" },
-    { name: "Mediador Adaptável", profile: "Alto A/O", description: "Flexível, harmonizador, diplomático", roles: "HRBP, Scrum Master, Consultor", color: "#FFEAA7" },
-    { name: "Rainmaker Audacioso", profile: "Alto E/O", description: "Persuasivo, ambicioso, orientado a resultados", roles: "Vendedor, BD, Founder", color: "#DDA0DD" },
-    { name: "Operador Resiliente", profile: "Alto C", description: "Estável sob pressão, focado, persistente", roles: "SRE, Suporte Crítico, Operações 24/7", color: "#87CEEB" },
-    { name: "Arquiteto Metódico", profile: "Alto C/O", description: "Detalhista, sistemático, qualidade", roles: "Engenheiro Sênior, QA Lead, Arquiteto de Software", color: "#98D8C8" }
+    { name: "Executor Confiável", profile: "Alto C/A", description: "Metódico, colaborativo, entrega consistente", roles: "Gerente de Projetos, Analista Sênior, Ops Manager", color: "#2E9E94" },
+    { name: "Guardião de Clientes", profile: "Alto A/E", description: "Empático, comunicativo, orientado ao cliente", roles: "Customer Success, Account Manager, Suporte Sênior", color: "#2E97B3" },
+    { name: "Estrategista Analítico", profile: "Alto O/C", description: "Pensador profundo, orientado a dados", roles: "Data Scientist, Arquiteto, Pesquisador", color: "#5A9E7E" },
+    { name: "Mediador Adaptável", profile: "Alto A/O", description: "Flexível, harmonizador, diplomático", roles: "HRBP, Scrum Master, Consultor", color: "#D4A017" },
+    { name: "Rainmaker Audacioso", profile: "Alto E/O", description: "Persuasivo, ambicioso, orientado a resultados", roles: "Vendedor, BD, Founder", color: "#B07AB0" },
+    { name: "Operador Resiliente", profile: "Alto C", description: "Estável sob pressão, focado, persistente", roles: "SRE, Suporte Crítico, Operações 24/7", color: "#5BA3C9" },
+    { name: "Arquiteto Metódico", profile: "Alto C/O", description: "Detalhista, sistemático, qualidade", roles: "Engenheiro Sênior, QA Lead, Arquiteto de Software", color: "#5DAA96" }
   ]
 
   return (
@@ -199,8 +198,7 @@ export default function AjudaPage() {
                     <Badge 
                       key={field} 
                       variant="outline" 
-                      className="text-xs"
-                      style={{color: '#0891b2'}}
+                      className="text-xs text-wedo-cyan border-wedo-cyan/30"
                     >
                       {field}
                     </Badge>

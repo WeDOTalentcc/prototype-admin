@@ -82,7 +82,7 @@ export default function LoginPage() {
             priority
           />
           <span
-            className="block text-right text-gray-950 font-semibold uppercase tracking-[0.18em] text-[18px]"
+            className="block text-right text-gray-950 dark:text-lia-text-primary font-semibold uppercase tracking-[0.18em] text-[18px]"
             style={{ marginTop: "-5px", paddingRight: "6px" }}
           >
             talent
@@ -91,16 +91,16 @@ export default function LoginPage() {
 
         <div className="flex-1 flex flex-col justify-center px-14 pr-10">
           <div className="mb-7">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/10 text-gray-700 text-sm font-medium">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-wedo-cyan/40 bg-wedo-cyan/10 text-gray-700 dark:text-lia-text-secondary text-sm font-medium">
               <span className="text-wedo-cyan text-base leading-none">»</span>
               IA Agêntica para Recrutamento
             </span>
           </div>
-          <h1 className="text-5xl text-gray-950 font-light leading-tight mb-7 font-['Open_Sans',sans-serif]">
+          <h1 className="text-5xl text-gray-950 dark:text-lia-text-primary font-light leading-tight mb-7 font-['Open_Sans',sans-serif]">
             Entre. A <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> já está<br />
             trabalhando por você.
           </h1>
-          <p className="text-base text-gray-600 font-normal leading-relaxed font-['Open_Sans',sans-serif]">
+          <p className="text-base text-gray-600 dark:text-lia-text-secondary font-normal leading-relaxed font-['Open_Sans',sans-serif]">
             Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos<br />
             Recrutamento <span className="text-wedo-cyan font-semibold">simples</span>
           </p>
@@ -112,7 +112,7 @@ export default function LoginPage() {
               href="https://www.wedotalent.cc"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 dark:text-lia-text-tertiary hover:text-gray-600 dark:hover:text-lia-text-secondary transition-colors"
               title="Website"
             >
               <Globe className="w-4 h-4" />
@@ -121,20 +121,20 @@ export default function LoginPage() {
               href="https://www.linkedin.com/company/wedotalent/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 dark:text-lia-text-tertiary hover:text-gray-600 dark:hover:text-lia-text-secondary transition-colors"
               title="LinkedIn"
             >
               <Linkedin className="w-4 h-4" />
             </a>
             <a
               href="mailto:tech@wedotalent.cc"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 dark:text-lia-text-tertiary hover:text-gray-600 dark:hover:text-lia-text-secondary transition-colors"
               title="Contato"
             >
               <Mail className="w-4 h-4" />
             </a>
           </div>
-          <p className="text-xs text-gray-400">© 2025 <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> by WeDoTalent</p>
+          <p className="text-xs text-gray-400 dark:text-lia-text-tertiary">© 2025 <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> by WeDoTalent</p>
         </div>
 
       </div>
@@ -155,31 +155,31 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-6 text-center">
-            <h2 className="text-xl font-semibold text-gray-950">
+            <h2 className="text-xl font-semibold text-gray-950 dark:text-lia-text-primary">
               Entrar na plataforma
             </h2>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-red-600">{error}</p>
+            <div className="mb-4 p-3 bg-red-50 dark:bg-status-error-bg border border-red-100 dark:border-status-error-border rounded-xl flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-red-500 dark:text-status-error mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-red-600 dark:text-status-error">{error}</p>
             </div>
           )}
 
           {step === "email" && (
             <form onSubmit={handleEmailStep} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-800 mb-1.5">
+                <label className="block text-xs font-medium text-gray-800 dark:text-lia-text-secondary mb-1.5">
                   Email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-lia-text-tertiary w-4 h-4" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-gray-950 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 dark:border-lia-border-default rounded-xl bg-white dark:bg-lia-input-bg text-gray-950 dark:text-lia-input-text placeholder:text-gray-400 dark:placeholder:text-lia-input-placeholder focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-lia-input-focus-ring focus:border-gray-400 dark:focus:border-lia-input-border-focus transition-colors"
                     placeholder="seu@email.com"
                     required
                     autoFocus
@@ -189,7 +189,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-10 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium"
+                className="w-full h-10 bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white dark:text-lia-btn-primary-text text-sm font-medium"
               >
                 Entrar
               </Button>
@@ -198,15 +198,15 @@ export default function LoginPage() {
 
           {step === "password" && (
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div className="flex items-center justify-between px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 rounded-xl">
+              <div className="flex items-center justify-between px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-lia-border-default rounded-xl">
                 <div className="flex items-center gap-2 min-w-0">
-                  <Mail className="w-4 h-4 text-gray-400 shrink-0" />
-                  <span className="text-sm text-gray-700 truncate">{email}</span>
+                  <Mail className="w-4 h-4 text-gray-400 dark:text-lia-text-tertiary shrink-0" />
+                  <span className="text-sm text-gray-700 dark:text-lia-text-secondary truncate">{email}</span>
                 </div>
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors ml-2 shrink-0"
+                  className="flex items-center gap-1 text-xs text-gray-500 dark:text-lia-text-tertiary hover:text-gray-800 dark:hover:text-lia-text-primary transition-colors ml-2 shrink-0"
                 >
                   <Pencil className="w-3 h-3" />
                   Alterar
@@ -214,16 +214,16 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-800 mb-1.5">
+                <label className="block text-xs font-medium text-gray-800 dark:text-lia-text-secondary mb-1.5">
                   Senha
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-lia-text-tertiary w-4 h-4" />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-9 pr-10 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-gray-950 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-400 transition-colors"
+                    className="w-full pl-9 pr-10 py-2.5 text-sm border border-gray-200 dark:border-lia-border-default rounded-xl bg-white dark:bg-lia-input-bg text-gray-950 dark:text-lia-input-text placeholder:text-gray-400 dark:placeholder:text-lia-input-placeholder focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-lia-input-focus-ring focus:border-gray-400 dark:focus:border-lia-input-border-focus transition-colors"
                     placeholder="••••••••"
                     required
                     autoFocus
@@ -233,7 +233,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-lia-text-tertiary hover:text-gray-600 dark:hover:text-lia-text-secondary"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -246,13 +246,13 @@ export default function LoginPage() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded border-gray-300 focus:ring-gray-900/20"
+                    className="rounded border-gray-300 dark:border-lia-border-default focus:ring-gray-900/20 dark:focus:ring-lia-input-focus-ring"
                   />
-                  <span className="text-gray-600">Lembrar de mim</span>
+                  <span className="text-gray-600 dark:text-lia-text-secondary">Lembrar de mim</span>
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-gray-600 hover:text-wedo-cyan font-medium transition-colors"
+                  className="text-gray-600 dark:text-lia-text-secondary hover:text-wedo-cyan font-medium transition-colors"
                 >
                   Esqueceu a senha?
                 </Link>
@@ -260,7 +260,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-10 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium"
+                className="w-full h-10 bg-gray-900 hover:bg-gray-800 dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white dark:text-lia-btn-primary-text text-sm font-medium"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -275,17 +275,17 @@ export default function LoginPage() {
 
               <div className="relative pt-1">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
+                  <div className="w-full border-t border-gray-200 dark:border-lia-border-default" />
                 </div>
                 <div className="relative flex justify-center text-xs">
-                  <span className="px-3 bg-white text-gray-400">ou</span>
+                  <span className="px-3 bg-white dark:bg-gray-800 text-gray-400 dark:text-lia-text-tertiary">ou</span>
                 </div>
               </div>
 
               <Button
                 type="button"
                 variant="outline"
-                className="w-full h-10 justify-start gap-3 bg-white hover:bg-gray-50 border-gray-200 text-gray-800 text-sm font-normal"
+                className="w-full h-10 justify-start gap-3 bg-white dark:bg-lia-bg-secondary hover:bg-gray-50 dark:hover:bg-lia-bg-tertiary border-gray-200 dark:border-lia-border-default text-gray-800 dark:text-lia-text-primary text-sm font-normal"
                 onClick={() => {
                   window.location.href = `/api/auth/workos/sso?${email ? `email=${encodeURIComponent(email)}&` : ""}connection=conn_microsoft_entra`
                 }}
@@ -305,7 +305,7 @@ export default function LoginPage() {
         </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 pb-8 px-12 text-gray-500 text-xs space-y-1 text-center flex flex-col items-center">
+        <div className="absolute bottom-0 left-0 right-0 pb-8 px-12 text-gray-500 dark:text-lia-text-tertiary text-xs space-y-1 text-center flex flex-col items-center">
           <p className="max-w-md">
             A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro.
           </p>

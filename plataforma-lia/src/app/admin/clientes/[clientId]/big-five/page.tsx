@@ -94,6 +94,7 @@ const traits = [
     name: 'Neuroticismo',
     fullName: 'Neuroticismo',
     icon: Shield,
+    color: '#6B7280',
     bgColor: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary',
     borderColor: 'border-lia-border-default dark:border-lia-border-default',
     description: 'Tendência a experienciar emoções negativas. Baixo neuroticismo indica estabilidade emocional e resiliência.'
