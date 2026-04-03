@@ -51,10 +51,11 @@
 | **Remuneracao** | 191L com calculo 13.33x + beneficios | ~80L simplificado | VUE SUPERIOR |
 | **Score Analysis** | 692L com requisitos expandiveis e confianca | Embutido no Parecer LIA (~150L) | VUE SUPERIOR |
 
-**Total de problemas catalogados: 78** (63 Vue originais + 4 bugs React + 5 detalhes visuais + 4 bugs Vue Sessao 2 + 2 features Vue positivas novas)
-**Criticos: 13 | Altos: 22 | Medios: 27 | Baixos: 15 | INFO: 1**
-**Screenshots documentados: 45** (23 React + 7 Vue Sessao 1 + 15 Vue Sessao 2)
+**Total de problemas catalogados: 85** (63 Vue originais + 4 bugs React + 5 detalhes visuais + 6 bugs Vue Sessao 2 + 2 features Vue positivas + 5 cards backport novos)
+**Criticos: 15 | Altos: 24 | Medios: 29 | Baixos: 16 | INFO: 1**
+**Screenshots documentados: 46** (23 React + 7 Vue Sessao 1 + 16 Vue Sessao 2)
 **Features Vue SUPERIORES ao React: 4** (Remuneracao 13.33x, Score Analysis 692L, Insights da Query com evidencias, Perguntas Sugeridas IA)
+**Cards Jira prontos: 40** (FIX-01 a FIX-31 Vue + FIX-R01 a FIX-R09 React)
 
 ## Verificacao Funcional (Playwright e2e)
 
@@ -1491,6 +1492,17 @@ CandidateAnalysisResult -> Frontend
 | FIX-R06 | **BUG: Contradicao remoto** — validar Modelo Trabalho vs Aceita Remoto | D16j | `CandidatePreviewProfileTab.tsx` | 2h | ALTO |
 | FIX-R07 | **Erro resumo sem recovery automatico** — retry com exponential backoff | D15 | `useCandidatePreviewCore.tsx` | 2h | ALTO |
 
+## Sprint Bugfix Vue Producao — Bugs descobertos na revisao visual (Sessao 2)
+
+| # | Correcao | IDs | Arquivo Vue | Esforco | Impacto |
+|---|---------|-----|------------|---------|---------|
+| FIX-V01 | **JSON RAW exposto em Log de Atualizacao** — sanitizar Data raw no feed de atividades, ocultar objeto JSON bruto, mostrar apenas campos humanamente legiveis (nome antigo→novo, campos alterados) | VUE-BUG-01 | `applies.vue` ou componente de activities/log | 1 dia | **CRITICO** |
+| FIX-V02 | **Dados internos expostos em Log de Criacao** — ocultar "Questt Candidate 111710", IDs internos, Account Id do feed de atividades. Mostrar apenas nome real do candidato | VUE-BUG-02 | `applies.vue` ou componente de activities/log | 4h | ALTO |
+| FIX-V03 | **Texto experiencia nao formatado** — aplicar formatacao (quebras de linha, bullet points) ao texto bruto de experiencia profissional no feed de atividades | VUE-BUG-03 | `applies.vue` | 2h | MEDIO |
+| FIX-V04 | **HTML RAW na Tab Curriculo** — renderizar HTML do curriculo em vez de exibir como texto plano com tags visiveis. Usar `v-html` com sanitizacao (DOMPurify) | VUE-BUG-04 | `curriculum_text.vue` | 4h | **CRITICO** |
+| FIX-V05 | **Tooltips ausentes nos icones de acao** — adicionar `v-tooltip` nos 8 icones sem tooltip (email, telefone, agenda, copiar, comparar, favoritar, desabilitar, notas) | VUE-BUG-05 | `preview.vue` | 2h | MEDIO |
+| FIX-V06 | **Remuneracao BRL 0,00** — ocultar secao de remuneracao ou mostrar "Nao informado" quando Salario Mensal = 0 em vez de calcular 13.33x * 0 | VUE-NEW-02 | `remunerations.vue` | 1h | BAIXO |
+
 ## Sprint Backport React — Adaptar features superiores do Vue
 
 | # | Correcao | IDs | Arquivo React | Esforco | Impacto |
@@ -1498,6 +1510,8 @@ CandidateAnalysisResult -> Frontend
 | FIX-R01 | Remuneracao detalhada (13.33x + beneficios) | V02 | `CandidatePreviewProfileTab.tsx` | 2 dias | ALTO |
 | FIX-R02 | Score Analysis rico (requisitos expandiveis) | V03 | `CandidatePreviewProfileTab.tsx` | 3 dias | ALTO |
 | FIX-R03 | Enriquecimento com creditos | V01 | `candidate-preview.tsx` | 1 dia | MEDIO |
+| FIX-R08 | **Insights da Query com evidencias** — implementar secao colapsavel com insights por requisito, badges Essencial/Importante, e citacoes do curriculo como evidencia | VUE-GOOD-01 | `CandidatePreviewProfileTab.tsx` | 3 dias | ALTO |
+| FIX-R09 | **Perguntas Sugeridas pela IA** — implementar secao com 3 perguntas contextuais geradas pela IA baseadas nas lacunas do candidato | VUE-GOOD-02 | `CandidatePreviewProfileTab.tsx` | 2 dias | ALTO |
 
 ---
 
@@ -1692,7 +1706,8 @@ DESCRICAO:
 | **Design System** | FIX-16, FIX-17, FIX-26 | 3, 4 |
 | **Perfil Enriquecido** | FIX-10, FIX-18, FIX-19, FIX-21 | 2, 3 |
 | **Database** | FIX-22, FIX-30 | 3, 4 |
-| **Backport Vue→React** | FIX-R01, FIX-R02, FIX-R03 | Backlog |
+| **Vue Producao Hotfix** | FIX-V01, FIX-V02, FIX-V03, FIX-V04, FIX-V05, FIX-V06 | **Sprint 0 (hotfix)** |
+| **Backport Vue→React** | FIX-R01, FIX-R02, FIX-R03, FIX-R08, FIX-R09 | Backlog |
 
 ## Documentos Relacionados
 
@@ -1703,5 +1718,5 @@ DESCRICAO:
 
 ---
 
-*Documento gerado a partir de: analise de codigo Vue real (GitHub API, 30+ arquivos), inspecao de codigo React (13 arquivos), testes Playwright e2e, e screenshots de producao.*
-*Atualizado em 2026-04-03.*
+*Documento gerado a partir de: analise de codigo Vue real (GitHub API, 30+ arquivos), inspecao de codigo React (13 arquivos), testes Playwright e2e, e 46 screenshots de producao (2 candidatos: Lucas Campos, Davi Guides).*
+*Revisao FINALIZADA em 2026-04-03. 85 problemas catalogados, 40 cards Jira prontos, 4 features superiores Vue identificadas para backport.*
