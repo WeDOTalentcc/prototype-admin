@@ -72,7 +72,7 @@ class AuthService {
   }
 
   async setTokens(accessToken: string, refreshToken: string): Promise<void> {
-    await fetch(SESSION_API_URL, {
+    const response = await fetch(SESSION_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -82,6 +82,9 @@ class AuthService {
         auth_method: 'jwt',
       }),
     })
+    if (!response.ok) {
+      throw new Error(`Failed to set session tokens: ${response.status}`)
+    }
   }
 
   async clearTokens(): Promise<void> {

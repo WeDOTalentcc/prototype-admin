@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { jwtVerify } from 'jose'
 
 const PUBLIC_PATHS = [
   '/login',
@@ -37,25 +38,47 @@ function isPublicPath(pathname: string): boolean {
   return false
 }
 
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
+function redirectToLogin(request: NextRequest, pathname: string): NextResponse {
+  const loginUrl = new URL('/login', request.url)
+  loginUrl.searchParams.set('next', pathname)
+  return NextResponse.redirect(loginUrl)
+}
+
+async function verifyJwt(token: string): Promise<Record<string, unknown> | null> {
+  const secret = process.env.SECRET_KEY || process.env.JWT_SECRET
+  if (!secret) return null
   try {
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    const payload = parts[1]
-    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
-    return JSON.parse(decoded)
+    const secretKey = new TextEncoder().encode(secret)
+    const { payload } = await jwtVerify(token, secretKey, {
+      algorithms: ['HS256'],
+    })
+    return payload as Record<string, unknown>
   } catch {
     return null
   }
 }
 
-function isTokenExpired(payload: Record<string, unknown>): boolean {
-  const exp = payload.exp
-  if (typeof exp !== 'number') return true
-  return Date.now() >= exp * 1000
+async function validateWorkosSession(request: NextRequest): Promise<boolean> {
+  const workosSession = request.cookies.get('workos_session')
+  if (!workosSession?.value) return false
+
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  try {
+    const response = await fetch(`${backendUrl}/api/v1/auth/me`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${workosSession.value}`,
+        'X-Auth-Method': 'workos',
+      },
+      signal: AbortSignal.timeout(3000),
+    })
+    return response.ok
+  } catch {
+    return false
+  }
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (isPublicPath(pathname)) {
@@ -65,30 +88,28 @@ export function middleware(request: NextRequest) {
   const accessTokenCookie = request.cookies.get('lia_access_token')
   const workosSession = request.cookies.get('workos_session')
 
-  if (workosSession) {
-    return NextResponse.next()
+  if (workosSession?.value) {
+    const isValid = await validateWorkosSession(request)
+    if (isValid) {
+      return NextResponse.next()
+    }
+    return redirectToLogin(request, pathname)
   }
 
   if (!accessTokenCookie || accessTokenCookie.value === '_sso_session_') {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('next', pathname)
-    return NextResponse.redirect(loginUrl)
+    return redirectToLogin(request, pathname)
   }
 
   const token = accessTokenCookie.value
-  const payload = decodeJwtPayload(token)
-  if (!payload || isTokenExpired(payload)) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('next', pathname)
-    return NextResponse.redirect(loginUrl)
+  const payload = await verifyJwt(token)
+  if (!payload) {
+    return redirectToLogin(request, pathname)
   }
 
   if (pathname.startsWith('/admin')) {
     const role = payload.role || payload.user_role
     if (role !== 'admin') {
-      const loginUrl = new URL('/login', request.url)
-      loginUrl.searchParams.set('next', pathname)
-      return NextResponse.redirect(loginUrl)
+      return redirectToLogin(request, pathname)
     }
   }
 
