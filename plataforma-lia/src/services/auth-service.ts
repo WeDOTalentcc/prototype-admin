@@ -131,7 +131,7 @@ class AuthService {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ access_token: 'sso', auth_method: 'sso' }),
+          body: JSON.stringify({ access_token: '_sso_session_', auth_method: 'sso', is_sso: true }),
         })
       }
       return data

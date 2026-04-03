@@ -35,6 +35,24 @@ function isPublicPath(pathname: string): boolean {
   return false
 }
 
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return null
+    const payload = parts[1]
+    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'))
+    return JSON.parse(decoded)
+  } catch {
+    return null
+  }
+}
+
+function isTokenExpired(payload: Record<string, unknown>): boolean {
+  const exp = payload.exp
+  if (typeof exp !== 'number') return true
+  return Date.now() >= exp * 1000
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -42,15 +60,34 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const accessToken = request.cookies.get('lia_access_token')
+  const accessTokenCookie = request.cookies.get('lia_access_token')
   const workosSession = request.cookies.get('workos_session')
 
-  const hasSession = !!accessToken || !!workosSession
+  if (workosSession) {
+    if (pathname.startsWith('/admin')) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    return NextResponse.next()
+  }
 
-  if (!hasSession) {
+  if (!accessTokenCookie || accessTokenCookie.value === '_sso_session_') {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('next', pathname)
     return NextResponse.redirect(loginUrl)
+  }
+
+  const payload = decodeJwtPayload(accessTokenCookie.value)
+  if (!payload || isTokenExpired(payload)) {
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('next', pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  if (pathname.startsWith('/admin')) {
+    const role = payload.role || payload.user_role
+    if (role !== 'admin') {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
   }
 
   return NextResponse.next()

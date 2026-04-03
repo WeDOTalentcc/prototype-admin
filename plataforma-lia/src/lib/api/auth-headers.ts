@@ -1,14 +1,19 @@
 import { NextRequest } from 'next/server'
 
-export function getAuthHeaders(request: NextRequest, required = false): HeadersInit {
-  let authHeader = request.headers.get('Authorization')
+function resolveAuthHeader(request: NextRequest): string | null {
+  const authHeader = request.headers.get('Authorization')
+  if (authHeader) return authHeader
 
-  if (!authHeader) {
-    const tokenCookie = request.cookies.get('lia_access_token')
-    if (tokenCookie) {
-      authHeader = `Bearer ${tokenCookie.value}`
-    }
+  const tokenCookie = request.cookies.get('lia_access_token')
+  if (tokenCookie && tokenCookie.value !== '_sso_session_') {
+    return `Bearer ${tokenCookie.value}`
   }
+
+  return null
+}
+
+export function getAuthHeaders(request: NextRequest, required = false): HeadersInit {
+  const authHeader = resolveAuthHeader(request)
 
   if (required && !authHeader) {
     throw new Error('Authentication required: Authorization header missing')
@@ -21,14 +26,7 @@ export function getAuthHeaders(request: NextRequest, required = false): HeadersI
 }
 
 export function getAuthHeadersForForm(request: NextRequest, required = false): HeadersInit {
-  let authHeader = request.headers.get('Authorization')
-
-  if (!authHeader) {
-    const tokenCookie = request.cookies.get('lia_access_token')
-    if (tokenCookie) {
-      authHeader = `Bearer ${tokenCookie.value}`
-    }
-  }
+  const authHeader = resolveAuthHeader(request)
 
   if (required && !authHeader) {
     throw new Error('Authentication required: Authorization header missing')
