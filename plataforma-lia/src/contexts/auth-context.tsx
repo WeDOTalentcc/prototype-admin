@@ -49,7 +49,7 @@ export function JWTAuthProvider({ children }: { children: ReactNode }) {
       } catch {
         setUser(null)
         setAuthMethod(null)
-        authService.clearTokens()
+        await authService.clearTokens()
       }
     } else {
       setUser(null)
@@ -68,10 +68,10 @@ export function JWTAuthProvider({ children }: { children: ReactNode }) {
             setUser(ssoSession.user)
             setAuthMethod('sso')
           } else {
-            authService.clearTokens()
+            await authService.clearTokens()
           }
         } catch {
-          authService.clearTokens()
+          await authService.clearTokens()
         }
       } else if (authService.isJWTAuthenticated()) {
         try {
@@ -80,7 +80,7 @@ export function JWTAuthProvider({ children }: { children: ReactNode }) {
           setUser(userData)
           setAuthMethod('jwt')
         } catch {
-          authService.clearTokens()
+          await authService.clearTokens()
           setUser(null)
           setAuthMethod(null)
         }
@@ -109,7 +109,7 @@ export function JWTAuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = async () => {
-    clearSessionStorage()  // limpa dados de sessão do localStorage
+    clearSessionStorage()
     await authService.logout()
     setUser(null)
     setAuthMethod(null)
@@ -144,11 +144,6 @@ export function useJWTAuth() {
 }
 
 
-/**
- * Alias de compatibilidade para componentes legados.
- * Retorna um shape simplificado compatível com o wrapper anterior de components/auth-context.
- * Para novos componentes, use useJWTAuth() diretamente.
- */
 export function useAuth() {
   const ctx = useJWTAuth()
   return {

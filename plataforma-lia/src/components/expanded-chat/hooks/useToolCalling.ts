@@ -42,16 +42,9 @@ export interface UseToolCallingOptions {
   onToolError?: (error: string, toolName: string) => void
 }
 
-function getAccessToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('access_token')
-}
-
 function getAuthHeaders(): HeadersInit {
-  const token = getAccessToken()
   return {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   }
 }
 

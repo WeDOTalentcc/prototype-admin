@@ -91,16 +91,9 @@ function clearStoredConversationId(contextType: string, contextId?: string): voi
   }
 }
 
-function getAccessToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('access_token')
-}
-
 function getAuthHeaders(): HeadersInit {
-  const token = getAccessToken()
   return {
     'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   }
 }
 

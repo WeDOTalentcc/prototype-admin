@@ -1,12 +1,7 @@
 const AUTH_API_URL = '/api/backend-proxy/auth'
+const SESSION_API_URL = '/api/auth/session'
 const WORKOS_SSO_URL = '/api/auth/workos/sso'
 const WORKOS_SESSION_URL = '/api/auth/workos/session'
-
-const TOKEN_KEYS = {
-  ACCESS_TOKEN: 'access_token',
-  REFRESH_TOKEN: 'refresh_token',
-  AUTH_METHOD: 'auth_method',
-}
 
 export type AuthMethod = 'jwt' | 'sso'
 
@@ -53,39 +48,55 @@ export interface SSOSessionResponse {
   reason?: string
 }
 
-class AuthService {
-  getAccessToken(): string | null {
-    if (typeof window === 'undefined') return null
-    return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN)
-  }
+function getCookieValue(name: string): string | null {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+  return match ? decodeURIComponent(match[2]) : null
+}
 
-  getRefreshToken(): string | null {
-    if (typeof window === 'undefined') return null
-    return localStorage.getItem(TOKEN_KEYS.REFRESH_TOKEN)
+class AuthService {
+  constructor() {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        localStorage.removeItem('auth_method')
+      } catch {
+      }
+    }
   }
 
   getAuthMethod(): AuthMethod | null {
     if (typeof window === 'undefined') return null
-    return localStorage.getItem(TOKEN_KEYS.AUTH_METHOD) as AuthMethod | null
+    return getCookieValue('lia_auth_method') as AuthMethod | null
   }
 
-  setAuthMethod(method: AuthMethod): void {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(TOKEN_KEYS.AUTH_METHOD, method)
+  async setTokens(accessToken: string, refreshToken: string): Promise<void> {
+    await fetch(SESSION_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        auth_method: 'jwt',
+      }),
+    })
   }
 
-  setTokens(accessToken: string, refreshToken: string): void {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, accessToken)
-    localStorage.setItem(TOKEN_KEYS.REFRESH_TOKEN, refreshToken)
-    this.setAuthMethod('jwt')
+  async clearTokens(): Promise<void> {
+    await fetch(SESSION_API_URL, {
+      method: 'DELETE',
+      credentials: 'include',
+    })
   }
 
-  clearTokens(): void {
-    if (typeof window === 'undefined') return
-    localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN)
-    localStorage.removeItem(TOKEN_KEYS.REFRESH_TOKEN)
-    localStorage.removeItem(TOKEN_KEYS.AUTH_METHOD)
+  isAuthenticated(): boolean {
+    return !!getCookieValue('lia_auth_method')
+  }
+
+  isJWTAuthenticated(): boolean {
+    return getCookieValue('lia_auth_method') === 'jwt'
   }
 
   initiateSSO(options: {
@@ -116,7 +127,12 @@ class AuthService {
 
       const data: SSOSessionResponse = await response.json()
       if (data.authenticated && data.user) {
-        this.setAuthMethod('sso')
+        await fetch(SESSION_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ access_token: 'sso', auth_method: 'sso' }),
+        })
       }
       return data
     } catch {
@@ -130,9 +146,9 @@ class AuthService {
         method: 'DELETE',
         credentials: 'include',
       })
-    } catch (error) {
+    } catch {
     }
-    this.clearTokens()
+    await this.clearTokens()
   }
 
   async login(email: string, password: string): Promise<TokenResponse> {
@@ -152,7 +168,7 @@ class AuthService {
     }
 
     const data: TokenResponse = await response.json()
-    this.setTokens(data.access_token, data.refresh_token)
+    await this.setTokens(data.access_token, data.refresh_token)
     return data
   }
 
@@ -175,47 +191,29 @@ class AuthService {
     return response.json()
   }
 
-  async refreshToken(): Promise<TokenResponse> {
-    const refreshToken = this.getRefreshToken()
-    
-    if (!refreshToken) {
-      throw new Error('No refresh token available')
-    }
-
-    const response = await fetch(`${AUTH_API_URL}/refresh`, {
+  async refreshToken(): Promise<void> {
+    const response = await fetch(`${SESSION_API_URL}/refresh`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refresh_token: refreshToken }),
+      credentials: 'include',
     })
 
     if (!response.ok) {
-      this.clearTokens()
-      const error: AuthError = await response.json().catch(() => ({ 
-        error: 'Token refresh failed' 
-      }))
-      throw new Error(error.error || 'Failed to refresh token')
+      await this.clearTokens()
+      throw new Error('Token refresh failed')
     }
-
-    const data: TokenResponse = await response.json()
-    this.setTokens(data.access_token, data.refresh_token)
-    return data
   }
 
   async getMe(): Promise<User> {
-    const accessToken = this.getAccessToken()
-    
-    if (!accessToken) {
-      throw new Error('No access token available')
+    if (!this.isAuthenticated()) {
+      throw new Error('No active session')
     }
 
     const response = await fetch(`${AUTH_API_URL}/me`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
       },
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -224,7 +222,7 @@ class AuthService {
           await this.refreshToken()
           return this.getMe()
         } catch {
-          this.clearTokens()
+          await this.clearTokens()
           throw new Error('Session expired')
         }
       }
@@ -242,16 +240,8 @@ class AuthService {
     if (authMethod === 'sso') {
       await this.logoutSSO()
     } else {
-      this.clearTokens()
+      await this.clearTokens()
     }
-  }
-
-  isAuthenticated(): boolean {
-    return !!this.getAccessToken() || this.getAuthMethod() === 'sso'
-  }
-
-  isJWTAuthenticated(): boolean {
-    return !!this.getAccessToken()
   }
 }
 

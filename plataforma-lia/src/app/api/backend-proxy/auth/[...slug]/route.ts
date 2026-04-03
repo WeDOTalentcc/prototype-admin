@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
@@ -13,19 +14,10 @@ export async function GET(
     const path = slug.join('/')
     const queryString = request.nextUrl.search
     const backendUrl = `${BACKEND_URL}/api/v1/auth/${path}${queryString}`
-    
-    const authHeader = request.headers.get('Authorization')
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    }
-    
-    if (authHeader) {
-      headers['Authorization'] = authHeader
-    }
-    
+
     const response = await fetch(backendUrl, {
       method: 'GET',
-      headers,
+      headers: getAuthHeaders(request),
     })
 
     if (!response.ok) {
@@ -56,21 +48,12 @@ export async function POST(
     const { slug } = await params
     const path = slug.join('/')
     const backendUrl = `${BACKEND_URL}/api/v1/auth/${path}`
-    
+
     const body = _bodySchema.parse(await request.json())
-    
-    const authHeader = request.headers.get('Authorization')
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    }
-    
-    if (authHeader) {
-      headers['Authorization'] = authHeader
-    }
-    
+
     const response = await fetch(backendUrl, {
       method: 'POST',
-      headers,
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
 

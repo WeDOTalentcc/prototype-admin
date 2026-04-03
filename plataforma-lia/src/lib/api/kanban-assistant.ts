@@ -238,16 +238,10 @@ export interface OrchestratedJobChatResponse {
 export async function callOrchestratedJobChat(
   request: OrchestratedJobChatRequest
 ): Promise<OrchestratedJobChatResponse> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  }
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`
-  }
   const response = await fetch(`/api/backend-proxy/orchestrator/job-chat`, {
     method: "POST",
-    headers,
+    headers: { "Content-Type": "application/json" },
+    credentials: 'include',
     body: JSON.stringify(request),
   })
 
@@ -263,16 +257,10 @@ export async function callOrchestratedJobChat(
 export async function callOrchestratedJobsManagement(
   request: OrchestratedJobsManagementRequest
 ): Promise<OrchestratedJobsManagementResponse> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  }
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`
-  }
   const response = await fetch(`/api/backend-proxy/orchestrator/jobs-management`, {
     method: "POST",
-    headers,
+    headers: { "Content-Type": "application/json" },
+    credentials: 'include',
     body: JSON.stringify(request),
   })
 
