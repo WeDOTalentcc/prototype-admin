@@ -40,7 +40,13 @@ function isPublicPath(pathname: string): boolean {
   return false
 }
 
-function redirectToLogin(request: NextRequest, pathname: string): NextResponse {
+function denyAccess(request: NextRequest, pathname: string): NextResponse {
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.json(
+      { error: 'Authentication required' },
+      { status: 401 }
+    )
+  }
   const loginUrl = new URL('/login', request.url)
   loginUrl.searchParams.set('next', pathname)
   return NextResponse.redirect(loginUrl)
@@ -60,7 +66,7 @@ async function verifyJwt(token: string): Promise<Record<string, unknown> | null>
     }
   }
 
-  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:8000'
   try {
     const response = await fetch(`${backendUrl}/api/v1/auth/me`, {
       method: 'GET',
@@ -88,11 +94,11 @@ export async function middleware(request: NextRequest) {
   if (workosSessionCookie?.value) {
     const sessionData = verifyAndDecodeSession(workosSessionCookie.value)
     if (!sessionData) {
-      return redirectToLogin(request, pathname)
+      return denyAccess(request, pathname)
     }
 
     if (pathname.startsWith('/admin')) {
-      const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:8000'
       try {
         const meResponse = await fetch(`${backendUrl}/api/v1/auth/me`, {
           method: 'GET',
@@ -103,15 +109,15 @@ export async function middleware(request: NextRequest) {
           signal: AbortSignal.timeout(3000),
         })
         if (!meResponse.ok) {
-          return redirectToLogin(request, pathname)
+          return denyAccess(request, pathname)
         }
         const meData = await meResponse.json()
         const userRole = meData.role || meData.user_role
         if (userRole !== 'admin') {
-          return redirectToLogin(request, pathname)
+          return denyAccess(request, pathname)
         }
       } catch {
-        return redirectToLogin(request, pathname)
+        return denyAccess(request, pathname)
       }
     }
 
@@ -127,19 +133,19 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!accessTokenCookie || accessTokenCookie.value === '_sso_session_') {
-    return redirectToLogin(request, pathname)
+    return denyAccess(request, pathname)
   }
 
   const token = accessTokenCookie.value
   const payload = await verifyJwt(token)
   if (!payload) {
-    return redirectToLogin(request, pathname)
+    return denyAccess(request, pathname)
   }
 
   if (pathname.startsWith('/admin')) {
     const role = payload.role || payload.user_role
     if (role !== 'admin') {
-      return redirectToLogin(request, pathname)
+      return denyAccess(request, pathname)
     }
   }
 
