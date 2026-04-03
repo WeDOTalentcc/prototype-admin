@@ -33,7 +33,7 @@ import {
   Percent,
   Info,
 } from "lucide-react"
-import { SmartImportZone } from "./SmartImportZone"
+
 import { LiaFieldToggle, defaultLiaFieldExamples } from "./LiaFieldToggle"
 import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
 import { BenefitItemCard } from "./benefits/BenefitItemCard"
@@ -593,16 +593,6 @@ export function BenefitsTab() {
           </Button>
         </div>
       </div>
-
-      <SmartImportZone
-        title="Importar Benefícios"
-        description="Arraste uma planilha Excel ou CSV com os benefícios da empresa. A LIA vai cruzar com a lista de benefícios pré-cadastrados e cadastrar automaticamente."
-        importEndpoint="/api/backend-proxy/benefits/import?company_id=default"
-        templateDownloadEndpoint="/api/backend-proxy/benefits/import/template"
-        expectedFields={["name", "description", "category", "value_type", "value", "seniority_levels", "waiting_period_days", "provider"]}
-        onImportSuccess={() => { loadBenefits() }}
-        disabled={!isEditingBenefits}
-      />
 
       <div className="space-y-3">
         {BENEFIT_CATEGORIES.map((category) => {

@@ -22,7 +22,7 @@ import {
   Linkedin,
 } from "lucide-react";
 import { LiaFieldToggle, defaultLiaFieldExamples } from './LiaFieldToggle';
-import { SmartImportZone } from "./SmartImportZone";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -244,27 +244,6 @@ export function DepartmentsTab({
             )}
           </div>
         </div>
-
-        <SmartImportZone
-          title="Importar Departamentos"
-          description="Arraste uma planilha Excel ou CSV com o organograma da empresa. A LIA vai identificar automaticamente os departamentos, gestores e hierarquias."
-          importEndpoint="/api/backend-proxy/company/departments/import"
-          templateDownloadEndpoint="/api/backend-proxy/company/departments/import/template"
-          expectedFields={[
-            "name",
-            "description",
-            "manager",
-            "manager_email",
-            "parent_department",
-            "headcount",
-            "cost_center",
-            "order",
-          ]}
-          onImportSuccess={() => {
-            loadDepartments();
-          }}
-          disabled={!isEditingDepartments}
-        />
 
         {showDepartmentForm && isEditingDepartments && (
           <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
