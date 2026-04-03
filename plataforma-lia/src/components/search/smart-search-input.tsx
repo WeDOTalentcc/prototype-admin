@@ -219,18 +219,11 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
               key={m.key}
               onClick={() => setMode(m.key)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-[width,height]",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border",
                 mode === m.key 
-                  ? "" 
-                  : "hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover"
+                  ? "border-lia-text-primary bg-lia-text-primary text-white dark:border-lia-text-primary dark:bg-lia-text-primary" 
+                  : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary dark:hover:bg-lia-btn-primary-hover"
               )}
-              style={mode === m.key 
-                ? { 
-                    backgroundColor: "var(--lia-text-primary)",
-                    color: "white",
-                  } 
-                : { color: "var(--lia-text-secondary)" }
-              }
             >
               <m.icon className="w-3.5 h-3.5" />
               {m.label}
@@ -242,7 +235,7 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
             <button
               onClick={onOpenFilters}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-[width,height] hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border border-lia-border-subtle hover:bg-lia-bg-tertiary hover:text-lia-text-primary dark:hover:bg-lia-btn-primary-hover",
                 (activeFiltersCount > 0 || filledCount > 0) && "ring-1 ring-lia-btn-primary-bg/20",
                 (activeFiltersCount > 0 || filledCount > 0) ? "text-lia-text-primary" : "text-lia-text-secondary"
               )}

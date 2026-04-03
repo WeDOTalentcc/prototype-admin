@@ -450,7 +450,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
           return (
             <div
               key={tag.key}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-[width,height]"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors border border-lia-border-subtle"
               style={{backgroundColor: colors.bg,
                 color: colors.text}}
               title={tag.value}
@@ -479,10 +479,10 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
               <button
                 onClick={() => setAutocompleteEnabled(!autocompleteEnabled)}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-[width,height] hover:opacity-90",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border hover:opacity-90",
                   autocompleteEnabled
-                    ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
-                    : "bg-lia-bg-tertiary text-lia-text-secondary"
+                    ? "border-lia-btn-primary-bg bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                    : "border-lia-border-subtle bg-transparent text-lia-text-secondary"
                 )}
               >
                 <Brain className={`w-3.5 h-3.5 ${autocompleteEnabled ? 'text-wedo-cyan' : 'text-lia-text-tertiary'}`} />
