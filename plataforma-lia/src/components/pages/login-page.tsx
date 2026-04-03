@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * @deprecated LEGACY login page — kept for reference only.
+ * Active login is handled by LoginClient.tsx via /login route.
+ * All auth bypass points have been disabled for security.
+ */
+
 import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { WeDOLogo } from "@/components/wedo-logo"
