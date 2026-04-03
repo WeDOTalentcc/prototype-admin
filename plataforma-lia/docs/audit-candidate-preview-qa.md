@@ -37,12 +37,12 @@
 
 | Area | Vue (Producao) | React (Replit) | Status |
 |------|---------------|----------------|--------|
-| **Header candidato** | Avatar + nome + score + LinkedIn | Avatar com ring + nome + 3 badges + 5 redes + datas + contato + indicadores | GAP CRITICO |
-| **Tabs** | 4 tabs (Perfil, Atividades, Arquivos, Curriculo) | 4 tabs (Perfil, Atividades, Arquivos, Pareceres) | DIFERENTE |
-| **Tab Perfil** | 9 cards separados (lia_assessment 458L, score_analysis 692L, etc.) | 1 componente monolitico (861L) com cards embutidos | PARCIAL |
-| **Tab Atividades** | `applies.vue` (30L) — tabela basica, dados reais | 3 sub-componentes (1.434L) — timeline rica, dados demo | GAP |
-| **Tab Arquivos** | `wrapper.vue` (120L) — lista + download | `CandidateFilesTab.tsx` (774L) — drag-drop + preview + categorias | GAP CRITICO |
-| **Tab Pareceres** | NAO EXISTE | `CandidateOpinionsTab.tsx` (293L) — historico + analises | FALTANDO |
+| **Header candidato** | Avatar + nome + score + LinkedIn | Avatar "TN" + "senior" badge + "13.0 anos" + "LGPD" + TH1886 + 10 icones acao + datas cadastro/atualizacao + Brain button + expand/close | GAP CRITICO |
+| **Tabs** | 4 tabs (Perfil, Atividades, Arquivos, Curriculo) | 4 tabs (Perfil Completo, Atividades, Arquivos, Pareceres e Analises) | DIFERENTE |
+| **Tab Perfil** | 9 cards separados (lia_assessment 458L, score_analysis 692L, etc.) | Resumo LIA (com erro "Nao foi possivel gerar") + Experiencia (border-left, duracao calculada) + Formacao (datas ISO raw) + Remuneracao (R$ 32.211) + Preferencias (**bugs: "undefined"/"null" renderizados**) | PARCIAL + BUGS |
+| **Tab Atividades** | `applies.vue` (30L) — tabela basica, dados reais | 8 filtros + "Nova Atividade" + agrupamento Hoje/Esta Semana + cards expandiveis (email completo, Avaliacao LIA 4 metricas) + 8 tipos de atividade — **dados demo** | GAP |
+| **Tab Arquivos** | `wrapper.vue` (120L) — lista + download | Drag-drop + 4 categorias coloridas + FilePreviewModal (PDF/imagem/video + Analise LIA + Parecer + Score) | GAP CRITICO |
+| **Tab Pareceres** | NAO EXISTE | 2 sub-tabs ("Pareceres da LIA" + "Analises") + empty state informativo | FALTANDO |
 | **Botoes de acao** | 8 icones-only no dropdown | 9 botoes com labels + LIA Chat + favoritar | GAP |
 | **Modais** | 3 (Email, Enrich, AddToJob) | 7+ (LIA Chat, DISC, BigFive, Screening, FilePreview, etc.) | GAP |
 | **Layout preview** | Empurra header/botoes da tabela | Drawer overlay sem afetar tabela | BUG CRITICO |
@@ -51,8 +51,9 @@
 | **Remuneracao** | 191L com calculo 13.33x + beneficios | ~80L simplificado | VUE SUPERIOR |
 | **Score Analysis** | 692L com requisitos expandiveis e confianca | Embutido no Parecer LIA (~150L) | VUE SUPERIOR |
 
-**Total de problemas catalogados: 63**
-**Criticos: 9 | Altos: 19 | Medios: 23 | Baixos: 12**
+**Total de problemas catalogados: 72** (63 Vue + 4 bugs React + 5 novos detalhes visuais)
+**Criticos: 11 | Altos: 21 | Medios: 26 | Baixos: 14**
+**Screenshots documentados: 30** (23 React + 7 Vue producao)
 
 ## Verificacao Funcional (Playwright e2e)
 
@@ -105,8 +106,23 @@
 | R6 | `Screen_Shot_2.41.15_PM` | FilePreviewModal — PDF com paginacao "1/5" |
 | R7 | `Screen_Shot_2.41.36_PM` | FilePreviewModal — Video com player + transcricao + Analise LIA |
 | R8 | `Screen_Shot_2.41.48_PM` | FilePreviewModal — Parecer LIA: Pontos Fortes/Atencao, Score 91% |
+| R9 | `Screen_Shot_2.44.39_PM` | Tab Perfil — erro resumo, Experiencia com border-left, duracao 2.9 anos |
+| R10 | `Screen_Shot_2.44.52_PM` | Tab Perfil — Formacao, Cursos, Idiomas "Nao informado", Remuneracao R$ 32.211 |
+| R11 | `Screen_Shot_2.45.03_PM` | Tab Perfil — Remuneracao CLT/PJ, Preferencias com bugs "undefined"/"null" |
+| R12 | `Screen_Shot_2.45.24_PM` | Tab Atividades — 8 filtros, "+ Nova Atividade", agrupamento "Hoje", cards com status |
+| R13 | `Screen_Shot_2.45.49_PM` | Tab Atividades — Avaliacao LIA 91%, Candidatura LinkedIn "Nova", "Esta Semana" |
+| R14 | `Screen_Shot_2.46.11_PM` | Tab Atividades — Rubrica 89% "Fit Alto", Email "Visualizado", Assessment 85% |
+| R15 | `Screen_Shot_2.46.28_PM` | Tab Atividades (full page) — job-id nos cards, layout expandido |
+| R16 | `Screen_Shot_2.46.39_PM` | Tab Atividades — Triagem voz 93% "Concluida", 4 perguntas respondidas |
+| R17 | `Screen_Shot_2.47.01_PM` | Tab Pareceres — sub-tabs "Pareceres da LIA" + "Analises", empty state |
+| R18 | `Screen_Shot_2.47.24_PM` | Tab Atividades — card expandido: email completo com De/Para/Cc/Assunto/corpo |
+| R19 | `Screen_Shot_2.47.46_PM` | Tab Atividades — card expandido: Avaliacao LIA com 4 metricas coloridas + Pontos Fortes |
+| R20 | `Screen_Shot_2.53.14_PM` | Atividades — Avaliacao LIA expandida: 5 Pontos Fortes + Recomendacao completa com 3 focos |
+| R21 | `Screen_Shot_2.53.47_PM` | Atividades — Candidatura LinkedIn expandida: ID aplicacao, metodo Easy Apply, dispositivo, botoes Baixar CV + Ver LinkedIn |
+| R22 | `Screen_Shot_2.54.09_PM` | Atividades — Triagem por Voz expandida: 4/4 perguntas, Duracao 4:32, Completude 100%, Confianca 97%, Destaques |
+| R23 | `Screen_Shot_2.54.23_PM` | Atividades — Triagem por Voz: Destaques (5 bullets) + Impressao Geral + botao "Ouvir Triagem" |
 
-**Nota:** Screenshots das tabs Perfil e Pareceres do Replit nao puderam ser capturados (timeout Next.js >10s). Analise feita via inspecao de codigo (6.196 linhas) + testes Playwright. **Tab Arquivos foi documentada com 6 screenshots detalhados.**
+**Total:** 23 screenshots React + 7 screenshots Vue producao = 30 screenshots documentados.
 
 ---
 
@@ -125,13 +141,16 @@
 
 ## 2.2 HEADER DO CANDIDATO
 
-| ID | Elemento | Vue (Producao) | React (Replit) | Sev. |
-|----|---------|---------------|----------------|------|
-| D05 | **Avatar** | `v-avatar size="40"`, iniciais inline, sem indicador status | `CandidateAvatar` com `showRing` (anel de status) | BAIXO |
-| D06 | **ID Badge** | ID numerico raw `4681` | `generateShortId()` → `A72E80` alfanumerico mono | BAIXO |
-| D07 | **Redes sociais** | Apenas LinkedIn | LinkedIn + GitHub + StackOverflow + X + Portfolio | MEDIO |
-| D08 | **Datas** | Nenhuma data no header | "Cadastrado em", "Atualizado em", "Ultimo contato em" | ALTO |
-| D09 | **Botao LIA** | Ausente | Botao Brain no header abre `LiaAnalysisModal` | ALTO |
+**Screenshots React:** `Screen_Shot_2.44.39_PM`, `Screen_Shot_2.45.49_PM`
+
+| ID | Elemento | Vue (Producao) | React (Replit — dos screenshots) | Sev. |
+|----|---------|---------------|----------------------------------|------|
+| D05 | **Avatar** | `v-avatar size="40"`, iniciais inline, sem indicador status | Avatar "TN" circular com fundo cinza + badge "senior" (chip cinza) + "13.0 anos" + "LGPD" (chip vermelho) | ALTO |
+| D06 | **ID Badge** | ID numerico raw `4681` | `TH1886` — prefixo + numerico, chip outline arredondado | BAIXO |
+| D07 | **Redes sociais** | Apenas LinkedIn | **Barra de 10 icones** separada por `|`: mail, phone, calendar, clipboard, chart, star, comments `|` linkedin, message, fork, X, Behance | **CRITICO** |
+| D08 | **Datas** | Nenhuma data no header | Duas datas com icones: "📅 13 de mar. de 2026" (cadastro) + "🕐 13 de mar. de 2026" (atualizacao) | ALTO |
+| D09 | **Botao LIA** | Ausente | Botao Brain (⊕) circular no canto superior direito do header | ALTO |
+| D09c | **Botoes expand/close** | Apenas fechar (X) | Botao expand (⛶) para full page + botao fechar (X) | MEDIO |
 
 ### Codigo Vue ATUAL — preview.vue (linhas 140-230)
 
@@ -317,53 +336,294 @@ function openUrl(url) {
 
 ---
 
-## 2.5 TAB PERFIL — PARECER LIA
+## 2.5 TAB PERFIL — RESUMO E PARECER LIA
 
-| ID | Elemento | Vue (Producao) | React (Replit) | Sev. |
-|----|---------|---------------|----------------|------|
-| D15 | **Estado vazio** | "Aguardando triagem" com loading, sem botao de acao | Botao "Gerar Parecer" quando vazio, score + archetype + summary quando preenchido | **CRITICO** |
+**Screenshots React:** `Screen_Shot_2.44.39_PM`
+
+| ID | Elemento | Vue (Producao) | React (Replit — dos screenshots) | Sev. |
+|----|---------|---------------|----------------------------------|------|
+| D15 | **Erro no resumo** | "Aguardando triagem" com loading, sem botao de acao | Exibe "Nao foi possivel gerar o resumo" com botao "Tentar novamente" — erro visivel mas com recovery | **CRITICO** |
 | D16 | **Score sem contexto** | Badge "87" sem escala de cores, sem label "Alta Confianca" | Score com barra circular colorida + label + badge metodo | ALTO |
 
 ---
 
-## 2.6 TAB PERFIL — ANALISE DE SCORE E SKILLS
+## 2.6 TAB PERFIL — EXPERIENCIA E FORMACAO
+
+**Screenshots React:** `Screen_Shot_2.44.39_PM`, `Screen_Shot_2.44.52_PM`
+
+| ID | Elemento | Vue (Producao) | React (Replit — dos screenshots) | Sev. |
+|----|---------|---------------|----------------------------------|------|
+| D16b | **Experiencia visual** | Titulo, empresa, datas, texto plano | **Border-left laranja** por experiencia + empresa ao lado do titulo + **duracao calculada** "(2.9 anos)" + descricao abaixo | ALTO |
+| D16e | **Formacao datas** | Datas formatadas | Datas em **formato ISO raw** "2020-02-01 - 2022-12-01" — deveria ser formatado | BUG MEDIO |
+| D16f | **Cursos e Certificacoes** | Nao visivel | Card "Cursos e Certificacoes" com "Nao informado" em italico cinza | BAIXO |
+
+---
+
+## 2.7 TAB PERFIL — REMUNERACAO, PREFERENCIAS E BUGS
+
+**Screenshots React:** `Screen_Shot_2.44.52_PM`, `Screen_Shot_2.45.03_PM`
+
+| ID | Elemento | Vue (Producao) | React (Replit — dos screenshots) | Sev. |
+|----|---------|---------------|----------------------------------|------|
+| D16c | **Remuneracao** | "BRL 0,00" para todos os campos | Salario Atual: **R$ 32.211,00** formatado, Pretensao Salarial: "Nao informado", Expectativa CLT: "Nao informado", Expectativa PJ: "Nao informado" | MEDIO |
+| D16d | **Idiomas** | "Nao informado" | Card "Idiomas" com "Nao informado" em italico | BAIXO |
+| D16g | **BUG: "undefined" exibido** | N/A (Vue nao tem campo) | Preferencias: "Aceita Mudanca: **undefined**" — valor `undefined` renderizado como texto | **BUG CRITICO** |
+| D16h | **BUG: "null" exibido** | N/A (Vue nao tem campo) | Preferencias: "Disponibilidade Viagens: **null**" — valor `null` renderizado como texto | **BUG CRITICO** |
+| D16i | **LGPD sem consentimento** | Nao exibe | "Consentimento LGPD: ✗ Nao consentido" (vermelho) — exibido corretamente como alerta | MEDIO |
+| D16j | **Contradicao dados** | N/A | "Modelo de Trabalho: remoto" MAS "Aceita Remoto: Nao" — dados contraditorios sem validacao | **BUG ALTO** |
+| D15b | **Preferencias Pessoais** | Nao visivel | Card completo: Modelo Trabalho, Tipo Contrato (CLT), Aceita Remoto, Aceita Mudanca, Disp. Viagens, LGPD | MEDIO |
+
+### Anatomia da Secao Preferencias (React — do screenshot)
+
+```
+┌─────────────────────────────────────────────┐
+│ 🧑 Preferências e Dados Pessoais           │
+│                                             │
+│ Modelo de Trabalho              remoto      │
+│ Tipo de Contrato                CLT         │
+│ Aceita Remoto                   Não         │ ← contradição com "remoto" acima
+│ Aceita Mudança                  undefined   │ ← BUG: valor JS renderizado
+│ Disponibilidade Viagens         null        │ ← BUG: valor JS renderizado
+│ Consentimento LGPD    ✗ Não consentido      │ ← vermelho, correto
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## 2.7b TAB PERFIL — SECOES AUSENTES
 
 | ID | Elemento | Vue (Producao) | React (Replit) | Sev. |
 |----|---------|---------------|----------------|------|
 | D09b | **Card Score Analysis desproporcionado** | Grafico circular grande demais, ocupa muito espaco vertical | Grid compacto 2 colunas com barra de progresso por metrica | MEDIO |
-| D09c | **Cores inconsistentes** | "Essencial" vermelho, "Importante" laranja, "Desejavel" laranja claro — sem semantica | Design tokens: success (verde), warning (amarelo), error (vermelho) | MEDIO |
 | D10b | **Skills sem categorias** | 37 itens planos sem agrupamento | Mapa categorizado: Backend, Frontend, Data, DevOps + cores por fonte | ALTO |
 | D10c | **Skills sem fonte** | Todas as badges iguais, impossivel saber se CV/LinkedIn/LIA | Cores distintas: `wedo-cyan` para LIA, `wedo-magenta` para Interesses | MEDIO |
-
----
-
-## 2.7 TAB PERFIL — SECOES AUSENTES E EXPERIENCIA
-
-| ID | Elemento | Vue (Producao) | React (Replit) | Sev. |
-|----|---------|---------------|----------------|------|
 | D11b | **Acordeoes sem preview** | "Avaliacao por Requisitos (7)" — apenas titulo + chevron | Conteudo exibido diretamente com scroll natural | MEDIO |
 | D12b | **ExperienceHighlight** | Nao existe | Card no topo do perfil com resumo gerado pela LIA | MEDIO |
 | D13b | **Perfil LinkedIn** | Nao existe | Card com headline, idade estimada, seguidores, conexoes | MEDIO |
 | D14b | **Indicadores especiais** | Nao existe | Badges: Open to Work, Top University, Decision Maker, LCNU | MEDIO |
-| D15b | **Preferencias Pessoais** | Nao visivel | Card com Genero, Modelo Trabalho, Contrato, Remoto, LGPD | MEDIO |
-| D16b | **Experiencia simples** | Titulo, empresa, datas, texto plano | `border-left` colorida, badges startup/tech stack, duracao calculada | ALTO |
-| D16c | **Remuneracao zerada** | "BRL 0,00" para todos os campos | Salario atual + pretensao + CLT/PJ/Freelance formatado | MEDIO |
-| D16d | **Idiomas** | "Nao informado" | Nivel de proficiencia quando disponivel | BAIXO |
 
 ---
 
 ## 2.8 TAB ATIVIDADES
 
-| ID | Elemento | Vue (Producao) | React (Replit) | Sev. |
-|----|---------|---------------|----------------|------|
-| D17 | **Cards nao expandem** | Cards estaticos sem interacao ao clicar | Cards expandiveis com `ActivityExpandedDetails` por tipo | **CRITICO** |
-| D18 | **JSON raw visivel** | Card "Log de Atualizacao" exibe dados raw (`"url": "/recruiter/..."`, `"skill_name": "weblogic"`) | Cada tipo de atividade formatado: email body, entrevista detalhes, etc. | **CRITICO** |
-| D19 | **Cards desproporcionais** | Card "Resumo das Alteracoes" ocupa tela inteira com texto bruto | Cards com altura maxima e scroll interno | **CRITICO** |
-| D20 | **Filtros truncados** | Preview mostra apenas "Todas, Emails, Entrevistas", demais ocultos | 8 filtros sempre visiveis | ALTO |
-| D21 | **Filtros divergentes** | Full page tem "Avaliacoes" e "Etapas" que nao existem na referencia | Referencia tem "Notas" | MEDIO |
-| D22 | **Sem Nova Atividade** | Nao ha botao para adicionar atividade manualmente | Botao "Nova Atividade" + textarea nota | ALTO |
-| D23 | **Sem agrupamento por data** | Lista cronologica sem separadores | "Hoje", "Ontem", "Esta Semana", etc. | MEDIO |
-| D24 | **Dots sem legenda** | Verde/roxo sem explicacao | Color-coded por tipo com legenda | MEDIO |
+**Screenshots React:** `Screen_Shot_2.45.24_PM`, `Screen_Shot_2.45.49_PM`, `Screen_Shot_2.46.11_PM`, `Screen_Shot_2.46.28_PM`, `Screen_Shot_2.46.39_PM`, `Screen_Shot_2.47.24_PM`, `Screen_Shot_2.47.46_PM`
+
+### Bugs Identificados
+
+| ID | Elemento | Vue (Producao) | React (Replit — dos screenshots) | Sev. |
+|----|---------|---------------|----------------------------------|------|
+| D17 | **Cards nao expandem** | Cards estaticos sem interacao ao clicar | Cards com chevron (v) que expande: email mostra De/Para/Cc/Assunto/corpo completo; Avaliacao LIA mostra 4 metricas coloridas + Pontos Fortes | **CRITICO** |
+| D18 | **JSON raw visivel** | Card "Log de Atualizacao" exibe dados raw (`"url": "/recruiter/..."`) | Cada tipo formatado: email com campos, entrevista com horario, avaliacao com scores, candidatura com fonte | **CRITICO** |
+| D19 | **Cards desproporcionais** | Card "Resumo das Alteracoes" ocupa tela inteira com texto bruto | Cards com altura fixa e expand on-click | **CRITICO** |
+| D20 | **Filtros truncados** | Preview mostra apenas "Todas, Emails, Entrevistas", demais ocultos | **8 filtros chip sempre visiveis:** Todas (preto), Emails, Entrevistas, Testes, LIA, Ofertas, Inscricoes, Avaliacoes — cada um com icone proprio | ALTO |
+| D21 | **Sem header de controle** | Nenhum header na secao | Header: "Feed de Atividades **11**" + select "Todo periodo" (dropdown) + botoes sort/view + botao "+ Nova Atividade" | ALTO |
+| D22 | **Sem Nova Atividade** | Nao ha botao para adicionar | Botao "+ Nova Atividade" proeminente no header | ALTO |
+| D23 | **Sem agrupamento por data** | Lista cronologica sem separadores | Agrupamento visual: "○ **Hoje**", "○ **Esta Semana**" com circulo vazio como separador | ALTO |
+| D24 | **Dots sem significado** | Verde/roxo sem explicacao | Color-coded por tipo: azul (email ✉), verde (sistema/candidatura 📋), laranja (LIA ⊕), roxo (triagem 🎤) | MEDIO |
+
+### Anatomia da Tab Atividades (React — dos screenshots)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ⚡ Feed de Atividades  11   [Todo período ▾]  [↕] [☰]      │
+│                                        (⊕) Nova Atividade  │
+│                                                             │
+│ [Todas] [📧Emails] [📝Entrevistas] [🧪Testes] [🧠LIA]     │
+│ [💼Ofertas] [📋Inscrições] [🎯Avaliações]                  │
+│                                                             │
+│ ○ Hoje                                                      │
+│ ●─── Email convite para entrevista  [Enviado]  v            │
+│ │    🏢 Tech Lead Mobile                                    │
+│ │    Maria Santos • Hoje, 10:30                             │
+│ │    Convite para entrevista técnica com time...            │
+│ │                                                           │
+│ ●─── Entrevista técnica agendada   [Confirmada]  v          │
+│ │    🏢 Tech Lead Mobile                                    │
+│ │    Sistema • Hoje, 09:15                                  │
+│ │    Entrevista com Time de Engenharia 15/01 às 14:00       │
+│ │                                                           │
+│ ○ Esta Semana                                               │
+│ ●─── Avaliação automática da LIA   [91.0%]                  │
+│ │    concluída              [Altamente Recomendado]  v      │
+│ │    🏢 Tech Lead Mobile                                    │
+│ │    LIA • Ontem, 16:45                                     │
+│ │    Análise de CV e perfil LinkedIn com score de 91%       │
+│ │                                                           │
+│ ●─── Candidatura recebida via LinkedIn  [Nova]  v           │
+│      🏢 Tech Lead Mobile                                    │
+│      Sistema • Ontem, 14:20                                 │
+│      Candidato aplicou para a vaga...                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Tipos de Atividade Identificados (dos screenshots)
+
+| Tipo | Icone | Cor dot | Status badges | Card expandido mostra |
+|------|-------|---------|---------------|----------------------|
+| Email enviado | ✉ | Azul | Enviado, Visualizado | De/Para/Cc/Assunto + corpo email completo |
+| Entrevista | 📅 | Verde | Confirmada | Detalhes do agendamento |
+| Avaliacao LIA | ⊕ | Laranja | Score% + Nivel | **4 metricas** (Tecnico/Fit Cultural/Experiencia/Soft Skills) + **5 Pontos Fortes** com checkmarks verdes + **Recomendacao** texto completo com 3 focos de entrevista |
+| Candidatura | 📋 | Verde | Nova | Grid 2x2: ID Aplicacao (APP-2026-001234), Metodo (Easy Apply), Recebido em (data+hora), Dispositivo (iPhone 15 Pro) + botoes **[Baixar CV]** e **[Ver LinkedIn]** |
+| Rubrica CV | ⊕ | Laranja | Score% + Fit | Analise detalhada de aderencia CV vs requisitos |
+| Follow-up | ✉ | Azul | Visualizado | Corpo do email completo |
+| Assessment | ⊕ | Verde | Score% + Nivel | Resultado comportamental |
+| Triagem voz | 🎤 | Vermelho | Score% + Status | **3 metricas** (Duracao 4:32, Completude 100%, Confianca 97%) + **Destaques** (5 bullets) + **Impressao Geral** (texto) + botao **[▶ Ouvir Triagem]** |
+
+### Card Expandido — Email (Screenshot 2.47.24)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ● Email de convite para entrevista enviado  [Enviado]  ^    │
+│   🏢 Tech Lead Mobile  Maria Santos • Hoje, 10:30          │
+│   Convite para entrevista técnica com time de engenharia    │
+│   agendada para 15/01                                       │
+│                                                             │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │ De:      maria.santos@wedotalent.com.br               │ │
+│   │ Para:    bruno.carvalho@email.com                     │ │
+│   │ Cc:      recrutamento@wedotalent.com.br               │ │
+│   │ Assunto: Convite: Entrevista Técnica - Tech Lead      │ │
+│   │          Mobile | WeDo Talent                         │ │
+│   │                                                       │ │
+│   │ Olá Bruno,                                            │ │
+│   │                                                       │ │
+│   │ Esperamos que esteja bem! É com grande satisfação     │ │
+│   │ que entramos em contato para informar que sua         │ │
+│   │ candidatura para a posição de Tech Lead Mobile foi    │ │
+│   │ muito bem avaliada pela nossa equipe...               │ │
+│   └───────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Card Expandido — Avaliacao LIA (Screenshot 2.47.46)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ● Avaliação automática da LIA  [91.0%]                      │
+│   concluída         [Altamente Recomendado]  ^              │
+│   🏢 Tech Lead Mobile                                       │
+│   LIA • Ontem, 16:45                                        │
+│   Análise de CV e perfil LinkedIn com score de 91%          │
+│                                                             │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │ ⊕ Avaliação Automática da LIA                        │ │
+│   │                                                       │ │
+│   │ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐                 │ │
+│   │ │94.0% │ │88.0% │ │92.0% │ │89.0% │                 │ │
+│   │ │Técni.│ │Fit   │ │Exper.│ │Soft  │                 │ │
+│   │ │      │ │Cultu.│ │      │ │Skills│                 │ │
+│   │ └──────┘ └──────┘ └──────┘ └──────┘                 │ │
+│   │  laranja   laranja   verde    teal                   │ │
+│   │                                                       │ │
+│   │ Pontos Fortes                                         │ │
+│   │ ✔ Domínio avançado de React Native (5+ anos)          │ │
+│   └───────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Card Expandido — Avaliacao LIA Completa (Screenshots 2.53.14 + 2.47.46)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ● Avaliação automática da LIA  [91.0%]                      │
+│   concluída         [Altamente Recomendado]  ^              │
+│   🏢 Tech Lead Mobile                                       │
+│   LIA • Ontem, 16:45                                        │
+│   Análise de CV e perfil LinkedIn com score de 91%          │
+│                                                             │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │ ⊕ Avaliação Automática da LIA                        │ │
+│   │                                                       │ │
+│   │ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐                 │ │
+│   │ │94.0% │ │88.0% │ │92.0% │ │89.0% │                 │ │
+│   │ │Técni.│ │Fit   │ │Exper.│ │Soft  │                 │ │
+│   │ │      │ │Cultu.│ │      │ │Skills│                 │ │
+│   │ └──────┘ └──────┘ └──────┘ └──────┘                 │ │
+│   │  laranja   laranja   verde    teal                   │ │
+│   │                                                       │ │
+│   │ Pontos Fortes                                         │ │
+│   │ ✔ Domínio avançado de React Native (5+ anos)          │ │
+│   │ ✔ Experiência comprovada em liderança (4 anos)        │ │
+│   │ ✔ Histórico de entregas em grandes empresas           │ │
+│   │   (Nubank, iFood)                                     │ │
+│   │ ✔ Contribuições open source relevantes                │ │
+│   │ ✔ Certificações AWS e Google Cloud                    │ │
+│   │                                                       │ │
+│   │ Recomendação                                          │ │
+│   │ Candidato altamente qualificado para a posição de     │ │
+│   │ Tech Lead Mobile. Possui experiência sólida em        │ │
+│   │ liderança técnica... Recomendo fortemente agendar     │ │
+│   │ entrevista técnica com foco em:                       │ │
+│   │ 1. Arquitetura de sistemas mobile escaláveis          │ │
+│   │ 2. Gestão de equipes multidisciplinares               │ │
+│   │ 3. Estratégias de migração e modernização de apps     │ │
+│   └───────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Card Expandido — Candidatura LinkedIn (Screenshot 2.53.47)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ● Candidatura recebida via LinkedIn        [Nova]  ^        │
+│   🏢 Tech Lead Mobile  Sistema • Ontem, 14:20               │
+│   Candidato aplicou para a vaga de Tech Lead Mobile         │
+│   através da integração com LinkedIn                        │
+│                                                             │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │ 📋 Candidatura Recebida   [LinkedIn Jobs]             │ │
+│   │                                                       │ │
+│   │ ID da Aplicação          Método                       │ │
+│   │ APP-2026-001234          Easy Apply                   │ │
+│   │                                                       │ │
+│   │ Recebido em              Dispositivo                  │ │
+│   │ 13/01/2026 às 14:20:33   iPhone 15 Pro -              │ │
+│   │                          LinkedIn App                 │ │
+│   │                                                       │ │
+│   │ [⬇ Baixar CV]  [🔗 Ver LinkedIn]                      │ │
+│   └───────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Card Expandido — Triagem por Voz (Screenshots 2.54.09 + 2.54.23)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ ● Triagem por voz concluída    [93.0%]  [Concluída]  ^      │
+│   🏢 Tech Lead Mobile  LIA • 2 dias atrás, 11:00            │
+│   Candidato completou triagem de voz com 4 perguntas        │
+│                                                             │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │ 🎤 Triagem por Voz   [4/4 perguntas]                  │ │
+│   │                                                       │ │
+│   │ ┌──────────┐ ┌──────────┐ ┌──────────┐               │ │
+│   │ │  4:32    │ │  100%    │ │   97%    │               │ │
+│   │ │ Duração  │ │Completude│ │Confiança │               │ │
+│   │ └──────────┘ └──────────┘ └──────────┘               │ │
+│   │                                                       │ │
+│   │ ✨ Destaques                                          │ │
+│   │ • 8+ anos de experiência em desenvolvimento mobile    │ │
+│   │ • Liderou time de 6 desenvolvedores no Nubank         │ │
+│   │ • Migrou app com 5M+ usuários para micro-frontends   │ │
+│   │ • Disponibilidade imediata (aviso prévio 30 dias)     │ │
+│   │ • Pretensão salarial: R$ 28-32k CLT                   │ │
+│   │                                                       │ │
+│   │ Impressão Geral                                       │ │
+│   │ Candidato demonstrou excelente comunicação,           │ │
+│   │ conhecimento técnico profundo e experiência relevante │ │
+│   │ em liderança. Respostas claras e objetivas, com       │ │
+│   │ exemplos concretos de situações reais.                │ │
+│   │                                                       │ │
+│   │ [▶ Ouvir Triagem]                                     │ │
+│   └───────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Full Page vs Preview (Screenshot 2.46.28)
+
+No modo full page, cada card de atividade inclui o **job-id** na segunda linha:
+- Preview: "🏢 Tech Lead Mobile"
+- Full page: "🏢 **job-001** - Tech Lead Mobile"
 
 ### Codigo Vue ATUAL — applies.vue (30 linhas)
 
@@ -375,53 +635,85 @@ function openUrl(url) {
 </template>
 ```
 
-### CORRECAO — Filtros de Atividade (D20, D22)
+### CORRECAO — Filtros de Atividade (D20, D21, D22)
 
 ```vue
 <!-- NOVO: features/candidates/activities/ActivityFilters.vue -->
 <template>
-  <div class="d-flex align-center ga-2 flex-wrap">
+  <div class="d-flex flex-column ga-2">
+    <div class="d-flex align-center justify-space-between">
+      <div class="d-flex align-center ga-2">
+        <Icon name="lucide-activity" size="16" />
+        <span class="f12 font-weight-semibold">Feed de Atividades</span>
+        <v-chip size="x-small" color="primary" variant="flat" class="f9">
+          {{ totalCount }}
+        </v-chip>
+      </div>
+      <div class="d-flex align-center ga-2">
+        <v-select v-model="period" :items="periods" density="compact"
+          variant="outlined" class="f10" style="max-width: 140px;" hide-details />
+        <v-btn size="small" variant="tonal" color="primary" @click="$emit('new-activity')">
+          <Icon name="lucide-plus" size="14" class="mr-1" /> Nova Atividade
+        </v-btn>
+      </div>
+    </div>
     <v-chip-group v-model="selectedFilter" mandatory selected-class="text-primary">
-      <v-chip v-for="filter in filters" :key="filter.value" :value="filter.value"
+      <v-chip v-for="f in filters" :key="f.value" :value="f.value"
         size="small" variant="tonal" class="f10">
-        <Icon :name="filter.icon" size="12" class="mr-1" />
-        {{ filter.label }}
-        <span v-if="filter.count > 0" class="ml-1 f9">({{ filter.count }})</span>
+        <Icon :name="f.icon" size="12" class="mr-1" />{{ f.label }}
       </v-chip>
     </v-chip-group>
-    <v-select v-model="periodFilter" :items="periods" density="compact"
-      variant="outlined" class="f10" style="max-width: 140px;" hide-details />
   </div>
 </template>
 ```
 
-### CORRECAO — Timeline Visual (D17, D24)
+### CORRECAO — Timeline com Agrupamento (D17, D23, D24)
 
 ```vue
 <!-- NOVO: features/candidates/activities/ActivityTimeline.vue -->
 <template>
   <div class="d-flex flex-column">
-    <div v-for="activity in activities" :key="activity.id"
-      class="d-flex ga-3 position-relative mb-4 cursor-pointer"
-      @click="$emit('expand', activity.id)">
-      <div class="d-flex flex-column align-center" style="width: 24px;">
-        <div class="rounded-circle d-flex align-center justify-center"
-          :style="{ backgroundColor: getBgColor(activity.color), width: '24px', height: '24px' }">
-          <Icon :name="activity.icon" size="12" :color="activity.color" />
-        </div>
-        <div v-if="!isLast(activity)" class="flex-grow-1"
-          style="width: 2px; background: rgb(var(--v-theme-border-color));" />
+    <template v-for="(group, idx) in groupedActivities" :key="idx">
+      <div class="d-flex align-center ga-2 my-3">
+        <div class="rounded-circle border" style="width: 12px; height: 12px;" />
+        <span class="f11 font-weight-bold">{{ group.label }}</span>
       </div>
-      <div class="flex-grow-1 pb-2">
-        <div class="d-flex align-center justify-space-between">
-          <span class="f11 font-weight-medium">{{ activity.title }}</span>
-          <span class="f9 text-body-light">{{ formatRelativeTime(activity.timestamp) }}</span>
+      <div v-for="activity in group.items" :key="activity.id"
+        class="d-flex ga-3 position-relative mb-3 cursor-pointer"
+        @click="toggleExpand(activity.id)">
+        <div class="d-flex flex-column align-center" style="width: 24px;">
+          <div class="rounded-circle d-flex align-center justify-center"
+            :style="{ backgroundColor: getBgColor(activity.type), width: '24px', height: '24px' }">
+            <Icon :name="getIcon(activity.type)" size="12" :color="getColor(activity.type)" />
+          </div>
+          <div v-if="!isLast(group, activity)" class="flex-grow-1"
+            style="width: 2px; background: rgb(var(--v-theme-border-color));" />
         </div>
-        <v-chip size="x-small" :color="activity.chipColor" variant="tonal" class="mt-1 f9">
-          {{ activity.typeLabel }}
-        </v-chip>
+        <div class="flex-grow-1 pb-2">
+          <div class="d-flex align-center justify-space-between">
+            <span class="f11 font-weight-medium">{{ activity.title }}</span>
+            <div class="d-flex align-center ga-1">
+              <v-chip v-if="activity.score" size="x-small" color="primary" variant="flat">
+                {{ activity.score }}%
+              </v-chip>
+              <v-chip size="x-small" :color="activity.statusColor" variant="tonal">
+                {{ activity.statusLabel }}
+              </v-chip>
+              <Icon :name="expanded === activity.id ? 'lucide-chevron-up' : 'lucide-chevron-down'" size="14" />
+            </div>
+          </div>
+          <div class="f10 text-body-light mt-1">
+            🏢 {{ activity.jobTitle }}
+          </div>
+          <div class="f9 text-body-light">
+            {{ activity.author }} • {{ formatRelativeTime(activity.timestamp) }}
+          </div>
+          <div class="f10 text-body-light mt-1">{{ activity.description }}</div>
+          <ActivityExpandedContent v-if="expanded === activity.id"
+            :activity="activity" class="mt-2" />
+        </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 ```
@@ -822,13 +1114,35 @@ function openUrl(url) {
 
 ## 2.10 TAB PARECERES E ANALISES
 
-| ID | Elemento | Vue (Producao) | React (Replit) | Sev. |
-|----|---------|---------------|----------------|------|
-| D31 | **Sem sub-tabs** | Lista unica de pareceres | 2 sub-tabs: "Pareceres da LIA" + "Analises" | ALTO |
+**Screenshot React:** `Screen_Shot_2.47.01_PM`
+
+| ID | Elemento | Vue (Producao) | React (Replit — do screenshot) | Sev. |
+|----|---------|---------------|-------------------------------|------|
+| D31 | **Sub-tabs** | Lista unica de pareceres | 2 sub-tabs: "⊕ Pareceres da LIA" (brain icon) + "📄 Analises" | ALTO |
+| D31b | **Empty state** | Nao documentado | Icone documento grande + "Nenhum parecer disponivel" + "Os pareceres serao gerados automaticamente apos triagens ou analises da LIA." — texto informativo e claro | MEDIO |
 | D32 | **Sem score breakdown** | Score como numero simples | Grid 2 colunas com label + valor + barra progresso por metrica | ALTO |
 | D33 | **Sem secoes qualitativas** | Nao exibe Pontos Fortes, Gaps, Skills Match separadamente | Secoes expansiveis com listas bulleted | ALTO |
 | D34 | **Sem copiar parecer** | Nao ha botao copiar | Botao copiar com formatacao limpa | MEDIO |
 | D35 | **Sem historico de versoes** | Apenas parecer atual visivel | Historico completo com timestamps e scores | ALTO |
+
+### Anatomia da Tab Pareceres (React — do screenshot)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  [⊕ Pareceres da LIA]  [📄 Análises]                       │
+│  ──────────────────────                                     │
+│                                                             │
+│   ┌───────────────────────────────────────────────────────┐ │
+│   │                                                       │ │
+│   │            📄  (ícone documento grande)                │ │
+│   │                                                       │ │
+│   │        Nenhum parecer disponível                      │ │
+│   │   Os pareceres serão gerados automaticamente          │ │
+│   │   após triagens ou análises da LIA.                   │ │
+│   │                                                       │ │
+│   └───────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ### CORRECAO — Tab Pareceres Vue (D31-D35)
 
@@ -1132,6 +1446,15 @@ CandidateAnalysisResult -> Frontend
 | FIX-29 | Tab overflow com setas | D12 | `preview.vue` | 2h | BAIXO |
 | FIX-30 | Defaults mutaveis no schema | DB05, DB06 | Models SQLAlchemy | 1h | BAIXO |
 | FIX-31 | Navegacao prev/next entre candidatos | G13 | `preview.vue` | 1 dia | BAIXO |
+
+## Sprint Bugfix React — Bugs visuais encontrados nos screenshots
+
+| # | Correcao | IDs | Arquivo React | Esforco | Impacto |
+|---|---------|-----|--------------|---------|---------|
+| FIX-R04 | **BUG: "undefined"/"null" renderizados** — sanitizar valores nulos em Preferencias | D16g, D16h | `CandidatePreviewProfileTab.tsx` | 2h | **CRITICO** |
+| FIX-R05 | **BUG: Datas ISO raw na Formacao** — formatar "2020-02-01" → "fev. de 2020" | D16e | `CandidatePreviewProfileTab.tsx` | 1h | MEDIO |
+| FIX-R06 | **BUG: Contradicao remoto** — validar Modelo Trabalho vs Aceita Remoto | D16j | `CandidatePreviewProfileTab.tsx` | 2h | ALTO |
+| FIX-R07 | **Erro resumo sem recovery automatico** — retry com exponential backoff | D15 | `useCandidatePreviewCore.tsx` | 2h | ALTO |
 
 ## Sprint Backport React — Adaptar features superiores do Vue
 
