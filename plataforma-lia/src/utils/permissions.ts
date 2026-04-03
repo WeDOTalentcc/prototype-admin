@@ -313,7 +313,7 @@ export const mockUsers: User[] = [
   {
     id: '1',
     name: 'Ana Silva',
-    email: 'ana.silva@sodexo.com',
+    email: 'recrutador.senior@empresa.com',
     role: 'senior_recruiter',
     department: 'RH',
     company: 'Sodexo'

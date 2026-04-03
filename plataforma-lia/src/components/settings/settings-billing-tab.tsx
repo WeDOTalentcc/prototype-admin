@@ -58,8 +58,8 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
       users: 45,
       setupDate: "2024-01-15",
       contact: {
-        name: "Ana Silva",
-        email: "ana.silva@sodexo.com.br",
+        name: "Contato Principal",
+        email: "contato@empresa.com.br",
         phone: "(11) 99999-9999"
       },
       tenant: "sodexo-prod",

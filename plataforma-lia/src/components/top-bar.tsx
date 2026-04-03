@@ -50,11 +50,12 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
   const [passwordSuccess, setPasswordSuccess] = useState(false)
 
   // User data
+  // TODO: Replace with real user data from auth context
   const currentUser = {
-    name: "Ana Silva",
-    email: "ana.silva@sodexo.com",
-    role: "Recrutadora Sênior",
-    company: "Sodexo Enterprise",
+    name: "Usuário",
+    email: "usuario@empresa.com",
+    role: "Recrutador(a)",
+    company: "Empresa",
     avatar: undefined as string | undefined
   }
 

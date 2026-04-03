@@ -71,9 +71,9 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
       const mockData: FirstAccessData = {
         token: tokenValue,
         companyName: 'Sodexo Enterprise',
-        contactName: 'Ana Silva',
-        contactEmail: 'ana.silva@sodexo.com',
-        contactPhone: '+55 11 99999-0001',
+        contactName: 'Contato Principal',
+        contactEmail: 'contato@empresa.com',
+        contactPhone: '+55 11 0000-0000',
         companyData: {
           razaoSocial: 'Sodexo do Brasil Comercial Ltda',
           endereco: 'Av. Paulista, 1000 - São Paulo, SP',
