@@ -10,7 +10,6 @@ const routeParamsSchema = z.object({
   jobId: z.string().min(1, 'jobId is required'),
 })
 
-
 const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(
@@ -21,13 +20,10 @@ export async function POST(
     const { jobId } = await params
     const paramValidation = validateParams({ jobId }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
-    let body = {}
-    try {
-      body = await request.json()
-    } catch {
-      body = {}
-    }
-    
+
+    const bodyResult = _bodySchema.safeParse(await request.json().catch(() => ({})))
+    const body = bodyResult.success ? bodyResult.data : {}
+
     const response = await fetch(`${BACKEND_URL}/api/v1/job-vacancies/${jobId}/generate-public-link`, {
       method: 'POST',
       headers: getAuthHeaders(request),

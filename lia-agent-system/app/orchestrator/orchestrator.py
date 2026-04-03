@@ -10,6 +10,10 @@ from app.domains.registry import DomainRegistry
 from app.domains.workflow import DomainWorkflow
 from app.domains.base import DomainContext, DomainResponse
 from app.shared.execution import PlanDetector, PlanExecutor
+try:
+    from app.api.v1.ws_manager import ws_manager as _ws_manager
+except Exception:
+    _ws_manager = None  # WS not available in test context
 from app.shared.memory.conversation_state import ConversationState
 from app.services import job_analytics_prompt_service, COMMAND_TEMPLATES
 from app.services.conversation_memory import conversation_memory
@@ -151,12 +155,24 @@ class Orchestrator:
                     logger.info(f"Multi-step plan detected: {detected_plan.detected_pattern}")
                     plan_context = dict(ctx)
                     plan_context["conversation_state"] = conv_state
+
+                    # Build real-time progress callback (WebSocket)
+                    _session_id_for_ws = conversation_id or ""
+                    async def _plan_progress_callback(event_type: str, data: dict) -> None:
+                        if _ws_manager and _session_id_for_ws:
+                            await _ws_manager.send_to_session(_session_id_for_ws, {
+                                "type": "plan_progress",
+                                "event": event_type,
+                                **data,
+                            })
+
                     executed_plan = await self._plan_executor.execute(
                         plan=detected_plan,
                         user_id=user_id,
                         session_id=conversation_id or "",
                         tenant_id=ctx.get("company_id", "default"),
                         base_context=plan_context,
+                        progress_callback=_plan_progress_callback,
                     )
                     consolidated = self._plan_executor.build_consolidated_response(executed_plan)
                     resp_msg = consolidated.message or "Plano executado."

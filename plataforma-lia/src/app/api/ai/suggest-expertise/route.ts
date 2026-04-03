@@ -1,15 +1,25 @@
 export const dynamic = "force-dynamic"
 import Anthropic from "@anthropic-ai/sdk"
 import { NextRequest, NextResponse } from "next/server"
+import { validateBody } from '@/lib/api/validate'
+import { z } from 'zod'
 import { z } from 'zod'
 
 const client = new Anthropic()
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
+const _bodySchema = z.object({
+  query: z.unknown(),
+  existing: z.array(z.string()).optional().default([]),
+  findSimilar: z.boolean().optional().default(false),
+})
+
 export async function POST(request: NextRequest) {
   try {
-    const { query, existing = [], findSimilar = false } = await request.json()
+    const bodyResult = await validateBody(request, _bodySchema)
+    if (!bodyResult.success) return bodyResult.response
+    const { query, existing, findSimilar } = bodyResult.data
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json(

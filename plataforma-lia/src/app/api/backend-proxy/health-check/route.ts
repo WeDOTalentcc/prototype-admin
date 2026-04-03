@@ -47,12 +47,8 @@ const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
   try {
-    let body = {}
-    try {
-      body = await request.json()
-    } catch {
-      // Empty body is OK for some endpoints
-    }
+    const bodyResult = _bodySchema.safeParse(await request.json().catch(() => ({})))
+    const body = bodyResult.success ? bodyResult.data : {}
     
     const backendUrl = `${BACKEND_URL}/api/v1/health-check`
     

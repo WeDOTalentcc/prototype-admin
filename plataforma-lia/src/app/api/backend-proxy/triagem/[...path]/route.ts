@@ -79,12 +79,9 @@ export async function POST(
     } else {
       let body: string | undefined
       if (contentType.includes("application/json")) {
-        try {
-          const jsonBody = await request.json()
-          body = JSON.stringify(jsonBody)
-        } catch {
-          body = undefined
-        }
+        const _jsonSchema = z.record(z.string(), z.unknown())
+        const parseResult = _jsonSchema.safeParse(await request.json().catch(() => ({})))
+        body = parseResult.success ? JSON.stringify(parseResult.data) : undefined
       }
       fetchOptions = {
         method: "POST",

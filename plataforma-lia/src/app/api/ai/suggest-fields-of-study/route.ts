@@ -1,5 +1,7 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
+import { z } from 'zod'
 import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 
@@ -10,9 +12,16 @@ const anthropic = new Anthropic({
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
+const _bodySchema = z.object({
+  query: z.unknown(),
+  existingFields: z.unknown(),
+})
+
 export async function POST(request: NextRequest) {
   try {
-    const { query, existingFields } = await request.json()
+    const bodyResult = await validateBody(request, _bodySchema)
+    if (!bodyResult.success) return bodyResult.response
+    const { query, existingFields } = bodyResult.data
     
     if (!query || typeof query !== 'string' || query.trim().length < 2) {
       return NextResponse.json(

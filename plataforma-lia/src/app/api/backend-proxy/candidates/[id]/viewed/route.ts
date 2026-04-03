@@ -9,7 +9,6 @@ const routeParamsSchema = z.object({
   id: z.string().min(1, 'id is required'),
 })
 
-
 const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(
@@ -20,20 +19,15 @@ export async function POST(
     const { id } = await params
     const paramValidation = validateParams({ id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
-    let body = {}
-    try {
-      body = await request.json()
-    } catch {
-      body = {}
-    }
-    
+
+    const bodyResult = _bodySchema.safeParse(await request.json().catch(() => ({})))
+    const body = bodyResult.success ? bodyResult.data : {}
+
     const backendUrl = `${BACKEND_URL}/api/v1/candidates/${id}/viewed`
-    
+
     const response = await fetch(backendUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
 
@@ -63,8 +57,9 @@ export async function DELETE(
     const { id } = await params
     const paramValidation = validateParams({ id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
+
     const backendUrl = `${BACKEND_URL}/api/v1/candidates/${id}/viewed`
-    
+
     const response = await fetch(backendUrl, {
       method: 'DELETE',
     })

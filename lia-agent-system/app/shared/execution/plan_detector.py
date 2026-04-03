@@ -200,7 +200,6 @@ PLAN_PATTERNS: List[PlanPattern] = [
         description="Parsear CV, cadastrar candidato e disparar triagem WSI",
     ),
 ]
-]
 
 
 class PlanDetector:
