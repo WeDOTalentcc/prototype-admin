@@ -190,21 +190,14 @@
     --space-lg: 24px;
     --space-xl: 32px;
     --space-2xl: 48px;
-  /* === Aliases: shadcn/ui → LIA Design System === */
-  /* Permite que componentes shadcn/ui usem automaticamente os tokens LIA */
-  --background: var(--lia-bg-primary);
-  --card: var(--lia-bg-elevated);
-  --popover: var(--lia-bg-elevated);
-  --muted: var(--lia-bg-secondary);
-  --foreground: var(--lia-text-primary);
-  --card-foreground: var(--lia-text-primary);
-  --popover-foreground: var(--lia-text-primary);
-  --muted-foreground: var(--lia-text-secondary);
-  --border: var(--lia-border-default);
-  --input: var(--lia-border-default);
-  --accent: var(--lia-bg-tertiary);
-  --accent-foreground: var(--lia-text-primary);
+  /* === Aliases shadcn/ui (light mode) === */
+  /* Light-mode shadcn aliases (--background, --foreground, --card, etc.) remain in
+     globals.css :root block (lines 94-113) in HSL format. This is intentional:
+     design-tokens.css is @imported first by globals.css, so defining HSL aliases
+     here would be overwritten by globals.css's own :root block. The dark-mode
+     aliases below ARE canonical since no other file defines .dark shadcn aliases. */
 }
+
 
 /* ========================================
    MODO ESCURO - Inversão monocromática
@@ -302,18 +295,117 @@
     --lia-input-focus-ring: rgba(249, 250, 251, 0.2); /* Focus ring claro no dark */
     --lia-text-inverted: var(--lia-text-inverse);    /* Alias retroativo */
   /* === Aliases: shadcn/ui → LIA Design System (dark) === */
-  --background: var(--lia-bg-primary);
-  --card: var(--lia-bg-elevated);
-  --popover: var(--lia-bg-elevated);
-  --muted: var(--lia-bg-secondary);
-  --foreground: var(--lia-text-primary);
-  --card-foreground: var(--lia-text-primary);
-  --popover-foreground: var(--lia-text-primary);
-  --muted-foreground: var(--lia-text-secondary);
-  --border: var(--lia-border-default);
-  --input: var(--lia-border-default);
-  --accent: var(--lia-bg-tertiary);
-  --accent-foreground: var(--lia-text-primary);
+  /* HSL format required — Tailwind wraps these in hsl() */
+  --background: 210 12% 7%;
+  --foreground: 210 20% 98%;
+  --card: 204 9% 11%;
+  --card-foreground: 210 20% 98%;
+  --popover: 204 9% 11%;
+  --popover-foreground: 210 20% 98%;
+  --primary: 210 20% 98%;
+  --primary-foreground: 221 39% 11%;
+  --secondary: 204 9% 11%;
+  --secondary-foreground: 210 20% 98%;
+  --muted: 204 9% 11%;
+  --muted-foreground: 216 12% 84%;
+  --accent: 204 6% 16%;
+  --accent-foreground: 210 20% 98%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 20% 98%;
+  --border: 217 19% 27%;
+  --input: 217 19% 27%;
+  --ring: 210 20% 98%;
+
+  /* === WeDo gray scale (dark) — inverted === */
+  --wedo-bg: 210 12% 7%;
+  --wedo-surface: 204 9% 11%;
+  --wedo-gray-25: 204 9% 11%;
+  --wedo-gray-50: 204 9% 14%;
+  --wedo-gray-100: 204 6% 16%;
+  --wedo-gray-200: 204 6% 20%;
+  --wedo-gray-300: 215 14% 30%;
+  --wedo-gray-400: 220 9% 46%;
+  --wedo-gray-500: 220 9% 65%;
+  --wedo-gray-600: 220 9% 84%;
+  --wedo-gray-700: 210 20% 94%;
+  --wedo-gray-800: 210 20% 98%;
+  --wedo-gray-900: 0 0% 100%;
+
+  /* === Dark overrides for rgba tokens — higher opacity for contrast === */
+  --status-success-bg: rgba(22, 163, 74, 0.20);
+  --status-error-bg: rgba(220, 38, 38, 0.20);
+  --status-warning-bg: rgba(217, 119, 6, 0.20);
+  --status-success-bg-15: rgba(22, 163, 74, 0.25);
+  --status-error-bg-12: rgba(220, 38, 38, 0.22);
+  --status-error-bg-15: rgba(220, 38, 38, 0.25);
+  --status-error-bg-08: rgba(220, 38, 38, 0.18);
+  --status-error-bg-20: rgba(220, 38, 38, 0.30);
+  --status-warning-bg-08: rgba(217, 119, 6, 0.18);
+  --status-warning-bg-12: rgba(217, 119, 6, 0.22);
+  --status-warning-bg-15: rgba(217, 119, 6, 0.25);
+  --status-warning-bg-05: rgba(245, 158, 11, 0.15);
+  --status-warning-bg-amber: rgba(245, 158, 11, 0.20);
+  --status-warning-bg-amber-03: rgba(245, 158, 11, 0.40);
+  --status-error-border: rgba(220, 38, 38, 0.50);
+  --status-error-border-strong: rgba(220, 38, 38, 0.70);
+  --status-warning-border: rgba(217, 119, 6, 0.50);
+  --status-warning-border-light: rgba(217, 119, 6, 0.40);
+
+  --wedo-cyan-bg-02: rgba(96, 190, 209, 0.06);
+  --wedo-cyan-bg-04: rgba(96, 190, 209, 0.10);
+  --wedo-cyan-bg-05: rgba(96, 190, 209, 0.12);
+  --wedo-cyan-bg-06: rgba(96, 190, 209, 0.14);
+  --wedo-cyan-bg-08: rgba(96, 190, 209, 0.16);
+  --wedo-cyan-bg-10: rgba(96, 190, 209, 0.20);
+  --wedo-cyan-bg-12: rgba(96, 190, 209, 0.22);
+  --wedo-cyan-bg-15: rgba(96, 190, 209, 0.25);
+  --wedo-cyan-bg-20: rgba(96, 190, 209, 0.30);
+  --wedo-cyan-border: rgba(96, 190, 209, 0.50);
+
+  --wedo-purple-bg-10: rgba(152, 96, 209, 0.20);
+  --wedo-green-bg-10: rgba(123, 194, 154, 0.20);
+  --wedo-green-bg-15: rgba(123, 194, 154, 0.25);
+  --wedo-green-bg-20: rgba(123, 194, 154, 0.30);
+  --wedo-green-active-15: rgba(93, 164, 122, 0.25);
+  --wedo-green-light-bg-20: rgba(168, 213, 183, 0.30);
+  --wedo-orange-bg-10: rgba(209, 153, 96, 0.20);
+  --wedo-orange-bg-15: rgba(209, 153, 96, 0.25);
+  --wedo-blue-bg-10: rgba(59, 130, 246, 0.20);
+  --wedo-blue-bg-20: rgba(59, 130, 246, 0.30);
+
+  --gray-bg-05: rgba(200, 210, 220, 0.08);
+  --gray-bg-10: rgba(200, 210, 220, 0.12);
+  --gray-bg-12: rgba(200, 210, 220, 0.15);
+  --gray-bg-15: rgba(200, 210, 220, 0.18);
+  --gray-bg-20: rgba(200, 210, 220, 0.20);
+  --gray-bg-30: rgba(200, 210, 220, 0.25);
+  --gray-600-bg-10: rgba(200, 210, 220, 0.12);
+  --gray-600-bg-12: rgba(200, 210, 220, 0.15);
+  --gray-200-bg-20: rgba(200, 210, 220, 0.20);
+  --gray-300-bg-20: rgba(200, 210, 220, 0.20);
+  --gray-light-bg-20: rgba(200, 210, 220, 0.20);
+  --gray-border: rgba(200, 210, 220, 0.30);
+
+  --overlay-white-95: rgba(15, 17, 19, 0.95);
+  --overlay-white-88: rgba(15, 17, 19, 0.88);
+  --overlay-white-82: rgba(15, 17, 19, 0.82);
+  --overlay-white-80: rgba(15, 17, 19, 0.80);
+  --overlay-white-78: rgba(15, 17, 19, 0.78);
+  --overlay-white-70: rgba(15, 17, 19, 0.70);
+  --overlay-white-68: rgba(15, 17, 19, 0.68);
+  --overlay-white-64: rgba(15, 17, 19, 0.64);
+  --overlay-white-58: rgba(15, 17, 19, 0.58);
+  --overlay-white-52: rgba(15, 17, 19, 0.52);
+  --overlay-white-50: rgba(15, 17, 19, 0.50);
+
+  --chart-1: rgba(249, 250, 251, 1.00);
+  --chart-2: rgba(249, 250, 251, 0.60);
+  --chart-3: rgba(249, 250, 251, 0.35);
+  --chart-4: rgba(249, 250, 251, 0.15);
+
+  --wedo-amber-light: rgba(245, 158, 11, 0.20);
+
+  --lia-accent-light: rgba(96, 190, 209, 0.20);
 }
 
 /* ========================================
@@ -934,6 +1026,27 @@
   color: #D1D5DB;
 }
 
+.dark .lia-badge-jobs,
+.dark .lia-badge-industry {
+  background-color: rgba(96, 190, 209, 0.20);
+  color: #67D4E8;
+}
+
+.dark .lia-badge-candidates {
+  background-color: rgba(93, 164, 122, 0.20);
+  color: #7BC29A;
+}
+
+.dark .lia-badge-interviews {
+  background-color: rgba(229, 168, 83, 0.20);
+  color: #E5A853;
+}
+
+.dark .lia-badge-reports {
+  background-color: rgba(139, 92, 246, 0.20);
+  color: #A78BFA;
+}
+
 .dark .lia-input {
   background-color: #1F2937;
   border-color: #374151;
@@ -942,6 +1055,17 @@
 
 .dark .lia-input::placeholder {
   color: #6B7280;
+}
+
+/* === Dark mode for LIA prompt component tokens === */
+.dark {
+  --lia-bg-main: #1A1D1F;
+  --lia-bg-card: #1A1D1F;
+  --lia-border: #374151;
+  --lia-border-light: #2D3748;
+  --lia-btn-neutral: #374151;
+  --lia-btn-neutral-hover: #4B5563;
+  --lia-pill-bg: #374151;
 }
 
 /* Desabilitar animações de Tooltips e Dropdowns - Radix UI */

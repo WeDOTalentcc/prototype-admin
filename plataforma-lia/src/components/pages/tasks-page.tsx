@@ -64,11 +64,11 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
         {/* Header - Saudação no topo (alinhado com outras páginas) */}
         <div className="flex items-center justify-between mb-1.5">
           <div>
-            <h1 className="text-base font-['Open_Sans',sans-serif] font-semibold wedo-text-black mb-0.5 flex items-center gap-2">
+            <h1 className="text-base font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary mb-0.5 flex items-center gap-2">
               <Target className="w-4 h-4 text-lia-text-primary" />
               Painel de Controle
             </h1>
-            <p className={`${textStyles.bodySmall} wedo-text-gray`}>
+            <p className={`${textStyles.bodySmall} text-lia-text-secondary`}>
               Você tem 30 novos candidatos e 4 vagas abertas.
             </p>
           </div>
@@ -145,7 +145,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-primary" />
-                      <CardTitle className={`${textStyles.label} font-semibold wedo-text-black`}>Minhas Tarefas</CardTitle>
+                      <CardTitle className={`${textStyles.label} font-semibold text-lia-text-primary`}>Minhas Tarefas</CardTitle>
                       <Badge variant="outline" className="text-xs font-inter">
                         {filteredPendingTasks.length}
                       </Badge>
@@ -298,7 +298,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
             <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-open-sans font-semibold wedo-text-black">Minhas Vagas Ativas</CardTitle>
+                  <CardTitle className="text-sm font-open-sans font-semibold text-lia-text-primary">Minhas Vagas Ativas</CardTitle>
                   <div className="flex items-center gap-2">
                     {/* Contador de resultados */}
                     <Badge variant="outline" className="text-xs font-inter">

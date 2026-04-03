@@ -216,11 +216,11 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
         {/* Header Simplificado */}
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold wedo-text-black mb-1 flex items-center gap-2">
+            <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary mb-1 flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-lia-text-secondary" />
               Biblioteca LIA
             </h1>
-            <p className="text-sm font-open-sans wedo-text-gray">
+            <p className="text-sm font-open-sans text-lia-text-secondary">
               Repositório de comandos inteligentes para recrutamento
             </p>
           </div>

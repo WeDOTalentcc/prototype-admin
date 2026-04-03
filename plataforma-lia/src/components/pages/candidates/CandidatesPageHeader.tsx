@@ -42,7 +42,7 @@ export function CandidatesPageHeader({
       <div className="flex items-center justify-between mb-0.5">
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold wedo-text-black flex items-center gap-2">
+            <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary flex items-center gap-2">
               <Users className="w-5 h-5 text-lia-text-secondary" />
               Funil de Talentos
             </h1>

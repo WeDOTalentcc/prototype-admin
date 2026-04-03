@@ -245,6 +245,85 @@
   background-color: rgba(0, 0, 0, 0.4);
 }
 
+.dark .wedo-card,
+.dark .wedo-card-elevated {
+  background-color: var(--lia-bg-secondary);
+  border-color: var(--lia-border-subtle);
+}
+
+.dark .wedo-surface {
+  background-color: var(--lia-bg-secondary);
+  border-color: var(--lia-border-subtle);
+}
+
+.dark .wedo-surface-elevated {
+  background-color: var(--lia-bg-secondary);
+}
+
+.dark .wedo-sidebar {
+  background-color: var(--lia-bg-primary);
+  border-color: var(--lia-border-subtle);
+}
+
+.dark .wedo-topbar {
+  background-color: var(--lia-bg-primary);
+  border-color: var(--lia-border-subtle);
+}
+
+.dark .wedo-divider {
+  border-color: var(--lia-border-subtle);
+}
+
+.dark .wedo-button-secondary {
+  background-color: var(--lia-bg-tertiary);
+  color: var(--lia-text-primary);
+  border-color: var(--lia-border-default);
+}
+
+.dark .wedo-button-secondary:hover {
+  background-color: var(--lia-interactive-active);
+  border-color: var(--lia-border-medium);
+}
+
+.dark .wedo-button-ghost {
+  color: var(--lia-text-secondary);
+}
+
+.dark .wedo-button-ghost:hover {
+  background-color: var(--lia-bg-tertiary);
+  color: var(--lia-text-primary);
+}
+
+.dark .wedo-badge-success {
+  background-color: rgba(139, 185, 35, 0.20);
+  color: #A3D134;
+}
+
+.dark .wedo-badge-warning {
+  background-color: rgba(240, 179, 35, 0.20);
+  color: #F0B323;
+}
+
+.dark .wedo-badge-error {
+  background-color: rgba(222, 28, 49, 0.20);
+  color: #F05565;
+}
+
+.dark .wedo-badge-info {
+  background-color: rgba(0, 148, 198, 0.20);
+  color: #60BED1;
+}
+
+.dark .wedo-badge-neutral {
+  background-color: rgba(246, 168, 140, 0.20);
+  color: #F6A88C;
+}
+
+.dark .wedo-nav-item.active {
+  background-color: var(--lia-bg-tertiary);
+  color: #60BED1;
+}
+
 
 /* Fonte Open Sans para elementos específicos (DS v4.1 - Source Serif 4 removido) */
 .font-source-serif {
