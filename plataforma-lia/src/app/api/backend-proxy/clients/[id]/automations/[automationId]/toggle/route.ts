@@ -25,7 +25,7 @@ export async function PATCH(
 ) {
   try {
     const { id, automationId } = await params
-    const paramValidation = validateParams(await Promise.resolve({ id, automationId }), routeParamsSchema)
+    const paramValidation = validateParams({ id, automationId }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/clients/${id}/automations/${automationId}/toggle`

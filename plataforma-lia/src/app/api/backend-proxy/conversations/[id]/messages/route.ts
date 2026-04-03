@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
@@ -13,7 +14,11 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const body = _bodySchema.parse(await request.json())
+    const bodyResult = await validateBody(request, _bodySchema)
+
+    if (!bodyResult.success) return bodyResult.response
+
+    const body = bodyResult.data
     
     const response = await fetch(`${BACKEND_URL}/api/v1/conversations/${id}/messages`, {
       method: 'POST',

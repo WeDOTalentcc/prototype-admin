@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
@@ -47,7 +48,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ jobId: string }> }) {
   try {
     const { jobId } = await params
-    const body = _bodySchema.parse(await request.json())
+    const bodyResult = await validateBody(request, _bodySchema)
+
+    if (!bodyResult.success) return bodyResult.response
+
+    const body = bodyResult.data
     const backendUrl = `${BACKEND_URL}/api/v1/jobs/qualification/${jobId}/override`
     const response = await fetch(backendUrl, {
       method: 'PUT',

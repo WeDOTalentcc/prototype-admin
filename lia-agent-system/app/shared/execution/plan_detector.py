@@ -167,6 +167,39 @@ PLAN_PATTERNS: List[PlanPattern] = [
         ],
         description="Gerar relatório e exportar",
     ),
+    PlanPattern(
+        name="adicionar_analisar_wsi",
+        patterns=[
+            r"adiciona[rn]?\s+.*\s+(na|[àa])\s+vaga\s+e\s+(dispara[r]?|inicia[r]?|fa[cz][er]?)\s+(triagem|wsi|screening)",
+            r"cadastra[rn]?\s+.*\s+(na|[àa])\s+vaga\s+e\s+(dispara[r]?|triagem|wsi)",
+            r"(adiciona[r]?|cadastra[r]?)\s+candidato\s+.*\s+e\s+(triagem|wsi|screening)",
+            r"coloca[r]?\s+.*\s+na\s+vaga\s+e\s+(tria[r]?|screen|wsi)",
+            r"insere?\s+.*\s+na\s+vaga\s+e\s+(dispara[r]?|tria[r]?|faz[er]?\s+triagem)",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="cv_screening", action_id="add_candidate_to_vacancy"),
+            PipelineStep(domain_id="cv_screening", action_id="run_wsi_screening", context_from="task_0.candidate_id"),
+        ],
+        description="Adicionar candidato à vaga e disparar triagem WSI",
+    ),
+    PlanPattern(
+        name="upload_cadastrar_triar",
+        patterns=[
+            r"analise?\s+(?:este|esse|o)\s+cv\s+(?:para|na|e\s+cadastr)",
+            r"cadastr[ae]\s+(?:este|esse|o)?\s*candidato\s+.*\s+e\s+tria[r]?",
+            r"faz[er]?\s+(?:o\s+)?upload\s+.*\s+e\s+(cadastr|registr|tria)",
+            r"cri[ae]\s+(?:o\s+)?candidato\s+.*\s+e\s+(tria[r]?|screen|wsi)",
+            r"registra[r]?\s+(?:o\s+)?candidato\s+.*\s+e\s+(dispara[r]?|tria[r]?|screen|wsi)",
+            r"parse[ia]?\s+(?:o\s+)?cv\s+.*\s+e\s+(cadastr|tria|adiciona)",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="cv_screening", action_id="parse_and_create_candidate"),
+            PipelineStep(domain_id="cv_screening", action_id="add_to_vacancy", context_from="task_0.candidate_id"),
+            PipelineStep(domain_id="cv_screening", action_id="run_wsi_screening", context_from="task_1.vacancy_candidate_id"),
+        ],
+        description="Parsear CV, cadastrar candidato e disparar triagem WSI",
+    ),
+]
 ]
 
 

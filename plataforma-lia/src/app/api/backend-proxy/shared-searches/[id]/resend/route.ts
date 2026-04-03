@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
@@ -14,7 +15,7 @@ export async function POST(
   try {
     const { id } = await params
     let body: Record<string, unknown> = {}
-    try { body = _bodySchema.parse(await request.json()) } catch { body = {} }
+    const parseResult = _bodySchema.safeParse(await request.json().catch(() => ({}))); body = parseResult.success ? parseResult.data : {}
     
     const backendUrl = `${BACKEND_URL}/api/v1/shared-searches/${id}/resend`
     

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000"
@@ -12,7 +13,13 @@ export async function POST(request: NextRequest) {
     const company_id = searchParams.get("company_id") || "demo_company"
     const user_id = searchParams.get("user_id") || "system"
     
-    const body = _bodySchema.parse(await request.json())
+    const bodyResult = await validateBody(request, _bodySchema)
+
+    
+    if (!bodyResult.success) return bodyResult.response
+
+    
+    const body = bodyResult.data
     
     const response = await fetch(`${BACKEND_URL}/api/v1/opinions?company_id=${company_id}&user_id=${user_id}`, {
       method: "POST",

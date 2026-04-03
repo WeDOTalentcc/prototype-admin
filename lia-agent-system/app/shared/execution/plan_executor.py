@@ -1,6 +1,7 @@
 import asyncio
 import logging
-from typing import Dict, Any, Optional, List
+import re
+from typing import Dict, Any, Optional, List, Callable, Awaitable
 from datetime import datetime
 
 from app.shared.execution.execution_plan import (
@@ -11,6 +12,9 @@ from app.domains.base import DomainContext, DomainResponse
 logger = logging.getLogger(__name__)
 
 TASK_TIMEOUT_SECONDS = 15
+
+# Type alias for progress callback
+ProgressCallback = Callable[[str, Dict[str, Any]], Awaitable[None]]
 
 
 class PlanExecutor:
@@ -25,9 +29,17 @@ class PlanExecutor:
         session_id: str = "",
         tenant_id: str = "default",
         base_context: Optional[Dict[str, Any]] = None,
+        progress_callback: Optional[ProgressCallback] = None,
     ) -> ExecutionPlan:
         plan.status = PlanStatus.IN_PROGRESS
         logger.info(f"Executing plan {plan.plan_id} with {len(plan.tasks)} tasks")
+
+        await self._emit(progress_callback, "plan_started", {
+            "plan_id": plan.plan_id,
+            "pattern": plan.detected_pattern,
+            "total_tasks": len(plan.tasks),
+            "tasks": [{"task_id": t.task_id, "domain_id": t.domain_id, "action_id": t.action_id} for t in plan.tasks],
+        })
 
         iteration_limit = len(plan.tasks) * 3
         iterations = 0
@@ -50,12 +62,47 @@ class PlanExecutor:
                                 task.error = f"Blocked by failed dependencies: {failed_deps}"
                             else:
                                 task.status = TaskStatus.SKIPPED
-                                task.error = f"Skipped due to failed dependencies: {failed_deps}"
+                                task.skip_reason = f"Skipped due to failed dependencies: {failed_deps}"
                     continue
                 break
 
             for task in next_tasks:
+                # Evaluate condition before executing
+                should_skip, skip_reason = self._evaluate_condition(task, plan)
+                if should_skip:
+                    task.status = TaskStatus.SKIPPED
+                    task.skip_reason = skip_reason
+                    task.completed_at = datetime.utcnow()
+                    logger.info(f"Task {task.task_id} skipped: {skip_reason}")
+                    await self._emit(progress_callback, "step_skipped", {
+                        "plan_id": plan.plan_id,
+                        "task_id": task.task_id,
+                        "domain_id": task.domain_id,
+                        "action_id": task.action_id,
+                        "skip_reason": skip_reason,
+                    })
+                    continue
+
+                await self._emit(progress_callback, "step_running", {
+                    "plan_id": plan.plan_id,
+                    "task_id": task.task_id,
+                    "domain_id": task.domain_id,
+                    "action_id": task.action_id,
+                    "step_index": plan.tasks.index(task),
+                    "total_steps": len(plan.tasks),
+                })
+
                 await self._execute_task(task, plan, user_id, session_id, tenant_id, base_context)
+
+                await self._emit(progress_callback, "step_completed", {
+                    "plan_id": plan.plan_id,
+                    "task_id": task.task_id,
+                    "domain_id": task.domain_id,
+                    "action_id": task.action_id,
+                    "status": task.status.value,
+                    "duration_ms": task.duration_ms,
+                    "error": task.error,
+                })
 
                 if task.status == TaskStatus.FAILED and task.is_critical:
                     logger.warning(
@@ -79,7 +126,38 @@ class PlanExecutor:
             f"{sum(1 for t in plan.tasks if t.status == TaskStatus.COMPLETED)}/{len(plan.tasks)} completed"
         )
 
+        await self._emit(progress_callback, "plan_completed", {
+            "plan_id": plan.plan_id,
+            "status": plan.status.value,
+            "summary": plan.get_summary(),
+        })
+
         return plan
+
+    def _evaluate_condition(self, task: AgentTask, plan: ExecutionPlan):
+        """Evaluate a task condition against plan context. Returns (should_skip, reason)."""
+        if not task.condition:
+            return False, None
+
+        try:
+            # Build local eval context from plan context data
+            local_vars = dict(plan.context_data)
+
+            # Support simple expressions like "task_0.match_score >= 40"
+            # Replace dotted paths with underscored keys if needed
+            expr = task.condition
+            # Allow direct evaluation with plan context keys
+            result = eval(expr, {"__builtins__": {}}, local_vars)
+
+            if not result:
+                threshold_info = f" (threshold: {task.condition_threshold})" if task.condition_threshold else ""
+                return True, f"Condition not met: {expr}{threshold_info}"
+            return False, None
+
+        except Exception as e:
+            logger.warning(f"Condition evaluation error for task {task.task_id}: {e}")
+            # If condition can't be evaluated, don't skip (fail safe)
+            return False, None
 
     async def _execute_task(
         self,
@@ -180,6 +258,14 @@ class PlanExecutor:
                     error=str(e),
                 )
 
+    async def _emit(self, callback: Optional[ProgressCallback], event_type: str, data: Dict[str, Any]) -> None:
+        """Emit a progress event via callback if provided."""
+        if callback:
+            try:
+                await callback(event_type, data)
+            except Exception as e:
+                logger.warning(f"Progress callback error for event {event_type}: {e}")
+
     def _resolve_context_path(self, context_path: str, plan: ExecutionPlan) -> Any:
         value = plan.get_context(context_path)
         if value is not None:
@@ -215,14 +301,16 @@ class PlanExecutor:
                         task.error = f"Blocked by failed task {failed_task_id}"
                     else:
                         task.status = TaskStatus.SKIPPED
-                        task.error = f"Skipped due to failed task {failed_task_id}"
+                        task.skip_reason = f"Skipped due to failed task {failed_task_id}"
 
     def build_consolidated_response(self, plan: ExecutionPlan) -> DomainResponse:
         messages = []
         for task in plan.tasks:
             status_icon = {"completed": "[OK]", "failed": "[FAIL]", "skipped": "[SKIP]"}.get(task.status.value, "[...]")
             msg = f"{status_icon} {task.domain_id}.{task.action_id}"
-            if task.result and isinstance(task.result, DomainResponse):
+            if task.status.value == "skipped" and task.skip_reason:
+                msg += f": {task.skip_reason[:100]}"
+            elif task.result and isinstance(task.result, DomainResponse):
                 msg += f": {task.result.message[:100]}"
             elif task.error:
                 msg += f": {task.error[:100]}"

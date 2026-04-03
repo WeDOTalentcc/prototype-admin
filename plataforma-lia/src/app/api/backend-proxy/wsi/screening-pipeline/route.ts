@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
@@ -8,7 +9,11 @@ const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
   try {
-    const body = _bodySchema.parse(await request.json())
+    const bodyResult = await validateBody(request, _bodySchema)
+
+    if (!bodyResult.success) return bodyResult.response
+
+    const body = bodyResult.data
 
     const backendUrl = `${BACKEND_URL}/api/v1/wsi/screening-pipeline`
 

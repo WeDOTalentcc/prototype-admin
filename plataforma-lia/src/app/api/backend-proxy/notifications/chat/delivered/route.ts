@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 import { getAuthHeaders } from "@/lib/api/auth-headers"
 
@@ -9,7 +10,11 @@ const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
   try {
-    const body = _bodySchema.parse(await request.json())
+    const bodyResult = await validateBody(request, _bodySchema)
+
+    if (!bodyResult.success) return bodyResult.response
+
+    const body = bodyResult.data
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("user_id") || "default_user"
     

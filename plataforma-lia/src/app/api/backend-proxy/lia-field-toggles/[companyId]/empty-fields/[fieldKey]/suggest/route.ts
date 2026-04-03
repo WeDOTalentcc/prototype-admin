@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8000'
@@ -23,7 +24,11 @@ export async function POST(
 ) {
   try {
     const { companyId, fieldKey } = await params
-    const body = _bodySchema.parse(await request.json())
+    const bodyResult = await validateBody(request, _bodySchema)
+
+    if (!bodyResult.success) return bodyResult.response
+
+    const body = bodyResult.data
     
     const response = await fetch(
       `${BACKEND_URL}/api/v1/lia-field-toggles/${companyId}/empty-fields/${fieldKey}/suggest`,

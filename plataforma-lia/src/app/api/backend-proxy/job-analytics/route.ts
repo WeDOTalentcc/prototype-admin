@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
@@ -50,7 +51,11 @@ export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const action = searchParams.get('action')
-    const body = _bodySchema.parse(await request.json())
+    const bodyResult = await validateBody(request, _bodySchema)
+
+    if (!bodyResult.success) return bodyResult.response
+
+    const body = bodyResult.data
     
     let backendUrl = `${BACKEND_URL}/api/v1/job-analytics`
     

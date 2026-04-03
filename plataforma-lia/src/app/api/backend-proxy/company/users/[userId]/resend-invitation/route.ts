@@ -15,7 +15,7 @@ export async function POST(
 ) {
   try {
     const { userId } = await params
-    const paramValidation = validateParams(await Promise.resolve({ userId }), routeParamsSchema)
+    const paramValidation = validateParams({ userId }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/company/users/${userId}/resend-invitation`

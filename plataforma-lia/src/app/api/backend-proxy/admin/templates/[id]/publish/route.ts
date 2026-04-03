@@ -15,7 +15,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const paramValidation = validateParams(await Promise.resolve({ id }), routeParamsSchema)
+    const paramValidation = validateParams({ id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
     const { searchParams } = new URL(request.url)
     const queryString = searchParams.toString()

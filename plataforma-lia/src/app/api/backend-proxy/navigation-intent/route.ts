@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic"
  * Retorna { page, confidence, hint, matched_pattern }.
  */
 import { NextRequest, NextResponse } from "next/server"
+import { validateBody } from '@/lib/api/validate'
 import { getAuthHeaders } from "@/lib/api/auth-headers"
 import { z } from 'zod'
 
@@ -15,7 +16,11 @@ const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function POST(request: NextRequest) {
   try {
-    const body = _bodySchema.parse(await request.json())
+    const bodyResult = await validateBody(request, _bodySchema)
+
+    if (!bodyResult.success) return bodyResult.response
+
+    const body = bodyResult.data
 
     const response = await fetch(`${BACKEND_URL}/api/v1/navigation-intent`, {
       method: "POST",

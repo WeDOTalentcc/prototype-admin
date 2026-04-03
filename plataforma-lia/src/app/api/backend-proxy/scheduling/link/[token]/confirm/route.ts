@@ -1,41 +1,37 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { validateParams, validateBody } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
-// POST /api/backend-proxy/scheduling/link/[token]/confirm
-// Proxies to: POST /api/v1/scheduling/link/{token}/confirm
-// PUBLIC — no auth required (candidate-facing action)
-// Body: { start: string, end: string }
-// Returns: { success, message, candidate_name, job_title, selected_slot }
-const _bodySchema = z.record(z.string(), z.unknown())
+const tokenParamsSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+})
+
+const confirmBodySchema = z.object({
+  start: z.string().min(1, 'start is required'),
+  end: z.string().min(1, 'end is required'),
+}).passthrough()
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const { token } = params
-    const body = _bodySchema.parse(await request.json())
+    const { token } = await params
+    const paramValidation = validateParams({ token }, tokenParamsSchema)
+    if (!paramValidation.success) return paramValidation.response
 
-    if (!token) {
-      return NextResponse.json({ error: 'Token inválido' }, { status: 400 })
-    }
-
-    if (!body.start || !body.end) {
-      return NextResponse.json(
-        { error: 'Os campos start e end são obrigatórios' },
-        { status: 400 }
-      )
-    }
+    const bodyValidation = await validateBody(request, confirmBodySchema)
+    if (!bodyValidation.success) return bodyValidation.response
 
     const response = await fetch(
       `${BACKEND_URL}/api/v1/scheduling/link/${token}/confirm`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(bodyValidation.data),
       }
     )
 

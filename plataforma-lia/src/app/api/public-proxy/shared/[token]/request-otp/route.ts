@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
@@ -13,7 +14,7 @@ export async function POST(
   try {
     const { token } = await params
     let body: Record<string, unknown> = {}
-    try { body = _bodySchema.parse(await request.json()) } catch { body = {} }
+    const parseResult = _bodySchema.safeParse(await request.json().catch(() => ({}))); body = parseResult.success ? parseResult.data : {}
     
     const backendUrl = `${BACKEND_URL}/api/public/shared/${token}/request-otp`
     

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://localhost:8000"
@@ -38,7 +39,11 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const body = _bodySchema.parse(await request.json())
+    const bodyResult = await validateBody(request, _bodySchema)
+
+    if (!bodyResult.success) return bodyResult.response
+
+    const body = bodyResult.data
     const url = `${BACKEND_URL}/api/v1/company/pipeline-templates/${id}`
     
     const response = await fetch(url, {

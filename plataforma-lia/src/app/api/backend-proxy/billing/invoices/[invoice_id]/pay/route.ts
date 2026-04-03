@@ -24,7 +24,7 @@ export async function POST(
 ) {
   try {
     const { invoice_id } = await params
-    const paramValidation = validateParams(await Promise.resolve({ invoice_id }), routeParamsSchema)
+    const paramValidation = validateParams({ invoice_id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
     const backendUrl = `${BACKEND_URL}/api/v1/billing/my-invoices/${invoice_id}/pay`
     

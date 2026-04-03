@@ -15,7 +15,7 @@ export async function POST(
 ) {
   try {
     const { profileId } = await params
-    const paramValidation = validateParams(await Promise.resolve({ profileId }), routeParamsSchema)
+    const paramValidation = validateParams({ profileId }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
     
     const backendUrl = `${BACKEND_URL}/api/v1/company/profile/${profileId}/generate-evp`

@@ -38,7 +38,7 @@ export async function POST(
 ) {
   try {
     const { planId } = await params
-    const paramValidation = validateParams(await Promise.resolve({ planId }), routeParamsSchema)
+    const paramValidation = validateParams({ planId }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
     const backendUrl = `${BACKEND_URL}/api/v1/workforce-planning/${planId}/calculate`
     

@@ -15,7 +15,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const paramValidation = validateParams(await Promise.resolve({ id }), routeParamsSchema)
+    const paramValidation = validateParams({ id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
     const url = `${BACKEND_URL}/api/v1/company/pipeline-templates/${id}/increment-usage`
     
