@@ -370,27 +370,44 @@ export function CandidateSearchResultsView({
 
   return (
     <div className="flex flex-col h-[calc(100vh-9rem)] gap-2">
-      {/* Header com botão LIA Brain + query da busca e opções de edição */}
-      <div className="flex items-center gap-2">
+      {/* Toolbar unificado: Brain + Busca realizada + Editar Filtros + Selecionar Todos/Filtros/Colunas */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          {!showExpandedLIA && (
+            <CompactLIAPrompt
+              isLIAThinking={isLIAThinking}
+              liaPromptValue={liaPromptValue}
+              setLiaPromptValue={setLiaPromptValue}
+              setShowExpandedLIA={setShowExpandedLIA}
+              onAICommand={onAICommand}
+            />
+          )}
+          <SearchResultsHeader
+            lastSearchQuery={lastSearchQuery}
+            lastSearchEntities={lastSearchEntities}
+            onBack={onBack}
+            onOpenEditQueryModal={(value) => {
+              setEditQueryValue(value)
+              setShowEditQueryModal(true)
+            }}
+            onOpenAdvancedSearch={onOpenAdvancedSearch}
+          />
+        </div>
+
         {!showExpandedLIA && (
-          <CompactLIAPrompt
-            isLIAThinking={isLIAThinking}
-            liaPromptValue={liaPromptValue}
-            setLiaPromptValue={setLiaPromptValue}
-            setShowExpandedLIA={setShowExpandedLIA}
-            onAICommand={onAICommand}
+          <SearchControlsBar
+            selectedCandidatesForBatch={selectedCandidatesForBatch}
+            searchSortBy={searchSortBy}
+            sortedCandidatesLength={sortedCandidates.length}
+            selectAllCandidates={selectAllCandidates}
+            showTableFiltersPanel={showTableFiltersPanel}
+            setShowTableFiltersPanel={setShowTableFiltersPanel}
+            getActiveTableFiltersCount={getActiveTableFiltersCount}
+            showColumnConfig={showColumnConfig}
+            onToggleColumnConfig={onToggleColumnConfig}
+            tableColumns={tableColumns}
           />
         )}
-        <SearchResultsHeader
-          lastSearchQuery={lastSearchQuery}
-          lastSearchEntities={lastSearchEntities}
-          onBack={onBack}
-          onOpenEditQueryModal={(value) => {
-            setEditQueryValue(value)
-            setShowEditQueryModal(true)
-          }}
-          onOpenAdvancedSearch={onOpenAdvancedSearch}
-        />
       </div>
 
       {/* Bulk Actions Bar - Ações para candidatos selecionados */}
@@ -493,24 +510,6 @@ export function CandidateSearchResultsView({
         setLastSearchQuery={setLastSearchQuery}
         setActiveTab={setActiveTab}
       />
-
-      {/* Toolbar Controles */}
-      {!showExpandedLIA && (
-        <div className="flex items-center justify-end gap-4 mb-1 mt-1">
-          <SearchControlsBar
-            selectedCandidatesForBatch={selectedCandidatesForBatch}
-            searchSortBy={searchSortBy}
-            sortedCandidatesLength={sortedCandidates.length}
-            selectAllCandidates={selectAllCandidates}
-            showTableFiltersPanel={showTableFiltersPanel}
-            setShowTableFiltersPanel={setShowTableFiltersPanel}
-            getActiveTableFiltersCount={getActiveTableFiltersCount}
-            showColumnConfig={showColumnConfig}
-            onToggleColumnConfig={onToggleColumnConfig}
-            tableColumns={tableColumns}
-          />
-        </div>
-      )}
 
       {/* Badge de Filtros Ativos */}
       <ActiveFiltersBadge
