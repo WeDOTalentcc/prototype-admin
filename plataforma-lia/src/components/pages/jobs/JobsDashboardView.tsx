@@ -37,21 +37,21 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenJobCreationChat('Criar nova vaga'), 100)
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white hover:border-lia-btn-primary-bg font-open-sans"
               >
                 <Plus className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Criar nova vaga
               </button>
               <button
                 onClick={() => onSetActiveFilter('ativas')}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white hover:border-lia-btn-primary-bg font-open-sans"
               >
                 <Briefcase className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Ver minhas vagas
               </button>
               <button
                 onClick={() => onSetActiveFilter('todas')}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white hover:border-lia-btn-primary-bg font-open-sans"
               >
                 <Building2 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Ver todas as vagas
@@ -61,7 +61,7 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenGeneralChat('Resumo das minhas vagas ativas'), 100)
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-[width,height] bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white font-open-sans"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white hover:border-lia-btn-primary-bg font-open-sans"
               >
                 <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
                 Resumo das vagas
@@ -133,7 +133,7 @@ export function JobsDashboardView({
                     onSetActiveFilter('todas')
                     setTimeout(() => onOpenGeneralChat(suggestion), 100)
                   }}
-                  className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-full transition-[width,height] bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle hover:text-lia-text-primary hover:bg-lia-bg-tertiary"
+                  className="inline-flex items-center px-2.5 py-0.5 text-xs rounded-lg transition-colors bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle hover:text-lia-text-primary hover:bg-lia-bg-tertiary"
                  
                 >
                   {suggestion}

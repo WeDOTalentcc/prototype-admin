@@ -105,7 +105,7 @@ export function LiaVacancyQueriesGuide({
         <PopoverTrigger asChild>
           <button
             className={cn(
- "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border transition-[width,height] font-medium",
+ "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors font-medium",
               "hover:border-lia-text-primary hover:bg-lia-bg-secondary",
               isOpen && "border-lia-text-primary bg-lia-bg-secondary",
               className
@@ -157,7 +157,7 @@ export function LiaVacancyQueriesGuide({
           <button
             onClick={() => setActiveCategory(null)}
             className={cn(
- "px-2 py-1 rounded-full text-micro font-medium transition-[width,height] whitespace-nowrap",
+ "px-2 py-1 rounded-lg text-micro font-medium transition-colors whitespace-nowrap",
               !activeCategory 
                 ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                 : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"
@@ -171,7 +171,7 @@ export function LiaVacancyQueriesGuide({
               key={key}
               onClick={() => setActiveCategory(activeCategory === key ? null : key)}
               className={cn(
- "inline-flex items-center gap-1 px-2 py-1 rounded-full text-micro font-medium transition-[width,height] whitespace-nowrap",
+ "inline-flex items-center gap-1 px-2 py-1 rounded-lg text-micro font-medium transition-colors whitespace-nowrap",
                 activeCategory === key 
                   ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                   : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active border border-lia-border-subtle"

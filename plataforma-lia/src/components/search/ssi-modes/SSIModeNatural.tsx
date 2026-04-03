@@ -645,7 +645,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                     <button
                       key={`${category}-${item}`}
                       onClick={() => onChange(value + ", " + item)}
-                      className="px-2 py-0.5 rounded-full text-xs font-medium transition-[width,height] hover:scale-105 border border-lia-border-subtle whitespace-nowrap flex-shrink-0 bg-[var(--lia-bg-primary)]"
+                      className="px-2 py-0.5 rounded-lg text-xs font-medium transition-colors hover:scale-105 border border-lia-border-subtle whitespace-nowrap flex-shrink-0 bg-[var(--lia-bg-primary)]"
                     >
                       + {item}
                     </button>
@@ -668,7 +668,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
               <button
                 key={suggestion}
                 onClick={() => onChange(suggestion)}
-                className="px-2.5 py-0.5 text-xs text-lia-text-primary hover:text-lia-text-primary bg-lia-bg-secondary hover:bg-lia-bg-tertiary rounded-full border border-lia-border-subtle transition-[width,height] whitespace-nowrap flex-shrink-0"
+                className="px-2.5 py-0.5 text-xs text-lia-text-primary hover:text-lia-text-primary bg-lia-bg-secondary hover:bg-lia-bg-tertiary rounded-lg border border-lia-border-subtle transition-colors whitespace-nowrap flex-shrink-0"
                 title={suggestion}
               >
                 {suggestion}
