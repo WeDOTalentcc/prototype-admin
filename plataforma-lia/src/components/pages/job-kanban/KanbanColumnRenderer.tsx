@@ -284,8 +284,7 @@ export function KanbanColumnRenderer({
     sortedCandidates = candidates.sort((a, b) => {
       if (a.needsAction && !b.needsAction) return -1
       if (!a.needsAction && b.needsAction) return 1
-      // @ts-ignore TODO: fix type
-      return b.score - a.score
+      return (b.score ?? 0) - (a.score ?? 0)
     })
   }
 
@@ -349,8 +348,7 @@ export function KanbanColumnRenderer({
               {filteredCandidates.length}
             </span>
             {stageId === "screening" && (currentJob.backendId || currentJob.id) && (
-              // @ts-ignore TODO: fix type — Object is possibly 'undefined'.
-              <SaturationBadge jobId={(currentJob.backendId || currentJob.id).toString()} />
+              <SaturationBadge jobId={String(currentJob.backendId || currentJob.id || '')} />
             )}
             {dynamicStage && (
               <ColumnContextMenu
@@ -445,18 +443,12 @@ export function KanbanColumnRenderer({
                 candidate={candidate}
                 shortListedCandidateIds={shortListedCandidateIds}
                 favoriteCandidates={favoriteCandidates}
-                // @ts-ignore TODO: fix type
-                onOpenPreview={onOpenPreview}
-                // @ts-ignore TODO: fix type
-                onSendEmail={onSendEmail}
-                // @ts-ignore TODO: fix type
-                onSendWhatsApp={onSendWhatsApp}
-                // @ts-ignore TODO: fix type
-                onScheduleInterview={onScheduleInterview}
-                // @ts-ignore TODO: fix type
-                onSendWSIInvite={onSendWSIInvite}
-                // @ts-ignore TODO: fix type
-                onSendFeedback={onSendFeedback}
+                onOpenPreview={onOpenPreview as (c: unknown) => void}
+                onSendEmail={onSendEmail as (c: unknown) => void}
+                onSendWhatsApp={onSendWhatsApp as (c: unknown) => void}
+                onScheduleInterview={onScheduleInterview as (c: unknown) => void}
+                onSendWSIInvite={onSendWSIInvite as (c: unknown) => void}
+                onSendFeedback={onSendFeedback as (c: unknown) => void}
                 onToggleShortList={onToggleShortList}
                 onToggleFavorite={onToggleFavorite}
               />
@@ -564,11 +556,9 @@ export function KanbanColumnRenderer({
               {/* Scores */}
               <KanbanCardScores
                 candidate={candidate}
-                // @ts-ignore TODO: fix type
-                calculateNotaLiaGeral={calculateNotaLiaGeral}
+                calculateNotaLiaGeral={calculateNotaLiaGeral as (c: unknown) => number | null}
                 _jobIdForSL={_jobIdForSL}
-                // @ts-ignore TODO: fix type
-                onOpenScoreModal={onOpenScoreModal}
+                onOpenScoreModal={onOpenScoreModal as (c: unknown, modalType: "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5") => void}
               />
 
               {/* Informações do candidato - Alinhadas à esquerda */}
@@ -593,10 +583,8 @@ export function KanbanColumnRenderer({
                 stageId={stageId}
                 aiSuggestions={aiSuggestions}
                 currentJob={currentJob}
-                // @ts-ignore TODO: fix type
-                setCandidatesData={setCandidatesData}
-                // @ts-ignore TODO: fix type
-                onOpenAnalysis={onOpenAnalysis}
+                setCandidatesData={setCandidatesData as (v: unknown) => void}
+                onOpenAnalysis={onOpenAnalysis as (c: unknown) => void}
                 approveSuggestion={approveSuggestion}
                 rejectSuggestion={rejectSuggestion}
               />
@@ -609,18 +597,13 @@ export function KanbanColumnRenderer({
               setTransitionInitialPrompt={setTransitionInitialPrompt}
               setTransitionInterviewAlert={setTransitionInterviewAlert}
               setTransitionAllowStageSelection={setTransitionAllowStageSelection}
-              // @ts-ignore TODO: fix type
-              setDecisionFlowCandidate={setDecisionFlowCandidate}
+              setDecisionFlowCandidate={setDecisionFlowCandidate as (c: unknown) => void}
               setDecisionFlowType={setDecisionFlowType}
               setShowDecisionFlowModal={setShowDecisionFlowModal}
-              // @ts-ignore TODO: fix type
-              onOpenDecisionFlowModal={onOpenDecisionFlowModal}
-              // @ts-ignore TODO: fix type
-              onApproveFromScreening={onApproveFromScreening}
-              // @ts-ignore TODO: fix type
-              onRejectFromScreening={onRejectFromScreening}
-              // @ts-ignore TODO: fix type
-              openTransition={openTransition}
+              onOpenDecisionFlowModal={onOpenDecisionFlowModal as (c: unknown, action: "approve" | "reject") => void}
+              onApproveFromScreening={onApproveFromScreening as (c: unknown) => void}
+              onRejectFromScreening={onRejectFromScreening as (c: unknown) => void}
+              openTransition={openTransition as (candidates: unknown[], fromStage: string, toStage: string) => void}
             />
           </div>
         ))}

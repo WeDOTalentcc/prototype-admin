@@ -27,10 +27,28 @@ interface EmailTemplate {
   previewImage?: string
 }
 
+interface JobReportFunnel {
+  total: number
+  screening: number
+  interview: number
+  final: number
+  hired: number
+}
+
+interface JobReportData {
+  title: string
+  jobId: string
+  manager: string
+  department: string
+  nps: number
+  funnel: JobReportFunnel
+  [key: string]: unknown
+}
+
 interface EmailTemplateModalProps {
   isOpen: boolean
   onClose: () => void
-  jobData: Record<string, unknown>
+  jobData: JobReportData
   onSend: (template: EmailTemplate, recipients: string[], customizations: Record<string, unknown>) => void
 }
 
@@ -317,19 +335,15 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
   }
 
   const getTemplateVariables = () => {
+    const { funnel } = jobData
     const baseVariables = {
       jobTitle: jobData.title,
       jobId: jobData.jobId,
-      // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-      totalCandidates: jobData.funnel.total.toString(),
-      // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-      hiredCandidates: jobData.funnel.hired.toString(),
+      totalCandidates: funnel.total.toString(),
+      hiredCandidates: funnel.hired.toString(),
       timeToHire: '28',
       managerName: jobData.manager,
-      // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-      // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-      conversionRate: Math.round((jobData.funnel.hired / jobData.funnel.total) * 100).toString(),
-      // @ts-ignore TODO: fix type — 'jobData.nps' is of type 'unknown'.
+      conversionRate: Math.round((funnel.hired / funnel.total) * 100).toString(),
       npsScore: jobData.nps.toString(),
       department: jobData.department,
       generated_date: new Date().toLocaleDateString('pt-BR'),
@@ -342,26 +356,14 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
     if (selectedTemplate.id === 'detailed-analysis') {
       return {
         ...baseVariables,
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        funnel_screening: jobData.funnel.screening.toString(),
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        funnel_interview: jobData.funnel.interview.toString(),
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        funnel_final: jobData.funnel.final.toString(),
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        funnel_hired: jobData.funnel.hired.toString(),
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        screening_rate: Math.round((jobData.funnel.screening / jobData.funnel.total) * 100).toString(),
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        interview_rate: Math.round((jobData.funnel.interview / jobData.funnel.total) * 100).toString(),
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        final_rate: Math.round((jobData.funnel.final / jobData.funnel.total) * 100).toString(),
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        // @ts-ignore TODO: fix type — 'jobData.funnel' is of type 'unknown'.
-        hired_rate: Math.round((jobData.funnel.hired / jobData.funnel.total) * 100).toString(),
+        funnel_screening: funnel.screening.toString(),
+        funnel_interview: funnel.interview.toString(),
+        funnel_final: funnel.final.toString(),
+        funnel_hired: funnel.hired.toString(),
+        screening_rate: Math.round((funnel.screening / funnel.total) * 100).toString(),
+        interview_rate: Math.round((funnel.interview / funnel.total) * 100).toString(),
+        final_rate: Math.round((funnel.final / funnel.total) * 100).toString(),
+        hired_rate: Math.round((funnel.hired / funnel.total) * 100).toString(),
         source_linkedin: '45',
         source_referrals: '23',
         source_website: '18',
@@ -416,10 +418,8 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
     setRecipients(recipients.filter(r => r !== email))
   }
 
-  // @ts-ignore TODO: fix type — Argument of type '{ jobTitle: unknown; jobId: unknown; totalCandidates: any; hir
-  const processedSubject = processTemplate(customSubject || selectedTemplate.subject, getTemplateVariables())
-  // @ts-ignore TODO: fix type — Argument of type '{ jobTitle: unknown; jobId: unknown; totalCandidates: any; hir
-  const processedContent = processTemplate(selectedTemplate.htmlContent, getTemplateVariables())
+  const processedSubject = processTemplate(customSubject || selectedTemplate.subject, getTemplateVariables() as Record<string, string>)
+  const processedContent = processTemplate(selectedTemplate.htmlContent, getTemplateVariables() as Record<string, string>)
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -466,8 +466,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
           ].map((tab) => (
             <button
               key={tab.id}
-              // @ts-ignore TODO: fix type — Property 'category' does not exist on type 'EmailTemplate'.
-              onClick={() => setActiveTab(tab.id as EmailTemplate['category'])}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
               className={`flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors motion-reduce:transition-none ${
  activeTab === tab.id
                   ? 'text-lia-text-secondary border-b-2 border-lia-btn-primary-bg bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
@@ -553,8 +552,7 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
                       </div>
                       <Button
                         size="sm"
-                        // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-                        variant={recipients.includes(person.email) ? "default" : "outline"}
+                        variant={recipients.includes(person.email) ? "default" as const : "outline" as const}
                         onClick={() => {
                           if (recipients.includes(person.email)) {
                             removeRecipient(person.email)
@@ -695,16 +693,14 @@ export function EmailTemplateModal({ isOpen, onClose, jobData, onSend }: EmailTe
 
               <div className="flex gap-2">
                 <Button
-                  // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-                  variant={showPreview ? "outline" : "default"}
+                  variant={showPreview ? "outline" as const : "default" as const}
                   size="sm"
                   onClick={() => setShowPreview(false)}
                 >
                   HTML
                 </Button>
                 <Button
-                  // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-                  variant={showPreview ? "default" : "outline"}
+                  variant={showPreview ? "default" as const : "outline" as const}
                   size="sm"
                   onClick={() => setShowPreview(true)}
                 >

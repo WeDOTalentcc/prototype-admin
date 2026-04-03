@@ -1,7 +1,7 @@
 """
 CV Parser API endpoints for uploading and parsing CVs.
 """
-from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
+from fastapi import APIRouter, Form, HTTPException, UploadFile, File, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, date
 from pathlib import Path

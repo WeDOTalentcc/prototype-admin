@@ -309,60 +309,43 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     // Apply detected_criteria to form fields
     if (detectedCriteriaFromBackend && Object.keys(detectedCriteriaFromBackend).length > 0) {
       
-      // Job title / cargo
       if (detectedCriteriaFromBackend.job_title || detectedCriteriaFromBackend.title || detectedCriteriaFromBackend.cargo) {
-        const title = detectedCriteriaFromBackend.job_title || detectedCriteriaFromBackend.title || detectedCriteriaFromBackend.cargo
-        // @ts-ignore
+        const title = String(detectedCriteriaFromBackend.job_title || detectedCriteriaFromBackend.title || detectedCriteriaFromBackend.cargo)
         ctx.setBasicInfoFields(prev => ({ ...prev, cargo: title }))
-        // @ts-ignore
         ctx.setDetectedCriteria(prev => ({ ...prev, cargo: title }))
         ctx.highlightField('cargo')
       }
       
-      // Department / area
       if (detectedCriteriaFromBackend.department || detectedCriteriaFromBackend.area) {
-        const dept = detectedCriteriaFromBackend.department || detectedCriteriaFromBackend.area
-        // @ts-ignore
+        const dept = String(detectedCriteriaFromBackend.department || detectedCriteriaFromBackend.area)
         ctx.setBasicInfoFields(prev => ({ ...prev, area: dept }))
-        // @ts-ignore
         ctx.setDetectedCriteria(prev => ({ ...prev, departamento: dept }))
         ctx.highlightField('departamento')
       }
       
-      // Seniority
       if (detectedCriteriaFromBackend.seniority || detectedCriteriaFromBackend.seniority_level) {
-        const seniority = detectedCriteriaFromBackend.seniority || detectedCriteriaFromBackend.seniority_level
-        // @ts-ignore
+        const seniority = String(detectedCriteriaFromBackend.seniority || detectedCriteriaFromBackend.seniority_level)
         ctx.setDetectedCriteria(prev => ({ ...prev, senioridadeIdiomas: seniority }))
         ctx.highlightField('senioridade')
       }
       
-      // Work model
       if (detectedCriteriaFromBackend.work_model || detectedCriteriaFromBackend.modelo_trabalho) {
-        const workModel = detectedCriteriaFromBackend.work_model || detectedCriteriaFromBackend.modelo_trabalho
-        // @ts-ignore
+        const workModel = String(detectedCriteriaFromBackend.work_model || detectedCriteriaFromBackend.modelo_trabalho)
         ctx.setBasicInfoFields(prev => ({ ...prev, modeloTrabalho: workModel }))
-        // @ts-ignore
         ctx.setDetectedCriteria(prev => ({ ...prev, modeloTrabalho: workModel }))
         ctx.highlightField('modeloTrabalho')
       }
       
-      // Location
       if (detectedCriteriaFromBackend.location || detectedCriteriaFromBackend.localidade) {
-        const location = detectedCriteriaFromBackend.location || detectedCriteriaFromBackend.localidade
-        // @ts-ignore
+        const location = String(detectedCriteriaFromBackend.location || detectedCriteriaFromBackend.localidade)
         ctx.setBasicInfoFields(prev => ({ ...prev, localidade: location }))
-        // @ts-ignore
         ctx.setDetectedCriteria(prev => ({ ...prev, localizacao: location }))
         ctx.highlightField('localizacao')
       }
       
-      // Manager / Gestor
       if (detectedCriteriaFromBackend.manager || detectedCriteriaFromBackend.gestor) {
-        const manager = detectedCriteriaFromBackend.manager || detectedCriteriaFromBackend.gestor
-        // @ts-ignore
+        const manager = String(detectedCriteriaFromBackend.manager || detectedCriteriaFromBackend.gestor)
         ctx.setBasicInfoFields(prev => ({ ...prev, gestor: manager }))
-        // @ts-ignore
         ctx.setDetectedCriteria(prev => ({ ...prev, gestorArea: manager }))
         ctx.highlightField('gestor')
       }
@@ -465,12 +448,10 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
         }
       }
       
-      // Affirmative action
       if (detectedCriteriaFromBackend.is_affirmative !== undefined) {
-        // @ts-ignore
-        ctx.setDetectedCriteria(prev => ({ ...prev, isAffirmative: detectedCriteriaFromBackend.is_affirmative as boolean }))
-        // @ts-ignore
-        ctx.setJobConfig(prev => ({ ...prev, isAffirmative: detectedCriteriaFromBackend.is_affirmative as boolean }))
+        const isAffirmative = detectedCriteriaFromBackend.is_affirmative as boolean
+        ctx.setDetectedCriteria(prev => ({ ...prev, isAffirmative }))
+        ctx.setJobConfig(prev => ({ ...prev, isAffirmative }))
       }
       
       // Responsibilities / Responsabilidades
@@ -544,25 +525,22 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     
     // Process tool_results if present (e.g., salary benchmark, skills suggestions)
     if (toolResults.length > 0) {
-        // @ts-ignore
-      toolResults.forEach((toolResult: { tool: string; result?: { skills?: { name?: string; level?: string; required?: boolean; category?: string; weight?: number }[]; [key: string]: unknown }; [key: string]: unknown }) => {
+      (toolResults as Array<{ tool: string; result?: { skills?: { name?: string; level?: string; required?: boolean; category?: string; weight?: number }[]; [key: string]: unknown }; [key: string]: unknown }>).forEach((toolResult) => {
         if (toolResult.tool === 'salary_benchmark' && toolResult.result) {
-        // @ts-ignore
-          ctx.setCompensationAnalysis(toolResult.result as CompensationAnalysisResult)
+          ctx.setCompensationAnalysis(toolResult.result as unknown as CompensationAnalysisResult)
         }
         if (toolResult.tool === 'skills_suggestion' && toolResult.result?.skills) {
           const suggestedSkills = toolResult.result.skills
           suggestedSkills.forEach((skill, index: number) => {
             if (!ctx.technicalSkills.find(s => s.name.toLowerCase() === skill.name?.toLowerCase())) {
-        // @ts-ignore
               ctx.setTechnicalSkills(prev => [
                 ...prev,
                 {
                   id: `tool-skill-${Date.now()}-${index}`,
-                  name: skill.name,
-                  level: skill.level || 'Intermediário',
+                  name: skill.name || '',
+                  level: (skill.level || 'Intermediário') as 'Básico' | 'Intermediário' | 'Avançado' | 'Expert',
                   required: skill.required ?? true,
-                  category: skill.category || 'tool',
+                  category: (skill.category || 'tool') as 'language' | 'framework' | 'tool' | 'concept' | 'methodology',
                   weight: skill.weight || 3
                 }
               ])
@@ -571,19 +549,13 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
         }
         // Process JD enrichment data
         if (toolResult.tool === 'generate_enriched_jd' && toolResult.result) {
-          const enrichmentResult = toolResult.result
-          // Map backend response to EnrichedJDData format
+          const er = toolResult.result as Record<string, unknown>
           const enrichedData: EnrichedJDData = {
-        // @ts-ignore
-            sections: enrichmentResult.sections || [],
-        // @ts-ignore
-            compensation: enrichmentResult.compensation,
-        // @ts-ignore
-            wsiQualityScore: enrichmentResult.wsi_quality_score ?? enrichmentResult.wsiQualityScore ?? 0,
-        // @ts-ignore
-            overallCompleteness: enrichmentResult.overall_completeness ?? enrichmentResult.overallCompleteness ?? 0,
-        // @ts-ignore
-            totalSuggestions: enrichmentResult.total_suggestions ?? enrichmentResult.totalSuggestions ?? 0
+            sections: (er.sections || []) as EnrichedJDData['sections'],
+            compensation: er.compensation as EnrichedJDData['compensation'],
+            wsiQualityScore: (er.wsi_quality_score ?? er.wsiQualityScore ?? 0) as number,
+            overallCompleteness: (er.overall_completeness ?? er.overallCompleteness ?? 0) as number,
+            totalSuggestions: (er.total_suggestions ?? er.totalSuggestions ?? 0) as number
           }
           ctx.setEnrichedJDData(enrichedData)
           ctx.setIsLoadingEnrichment(false)
@@ -598,32 +570,27 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       if (orchestratorResult.draft_updates && Object.keys(orchestratorResult.draft_updates).length > 0) {
         const updates = orchestratorResult.draft_updates as Record<string, unknown>
         if (updates.cargo || updates.job_title || updates.title) {
-          const title = updates.cargo || updates.job_title || updates.title
-        // @ts-ignore
+          const title = String(updates.cargo || updates.job_title || updates.title)
           ctx.setBasicInfoFields(prev => ({ ...prev, cargo: title }))
           ctx.highlightField('cargo')
         }
         if (updates.area || updates.department) {
-          const dept = updates.area || updates.department
-        // @ts-ignore
+          const dept = String(updates.area || updates.department)
           ctx.setBasicInfoFields(prev => ({ ...prev, area: dept }))
           ctx.highlightField('departamento')
         }
         if (updates.localidade || updates.location) {
-          const location = updates.localidade || updates.location
-        // @ts-ignore
+          const location = String(updates.localidade || updates.location)
           ctx.setBasicInfoFields(prev => ({ ...prev, localidade: location }))
           ctx.highlightField('localizacao')
         }
         if (updates.modeloTrabalho || updates.work_model) {
-          const workModel = updates.modeloTrabalho || updates.work_model
-        // @ts-ignore
+          const workModel = String(updates.modeloTrabalho || updates.work_model)
           ctx.setBasicInfoFields(prev => ({ ...prev, modeloTrabalho: workModel }))
           ctx.highlightField('modeloTrabalho')
         }
         if (updates.gestor || updates.manager) {
-          const manager = updates.gestor || updates.manager
-        // @ts-ignore
+          const manager = String(updates.gestor || updates.manager)
           ctx.setBasicInfoFields(prev => ({ ...prev, gestor: manager }))
           ctx.highlightField('gestor')
         }
@@ -684,8 +651,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       if (title) detectedFields.push(`Cargo: **${title}**`)
       if (seniority) detectedFields.push(`Senioridade: **${seniority}**`)
       if (department) detectedFields.push(`Departamento: **${department}**`)
-        // @ts-ignore
-      if (techSkills?.length > 0) detectedFields.push(`Skills Técnicas: **${techSkills.slice(0, 3).join(', ')}**`)
+      if ((techSkills as unknown[])?.length > 0) detectedFields.push(`Skills Técnicas: **${(techSkills as string[]).slice(0, 3).join(', ')}**`)
       if (salaryMin && salaryMax) {
         const minFormatted = typeof salaryMin === 'number' ? salaryMin.toLocaleString('pt-BR') : salaryMin
         const maxFormatted = typeof salaryMax === 'number' ? salaryMax.toLocaleString('pt-BR') : salaryMax
@@ -704,8 +670,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       if (title) detectedFieldsStructured.push({ label: "Cargo", value: String(title), confidence: "high" })
       if (seniority) detectedFieldsStructured.push({ label: "Senioridade", value: String(seniority), confidence: "high" })
       if (department) detectedFieldsStructured.push({ label: "Departamento", value: String(department), confidence: "medium" })
-        // @ts-ignore
-      if (techSkills?.length > 0) detectedFieldsStructured.push({ label: "Skills Técnicas", value: techSkills.slice(0, 5).join(", "), confidence: "high" })
+      if ((techSkills as unknown[])?.length > 0) detectedFieldsStructured.push({ label: "Skills Técnicas", value: (techSkills as string[]).slice(0, 5).join(", "), confidence: "high" })
       if (salaryMin && salaryMax) {
         const minF = typeof salaryMin === 'number' ? salaryMin.toLocaleString('pt-BR') : salaryMin
         const maxF = typeof salaryMax === 'number' ? salaryMax.toLocaleString('pt-BR') : salaryMax

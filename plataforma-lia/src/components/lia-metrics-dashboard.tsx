@@ -12,8 +12,28 @@ import {
 import { LiaMetricsChart } from "./lia-metrics-chart"
 import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
 
+interface DashboardCandidate {
+  liaScore?: number
+  skillsMatch?: number
+  contactStatus?: string
+  liaStatus?: string
+  triageComplete?: boolean
+  triageData?: {
+    mobility?: string
+    salary?: string
+    interest?: string
+    [key: string]: unknown
+  }
+  status?: string
+  stage?: string
+  approvalPending?: boolean
+  feedbackSent?: boolean
+  source?: string
+  [key: string]: unknown
+}
+
 interface LiaMetricsDashboardProps {
-  candidates: Record<string, unknown>[]
+  candidates: DashboardCandidate[]
 }
 
 // Gerar dados de evolução temporal (últimos 7 dias)
@@ -50,11 +70,8 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
   // Métricas de Triagem Aprovada
   const triageApproved = candidates.filter(c => {
     if (!c.triageComplete || !c.triageData) return false
-    // @ts-ignore TODO: fix type — Property 'mobility' does not exist on type '{}'.
     return c.triageData.mobility === 'OK' &&
-           // @ts-ignore TODO: fix type — Property 'salary' does not exist on type '{}'.
            c.triageData.salary !== 'Acima do budget' &&
-           // @ts-ignore TODO: fix type — Property 'interest' does not exist on type '{}'.
            c.triageData.interest !== 'Baixo'
   }).length
   const triageApprovalRate = triageCompleted > 0 ? (triageApproved / triageCompleted) * 100 : 0
@@ -69,12 +86,10 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
   // Métricas de Performance
   const avgLiaScore = candidates.length > 0
-    // @ts-ignore TODO: fix type — Operator '+' cannot be applied to types 'number' and '{}'.
-    ? candidates.reduce((sum, c) => sum + (c.liaScore || 0), 0) / candidates.length
+    ? candidates.reduce((sum, c) => sum + (c.liaScore ?? 0), 0) / candidates.length
     : 0
   const avgSkillsMatch = candidates.length > 0
-    // @ts-ignore TODO: fix type — Operator '+' cannot be applied to types 'number' and '{}'.
-    ? candidates.reduce((sum, c) => sum + (c.skillsMatch || 0), 0) / candidates.length
+    ? candidates.reduce((sum, c) => sum + (c.skillsMatch ?? 0), 0) / candidates.length
     : 0
 
   // Tempo médio por etapa (simulado - em produção viria do backend)
@@ -151,21 +166,11 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
 
   // Distribuição de Scores LIA
   const scoreDistribution = [
-    // @ts-ignore TODO: fix type — Operator '<' cannot be applied to types '{}' and 'number'.
-    // @ts-ignore TODO: fix type — Operator '>=' cannot be applied to types '{}' and 'number'.
-    { date: '0-2', value: candidates.filter(c => (c.liaScore || 0) >= 0 && (c.liaScore || 0) < 2).length },
-    // @ts-ignore TODO: fix type — Operator '<' cannot be applied to types '{}' and 'number'.
-    // @ts-ignore TODO: fix type — Operator '>=' cannot be applied to types '{}' and 'number'.
-    { date: '2-4', value: candidates.filter(c => (c.liaScore || 0) >= 2 && (c.liaScore || 0) < 4).length },
-    // @ts-ignore TODO: fix type — Operator '<' cannot be applied to types '{}' and 'number'.
-    // @ts-ignore TODO: fix type — Operator '>=' cannot be applied to types '{}' and 'number'.
-    { date: '4-6', value: candidates.filter(c => (c.liaScore || 0) >= 4 && (c.liaScore || 0) < 6).length },
-    // @ts-ignore TODO: fix type — Operator '<' cannot be applied to types '{}' and 'number'.
-    // @ts-ignore TODO: fix type — Operator '>=' cannot be applied to types '{}' and 'number'.
-    { date: '6-8', value: candidates.filter(c => (c.liaScore || 0) >= 6 && (c.liaScore || 0) < 8).length },
-    // @ts-ignore TODO: fix type — Operator '<=' cannot be applied to types '{}' and 'number'.
-    // @ts-ignore TODO: fix type — Operator '>=' cannot be applied to types '{}' and 'number'.
-    { date: '8-10', value: candidates.filter(c => (c.liaScore || 0) >= 8 && (c.liaScore || 0) <= 10).length },
+    { date: '0-2', value: candidates.filter(c => (c.liaScore ?? 0) >= 0 && (c.liaScore ?? 0) < 2).length },
+    { date: '2-4', value: candidates.filter(c => (c.liaScore ?? 0) >= 2 && (c.liaScore ?? 0) < 4).length },
+    { date: '4-6', value: candidates.filter(c => (c.liaScore ?? 0) >= 4 && (c.liaScore ?? 0) < 6).length },
+    { date: '6-8', value: candidates.filter(c => (c.liaScore ?? 0) >= 6 && (c.liaScore ?? 0) < 8).length },
+    { date: '8-10', value: candidates.filter(c => (c.liaScore ?? 0) >= 8 && (c.liaScore ?? 0) <= 10).length },
   ]
 
   // Métricas por fonte
@@ -173,22 +178,13 @@ export function LiaMetricsDashboard({ candidates }: LiaMetricsDashboardProps) {
     const source = c.source
     if (!source) return acc
 
-    // @ts-ignore TODO: fix type — Type '{}' cannot be used as an index type.
     if (!acc[source]) {
-      // @ts-ignore TODO: fix type — Type '{}' cannot be used as an index type.
       acc[source] = { source, count: 0, contacted: 0, avgScore: 0 }
     }
 
-    // @ts-ignore TODO: fix type — Type '{}' cannot be used as an index type.
     acc[source].count += 1
-    // @ts-ignore TODO: fix type — Type '{}' cannot be used as an index type.
     acc[source].contacted += c.contactStatus !== 'não contatado' ? 1 : 0
-    // @ts-ignore TODO: fix type — Type '{}' cannot be used as an index type.
-    // @ts-ignore TODO: fix type — Type '{}' cannot be used as an index type.
-    // @ts-ignore TODO: fix type — Type '{}' cannot be used as an index type.
-    // @ts-ignore TODO: fix type — Operator '+' cannot be applied to types 'number' and '{}'.
-    // @ts-ignore TODO: fix type — Type '{}' cannot be used as an index type.
-    acc[source].avgScore = (acc[source].avgScore * (acc[source].count - 1) + (c.liaScore || 0)) / acc[source].count
+    acc[source].avgScore = (acc[source].avgScore * (acc[source].count - 1) + (c.liaScore ?? 0)) / acc[source].count
 
     return acc
   }, {} as Record<string, { source: string; count: number; contacted: number; avgScore: number }>)

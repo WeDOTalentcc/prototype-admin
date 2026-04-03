@@ -156,8 +156,7 @@ export const SCREENING_SECTIONS = [
 
 
 export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar }: ScreeningConfigManagerProps & { _externalActiveSection?: string; _hideOwnSidebar?: boolean }) {
-  // @ts-ignore TODO: fix type
-  const { config: screeningConfig, updateConfig: updateScreeningConfig } = useScreeningConfig(job?.backendId || job?.jobId || null)
+  const { config: screeningConfig, updateConfig: updateScreeningConfig } = useScreeningConfig((job?.backendId || job?.jobId || null) as string | number | null)
 
   const [blockPromptOpen, setBlockPromptOpen] = useState<string | null>(null)
   const [blockPromptText, setBlockPromptText] = useState("")
@@ -193,21 +192,18 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         const items: Array<Record<string, unknown>> = data?.items ?? (Array.isArray(data) ? data : [])
-        // @ts-ignore TODO: fix type
-        setCompanyQuestions(items.map((q: Record<string, unknown>) => ({
-          id: q.id,
-          question: q.question_text || q.question,
-          is_eliminatory: q.is_eliminatory ?? false,
-          expected_answer: q.expected_answer || undefined,
+        setCompanyQuestions(items.map((q) => ({
+          id: q.id as string,
+          question: (q.question_text || q.question) as string,
+          is_eliminatory: (q.is_eliminatory ?? false) as boolean,
+          expected_answer: (q.expected_answer || undefined) as string | undefined,
         })))
       })
       .catch(() => {})
   }, [])
 
-  // Load opt-out list from job
   useEffect(() => {
-    // @ts-ignore TODO: fix type
-    const ids: string[] = job?.disabled_eligibility_question_ids || []
+    const ids: string[] = (job?.disabled_eligibility_question_ids as string[] | undefined) || []
     setDisabledCompanyQIds(new Set(ids))
   }, [job?.id])
 
@@ -331,17 +327,15 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setWsiGenerationCompleted(false)
     setWsiSummaryExpanded(false)
 
-    // @ts-ignore TODO: fix type
-    const techSkills = (job.technicalRequirements || []).map((r: Record<string, unknown>) => r.technology || r.skill || r).filter(Boolean)
-    // @ts-ignore TODO: fix type
-    const behavComp = (job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || c).filter(Boolean)
-    // @ts-ignore TODO: fix type
-    const responsibilities = (job.requirements || []).map((r: Record<string, unknown>) => typeof r === 'string' ? r : r.requirement || r.text || r.name || r).filter(Boolean)
+    const techReqs = (job.technicalRequirements || []) as Record<string, unknown>[]
+    const techSkills = techReqs.map((r) => r.technology || r.skill || r).filter(Boolean)
+    const behavComps = (job.behavioralCompetencies || []) as Record<string, unknown>[]
+    const behavComp = behavComps.map((c) => c.competency || c.name || c).filter(Boolean)
+    const reqs = (job.requirements || []) as Array<string | Record<string, unknown>>
+    const responsibilities = reqs.map((r) => typeof r === 'string' ? r : (r as Record<string, unknown>).requirement || (r as Record<string, unknown>).text || (r as Record<string, unknown>).name || r).filter(Boolean)
     setWsiGenerationContext({
-      // @ts-ignore TODO: fix type
-      title: job.title || '',
-      // @ts-ignore TODO: fix type
-      seniority: job.level || (job as Record<string, unknown>).seniority || null,
+      title: (job.title as string) || '',
+      seniority: (job.level as string) || (job.seniority as string) || null,
       responsibilities: responsibilities.slice(0, 5),
       technicalSkills: techSkills.slice(0, 6),
       behavioralCompetencies: behavComp.slice(0, 6),
@@ -389,10 +383,8 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
         const grouped: Record<number, any[]> = {}
         data.questions.forEach((q: Record<string, unknown>) => {
           const bid = q.block_id || 2
-          // @ts-ignore TODO: fix type
-          if (!grouped[bid]) grouped[bid] = []
-          // @ts-ignore TODO: fix type
-          grouped[bid].push({ ...q, id: q.id || `q_gen_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, generated: true })
+          if (!grouped[bid as number]) grouped[bid as number] = []
+          grouped[bid as number].push({ ...q, id: q.id || `q_gen_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, generated: true })
         })
         setGeneratedQuestions(grouped)
         const totalCount = Object.values(grouped).reduce((sum, arr) => sum + arr.length, 0)
@@ -409,8 +401,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
         Object.entries(grouped).forEach(([bid, questions]) => {
           breakdown[Number(bid)] = (questions as Array<Record<string, unknown>>).length
           ;(questions as Array<Record<string, unknown>>).forEach((q: Record<string, unknown>) => {
-            const fw = q.framework || (q.category === 'behavioral' ? 'BigFive' : 'CBI')
-            // @ts-ignore TODO: fix type
+            const fw = (q.framework || (q.category === 'behavioral' ? 'BigFive' : 'CBI')) as string
             methodBreakdown[fw] = (methodBreakdown[fw] || 0) + 1
             if (q.source === 'company_standard' || q.is_company_standard) hasCompanyStandard = true
           })
@@ -549,12 +540,10 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setWsiGenerationContext(null)
   }
 
-  // @ts-ignore TODO: fix type
-  const configDone = !!(screeningConfig && (screeningConfig.channels || screeningConfig.settings || screeningConfig.scheduling)) || !!(job.screeningConfig && (job.screeningConfig.channels || job.screeningConfig.settings || job.screeningConfig.scheduling))
-  // @ts-ignore TODO: fix type
-  const jdDone = !!(job.description && job.description.trim().length > 0)
-  // @ts-ignore TODO: fix type
-  const questionsDone = (job.screeningQuestions && job.screeningQuestions.length > 0) || (isEditingScreening && acceptedQuestions.size > 0)
+  const scConfig = job.screeningConfig as Record<string, unknown> | undefined
+  const configDone = !!(screeningConfig && ((screeningConfig as Record<string, unknown>).channels || (screeningConfig as Record<string, unknown>).settings || (screeningConfig as Record<string, unknown>).scheduling)) || !!(scConfig && (scConfig.channels || scConfig.settings || scConfig.scheduling))
+  const jdDone = !!(job.description && (job.description as string).trim().length > 0)
+  const questionsDone = ((job.screeningQuestions as unknown[] | undefined)?.length ?? 0) > 0 || (isEditingScreening && acceptedQuestions.size > 0)
   const progressCount = [configDone, jdDone, questionsDone].filter(Boolean).length
 
   const currentSection = SCREENING_SECTIONS.find(s => s.id === activeSection) || SCREENING_SECTIONS[0]

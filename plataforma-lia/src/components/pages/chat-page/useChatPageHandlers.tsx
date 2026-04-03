@@ -19,6 +19,9 @@ interface ChatPageHandlersContext {
     startSearch: (q: string, e: ParsedEntities, m?: SearchMode, meta?: SearchMetadata) => Promise<void>
     reset: () => void
     submitProfile: (profile: string) => void
+    submitSearch: (params: Record<string, unknown>) => void
+    showResults: () => void
+    startProfileCollection: () => void
   }
   activeSearchFilters: SearchFilters
   setIsSmartSearchMode: (v: boolean) => void
@@ -63,8 +66,6 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
     const finalMode = mode || "natural"
     const finalMetadata: SearchMetadata = metadata || { mode: finalMode }
     
-    // Submit search with all context (mode, metadata, filters)
-    // @ts-ignore TODO: fix type
     searchFlow.submitSearch({
       query,
       entities,
@@ -119,8 +120,7 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
       })
       
       const workflowData = response.conversation?.workflow_data || response.message.message_metadata?.workflow_data
-      // @ts-ignore TODO: fix type
-      const searchResults = workflowData?.search_results
+      const searchResults = (workflowData as Record<string, unknown> | undefined)?.search_results as Record<string, unknown> | undefined
       
       const localCount = searchResults?.local_count || searchResults?.local_candidates?.length || 0
       const globalCandidates = searchResults?.global_candidates || []
@@ -156,7 +156,6 @@ export function useChatPageHandlers(ctx: ChatPageHandlersContext) {
       
       if (searchResults) {
         setHasSearchResults(true)
-        // @ts-ignore TODO: fix type
         searchFlow.showResults()
         
         const totalCount = localCount + globalCandidates.length
@@ -244,8 +243,6 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
       }
       setMessages(prev => [...prev, liaResponse])
       
-      // Activate Smart Search mode for profile collection
-      // @ts-ignore TODO: fix type
       searchFlow.startProfileCollection()
       setIsSmartSearchMode(true)
       setSmartSearchQuery("")
@@ -295,9 +292,9 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
     setMessages(prev => [...prev, thinkingMessage])
 
     try {
-      const messageContent = currentFileAnalysis
-        // @ts-ignore TODO: fix type
-        ? `${userMessageContent}\n\n[Contexto do arquivo analisado: ${currentFileAnalysis.filename}]\n${currentFileAnalysis.summary || ''}\n${currentFileAnalysis.extractedText ? `Texto extraído: ${currentFileAnalysis.extractedText.substring(0, 500)}...` : ''}`
+      const fileCtx = currentFileAnalysis as Record<string, unknown> | null
+      const messageContent = fileCtx
+        ? `${userMessageContent}\n\n[Contexto do arquivo analisado: ${fileCtx.filename}]\n${fileCtx.summary || ''}\n${(fileCtx.extractedText as string) ? `Texto extraído: ${(fileCtx.extractedText as string).substring(0, 500)}...` : ''}`
         : userMessageContent
 
       // Use streaming for text-only messages (no attachments / audio)
@@ -405,12 +402,13 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
         }
 
         const workflowData = response.conversation?.workflow_data || response.message.message_metadata?.workflow_data
+        const wfData = workflowData as Record<string, unknown> | undefined
 
-        // @ts-ignore TODO: fix type
-        if (workflowData?.search_results) {
-          // @ts-ignore TODO: fix type
-          const searchResults = workflowData.search_results
-          const totalCount = (searchResults.local_candidates?.length || 0) + (searchResults.global_candidates?.length || 0)
+        if (wfData?.search_results) {
+          const searchResults = wfData.search_results as Record<string, unknown>
+          const localCandidates = (searchResults.local_candidates || []) as unknown[]
+          const globalCandidates = (searchResults.global_candidates || []) as unknown[]
+          const totalCount = localCandidates.length + globalCandidates.length
           const panelData = {
             type: "candidate-suggestions" as const,
             title: `Candidatos Encontrados (${totalCount})`,
@@ -419,41 +417,33 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
               source: searchResults.source,
               localCount: searchResults.local_count,
               totalCount,
-              candidates: [...(searchResults.local_candidates || []), ...(searchResults.global_candidates || [])]
+              candidates: [...localCandidates, ...globalCandidates]
             }
           }
           liaResponse.contextData = panelData
           setContextData(panelData)
           setIsPanelOpen(true)
-        } else if (response.conversation?.workflow_type === 'job_creation' && workflowData) {
-          // @ts-ignore TODO: fix type
-          if (workflowData.completion_percentage !== undefined) {
-            const jobState = workflowData
-            // @ts-ignore TODO: fix type
-            const collectedFields = Object.keys(jobState.field_status || {}).filter(k => jobState.field_status[k] === 'collected')
-            // @ts-ignore TODO: fix type
-            const pendingFields = Object.keys(jobState.field_status || {}).filter(k => jobState.field_status[k] === 'pending')
+        } else if (response.conversation?.workflow_type === 'job_creation' && wfData) {
+          if (wfData.completion_percentage !== undefined) {
+            const fieldStatus = (wfData.field_status || {}) as Record<string, string>
+            const collectedFields = Object.keys(fieldStatus).filter(k => fieldStatus[k] === 'collected')
+            const pendingFields = Object.keys(fieldStatus).filter(k => fieldStatus[k] === 'pending')
             const panelData = {
               type: "job-creation-progress" as const,
               title: "Progresso: Criação de Vaga",
               data: {
-                // @ts-ignore TODO: fix type
-                completion_percentage: Math.round(jobState.completion_percentage || 0),
+                completion_percentage: Math.round((wfData.completion_percentage as number) || 0),
                 collected_fields: collectedFields,
                 pending_fields: pendingFields,
-                // @ts-ignore TODO: fix type
-                next_panel: jobState.current_panel || 'Aguardando próxima etapa'
+                next_panel: (wfData.current_panel as string) || 'Aguardando próxima etapa'
               }
             }
             liaResponse.contextData = panelData
             setContextData(panelData)
             setIsPanelOpen(true)
-          // @ts-ignore TODO: fix type
-          } else if (workflowData.frames) {
-            // @ts-ignore TODO: fix type
-            const frames = workflowData.frames
-            // @ts-ignore TODO: fix type
-            let panelData: ContextPanelData | null = null
+          } else if (wfData.frames) {
+            const frames = wfData.frames as Record<string, unknown>
+            let panelData: Record<string, unknown> | null = null
             if (frames.org_chart) panelData = { type: "org-chart", title: "Organograma da Posição", data: frames.org_chart }
             else if (frames.interview_flow) panelData = { type: "interview-flow", title: "Fluxo de Entrevistas", data: frames.interview_flow }
             else if (frames.timeline) panelData = { type: "timeline", title: "Cronograma de Recrutamento", data: frames.timeline }
@@ -472,13 +462,10 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
           return newMessages
         })
 
-        // Ciclo fechado: notificar outros componentes (ex: kanban) quando uma ação foi executada
-        const actionResult = response.message.message_metadata?.action_result
-        // @ts-ignore TODO: fix type
+        const actionResult = response.message.message_metadata?.action_result as Record<string, unknown> | undefined
         if (actionResult?.success) {
           window.dispatchEvent(
             new CustomEvent("lia:action-executed", {
-              // @ts-ignore TODO: fix type
               detail: { action_id: actionResult.action_id, data: actionResult.data }
             })
           )
