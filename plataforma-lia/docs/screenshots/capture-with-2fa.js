@@ -26,146 +26,192 @@ if (!CODE_2FA || CODE_2FA.length !== 6) {
   await page.goto('https://app.wedotalent.cc', { timeout: 30000, waitUntil: 'networkidle' });
   await page.waitForTimeout(2000);
   
-  // Email
   const emailInput = await page.$('input[type="text"], input[type="email"]');
-  await emailInput.fill('paulo.moraes@wedotalent.cc');
+  await emailInput.click();
+  await page.keyboard.type('paulo.moraes@wedotalent.cc', { delay: 30 });
   await page.waitForTimeout(500);
   
-  // Continuar
   const continueBtn = await page.$('button:has-text("Continuar")');
   await continueBtn.click();
   await page.waitForTimeout(3000);
   
-  // Password
   const passField = await page.$('input[type="password"]');
-  await passField.fill('Rodesia94');
+  await passField.click();
+  await page.keyboard.type('Rodesia94', { delay: 30 });
+  await page.waitForTimeout(500);
+  
   const loginBtn = await page.$('button:has-text("Entrar")');
   await loginBtn.click();
   await page.waitForTimeout(5000);
   
-  // 2FA Code
   console.log('Entering 2FA code:', CODE_2FA);
+  await page.screenshot({ path: `${outDir}/vue-2fa-before.png`, fullPage: false });
+  
+  // Get all OTP inputs
   const codeInputs = await page.$$('input[maxlength="1"]');
+  console.log('   Found', codeInputs.length, 'code inputs');
+  
   if (codeInputs.length >= 6) {
+    // Use dispatchEvent to set values natively and trigger Vue reactivity
     for (let i = 0; i < 6; i++) {
-      await codeInputs[i].fill(CODE_2FA[i]);
+      await codeInputs[i].click();
       await page.waitForTimeout(100);
+      
+      // Set value via native input setter to trigger Vue/Vuetify reactivity
+      await codeInputs[i].evaluate((el, digit) => {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        nativeInputValueSetter.call(el, digit);
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        el.dispatchEvent(new KeyboardEvent('keydown', { key: digit, code: 'Digit' + digit, bubbles: true }));
+        el.dispatchEvent(new KeyboardEvent('keyup', { key: digit, code: 'Digit' + digit, bubbles: true }));
+      }, CODE_2FA[i]);
+      
+      await page.waitForTimeout(150);
     }
-    console.log('   ✓ 2FA code filled');
-  } else {
-    const singleInput = await page.$('input[maxlength="6"]');
-    if (singleInput) {
-      await singleInput.fill(CODE_2FA);
-      console.log('   ✓ 2FA code filled (single input)');
-    } else {
-      console.log('   ✗ No 2FA inputs found, count:', codeInputs.length);
-    }
+    console.log('   ✓ 2FA code filled via native events');
   }
   
-  // Verificar Código
-  const verifyBtn = await page.$('button:has-text("Verificar"), button:has-text("Confirmar")');
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: `${outDir}/vue-2fa-filled.png`, fullPage: false });
+  
+  // Check verify button
+  const verifyBtn = await page.$('button:has-text("Verificar")');
   if (verifyBtn) {
-    await verifyBtn.click();
-    console.log('   ✓ Verify clicked');
-  } else {
-    await page.keyboard.press('Enter');
+    const isDisabled = await verifyBtn.evaluate(el => el.disabled);
+    console.log('   Verify button disabled?', isDisabled);
+    
+    if (isDisabled) {
+      // Try alternative: clear all and use keyboard.type approach
+      console.log('   Trying keyboard approach...');
+      await codeInputs[0].click();
+      await page.waitForTimeout(200);
+      // Select all and delete
+      for (let i = 0; i < 6; i++) {
+        await codeInputs[i].evaluate(el => { el.value = ''; });
+      }
+      await codeInputs[0].click();
+      await page.waitForTimeout(200);
+      
+      // Type each digit one by one with proper focus
+      for (let i = 0; i < 6; i++) {
+        await codeInputs[i].focus();
+        await page.waitForTimeout(50);
+        await codeInputs[i].type(CODE_2FA[i], { delay: 50 });
+        await page.waitForTimeout(150);
+      }
+      
+      await page.waitForTimeout(500);
+      const isStillDisabled = await verifyBtn.evaluate(el => el.disabled);
+      console.log('   After keyboard approach, disabled?', isStillDisabled);
+      
+      if (isStillDisabled) {
+        // Last resort: paste approach
+        console.log('   Trying paste approach...');
+        await codeInputs[0].click();
+        await page.evaluate((code) => {
+          const inputs = document.querySelectorAll('input[maxlength="1"]');
+          inputs.forEach((input, i) => {
+            const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+            nativeSetter.call(input, code[i]);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          });
+          // Also try triggering paste event on first input
+          const dt = new DataTransfer();
+          dt.setData('text/plain', code);
+          inputs[0].dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true }));
+        }, CODE_2FA);
+        
+        await page.waitForTimeout(1000);
+        const finalDisabled = await verifyBtn.evaluate(el => el.disabled);
+        console.log('   After paste approach, disabled?', finalDisabled);
+      }
+    }
+    
+    // Try clicking regardless
+    try {
+      await verifyBtn.click({ timeout: 3000, force: true });
+      console.log('   ✓ Verify clicked');
+    } catch (e) {
+      await verifyBtn.evaluate(el => el.click());
+      console.log('   ✓ Verify force-clicked');
+    }
   }
   
-  await page.waitForTimeout(8000);
+  await page.waitForTimeout(10000);
   await page.screenshot({ path: `${outDir}/vue-10-after-2fa.png`, fullPage: false });
   console.log('   URL after 2FA:', page.url());
   
-  // Check if logged in
-  const url = page.url();
-  if (!url.includes('wedotalent.cc') || url === 'https://app.wedotalent.cc/') {
-    const bodyText = await page.evaluate(() => document.body.innerText.substring(0, 300));
-    console.log('   Body:', bodyText.substring(0, 200));
-    console.log('   ✗ May not be logged in. Stopping.');
-    await browser.close();
-    return;
-  }
+  const bodyAfter = await page.evaluate(() => document.body.innerText.substring(0, 500));
+  console.log('   Body:', bodyAfter.substring(0, 300));
   
-  console.log('   ✓ Logged in!\n');
-  
-  // === CANDIDATES LIST ===
-  console.log('--- CANDIDATES ---');
+  // === CANDIDATES ===
+  console.log('\n--- CANDIDATES ---');
   await page.goto('https://app.wedotalent.cc/user/candidates', { timeout: 30000, waitUntil: 'networkidle' });
   await page.waitForTimeout(5000);
   await page.screenshot({ path: `${outDir}/vue-11-candidates-list.png`, fullPage: false });
   console.log('   URL:', page.url());
   
-  // Count candidates
-  const candidateCount = await page.evaluate(() => {
-    const rows = document.querySelectorAll('tr, .candidate-row, [class*="candidate"]');
-    return rows.length;
-  });
-  console.log('   Candidate elements:', candidateCount);
-  
-  // Get page structure
-  const pageStructure = await page.evaluate(() => {
-    const els = document.querySelectorAll('.v-card, .v-data-table, table, [role="table"]');
-    return Array.from(els).map(e => ({ tag: e.tagName, class: e.className.substring(0, 100) }));
-  });
-  console.log('   Structure:', JSON.stringify(pageStructure).substring(0, 300));
-  
-  // Click first candidate to open preview
-  console.log('\n--- CANDIDATE PREVIEW ---');
-  const firstRow = await page.$('table tbody tr, .v-data-table tbody tr, tr.v-data-table__tr');
-  if (firstRow) {
-    await firstRow.click();
-    await page.waitForTimeout(5000);
-    await page.screenshot({ path: `${outDir}/vue-12-candidate-preview.png`, fullPage: false });
-    console.log('   ✓ Candidate preview opened');
-    console.log('   URL:', page.url());
-    
-    // Scroll down to see more
-    await page.evaluate(() => {
-      const drawer = document.querySelector('.v-navigation-drawer, [class*="drawer"], [class*="preview"], [class*="sidebar"]');
-      if (drawer) drawer.scrollTop = drawer.scrollHeight / 3;
-      else window.scrollTo(0, 300);
-    });
-    await page.waitForTimeout(2000);
-    await page.screenshot({ path: `${outDir}/vue-12b-candidate-scroll1.png`, fullPage: false });
-    
-    await page.evaluate(() => {
-      const drawer = document.querySelector('.v-navigation-drawer, [class*="drawer"], [class*="preview"], [class*="sidebar"]');
-      if (drawer) drawer.scrollTop = drawer.scrollHeight * 2 / 3;
-      else window.scrollTo(0, 600);
-    });
-    await page.waitForTimeout(2000);
-    await page.screenshot({ path: `${outDir}/vue-12c-candidate-scroll2.png`, fullPage: false });
-    
-    // Click tabs
-    const tabs = ['Atividades', 'Arquivos', 'Currículo', 'Curriculo'];
-    for (const tab of tabs) {
-      const tabEl = await page.$(`[role="tab"]:has-text("${tab}"), .v-tab:has-text("${tab}"), button:has-text("${tab}")`);
-      if (tabEl) {
-        await tabEl.click();
-        await page.waitForTimeout(3000);
-        const safeName = tab.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
-        await page.screenshot({ path: `${outDir}/vue-13-tab-${safeName}.png`, fullPage: false });
-        console.log(`   ✓ Tab "${tab}" captured`);
-      }
-    }
-    
-    // Look for tabs we might have missed
-    const allTabs = await page.$$eval('[role="tab"], .v-tab, .v-btn--variant-text', els => 
-      els.map(e => e.textContent.trim()).filter(t => t.length > 0 && t.length < 30)
-    );
-    console.log('   Available tabs:', allTabs);
-    
-  } else {
-    console.log('   ✗ No candidate rows found');
-    
-    // Try clicking any clickable element
-    const links = await page.$$eval('a, [role="link"], .clickable', els => 
-      els.map(e => ({ text: e.textContent.trim().substring(0, 50), href: e.href })).slice(0, 10)
-    );
-    console.log('   Links found:', JSON.stringify(links).substring(0, 500));
+  if (page.url() === 'https://app.wedotalent.cc/' || page.url().includes('login')) {
+    console.log('   ✗ Not logged in');
+    await browser.close();
+    return;
   }
   
-  // Full page screenshot
-  await page.screenshot({ path: `${outDir}/vue-14-full-page.png`, fullPage: true });
+  console.log('   ✓ Logged in! Capturing candidates page...');
+  
+  // Full page
+  await page.screenshot({ path: `${outDir}/vue-11-candidates-full.png`, fullPage: true });
+  
+  // Get table rows
+  const rows = await page.$$('table tbody tr');
+  console.log('   Table rows:', rows.length);
+  
+  if (rows.length > 0) {
+    console.log('\n--- CANDIDATE PREVIEW ---');
+    await rows[0].click();
+    await page.waitForTimeout(5000);
+    await page.screenshot({ path: `${outDir}/vue-12-candidate-preview.png`, fullPage: false });
+    console.log('   ✓ Preview opened, URL:', page.url());
+    
+    // Scroll preview
+    for (let scroll = 1; scroll <= 3; scroll++) {
+      await page.evaluate((s) => {
+        const panels = document.querySelectorAll('.v-navigation-drawer, [class*="drawer"], [class*="preview"], [class*="sidebar"]');
+        for (const p of panels) {
+          if (p.scrollHeight > p.clientHeight) {
+            p.scrollTop = (p.scrollHeight * s) / 4;
+            return;
+          }
+        }
+        window.scrollTo(0, s * 300);
+      }, scroll);
+      await page.waitForTimeout(1500);
+      await page.screenshot({ path: `${outDir}/vue-12-scroll${scroll}.png`, fullPage: false });
+      console.log(`   ✓ Scroll ${scroll}/3`);
+    }
+    
+    // Find and capture all tabs
+    const allTabs = await page.$$eval('[role="tab"], .v-tab', els => 
+      els.map(e => e.textContent.trim()).filter(t => t.length > 0 && t.length < 30)
+    );
+    console.log('   Tabs:', JSON.stringify(allTabs));
+    
+    for (const tabText of allTabs) {
+      try {
+        const tab = await page.$(`[role="tab"]:has-text("${tabText}"), .v-tab:has-text("${tabText}")`);
+        if (tab) {
+          await tab.click();
+          await page.waitForTimeout(3000);
+          const safeName = tabText.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+          await page.screenshot({ path: `${outDir}/vue-tab-${safeName}.png`, fullPage: false });
+          console.log(`   ✓ Tab "${tabText}"`);
+        }
+      } catch (e) {
+        console.log(`   ✗ Tab "${tabText}" error`);
+      }
+    }
+  }
   
   await browser.close();
   console.log('\n=== Done ===');
