@@ -1,0 +1,554 @@
+{
+  "benchmark": "benchmark_agents.py",
+  "timestamp": "20260403_202659",
+  "base_url": "http://localhost:5000",
+  "agent_filter": null,
+  "summary": {
+    "total": 13,
+    "passed": 8,
+    "failed": 5,
+    "avg_quality_score": 79.6,
+    "avg_elapsed_ms": 15235.6
+  },
+  "results": [
+    {
+      "id": "wsi_001",
+      "agent": "wsi",
+      "name": "WSI — Resposta STAR completa (deve score >= 7)",
+      "endpoint": "http://localhost:8000/api/v1/wsi/analyze-response",
+      "http_status": 200,
+      "elapsed_ms": 11919.9,
+      "quality_score": 60,
+      "passed": false,
+      "issues": [
+        "Score 3.8 fora do intervalo esperado [7.0, 10.0]"
+      ],
+      "details": {
+        "score_raw": 3.8,
+        "star_completeness_raw": 1.0,
+        "feedback_snippet": "A resposta segue corretamente a estrutura STAR e apresenta métricas concretas e verificáveis, o que é um diferencial pos",
+        "score_range_ok": false,
+        "star_completeness_ok": true,
+        "feedback_portuguese": true
+      },
+      "response_snippet": "{\"question_id\": \"q-benchmark-001\", \"bloom_score\": 4, \"bloom_level_name\": \"Analyze\", \"dreyfus_level\": 3, \"dreyfus_level_name\": \"Competent\", \"big_five_indicators\": {\"openness\": 60, \"conscientiousness\": 85, \"extraversion\": 50, \"agreeableness\": 45, \"neuroticism\": 25}, \"score\": 3.8, \"score_max\": 5.0, \"sc",
+      "response_raw": {
+        "question_id": "q-benchmark-001",
+        "bloom_score": 4,
+        "bloom_level_name": "Analyze",
+        "dreyfus_level": 3,
+        "dreyfus_level_name": "Competent",
+        "big_five_indicators": {
+          "openness": 60,
+          "conscientiousness": 85,
+          "extraversion": 50,
+          "agreeableness": 45,
+          "neuroticism": 25
+        },
+        "score": 3.8,
+        "score_max": 5.0,
+        "score_normalized": 7.6,
+        "star_completeness": 1.0,
+        "feedback": "A resposta segue corretamente a estrutura STAR e apresenta métricas concretas e verificáveis, o que é um diferencial positivo. O candidato demonstra competência técnica sólida e capacidade de planejamento estruturado. Pontos de melhoria: faltou mencionar desafios enfrentados durante o projeto e como foram superados, o que elevaria o nível analítico e avaliativo da resposta. Também há ausência de menção ao trabalho em equipe, colaboração ou liderança de pessoas, o que é relevante para um papel de tech lead. Adicionar o contexto de decisões arquiteturais tomadas e por quê elevaria a resposta ao nível Bloom 5.",
+        "evidences": [
+          "Métricas quantitativas precisas: 99.8% de integridade de dados e 40% de redução no tempo de queries",
+          "Entrega antecipada: 2,5 meses vs prazo de 3 meses acordado",
+          "Uso de ferramentas modernas e adequadas: Python, Airflow, testes automatizados",
+          "Estrutura de execução clara: divisão em 4 sprints demonstra planejamento ágil",
+          "Escopo bem definido: 500GB de dados legados com prazo estabelecido",
+          "Papel de liderança técnica assumido com responsabilidade sobre arquitetura e execução"
+        ],
+        "red_flags": [
+          "Ausência total de menção à equipe: como tech lead, não citar colaboração ou liderança de pessoas levanta dúvida sobre habilidades interpessoais",
+          "Nenhum obstáculo ou dificuldade foi mencionado, tornando a narrativa excessivamente linear e possivelmente idealizada",
+          "Não há justificativa para as escolhas técnicas (por que Airflow? por que essa arquitetura ETL?), o que limita a evidência de pensamento avaliativo",
+          "Falta contexto de negócio: qual o impacto do projeto além da performance técnica?"
+        ]
+      },
+      "description": "Resposta STAR completa deve receber score alto (>=7) com star_completeness >= 0.8"
+    },
+    {
+      "id": "wsi_002",
+      "agent": "wsi",
+      "name": "WSI — Resposta vaga (deve score <= 4)",
+      "endpoint": "http://localhost:8000/api/v1/wsi/analyze-response",
+      "http_status": 200,
+      "elapsed_ms": 8308.4,
+      "quality_score": 85,
+      "passed": true,
+      "issues": [],
+      "details": {
+        "score_raw": 0.5,
+        "star_completeness_raw": 0.0,
+        "feedback_snippet": "A resposta é extremamente superficial e não fornece nenhuma evidência concreta de experiência com projetos de dados. Afi",
+        "score_range_ok": true,
+        "feedback_portuguese": true
+      },
+      "response_snippet": "{\"question_id\": \"q-benchmark-001\", \"bloom_score\": 1, \"bloom_level_name\": \"Remember\", \"dreyfus_level\": 1, \"dreyfus_level_name\": \"Novice\", \"big_five_indicators\": {\"openness\": 30, \"conscientiousness\": 20, \"extraversion\": 40, \"agreeableness\": 50, \"neuroticism\": 55}, \"score\": 0.5, \"score_max\": 5.0, \"scor",
+      "response_raw": {
+        "question_id": "q-benchmark-001",
+        "bloom_score": 1,
+        "bloom_level_name": "Remember",
+        "dreyfus_level": 1,
+        "dreyfus_level_name": "Novice",
+        "big_five_indicators": {
+          "openness": 30,
+          "conscientiousness": 20,
+          "extraversion": 40,
+          "agreeableness": 50,
+          "neuroticism": 55
+        },
+        "score": 0.5,
+        "score_max": 5.0,
+        "score_normalized": 1.0,
+        "star_completeness": 0.0,
+        "feedback": "A resposta é extremamente superficial e não fornece nenhuma evidência concreta de experiência com projetos de dados. Afirmar que 'foi uma experiência muito boa e aprendi bastante' sem detalhar o que foi feito, quais tecnologias foram usadas, quais desafios foram enfrentados ou quais resultados foram alcançados não demonstra competência real. Recomenda-se descrever projetos específicos, ferramentas utilizadas (ex: Python, SQL, Power BI), o papel desempenhado na equipe e os impactos gerados.",
+        "evidences": [
+          "Confirmação binária de experiência ('Sim, já trabalhei') sem qualquer detalhamento",
+          "Ausência de exemplos concretos, métricas ou contexto",
+          "Linguagem vaga e genérica ('muito boa', 'aprendi bastante')",
+          "Nenhuma tecnologia, metodologia ou ferramenta mencionada"
+        ],
+        "red_flags": [
+          "Resposta evasiva pode indicar experiência mínima ou inexistente com projetos de dados",
+          "Falta de detalhes específicos sugere dificuldade em articular conhecimento técnico",
+          "Ausência de estrutura narrativa (contexto, ação, resultado) é preocupante para uma vaga técnica",
+          "Possível insegurança ou despreparo para a entrevista técnica"
+        ]
+      },
+      "description": "Resposta vaga deve receber score baixo (<=4) sem elementos STAR claros"
+    },
+    {
+      "id": "wsi_003",
+      "agent": "wsi",
+      "name": "WSI — Resposta parcial STAR (deve score 4-7)",
+      "endpoint": "http://localhost:8000/api/v1/wsi/analyze-response",
+      "http_status": 200,
+      "elapsed_ms": 8491.9,
+      "quality_score": 45,
+      "passed": false,
+      "issues": [
+        "Score 1.5 fora do intervalo esperado [4.0, 7.0]"
+      ],
+      "details": {
+        "score_raw": 1.5,
+        "star_completeness_raw": 0.25,
+        "feedback_snippet": "A resposta é extremamente superficial e não demonstra profundidade técnica ou reflexiva. O candidato menciona a ferramen",
+        "score_range_ok": false,
+        "feedback_portuguese": true
+      },
+      "response_snippet": "{\"question_id\": \"q-benchmark-001\", \"bloom_score\": 3, \"bloom_level_name\": \"Apply\", \"dreyfus_level\": 2, \"dreyfus_level_name\": \"Advanced Beginner\", \"big_five_indicators\": {\"openness\": 40, \"conscientiousness\": 45, \"extraversion\": 35, \"agreeableness\": 40, \"neuroticism\": 50}, \"score\": 1.5, \"score_max\": 5.",
+      "response_raw": {
+        "question_id": "q-benchmark-001",
+        "bloom_score": 3,
+        "bloom_level_name": "Apply",
+        "dreyfus_level": 2,
+        "dreyfus_level_name": "Advanced Beginner",
+        "big_five_indicators": {
+          "openness": 40,
+          "conscientiousness": 45,
+          "extraversion": 35,
+          "agreeableness": 40,
+          "neuroticism": 50
+        },
+        "score": 1.5,
+        "score_max": 5.0,
+        "score_normalized": 3.0,
+        "star_completeness": 0.25,
+        "feedback": "A resposta é extremamente superficial e não demonstra profundidade técnica ou reflexiva. O candidato menciona a ferramenta utilizada (Python/ETL) e o resultado final, mas não explica os desafios enfrentados, as decisões tomadas, o impacto do projeto, nem o seu papel específico na equipe. Para uma resposta mais forte, seria necessário detalhar: qual era o volume de dados, quais dificuldades surgiram, como foram resolvidas, quais métricas de sucesso foram usadas e o que aprendeu com a experiência.",
+        "evidences": [
+          "Menciona uso de Python para ETL, indicando conhecimento prático mínimo",
+          "Cita conclusão bem-sucedida do projeto, sugerindo alguma orientação a resultados",
+          "Identifica o contexto do projeto (migração de banco de dados)"
+        ],
+        "red_flags": [
+          "Ausência total de métricas ou indicadores de sucesso concretos",
+          "Não menciona desafios, problemas ou decisões tomadas durante o projeto",
+          "Não descreve seu papel específico — se liderou, colaborou ou executou sozinho",
+          "Não há reflexão sobre aprendizados ou melhorias aplicadas",
+          "Resposta genérica que qualquer candidato poderia fabricar sem experiência real",
+          "Falta de contexto sobre escala, complexidade ou impacto do projeto para o negócio"
+        ]
+      },
+      "description": "Resposta parcial deve receber score médio (4-7) com alguns elementos STAR"
+    },
+    {
+      "id": "wsi_004",
+      "agent": "wsi",
+      "name": "WSI — Resposta irrelevante/off-topic (deve score <= 3)",
+      "endpoint": "http://localhost:8000/api/v1/wsi/analyze-response",
+      "http_status": 200,
+      "elapsed_ms": 7959.0,
+      "quality_score": 85,
+      "passed": true,
+      "issues": [],
+      "details": {
+        "score_raw": 0.8,
+        "star_completeness_raw": 0.0,
+        "feedback_snippet": "A resposta é extremamente superficial e genérica, sem qualquer evidência concreta ou situação real que sustente as afirm",
+        "score_range_ok": true,
+        "feedback_portuguese": true
+      },
+      "response_snippet": "{\"question_id\": \"q-benchmark-001\", \"bloom_score\": 1, \"bloom_level_name\": \"Remember\", \"dreyfus_level\": 1, \"dreyfus_level_name\": \"Novice\", \"big_five_indicators\": {\"openness\": 30, \"conscientiousness\": 35, \"extraversion\": 50, \"agreeableness\": 60, \"neuroticism\": 55}, \"score\": 0.8, \"score_max\": 5.0, \"scor",
+      "response_raw": {
+        "question_id": "q-benchmark-001",
+        "bloom_score": 1,
+        "bloom_level_name": "Remember",
+        "dreyfus_level": 1,
+        "dreyfus_level_name": "Novice",
+        "big_five_indicators": {
+          "openness": 30,
+          "conscientiousness": 35,
+          "extraversion": 50,
+          "agreeableness": 60,
+          "neuroticism": 55
+        },
+        "score": 0.8,
+        "score_max": 5.0,
+        "score_normalized": 1.6,
+        "star_completeness": 0.0,
+        "feedback": "A resposta é extremamente superficial e genérica, sem qualquer evidência concreta ou situação real que sustente as afirmações. Frases como 'gosto de trabalhar em equipe' e 'sempre fui dedicado' são percepções subjetivas sem contexto, métricas ou exemplos. Para melhorar, utilize o método STAR (Situação, Tarefa, Ação, Resultado) para estruturar sua resposta com exemplos reais e resultados mensuráveis.",
+        "evidences": [
+          "Menciona trabalho em equipe como característica positiva",
+          "Demonstra alguma autoconsciência ao citar dedicação",
+          "Linguagem simples e direta, sem rodeios"
+        ],
+        "red_flags": [
+          "Ausência total de exemplos concretos ou situações reais",
+          "Afirmações genéricas não verificáveis ('sempre fui dedicado')",
+          "Nenhuma métrica ou resultado tangível apresentado",
+          "Resposta muito curta, sugerindo baixo preparo para a entrevista",
+          "Uso de generalização absoluta ('sempre') sem evidências",
+          "Não responde a nenhuma pergunta específica — possível fuga da questão original",
+          "Baixo nível de elaboração cognitiva indica possível dificuldade de autoavaliação crítica"
+        ]
+      },
+      "description": "Resposta off-topic deve receber score muito baixo (<=3)"
+    },
+    {
+      "id": "cv_001",
+      "agent": "cv_match",
+      "name": "CV Match — Match forte (deve match_score > 80)",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "http_status": 200,
+      "elapsed_ms": 14614.6,
+      "quality_score": 70,
+      "passed": false,
+      "issues": [
+        "Lista 'matched_skills' ausente ou vazia"
+      ],
+      "details": {
+        "match_score_raw": 92.0,
+        "matched_skills_count": 0,
+        "missing_skills_count": 0,
+        "score_range_ok": true,
+        "matched_skills_present": false
+      },
+      "response_snippet": "# 🎯 Análise de Match — Engenheiro de Dados Sênior\n\n---\n\n## 📊 Score Geral de Compatibilidade\n\n```\n████████████████████░░  92% Match\n```\n### ✅ **Resultado: Candidato Altamente Recomendado**\n\n---\n\n## 🔍 Análise Detalhada por Critério\n\n| Critério | Requisito | Candidato | Status |\n|---|---|---|---|\n| **P",
+      "response_raw": {
+        "success": true,
+        "conversation_id": "ca8cd178-75bb-4dba-bc9b-7f9f5677fdd9",
+        "intent": "create_job",
+        "agent": "job_management",
+        "confidence": 0.3,
+        "result": {
+          "message": "# 🎯 Análise de Match — Engenheiro de Dados Sênior\n\n---\n\n## 📊 Score Geral de Compatibilidade\n\n```\n████████████████████░░  92% Match\n```\n### ✅ **Resultado: Candidato Altamente Recomendado**\n\n---\n\n## 🔍 Análise Detalhada por Critério\n\n| Critério | Requisito | Candidato | Status |\n|---|---|---|---|\n| **Python** | Obrigatório | ✅ 10 anos | 🟢 Supera |\n| **Apache Spark** | Obrigatório | ✅ Confirmado | 🟢 Atende |\n| **AWS** | Obrigatório | ✅ Glue + Redshift | 🟢 Supera |\n| **Experiência** | 5+ anos | ✅ 10 anos | 🟢 Supera em 2x |\n| **ETL** | Implícito/Sênior | ✅ Confirmado | 🟢 Atende |\n| **SQL** | Implícito/Sênior | ✅ Avançado | 🟢 Atende |\n\n---\n\n## 💪 Pontos Fortes do Candidato\n\n- 🏆 **Experiência dobrada** — 10 anos vs. 5 exigidos\n- 🔧 **AWS especializado** — Glue e Redshift são ferramentas core de Data Engineering\n- 📐 **Stack 100% alinhada** com o ecossistema da vaga\n- 🗄️ **SQL Avançado** agrega valor além do requisitado\n\n---\n\n## ⚠️ Pontos de Atenção\n\n> Algumas informações não foram mencionadas no CV e merecem verificação:\n\n- ❓ **Formação acadêmica** — não informada\n- ❓ **Soft skills e liderança** — relevante para nível Sênior\n- ❓ **Projetos de grande escala** — volumes e complexidade não descritos\n- ❓ **Outras ferramentas AWS** — Kafka, Airflow, dbt?\n\n---\n\n## 🎬 Próximos Passos Recomendados\n\n```\n1️⃣  Avançar para entrevista WSI\n2️⃣  Validar projetos com métricas reais (volume de dados, pipelines)\n3️⃣  Checar pretensão salarial vs. faixa da vaga\n4️⃣  Verificar disponibilidade de início\n```\n\n---\n\n## 💡 Sugestão de Perguntas para Entrevista\n\n- *\"Descreva o maior pipeline de dados que você arquitetou. Quais os volumes processados?\"*\n- *\"Como você otimizou jobs Spark em produção? Quais os ganhos obtidos?\"*\n- *\"Qual sua experiência com orquestração de dados (Airflow, Step Functions)?\"*\n\n---\n\n> 🚀 **Deseja que eu agende a entrevista WSI, gere o relatório completo ou envie feedback ao candidato?**",
+          "data": null,
+          "suggestions": []
+        },
+        "message": "# 🎯 Análise de Match — Engenheiro de Dados Sênior\n\n---\n\n## 📊 Score Geral de Compatibilidade\n\n```\n████████████████████░░  92% Match\n```\n### ✅ **Resultado: Candidato Altamente Recomendado**\n\n---\n\n## 🔍 Análise Detalhada por Critério\n\n| Critério | Requisito | Candidato | Status |\n|---|---|---|---|\n| **Python** | Obrigatório | ✅ 10 anos | 🟢 Supera |\n| **Apache Spark** | Obrigatório | ✅ Confirmado | 🟢 Atende |\n| **AWS** | Obrigatório | ✅ Glue + Redshift | 🟢 Supera |\n| **Experiência** | 5+ anos | ✅ 10 anos | 🟢 Supera em 2x |\n| **ETL** | Implícito/Sênior | ✅ Confirmado | 🟢 Atende |\n| **SQL** | Implícito/Sênior | ✅ Avançado | 🟢 Atende |\n\n---\n\n## 💪 Pontos Fortes do Candidato\n\n- 🏆 **Experiência dobrada** — 10 anos vs. 5 exigidos\n- 🔧 **AWS especializado** — Glue e Redshift são ferramentas core de Data Engineering\n- 📐 **Stack 100% alinhada** com o ecossistema da vaga\n- 🗄️ **SQL Avançado** agrega valor além do requisitado\n\n---\n\n## ⚠️ Pontos de Atenção\n\n> Algumas informações não foram mencionadas no CV e merecem verificação:\n\n- ❓ **Formação acadêmica** — não informada\n- ❓ **Soft skills e liderança** — relevante para nível Sênior\n- ❓ **Projetos de grande escala** — volumes e complexidade não descritos\n- ❓ **Outras ferramentas AWS** — Kafka, Airflow, dbt?\n\n---\n\n## 🎬 Próximos Passos Recomendados\n\n```\n1️⃣  Avançar para entrevista WSI\n2️⃣  Validar projetos com métricas reais (volume de dados, pipelines)\n3️⃣  Checar pretensão salarial vs. faixa da vaga\n4️⃣  Verificar disponibilidade de início\n```\n\n---\n\n## 💡 Sugestão de Perguntas para Entrevista\n\n- *\"Descreva o maior pipeline de dados que você arquitetou. Quais os volumes processados?\"*\n- *\"Como você otimizou jobs Spark em produção? Quais os ganhos obtidos?\"*\n- *\"Qual sua experiência com orquestração de dados (Airflow, Step Functions)?\"*\n\n---\n\n> 🚀 **Deseja que eu agende a entrevista WSI, gere o relatório completo ou envie feedback ao candidato?**",
+        "error": null
+      },
+      "description": "CV sênior Python/Spark vs vaga Python/Spark deve ter match alto (>80)"
+    },
+    {
+      "id": "cv_002",
+      "agent": "cv_match",
+      "name": "CV Match — Match fraco (deve match_score < 30)",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "http_status": 200,
+      "elapsed_ms": 22364.2,
+      "quality_score": 70,
+      "passed": false,
+      "issues": [
+        "Lista 'missing_skills' ausente ou vazia"
+      ],
+      "details": {
+        "match_score_raw": 12.0,
+        "matched_skills_count": 0,
+        "missing_skills_count": 0,
+        "score_range_ok": true,
+        "missing_skills_present": false
+      },
+      "response_snippet": "# Análise de Match: Engenheiro de Dados Sênior × UX Designer\n\n---\n\n## 📊 Resultado Geral\n\n> **Match Score: 8-12%** — Incompatibilidade crítica de perfil\n\n---\n\n## 🔍 Análise Detalhada por Dimensão\n\n| Dimensão | Peso | Score | Status |\n|---|---|---|---|\n| Stack Técnica | 40% | 0% | ❌ Sem sobreposição |\n",
+      "response_raw": {
+        "success": true,
+        "conversation_id": "aed139fa-8bb5-4974-90b4-443079317995",
+        "intent": "create_job",
+        "agent": "job_management",
+        "confidence": 0.3,
+        "result": {
+          "message": "# Análise de Match: Engenheiro de Dados Sênior × UX Designer\n\n---\n\n## 📊 Resultado Geral\n\n> **Match Score: 8-12%** — Incompatibilidade crítica de perfil\n\n---\n\n## 🔍 Análise Detalhada por Dimensão\n\n| Dimensão | Peso | Score | Status |\n|---|---|---|---|\n| Stack Técnica | 40% | 0% | ❌ Sem sobreposição |\n| Experiência na Função | 30% | 0% | ❌ Área distinta |\n| Senioridade | 15% | 85% | ✅ 8 anos > requisito |\n| Soft Skills transferíveis | 10% | 40% | ⚠️ Parcial |\n| Domínio de dados | 5% | 15% | ⚠️ Tangencial |\n\n---\n\n## ❌ Gaps Críticos (Não Negociáveis)\n\n```\nPython          → Não mencionado\nApache Spark    → Não mencionado  \nAWS             → Não mencionado\nPipelines ETL   → Sem evidência\nModelagem dados → Sem evidência\nSQL/NoSQL       → Sem evidência\n```\n\n---\n\n## ✅ Pontos Positivos do Candidato\n\n- **8 anos de experiência** — senioridade relevante\n- **Design System** → familiaridade com arquitetura estruturada\n- **Pesquisa de usuário** → pensamento analítico e orientação a dados\n- **Prototipagem** → capacidade de resolução de problemas\n\n*Mas atenção: esses pontos não compensam os gaps técnicos para esta vaga.*\n\n---\n\n## ⚠️ Recomendação Estratégica\n\n### 🚫 Para esta vaga: **Não avançar**\nA distância entre os perfis é estrutural, não uma questão de lacunas pontuais treináveis em curto prazo.\n\n---\n\n### 💡 O que fazer com este candidato?\n\n**Opção 1 — Verificar vagas compatíveis:**\n> UX Designer Sênior, Product Designer, UX Researcher, Design Lead\n\n**Opção 2 — Pipeline futuro:**\n> Cadastrar em banco de talentos se houver demanda de design prevista\n\n**Opção 3 — Feedback construtivo:**\n> Comunicar a incompatibilidade com respeito e indicar perfis onde se encaixa\n\n---\n\n## 📋 Próximos Passos Sugeridos\n\n```\n[ ] Desclassificar para Eng. de Dados Sênior\n[ ] Verificar se há vaga de UX ativa no sistema\n[ ] Enviar feedback personalizado ao candidato\n[ ] Cadastrar no banco de talentos (perfil UX)\n```\n\n---\n\n**Deseja que eu redija o feedback para o candidato ou busque vagas compatíveis com o perfil dele?** 🎯",
+          "data": null,
+          "suggestions": []
+        },
+        "message": "# Análise de Match: Engenheiro de Dados Sênior × UX Designer\n\n---\n\n## 📊 Resultado Geral\n\n> **Match Score: 8-12%** — Incompatibilidade crítica de perfil\n\n---\n\n## 🔍 Análise Detalhada por Dimensão\n\n| Dimensão | Peso | Score | Status |\n|---|---|---|---|\n| Stack Técnica | 40% | 0% | ❌ Sem sobreposição |\n| Experiência na Função | 30% | 0% | ❌ Área distinta |\n| Senioridade | 15% | 85% | ✅ 8 anos > requisito |\n| Soft Skills transferíveis | 10% | 40% | ⚠️ Parcial |\n| Domínio de dados | 5% | 15% | ⚠️ Tangencial |\n\n---\n\n## ❌ Gaps Críticos (Não Negociáveis)\n\n```\nPython          → Não mencionado\nApache Spark    → Não mencionado  \nAWS             → Não mencionado\nPipelines ETL   → Sem evidência\nModelagem dados → Sem evidência\nSQL/NoSQL       → Sem evidência\n```\n\n---\n\n## ✅ Pontos Positivos do Candidato\n\n- **8 anos de experiência** — senioridade relevante\n- **Design System** → familiaridade com arquitetura estruturada\n- **Pesquisa de usuário** → pensamento analítico e orientação a dados\n- **Prototipagem** → capacidade de resolução de problemas\n\n*Mas atenção: esses pontos não compensam os gaps técnicos para esta vaga.*\n\n---\n\n## ⚠️ Recomendação Estratégica\n\n### 🚫 Para esta vaga: **Não avançar**\nA distância entre os perfis é estrutural, não uma questão de lacunas pontuais treináveis em curto prazo.\n\n---\n\n### 💡 O que fazer com este candidato?\n\n**Opção 1 — Verificar vagas compatíveis:**\n> UX Designer Sênior, Product Designer, UX Researcher, Design Lead\n\n**Opção 2 — Pipeline futuro:**\n> Cadastrar em banco de talentos se houver demanda de design prevista\n\n**Opção 3 — Feedback construtivo:**\n> Comunicar a incompatibilidade com respeito e indicar perfis onde se encaixa\n\n---\n\n## 📋 Próximos Passos Sugeridos\n\n```\n[ ] Desclassificar para Eng. de Dados Sênior\n[ ] Verificar se há vaga de UX ativa no sistema\n[ ] Enviar feedback personalizado ao candidato\n[ ] Cadastrar no banco de talentos (perfil UX)\n```\n\n---\n\n**Deseja que eu redija o feedback para o candidato ou busque vagas compatíveis com o perfil dele?** 🎯",
+        "error": null
+      },
+      "description": "CV de designer vs vaga de dados deve ter match baixo (<30)"
+    },
+    {
+      "id": "cv_003",
+      "agent": "cv_match",
+      "name": "CV Match — Match parcial (deve match_score 40-70)",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "http_status": 200,
+      "elapsed_ms": 26453.5,
+      "quality_score": 30,
+      "passed": false,
+      "issues": [
+        "match_score 28.0 fora do intervalo esperado [40.0, 70.0]"
+      ],
+      "details": {
+        "match_score_raw": 28.0,
+        "matched_skills_count": 0,
+        "missing_skills_count": 0,
+        "score_range_ok": false
+      },
+      "response_snippet": "# Análise de Match: Engenheiro de Dados Sênior 🔍\n\n## Resultado Geral: ⚠️ **Match Baixo — 28%**\n\n---\n\n## Comparativo Detalhado\n\n| Requisito da Vaga | Perfil do Candidato | Status |\n|---|---|---|\n| Python (5+ anos) | Python (2 anos) | 🔴 Abaixo |\n| Apache Spark | Não mencionado | 🔴 Ausente |\n| AWS | Nã",
+      "response_raw": {
+        "success": true,
+        "conversation_id": "7faf0aeb-69b9-4d80-aa5d-eac5ea0c76bc",
+        "intent": "create_job",
+        "agent": "job_management",
+        "confidence": 0.3,
+        "result": {
+          "message": "# Análise de Match: Engenheiro de Dados Sênior 🔍\n\n## Resultado Geral: ⚠️ **Match Baixo — 28%**\n\n---\n\n## Comparativo Detalhado\n\n| Requisito da Vaga | Perfil do Candidato | Status |\n|---|---|---|\n| Python (5+ anos) | Python (2 anos) | 🔴 Abaixo |\n| Apache Spark | Não mencionado | 🔴 Ausente |\n| AWS | Não mencionado | 🔴 Ausente |\n| SQL (esperado) | Básico | 🟡 Parcial |\n| Pandas/Data Tools | Pandas ✓ | 🟢 Atende |\n| Senioridade (5+ anos) | ~2 anos estimados | 🔴 Abaixo |\n\n---\n\n## Gaps Críticos Identificados\n\n### 🔴 Eliminatórios\n- **Apache Spark** — ausente no CV (core da vaga)\n- **AWS** — ausente no CV (infraestrutura essencial)\n- **Senioridade** — defasagem de ~3 anos em relação ao requisito mínimo\n\n### 🟡 Desenvolvíveis (médio prazo)\n- **Python** — base existe, mas volume de experiência é insuficiente para nível sênior\n- **SQL** — conhecimento básico precisa evoluir para avançado\n\n### 🟢 Pontos Positivos\n- Familiaridade com **Pandas** indica afinidade com ecossistema de dados\n- Base em Python é um ponto de partida relevante\n\n---\n\n## 💡 Recomendação da LIA\n\n> **Não recomendo avançar** este candidato para esta vaga específica.\n> Os gaps são estruturais e eliminatórios para nível sênior.\n\n### Alternativas sugeridas:\n\n**Para o candidato:**\n```\n✅ Vaga mais adequada: Engenheiro de Dados Júnior/Pleno\n✅ Plano de desenvolvimento: 12-18 meses com foco em\n   Spark, AWS e projetos práticos\n```\n\n**Para a vaga:**\n```\n🔎 Continuar busca ativa por candidatos com\n   perfil aderente aos requisitos definidos\n```\n\n---\n\n## Próximos Passos\n\nO que deseja fazer?\n\n**1️⃣** Buscar candidatos mais aderentes a esta vaga\n**2️⃣** Verificar outras vagas compatíveis com este CV\n**3️⃣** Gerar feedback estruturado para o candidato\n**4️⃣** Ajustar os requisitos da vaga",
+          "data": null,
+          "suggestions": []
+        },
+        "message": "# Análise de Match: Engenheiro de Dados Sênior 🔍\n\n## Resultado Geral: ⚠️ **Match Baixo — 28%**\n\n---\n\n## Comparativo Detalhado\n\n| Requisito da Vaga | Perfil do Candidato | Status |\n|---|---|---|\n| Python (5+ anos) | Python (2 anos) | 🔴 Abaixo |\n| Apache Spark | Não mencionado | 🔴 Ausente |\n| AWS | Não mencionado | 🔴 Ausente |\n| SQL (esperado) | Básico | 🟡 Parcial |\n| Pandas/Data Tools | Pandas ✓ | 🟢 Atende |\n| Senioridade (5+ anos) | ~2 anos estimados | 🔴 Abaixo |\n\n---\n\n## Gaps Críticos Identificados\n\n### 🔴 Eliminatórios\n- **Apache Spark** — ausente no CV (core da vaga)\n- **AWS** — ausente no CV (infraestrutura essencial)\n- **Senioridade** — defasagem de ~3 anos em relação ao requisito mínimo\n\n### 🟡 Desenvolvíveis (médio prazo)\n- **Python** — base existe, mas volume de experiência é insuficiente para nível sênior\n- **SQL** — conhecimento básico precisa evoluir para avançado\n\n### 🟢 Pontos Positivos\n- Familiaridade com **Pandas** indica afinidade com ecossistema de dados\n- Base em Python é um ponto de partida relevante\n\n---\n\n## 💡 Recomendação da LIA\n\n> **Não recomendo avançar** este candidato para esta vaga específica.\n> Os gaps são estruturais e eliminatórios para nível sênior.\n\n### Alternativas sugeridas:\n\n**Para o candidato:**\n```\n✅ Vaga mais adequada: Engenheiro de Dados Júnior/Pleno\n✅ Plano de desenvolvimento: 12-18 meses com foco em\n   Spark, AWS e projetos práticos\n```\n\n**Para a vaga:**\n```\n🔎 Continuar busca ativa por candidatos com\n   perfil aderente aos requisitos definidos\n```\n\n---\n\n## Próximos Passos\n\nO que deseja fazer?\n\n**1️⃣** Buscar candidatos mais aderentes a esta vaga\n**2️⃣** Verificar outras vagas compatíveis com este CV\n**3️⃣** Gerar feedback estruturado para o candidato\n**4️⃣** Ajustar os requisitos da vaga",
+        "error": null
+      },
+      "description": "CV júnior Python vs vaga sênior deve ter match médio (40-70)"
+    },
+    {
+      "id": "salary_001",
+      "agent": "salary",
+      "name": "Salary — Engenheiro de Dados Sênior SP (R$ 12k-25k)",
+      "endpoint": "/api/backend-proxy/lia/conversational/",
+      "http_status": 200,
+      "elapsed_ms": 27366.4,
+      "quality_score": 90,
+      "passed": true,
+      "issues": [],
+      "details": {
+        "brl_values_found": [
+          14000.0,
+          20000.0,
+          28000.0,
+          18000.0,
+          25000.0
+        ],
+        "brl_values_ok": true,
+        "brl_plausible": true,
+        "brl_plausible_values": [
+          14000.0,
+          20000.0,
+          28000.0,
+          18000.0,
+          25000.0
+        ],
+        "portuguese_ok": true
+      },
+      "response_snippet": "Com base na minha expertise no mercado brasileiro de tecnologia, considerando a alta demanda por profissionais de dados, a senioridade da posição, a localização de São Paulo (mesmo com trabalho remoto, que geralmente atrai salários competitivos do epicentro tecnológico do país) e projetando o cenári",
+      "response_raw": {
+        "response": "Com base na minha expertise no mercado brasileiro de tecnologia, considerando a alta demanda por profissionais de dados, a senioridade da posição, a localização de São Paulo (mesmo com trabalho remoto, que geralmente atrai salários competitivos do epicentro tecnológico do país) e projetando o cenário para 2025, apresento a seguinte análise de faixa salarial para um **Engenheiro de Dados Sênior** em regime CLT:\n\n---\n\n**Análise Salarial: Engenheiro de Dados Sênior (São Paulo, Remoto) - Cenário 2025**\n\nA função de Engenheiro de Dados Sênior é estratégica e de alta demanda no Brasil, especialmente em São Paulo, que concentra as maiores empresas de tecnologia e finanças. Profissionais seniores são responsáveis por projetar, construir, otimizar e manter arquiteturas e pipelines de dados complexos, atuando com Big Data, Data Warehousing, Data Lakes e ferramentas de ETL/ELT. A senioridade implica experiência em liderar projetos, tomar decisões arquiteturais e mentorar profissionais menos experientes.\n\nO modelo de trabalho remoto, neste caso, não tende a reduzir a faixa salarial para um profissional sênior baseado em São Paulo, pois as empresas continuam a competir por talentos nesse polo, e a flexibilidade é muitas vezes um benefício adicional.\n\n*   **Faixa mínima:** R$ 14.000\n*   **Mediana:** R$ 20.000\n*   **Faixa máxima:** R$ 28.000\n*   **Recomendação:** R$ 18.000 - R$ 25.000 mensais (CLT)\n\n---\n\n**Considerações Adicionais:**\n\n*   **Experiência e Especialização:** Os valores na faixa máxima são geralmente alcançados por profissionais com vasta experiência (8+ anos), especialização em tecnologias de ponta (ex: Spark, Kafka, Kubernetes, nuvens AWS/Azure/GCP aprofundadas), experiência em arquitetura de dados e/ou liderança técnica.\n*   **Porte da Empresa:** Empresas de grande porte, fintechs, startups unicórnios e empresas com forte investimento em dados tendem a oferecer salários mais próximos ou acima da mediana e da faixa máxima. Empresas menores ou em estágios iniciais podem operar na faixa mínima a mediana.\n*   **Demandas do Mercado:** A escassez de talentos seniores em Engenharia de Dados mantém a remuneração em patamares elevados e em crescimento contínuo.\n*   **Benefícios:** Além do salário base, é comum que essas posições ofereçam um pacote robusto de benefícios (bônus anual, participação nos lucros, plano de saúde e odontológico premium, vale-refeição/alimentação, auxílio-home office, seguro de vida, previdência privada, etc.), que podem adicionar um valor considerável à remuneração total.",
+        "understood_intent": "salary_benchmark",
+        "suggested_action": null,
+        "can_help": true
+      },
+      "description": "Consulta de salário senior deve retornar faixa BRL plausível (R$ 12.000-25.000)"
+    },
+    {
+      "id": "salary_002",
+      "agent": "salary",
+      "name": "Salary — Analista de Dados Júnior BH (R$ 3k-6k)",
+      "endpoint": "/api/backend-proxy/lia/conversational/",
+      "http_status": 200,
+      "elapsed_ms": 37351.4,
+      "quality_score": 100,
+      "passed": true,
+      "issues": [],
+      "details": {
+        "brl_values_found": [
+          3500.0,
+          4900.0,
+          6800.0,
+          4000.0,
+          5500.0
+        ],
+        "brl_values_ok": true,
+        "brl_plausible": true,
+        "brl_plausible_values": [
+          3500.0,
+          4900.0,
+          6800.0,
+          4000.0,
+          5500.0
+        ],
+        "portuguese_ok": true
+      },
+      "response_snippet": "Olá! Como especialista em remuneração no mercado brasileiro de tecnologia, apresento a análise salarial completa para a posição de Analista de Dados Júnior em Belo Horizonte, para o ano de 2025, considerando um regime de trabalho presencial.\n\n**Análise Salarial para Analista de Dados Júnior (Belo Ho",
+      "response_raw": {
+        "response": "Olá! Como especialista em remuneração no mercado brasileiro de tecnologia, apresento a análise salarial completa para a posição de Analista de Dados Júnior em Belo Horizonte, para o ano de 2025, considerando um regime de trabalho presencial.\n\n**Análise Salarial para Analista de Dados Júnior (Belo Horizonte, Presencial, 2025):**\n\n*   **Faixa mínima:** R$ 3.500,00\n    *   Este valor representa o piso de entrada para um profissional Júnior, tipicamente com pouca ou nenhuma experiência formal na área, talvez recém-formado ou em transição de carreira, mas com conhecimentos teóricos sólidos e aptidão. É mais comum em empresas de menor porte ou em primeiras contratações de juniores.\n\n*   **Mediana:** R$ 4.900,00\n    *   A mediana reflete o salário mais comum pago a um Analista de Dados Júnior no mercado de Belo Horizonte em 2025. Profissionais nesta faixa geralmente possuem alguma experiência (estágios ou projetos pessoais/acadêmicos), domínio das ferramentas essenciais (SQL, Excel, Python/R básico, ferramentas de BI como Power BI ou Tableau) e boa capacidade de comunicação e raciocínio analítico.\n\n*   **Faixa máxima:** R$ 6.800,00\n    *   Este patamar é alcançado por juniores de alto potencial. São profissionais que, mesmo sendo juniores, destacam-se por uma formação robusta (universidades de ponta), múltiplas experiências de estágio relevantes, proficiência avançada em ferramentas e linguagens (e.g., Python para análise de dados, conhecimento de cloud computing, estatística aplicada), um portfólio de projetos impressionante e excelentes habilidades interpessoais e de resolução de problemas. Empresas maiores, startups bem financiadas ou consultorias com programas de entrada competitivos tendem a oferecer esses salários para atrair os melhores talentos logo no início da carreira.\n\n*   **Recomendação:** R$ 4.000,00 - R$ 5.500,00 mensais (CLT)\n    *   Para atrair e reter um Analista de Dados Júnior de qualidade em Belo Horizonte em 2025, uma remuneração nessa faixa é altamente recomendável. Ela permite à empresa acessar um pool de talentos competentes e motivados, oferecendo uma compensação justa que reconhece o investimento em formação e o potencial de crescimento do profissional, alinhada às expectativas do mercado local.\n\n**Considerações Adicionais:**\n\n*   **Habilidades e Ferramentas:** O domínio de SQL, Python ou R, ferramentas de visualização de dados (Power BI, Tableau), e conhecimentos básicos de estatística e Excel são pré-requisitos fundamentais que impactam diretamente a atratividade do candidato e, consequentemente, a faixa salarial.\n*   **Setor da Empresa:** Empresas em setores mais maduros (bancos, varejo tradicional) podem ter faixas salariais ligeiramente diferentes de startups de tecnologia ou empresas de consultoria.\n*   **Soft Skills:** Habilidades como comunicação, proatividade, raciocínio lógico e capacidade de aprendizado contínuo são extremamente valorizadas para juniores e podem ser um diferencial na negociação salarial.\n*   **Pacote de Benefícios:** Além do salário CLT, é importante considerar o pacote de benefícios (vale-alimentação/refeição, plano de saúde, auxílio home-office, bônus, etc.), que pode complementar significativamente a remuneração total.\n\nEspero que esta análise seja útil!",
+        "understood_intent": "salary_benchmark",
+        "suggested_action": null,
+        "can_help": true
+      },
+      "description": "Consulta júnior deve retornar faixa menor que sênior (R$ 3.000-6.000)"
+    },
+    {
+      "id": "pipeline_001",
+      "agent": "pipeline",
+      "name": "Pipeline — Saúde geral do funil",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "http_status": 200,
+      "elapsed_ms": 11601.8,
+      "quality_score": 100,
+      "passed": true,
+      "issues": [],
+      "details": {
+        "response_length": 1456,
+        "length_ok": true,
+        "pipeline_stages_mentioned": true,
+        "portuguese_ok": true
+      },
+      "response_snippet": "# 📊 Análise de Saúde do Funil de Recrutamento\n\nOlá! Vou ajudar você a analisar o funil de recrutamento. Para gerar uma análise completa e precisa, preciso de algumas informações:\n\n---\n\n## 🔍 Para uma análise completa, me informe:\n\n| # | Informação | Por quê é importante |\n|---|-----------|-----------",
+      "response_raw": {
+        "success": true,
+        "conversation_id": "e87e089a-fc2c-4631-a304-cfebfdaeb49b",
+        "intent": "kanban_search",
+        "agent": "kanban_search",
+        "confidence": 0.95,
+        "result": {
+          "message": "# 📊 Análise de Saúde do Funil de Recrutamento\n\nOlá! Vou ajudar você a analisar o funil de recrutamento. Para gerar uma análise completa e precisa, preciso de algumas informações:\n\n---\n\n## 🔍 Para uma análise completa, me informe:\n\n| # | Informação | Por quê é importante |\n|---|-----------|---------------------|\n| 1 | **Período de análise** | Ex: últimos 30, 60 ou 90 dias |\n| 2 | **Vagas em aberto** | Quantidade e áreas/departamentos |\n| 3 | **Volume de candidatos** | Total no funil atualmente |\n| 4 | **SLA das vagas** | Prazo médio esperado para fechamento |\n\n---\n\n## 📌 O que a análise irá cobrir:\n\n### 🔵 Métricas de Volume\n- Candidatos por etapa do Kanban\n- Taxa de conversão entre etapas\n- Gargalos identificados\n\n### 🟡 Métricas de Tempo\n- **Time-to-Fill** por vaga e área\n- **Time-to-Hire** médio\n- Etapas com maior tempo de espera\n\n### 🟢 Métricas de Qualidade\n- Taxa de aprovação por etapa\n- Índice de desistência de candidatos\n- Qualidade das fontes de captação\n\n### 🔴 Alertas & Riscos\n- Vagas em risco de SLA\n- Candidatos parados há mais de X dias\n- Etapas com baixa conversão\n\n---\n\n## ⚡ Ação Rápida\n\nPosso buscar os dados do Kanban agora mesmo. Deseja que eu:\n\n- [ ] 📋 **Gere um relatório geral** com todas as vagas ativas\n- [ ] 🎯 **Filtre por área específica** (TI, Comercial, Operações...)\n- [ ] ⚠️ **Priorize alertas críticos** (SLAs em risco)\n- [ ] 📈 **Compare períodos** (mês atual vs. anterior)\n\n**O que prefere como ponto de partida?** 😊",
+          "success": true,
+          "data": {},
+          "requires_user_input": true,
+          "suggested_prompts": [],
+          "next_actions": [],
+          "agent_used": "LIA Orchestrator",
+          "agent_type": "orchestrator"
+        },
+        "message": "# 📊 Análise de Saúde do Funil de Recrutamento\n\nOlá! Vou ajudar você a analisar o funil de recrutamento. Para gerar uma análise completa e precisa, preciso de algumas informações:\n\n---\n\n## 🔍 Para uma análise completa, me informe:\n\n| # | Informação | Por quê é importante |\n|---|-----------|---------------------|\n| 1 | **Período de análise** | Ex: últimos 30, 60 ou 90 dias |\n| 2 | **Vagas em aberto** | Quantidade e áreas/departamentos |\n| 3 | **Volume de candidatos** | Total no funil atualmente |\n| 4 | **SLA das vagas** | Prazo médio esperado para fechamento |\n\n---\n\n## 📌 O que a análise irá cobrir:\n\n### 🔵 Métricas de Volume\n- Candidatos por etapa do Kanban\n- Taxa de conversão entre etapas\n- Gargalos identificados\n\n### 🟡 Métricas de Tempo\n- **Time-to-Fill** por vaga e área\n- **Time-to-Hire** médio\n- Etapas com maior tempo de espera\n\n### 🟢 Métricas de Qualidade\n- Taxa de aprovação por etapa\n- Índice de desistência de candidatos\n- Qualidade das fontes de captação\n\n### 🔴 Alertas & Riscos\n- Vagas em risco de SLA\n- Candidatos parados há mais de X dias\n- Etapas com baixa conversão\n\n---\n\n## ⚡ Ação Rápida\n\nPosso buscar os dados do Kanban agora mesmo. Deseja que eu:\n\n- [ ] 📋 **Gere um relatório geral** com todas as vagas ativas\n- [ ] 🎯 **Filtre por área específica** (TI, Comercial, Operações...)\n- [ ] ⚠️ **Priorize alertas críticos** (SLAs em risco)\n- [ ] 📈 **Compare períodos** (mês atual vs. anterior)\n\n**O que prefere como ponto de partida?** 😊",
+        "error": null
+      },
+      "description": "Análise de saúde deve mencionar etapas do pipeline e identificar gargalos"
+    },
+    {
+      "id": "pipeline_002",
+      "agent": "pipeline",
+      "name": "Pipeline — Tempo médio de contratação tech",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "http_status": 200,
+      "elapsed_ms": 113.4,
+      "quality_score": 100,
+      "passed": true,
+      "issues": [],
+      "details": {
+        "response_length": 1185,
+        "length_ok": true,
+        "pipeline_stages_mentioned": true,
+        "portuguese_ok": true
+      },
+      "response_snippet": "# 📊 Análise de Tempo Médio de Contratação — Tecnologia\n\nOlá! Vou ajudá-lo com essa análise de KPI importante!\n\n---\n\n## ⚠️ Dados em Tempo Real\n\nPara trazer o **tempo médio de contratação exato** das suas vagas de tecnologia, preciso acessar os dados do seu pipeline atual.\n\n**Não identifiquei filtros ",
+      "response_raw": {
+        "success": true,
+        "conversation_id": "05ae10f5-0415-49ad-adc3-4972feb9bc9f",
+        "intent": "get_dashboard_data",
+        "agent": "analytics",
+        "confidence": 0.3,
+        "result": {
+          "message": "# 📊 Análise de Tempo Médio de Contratação — Tecnologia\n\nOlá! Vou ajudá-lo com essa análise de KPI importante!\n\n---\n\n## ⚠️ Dados em Tempo Real\n\nPara trazer o **tempo médio de contratação exato** das suas vagas de tecnologia, preciso acessar os dados do seu pipeline atual.\n\n**Não identifiquei filtros específicos na sua solicitação. Poderia confirmar:**\n\n| Parâmetro | Opções |\n|-----------|--------|\n| 📅 **Período** | Últimos 30, 60, 90 dias / Ano atual |\n| 💼 **Tipo de vaga** | Todas de tech / Cargo específico |\n| 📍 **Unidade/Região** | Todas / Específica |\n| ✅ **Status** | Vagas encerradas / Em aberto também |\n\n---\n\n## 📈 Benchmarks do Mercado para Referência\n\nEnquanto isso, veja como o mercado se comporta:\n\n- 🟢 **Cargos Júnior Tech** → 25–35 dias\n- 🟡 **Cargos Pleno Tech** → 35–45 dias\n- 🔴 **Cargos Sênior/Especialista** → 45–65 dias\n- 🔴 **Liderança Técnica** → 60–90 dias\n\n---\n\n## 💡 O que posso gerar para você:\n\n✅ Relatório completo de **Time-to-Hire** por vaga\n✅ Análise de **gargalos no funil** (onde os candidatos travam)\n✅ Comparativo com **benchmarks do setor**\n✅ **Recomendações** para redução do tempo\n\n---\n\n**Quais filtros deseja aplicar para eu gerar o relatório?** 🎯",
+          "data": null,
+          "suggestions": []
+        },
+        "message": "# 📊 Análise de Tempo Médio de Contratação — Tecnologia\n\nOlá! Vou ajudá-lo com essa análise de KPI importante!\n\n---\n\n## ⚠️ Dados em Tempo Real\n\nPara trazer o **tempo médio de contratação exato** das suas vagas de tecnologia, preciso acessar os dados do seu pipeline atual.\n\n**Não identifiquei filtros específicos na sua solicitação. Poderia confirmar:**\n\n| Parâmetro | Opções |\n|-----------|--------|\n| 📅 **Período** | Últimos 30, 60, 90 dias / Ano atual |\n| 💼 **Tipo de vaga** | Todas de tech / Cargo específico |\n| 📍 **Unidade/Região** | Todas / Específica |\n| ✅ **Status** | Vagas encerradas / Em aberto também |\n\n---\n\n## 📈 Benchmarks do Mercado para Referência\n\nEnquanto isso, veja como o mercado se comporta:\n\n- 🟢 **Cargos Júnior Tech** → 25–35 dias\n- 🟡 **Cargos Pleno Tech** → 35–45 dias\n- 🔴 **Cargos Sênior/Especialista** → 45–65 dias\n- 🔴 **Liderança Técnica** → 60–90 dias\n\n---\n\n## 💡 O que posso gerar para você:\n\n✅ Relatório completo de **Time-to-Hire** por vaga\n✅ Análise de **gargalos no funil** (onde os candidatos travam)\n✅ Comparativo com **benchmarks do setor**\n✅ **Recomendações** para redução do tempo\n\n---\n\n**Quais filtros deseja aplicar para eu gerar o relatório?** 🎯",
+        "error": null
+      },
+      "description": "Consulta de time-to-hire deve mencionar métricas de tempo e sugestões"
+    },
+    {
+      "id": "search_001",
+      "agent": "candidate_search",
+      "name": "Candidate Search — Engenheiro Python Sênior",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "http_status": 200,
+      "elapsed_ms": 10295.6,
+      "quality_score": 100,
+      "passed": true,
+      "issues": [],
+      "details": {
+        "response_length": 1206,
+        "length_ok": true,
+        "portuguese_ok": true,
+        "candidate_content_ok": true
+      },
+      "response_snippet": "# 🔍 Buscando Candidatos — Engenheiro Python Sênior + AWS\n\nVou iniciar a busca na nossa base de talentos agora mesmo!\n\n---\n\n## ⚙️ Parâmetros da Busca\n\n| Critério | Detalhe |\n|---|---|\n| 💼 **Cargo** | Engenheiro Python Sênior |\n| ☁️ **Tecnologia** | AWS (Amazon Web Services) |\n| 📊 **Nível** | Sênior |",
+      "response_raw": {
+        "success": true,
+        "conversation_id": "c3d5f29b-e42b-4cec-a70e-43c24b0c2405",
+        "intent": "sourcing_search",
+        "agent": "sourcing_search",
+        "confidence": 0.95,
+        "result": {
+          "message": "# 🔍 Buscando Candidatos — Engenheiro Python Sênior + AWS\n\nVou iniciar a busca na nossa base de talentos agora mesmo!\n\n---\n\n## ⚙️ Parâmetros da Busca\n\n| Critério | Detalhe |\n|---|---|\n| 💼 **Cargo** | Engenheiro Python Sênior |\n| ☁️ **Tecnologia** | AWS (Amazon Web Services) |\n| 📊 **Nível** | Sênior |\n| 📍 **Localização** | Não definida |\n| 💰 **Faixa Salarial** | Não definida |\n\n---\n\n## 🎯 Para Refinar e Potencializar a Busca\n\nAntes de rodar a varredura completa, me ajude com algumas informações:\n\n**1️⃣ Localização**\n> Presencial, híbrido ou remoto? Alguma cidade/estado específico?\n\n**2️⃣ Experiência mínima**\n> Quantos anos de Python? E com AWS especificamente?\n\n**3️⃣ Serviços AWS específicos?**\n> Ex: Lambda, ECS, RDS, SageMaker, Glue, EC2...\n\n**4️⃣ Stack complementar?**\n> Ex: FastAPI, Django, Terraform, Docker, Kubernetes, SQL...\n\n**5️⃣ Modelo de contratação**\n> CLT, PJ ou ambos?\n\n**6️⃣ Faixa salarial/hora**\n> Isso ajuda a filtrar candidatos com expectativas alinhadas ✅\n\n---\n\n## 💡 Dica LIA\n\n> Quanto mais critérios você definir, **mais assertiva será a triagem** — evitando desperdício de tempo com perfis fora do escopo. 🎯\n\n---\n\nMe passe esses detalhes e eu **inicio a busca imediatamente**! 🚀",
+          "success": true,
+          "data": {},
+          "requires_user_input": true,
+          "suggested_prompts": [],
+          "next_actions": [],
+          "agent_used": "LIA Orchestrator",
+          "agent_type": "orchestrator"
+        },
+        "message": "# 🔍 Buscando Candidatos — Engenheiro Python Sênior + AWS\n\nVou iniciar a busca na nossa base de talentos agora mesmo!\n\n---\n\n## ⚙️ Parâmetros da Busca\n\n| Critério | Detalhe |\n|---|---|\n| 💼 **Cargo** | Engenheiro Python Sênior |\n| ☁️ **Tecnologia** | AWS (Amazon Web Services) |\n| 📊 **Nível** | Sênior |\n| 📍 **Localização** | Não definida |\n| 💰 **Faixa Salarial** | Não definida |\n\n---\n\n## 🎯 Para Refinar e Potencializar a Busca\n\nAntes de rodar a varredura completa, me ajude com algumas informações:\n\n**1️⃣ Localização**\n> Presencial, híbrido ou remoto? Alguma cidade/estado específico?\n\n**2️⃣ Experiência mínima**\n> Quantos anos de Python? E com AWS especificamente?\n\n**3️⃣ Serviços AWS específicos?**\n> Ex: Lambda, ECS, RDS, SageMaker, Glue, EC2...\n\n**4️⃣ Stack complementar?**\n> Ex: FastAPI, Django, Terraform, Docker, Kubernetes, SQL...\n\n**5️⃣ Modelo de contratação**\n> CLT, PJ ou ambos?\n\n**6️⃣ Faixa salarial/hora**\n> Isso ajuda a filtrar candidatos com expectativas alinhadas ✅\n\n---\n\n## 💡 Dica LIA\n\n> Quanto mais critérios você definir, **mais assertiva será a triagem** — evitando desperdício de tempo com perfis fora do escopo. 🎯\n\n---\n\nMe passe esses detalhes e eu **inicio a busca imediatamente**! 🚀",
+        "error": null
+      },
+      "description": "Busca de candidatos deve retornar lista ou indicação de candidatos relevantes"
+    },
+    {
+      "id": "search_002",
+      "agent": "candidate_search",
+      "name": "Candidate Search — Product Manager",
+      "endpoint": "/api/backend-proxy/orchestrator/process/",
+      "http_status": 200,
+      "elapsed_ms": 11222.2,
+      "quality_score": 100,
+      "passed": true,
+      "issues": [],
+      "details": {
+        "response_length": 1285,
+        "length_ok": true,
+        "portuguese_ok": true,
+        "candidate_content_ok": true
+      },
+      "response_snippet": "# 🔍 Buscando Candidatos — Product Manager\n\nVou iniciar a busca na nossa base de talentos! Deixa eu configurar os parâmetros para encontrar os melhores perfis.\n\n---\n\n## 📋 Critérios de Busca Identificados\n\n| Parâmetro | Valor |\n|-----------|-------|\n| 🎯 **Cargo** | Product Manager |\n| ⚙️ **Competência",
+      "response_raw": {
+        "success": true,
+        "conversation_id": "298f82ce-dc5d-46a9-adb2-d7cad4843739",
+        "intent": "list_tasks",
+        "agent": "automation",
+        "confidence": 0.3,
+        "result": {
+          "message": "# 🔍 Buscando Candidatos — Product Manager\n\nVou iniciar a busca na nossa base de talentos! Deixa eu configurar os parâmetros para encontrar os melhores perfis.\n\n---\n\n## 📋 Critérios de Busca Identificados\n\n| Parâmetro | Valor |\n|-----------|-------|\n| 🎯 **Cargo** | Product Manager |\n| ⚙️ **Competência-chave** | Metodologias Ágeis |\n| 📊 **Status** | Configurando filtros... |\n\n---\n\n## 🎯 Para Refinar os Resultados, Preciso de Mais Detalhes:\n\n**1️⃣ Nível de Experiência**\n- Júnior (1-3 anos)\n- Pleno (3-6 anos)\n- Sênior (6+ anos)\n\n**2️⃣ Metodologias Específicas**\n> Scrum · Kanban · SAFe · OKRs · Design Thinking · Shape Up\n\n**3️⃣ Contexto do Produto**\n> B2B · B2C · SaaS · Fintech · E-commerce · Healthtech\n\n**4️⃣ Localização / Modelo de Trabalho**\n> Presencial · Híbrido · Remoto | Cidade/Estado\n\n**5️⃣ Pretensão Salarial**\n> Faixa desejada para filtrar compatibilidade\n\n**6️⃣ Diferenciais Desejados**\n> Certificações (CSPO, PMP, PMI-ACP) · Experiência com dados · Inglês avançado\n\n---\n\n## ⚡ Ou Posso Buscar Agora Com Critérios Padrão:\n\n> 🔎 **Busca Rápida:** PM Pleno/Sênior · Scrum/Kanban · Remoto/Híbrido · Base nacional\n\n```\n▶ Confirmar busca rápida?   OU   📝 Personalizar critérios\n```\n\n---\n\n💡 *Quanto mais detalhes você fornecer, mais precisos e qualificados serão os resultados!*",
+          "data": null,
+          "suggestions": []
+        },
+        "message": "# 🔍 Buscando Candidatos — Product Manager\n\nVou iniciar a busca na nossa base de talentos! Deixa eu configurar os parâmetros para encontrar os melhores perfis.\n\n---\n\n## 📋 Critérios de Busca Identificados\n\n| Parâmetro | Valor |\n|-----------|-------|\n| 🎯 **Cargo** | Product Manager |\n| ⚙️ **Competência-chave** | Metodologias Ágeis |\n| 📊 **Status** | Configurando filtros... |\n\n---\n\n## 🎯 Para Refinar os Resultados, Preciso de Mais Detalhes:\n\n**1️⃣ Nível de Experiência**\n- Júnior (1-3 anos)\n- Pleno (3-6 anos)\n- Sênior (6+ anos)\n\n**2️⃣ Metodologias Específicas**\n> Scrum · Kanban · SAFe · OKRs · Design Thinking · Shape Up\n\n**3️⃣ Contexto do Produto**\n> B2B · B2C · SaaS · Fintech · E-commerce · Healthtech\n\n**4️⃣ Localização / Modelo de Trabalho**\n> Presencial · Híbrido · Remoto | Cidade/Estado\n\n**5️⃣ Pretensão Salarial**\n> Faixa desejada para filtrar compatibilidade\n\n**6️⃣ Diferenciais Desejados**\n> Certificações (CSPO, PMP, PMI-ACP) · Experiência com dados · Inglês avançado\n\n---\n\n## ⚡ Ou Posso Buscar Agora Com Critérios Padrão:\n\n> 🔎 **Busca Rápida:** PM Pleno/Sênior · Scrum/Kanban · Remoto/Híbrido · Base nacional\n\n```\n▶ Confirmar busca rápida?   OU   📝 Personalizar critérios\n```\n\n---\n\n💡 *Quanto mais detalhes você fornecer, mais precisos e qualificados serão os resultados!*",
+        "error": null
+      },
+      "description": "Busca PM deve retornar candidatos ou diagnóstico útil"
+    }
+  ]
+}
