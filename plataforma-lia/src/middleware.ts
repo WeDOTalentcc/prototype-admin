@@ -1,5 +1,8 @@
+export const runtime = 'nodejs'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
+import { verifyAndDecodeSession } from '@/lib/session-crypto'
 
 const PUBLIC_PATHS = [
   '/login',
@@ -58,26 +61,6 @@ async function verifyJwt(token: string): Promise<Record<string, unknown> | null>
   }
 }
 
-async function validateWorkosSession(request: NextRequest): Promise<boolean> {
-  const workosSession = request.cookies.get('workos_session')
-  if (!workosSession?.value) return false
-
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-  try {
-    const response = await fetch(`${backendUrl}/api/v1/auth/me`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${workosSession.value}`,
-        'X-Auth-Method': 'workos',
-      },
-      signal: AbortSignal.timeout(3000),
-    })
-    return response.ok
-  } catch {
-    return false
-  }
-}
-
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -86,14 +69,23 @@ export async function middleware(request: NextRequest) {
   }
 
   const accessTokenCookie = request.cookies.get('lia_access_token')
-  const workosSession = request.cookies.get('workos_session')
+  const workosSessionCookie = request.cookies.get('workos_session')
 
-  if (workosSession?.value) {
-    const isValid = await validateWorkosSession(request)
-    if (isValid) {
-      return NextResponse.next()
+  if (workosSessionCookie?.value) {
+    const sessionData = verifyAndDecodeSession(workosSessionCookie.value)
+    if (!sessionData) {
+      return redirectToLogin(request, pathname)
     }
-    return redirectToLogin(request, pathname)
+
+    const requestHeaders = new Headers(request.headers)
+    if (sessionData.accessToken && !requestHeaders.get('Authorization')) {
+      requestHeaders.set('Authorization', `Bearer ${sessionData.accessToken}`)
+      requestHeaders.set('X-Auth-Method', 'workos')
+    }
+
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    })
   }
 
   if (!accessTokenCookie || accessTokenCookie.value === '_sso_session_') {

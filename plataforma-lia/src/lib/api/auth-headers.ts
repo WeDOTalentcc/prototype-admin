@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { verifyAndDecodeSession } from '@/lib/session-crypto'
 
 function resolveAuthHeader(request: NextRequest): string | null {
   const authHeader = request.headers.get('Authorization')
@@ -7,6 +8,14 @@ function resolveAuthHeader(request: NextRequest): string | null {
   const tokenCookie = request.cookies.get('lia_access_token')
   if (tokenCookie && tokenCookie.value !== '_sso_session_') {
     return `Bearer ${tokenCookie.value}`
+  }
+
+  const workosSession = request.cookies.get('workos_session')
+  if (workosSession?.value) {
+    const sessionData = verifyAndDecodeSession(workosSession.value)
+    if (sessionData?.accessToken) {
+      return `Bearer ${sessionData.accessToken}`
+    }
   }
 
   return null
