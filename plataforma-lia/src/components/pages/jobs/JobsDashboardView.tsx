@@ -37,21 +37,21 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenJobCreationChat('Criar nova vaga'), 100)
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
               >
                 <Plus className="w-3 h-3" />
                 Criar nova vaga
               </button>
               <button
                 onClick={() => onSetActiveFilter('ativas')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
               >
                 <Briefcase className="w-3 h-3" />
                 Ver minhas vagas
               </button>
               <button
                 onClick={() => onSetActiveFilter('todas')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
               >
                 <Building2 className="w-3 h-3" />
                 Ver todas as vagas
@@ -61,7 +61,7 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenGeneralChat('Resumo das minhas vagas ativas'), 100)
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors motion-reduce:transition-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
               >
                 <BarChart3 className="w-3 h-3" />
                 Resumo das vagas
