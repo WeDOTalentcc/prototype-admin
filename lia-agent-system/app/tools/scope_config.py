@@ -106,6 +106,7 @@ IN_JOB_ACTION_TOOLS: Set[str] = {
 GLOBAL_TOOLS: Set[str] = {
     "generate_report",
     "schedule_report",
+    "analyze_cv_match",  # Opção B: BARS rubric from any context
 }
 
 

@@ -33,7 +33,6 @@ const STATIC_PATHS = [
 
 function isPublicPath(pathname: string): boolean {
   if (STATIC_PATHS.some(p => pathname.startsWith(p))) return true
-  if (pathname === '/') return true
   if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) return true
   if (PUBLIC_API_PATHS.some(p => pathname.startsWith(p))) return true
   if (pathname.startsWith('/api/v1')) return true
@@ -74,6 +73,10 @@ export async function middleware(request: NextRequest) {
   if (workosSessionCookie?.value) {
     const sessionData = verifyAndDecodeSession(workosSessionCookie.value)
     if (!sessionData) {
+      return redirectToLogin(request, pathname)
+    }
+
+    if (pathname.startsWith('/admin')) {
       return redirectToLogin(request, pathname)
     }
 

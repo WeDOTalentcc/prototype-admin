@@ -199,7 +199,7 @@ class Orchestrator:
                         f"[Orchestrator] Technical response detected from domain '{domain_id}' "
                         f"(executor={executor}), falling back to LLM"
                     )
-                    fb = await self._handle_directly(intent, sanitized, dr.data or {})
+                    fb = await self._handle_directly(intent, sanitized, dr.data or {}, context=ctx)
                     resp_msg = fb.get("message") or resp_msg
                 self.state_manager.add_message(conversation_id, "assistant", resp_msg,
                     metadata={"agent": domain_id, "intent": domain_id, "confidence": confidence})
@@ -215,7 +215,7 @@ class Orchestrator:
                           "result": {"message": resp_msg, "data": dr.data, "suggestions": dr.suggestions},
                           "policy_constraints": policy.get("constraints", {})}
             else:
-                fb = await self._handle_directly(intent, sanitized, {})
+                fb = await self._handle_directly(intent, sanitized, {}, context=ctx)
                 result = {"success": True, "conversation_id": conversation_id, "intent": intent,
                           "agent": domain_id, "agent_type": domain_id, "confidence": confidence,
                           "message": fb.get("message", ""), "result": fb,
@@ -310,7 +310,20 @@ class Orchestrator:
         ),
     }
 
-    async def _handle_directly(self, intent: str, message: str, entities: Dict[str, Any]) -> Dict[str, Any]:
+    async def _handle_directly(
+        self,
+        intent: str,
+        message: str,
+        entities: Dict[str, Any],
+        context: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        # Opção B: cv_screening → invoke BARS rubric tool (real methodology)
+        if intent == "cv_screening":
+            rubric_result = await self._handle_cv_screening_with_rubric(message, context or {})
+            if rubric_result.get("success"):
+                return rubric_result
+            # If tool failed (e.g. IDs not found), fall through to LLM with C-05 addendum
+
         try:
             from langchain_core.prompts import ChatPromptTemplate
             # Inject intent-specific structured-output instructions (C-05, C-06)
@@ -328,6 +341,95 @@ class Orchestrator:
                     "success": True, "requires_user_input": True,
                     "suggested_prompts": ["Criar uma nova vaga", "Buscar candidatos", "Ver minhas tarefas pendentes"],
                     "agent_used": "LIA Orchestrator", "agent_type": "orchestrator"}
+
+    async def _handle_cv_screening_with_rubric(
+        self,
+        message: str,
+        context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Opção B: Extract candidate/vacancy from message and invoke the BARS rubric tool.
+
+        Uses the LLM for entity extraction only, then delegates scoring to
+        CVScoringService (deterministic BARS methodology — not LLM free-text).
+        Falls back gracefully so _handle_directly can use the LLM addendum instead.
+        """
+        try:
+            import json, re
+            from app.tools.executor import tool_executor, ToolExecutionContext
+
+            # ── Entity extraction ─────────────────────────────────────────────
+            extraction_prompt = (
+                "Extraia do texto abaixo as informações de candidato e vaga para análise de CV. "
+                "Retorne SOMENTE um JSON válido (sem markdown) com as chaves: "
+                'candidate_id, candidate_name, vacancy_id, vacancy_title. '
+                "Use null quando não encontrar. Não invente IDs — somente use se mencionados "
+                "explicitamente como UUID.
+
+"
+                f"Texto: {message}"
+            )
+
+            raw = await self.llm_service.generate(extraction_prompt, provider="gemini")
+
+            # Strip potential markdown fences
+            raw = re.sub(r"```(?:json)?", "", raw).strip().strip("`")
+            match = re.search(r"\{.*?\}", raw, re.DOTALL)
+            if not match:
+                logger.debug("[cv_screening rubric] No JSON in extraction response")
+                return {"success": False}
+
+            params = json.loads(match.group())
+            # Remove null / empty values
+            params = {k: v for k, v in params.items() if v not in (None, "", "null")}
+
+            if not params.get("candidate_id") and not params.get("candidate_name"):
+                logger.debug("[cv_screening rubric] No candidate found in message")
+                return {"success": False}
+
+            # ── Build execution context ───────────────────────────────────────
+            exec_context = ToolExecutionContext(
+                user_id=context.get("user_id", "system"),
+                company_id=context.get("company_id", "default"),
+                session_id=context.get("session_id"),
+            )
+
+            # ── Execute tool ─────────────────────────────────────────────────
+            tool_result = await tool_executor.execute(
+                tool_name="analyze_cv_match",
+                parameters=params,
+                agent_type="orchestrator",
+                context=exec_context,
+            )
+
+            if tool_result.success and tool_result.result:
+                data = tool_result.result
+                return {
+                    "success": True,
+                    "message": data.get("message", "Análise de CV concluída."),
+                    "data": data,
+                    "requires_user_input": False,
+                    "suggested_prompts": [
+                        "Mover candidato para próxima etapa",
+                        "Ver outros candidatos para esta vaga",
+                        "Enviar feedback ao candidato",
+                    ],
+                    "next_actions": [],
+                    "agent_used": "CV Match Tool (BARS Rubric)",
+                    "agent_type": "tool",
+                    # C-05 structured fields surfaced at top level
+                    "match_score": data.get("match_score"),
+                    "matched_skills": data.get("matched_skills", []),
+                    "missing_skills": data.get("missing_skills", []),
+                    "recommendation": data.get("recommendation"),
+                }
+
+            logger.warning("[cv_screening rubric] Tool returned failure: %s", tool_result.error)
+            return {"success": False}
+
+        except Exception as exc:
+            logger.warning("[cv_screening rubric] Tool invocation failed (%s), falling back to LLM", exc)
+            return {"success": False}
 
     def get_available_tools(self, agent_type: Optional[str] = None) -> List[Dict[str, Any]]:
         return get_all_tool_schemas(agent_type=agent_type, format="claude")
