@@ -51,9 +51,10 @@
 | **Remuneracao** | 191L com calculo 13.33x + beneficios | ~80L simplificado | VUE SUPERIOR |
 | **Score Analysis** | 692L com requisitos expandiveis e confianca | Embutido no Parecer LIA (~150L) | VUE SUPERIOR |
 
-**Total de problemas catalogados: 72** (63 Vue + 4 bugs React + 5 novos detalhes visuais)
-**Criticos: 11 | Altos: 21 | Medios: 26 | Baixos: 14**
-**Screenshots documentados: 30** (23 React + 7 Vue producao)
+**Total de problemas catalogados: 78** (63 Vue originais + 4 bugs React + 5 detalhes visuais + 4 bugs Vue Sessao 2 + 2 features Vue positivas novas)
+**Criticos: 13 | Altos: 22 | Medios: 27 | Baixos: 15 | INFO: 1**
+**Screenshots documentados: 45** (23 React + 7 Vue Sessao 1 + 15 Vue Sessao 2)
+**Features Vue SUPERIORES ao React: 4** (Remuneracao 13.33x, Score Analysis 692L, Insights da Query com evidencias, Perguntas Sugeridas IA)
 
 ## Verificacao Funcional (Playwright e2e)
 
@@ -94,6 +95,26 @@
 | P6 | `Screen_Shot_..._1.25.00_PM` (2) | Atividades (entries, duplicata) | D18, D19 |
 | P7 | `Screen_Shot_..._1.25.58_PM` | Atividades (full page expandido) | D18, D21, D22 |
 
+### Producao WeDOTalent — Sessao 2 (em `attached_assets/`, candidato Lucas Campos)
+
+| # | Arquivo (timestamp) | Conteudo | Bugs Novos |
+|---|---|---|---|
+| V1 | `3.29.00_PM` | Lista candidatos (15 perfis) + preview lateral Perfil Completo topo: Parecer LIA "Aguardando triagem", Analise Score 80% Alta Confianca, Resumo azul, Pontos Positivos, Skills Principais (Java/Spring/REST/SQL/Git/Ingles/Python/Angular), Skills Nao Encontradas (Delphi/PHP/C#/C), Resumo por Prioridade (Essencial 3req, Importante 5req) | VUE-NEW-01 |
+| V2 | `3.29.14_PM` | Perfil Completo scroll: Resumo Prioridade completo (Essencial 3/0/0, Importante 4/0/1), Avaliacao por Requisitos (8, colapsado), Insights da Query (8, colapsado), Perguntas Sugeridas (3, colapsado), Mapa de Skills 39 itens (pl/sql, javascript, websphere, python, weblogic, sql server, pascal, mysql, Java, Spring, Angular, Git, Web Services REST, SCRUM, PostgreSQL, Desenvolvimento Web, C#, PHP, Delphi, Struts, Hibernate, JSF, Maven, jQuery, Kanban, Oracle WebCenter Sites, AEM, PostgreSQL, Web Services, DevOps, REST, SQL, Jenkins, Spring Framework, REST APIs, Tomcat, JBoss, Ingles, MongoDB) | — |
+| V3 | `3.29.29_PM` | Experiencia Profissional: 6 cargos (programador java Jul/2018-, analista software senior Ago/2014-Jun/2018 CI&T, desenvolvedor java Jun/2014-Jul/2014 Cpqd, programador pleno ii Set/2011-Out/2013 Luxfacta, programador junior Set/2010-Fev/2011 Luxfacta), Formacao Academica "Nao informado", Idiomas "Nao informado", inicio Remuneracao e Beneficios | — |
+| V4 | `3.29.41_PM` | Remuneracao: Salario Mensal Anualizado 13,33x, Subtotal Remuneracao BRL 0,00, Beneficios vazio, Remuneracao Total Anual BRL 0,00 (highlight verde), Endereco parcial | VUE-NEW-02 |
+| V5 | `3.29.54_PM` | Tab Atividades: Feed 4 atividades, filtro "Todo periodo", sub-filtros (Todas/Emails/Entrevistas/Testes/LIA/...), Timeline vertical verde/roxa. Atividade 1: "Inscrito em vaga - Back-end Senior Software Engineer" tag Criacao, realizado por anderson ha 68 dias. Log Atualizado: **JSON RAW EXPOSTO** — dados brutos do candidato visiveis | VUE-BUG-01 CRITICO |
+| V6 | `3.30.06_PM` | Atividades scroll: **JSON RAW COMPLETO EXPOSTO** — skills array, applies array, selective_process_name "Rejected"/"Submission", linkedin URL, role_name "Programador Java", sectors_a, businesses, created_at ISO timestamp — DADOS SENSIVEIS VISIVEIS | VUE-BUG-01 CRITICO |
+| V7 | `3.30.24_PM` | Atividades: "Inscrito em vaga - Desenvolvedor Java" tag Criacao, ha 152 dias por anderson. Log Criacao expandido: Resumo Id->1173, Name->Questt Candidate 111710, Email->lucas.pcampos@outlook.com, Account->2 | VUE-BUG-02 |
+| V8 | `3.30.38_PM` | Atividades: mesmo "Inscrito em vaga - Back-end Senior Software Engineer", Log Atualizado com **JSON RAW novamente** — Name: Questt Candidate 111710 -> Lucas Campos, Phone, Gender, skills array completo | VUE-BUG-01 CRITICO |
+| V9 | `3.30.54_PM` | Atividades scroll: texto bruto de experiencia profissional (nao formatado), mesma inscricao Desenvolvedor Java + Log Criacao | VUE-BUG-03 |
+| V10 | `3.31.10_PM` | Log Criacao expandido: Campos Alterados com accordion — Id (vazio->1173), Name (vazio->Questt Candidate 111710), Email (->lucas.pcampos@outlook.com), Account Id (vazio->2). Botao "Desfazer" visivel | — |
+| V11 | `3.31.22_PM` | Tab Arquivos: "Arquivos e Documentos", area drag-drop "Arraste arquivos ou clique para selecionar — PDF, DOC, DOCX, JPG, PNG, MP4 Max 10MB". Sem arquivos listados (vazio) | — |
+| V12 | `3.31.35_PM` | Tab Curriculo: "1 linhas, 2903 caracteres", Copiar + Ver mais. Conteudo: **HTML RAW** — `<p>Lucas Campos Desenvolvedor Java Senior na CI&amp;T Campinas...` com tags HTML visiveis ao usuario | VUE-BUG-04 CRITICO |
+| V13 | `3.32.04_PM` | Candidato Davi Guides (DG, ID 4701, Score 88%, Alta Confianca, Baseado em Rubrica). Resumo: "Candidato experiente em Python backend, AWS e SQL, com ingles avancado e vivencia em microservicos." Pontos Positivos (2): progressao carreira + experiencia diversas tecnologias. Skills Principais: python/sql/aws/docker/kubernetes/restful webservices/ci-cd. Skills Nao Encontradas: php/as3/flex. Resumo Prioridade: Essencial 3 (3/0/0), Importante 2 (2/0/0), Desejavel 1 (1/0/0) | — |
+| V14 | `3.32.16_PM` | Davi Guides — Avaliacao por Requisitos (6) colapsado, Insights da Query (6) EXPANDIDO: "Experiencia em desenvolvimento Python" (Essencial, evidencias: Senior python backend developer Dataart 2022-presente, Staff python backend engineer Facily 2022), "Experiencia em desenvolvimento backend" (Essencial, evidencias: Microservices oriented architecture, Wordpress plug-in postgresql+php), "Experiencia com AWS" (Importante, evidencias: docker containers on aws, fastapi k8s rancher), "Experiencia com SQL" (Importante) | VUE-GOOD-01 |
+| V15 | `3.32.36_PM` | Davi Guides — Perguntas Sugeridas (3) EXPANDIDO: 1) "Pode detalhar sua experiencia com otimizacao de queries SQL?", 2) "Quais servicos AWS voce utilizou em seus projetos?", 3) "Como voce aplicou metodologias ageis em seus projetos?". Mapa de Skills 7 itens (python/sql/aws/docker/kubernetes/restful webservices/ci-cd). Experiencia Profissional: staff python backend engineer Jan/2022-Set/2022 Facily, senior python backend developer Out/2018-Dez/2021 Quiteja, senior python backend developer Jan/2017-Set/20.. Freelancer | VUE-GOOD-02 |
+
 ### Replit Referencia (em `plataforma-lia/docs/screenshots/` e `attached_assets/`)
 
 | # | Arquivo | Conteudo |
@@ -122,7 +143,21 @@
 | R22 | `Screen_Shot_2.54.09_PM` | Atividades — Triagem por Voz expandida: 4/4 perguntas, Duracao 4:32, Completude 100%, Confianca 97%, Destaques |
 | R23 | `Screen_Shot_2.54.23_PM` | Atividades — Triagem por Voz: Destaques (5 bullets) + Impressao Geral + botao "Ouvir Triagem" |
 
-**Total:** 23 screenshots React + 7 screenshots Vue producao = 30 screenshots documentados.
+**Total:** 23 screenshots React + 7 screenshots Vue Sessao 1 + 15 screenshots Vue Sessao 2 (Lucas Campos + Davi Guides) = **45 screenshots documentados.**
+
+### Bugs Vue NOVOS descobertos na Sessao 2
+
+| ID | Severidade | Descricao | Screenshots |
+|---|---|---|---|
+| VUE-BUG-01 | **CRITICO** | **JSON RAW exposto em Atividades** — Log de Atualizacao mostra objeto JSON completo do candidato (skills array, applies array, linkedin URL, email, phone, gender, selective_process "Rejected") diretamente na UI. Vazamento de dados sensiveis e estrutura interna. | V5, V6, V8 |
+| VUE-BUG-02 | ALTO | **Dados internos em Log de Criacao** — Mostra "Questt Candidate 111710" (nome interno do sistema) + email pessoal lucas.pcampos@outlook.com + Account Id diretamente no feed de atividades | V7, V10 |
+| VUE-BUG-03 | MEDIO | **Texto bruto de experiencia nao formatado** — Experiencia profissional aparece como texto plain sem quebras de linha ou formatacao adequada no feed de atividades | V9 |
+| VUE-BUG-04 | **CRITICO** | **HTML RAW na Tab Curriculo** — Tags HTML visiveis ao usuario (`<p>`, `&amp;`) em vez de conteudo renderizado. Mostra "1 linhas, 2903 caracteres" indicando que o curriculo e armazenado como HTML mas exibido como texto | V12 |
+| VUE-NEW-01 | INFO | **Parecer LIA "Aguardando triagem"** — Card Parecer LIA mostra loading state permanente. Pode indicar falta de processamento ou timeout | V1 |
+| VUE-NEW-02 | BAIXO | **Remuneracao BRL 0,00** — Remuneracao Total Anual mostra BRL 0,00 com multiplicador 13,33x aplicado a zero. Deveria ocultar quando nao informado | V4 |
+| VUE-BUG-05 | MEDIO | **Tooltips ausentes nos icones de acao** — Dos 9 icones de acao no header do candidato (email, telefone, agenda, copiar, adicionar vaga, comparar, favoritar, desabilitar, notas), apenas "Adicionar a vaga" tem tooltip funcional. Os outros 8 nao mostram tooltip no hover, dificultando a descoberta de funcionalidade | V16 (image_1775241260428) |
+| VUE-GOOD-01 | POSITIVO | **Insights da Query funcional** — 6 insights com evidencias reais, tags Essencial/Importante, citacoes do curriculo. Feature ausente no React | V14 |
+| VUE-GOOD-02 | POSITIVO | **Perguntas Sugeridas funcional** — 3 perguntas contextuais geradas pela IA. Feature ausente no React | V15 |
 
 ---
 
