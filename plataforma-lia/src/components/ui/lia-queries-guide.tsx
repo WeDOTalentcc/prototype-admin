@@ -125,12 +125,11 @@ export function LiaQueriesGuide({
       <PopoverTrigger asChild>
         <button
           className={cn(
- "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors font-medium",
-            "hover:border-lia-text-primary hover:bg-lia-bg-secondary",
-            isOpen && "border-lia-text-primary bg-lia-bg-secondary",
+            "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-lia-border-subtle transition-colors font-medium text-lia-text-secondary",
+            "hover:bg-lia-bg-tertiary hover:text-lia-text-primary",
+            isOpen && "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary",
             className
           )}
-          style={{borderColor: isOpen ? 'var(--lia-text-primary)' : 'var(--lia-border-subtle)'}}
         >
           <Lightbulb className="w-3.5 h-3.5" />
           <span>Mais ideias</span>
