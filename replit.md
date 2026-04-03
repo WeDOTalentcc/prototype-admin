@@ -91,6 +91,5 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - Elasticsearch
 
 # Audit & Comparison Documents
-- `plataforma-lia/docs/audit-candidate-preview-qa.md` — QA audit with 63 issues across 4 dimensions (Design/Frontend, Backend, AI, Database)
-- `plataforma-lia/docs/deep-comparison-candidate-preview.md` — Deep code-to-code comparison of Vue/Vuetify/Nuxt production (from GitHub ats_front repo) vs React/Tailwind/Next.js reference, with component mapping, code snippets, and Vue correction suggestions
+- `plataforma-lia/docs/audit-candidate-preview-qa.md` — Consolidated QA audit (1443 lines): 63 issues across 4 dimensions (Design/Frontend, Backend, AI, Database) + deep code-to-code comparison of Vue/Vuetify/Nuxt production (from GitHub ats_front repo) vs React/Tailwind/Next.js reference, with real component mapping, code snippets, design token mapping, and Vue correction suggestions (Appendices D-G)
 - `.agents/outputs/guia-completo-correcoes-wedotalent.md` — Consolidated correction guide (6 parts + appendix R01-R03)
