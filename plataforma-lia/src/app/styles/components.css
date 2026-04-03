@@ -474,9 +474,10 @@
 
 /* Pills/Tags inativas */
 .lia-pill {
-  background-color: var(--lia-pill-bg);
-  color: var(--lia-text-primary);
-  border-radius: 9999px;
+  background-color: var(--lia-bg-primary);
+  color: var(--lia-text-secondary);
+  border-radius: 0.5rem;
+  border: 1px solid var(--lia-border-subtle);
   font-family: var(--font-open-sans);
   font-size: 0.75rem;
   font-weight: 500;
@@ -485,14 +486,16 @@
 }
 
 .lia-pill:hover {
-  background-color: var(--lia-btn-neutral-hover);
+  background-color: var(--lia-bg-tertiary);
+  color: var(--lia-text-primary);
 }
 
 /* Pills/Tags ativas */
 .lia-pill-active {
-  background-color: var(--lia-accent);
+  background-color: var(--lia-text-primary);
   color: white;
-  border-radius: 9999px;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
   font-family: var(--font-open-sans);
   font-size: 0.75rem;
   font-weight: 500;

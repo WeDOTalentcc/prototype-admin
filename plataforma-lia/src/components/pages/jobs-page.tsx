@@ -235,7 +235,7 @@ export function JobsPage(props: JobsPageProps) {
                 }}
                 role="tab"
                 aria-selected={activeFilter === filter.id}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] ${
                   activeFilter === filter.id
                     ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-btn-primary-hover'
                     : 'text-lia-text-secondary hover:bg-lia-bg-tertiary dark:hover:bg-lia-btn-primary-hover'
