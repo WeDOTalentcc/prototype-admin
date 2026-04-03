@@ -93,14 +93,20 @@
 | P6 | `Screen_Shot_..._1.25.00_PM` (2) | Atividades (entries, duplicata) | D18, D19 |
 | P7 | `Screen_Shot_..._1.25.58_PM` | Atividades (full page expandido) | D18, D21, D22 |
 
-### Replit Referencia (em `plataforma-lia/docs/screenshots/`)
+### Replit Referencia (em `plataforma-lia/docs/screenshots/` e `attached_assets/`)
 
 | # | Arquivo | Conteudo |
 |---|---|---|
 | R1 | `replit-ref-home.jpg` | Pagina principal Funil de Talentos |
 | R2 | `replit-ref-atividades-tab.jpg` | Tab Atividades com filtros e layout |
+| R3 | `Screen_Shot_2.40.26_PM` | Tab Arquivos — estado vazio, drag-drop, "+ Adicionar Arquivo" |
+| R4 | `Screen_Shot_2.40.46_PM` | Tab Arquivos — 4 arquivos com categorias coloridas e status |
+| R5 | `Screen_Shot_2.40.56_PM` | Tab Arquivos — videos entrevista + audio triagem com badges |
+| R6 | `Screen_Shot_2.41.15_PM` | FilePreviewModal — PDF com paginacao "1/5" |
+| R7 | `Screen_Shot_2.41.36_PM` | FilePreviewModal — Video com player + transcricao + Analise LIA |
+| R8 | `Screen_Shot_2.41.48_PM` | FilePreviewModal — Parecer LIA: Pontos Fortes/Atencao, Score 91% |
 
-**Nota:** Screenshots das tabs Perfil, Arquivos e Pareceres do Replit nao puderam ser capturados (timeout Next.js >10s). Analise feita via inspecao de codigo (6.196 linhas) + testes Playwright.
+**Nota:** Screenshots das tabs Perfil e Pareceres do Replit nao puderam ser capturados (timeout Next.js >10s). Analise feita via inspecao de codigo (6.196 linhas) + testes Playwright. **Tab Arquivos foi documentada com 6 screenshots detalhados.**
 
 ---
 
@@ -424,14 +430,128 @@ function openUrl(url) {
 
 ## 2.9 TAB ARQUIVOS
 
+**Screenshots React (Replit):**
+- `Screen_Shot_2.40.26_PM` — Tab vazia: header "Arquivos e Documentos 0", botao "+ Adicionar Arquivo", filtro "Todos (0)", zona drag-drop, empty state
+- `Screen_Shot_2.40.46_PM` — Lista com 4 arquivos: CV (PDF), foto (JPG), video triagem (MP4), video entrevista (MP4)
+- `Screen_Shot_2.40.56_PM` — Mais arquivos: entrevista completa (MP4), audio triagem (MP3) com badges de status
+- `Screen_Shot_2.41.15_PM` — FilePreviewModal para PDF com paginacao "1/5"
+- `Screen_Shot_2.41.36_PM` — FilePreviewModal para video com transcricao + Analise LIA
+- `Screen_Shot_2.41.48_PM` — FilePreviewModal para video: Parecer LIA com score 91%
+
+### Bugs Identificados
+
 | ID | Elemento | Vue (Producao) | React (Replit) | Sev. |
 |----|---------|---------------|----------------|------|
 | D25 | **"Failed to fetch"** | Tab Arquivos nao carrega, erro em producao | Lista de arquivos funcional | **CRITICO** |
-| D26 | **Sem drag-and-drop** | Apenas botao de upload basico | Zona dashed drag-drop com progress bar | ALTO |
-| D27 | **Sem preview de midia** | Download abre em nova aba | `FilePreviewModal` com PDF, imagem, video inline | ALTO |
-| D28 | **Sem categorias** | Lista plana de arquivos | 7 categorias automaticas com icones e contagem | MEDIO |
-| D29 | **Sem delete** | Nao implementado | Botao com confirmacao | MEDIO |
-| D30 | **Sem tamanho/data** | Nao exibidos | `formatFileSize()` + `formatRelativeTime()` | BAIXO |
+| D26 | **Sem drag-and-drop** | Apenas botao de upload basico | Zona dashed com borda tracejada: "Arraste arquivos ou clique para selecionar" + "PDF, DOC, DOCX, JPG, PNG, MP4 • Max 10MB" + empty state com icone documento | ALTO |
+| D27 | **Sem preview de midia** | Download abre em nova aba | `FilePreviewModal` com 3 modos: PDF (paginado), imagem, video (com player + transcricao + analise IA) | **CRITICO** |
+| D28 | **Sem categorias coloridas** | Lista plana de arquivos sem categorias | 7 categorias com badges coloridos: Curriculo (vermelho), Foto (verde), Triagem (laranja), Entrevista (azul) + filtro chip "Todos (N)" | ALTO |
+| D29 | **Sem status de processamento** | Nenhum indicador de status | Badges de status por arquivo: "Analisado", "Destaque", "Completa", "Transcrito" — indicam processamento IA | ALTO |
+| D30 | **Sem metadados ricos** | Apenas nome e tipo do arquivo | Cada card exibe: nome, tamanho (2.1 MB), formato (PDF), tempo relativo (Enviado ha 2 dias), duracao para midia (3:45, 8:20, 30:15), descricao ("Curriculo atualizado • Categorizado pela LIA"), categoria source | MEDIO |
+| D30b | **Sem botoes de acao por arquivo** | Apenas download | 3 botoes: olho (preview), download, chevron (expandir/menu). Videos tem botao play adicional | MEDIO |
+| D30c | **Sem descricao/contexto** | Nenhuma descricao | Texto contextual: "Curriculo atualizado • Categorizado pela LIA", "Video de apresentacao pessoal • Prescreening", "Apresentacao de case tecnico • Entrevista gravada", "Resposta de triagem por voz • OpenMic.ai" | MEDIO |
+| D30d | **Sem delete** | Nao implementado | Botao com confirmacao | MEDIO |
+
+### Anatomia de um Card de Arquivo (React — dos screenshots)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ [icone categoria]  CV_MariaOliveira_2024.pdf    [👁] [⬇] [v]│
+│                    2.1 MB • PDF  Enviado há 2 dias          │
+│                    ◉ Currículo (badge vermelho)              │
+│                    Currículo atualizado • Categorizado pela  │
+│                    LIA                                       │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ [icone video]  Apresentacao_Pessoal.mp4  [Analisado] [▶][v] │
+│                25.4 MB • MP4 • 3:45                         │
+│                ◉ Triagem (badge laranja)                    │
+│                Vídeo de apresentação pessoal • Prescreening  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Categorias de Arquivo (React — dos screenshots)
+
+| Categoria | Cor Badge | Icone | Tipos de arquivo |
+|-----------|----------|-------|-----------------|
+| Curriculo | Vermelho `#ef4444` | Documento | PDF, DOC, DOCX (CVs) |
+| Foto | Verde `#22c55e` | Imagem | JPG, PNG (fotos perfil) |
+| Triagem | Laranja `#f97316` | Video/Audio | MP4, MP3 (prescreening, OpenMic.ai) |
+| Entrevista | Azul `#3b82f6` | Video | MP4 (entrevistas gravadas) |
+
+### Status de Processamento (React — dos screenshots)
+
+| Status | Significado | Aparece em |
+|--------|------------|-----------|
+| Analisado | IA processou o conteudo | Videos de triagem |
+| Destaque | Conteudo marcado como relevante | Videos de entrevista |
+| Completa | Gravacao completa | Entrevistas longas |
+| Transcrito | Transcricao IA disponivel | Audios de triagem |
+
+### FilePreviewModal — 3 Modos (React — dos screenshots)
+
+**Modo PDF:**
+```
+┌──────────────────────────────────────────────────┐
+│ [📄] CV_MariaOliveira_2024.pdf   < 1/5 > [⬇ Baixar] [X] │
+│                                                    │
+│  ┌──────────────────────────────────────────────┐  │
+│  │                                              │  │
+│  │         Visualizando página 1 de 5           │  │
+│  │     [Conteúdo do PDF seria renderizado aqui] │  │
+│  │                                              │  │
+│  └──────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────┘
+```
+- Header: icone PDF + nome + navegacao paginas `< 1/5 >` + "Baixar" + fechar
+- Renderizacao inline do conteudo PDF
+
+**Modo Video (Triagem/Entrevista):**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ [🎬] Apresentacao_Pessoal.mp4           [▶] [⬇ Baixar] [X] │
+│                                                               │
+│ ┌──────────────────────────┐  ┌───────────────────────────┐  │
+│ │                          │  │ 📋 Transcrição            │  │
+│ │   [▶ Clique para        │  │ [Vídeo de Triagem] 3:45   │  │
+│ │    reproduzir]           │  │                           │  │
+│ │  Apresentacao_Pessoal.mp4│  │ Transcrição não           │  │
+│ │                          │  │ disponível para           │  │
+│ └──────────────────────────┘  │ este vídeo                │  │
+│                               └───────────────────────────┘  │
+│                                                               │
+│ 📋 Perguntas de Triagem                                      │
+│  1. Por favor, apresente-se e conte sobre sua experiência    │
+│  2. Por que você está interessado nesta vaga e empresa?      │
+│  3. Quais são suas principais conquistas profissionais?      │
+│  4. Qual sua disponibilidade para início e expectativa       │
+│     salarial?                                                │
+│                                                               │
+│ ⊕ Análise da LIA                                            │
+│  Confiança    Comunicação    Clareza    Entusiasmo           │
+│    92%           95%          88%          90%                │
+│                                                               │
+│ ⊕ Parecer da LIA                                            │
+│  Pontos Fortes: O candidato demonstra excelente capacidade   │
+│   de comunicação, com respostas claras e estruturadas...     │
+│  Pontos de Atenção: Poderia ter elaborado mais sobre         │
+│   metodologias específicas de design...                      │
+│  Recomendação: Candidato altamente recomendado para          │
+│   próxima fase...                                            │
+│                                                               │
+│  Score Geral  [91% - Altamente Recomendado] (badge verde)    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Layout modal video:**
+- **Header:** icone video (vermelho) + nome arquivo + botao play + "Baixar" + fechar
+- **Corpo esquerdo (60%):** Player de video com overlay "Clique para reproduzir"
+- **Corpo direito (40%):** Painel "Transcricao" com chip tipo ("Video de Triagem"), duracao, texto transcricao
+- **Abaixo do player:** "Perguntas de Triagem" — lista numerada das perguntas usadas
+- **Analise da LIA:** 4 metricas em grid horizontal: Confianca, Comunicacao, Clareza, Entusiasmo (% cada)
+- **Parecer da LIA:** Secoes textuais: Pontos Fortes, Pontos de Atencao, Recomendacao
+- **Score Geral:** Badge verde com "91% - Altamente Recomendado"
 
 ### Codigo Vue ATUAL — files/wrapper.vue (120 linhas)
 
@@ -449,11 +569,13 @@ function openUrl(url) {
 </ul>
 ```
 
-### CORRECAO — Arquivos Enriquecidos (D25-D30)
+### CORRECAO — Tab Arquivos Completa (D25-D30d)
 
 ```vue
+<!-- REWRITE: features/candidates/files/wrapper.vue -->
 <template>
   <div class="pa-3">
+    <!-- Header -->
     <div class="d-flex align-center justify-space-between mb-3">
       <div class="d-flex align-center ga-2">
         <Icon name="lucide-file-text" size="14" />
@@ -461,41 +583,238 @@ function openUrl(url) {
         <v-chip size="x-small" variant="tonal">{{ files.length }}</v-chip>
       </div>
       <v-btn size="small" variant="tonal" color="primary" @click="triggerUpload">
-        <Icon name="lucide-plus" size="12" class="mr-1" />Adicionar
+        <Icon name="lucide-plus" size="12" class="mr-1" />Adicionar Arquivo
       </v-btn>
     </div>
+
+    <!-- Filtro por categoria -->
     <div class="d-flex ga-1 flex-wrap mb-3">
       <v-chip v-for="cat in categories" :key="cat.value"
         :variant="selectedCategory === cat.value ? 'flat' : 'outlined'"
-        size="x-small" @click="toggleCategory(cat.value)" class="cursor-pointer">
+        :color="cat.color" size="x-small"
+        @click="selectedCategory = selectedCategory === cat.value ? 'all' : cat.value"
+        class="cursor-pointer f9">
         {{ cat.icon }} {{ cat.label }} ({{ cat.count }})
       </v-chip>
     </div>
-    <div class="border-dashed border-2 rounded-lg pa-4 text-center mb-3 cursor-pointer"
-      :class="isDragging ? 'border-primary bg-primary-lighten-5' : 'border-border-color'"
+
+    <!-- Zona drag-and-drop -->
+    <div class="rounded-lg pa-4 text-center mb-3 cursor-pointer"
+      :class="isDragging ? 'border-primary bg-primary-lighten-5' : ''"
+      :style="{
+        border: isDragging ? '2px dashed rgb(var(--v-theme-primary))' : '2px dashed rgba(0,0,0,0.12)',
+      }"
       @dragover.prevent="isDragging = true" @dragleave="isDragging = false"
-      @drop.prevent="handleDrop">
-      <Icon name="lucide-upload" size="20" color="body-light" class="mb-1" />
-      <p class="f10 text-body-light">Arraste arquivos aqui</p>
+      @drop.prevent="handleDrop" @click="triggerUpload">
+      <Icon name="lucide-upload" size="24" color="body-light" class="mb-2" />
+      <p class="f11 text-on-surface">Arraste arquivos ou clique para selecionar</p>
+      <p class="f9 text-body-light mt-1">PDF, DOC, DOCX, JPG, PNG, MP4 • Max 10MB</p>
     </div>
+
+    <!-- Empty state -->
+    <div v-if="filteredFiles.length === 0 && !isLoading" class="text-center py-6">
+      <Icon name="lucide-file-text" size="36" color="body-light" class="mb-2" />
+      <p class="f11 text-body-light">Nenhum arquivo enviado</p>
+      <p class="f9 text-body-light">Arraste arquivos ou clique acima para enviar</p>
+    </div>
+
+    <!-- Lista de arquivos -->
     <div v-for="file in filteredFiles" :key="file.id"
-      class="d-flex align-center ga-2 pa-2 border border-border-color rounded-lg mb-2">
-      <Icon :name="getFileIcon(file)" size="16" :color="getCategoryColor(file)" />
-      <div class="flex-grow-1">
-        <p class="f11 text-on-surface">{{ file.name }}</p>
-        <div class="d-flex align-center ga-2 f9 text-body-light">
-          <span>{{ formatFileSize(file.size) }}</span>
-          <span>{{ formatRelativeTime(file.created_at) }}</span>
-        </div>
+      class="d-flex align-start ga-3 pa-3 border border-border-color rounded-lg mb-2
+             hover:bg-grey-lighten-5 transition-colors">
+      <!-- Icone da categoria -->
+      <div class="rounded-lg d-flex align-center justify-center flex-shrink-0"
+        :style="{ width: '36px', height: '36px', backgroundColor: getCategoryBg(file.category) }">
+        <Icon :name="getCategoryIcon(file)" size="18" :color="getCategoryColor(file.category)" />
       </div>
-      <v-btn icon variant="text" size="x-small" @click="previewFile(file)">
-        <Icon name="lucide-eye" size="14" />
-      </v-btn>
-      <v-btn icon variant="text" size="x-small" @click="downloadFile(file)">
-        <Icon name="lucide-download" size="14" />
-      </v-btn>
+
+      <!-- Info principal -->
+      <div class="flex-grow-1" style="min-width: 0;">
+        <div class="d-flex align-center ga-2 mb-0">
+          <p class="f11 font-weight-medium text-on-surface text-truncate">{{ file.name }}</p>
+        </div>
+        <div class="d-flex align-center ga-1 f9 text-body-light flex-wrap">
+          <span>{{ formatFileSize(file.size) }}</span>
+          <span>•</span>
+          <span>{{ file.file_type?.toUpperCase() }}</span>
+          <template v-if="file.duration">
+            <span>•</span>
+            <span>{{ formatDuration(file.duration) }}</span>
+          </template>
+          <span>Enviado {{ formatRelativeTime(file.created_at) }}</span>
+        </div>
+        <div class="d-flex align-center ga-1 mt-1">
+          <v-chip size="x-small" :color="getCategoryColor(file.category)" variant="tonal" class="f8">
+            ◉ {{ file.category }}
+          </v-chip>
+          <v-chip v-if="file.status" size="x-small" variant="outlined" class="f8">
+            {{ file.status }}
+          </v-chip>
+        </div>
+        <p v-if="file.description" class="f9 text-body-light mt-1">{{ file.description }}</p>
+      </div>
+
+      <!-- Acoes -->
+      <div class="d-flex align-center ga-1 flex-shrink-0">
+        <v-btn v-if="isMedia(file)" icon variant="text" size="x-small"
+          @click="previewFile(file)">
+          <Icon name="lucide-play" size="14" />
+        </v-btn>
+        <v-btn icon variant="text" size="x-small" @click="previewFile(file)">
+          <Icon name="lucide-eye" size="14" />
+        </v-btn>
+        <v-btn icon variant="text" size="x-small" @click="downloadFile(file)">
+          <Icon name="lucide-download" size="14" />
+        </v-btn>
+        <v-btn icon variant="text" size="x-small" @click="showFileMenu(file)">
+          <Icon name="lucide-chevron-down" size="14" />
+        </v-btn>
+      </div>
     </div>
+
+    <!-- File Preview Modal -->
+    <FilePreviewModal v-if="previewingFile" :file="previewingFile"
+      @close="previewingFile = null" @download="downloadFile" />
+
+    <input ref="fileInput" type="file" class="d-none" multiple
+      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.mp4,.mp3"
+      @change="handleFileSelect" />
   </div>
+</template>
+```
+
+### CORRECAO — FilePreviewModal para Video com Analise IA (D27)
+
+```vue
+<!-- NOVO: features/candidates/files/FilePreviewModal.vue -->
+<template>
+  <v-dialog v-model="isOpen" max-width="900" persistent>
+    <v-card class="rounded-lg">
+      <!-- Header -->
+      <v-card-title class="d-flex align-center justify-space-between pa-3 border-b">
+        <div class="d-flex align-center ga-2">
+          <Icon :name="getTypeIcon(file)" size="16" :color="getTypeColor(file)" />
+          <span class="f12 font-weight-medium">{{ file.name }}</span>
+        </div>
+        <div class="d-flex align-center ga-1">
+          <template v-if="isPDF">
+            <v-btn icon variant="text" size="x-small" @click="prevPage" :disabled="currentPage <= 1">
+              <Icon name="lucide-chevron-left" size="14" />
+            </v-btn>
+            <span class="f10">{{ currentPage }} / {{ totalPages }}</span>
+            <v-btn icon variant="text" size="x-small" @click="nextPage" :disabled="currentPage >= totalPages">
+              <Icon name="lucide-chevron-right" size="14" />
+            </v-btn>
+          </template>
+          <v-btn v-if="isVideo" icon variant="text" size="x-small" @click="playVideo">
+            <Icon name="lucide-play" size="14" />
+          </v-btn>
+          <v-btn size="small" variant="tonal" @click="$emit('download', file)">
+            <Icon name="lucide-download" size="12" class="mr-1" />Baixar
+          </v-btn>
+          <v-btn icon variant="text" size="small" @click="$emit('close')">
+            <Icon name="lucide-x" size="16" />
+          </v-btn>
+        </div>
+      </v-card-title>
+
+      <v-card-text class="pa-0">
+        <!-- Modo PDF -->
+        <div v-if="isPDF" class="pa-6 d-flex justify-center" style="min-height: 500px; background: #f5f5f5;">
+          <div class="text-center">
+            <p class="f11 text-body-light">Visualizando pagina {{ currentPage }} de {{ totalPages }}</p>
+          </div>
+        </div>
+
+        <!-- Modo Video/Audio -->
+        <template v-if="isMedia">
+          <div class="d-flex" style="min-height: 300px;">
+            <!-- Player (60%) -->
+            <div class="flex-grow-1 pa-4" style="flex-basis: 60%;">
+              <div class="rounded-lg d-flex align-center justify-center"
+                style="background: #1a1a2e; aspect-ratio: 16/9; cursor: pointer;"
+                @click="playVideo">
+                <div class="text-center">
+                  <Icon name="lucide-play-circle" size="48" color="white" class="mb-2" />
+                  <p class="f11 text-white">Clique para reproduzir</p>
+                  <p class="f9 text-grey-lighten-1">{{ file.name }}</p>
+                </div>
+              </div>
+            </div>
+            <!-- Transcricao (40%) -->
+            <div class="pa-4 border-s" style="flex-basis: 40%;">
+              <div class="d-flex align-center ga-2 mb-3">
+                <span class="f11">📋 Transcricao</span>
+              </div>
+              <div class="d-flex align-center ga-2 mb-3">
+                <v-chip size="small" color="grey-darken-3" variant="flat" class="text-white f9">
+                  {{ file.category === 'Triagem' ? 'Video de Triagem' : 'Entrevista' }}
+                </v-chip>
+                <span class="f10 text-body-light">Duracao: {{ formatDuration(file.duration) }}</span>
+              </div>
+              <p v-if="file.transcription" class="f10" style="white-space: pre-wrap;">
+                {{ file.transcription }}
+              </p>
+              <p v-else class="f10 text-body-light">
+                Transcricao nao disponivel para este video
+              </p>
+            </div>
+          </div>
+
+          <!-- Perguntas de Triagem -->
+          <div v-if="file.screening_questions?.length" class="pa-4 border-t">
+            <p class="f11 font-weight-medium mb-2">📋 Perguntas de Triagem</p>
+            <ol class="pl-4">
+              <li v-for="(q, i) in file.screening_questions" :key="i" class="f10 mb-1">{{ q }}</li>
+            </ol>
+          </div>
+
+          <!-- Analise da LIA -->
+          <div v-if="file.lia_analysis" class="pa-4 border-t">
+            <p class="f11 font-weight-medium mb-3">
+              <Icon name="lucide-brain" size="12" class="mr-1" /> Analise da LIA
+            </p>
+            <div class="d-flex justify-space-around mb-4">
+              <div v-for="metric in file.lia_analysis.metrics" :key="metric.label" class="text-center">
+                <p class="f9 text-body-light mb-1">{{ metric.label }}</p>
+                <p class="f14 font-weight-bold" :style="{ color: getMetricColor(metric.value) }">
+                  {{ metric.value }}%
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Parecer da LIA -->
+          <div v-if="file.lia_opinion" class="pa-4 border-t">
+            <p class="f11 font-weight-medium mb-2">
+              <Icon name="lucide-brain" size="12" class="mr-1" /> Parecer da LIA
+            </p>
+            <div class="mb-2">
+              <p class="f10"><b>Pontos Fortes:</b> {{ file.lia_opinion.strengths }}</p>
+            </div>
+            <div class="mb-2">
+              <p class="f10"><b>Pontos de Atencao:</b> {{ file.lia_opinion.concerns }}</p>
+            </div>
+            <div class="mb-3">
+              <p class="f10"><b>Recomendacao:</b> {{ file.lia_opinion.recommendation }}</p>
+            </div>
+            <div class="d-flex align-center ga-2">
+              <span class="f10">Score Geral</span>
+              <v-chip :color="file.lia_opinion.score >= 80 ? 'success' : 'warning'" variant="flat"
+                size="small" class="font-weight-bold">
+                {{ file.lia_opinion.score }}% - {{ file.lia_opinion.label }}
+              </v-chip>
+            </div>
+          </div>
+        </template>
+
+        <!-- Modo Imagem -->
+        <div v-if="isImage" class="pa-4 d-flex justify-center">
+          <img :src="file.url" :alt="file.name" style="max-width: 100%; max-height: 600px;" />
+        </div>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 ```
 
@@ -624,9 +943,9 @@ Funcionalidades que existem no React e NAO existem no Vue. Cada item e um potenc
 | G04 | **Screening Media Modal** | `screening-media-modal.tsx` | dynamic | Player video/audio com transcricao IA segmentada | ALTO |
 | G05 | **DISC Assessment Modal** | `disc-assessment-modal.tsx` | dynamic | Resultado DISC com grafico visual | ALTO |
 | G06 | **Big Five Modal** | `big-five-modal.tsx` | dynamic | Resultado Big Five com radar chart | ALTO |
-| G07 | **File Preview Modal** | `FilePreviewModal.tsx` | 546 | Preview inline PDF/imagem/video sem sair do preview | ALTO |
-| G08 | **Drag & Drop Upload** | `CandidateFilesTab.tsx` | embutido | Area visual drag-drop com progress bar e multiplos formatos | ALTO |
-| G09 | **Categorias Arquivo** | `useCandidateFiles.tsx` | embutido | 7 categorias automaticas (Curriculos, Certificados, Videos, etc.) | MEDIO |
+| G07 | **File Preview Modal** | `FilePreviewModal.tsx` | 546 | 3 modos: PDF (paginado com < 1/5 >), imagem, video/audio. Modo video inclui: player com overlay, painel Transcricao lateral (chip tipo + duracao + texto), Perguntas de Triagem (lista numerada), Analise da LIA (4 metricas: Confianca/Comunicacao/Clareza/Entusiasmo em %), Parecer da LIA (Pontos Fortes, Pontos de Atencao, Recomendacao), Score Geral com badge colorido ("91% - Altamente Recomendado") | **CRITICO** |
+| G08 | **Drag & Drop Upload** | `CandidateFilesTab.tsx` | embutido | Zona dashed "Arraste arquivos ou clique para selecionar" + "PDF, DOC, DOCX, JPG, PNG, MP4 • Max 10MB" + empty state com icone | ALTO |
+| G09 | **Categorias + Status** | `useCandidateFiles.tsx` | embutido | Categorias coloridas (Curriculo vermelho, Foto verde, Triagem laranja, Entrevista azul) + badges de status (Analisado, Destaque, Completa, Transcrito) + descricao contextual por arquivo | ALTO |
 | G10 | **Activity Timeline** | `ActivityTimeline.tsx` | 98 | Timeline visual com dots coloridos e click-to-expand | ALTO |
 | G11 | **Activity Filters** | `ActivityFilters.tsx` | 131 | Filtros por tipo + periodo + modo visualizacao | ALTO |
 | G12 | **Activity Details** | `ActivityExpandedDetails.tsx` | 878 | Detalhes expandidos por tipo (15+ tipos) | ALTO |
@@ -782,7 +1101,8 @@ CandidateAnalysisResult -> Frontend
 | FIX-09 | **Botao LIA no header** + conectar modal chat/analise | D09, G02 | `preview.vue` + **NOVO:** `LiaChatModal.vue` | 3 dias | ALTO |
 | FIX-10 | **Skills categorizadas** — agrupar por Backend/Frontend/Data + cores por fonte | D10b, D10c | `cards/skills.vue` | 1-2 dias | ALTO |
 | FIX-11 | **Filtros atividade completos** — 8 filtros visiveis + "Nova Atividade" + nota | D20, D22 | **NOVO:** `activities/ActivityFilters.vue` | 1-2 dias | ALTO |
-| FIX-12 | **Upload drag-and-drop** + preview de midia | D26, D27, G07, G08 | `files/wrapper.vue` + **NOVO:** `FilePreviewModal.vue` | 3 dias | ALTO |
+| FIX-12 | **Upload drag-and-drop** + cards ricos (categorias coloridas, status IA, metadados, descricao) | D26, D28, D29, D30, D30b, D30c, G08, G09 | `files/wrapper.vue` (rewrite) | 3 dias | ALTO |
+| FIX-12b | **FilePreviewModal** — 3 modos: PDF paginado, imagem, video (player + transcricao + Perguntas Triagem + Analise LIA 4 metricas + Parecer LIA + Score) | D27, G07 | **NOVO:** `files/FilePreviewModal.vue` | 3-5 dias | **CRITICO** |
 | FIX-13 | **Integrar FairnessGuard** na geracao de parecer | IA02 | `analysis_service.py` | 1 dia | ALTO |
 | FIX-14 | **Prompt Injection Guard** nos inputs | IA03 | `analysis_service.py` | 1 dia | ALTO |
 | FIX-15 | **Corrigir N+1 query** no opinions history | B03, B04 | `app/api/v1/opinions.py` | 1 dia | ALTO |
@@ -957,7 +1277,7 @@ stores/candidate_feedbacks.ts (80)              useCandidatePreviewCore.tsx (emb
 | `features/candidates/activities/ActivityFilters.vue` | **CRIAR** | FIX-11 |
 | `features/candidates/activities/ActivityTimeline.vue` | **CRIAR** | FIX-20 |
 | `features/candidates/LiaChatModal.vue` | **CRIAR** | FIX-09 |
-| `features/candidates/files/FilePreviewModal.vue` | **CRIAR** | FIX-12 |
+| `features/candidates/files/FilePreviewModal.vue` | **CRIAR** | FIX-12b |
 
 ### Backend (FastAPI)
 
