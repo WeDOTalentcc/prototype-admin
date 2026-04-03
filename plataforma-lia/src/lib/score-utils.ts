@@ -177,3 +177,50 @@ export function getRiskBadgeColor(risk: string): string {
 export function getCompareScoreAboveAvg(score: number, avgScore: number): boolean {
   return score >= avgScore
 }
+
+export type ScoreDomain = 'percentage' | 'risk' | 'prediction' | 'job' | 'english'
+
+export interface UnifiedScoreResult {
+  label: string
+  colorClass: string
+  colorVar: string
+  bgVar: string
+}
+
+export function classifyScore(score: number, domain: ScoreDomain = 'percentage'): UnifiedScoreResult {
+  switch (domain) {
+    case 'risk': {
+      const r = classifyRiskScore(score)
+      return {
+        label: r.label,
+        colorClass: r.text.replace('var(--', 'text-').replace(')', ''),
+        colorVar: r.text,
+        bgVar: r.bg,
+      }
+    }
+    case 'prediction': {
+      const color = getPredictionScoreColor(score)
+      return { label: score >= 85 ? 'Alto' : score >= 70 ? 'Médio' : 'Baixo', colorClass: color, colorVar: color.replace('text-', 'var(--').replace(/$/g, ')'), bgVar: '' }
+    }
+    case 'job': {
+      const cls = getJobScoreClass(score)
+      return { label: score >= 80 ? 'Excelente' : score >= 60 ? 'Bom' : 'Regular', colorClass: cls, colorVar: '', bgVar: '' }
+    }
+    case 'english': {
+      const level = getEnglishLevel(score)
+      const pct = classifyPercentageScore(score)
+      return { label: level, colorClass: pct.colorClass, colorVar: pct.colorVar, bgVar: pct.bgVar }
+    }
+    case 'percentage':
+    default: {
+      const p = classifyPercentageScore(score)
+      return { label: p.label, colorClass: p.colorClass, colorVar: p.colorVar, bgVar: p.bgVar }
+    }
+  }
+}
+
+export function getScoreBadgeClasses(score: number): string {
+  if (score >= 80) return 'bg-status-success/15 text-status-success'
+  if (score >= 60) return 'bg-status-warning/15 text-status-warning'
+  return 'bg-status-error/15 text-status-error'
+}

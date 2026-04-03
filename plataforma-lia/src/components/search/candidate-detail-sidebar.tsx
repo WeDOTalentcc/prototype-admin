@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { getPercentageScoreColorClass } from "@/lib/score-utils"
+import { getScoreBadgeClasses } from "@/lib/score-utils"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -96,9 +96,7 @@ export function CandidateDetailSidebar({
 
   const getScoreColor = (score?: number) => {
     if (!score) return "bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary"
-    if (score >= 80) return "bg-status-success/15 text-status-success"
-    if (score >= 60) return "bg-status-warning/15 text-status-warning"
-    return "bg-status-error/15 text-status-error"
+    return getScoreBadgeClasses(score)
   }
 
   const copyToClipboard = (text: string) => {

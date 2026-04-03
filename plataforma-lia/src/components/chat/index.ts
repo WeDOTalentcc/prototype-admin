@@ -8,3 +8,6 @@ export { TypingIndicator } from './typing-indicator'
 export { ChatInputBar } from './chat-input-bar'
 export { ActionResultCard } from './action-result-card'
 export { DetectedFieldsCard } from './detected-fields-card'
+
+export { PlanProgressCard } from './plan-progress-card'
+export type { ExecutionPlanData, PlanTask } from './plan-progress-card'
