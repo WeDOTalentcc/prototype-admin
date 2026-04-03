@@ -176,7 +176,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {stages.map((stage, index) => (
                     <div
                       key={stage.name}

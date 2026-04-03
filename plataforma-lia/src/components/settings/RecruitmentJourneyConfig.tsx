@@ -275,7 +275,7 @@ export function RecruitmentJourneyConfig({
       {isEditMode ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={stages.map(s => s.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-0">
+            <div className="space-y-3">
               {stages.map(stage => (
                 <SortableStageCard
                   key={stage.id}
@@ -294,7 +294,7 @@ export function RecruitmentJourneyConfig({
           </SortableContext>
         </DndContext>
       ) : (
-        <div className="space-y-0">
+        <div className="space-y-3">
           {stages.map(stage => <ReadOnlyStageCard key={stage.id} stage={stage} />)}
         </div>
       )}

@@ -592,7 +592,7 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
 
   return (
     <Card
-      className={`border rounded-md p-4 mb-3 bg-lia-bg-primary dark:bg-lia-bg-primary ${!stage.isActive ? "opacity-60" : ""} ${isSystemStage ? "border-lia-border-default bg-lia-bg-secondary/50" : "border-lia-border-subtle"}`}
+      className={`border rounded-md p-4 bg-lia-bg-primary dark:bg-lia-bg-primary ${!stage.isActive ? "opacity-60" : ""} ${isSystemStage ? "border-lia-border-default bg-lia-bg-secondary/50" : "border-lia-border-subtle"}`}
       style={{borderLeft: stage.color ? `4px solid ${stage.color}` : undefined}}
     >
       <div className="flex items-start gap-3">
@@ -695,7 +695,7 @@ export function SortableStageCard({
   return (
     <div ref={combinedRef} style={style}>
       <Card
-        className={`border rounded-md p-4 mb-3 transition-colors motion-reduce:transition-none duration-200 ${
+        className={`border rounded-md p-4 transition-colors motion-reduce:transition-none duration-200 ${
           isDragging ? "opacity-90 bg-lia-bg-secondary" : "bg-lia-bg-primary hover:border-lia-border-medium dark:bg-lia-bg-secondary dark:hover:border-lia-border-medium"
         } ${!stage.isActive ? "opacity-60" : ""} ${
           isSystemStage ? "border-lia-border-default bg-lia-bg-secondary/50 dark:bg-lia-bg-primary/50" : "border-lia-border-subtle dark:border-lia-border-subtle"
