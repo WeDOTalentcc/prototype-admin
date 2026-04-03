@@ -463,17 +463,21 @@ IMPORTANTE: Retorne APENAS o JSON, sem texto adicional."""
                 )
         
         except Exception as e:
-            logger.warning(f"LLM classification failed, using regex fallback: {e}")
+            logger.error(
+                f"LLM intent classification failed [{type(e).__name__}]: {e} — "
+                f"degradando para fallback regex (qualidade reduzida)"
+            )
+            # metrics.increment("intent_classifier.llm_fallback")  # habilitar quando métricas estiverem disponíveis
         
         intent = quick_intent or EnhancedIntentType.CREATE_JOB
-        confidence = quick_confidence or 0.6
+        confidence = quick_confidence or 0.5  # Reduzido para sinalizar qualidade menor
         
         return EnhancedClassificationResult(
             intent_type=intent,
             confidence=confidence,
             entities=regex_entities,
             original_text=user_input,
-            reasoning="Fallback para extração por regex"
+            reasoning="Fallback regex (LLM indisponível — qualidade reduzida)"
         )
 
     def _merge_entities(self, regex_entities: ExtractedEntities, llm_entities: Dict[str, Any]) -> ExtractedEntities:

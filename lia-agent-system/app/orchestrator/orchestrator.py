@@ -289,10 +289,34 @@ class Orchestrator:
             return True
         return any(p in message for p in self._TECHNICAL_PATTERNS)
 
+    # Structured-output additions injected per intent (fix C-05 / C-06)
+    _STRUCTURED_INTENT_ADDENDA = {
+        "cv_screening": (
+            "\n\nRegra de saída estruturada (C-05): sempre que responder a uma análise de "
+            "compatibilidade ou match de CV, inclua ao final da resposta um bloco JSON no formato:\n"
+            "```json\n"
+            "{\"match_score\": <0-100>, \"matched_skills\": [\"skill1\", \"skill2\"], "
+            "\"missing_skills\": [\"skill3\"], \"recommendation\": \"APROVADO|EM_ANALISE|REPROVADO\"}\n"
+            "```\n"
+            "O match_score deve ser um número inteiro de 0 a 100."
+        ),
+        "salary_benchmark": (
+            "\n\nRegra de saída salarial (C-06): sempre inclua faixas salariais no formato "
+            "R$ XX.XXX - R$ XX.XXX mensais (CLT). Estruture a resposta com:\n"
+            "- Faixa mínima: R$ X.XXX\n"
+            "- Faixa máxima: R$ X.XXX\n"
+            "- Mediana: R$ X.XXX\n"
+            "Use ponto como separador de milhar (ex: R$ 12.000)."
+        ),
+    }
+
     async def _handle_directly(self, intent: str, message: str, entities: Dict[str, Any]) -> Dict[str, Any]:
         try:
             from langchain_core.prompts import ChatPromptTemplate
-            prompt = ChatPromptTemplate.from_messages([("system", _LIA_SYSTEM_PROMPT), ("human", "{message}")])
+            # Inject intent-specific structured-output instructions (C-05, C-06)
+            extra = self._STRUCTURED_INTENT_ADDENDA.get(intent, "")
+            enriched_system = _LIA_SYSTEM_PROMPT + extra
+            prompt = ChatPromptTemplate.from_messages([("system", enriched_system), ("human", "{message}")])
             chain = prompt | self.llm_service.claude
             response = await chain.ainvoke({"intent": intent, "entities": str(entities), "message": message})
             return {"message": response.content, "success": True, "data": {},

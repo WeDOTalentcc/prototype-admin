@@ -62,7 +62,7 @@ export function JobPreviewPanel({
 
   return (
               <div 
-                className="flex-shrink-0 bg-lia-bg-secondary rounded-md overflow-hidden animate-slide-in flex flex-col h-full max-h-[calc(100vh-180px)] relative group"
+                className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle overflow-hidden animate-slide-in flex flex-col h-full max-h-[calc(100vh-180px)] relative group"
                 style={{width: `${previewWidth}px`,
                   minWidth: '320px',
                   maxWidth: '700px'}}
@@ -93,7 +93,7 @@ export function JobPreviewPanel({
                   }}
                 />
                 {/* Header Padronizado (Design System Candidato) */}
-                <div className="bg-lia-bg-secondary border-b border-lia-border-subtle">
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border-b border-lia-border-subtle">
                   {/* Linha 1: Título + Código + Ações */}
                   <div className="px-3 pt-3 pb-2">
                     <div className="flex items-start justify-between gap-2">
@@ -103,7 +103,7 @@ export function JobPreviewPanel({
                           <h3 className="text-base-ui font-semibold text-lia-text-primary truncate">
                             {_previewJob.title}
                           </h3>
-                          <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium" style={{backgroundColor: 'var(--lia-bg-tertiary)', border: '1px solid var(--lia-border-default)'}}>
+                          <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 flex-shrink-0 font-mono font-medium bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default">
                             {_previewJob.jobId}
                           </Badge>
                           {_previewJob.isAffirmative && (
@@ -151,65 +151,64 @@ export function JobPreviewPanel({
                         </div>
 
                         {/* Row 3: Badges de informação */}
-                        <div className="flex items-center gap-1.5 flex-wrap">
+                        <div className="flex items-center gap-1 flex-wrap">
                           {_previewJob.department && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
                               {_previewJob.department}
                             </Badge>
                           )}
                           {_previewJob.level && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-status-warning/10 text-status-warning border border-status-warning/30">
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-status-warning/10 text-status-warning border border-status-warning/30">
                               {_previewJob.level}
                             </Badge>
                           )}
                           {_previewJob.location && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 flex items-center gap-0.5">
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-wedo-cyan/10 text-wedo-cyan-dark border border-wedo-cyan/30 flex items-center gap-0.5">
                               <MapPin className="w-2.5 h-2.5" />
                               {_previewJob.location}
                             </Badge>
                           )}
                           {_previewJob.workModel && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
                               {_previewJob.workModel === 'remoto' ? 'Remoto' : _previewJob.workModel === 'híbrido' ? 'Híbrido' : 'Presencial'}
                             </Badge>
                           )}
                           {_previewJob.type && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
                               {_previewJob.type}
                             </Badge>
                           )}
                           {(_previewJob.visibility === 'confidential' || _previewJob.isConfidential) && (
-                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30">
+                            <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30">
                               <Shield className="w-2.5 h-2.5 mr-0.5" />
                               Confidencial
                             </Badge>
                           )}
                           {_previewJob.visibility === 'internal' && (
-                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30">
+                            <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30">
                               <Building className="w-2.5 h-2.5 mr-0.5" />
                               Interna
                             </Badge>
                           )}
                           {_previewJob.visibility === 'hidden' && (
-                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
+                            <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                               <Lock className="w-2.5 h-2.5 mr-0.5" />
                               Oculta
                             </Badge>
                           )}
-                          {/* Badge de publicação */}
                           {(_previewJob.publishedLinkedIn || _previewJob.publishedWebsite) ? (
-                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success border-status-success/30 flex items-center gap-0.5">
+                            <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-status-success/10 text-status-success border-status-success/30 flex items-center gap-0.5">
                               <Globe className="w-2.5 h-2.5" />
                               Publicada
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-tertiary border-lia-border-subtle flex items-center gap-0.5">
+                            <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-tertiary border-lia-border-subtle flex items-center gap-0.5">
                               <Globe className="w-2.5 h-2.5" />
                               Não publicada
                             </Badge>
                           )}
                           {(_previewJob.salaryRange?.min || _previewJob.salaryRange?.max || (_previewJob as unknown as Record<string, number | undefined>).salaryMin || (_previewJob as unknown as Record<string, number | undefined>).salaryMax) && (
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success border border-status-success/30 flex items-center gap-0.5">
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-status-success/10 text-status-success border border-status-success/30 flex items-center gap-0.5">
                               <DollarSign className="w-2.5 h-2.5" />
                               {(() => {
                                 const min = _previewJob.salaryRange?.min || (_previewJob as unknown as Record<string, number | undefined>).salaryMin
@@ -221,9 +220,8 @@ export function JobPreviewPanel({
                               })()}
                             </Badge>
                           )}
-                          {/* Badge de status */}
                           <Badge 
-                            className="text-micro px-1.5 py-0 h-4 font-medium"
+                            className="text-[0.625rem] leading-none px-1.5 py-0.5 font-medium"
                             style={{backgroundColor: getStatusColor(_previewJob.status as Job['status']), color: 'var(--white)'}}
                           >
                             {_previewJob.status}
@@ -242,7 +240,7 @@ export function JobPreviewPanel({
                             }
                             return (
                               <Badge 
-                                className="text-micro px-1.5 py-0 h-4 font-medium text-lia-text-primary"
+                                className="text-[0.625rem] leading-none px-1.5 py-0.5 font-medium text-lia-text-primary"
                                 style={{backgroundColor: scrColors[scrStatus] || 'var(--lia-border-subtle)'}}
                               >
                                 {scrLabels[scrStatus] || 'Triagem: N/C'}
