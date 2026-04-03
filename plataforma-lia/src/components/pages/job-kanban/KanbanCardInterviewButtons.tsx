@@ -117,8 +117,11 @@ export function KanbanCardInterviewButtons({
                 className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
                 onClick={(e) => {
                   e.stopPropagation()
-                  const teamsUrl =
-                    candidate.teamsLink || "https://teams.microsoft.com/l/meetup-join/..."
+                  const teamsUrl = candidate.teamsLink
+                  if (!teamsUrl) {
+                    console.warn('Teams link not configured for this interview')
+                    return
+                  }
                   window.open(teamsUrl, "_blank")
                 }}
                 title={`Entrar na reunião - ${
