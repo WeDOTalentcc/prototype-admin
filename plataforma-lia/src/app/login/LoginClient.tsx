@@ -100,9 +100,9 @@ export default function LoginPage() {
             Entre. A <span className="font-['Source_Serif_4',serif] font-bold">LIA</span> já está<br />
             trabalhando por você.
           </h1>
-          <p className="text-base text-gray-500 font-light leading-relaxed font-['Open_Sans',sans-serif]">
+          <p className="text-base text-gray-600 font-normal leading-relaxed font-['Open_Sans',sans-serif]">
             Sourcing global&nbsp;·&nbsp;Triagem inteligente&nbsp;·&nbsp;Agendamentos automáticos<br />
-            Recrutamento <span className="text-wedo-cyan">simples</span>
+            Recrutamento <span className="text-wedo-cyan font-semibold">simples</span>
           </p>
         </div>
 
@@ -305,11 +305,11 @@ export default function LoginPage() {
         </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 pb-8 px-12 text-gray-500 text-xs space-y-1 text-center">
-          <p>
+        <div className="absolute bottom-0 left-0 right-0 pb-8 px-12 text-gray-500 text-xs space-y-1 text-center flex flex-col items-center">
+          <p className="max-w-md">
             A WeDoTalent é uma HRTech brasileira que desenvolve soluções avançadas de tecnologia para o RH do futuro.
           </p>
-          <p>© 2025 WeDoTalent. Todos os direitos reservados.</p>
+          <p className="max-w-md">© 2025 WeDoTalent. Todos os direitos reservados.</p>
         </div>
       </div>
     </div>
