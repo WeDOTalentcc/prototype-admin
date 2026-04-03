@@ -332,6 +332,16 @@ Responda APENAS com JSON array válido, sem markdown."""
     for q in raw_questions:
         skill_type = q.get("skill_type", "technical")
         comp = q.get("competency_validated", "general")
+        # Guard: LLM may return a list instead of a string (fix WSI-Q-01)
+        if isinstance(comp, list):
+            comp = ", ".join(str(c) for c in comp) if comp else "general"
+        elif not isinstance(comp, str):
+            comp = str(comp) if comp else "general"
+        # Guard: LLM may return a list instead of a string (fix WSI-Q-01)
+        if isinstance(comp, list):
+            comp = ", ".join(str(c) for c in comp) if comp else "general"
+        elif not isinstance(comp, str):
+            comp = str(comp) if comp else "general"
         safe_id = comp.lower().replace(" ", "-").replace("/", "-")
         block_id = q.get("block_id")
         if block_id is None:

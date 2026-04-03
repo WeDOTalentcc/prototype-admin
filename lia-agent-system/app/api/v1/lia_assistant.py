@@ -1364,12 +1364,33 @@ async def interpret_user_message(
             
         elif classification.intent_type == EnhancedIntentType.QUESTION:
             action = InterpretMessageAction.ASK_QUESTION
-            
+            lia_response = f"Boa pergunta! Na etapa de **{STAGE_NAMES.get(request.current_stage, 'atual')}**, posso esclarecer o que precisar. Qual é a sua dúvida?"
+
         elif classification.intent_type == EnhancedIntentType.CORRECTION:
             action = InterpretMessageAction.UPDATE_FIELD
-            
+            lia_response = "Entendido, vou atualizar as informações conforme solicitado."
+
         elif classification.intent_type == EnhancedIntentType.CREATE_JOB or classification.intent_type == EnhancedIntentType.UPDATE_FIELD:
             action = InterpretMessageAction.PROVIDE_DATA
+            # Build confirmation from extracted entities (fix wizard lia_response null)
+            ents = classification.entities
+            parts = []
+            if ents:
+                if getattr(ents, "cargo", None):
+                    parts.append(f"cargo: **{ents.cargo}**")
+                if getattr(ents, "senioridade", None):
+                    parts.append(f"senioridade: **{ents.senioridade}**")
+                if getattr(ents, "modelo_trabalho", None):
+                    parts.append(f"modelo: **{ents.modelo_trabalho}**")
+                if getattr(ents, "localizacao", None):
+                    parts.append(f"local: **{ents.localizacao}**")
+                if getattr(ents, "skills_tecnicas", None):
+                    skills_str = ", ".join(getattr(ents, "skills_tecnicas", [])[:4])
+                    parts.append(f"skills: **{skills_str}**")
+            if parts:
+                lia_response = f"✅ Registrado! {', '.join(parts).capitalize()}. Deseja adicionar mais detalhes ou podemos avançar?"
+            else:
+                lia_response = "✅ Informações registradas. Deseja adicionar mais detalhes ou podemos avançar para a próxima etapa?"
             
         elif classification.intent_type == EnhancedIntentType.REJECT:
             action = InterpretMessageAction.REJECT
@@ -1453,14 +1474,43 @@ async def handle_conversational_message(
     questions about capabilities and responding intelligently.
     """
     try:
+        # Mode: salary_benchmark — use structured salary analysis (fix C-06)
+        if request.mode == "salary_benchmark":
+            import re as _re
+            salary_prompt = f"""Você é especialista em remuneração do mercado brasileiro de tecnologia.
+Forneça uma análise completa de faixa salarial para a seguinte solicitação.
+
+REGRAS OBRIGATÓRIAS:
+1. Sempre inclua valores em Reais no formato R$ XX.XXX (ponto como separador de milhar)
+2. Estruture a resposta com:
+   - Faixa mínima: R$ X.XXX
+   - Mediana: R$ X.XXX
+   - Faixa máxima: R$ X.XXX
+   - Recomendação: R$ X.XXX - R$ X.XXX mensais (CLT)
+3. Considere senioridade, localização e mercado brasileiro 2025
+4. Responda em Português do Brasil
+
+Solicitação: {request.message}"""
+            
+            llm_service = LLMService()
+            response_text = await llm_service.generate(
+                salary_prompt,
+                provider="gemini"
+            )
+            return ConversationalResponse(
+                response=response_text,
+                understood_intent="salary_benchmark",
+                suggested_action=None,
+                can_help=True
+            )
+
         llm_service = LLMService()
         
         prompt = LIA_CAPABILITIES_PROMPT.format(message=request.message)
         
-        response_text = await llm_service.generate_response(
-            prompt=prompt,
-            max_tokens=500,
-            temperature=0.7
+        response_text = await llm_service.generate(
+            prompt,
+            provider="gemini"
         )
         
         lower_msg = request.message.lower()

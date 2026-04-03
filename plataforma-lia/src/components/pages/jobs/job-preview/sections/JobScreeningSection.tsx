@@ -141,7 +141,7 @@ export function JobScreeningSection({
                             return (
                               <div className="flex flex-wrap gap-1.5">
                                 {fallbackSkills.slice(0, 6).map((skill: string) => (
-                                  <Badge key={skill} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-micro px-1.5 py-0.5 h-[18px] font-medium">
+                                  <Badge key={skill} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
                                     {skill}
                                   </Badge>
                                 ))}
@@ -156,7 +156,7 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Técnicas</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(technicalSkills as string[]).map((skill: string) => (
-                                      <Badge key={skill} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-micro px-1.5 py-0.5 h-[18px] font-medium border border-wedo-cyan/30">
+                                      <Badge key={skill} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-cyan/30">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -168,7 +168,7 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Comportamentais</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(behavioralSkills as string[]).map((skill: string) => (
-                                      <Badge key={skill} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-micro px-1.5 py-0.5 h-[18px] font-medium border border-wedo-purple/30">
+                                      <Badge key={skill} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-purple/30">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -180,7 +180,7 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Responsabilidades</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(responsibilitySkills as string[]).slice(0, 8).map((skill: string) => (
-                                      <Badge key={skill} className="bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning text-micro px-1.5 py-0.5 h-[18px] font-medium border border-status-warning/30">
+                                      <Badge key={skill} className="bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-status-warning/30">
                                         {skill}
                                       </Badge>
                                     ))}
@@ -218,12 +218,12 @@ export function JobScreeningSection({
                                     {lang.language}
                                   </span>
                                   {lang.level && (
-                                    <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+                                    <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
                                       {lang.level}
                                     </Badge>
                                   )}
                                   {lang.required && (
-                                    <Badge className="text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error border border-status-error/30">
+                                    <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-status-error/10 text-status-error border border-status-error/30">
                                       Obrigatório
                                     </Badge>
                                   )}
@@ -296,7 +296,7 @@ export function JobScreeningSection({
                                       <span className="text-micro text-lia-text-tertiary block mb-1">Benefícios:</span>
                                       <div className="flex flex-wrap gap-1.5">
                                         {(benefits as Benefit[]).map((b: Benefit, idx: number) => (
-                                          <Badge key={`benefit-${idx}`} className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+                                          <Badge key={`benefit-${idx}`} className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
                                             {typeof b === 'string' ? b : b.name}
                                           </Badge>
                                         ))}
@@ -372,7 +372,7 @@ export function JobScreeningSection({
                               <ClipboardList className="w-4 h-4 text-lia-text-secondary" />
                               <h4 className="text-xs font-semibold text-lia-text-primary">Roteiro de Triagem Automática</h4>
                               <Badge 
-                                className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-lia-interactive-active'}`}
+                                className={`text-[0.625rem] leading-none px-1.5 py-0.5 text-lia-text-primary ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-lia-interactive-active'}`}
                               >
                                 {(screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
                               </Badge>
@@ -385,7 +385,7 @@ export function JobScreeningSection({
                             <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Resumo da Triagem
                             <Badge
-                              className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-lia-interactive-active'}`}
+                              className={`text-[0.625rem] leading-none px-1.5 py-0.5 text-lia-text-primary ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-lia-interactive-active'}`}
                             >
                               {(screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
                             </Badge>
@@ -418,7 +418,7 @@ export function JobScreeningSection({
                           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Fluxo de Triagem WSI
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary">
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-interactive-active text-lia-text-primary">
                               6 Blocos
                             </Badge>
                           </h5>
@@ -578,7 +578,7 @@ export function JobScreeningSection({
                                               className="p-2.5 bg-lia-bg-primary border border-lia-border-subtle rounded-md"
                                             >
                                               <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                                <Badge className={`text-micro px-1.5 py-0 h-4 rounded-full ${
+                                                <Badge className={`text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full ${
                                                   item.category === 'behavioral' || item.category === 'Comportamental'
                                                     ? 'bg-wedo-purple/15 text-wedo-purple border border-wedo-purple/30'
                                                     : item.category === 'technical' || item.category === 'Técnica'
@@ -594,7 +594,7 @@ export function JobScreeningSection({
                                                     : item.category || 'Geral'}
                                                 </Badge>
                                                 {(item.type === 'eliminatory' || item.required) && (
-                                                  <Badge className="text-micro px-1.5 py-0 h-4 rounded-full bg-status-error/10 text-status-error border border-status-error/30">
+                                                  <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full bg-status-error/10 text-status-error border border-status-error/30">
                                                     Eliminatória
                                                   </Badge>
                                                 )}
@@ -649,7 +649,7 @@ export function JobScreeningSection({
                             <h5 className="text-xs font-semibold text-lia-text-primary">Agendamento Automático</h5>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <Badge className={`${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-lia-bg-inverse text-white dark:bg-lia-bg-elevated' : 'bg-lia-border-medium text-white'} text-micro px-1.5 py-0 h-4`}>
+                            <Badge className={`${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-lia-bg-inverse text-white dark:bg-lia-bg-elevated' : 'bg-lia-border-medium text-white'} text-[0.625rem] leading-none px-1.5 py-0.5`}>
                               {(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
                             </Badge>
                             {collapsedPreviewSections.includes('agendamento') ? (
@@ -707,22 +707,22 @@ export function JobScreeningSection({
                         {!collapsedPreviewSections.includes('canais') && (<>
                         {/* Canais em linha */}
                         <div className="flex items-center gap-3 mb-3 mt-3 pb-3 border-b border-lia-border-subtle">
-                          <span className="text-micro text-lia-text-tertiary">Canais:</span>
+                          <span className="text-[0.625rem] text-lia-text-tertiary">Canais:</span>
                           <div className="flex items-center gap-2">
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
-                              <MessageSquare className="w-3 h-3" />
-                              <span className="text-micro font-medium">WhatsApp</span>
-                              {(screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
+                            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${(screeningConfig?.channels?.whatsapp?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+                              <MessageSquare className="w-2.5 h-2.5" />
+                              <span className="text-[0.625rem] font-medium">WhatsApp</span>
+                              {(screeningConfig?.channels?.whatsapp?.enabled ?? true) && <CheckCircle className="w-2.5 h-2.5" />}
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
-                              <Globe className="w-3 h-3" />
-                              <span className="text-micro font-medium">Chat Web</span>
-                              {(screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-3 h-3" />}
+                            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${(screeningConfig?.channels?.chat_web?.enabled ?? true) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+                              <Globe className="w-2.5 h-2.5" />
+                              <span className="text-[0.625rem] font-medium">Chat Web</span>
+                              {(screeningConfig?.channels?.chat_web?.enabled ?? true) && <CheckCircle className="w-2.5 h-2.5" />}
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-1 rounded-md ${(screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
-                              <Phone className="w-3 h-3" />
-                              <span className="text-micro font-medium">Ligação</span>
-                              {(screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-3 h-3" />}
+                            <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${(screeningConfig?.channels?.phone?.enabled ?? false) ? 'bg-status-success/10 text-status-success' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+                              <Phone className="w-2.5 h-2.5" />
+                              <span className="text-[0.625rem] font-medium">Ligação</span>
+                              {(screeningConfig?.channels?.phone?.enabled ?? false) && <CheckCircle className="w-2.5 h-2.5" />}
                             </div>
                           </div>
                         </div>
@@ -730,8 +730,8 @@ export function JobScreeningSection({
                         {/* Configurações em grid */}
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-micro text-lia-text-tertiary">Score Mínimo Aprovação</span>
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-inverse text-white">{(() => {
+                            <span className="text-[0.625rem] text-lia-text-tertiary">Score Mínimo{'\n'}Aprovação</span>
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-inverse text-white">{(() => {
                               const preset = screeningConfig?.settings?.min_score_preset
                               switch(preset) {
                                 case 'rigorous': return 'Rigoroso'
@@ -741,16 +741,16 @@ export function JobScreeningSection({
                             })()}</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-micro text-lia-text-tertiary">Timeout Resposta</span>
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">{screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
+                            <span className="text-[0.625rem] text-lia-text-tertiary">Timeout Resposta</span>
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-micro text-lia-text-tertiary">Re-tentativas</span>
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">{screeningConfig?.settings?.max_retries ?? 2}x</Badge>
+                            <span className="text-[0.625rem] text-lia-text-tertiary">Re-tentativas</span>
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{screeningConfig?.settings?.max_retries ?? 2}x</Badge>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-micro text-lia-text-tertiary">Fallback</span>
-                            <Badge className="text-micro px-1.5 py-0 h-4 bg-wedo-orange/15 text-wedo-orange">Revisão Manual</Badge>
+                            <span className="text-[0.625rem] text-lia-text-tertiary">Fallback</span>
+                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-wedo-orange/15 text-wedo-orange">Revisão Manual</Badge>
                           </div>
                         </div>
 

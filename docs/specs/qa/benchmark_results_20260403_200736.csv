@@ -1,0 +1,137 @@
+﻿id,component,name,endpoint,passed,score,http_status,latency_ms,response_received,response_length,length_ok,min_length,has_portuguese,is_relevant,has_hallucination_risk,keywords_coverage,expected_missing,forbidden_found,error,response_text
+chat_001,chat,Consulta candidatos triagem,/api/backend-proxy/chat/,False,95,200,17387,True,1687,True,20,True,True,True,1.0,,null,,"```json
+{
+    ""thought"": ""O retorno da ferramenta indica 0 candidatos no pipeline. Isso pode ser porque o company_id 'current' não é o correto, ou realmente não há candidatos. Vou informar o recrutador de forma amigável sobre o resultado e perguntar se os dados estão corretos ou se preciso de mais informações."",
+    ""action"": ""respond"",
+    ""tool_name"": null,
+    ""tool_args"": {},
+    ""response"": ""Consultei o pipeline agora e, pelo que os dados mostram, **não há candidatos registrados na triagem*"
+chat_002,chat,Pipeline travado,/api/backend-proxy/chat/,True,100,200,12609,True,1193,True,20,True,True,True,1.0,,,,"# 📊 Análise de Pipeline Travado
+
+Vou verificar as vagas com candidatos parados há mais de 5 dias no pipeline!
+
+---
+
+## ⚠️ Vagas com Pipeline Travado
+
+> 🔄 *Consultando dados em tempo real do seu Kanban...*
+
+Parece que não tenho acesso direto aos dados do seu pipeline neste momento. Mas posso te ajudar de duas formas:
+
+---
+
+## 🛠️ O que posso fazer por você:
+
+### **Opção 1 — Você me passa os dados**
+Me informe as vagas e eu faço a análise completa:
+- Nome da vaga
+- Etapa atual dos candidatos
+- Data"
+chat_003,chat,Relatório processos seletivos,/api/backend-proxy/chat/,True,100,200,9551,True,1057,True,30,True,True,False,1.0,,,,"# 📊 Relatório de Processos Seletivos
+
+Olá! Vou te ajudar a gerar esse relatório. Para que eu possa compilar as informações mais relevantes para você, preciso de alguns detalhes:
+
+---
+
+## 🔍 Quais informações você precisa?
+
+**1. Escopo do relatório:**
+- [ ] Todos os processos seletivos da empresa
+- [ ] Departamento(s) específico(s)
+- [ ] Vagas específicas
+
+**2. Métricas desejadas:**
+- [ ] **Volume** → vagas abertas, candidatos por vaga, taxa de conversão
+- [ ] **Tempo** → time-to-hire, time-to-fil"
+chat_004,chat,Candidatos vaga backend,/api/backend-proxy/chat/,True,100,200,7161,True,851,True,20,True,True,True,0.75,aplicar,,,"# 🔍 Buscando Candidatos - Vaga Backend
+
+Vou ajudá-lo a visualizar os candidatos dessa vaga! Para trazer as informações corretas, preciso de alguns detalhes:
+
+---
+
+## ❓ Qual vaga exatamente?
+
+Encontrei **mais de uma vaga** que pode corresponder. Você poderia confirmar?
+
+| # | Vaga | Status | Candidatos |
+|---|------|--------|------------|
+| 1 | **Backend Developer Sênior** | 🟢 Ativa | 34 candidatos |
+| 2 | **Backend Engineer - Node.js** | 🟢 Ativa | 18 candidatos |
+| 3 | **Backend Python - Dados**"
+chat_005,chat,Silver medalist Product Manager,/api/backend-proxy/chat/,True,100,200,10527,True,1253,True,20,True,True,False,1.0,,,,"# 🔍 Buscando Silver Medalists — Product Manager
+
+Deixa eu verificar os candidatos que ficaram em segundo lugar em processos anteriores para vagas de Product Manager!
+
+---
+
+⚠️ **Não consegui acessar os dados em tempo real neste momento.**
+
+Para localizar os **silver medalists** dessa vaga, posso te ajudar de algumas formas:
+
+---
+
+## 📋 O que você pode fazer agora:
+
+### 1️⃣ **Verificar no Kanban da vaga**
+Acesse a vaga de **Product Manager** e filtre candidatos com status:
+- 🥈 *""Silver Medalist""*
+-"
+orch_001,orchestrator,Mover candidato próxima etapa,/api/backend-proxy/orchestrator/process/,True,100,200,7590,True,847,True,10,True,True,False,0.67,"candidato, pipeline",,,"# Movendo João Silva para a Próxima Etapa 🔄
+
+Para realizar essa ação no Kanban, preciso de algumas informações adicionais:
+
+---
+
+## 📋 Informações Necessárias
+
+**1. Qual vaga está vinculado o João Silva?**
+> Ex: Analista de Marketing, Desenvolvedor Backend...
+
+**2. Em qual etapa ele está atualmente?**
+| # | Etapas Comuns |
+|---|---------------|
+| 1 | 📥 Triagem de Currículos |
+| 2 | 📞 Contato Inicial |
+| 3 | 🧠 Entrevista WSI |
+| 4 | 👥 Entrevista com Cliente |
+| 5 | ✅ Proposta / Contratação |
+
+---
+"
+orch_002,orchestrator,Agendar entrevista,/api/backend-proxy/orchestrator/process/,True,70,200,163,True,43,True,10,False,True,False,0.4,"amanhã, 14, horário",,,Confirma a execução de: Agendar Entrevista?
+orch_003,orchestrator,Email feedback reprovados,/api/backend-proxy/orchestrator/process/,True,50,200,162,True,37,True,10,False,False,False,0.4,"feedback, candidato, reprovado",,,Confirma a execução de: Enviar Email?
+orch_004,orchestrator,Criar vaga engenheiro dados,/api/backend-proxy/orchestrator/process/,True,100,200,6763,True,898,True,10,True,True,False,1.0,,,,"```json
+{
+    ""thought"": ""O recrutador quer criar uma vaga para Engenheiro de Dados Sênior. Já consigo extrair: título = 'Engenheiro de Dados', senioridade = 'Sênior'. Falta coletar: departamento (obrigatório), localização, modelo de trabalho e tipo de contrato. Vou confirmar o que já extraí e perguntar sobre o departamento de forma natural."",
+    ""action"": ""respond"",
+    ""tool_name"": null,
+    ""tool_args"": {},
+    ""response"": null
+}
+```
+
+Ótimo! Já anotei as primeiras informações da vaga: **Enge"
+wizard_001,wizard,Wizard info básica Python fintech,/api/backend-proxy/lia/job-wizard/interpret/,False,5,200,2353,False,0,False,10,False,False,False,0.0,,,,
+wizard_002,wizard,Wizard requisitos Python Spark AWS,/api/backend-proxy/lia/job-wizard/interpret/,False,5,200,159,False,0,False,10,False,False,False,0.0,,,,
+wizard_003,wizard,Wizard competências raciocínio equipe,/api/backend-proxy/lia/job-wizard/interpret/,False,5,200,131,False,0,False,10,False,False,False,0.0,,,,
+wizard_004,wizard,Wizard revisão publicar vaga,/api/backend-proxy/lia/job-wizard/interpret/,False,5,200,99,False,0,False,5,False,False,False,0.0,,,,
+conv_001,conversational,Olá como funciona plataforma,/api/backend-proxy/lia/conversational/,True,100,200,879,True,225,True,30,True,True,False,0.67,"candidato, funciona",,,"Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:
+
+• **Criar uma nova vaga** do zero com toda inteligência da plataforma
+• **Reutilizar uma vaga anterior** para publicar rapidamente
+
+Como gostaria de começar?"
+conv_002,conversational,Quero criar nova vaga,/api/backend-proxy/lia/conversational/,True,100,200,117,True,225,True,20,True,True,False,0.6,"wizard, informação",,,"Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:
+
+• **Criar uma nova vaga** do zero com toda inteligência da plataforma
+• **Reutilizar uma vaga anterior** para publicar rapidamente
+
+Como gostaria de começar?"
+conv_003,conversational,Ajuda processo seletivo,/api/backend-proxy/lia/conversational/,True,90,200,164,True,225,True,20,True,True,False,0.2,"processo, seletivo, candidato, etapa",,,"Sou a LIA, sua assistente de recrutamento! Aqui posso te ajudar a:
+
+• **Criar uma nova vaga** do zero com toda inteligência da plataforma
+• **Reutilizar uma vaga anterior** para publicar rapidamente
+
+Como gostaria de começar?"
+wsi_001,wsi,Perguntas triagem Python Sênior,/api/lia/api/wsi/generate-job-screening-questions/,False,5,500,25718,False,0,False,50,False,False,False,0.0,,,"Erro do servidor (500): {""error"":{""error"":true,""status_code"":500,""message"":""Failed to generate screening questions: 'list' object has no attribute 'lower'"",""request_id"":""8c43c055-5367-4574-920e-4f02cbf9deb8""}}",
+wsi_002,wsi,Perguntas triagem Product Manager,/api/lia/api/wsi/generate-job-screening-questions/,True,80,200,28847,True,1220,True,50,True,False,True,0.57,"roadmap, prioridade, manager",,,"De 1 a 5, qual seu domínio em técnicas de priorização de backlog (ex: MoSCoW, RICE, WSJF)? Conte sobre um projeto em que você aplicou uma dessas técnicas para priorizar funcionalidades e como isso impactou o resultado final. | De 1 a 5, qual seu nível de proficiência em definir, acompanhar e analisar métricas de produto (ex: NPS, DAU/MAU, Funil de Conversão)? Dê um exemplo de como você utilizou a análise de métricas para tomar uma decisão importante sobre uma funcionalidade ou produto. | Imagine"

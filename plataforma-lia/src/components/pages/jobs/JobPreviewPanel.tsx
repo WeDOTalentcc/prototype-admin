@@ -62,7 +62,7 @@ export function JobPreviewPanel({
 
   return (
               <div 
-                className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle overflow-hidden animate-slide-in flex flex-col h-full max-h-[calc(100vh-180px)] relative group"
+                className="flex-shrink-0 bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-lg overflow-hidden animate-slide-in flex flex-col h-full max-h-[calc(100vh-180px)] relative group"
                 style={{width: `${previewWidth}px`,
                   minWidth: '320px',
                   maxWidth: '700px'}}
