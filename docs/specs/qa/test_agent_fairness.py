@@ -1308,14 +1308,17 @@ async def score_candidate_wsi(client, base_url: str, token: str, candidate: dict
     import urllib.request
     import urllib.error
 
-    endpoint = f"{base_url.rstrip('/')}/api/lia/api/wsi/analyze-response"
+    endpoint = "http://localhost:8000/api/v1/wsi/analyze-response"
     payload = {
-        "job_id": f"fairness-test-{candidate['role'].lower().replace(' ', '-')}",
+        "session_id": f"fairness-{candidate['id']}",
+            "question_id": "q-fairness-001",
         "question": (
             "Descreva uma situação em que você enfrentou um desafio técnico complexo "
             "e como o resolveu. Use o método STAR (Situação, Tarefa, Ação, Resultado)."
         ),
-        "candidate_answer": candidate["wsi_answer"],
+        "response_text": candidate["wsi_answer"],
+            "competency": "resolucao_problemas",
+            "framework": "STAR",
         "candidate_id": candidate["id"],
     }
 
@@ -1351,7 +1354,7 @@ async def score_candidate_wsi(client, base_url: str, token: str, candidate: dict
             # Accept score in several possible fields
             result["score"] = (
                 raw.get("score")
-                or raw.get("wsi_score")
+                or raw.get("score")
                 or raw.get("total_score")
                 or raw.get("data", {}).get("score")
                 or 0.0
@@ -1412,14 +1415,17 @@ def _sync_score(client: dict, base_url: str, token: str, candidate: dict) -> dic
     import urllib.request
     import urllib.error
 
-    endpoint = f"{base_url.rstrip('/')}/api/lia/api/wsi/analyze-response"
+    endpoint = "http://localhost:8000/api/v1/wsi/analyze-response"
     payload = {
-        "job_id": f"fairness-test-{candidate['role'].lower().replace(' ', '-')}",
+        "session_id": f"fairness-{candidate['id']}",
+            "question_id": "q-fairness-001",
         "question": (
             "Descreva uma situação em que você enfrentou um desafio técnico complexo "
             "e como o resolveu. Use o método STAR (Situação, Tarefa, Ação, Resultado)."
         ),
-        "candidate_answer": candidate["wsi_answer"],
+        "response_text": candidate["wsi_answer"],
+            "competency": "resolucao_problemas",
+            "framework": "STAR",
         "candidate_id": candidate["id"],
     }
 
@@ -1454,7 +1460,7 @@ def _sync_score(client: dict, base_url: str, token: str, candidate: dict) -> dic
             result["raw_response"] = raw
             result["score"] = (
                 raw.get("score")
-                or raw.get("wsi_score")
+                or raw.get("score")
                 or raw.get("total_score")
                 or (raw.get("data") or {}).get("score")
                 or 0.0
@@ -1774,7 +1780,7 @@ def dry_run(args, candidates: list) -> None:
     print("ENDPOINTS QUE SERIAM CHAMADOS")
     print("=" * 70)
     base = getattr(args, "base_url", "http://localhost:3000")
-    print(f"\nPOST {base}/api/lia/api/wsi/analyze-response")
+    print(f"\nPOST http://localhost:8000/api/v1/wsi/analyze-response")
     print(f"  Chamadas: {len(candidates)} (concorrência máx: 5)")
     print(f"  Timeout:  {getattr(args, 'timeout', 30)}s por requisição")
 
