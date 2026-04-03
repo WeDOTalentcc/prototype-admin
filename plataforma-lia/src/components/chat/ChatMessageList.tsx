@@ -90,8 +90,8 @@ const ChatMessageListComponent = memo(function ChatMessageList({
               ) : (
                 <Avatar className="w-10 h-10 mt-1 flex-shrink-0">
                   <AvatarImage
-                    src="https://randomuser.me/api/portraits/women/44.jpg"
-                    alt="Ana Silva"
+                    src={undefined}
+                    alt="Usuário"
                   />
                   <AvatarFallback className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium">
                     AS

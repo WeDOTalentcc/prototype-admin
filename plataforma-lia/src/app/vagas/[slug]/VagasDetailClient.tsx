@@ -211,7 +211,12 @@ export default function PublicVacancyPage() {
     const message = encodeURIComponent(
       `Olá! Tenho interesse na vaga de ${vacancy.title} - Ref: ${slug}`
     )
-    window.open(`https://wa.me/5511999999999?text=${message}`, '_blank')
+    const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ''
+    if (!whatsappNumber) {
+      console.warn('NEXT_PUBLIC_WHATSAPP_NUMBER not configured')
+      return
+    }
+    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank')
   }
 
   const handleOpenForm = () => {

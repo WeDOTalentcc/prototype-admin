@@ -69,17 +69,7 @@ export function LoginPage() {
     try {
       await new Promise(resolve => setTimeout(resolve, 1500))
 
-      if (email === "ana.silva@sodexo.com" && password === "123456") {
-        // @ts-ignore TODO: fix type
-        login({
-          name: "Ana Silva",
-          email: "ana.silva@sodexo.com",
-          role: "Recrutadora Sênior",
-          company: "Sodexo"
-        })
-      } else {
-        setError("Email ou senha inválidos")
-      }
+      setError("Use a página de login principal (/login) para autenticação.")
     } catch (error) {
       setError("Erro ao fazer login")
     } finally {
@@ -88,13 +78,7 @@ export function LoginPage() {
   }
 
   const handleSocialLogin = (provider: string) => {
-    // @ts-ignore TODO: fix type
-    login({
-      name: "Ana Silva",
-      email: "ana.silva@sodexo.com",
-      role: "Recrutadora Sênior",
-      company: "Sodexo"
-    })
+    setError(`Login social (${provider}) não disponível. Use a página principal (/login).`)
   }
 
   return (
@@ -190,12 +174,7 @@ export function LoginPage() {
 
       {/* Right Side - Login Form */}
       <div className="w-full lg:w-2/5 bg-lia-bg-primary flex flex-col shadow-2xl relative z-10">
-        {/* Demo Notice */}
-        <div className="p-4 text-right">
-          <div className="text-xs text-lia-text-primary">
-            <span className="font-medium">Demo:</span> ana.silva@sodexo.com / 123456
-          </div>
-        </div>
+        <div className="p-4" />
 
         {/* Login Card */}
         <div className="flex-1 flex items-center justify-center p-4">
@@ -391,16 +370,7 @@ export function LoginPage() {
                   <Button
                     type="button"
                     onClick={() => {
-                      // Trigger onboarding for logged user
-                      localStorage.setItem('lia_first_access', 'true')
-                      // Login with demo user first
-                      // @ts-ignore TODO: fix type
-                      login({
-                        name: "Demo User",
-                        email: "demo@wedotalent.com",
-                        role: "Recrutador",
-                        company: "WeDo Talent Demo"
-                      })
+                      setError("Acesso demo não disponível nesta página. Use a página principal (/login).")
                     }}
                     variant="outline"
  className="w-full py-3 border-2 border-lia-border-default hover:border-lia-border-default rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 hover:bg-lia-bg-tertiary font-medium text-wedo-cyan-dark"
@@ -412,15 +382,7 @@ export function LoginPage() {
                   <Button
                     type="button"
                     onClick={() => {
-                      // Login and set replay flag
-                      localStorage.setItem('lia_can_replay_onboarding', 'true')
-                      // @ts-ignore TODO: fix type
-                      login({
-                        name: "Ana Silva",
-                        email: "ana.silva@sodexo.com",
-                        role: "Recrutadora Sênior",
-                        company: "Sodexo"
-                      })
+                      setError("Replay de onboarding não disponível nesta página. Use a página principal (/login).")
                     }}
                     variant="outline"
                     className="w-full py-3 border-2 border-status-success/30 hover:border-status-success/30 rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 bg-status-success/10 hover:bg-status-success/15 font-medium text-status-success"
@@ -453,12 +415,7 @@ export function LoginPage() {
 
       {/* Mobile Layout */}
       <div className="lg:hidden w-full bg-lia-bg-secondary p-6">
-        {/* Demo Notice */}
-        <div className="text-center mb-6">
-          <div className="text-xs text-lia-text-primary">
-            <span className="font-medium">Demo:</span> ana.silva@sodexo.com / 123456
-          </div>
-        </div>
+        <div className="mb-6" />
 
         {/* Mobile Header */}
         <div className="text-center mb-8">

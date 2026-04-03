@@ -354,17 +354,8 @@ switch (columnId) {
     )
 
   case 'name':
-    const getAvatarUrl = (id: string, name: string): string => {
-      let hash = 0
-      const str = id + name
-      for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i)
-        hash = ((hash << 5) - hash) + char
-        hash = hash & hash
-      }
-      const avatarIndex = Math.abs(hash % 70) + 1
-      const gender = Math.abs(hash % 2) === 0 ? 'men' : 'women'
-      return `https://randomuser.me/api/portraits/${gender}/${avatarIndex}.jpg`
+    const getAvatarUrl = (_id: string, _name: string): string | undefined => {
+      return undefined
     }
     const avatarUrl = (candidate.avatar as string | undefined)?.startsWith('http') ? (candidate.avatar as string) : getAvatarUrl(candidate.id || '', candidate.name || '')
     const isDemo = !(candidate.avatar as string | undefined)?.startsWith('http') || candidate.isDemo

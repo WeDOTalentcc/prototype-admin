@@ -510,22 +510,10 @@ export function KanbanColumnRenderer({
                 {/* Avatar pequeno com foto */}
                 <div className="relative flex-shrink-0">
                   {(() => {
-                    const getKanbanAvatarUrl = (id: string, name: string): string => {
-                      let hash = 0
-                      const str = id + name
-                      for (let i = 0; i < str.length; i++) {
-                        const char = str.charCodeAt(i)
-                        hash = ((hash << 5) - hash) + char
-                        hash = hash & hash
-                      }
-                      const avatarIndex = Math.abs(hash % 70) + 1
-                      const gender = Math.abs(hash % 2) === 0 ? "men" : "women"
-                      return `https://randomuser.me/api/portraits/thumb/${gender}/${avatarIndex}.jpg`
-                    }
                     const kanbanAvatarUrl =
                       candidate.avatar?.startsWith("http")
                         ? candidate.avatar
-                        : getKanbanAvatarUrl(candidate.id || "", candidate.name || "")
+                        : undefined
                     return (
                       <Avatar className="w-7 h-7">
                         <AvatarImage src={kanbanAvatarUrl} alt={candidate.name} />

@@ -103,17 +103,8 @@ const ACTION_CONFIG: Record<BulkActionType, { title: string; description: string
   },
 }
 
-const getRandomAvatarUrl = (candidateId: string, name: string): string => {
-  let hash = 0
-  const str = candidateId + name
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash
-  }
-  const avatarIndex = Math.abs(hash % 70) + 1
-  const gender = Math.abs(hash % 2) === 0 ? 'men' : 'women'
-  return `https://randomuser.me/api/portraits/${gender}/${avatarIndex}.jpg`
+const getRandomAvatarUrl = (_candidateId: string, _name: string): string | undefined => {
+  return undefined
 }
 
 export function BulkActionModal({

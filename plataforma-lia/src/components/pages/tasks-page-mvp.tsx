@@ -165,17 +165,8 @@ function getTimeUntilNext(interviews: ScheduledInterview[]): string | null {
   return `${diffMinutes}min`
 }
 
-function getAvatarUrl(id: string, name: string): string {
-  let hash = 0
-  const str = id + name
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash |= 0
-  }
-  const num = Math.abs(hash) % 99
-  const gender = num % 2 === 0 ? 'men' : 'women'
-  return `https://randomuser.me/api/portraits/thumb/${gender}/${num}.jpg`
+function getAvatarUrl(_id: string, _name: string): string | undefined {
+  return undefined
 }
 
 function getInitials(name: string): string {

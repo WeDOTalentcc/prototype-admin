@@ -285,7 +285,6 @@ function AdminSidebar({
         {!sidebarCollapsed ? (
           <div className="flex items-center gap-3">
             <Avatar className="w-8 h-8">
-              <AvatarImage src="https://randomuser.me/api/portraits/men/32.jpg" />
               <AvatarFallback className="bg-lia-bg-inverse text-lia-text-on-inverse text-xs">AD</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
@@ -308,7 +307,6 @@ function AdminSidebar({
           </div>
         ) : (
           <Avatar className="w-8 h-8 mx-auto">
-            <AvatarImage src="https://randomuser.me/api/portraits/men/32.jpg" />
             <AvatarFallback className="bg-lia-bg-inverse text-lia-text-on-inverse text-xs">AD</AvatarFallback>
           </Avatar>
         )}

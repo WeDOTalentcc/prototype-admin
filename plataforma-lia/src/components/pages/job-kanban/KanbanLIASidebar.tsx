@@ -233,11 +233,9 @@ export function KanbanLIASidebar({
               <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {msg.type === 'user' ? (
                   <div className="flex items-start gap-2 max-w-[90%]">
-                    <img
-                      src="https://randomuser.me/api/portraits/men/32.jpg"
-                      alt="Você"
-                      className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-                    />
+                    <div className="w-6 h-6 rounded-full bg-lia-bg-elevated flex items-center justify-center flex-shrink-0 text-xs font-medium text-lia-text-secondary">
+                      U
+                    </div>
                     <div
                       className="px-2.5 py-2 rounded-md bg-lia-bg-tertiary"
                     >

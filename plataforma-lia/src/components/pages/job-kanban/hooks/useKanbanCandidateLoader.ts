@@ -168,7 +168,7 @@ export function useKanbanCandidateLoader({
                 agendada: isScheduled ? new Date(Date.now() + (idx + 1) * 24 * 60 * 60 * 1000).toISOString() : undefined,
                 interviewDate: isScheduled ? (idx === 0 ? 'Hoje às 14h' : `${idx + 1} dias às 10h`) : undefined,
                 typeOfInterview: isScheduled ? 'Teams' : undefined,
-                teamsLink: isScheduled ? 'https://teams.microsoft.com/l/meetup-join/19%3ameeting_demo123' : undefined,
+                teamsLink: undefined,
                 interviewer: isScheduled ? 'Maria Silva - Head de P&C' : undefined,
               }
             }

@@ -399,7 +399,14 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
                         size="sm"
                         variant="outline"
                         className="gap-1.5 h-7 text-xs"
-                        onClick={() => window.open('https://wa.me/5511999999999?text=Olá LIA, preciso de ajuda', '_blank')}
+                        onClick={() => {
+                          const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || ''
+                          if (!whatsappNumber) {
+                            console.warn('NEXT_PUBLIC_WHATSAPP_NUMBER not configured')
+                            return
+                          }
+                          window.open(`https://wa.me/${whatsappNumber}?text=Olá LIA, preciso de ajuda`, '_blank')
+                        }}
                       >
                         <Phone className="w-3 h-3" />
                         WhatsApp

@@ -8,6 +8,7 @@ import { FileUploadButton, FileAnalysisResult } from "@/components/ui/file-uploa
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
+import { sanitizeHtml } from "@/lib/sanitize"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { toast } from "sonner"
 
@@ -432,7 +433,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
             <div 
               className="text-base-ui leading-relaxed text-lia-text-secondary" 
              
-              dangerouslySetInnerHTML={{ __html: userHtml }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(userHtml) }}
             />
           </div>
           {timestamp && (
@@ -468,7 +469,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
           <div 
             className="text-base-ui leading-relaxed text-lia-text-secondary" 
            
-            dangerouslySetInnerHTML={{ __html: liaHtml }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(liaHtml) }}
           />
         </div>
         <MessageFeedback

@@ -621,7 +621,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <div className="flex items-center gap-2">
                                 <Avatar className="w-8 h-8">
-                                  <AvatarImage src={`https://i.pravatar.cc/100?u=${job.recruiterEmail}`} />
+                                  <AvatarImage src={undefined} />
                                   <AvatarFallback className="text-xs bg-lia-interactive-active text-lia-text-primary">
                                     {job.recruiter.split(' ').map(n => n[0]).join('')}
                                   </AvatarFallback>

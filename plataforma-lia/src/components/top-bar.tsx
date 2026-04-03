@@ -55,7 +55,7 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
     email: "ana.silva@sodexo.com",
     role: "Recrutadora Sênior",
     company: "Sodexo Enterprise",
-    avatar: "https://i.pravatar.cc/150?u=ana.silva"
+    avatar: undefined as string | undefined
   }
 
   const handleOpenPasswordModal = () => {
