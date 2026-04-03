@@ -105,7 +105,7 @@ export function LiaVacancyQueriesGuide({
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-lia-border-subtle transition-colors font-medium text-lia-text-secondary",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border border-lia-border-subtle bg-lia-bg-primary text-lia-text-secondary",
               "hover:bg-lia-bg-tertiary hover:text-lia-text-primary",
               isOpen && "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary",
               className
