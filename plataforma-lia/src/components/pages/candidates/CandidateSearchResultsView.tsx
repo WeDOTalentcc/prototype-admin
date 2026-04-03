@@ -370,17 +370,28 @@ export function CandidateSearchResultsView({
 
   return (
     <div className="flex flex-col h-[calc(100vh-9rem)] gap-2">
-      {/* Header com query da busca e opções de edição */}
-      <SearchResultsHeader
-        lastSearchQuery={lastSearchQuery}
-        lastSearchEntities={lastSearchEntities}
-        onBack={onBack}
-        onOpenEditQueryModal={(value) => {
-          setEditQueryValue(value)
-          setShowEditQueryModal(true)
-        }}
-        onOpenAdvancedSearch={onOpenAdvancedSearch}
-      />
+      {/* Header com botão LIA Brain + query da busca e opções de edição */}
+      <div className="flex items-center gap-2">
+        {!showExpandedLIA && (
+          <CompactLIAPrompt
+            isLIAThinking={isLIAThinking}
+            liaPromptValue={liaPromptValue}
+            setLiaPromptValue={setLiaPromptValue}
+            setShowExpandedLIA={setShowExpandedLIA}
+            onAICommand={onAICommand}
+          />
+        )}
+        <SearchResultsHeader
+          lastSearchQuery={lastSearchQuery}
+          lastSearchEntities={lastSearchEntities}
+          onBack={onBack}
+          onOpenEditQueryModal={(value) => {
+            setEditQueryValue(value)
+            setShowEditQueryModal(true)
+          }}
+          onOpenAdvancedSearch={onOpenAdvancedSearch}
+        />
+      </div>
 
       {/* Bulk Actions Bar - Ações para candidatos selecionados */}
       <BulkActionsBar
@@ -483,17 +494,9 @@ export function CandidateSearchResultsView({
         setActiveTab={setActiveTab}
       />
 
-      {/* Toolbar Compacto - Prompt LIA + Controles */}
+      {/* Toolbar Controles */}
       {!showExpandedLIA && (
-        <div className="flex items-center justify-between gap-4 mb-1 mt-1">
-          <CompactLIAPrompt
-            isLIAThinking={isLIAThinking}
-            liaPromptValue={liaPromptValue}
-            setLiaPromptValue={setLiaPromptValue}
-            setShowExpandedLIA={setShowExpandedLIA}
-            onAICommand={onAICommand}
-          />
-
+        <div className="flex items-center justify-end gap-4 mb-1 mt-1">
           <SearchControlsBar
             selectedCandidatesForBatch={selectedCandidatesForBatch}
             searchSortBy={searchSortBy}
