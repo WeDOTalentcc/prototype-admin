@@ -112,7 +112,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
         />
         {/* Seletor de Origem de Busca + Filtros de Contato - Próximo ao search */}
         {onSearchSourceChange && (
-          <div className="absolute right-12 bottom-2.5 flex items-center gap-1 flex-shrink-0 z-10">
+          <div className="absolute right-12 bottom-2.5 flex items-center gap-0.5 flex-shrink-0 z-10">
             {/* Source selectors: Local, Hybrid, Global */}
             <TooltipProvider>
               <Tooltip>
@@ -121,14 +121,13 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                     type="button"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSearchSourceChange('local'); }}
                     className={cn(
-                      "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                      "flex items-center justify-center p-1 rounded-md text-xs transition-colors",
                       searchSource === 'local'
-                        ? "bg-wedo-green/15 ring-1 ring-wedo-green"
-                        : "hover:bg-lia-bg-tertiary"
-                    , searchSource === 'local' ? "text-wedo-green" : "text-lia-text-tertiary"
+                        ? "bg-wedo-green/15 text-wedo-green"
+                        : "text-lia-border-default hover:text-lia-text-tertiary"
                     )}
                   >
-                    <Home className="w-4 h-4" />
+                    <Home className="w-3.5 h-3.5" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">
@@ -146,14 +145,13 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('hybrid'); }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                        "flex items-center justify-center p-1 rounded-md text-xs transition-colors",
                         searchSource === 'hybrid'
-                          ? "bg-wedo-orange/15 ring-1 ring-wedo-orange"
-                          : "hover:bg-lia-bg-tertiary"
-                      , searchSource === 'hybrid' ? "text-wedo-orange" : "text-lia-text-tertiary"
+                          ? "bg-wedo-orange/15 text-wedo-orange"
+                          : "text-lia-border-default hover:text-lia-text-tertiary"
                       )}
                     >
-                      <Zap className="w-4 h-4" />
+                      <Zap className="w-3.5 h-3.5" />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">
@@ -172,14 +170,13 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                       type="button"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSourceChange('global'); }}
                       className={cn(
-                        "flex items-center justify-center p-1.5 rounded-md text-xs transition-colors",
+                        "flex items-center justify-center p-1 rounded-md text-xs transition-colors",
                         searchSource === 'global'
-                          ? "bg-wedo-cyan/15 ring-1 ring-lia-btn-primary-bg/20"
-                          : "hover:bg-lia-bg-tertiary"
-                      , searchSource === 'global' ? "text-lia-text-primary" : "text-lia-text-tertiary"
+                          ? "bg-wedo-cyan/15 text-lia-text-primary"
+                          : "text-lia-border-default hover:text-lia-text-tertiary"
                       )}
                     >
-                      <Globe className="w-4 h-4" />
+                      <Globe className="w-3.5 h-3.5" />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="!animate-none !duration-0">

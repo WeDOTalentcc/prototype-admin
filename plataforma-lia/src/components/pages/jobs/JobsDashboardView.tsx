@@ -37,23 +37,23 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenJobCreationChat('Criar nova vaga'), 100)
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white hover:border-lia-btn-primary-bg font-open-sans"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
               >
-                <Plus className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
+                <Plus className="w-3.5 h-3.5" />
                 Criar nova vaga
               </button>
               <button
                 onClick={() => onSetActiveFilter('ativas')}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white hover:border-lia-btn-primary-bg font-open-sans"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
               >
-                <Briefcase className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
+                <Briefcase className="w-3.5 h-3.5" />
                 Ver minhas vagas
               </button>
               <button
                 onClick={() => onSetActiveFilter('todas')}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white hover:border-lia-btn-primary-bg font-open-sans"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
               >
-                <Building2 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
+                <Building2 className="w-3.5 h-3.5" />
                 Ver todas as vagas
               </button>
               <button
@@ -61,9 +61,9 @@ export function JobsDashboardView({
                   onSetActiveFilter('todas')
                   setTimeout(() => onOpenGeneralChat('Resumo das minhas vagas ativas'), 100)
                 }}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-primary hover:bg-lia-btn-primary-bg hover:text-white hover:border-lia-btn-primary-bg font-open-sans"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors border border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
               >
-                <BarChart3 className="w-3.5 h-3.5 text-lia-text-primary group-hover:text-white transition-colors motion-reduce:transition-none" />
+                <BarChart3 className="w-3.5 h-3.5" />
                 Resumo das vagas
               </button>
               <LiaVacancyQueriesGuide
