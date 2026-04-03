@@ -55,6 +55,9 @@ export function useFloatStreaming(
   const [hitlPending, setHitlPending] = useState<HITLPending | null>(null)
   const hitlRef = useRef<HITLPending | null>(null)
   const onCompleteRef = useRef(onComplete)
+  // Plan progress tracking
+  const [planProgressSteps, setPlanProgressSteps] = useState<Array<{task_id: string; action_id: string; domain_id: string; status: string}>>([])
+  const [activePlanId, setActivePlanId] = useState<string | null>(null)
 
   // E7: estado de pensamentos ReAct
   const [thinkingSteps, setThinkingSteps] = useState<string[]>([])
@@ -75,6 +78,36 @@ export function useFloatStreaming(
           setThinkingSteps(prev => [...prev, event.content as string])
         }
         break
+
+      case 'plan_progress': {
+        const planEvent = event as Record<string, unknown>
+        const planEventType = planEvent.event as string
+        if (planEventType === 'plan_started') {
+          setActivePlanId(planEvent.plan_id as string || null)
+          setPlanProgressSteps([])
+        } else if (planEventType === 'step_running' || planEventType === 'step_completed' || planEventType === 'step_skipped') {
+          setPlanProgressSteps(prev => {
+            const taskId = planEvent.task_id as string
+            const existing = prev.findIndex(s => s.task_id === taskId)
+            const step = {
+              task_id: taskId,
+              action_id: planEvent.action_id as string || '',
+              domain_id: planEvent.domain_id as string || '',
+              status: planEventType === 'step_running' ? 'running' : planEventType === 'step_skipped' ? 'skipped' : (planEvent.status as string || 'completed'),
+            }
+            if (existing >= 0) {
+              const updated = [...prev]
+              updated[existing] = step
+              return updated
+            }
+            return [...prev, step]
+          })
+        } else if (planEventType === 'plan_completed') {
+          // Plan done — final state will come via 'message' event
+          setActivePlanId(null)
+        }
+        break
+      }
 
       case 'approval_required': {
         const pending: HITLPending = {

@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { classifyRiskScore, isRiskCritical } from "@/lib/score-utils"
 import Link from "next/link"
 import { 
   AlertTriangle, 
@@ -35,8 +36,8 @@ const insuranceCoverage = 'R$ 5.000.000,00'
 
 const riskStats = {
   total: risks.length,
-  critical: risks.filter(r => r.score >= 12).length,
-  high: risks.filter(r => r.score >= 8 && r.score < 12).length,
+  critical: risks.filter(r => isRiskCritical(r.score)).length,
+  high: risks.filter(r => classifyRiskScore(r.score).level === 'high').length,
   mitigated: risks.filter(r => r.status === 'mitigated').length,
   lastAssessment: '2025-01-10',
   insuranceCoverage: insuranceCoverage
@@ -110,12 +111,7 @@ const subpages = [
   },
 ]
 
-const getScoreColor = (score: number) => {
-  if (score >= 12) return { bg: 'var(--status-error-bg)', text: 'var(--status-error)', label: 'Crítico' }
-  if (score >= 8) return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', label: 'Alto' }
-  if (score >= 4) return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', label: 'Médio' }
-  return { bg: 'var(--status-success-bg)', text: 'var(--status-success)', label: 'Baixo' }
-}
+const getScoreColor = (score: number) => classifyRiskScore(score)
 
 
 export default function RiscosPage() {

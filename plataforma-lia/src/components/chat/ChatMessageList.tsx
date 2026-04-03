@@ -16,6 +16,7 @@ import {
   CompletionMessage,
 } from "@/components/ui/chat-status-indicators"
 import { ActionResultCard } from "@/components/chat/action-result-card"
+import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { TypingIndicator } from "@/components/chat/typing-indicator"
 import { Message } from "@/types/chat"
 import { sanitizeHtml } from "@/lib/sanitize"
@@ -163,6 +164,14 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                         }
                       />
                     </div>
+                  )}
+
+                {/* Plan Progress Card — shown when orchestrator ran a multi-step plan */}
+                {message.sender === "lia" &&
+                  (message.data as Record<string, any>)?.execution_plan && (
+                    <PlanProgressCard
+                      plan={(message.data as Record<string, any>).execution_plan as ExecutionPlanData}
+                    />
                   )}
 
 

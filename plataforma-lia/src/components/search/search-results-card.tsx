@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { getPercentageScoreColorClass } from "@/lib/score-utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -147,9 +148,7 @@ export function SearchResultsCard({
 
   const getScoreColor = (score?: number) => {
     if (!score) return "text-lia-text-secondary"
-    if (score >= 80) return "text-status-success"
-    if (score >= 60) return "text-status-warning"
-    return "text-wedo-orange"
+    return getPercentageScoreColorClass(score)
   }
 
   return (

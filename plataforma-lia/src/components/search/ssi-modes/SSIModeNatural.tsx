@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { getPercentageScoreVar } from '@/lib/score-utils'
 import { cn } from "@/lib/utils"
 import { textStyles } from '@/lib/design-tokens'
 import { Button } from "@/components/ui/button"
@@ -560,11 +561,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                 </span>
                 <span
                   className="text-xs font-bold"
-                  style={{color: searchAnalysis.completeness_score >= 60
-                      ? "var(--status-success)"
-                      : searchAnalysis.completeness_score >= 40
-                        ? "var(--status-warning)"
-                        : "var(--status-error)"}}
+                  style={{color: getPercentageScoreVar(searchAnalysis.completeness_score)}}
                 >
                   {searchAnalysis.completeness_score}%
                 </span>
@@ -575,11 +572,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                 <div
                   className="h-full rounded-full transition-[width,height] duration-500"
                   style={{width: `${searchAnalysis.completeness_score}%`,
-                    backgroundColor: searchAnalysis.completeness_score >= 60
-                      ? "var(--status-success)"
-                      : searchAnalysis.completeness_score >= 40
-                        ? "var(--status-warning)"
-                        : "var(--status-error)"}}
+                    backgroundColor: getPercentageScoreVar(searchAnalysis.completeness_score)}}
                 />
               </div>
             </div>

@@ -8,6 +8,7 @@ import { GripVertical, Star, MessageSquare, Clock, TrendingUp, AlertTriangle } f
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
 import type { KanbanCandidate } from "./types"
+import { getPercentageScoreColorClass } from "@/lib/score-utils"
 
 interface KanbanCardProps {
   candidate: KanbanCandidate
@@ -24,9 +25,7 @@ export const KanbanCard = React.memo(function KanbanCard({
 }: KanbanCardProps) {
   const getScoreColor = (score?: number) => {
     if (!score) return "text-lia-text-disabled"
-    if (score >= 80) return "text-status-success dark:text-status-success"
-    if (score >= 60) return "text-status-warning dark:text-status-warning"
-    return "text-status-error dark:text-status-error"
+    return getPercentageScoreColorClass(score)
   }
 
   const getInitials = (name: string) => {

@@ -2,6 +2,7 @@ import React from "react"
 import { Brain } from "lucide-react"
 import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
 import { textStyles } from "@/lib/design-tokens"
+import { getPercentageScoreVar } from "@/lib/score-utils"
 import type { Candidate } from "@/components/pages/candidates/types"
 
 export function renderMatchScoreCell(candidate: Candidate, searchQuery: string): React.ReactNode {
@@ -16,12 +17,7 @@ export function renderMatchScoreCell(candidate: Candidate, searchQuery: string):
     )
   }
 
-  const getMatchRingColor = (score: number) => {
-    if (score >= 85) return "var(--lia-text-secondary)"
-    if (score >= 70) return "var(--wedo-green-light)"
-    if (score >= 50) return "var(--wedo-orange)"
-    return "var(--lia-text-tertiary)"
-  }
+  const getMatchRingColor = getPercentageScoreVar
 
   const ringColor = getMatchRingColor(matchScore)
   const ringSize = 32

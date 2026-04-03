@@ -1,6 +1,7 @@
 "use client"
 
 import { X, Code, Clock, Trophy, Users, CheckCircle, Loader2, AlertCircle, TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { getPercentageScoreVar } from "@/lib/score-utils"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 
@@ -60,12 +61,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
   const statusConfig = STATUS_CONFIG[status]
   const StatusIcon = statusConfig.icon
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'var(--status-success)'
-    if (score >= 60) return 'var(--lia-text-tertiary)'
-    if (score >= 40) return 'var(--status-warning)'
-    return 'var(--status-error)'
-  }
+  const getScoreColor = getPercentageScoreVar
 
   const getComparisonIcon = (candidateScore: number, avgScore: number) => {
     const diff = candidateScore - avgScore

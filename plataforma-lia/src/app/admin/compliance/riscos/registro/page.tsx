@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { classifyRiskScore, isRiskCritical } from "@/lib/score-utils"
 import { 
   FileWarning, 
   Search, 
@@ -141,12 +142,7 @@ const risks = [
   },
 ]
 
-const getScoreColor = (score: number) => {
-  if (score >= 15) return { bg: 'var(--status-error-bg)', text: 'var(--status-error)', label: 'Crítico' }
-  if (score >= 10) return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', label: 'Alto' }
-  if (score >= 5) return { bg: 'var(--status-warning-bg)', text: 'var(--status-warning)', label: 'Médio' }
-  return { bg: 'var(--status-success-bg)', text: 'var(--status-success)', label: 'Baixo' }
-}
+const getScoreColor = (score: number) => classifyRiskScore(score)
 
 const getStatusConfig = (status: string) => {
   switch (status) {
@@ -223,7 +219,7 @@ export default function RiskRegisterPage() {
     return matchesSearch && matchesCategory && matchesStatus
   })
 
-  const criticalCount = risks.filter(r => r.score >= 12).length
+  const criticalCount = risks.filter(r => isRiskCritical(r.score)).length
   const closedCount = risks.filter(r => r.status === 'closed').length
   const inTreatmentCount = risks.filter(r => r.status === 'in_treatment').length
   const openCount = risks.filter(r => r.status === 'open').length

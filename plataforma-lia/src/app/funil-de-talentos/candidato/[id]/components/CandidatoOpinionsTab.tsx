@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { getPercentageScoreColorClass } from "@/lib/score-utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -31,9 +32,7 @@ interface CandidatoOpinionsTabProps {
 
 function getScoreColor(score: number | null | undefined): string {
   if (score === null || score === undefined) return "text-lia-text-secondary"
-  if (score >= 80) return "text-status-success"
-  if (score >= 60) return "text-status-warning"
-  return "text-status-error"
+  return getPercentageScoreColorClass(score)
 }
 
 function RecommendationBadge({ rec }: { rec: unknown }) {

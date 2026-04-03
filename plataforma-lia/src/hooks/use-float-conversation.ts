@@ -16,6 +16,8 @@ export interface FloatMessage {
   sender: "lia" | "user"
   content: string
   timestamp: string
+  executionPlan?: Record<string, unknown>  // Plan progress data when orchestrator ran multi-step plan
+  planProgressSteps?: Array<{ task_id: string; action_id: string; status: string }>  // Real-time steps
 }
 
 /** Tipos aceitos pelo backend como context_type */

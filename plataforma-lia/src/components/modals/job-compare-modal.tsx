@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { getJobScoreClass } from "@/lib/score-utils"
 import {
   Dialog,
   DialogContent,
@@ -187,9 +188,7 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
 
   const getScoreColor = (score?: number) => {
     if (!score) return "text-lia-text-tertiary"
-    if (score >= 80) return "text-lia-text-secondary font-semibold"
-    if (score >= 60) return "text-lia-text-primary"
-    return "text-lia-text-primary"
+    return getJobScoreClass(score)
   }
 
   const liaAnalysis = useMemo<LiaAnalysisData | null>(() => {

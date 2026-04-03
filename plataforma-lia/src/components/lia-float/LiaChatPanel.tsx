@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
-import { Brain, X, Maximize2, Loader2, Send, ArrowRight, Plus, Eraser, History, Clock, User } from "lucide-react"
+import { Brain, X, Maximize2, Loader2, Send, ArrowRight, Plus, Eraser, History, Clock, User, Paperclip, FileText, XCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useNavigationIntent } from "@/hooks/use-navigation-intent"
@@ -35,6 +35,7 @@ import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { sanitizeHtml } from "@/lib/sanitize"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
+import { useCvScreening } from "@/hooks/use-cv-screening"
 
 const MAX_INPUT_CHARS = 2000
 
@@ -48,6 +49,10 @@ export function LiaChatPanel() {
   const { detect: detectAction } = useActionIntent()
   const currentScope = resolveScopeFromPathname(typeof window !== 'undefined' ? window.location.pathname : '')
   const [activeActionType, setActiveActionType] = useState<ActionType>(null)
+  // CV file attachment state
+  const [attachedCvFile, setAttachedCvFile] = useState<File | null>(null)
+  const cvFileInputRef = React.useRef<HTMLInputElement>(null)
+  const { screenCv, isScreening } = useCvScreening()
   const [actionLabel, setActionLabel] = useState<string | null>(null)
 
   const {
@@ -127,6 +132,27 @@ export function LiaChatPanel() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, isStreaming, hitlPending])
 
+  const handleCvFileAttach = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      addMessage({ id: `err-${Date.now()}`, sender: "lia", content: "Arquivo muito grande. Máximo 10MB.", timestamp: formatMessageTime() })
+      return
+    }
+    setAttachedCvFile(file)
+    addMessage({
+      id: `cv-attach-${Date.now()}`,
+      sender: "lia",
+      content: `📎 **${file.name}** anexado. Para analisar este CV para uma vaga específica, me diga o título da vaga. Ou envie para análise geral.`,
+      timestamp: formatMessageTime(),
+    })
+    if (e.target) e.target.value = ""
+  }, [addMessage])
+
+  const handleCvFileButtonClick = useCallback(() => {
+    cvFileInputRef.current?.click()
+  }, [])
+
   const handleSend = useCallback(async () => {
     const text = inputText.trim()
     if (!text || isCreating || isStreaming) return
@@ -167,6 +193,33 @@ export function LiaChatPanel() {
       }
       setSharedConversationId(convId)
       wsConnect()
+    }
+
+    // If a CV file is attached, screen it via HTTP instead of WS
+    if (attachedCvFile) {
+      const vacancyHint = text.length > 3 ? text : undefined
+      addMessage({ id: `user-cv-${Date.now()}`, sender: "user", content: text || "Analisar CV", timestamp: formatMessageTime() })
+      addMessage({ id: `thinking-cv-${Date.now()}`, sender: "lia", content: "⏳ Analisando CV com IA...", timestamp: formatMessageTime() })
+      const cvFile = attachedCvFile
+      setAttachedCvFile(null)
+      setInputText("")
+
+      screenCv({
+        file: cvFile,
+        vacancyTitle: vacancyHint,
+        runBars: true,
+        onProgress: () => {},
+      }).then(result => {
+        addMessage({
+          id: `cv-result-${Date.now()}`,
+          sender: "lia",
+          content: result.message,
+          timestamp: formatMessageTime(),
+        })
+      }).catch(() => {
+        addMessage({ id: `cv-err-${Date.now()}`, sender: "lia", content: "❌ Erro ao analisar CV. Tente novamente.", timestamp: formatMessageTime() })
+      })
+      return
     }
 
     const domain = actionResult.actionType ? actionTypeToDomain(actionResult.actionType) : ""
@@ -440,6 +493,20 @@ export function LiaChatPanel() {
 
       {/* Input */}
       <div className="px-4 pb-4 pt-2 flex-shrink-0 border-t border-lia-border-subtle">
+        {/* Attached CV file chip */}
+        {attachedCvFile && (
+          <div className="flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg bg-lia-bg-secondary border border-lia-border-subtle">
+            <FileText className="w-3.5 h-3.5 text-chat-cyan flex-shrink-0" />
+            <span className="text-xs text-lia-text-primary truncate flex-1">{attachedCvFile.name}</span>
+            <button
+              onClick={() => setAttachedCvFile(null)}
+              className="p-0.5 rounded hover:bg-lia-interactive-hover text-lia-text-tertiary hover:text-lia-text-secondary"
+              aria-label="Remover arquivo"
+            >
+              <XCircle className="w-3 h-3" />
+            </button>
+          </div>
+        )}
         <div className="flex items-center gap-2 px-3 py-2 rounded-[24px] bg-lia-bg-primary border border-lia-border-subtle">
           <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
             <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
@@ -459,6 +526,26 @@ export function LiaChatPanel() {
             className="flex-1 text-base-ui bg-transparent focus:outline-none text-lia-text-primary placeholder:text-lia-text-disabled disabled:opacity-50 min-w-0"
            
           />
+          {/* Hidden file input for CV upload */}
+          <input
+            ref={cvFileInputRef}
+            type="file"
+            accept=".pdf,.docx,.doc,.txt"
+            onChange={handleCvFileAttach}
+            className="hidden"
+            aria-hidden="true"
+          />
+          {/* CV file attach button */}
+          <button
+            type="button"
+            onClick={handleCvFileButtonClick}
+            disabled={isCreating || isStreaming || isScreening}
+            title="Anexar CV"
+            aria-label="Anexar currículo"
+            className="flex-shrink-0 p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none disabled:opacity-40"
+          >
+            <Paperclip className="w-3.5 h-3.5" />
+          </button>
           <AudioRecordButton
             onTranscription={(text) => setInputText(prev => prev ? `${prev} ${text}` : text)}
             className="p-1.5"

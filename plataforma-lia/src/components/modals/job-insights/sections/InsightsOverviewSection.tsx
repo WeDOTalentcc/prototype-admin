@@ -1,5 +1,6 @@
 "use client"
 
+import { getJobDimensionColorClass } from "@/lib/score-utils"
 import {
   Users,
   CheckCircle,
@@ -350,11 +351,11 @@ export function InsightsOverviewSection({
               </div>
               <div className="flex-1 h-4 bg-lia-interactive-active rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-[width] ${dim.score >= 80 ? "bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg" : dim.score >= 60 ? "bg-status-warning" : "bg-status-error"}`}
+                  className={`h-full rounded-full transition-[width] ${getJobDimensionColorClass(dim.score).bar}`}
                   style={{ width: `${dim.score}%` }}
                 />
               </div>
-              <span className={`text-xs font-semibold w-10 text-right ${dim.score >= 80 ? "text-lia-text-secondary" : dim.score >= 60 ? "text-status-warning" : "text-status-error"}`}>
+              <span className={`text-xs font-semibold w-10 text-right ${getJobDimensionColorClass(dim.score).text}`}>
                 {dim.score}%
               </span>
             </div>

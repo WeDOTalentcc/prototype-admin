@@ -1,6 +1,7 @@
 "use client"
 
 import { X, Gauge, TrendingUp, FileText, Brain, Code, Globe } from "lucide-react"
+import { getPercentageScoreVar, getPercentageScoreBgVar, getPercentageScoreLabel } from "@/lib/score-utils"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 
@@ -70,28 +71,11 @@ export function GeneralScoreModal({ isOpen, onClose, candidate }: GeneralScoreMo
 
   const finalScore = ((candidate as any)?.score ?? calculateWeightedScore()) as number
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'var(--status-success)'
-    if (score >= 60) return 'var(--lia-text-tertiary)'
-    if (score >= 40) return 'var(--status-warning)'
-    return 'var(--status-error)'
-  }
+  const getScoreColor = getPercentageScoreVar
 
-  const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'var(--status-success-bg)'
-    if (score >= 60) return 'var(--lia-bg-tertiary)'
-    if (score >= 40) return 'var(--status-warning-bg)'
-    return 'var(--status-error-bg)'
-  }
+  const getScoreBgColor = getPercentageScoreBgVar
 
-  const getScoreLabel = (score: number) => {
-    if (score >= 90) return 'Excelente'
-    if (score >= 80) return 'Muito Bom'
-    if (score >= 70) return 'Bom'
-    if (score >= 60) return 'Satisfatório'
-    if (score >= 50) return 'Regular'
-    return 'Abaixo do esperado'
-  }
+  const getScoreLabel = getPercentageScoreLabel
 
   return (
     <div

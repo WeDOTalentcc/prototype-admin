@@ -9,6 +9,7 @@ import React, { useState, useEffect, useRef } from "react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
+import { classifyPercentageScore } from "@/lib/score-utils"
 
 // ── Services & API ────────────────────────────────────────────────────────────
 import { mapCandidateToInternal as _mapCandidateToInternal } from "@/components/pages/candidates/hooks/useCandidatesExecuteSearch"
@@ -787,10 +788,13 @@ user, router,
     toast.success('Busca salva', { description: `${sortedCandidates.length} candidatos encontrados` })
   }
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30'
-    if (score >= 80) return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle'
-    if (score >= 70) return 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning border-status-warning/30 dark:border-status-warning/30'
-    return 'bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30'
+    const cls = classifyPercentageScore(score)
+    switch (cls.level) {
+      case 'excellent': return 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30'
+      case 'good': return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle'
+      case 'satisfactory': return 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning border-status-warning/30 dark:border-status-warning/30'
+      default: return 'bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30'
+    }
   }
 
   const mapCandidateToInternal = _mapCandidateToInternal

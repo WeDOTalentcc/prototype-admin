@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { getPredictionScoreColor, getRiskBadgeColor } from "@/lib/score-utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -279,20 +280,9 @@ export function SuccessPredictionAnalytics() {
     }
   }
 
-  const getScoreColor = (score: number) => {
-    if (score >= 85) return 'text-status-success'
-    if (score >= 70) return 'text-status-warning'
-    return 'text-status-error'
-  }
+  const getScoreColor = getPredictionScoreColor
 
-  const getRiskColor = (risk: string) => {
-    switch (risk) {
-      case 'low': return 'bg-status-success/10 text-status-success border-status-success/30'
-      case 'medium': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
-      case 'high': return 'bg-status-error/10 text-status-error border-status-error/30'
-      default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
-    }
-  }
+  const getRiskColor = getRiskBadgeColor
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -672,20 +662,9 @@ interface CandidatePredictionModalProps {
 }
 
 function CandidatePredictionModal({ candidate, onClose }: CandidatePredictionModalProps) {
-  const getScoreColor = (score: number) => {
-    if (score >= 85) return 'text-status-success'
-    if (score >= 70) return 'text-status-warning'
-    return 'text-status-error'
-  }
+  const getScoreColor = getPredictionScoreColor
 
-  const getRiskColor = (risk: string) => {
-    switch (risk) {
-      case 'low': return 'bg-status-success/10 text-status-success border-status-success/30'
-      case 'medium': return 'bg-status-warning/10 text-status-warning border-status-warning/30'
-      case 'high': return 'bg-status-error/10 text-status-error border-status-error/30'
-      default: return 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle'
-    }
-  }
+  const getRiskColor = getRiskBadgeColor
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">

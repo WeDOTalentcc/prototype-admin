@@ -7,6 +7,7 @@
  * Lazy-load: fetch ocorre ao abrir o modal.
  */
 import React, { useEffect } from "react"
+import { getPercentageScoreColorClass } from "@/lib/score-utils"
 import {
   Dialog,
   DialogContent,
@@ -31,9 +32,7 @@ interface CandidateCompareModalProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return "text-status-success"
-  if (score >= 60) return "text-status-warning"
-  return "text-status-error"
+  return getPercentageScoreColorClass(score)
 }
 
 function ScoreBar({ value, max = 100 }: { value: number | null; max?: number }) {

@@ -1,6 +1,7 @@
 "use client"
 
 import { X, Globe, CheckCircle, Loader2, AlertCircle, BookOpen, Pencil, MessageCircle, Headphones } from "lucide-react"
+import { getPercentageScoreVar, getEnglishLevel } from "@/lib/score-utils"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 
@@ -75,21 +76,9 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
   // @ts-ignore TODO: fix type
   const levelInfo = LEVEL_CONFIG[testData.level] ?? LEVEL_CONFIG['B1']
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'var(--status-success)'
-    if (score >= 60) return 'var(--lia-text-secondary)'
-    if (score >= 40) return 'var(--status-warning)'
-    return 'var(--status-error)'
-  }
+  const getScoreColor = getPercentageScoreVar
 
-  const getSkillLevel = (score: number) => {
-    if (score >= 90) return 'C2'
-    if (score >= 80) return 'C1'
-    if (score >= 70) return 'B2'
-    if (score >= 60) return 'B1'
-    if (score >= 40) return 'A2'
-    return 'A1'
-  }
+  const getSkillLevel = getEnglishLevel
 
   return (
     <div 

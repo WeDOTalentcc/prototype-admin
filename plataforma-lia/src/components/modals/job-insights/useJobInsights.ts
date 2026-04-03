@@ -1,4 +1,5 @@
 import { useMemo, useCallback } from "react"
+import { getJobScoreClass } from "@/lib/score-utils"
 import type {
   JobInsightData,
   CandidateDemographics,
@@ -315,9 +316,7 @@ export function useJobInsights({
 
   const getScoreColor = useCallback((score?: number) => {
     if (!score) return "text-lia-text-tertiary"
-    if (score >= 85) return "text-lia-text-secondary font-semibold"
-    if (score >= 50) return "text-lia-text-primary"
-    return "text-lia-text-secondary"
+    return getJobScoreClass(score)
   }, [])
 
   const generateAttentionPoints = useCallback(() => {

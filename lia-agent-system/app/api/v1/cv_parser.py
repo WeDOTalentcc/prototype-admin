@@ -503,3 +503,86 @@ async def health_check():
         "max_file_size_mb": 5,
         "ai_extraction": "Claude (Anthropic)"
     }
+
+
+@router.post("/upload-and-screen")
+async def upload_and_screen_cv(
+    file: Optional[UploadFile] = File(None),
+    cv_text: Optional[str] = Form(None),
+    vacancy_title: Optional[str] = Form(None),
+    vacancy_id: Optional[str] = Form(None),
+    run_bars: bool = Form(True),
+    company_id: Optional[str] = Form(None),
+    user_id: Optional[str] = Form(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_service_or_user),
+):
+    """
+    Full CV flow: parse → create Candidate → add to vacancy → BARS score.
+    
+    Accepts either a file upload or raw CV text.
+    Returns structured result with candidate_id, BARS score, and messages.
+    """
+    from app.tools.registry import tool_registry
+    from app.tools.executor import ToolExecutionContext
+
+    try:
+        # Determine company_id from JWT or form field
+        resolved_company = company_id or getattr(current_user, "company_id", None) or "demo_company"
+        resolved_user = user_id or getattr(current_user, "id", "system")
+
+        # Extract CV text
+        if file:
+            raw_text = ""
+            if file.content_type == "application/pdf" or (file.filename or "").endswith(".pdf"):
+                content_bytes = await file.read()
+                from app.domains.cv_screening.services.cv_parser import CVParserService
+                parser = CVParserService()
+                raw_text = await parser.extract_text_from_pdf(content_bytes)
+            else:
+                raw_bytes = await file.read()
+                raw_text = raw_bytes.decode("utf-8", errors="ignore")
+        elif cv_text:
+            raw_text = cv_text
+        else:
+            raise HTTPException(status_code=400, detail="Either file or cv_text is required")
+
+        # Build execution context
+        from app.tools.executor import tool_executor
+
+        class _MockContext:
+            company_id = resolved_company
+            user_id = resolved_user
+
+        ctx = _MockContext()
+
+        # Call create_and_screen_candidate tool
+        from app.domains.cv_screening.tools.cv_upload_tool import create_and_screen_candidate
+
+        result = await create_and_screen_candidate(
+            cv_text=raw_text,
+            vacancy_title=vacancy_title,
+            vacancy_id=vacancy_id,
+            run_bars=run_bars,
+            run_wsi=False,
+            context=ctx,
+        )
+
+        return {
+            "success": result.get("success", False),
+            "candidate_id": result.get("candidate_id"),
+            "candidate_name": result.get("candidate_name"),
+            "job_id": result.get("job_id"),
+            "job_title": result.get("job_title"),
+            "match_score": result.get("match_score"),
+            "recommendation": result.get("recommendation"),
+            "message": result.get("message", ""),
+            "parsed": result.get("steps", {}).get("parse_create", {}).get("parsed", {}),
+            "error": result.get("error"),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"upload-and-screen error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erro ao processar CV: {str(e)}")
