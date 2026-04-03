@@ -1,18 +1,20 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
 import { z } from 'zod'
+import { validateQuery } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.LIA_BACKEND_URL || "http://127.0.0.1:8000"
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
-/**
- * POST /api/backend-proxy/jd-import/upload
- *
- * Faz proxy de upload de arquivo JD para o backend.
- * Repassa multipart/form-data sem transformação.
- */
+const uploadQuerySchema = z.object({
+  title: z.string().optional().default(''),
+})
+
 export async function POST(request: NextRequest) {
   try {
+    const queryValidation = validateQuery(request, uploadQuerySchema)
+    if (!queryValidation.success) return queryValidation.response
+
     const formData = await request.formData()
     const file = formData.get("file") as File
     if (file && file instanceof File && file.size > MAX_FILE_SIZE) {
@@ -21,9 +23,8 @@ export async function POST(request: NextRequest) {
         { status: 413 }
       )
     }
-    const { searchParams } = new URL(request.url)
-    const title = searchParams.get("title") || ""
 
+    const { title } = queryValidation.data
     const url = new URL(`${BACKEND_URL}/api/v1/import/upload-file`)
     if (title) url.searchParams.set("title", title)
 

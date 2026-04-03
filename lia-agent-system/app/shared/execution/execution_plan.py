@@ -38,6 +38,9 @@ class AgentTask:
     max_retries: int = 1
     is_critical: bool = True
     context_mappings: Dict[str, str] = field(default_factory=dict)
+    condition: Optional[str] = None          # e.g. 'task_0.match_score >= 40'
+    condition_threshold: Optional[float] = None
+    skip_reason: Optional[str] = None
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
 
@@ -62,6 +65,7 @@ class AgentTask:
             "error": self.error,
             "retry_count": self.retry_count,
             "is_critical": self.is_critical,
+            "skip_reason": self.skip_reason,
             "duration_ms": self.duration_ms,
         }
 

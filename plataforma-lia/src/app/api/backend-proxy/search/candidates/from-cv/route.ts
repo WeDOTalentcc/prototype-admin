@@ -1,22 +1,32 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { validateQuery } from '@/lib/api/validate'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
+const fromCvQuerySchema = z.object({
+  limit: z.string().regex(/^\d+$/).optional().default('20'),
+  search_pearch: z.enum(['true', 'false']).optional().default('true'),
+  pearch_type: z.enum(['fast', 'deep']).optional().default('fast'),
+})
+
 export async function POST(request: NextRequest) {
   try {
+    const queryValidation = validateQuery(request, fromCvQuerySchema)
+    if (!queryValidation.success) return queryValidation.response
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
-    
+
     if (!file || !(file instanceof File)) {
       return NextResponse.json(
         { error: 'Arquivo CV é obrigatório' },
         { status: 400 }
       )
     }
-    
+
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: 'File too large (max 10MB)' },
@@ -24,16 +34,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { searchParams } = new URL(request.url)
-    const limit = searchParams.get('limit') || '20'
-    const searchPearch = searchParams.get('search_pearch') !== 'false'
-    const pearchType = searchParams.get('pearch_type') || 'fast'
-    
+    const { limit, search_pearch, pearch_type } = queryValidation.data
+
     const backendFormData = new FormData()
     backendFormData.append('file', file)
-    
-    const backendUrl = `${BACKEND_URL}/api/v1/search/from-cv?limit=${limit}&search_pearch=${searchPearch}&pearch_type=${pearchType}`
-    
+
+    const backendUrl = `${BACKEND_URL}/api/v1/search/from-cv?limit=${limit}&search_pearch=${search_pearch}&pearch_type=${pearch_type}`
+
     const response = await fetch(backendUrl, {
       method: 'POST',
       body: backendFormData,
