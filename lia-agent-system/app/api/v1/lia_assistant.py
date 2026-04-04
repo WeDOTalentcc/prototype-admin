@@ -2819,53 +2819,63 @@ async def process_expanded_prompt(
     current_user: User = Depends(get_current_user_or_demo),
     _budget: None = Depends(require_token_budget),
 ):
-    company_id = current_user.company_id or "demo_company"
     """
     Route expanded commands to appropriate agents based on context.
+
+    Strategy:
+    1. For job_creation context: run specialized pre-handlers (salary/skills/time)
+       then fall through to full orchestrator for anything else.
+    2. For all other contexts: route directly through the full orchestrator
+       (with 14-pattern multi-step plan detection enabled).
+    3. Orchestrator fallback on any error.
     """
+    company_id = current_user.company_id or "demo_company"
+    user_id = str(current_user.id)
+
     try:
         llm_service = LLMService()
-        
-        classification = await intent_classifier_service.classify(
-            user_input=request.message,
-            stage_context=request.context_type,
-            use_llm=True
-        )
-        
-        response_text = ""
-        agent_used = "general"
-        actions = []
-        follow_ups = []
-        
+
+        # --- Phase 1: specialized pre-handlers for job_creation context ---
         if request.context_type == "job_creation":
             question_type = detect_question_type(request.message)
-
             job_context = request.context or {}
 
             if question_type == QuestionType.SALARY:
                 response_text = await handle_salary_question(db, company_id, job_context, request.message)
-                agent_used = "salary_insights"
+                return ExpandedPromptResponse(
+                    response=response_text,
+                    agent_used="salary_insights",
+                    actions=[],
+                    follow_up_suggestions=["Quer ajustar a faixa salarial?", "Posso comparar com outras vagas similares."],
+                )
             elif question_type == QuestionType.SKILLS:
                 response_text = await handle_skills_question(db, company_id, job_context, request.message)
-                agent_used = "skills_insights"
+                return ExpandedPromptResponse(
+                    response=response_text,
+                    agent_used="skills_insights",
+                    actions=[],
+                    follow_up_suggestions=["Quer adicionar essas skills à vaga?", "Posso sugerir competências comportamentais também."],
+                )
             elif question_type == QuestionType.TIME_TO_FILL:
                 response_text = await handle_time_to_fill_question(db, company_id, job_context, request.message)
-                agent_used = "time_insights"
+                return ExpandedPromptResponse(
+                    response=response_text,
+                    agent_used="time_insights",
+                    actions=[],
+                    follow_up_suggestions=["Quer ver as etapas que mais demoram?", "Posso sugerir ações para acelerar o processo."],
+                )
             elif question_type == QuestionType.PROCESS:
                 response_text = await handle_process_question(request.message, llm_service)
-                agent_used = "process_explainer"
-            else:
-                prompt = f"""Você é LIA, assistente de recrutamento. Responda à mensagem:
+                return ExpandedPromptResponse(
+                    response=response_text,
+                    agent_used="process_explainer",
+                    actions=[],
+                    follow_up_suggestions=["Posso ajudar com mais detalhes sobre o processo."],
+                )
+            # Falls through to orchestrator for unrecognized job_creation questions
 
-Mensagem: {request.message}
-Contexto: {request.context_type}
-IDs relacionados: {request.context_ids}
-
-Seja útil e concisa."""
-                response_text = await llm_service.generate(prompt, provider="gemini")
-                agent_used = "general_assistant"
-
-        elif request.context_type in ("jobs", "job_management", "portfolio"):
+        # --- Phase 2: jobs/portfolio specialized handler ---
+        if request.context_type in ("jobs", "job_management", "portfolio"):
             response_text = await handle_jobs_management_query(
                 db=db,
                 company_id=company_id,
@@ -2873,40 +2883,83 @@ Seja útil e concisa."""
                 context_ids=request.context_ids,
                 llm_service=llm_service,
             )
-            agent_used = "jobs_management"
+            return ExpandedPromptResponse(
+                response=response_text,
+                agent_used="jobs_management",
+                actions=[],
+                follow_up_suggestions=["Quer mais detalhes sobre alguma vaga?", "Posso gerar um relatório completo."],
+            )
 
-        else:
+        # --- Phase 3: Full orchestrator with 14-pattern multi-step detection ---
+        # This enables: "busca candidatos e compara", "adiciona João e dispara triagem", etc.
+        try:
+            from app.api.orchestrator_routes import get_orchestrator
+            orchestrator = get_orchestrator()
+
+            # Build enriched context for the orchestrator
+            orch_context = {
+                "company_id": company_id,
+                "source": "expanded_prompt",
+                "context_type": request.context_type,
+                "context_ids": request.context_ids or [],
+            }
+            if request.context:
+                orch_context.update(request.context)
+
+            # Use a stable conversation_id scoped to the user + context
+            conv_id = f"expanded_{user_id}_{request.context_type}"
+
+            result = await orchestrator.process_request(
+                user_id=user_id,
+                message=request.message,
+                conversation_id=conv_id,
+                context=orch_context,
+            )
+
+            response_text = (
+                result.get("message")
+                or result.get("response")
+                or result.get("content")
+                or "Processando sua solicitação..."
+            )
+            agent_used = result.get("agent", result.get("agent_used", "orchestrator"))
+            follow_ups = result.get("suggested_prompts") or result.get("next_actions") or [
+                "Posso ajudar com mais alguma coisa?",
+                "Quer que eu analise algo mais?",
+            ]
+
+            return ExpandedPromptResponse(
+                response=response_text,
+                agent_used=agent_used,
+                actions=result.get("actions", []),
+                follow_up_suggestions=follow_ups[:3],
+            )
+
+        except Exception as orch_err:
+            logger.warning(f"[expanded-prompt] Orchestrator error, falling back to LLM: {orch_err}")
+            # Graceful fallback to direct LLM
             prompt = f"""Você é LIA, assistente de recrutamento inteligente da plataforma WeDOTalent.
 Você está auxiliando um RECRUTADOR.
 
 Mensagem do recrutador: {request.message}
 Contexto: {request.context_type}
 
-Responda em Português Brasileiro de forma útil, clara e profissional.
-NUNCA peça informações pessoais do usuário como cargo, localização ou experiência — ele é o recrutador, não um candidato."""
-            response_text = await llm_service.generate(prompt, provider="claude")
-            agent_used = "general_assistant"
-        
-        follow_ups = [
-            "Posso ajudar com mais alguma informação?",
-            "Quer que eu analise algo mais sobre esta vaga?",
-            "Precisa de ajuda com outra funcionalidade?"
-        ]
-        
-        return ExpandedPromptResponse(
-            response=response_text,
-            agent_used=agent_used,
-            actions=actions,
-            follow_up_suggestions=follow_ups[:2]
-        )
-        
+Responda em Português Brasileiro de forma útil, clara e profissional."""
+            response_text = await llm_service.generate(prompt, provider="gemini")
+            return ExpandedPromptResponse(
+                response=response_text,
+                agent_used="general_assistant_fallback",
+                actions=[],
+                follow_up_suggestions=["Posso ajudar com mais alguma informação?"],
+            )
+
     except Exception as e:
         logger.error(f"Error processing expanded prompt: {e}")
         return ExpandedPromptResponse(
-            response=f"Desculpe, ocorreu um erro ao processar sua solicitação: {str(e)}",
+            response=f"Desculpe, ocorreu um erro ao processar sua solicitação. Tente novamente.",
             agent_used="error_handler",
             actions=[],
-            follow_up_suggestions=["Tente novamente ou reformule sua pergunta"]
+            follow_up_suggestions=["Tente novamente ou reformule sua pergunta"],
         )
 
 

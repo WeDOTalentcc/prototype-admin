@@ -90,13 +90,55 @@ class SimpleTeamsBot:
         
         return None
     
+    # ── Slash command definitions ────────────────────────────────────────────
+
+    _SLASH_COMMANDS = {
+        "/ajuda": "Quais são todas as funcionalidades que você pode me ajudar?",
+        "/help":  "Quais são todas as funcionalidades que você pode me ajudar?",
+        "/buscar": "Busca os melhores candidatos para a vaga mais recente",
+        "/triagem": "Quais candidatos ainda precisam de triagem WSI?",
+        "/relatorio": "Gera o relatório semanal de recrutamento",
+        "/pipeline": "Como está a saúde geral do pipeline de recrutamento?",
+        "/vagas": "Quais são as vagas ativas e seus status?",
+        "/candidatos": "Quais candidatos estão aguardando triagem ou retorno?",
+        "/resumo": "Me dê um resumo das atividades e alertas de hoje",
+    }
+
+    def _parse_slash_command(self, text: str) -> str:
+        """Convert slash command to a natural language prompt."""
+        stripped = text.strip().lower()
+        # Match /command optionally followed by args
+        parts = stripped.split(None, 1)
+        cmd = parts[0]
+        args = parts[1] if len(parts) > 1 else ""
+        if cmd in self._SLASH_COMMANDS:
+            base = self._SLASH_COMMANDS[cmd]
+            return f"{base} {args}".strip() if args else base
+        return text  # Not a known slash command — return as-is
+
+    def _strip_at_mention(self, text: str) -> str:
+        """Remove <at>BotName</at> tags from Teams messages in group channels."""
+        import re as _re
+        # Strip <at>...</at> tags
+        cleaned = _re.sub(r'<at>[^<]*</at>', '', text)
+        return cleaned.strip()
+
+    # ─────────────────────────────────────────────────────────────────────────
+
     async def _handle_message(self, activity: Dict[str, Any]) -> Dict[str, Any]:
         """Handle incoming message — routes through full LIA orchestrator."""
         try:
             from app.domains.communication.services.teams_orchestrator_bridge import teams_orchestrator_bridge
             from app.domains.communication.services.teams_card_renderer import teams_card_renderer
 
-            text = activity.get("text", "").strip()
+            raw_text = activity.get("text", "").strip()
+            # Strip @mention tags (e.g. <at>LIA</at> in group channels)
+            text = self._strip_at_mention(raw_text)
+            # Handle slash commands (/buscar, /triagem, /relatorio, etc.)
+            if text.startswith("/"):
+                text = self._parse_slash_command(text)
+            activity = {**activity, "text": text}
+
             from_user = activity.get("from", {})
             logger.info(f"[Teams] Message from {from_user.get('name')}: {text[:80]}")
 

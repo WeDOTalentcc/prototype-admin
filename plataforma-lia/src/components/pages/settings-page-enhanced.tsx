@@ -19,13 +19,14 @@ import {
   ChevronDown, ChevronUp, Lock, Unlock, Circle
 } from "lucide-react"
 import dynamic from "next/dynamic"
-const ProgressDashboard = dynamic(() => import("@/components/settings/progress-dashboard").then(m => ({ default: m.ProgressDashboard })), { ssr: false, loading: () => null })
-const CompanyTeamHub = dynamic(() => import("@/components/settings/CompanyTeamHub").then(m => ({ default: m.CompanyTeamHub })), { ssr: false, loading: () => null })
-const RecruitmentHub = dynamic(() => import("@/components/settings/RecruitmentHub").then(m => ({ default: m.RecruitmentHub })), { ssr: false, loading: () => null })
-const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => null })
-const GoalsPlanningHub = dynamic(() => import("@/components/settings/GoalsPlanningHub").then(m => ({ default: m.GoalsPlanningHub })), { ssr: false, loading: () => null })
-const GlobalSearchHub = dynamic(() => import("@/components/settings/GlobalSearchHub").then(m => ({ default: m.GlobalSearchHub })), { ssr: false, loading: () => null })
-const TasksPage = dynamic(() => import("@/components/pages/tasks-page").then(m => ({ default: m.TasksPage })), { ssr: false, loading: () => null })
+import { LoadingFallback } from "@/components/ui/loading"
+const ProgressDashboard = dynamic(() => import("@/components/settings/progress-dashboard").then(m => ({ default: m.ProgressDashboard })), { ssr: false, loading: () => <LoadingFallback text="Carregando dashboard..." /> })
+const CompanyTeamHub = dynamic(() => import("@/components/settings/CompanyTeamHub").then(m => ({ default: m.CompanyTeamHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
+const RecruitmentHub = dynamic(() => import("@/components/settings/RecruitmentHub").then(m => ({ default: m.RecruitmentHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando recrutamento..." /> })
+const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
+const GoalsPlanningHub = dynamic(() => import("@/components/settings/GoalsPlanningHub").then(m => ({ default: m.GoalsPlanningHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando metas..." /> })
+const GlobalSearchHub = dynamic(() => import("@/components/settings/GlobalSearchHub").then(m => ({ default: m.GlobalSearchHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando busca..." /> })
+const TasksPage = dynamic(() => import("@/components/pages/tasks-page").then(m => ({ default: m.TasksPage })), { ssr: false, loading: () => <LoadingFallback text="Carregando tarefas..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 

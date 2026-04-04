@@ -71,7 +71,8 @@ import { JobPreviewPanel } from"@/components/pages/jobs/JobPreviewPanel"
 import { JobsCompactTableView } from"@/components/pages/jobs/JobsCompactTableView"
 const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModalsSection").then(m => ({ default: m.JobsModalsSection })), { ssr: false, loading: () => null }) as any
 import { JobsDashboardView } from"@/components/pages/jobs/JobsDashboardView"
-const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false })
+import { LoadingModal as JobsLoadingModal } from "@/components/ui/loading"
+const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false, loading: () => <JobsLoadingModal /> })
 import { liaApi } from"@/services/lia-api"
 import { useJobsPageCore } from"./jobs/hooks/useJobsPageCore"
 

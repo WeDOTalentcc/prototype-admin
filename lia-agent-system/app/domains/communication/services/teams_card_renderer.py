@@ -10,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 # LIA brand color
 LIA_COLOR = "#6366F1"
+# Platform base URL for deep links — set WEDOTALENT_PLATFORM_URL env var in production
+import os as _os
+PLATFORM_URL = _os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com").rstrip("/")
 SUCCESS_COLOR = "#22C55E"
 WARNING_COLOR = "#F59E0B"
 ERROR_COLOR = "#EF4444"
@@ -57,8 +60,14 @@ class TeamsCardRenderer:
 
     # --- Card builders -------------------------------------------------------
 
-    def _render_text_card(self, text: str, suggestions: List = []) -> Dict[str, Any]:
-        """Rich text response card with optional follow-up suggestion buttons."""
+    def _render_text_card(
+        self,
+        text: str,
+        suggestions: List = [],
+        deep_link_path: str = "",
+        show_feedback: bool = True,
+    ) -> Dict[str, Any]:
+        """Rich text response card with follow-up suggestion buttons + 👍👎 feedback + deep link."""
         body = [
             {
                 "type": "TextBlock",
@@ -69,13 +78,36 @@ class TeamsCardRenderer:
         ]
 
         actions = []
-        for s in suggestions[:4]:
+        for s in suggestions[:3]:
             label = s if isinstance(s, str) else s.get("label", str(s))
             value = s if isinstance(s, str) else s.get("action", str(s))
             actions.append({
                 "type": "Action.Submit",
                 "title": label[:40],
                 "data": {"message": value},
+            })
+
+        # Feedback buttons (👍👎)
+        if show_feedback:
+            actions.append({
+                "type": "Action.Submit",
+                "title": "👍 Útil",
+                "style": "positive",
+                "data": {"feedback": "positive", "feedback_text": text[:100]},
+            })
+            actions.append({
+                "type": "Action.Submit",
+                "title": "👎 Melhorar",
+                "data": {"feedback": "negative", "feedback_text": text[:100]},
+            })
+
+        # Deep link to platform
+        if deep_link_path:
+            full_url = f"{PLATFORM_URL}{deep_link_path}"
+            actions.append({
+                "type": "Action.OpenUrl",
+                "title": "🔗 Ver na plataforma",
+                "url": full_url,
             })
 
         card: Dict[str, Any] = {
