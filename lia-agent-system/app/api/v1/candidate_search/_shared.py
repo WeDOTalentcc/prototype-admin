@@ -56,10 +56,10 @@ def _normalize_name(name: str) -> str:
     """Normaliza nome para comparação e deduplicação."""
     import unicodedata
     import re
-    normalized = unicodedata.normalize(NFKD, name.lower())
-    normalized = .join(c for c in normalized if not unicodedata.combining(c))
-    normalized = re.sub(r[^a-z\s], , normalized)
-    normalized =  .join(normalized.split())
+    normalized = unicodedata.normalize('NFKD', name.lower())
+    normalized = ''.join(c for c in normalized if not unicodedata.combining(c))
+    normalized = re.sub(r'[^a-z\s]', '', normalized)
+    normalized = ' '.join(normalized.split())
     return normalized
 
 
@@ -68,11 +68,11 @@ def _generate_fingerprint(name: str, linkedin_url: Optional[str] = None, email: 
     import hashlib
     parts = [_normalize_name(name)]
     if linkedin_url:
-        linkedin_id = linkedin_url.rstrip(/).split(/)[-1].lower()
-        parts.append(fli:{linkedin_id})
+        linkedin_id = linkedin_url.rstrip('/').split('/')[-1].lower()
+        parts.append(f'li:{linkedin_id}')
     if email:
-        parts.append(femail:{email.lower()})
-    fingerprint_str = |.join(sorted(parts))
+        parts.append(f'email:{email.lower()}')
+    fingerprint_str = '|'.join(sorted(parts))
     return hashlib.sha256(fingerprint_str.encode()).hexdigest()[:32]
 
 
@@ -103,20 +103,20 @@ async def _get_job_requirements(
             for req in db_requirements
         ]
     except Exception as e:
-        logger.warning(fFailed to fetch job requirements for job_id={job_id}: {e})
+        logger.warning(f'Failed to fetch job requirements for job_id={job_id}: {e}')
         return None
 
 
 def _get_match_label(score: float) -> str:
     """Get match label based on rubric score."""
     if score >= 85:
-        return Exceeds
+        return 'Exceeds'
     elif score >= 70:
-        return Meets
+        return 'Meets'
     elif score >= 40:
-        return Partial
+        return 'Partial'
     else:
-        return Missing
+        return 'Missing'
 
 
 # ============================================================================
@@ -159,6 +159,7 @@ class LanguageDTO(BaseModel):
 
 
 class CandidateSearchResultDTO(BaseModel):
+    """Resultado individual para o frontend."""
     id: str
     name: str
     first_name: Optional[str] = None
@@ -177,7 +178,7 @@ class CandidateSearchResultDTO(BaseModel):
     has_phone: bool = False
     email: Optional[str] = None
     phone: Optional[str] = None
-    source: str = local
+    source: str = 'local'
     is_open_to_work: Optional[bool] = None
     is_discovered: bool = False
     summary: Optional[str] = None
@@ -193,7 +194,8 @@ class CandidateSearchResultDTO(BaseModel):
     rubric_evaluated: bool = Field(False)
 
     @classmethod
-    def from_profile(cls, profile: CandidateProfile, source: str = local) -> CandidateSearchResultDTO:
+    def from_profile(cls, profile: CandidateProfile, source: str = 'local') -> 'CandidateSearchResultDTO':
+        """Converte CandidateProfile para DTO do frontend."""
         experiences_dto = []
         for exp in (profile.experiences or []):
             company_info = exp.company_info
@@ -216,7 +218,7 @@ class CandidateSearchResultDTO(BaseModel):
                         end_date=role.end_date,
                         duration_years=role.duration_years,
                         description=role.description,
-                        current=role.end_date is None or role.end_date == ,
+                        current=role.end_date is None or role.end_date == '',
                         industries=industries,
                         company_size=company_size,
                         company_size_range=company_size_range,
@@ -235,7 +237,7 @@ class CandidateSearchResultDTO(BaseModel):
                     end_date=exp.end_date,
                     duration_years=exp.duration_years,
                     description=exp.description,
-                    current=exp.end_date is None or exp.end_date == ,
+                    current=exp.end_date is None or exp.end_date == '',
                     industries=industries,
                     company_size=company_size,
                     company_size_range=company_size_range,
@@ -282,7 +284,7 @@ class CandidateSearchResultDTO(BaseModel):
                 top_level_company_size = first_exp.company_size
 
         return cls(
-            id=profile.docid or ,
+            id=profile.docid or '',
             name=profile.get_full_name(),
             first_name=profile.first_name,
             last_name=profile.last_name,
@@ -315,6 +317,7 @@ class CandidateSearchResultDTO(BaseModel):
 
 
 class SearchResponseDTO(BaseModel):
+    """Response da busca para o frontend."""
     query: str
     thread_id: Optional[str] = None
     candidates: List[CandidateSearchResultDTO] = Field(default_factory=list)
@@ -331,10 +334,45 @@ class SearchResponseDTO(BaseModel):
     high_adherence_count: int = Field(default=0)
 
 
+def _build_candidate_data_from_dto(candidate_dto: 'CandidateSearchResultDTO') -> Dict[str, Any]:
+    """Build candidate data dict for rubric evaluation from CandidateSearchResultDTO."""
+    work_history = []
+    for exp in (candidate_dto.experiences or candidate_dto.work_history or []):
+        work_history.append({
+            'title': exp.title,
+            'company_name': exp.company or exp.company_name,
+            'start_date': exp.start_date,
+            'end_date': exp.end_date,
+            'description': exp.description,
+            'technologies': exp.technologies or [],
+        })
+    education = []
+    for edu in (candidate_dto.education or []):
+        education.append({
+            'degree': edu.degree,
+            'institution': edu.school or edu.institution,
+            'field_of_study': edu.field_of_study,
+        })
+    return {
+        'id': candidate_dto.id,
+        'name': candidate_dto.name,
+        'current_title': candidate_dto.current_title,
+        'current_company': candidate_dto.current_company,
+        'years_of_experience': candidate_dto.total_experience_years,
+        'skills': candidate_dto.skills or [],
+        'technical_skills': candidate_dto.skills or [],
+        'expertise': candidate_dto.expertise or [],
+        'work_history': work_history,
+        'education': education,
+        'self_introduction': candidate_dto.summary,
+    }
+
+
 async def _evaluate_candidates_with_rubrics(
-    candidates: List[CandidateSearchResultDTO],
+    candidates: List['CandidateSearchResultDTO'],
     requirements: List[JobRequirementCreate],
-) -> List[CandidateSearchResultDTO]:
+) -> List['CandidateSearchResultDTO']:
+    """Evaluate candidates using rubric evaluation service."""
     for candidate in candidates:
         try:
             candidate_data = _build_candidate_data_from_dto(candidate)
@@ -346,39 +384,176 @@ async def _evaluate_candidates_with_rubrics(
             candidate.rubric_match_label = _get_match_label(result.score)
             candidate.rubric_evaluated = True
         except Exception as e:
-            logger.warning(fFailed to evaluate candidate {candidate.id} with rubrics: {e})
+            logger.warning(f'Failed to evaluate candidate {candidate.id} with rubrics: {e}')
             candidate.rubric_evaluated = False
     return candidates
 
 
-def _build_candidate_data_from_dto(candidate_dto: CandidateSearchResultDTO) -> Dict[str, Any]:
-    work_history = []
-    for exp in (candidate_dto.experiences or candidate_dto.work_history or []):
-        work_history.append({
-            title: exp.title,
-            company_name: exp.company or exp.company_name,
-            start_date: exp.start_date,
-            end_date: exp.end_date,
-            description: exp.description,
-            technologies: exp.technologies or [],
-        })
-    education = []
-    for edu in (candidate_dto.education or []):
-        education.append({
-            degree: edu.degree,
-            institution: edu.school or edu.institution,
-            field_of_study: edu.field_of_study,
-        })
-    return {
-        id: candidate_dto.id,
-        name: candidate_dto.name,
-        current_title: candidate_dto.current_title,
-        current_company: candidate_dto.current_company,
-        years_of_experience: candidate_dto.total_experience_years,
-        skills: candidate_dto.skills or [],
-        technical_skills: candidate_dto.skills or [],
-        expertise: candidate_dto.expertise or [],
-        work_history: work_history,
-        education: education,
-        self_introduction: candidate_dto.summary,
-    }
+# ============================================================================
+# ADDITIONAL MODELS (from core_search preamble)
+# ============================================================================
+
+class SearchRequestDTO(BaseModel):
+    """Request para busca de candidatos via API."""
+    query: str = Field(..., description="Query em linguagem natural")
+    thread_id: Optional[str] = Field(None, description="Thread ID para refinamento")
+    
+    # SearchSpec - metadados estruturados extraídos pelo LLM do frontend
+    search_spec: Optional[Dict[str, Any]] = Field(None, description="Metadados estruturados (location, skills, seniority, etc)")
+    
+    # Configuração de busca
+    search_local: bool = Field(True, description="Buscar no banco local")
+    search_pearch: bool = Field(True, description="Buscar na Pearch AI")
+    pearch_type: str = Field("fast", description="Tipo: 'fast' ou 'pro'", pattern="^(fast|pro)$")
+    
+    # Limites
+    local_limit: int = Field(20, ge=1, le=100)
+    pearch_limit: int = Field(15, ge=1, le=50)
+    
+    # Opções de contato
+    show_emails: bool = Field(False)
+    show_phone_numbers: bool = Field(False)
+    high_freshness: bool = Field(False, description="Dados em tempo real (+2 créditos)")
+    require_emails: bool = Field(False, description="Apenas perfis com email")
+    require_phone_numbers: bool = Field(False, description="Apenas perfis com telefone")
+    
+    # Contexto
+    job_vacancy_id: Optional[int] = Field(None)
+    exclude_candidate_ids: List[str] = Field(default_factory=list)
+    
+    # Include discovered candidates from staging table
+    include_discovered: bool = Field(True, description="Include discovered candidates from staging table")
+    
+    # Rubric evaluation - optional job_id to evaluate candidates against job requirements
+    job_id: Optional[str] = Field(None, description="Job UUID for rubric evaluation. If provided, candidates will be scored against job requirements.")
+
+
+
+class ImportCandidateExperienceDTO(BaseModel):
+    """Experiência para importação com dados ricos de empresa."""
+    company_name: str
+    company_linkedin_url: Optional[str] = None
+    company_domain: Optional[str] = None
+    title: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    duration_years: Optional[float] = None
+    is_current: bool = False
+    description: Optional[str] = None
+    location: Optional[str] = None
+    industries: List[str] = Field(default_factory=list)
+    company_size: Optional[str] = None
+    company_size_range: Optional[str] = None
+    technologies: List[str] = Field(default_factory=list)
+    is_startup: Optional[bool] = None
+    company_founded_year: Optional[int] = None
+    company_annual_revenue: Optional[float] = None
+    # Campos de company_info da Pearch
+    company_followers_count: Optional[int] = None
+    company_keywords: List[str] = Field(default_factory=list)
+    company_is_hiring: Optional[bool] = None
+
+
+
+class ImportCandidateDTO(BaseModel):
+    """Candidato Pearch para importação na base local."""
+    pearch_id: str
+    name: str
+    first_name: Optional[str] = None
+    middle_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    avatar_url: Optional[str] = None
+    current_title: Optional[str] = None
+    current_company: Optional[str] = None
+    headline: Optional[str] = None
+    summary: Optional[str] = None
+    location: Optional[str] = None
+    years_of_experience: Optional[float] = None
+    skills: List[str] = Field(default_factory=list)
+    languages: List[Dict[str, Any]] = Field(default_factory=list)
+    education: List[Dict[str, Any]] = Field(default_factory=list)
+    experiences: List[ImportCandidateExperienceDTO] = Field(default_factory=list)
+    is_open_to_work: Optional[bool] = None
+    is_decision_maker: Optional[bool] = None
+    is_top_universities: Optional[bool] = None
+    is_hiring: Optional[bool] = None
+    expertise: List[str] = Field(default_factory=list)
+    # Campos de contato Pearch
+    best_personal_email: Optional[str] = None
+    best_business_email: Optional[str] = None
+    personal_emails: List[str] = Field(default_factory=list)
+    business_emails: List[str] = Field(default_factory=list)
+    phone_types: Optional[Dict[str, Any]] = None
+    # Campos de perfil Pearch
+    estimated_age: Optional[int] = None
+    linkedin_followers_count: Optional[int] = None
+    linkedin_connections_count: Optional[int] = None
+    # Insights e mensagem
+    insights: Optional[Dict[str, Any]] = None
+    outreach_message: Optional[str] = None
+    match_reasoning: Optional[str] = None
+
+
+
+class ImportCandidatesRequest(BaseModel):
+    """Request para importar candidatos Pearch para base local."""
+    candidates: List[ImportCandidateDTO]
+    source_search_query: Optional[str] = None
+    add_to_vacancy_id: Optional[str] = None
+
+
+class IdMapping(BaseModel):
+    """Mapeamento de pearch_id para local_id."""
+    pearch_id: str
+    local_id: str
+
+
+class ImportCandidatesResponse(BaseModel):
+    """Response da importação de candidatos."""
+    imported_count: int
+    skipped_count: int
+    updated_count: int = 0
+    imported_ids: List[str]
+    skipped_ids: List[str]
+    mapping: List[IdMapping]
+    message: str
+
+
+class CreditEstimateDTO(BaseModel):
+    """Estimativa de créditos para confirmação."""
+    query: str
+    pearch_type: str
+    limit: int
+    
+    cost_per_candidate: int
+    total_estimated: int
+    
+    breakdown: dict = Field(default_factory=dict)
+    confirmation_message: str
+
+
+class EvaluateForJobRequest(BaseModel):
+    """Request para avaliar candidatos em batch por job_id."""
+    job_id: str = Field(..., description="UUID da vaga para avaliação")
+    candidate_ids: List[str] = Field(..., description="Lista de UUIDs dos candidatos a avaliar", min_length=1, max_length=100)
+
+
+class EvaluateForJobResult(BaseModel):
+    """Resultado da avaliação de um candidato."""
+    candidate_id: str
+    rubric_score: Optional[float] = None
+    rubric_match_label: Optional[str] = None
+    rubric_evaluated: bool = False
+    error: Optional[str] = None
+
+
+class EvaluateForJobResponse(BaseModel):
+    """Response da avaliação em batch."""
+    job_id: str
+    total_candidates: int
+    evaluated_count: int
+    failed_count: int
+    results: List[EvaluateForJobResult]

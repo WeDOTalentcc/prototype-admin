@@ -24,41 +24,17 @@ from app.services.seniority_context_calibrator import (
     WSI_CONTEXTUAL_CALIBRATION_ENABLED,
 )
 from app.services.seniority_utils import normalize_seniority
+from app.domains.cv_screening.constants.wsi_constants import (
+    BLOOM_LEVEL_LABELS,
+    DREYFUS_STAGE_LABELS,
+    SENIORITY_TO_DREYFUS,
+    SENIORITY_TO_BLOOM,
+)
 
 logger = logging.getLogger(__name__)
 
-BLOOM_LEVELS = {
-    1: "Lembrar",
-    2: "Compreender",
-    3: "Aplicar",
-    4: "Analisar",
-    5: "Avaliar",
-    6: "Criar"
-}
-
-DREYFUS_STAGES = {
-    1: "Novato",
-    2: "Iniciante Avançado",
-    3: "Competente",
-    4: "Proficiente",
-    5: "Especialista"
-}
-
-SENIORITY_TO_DREYFUS = {
-    "junior": 2,
-    "pleno": 3,
-    "senior": 4,
-    "lead": 5,
-    "executive": 5
-}
-
-SENIORITY_TO_BLOOM = {
-    "junior": [1, 2, 3],
-    "pleno": [3, 4],
-    "senior": [4, 5],
-    "lead": [5, 6],
-    "executive": [5, 6]
-}
+BLOOM_LEVELS = BLOOM_LEVEL_LABELS
+DREYFUS_STAGES = DREYFUS_STAGE_LABELS
 
 BIG_FIVE_QUESTIONS = {
     "openness": [

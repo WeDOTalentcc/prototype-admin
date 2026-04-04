@@ -17,9 +17,97 @@ from ._shared import (
     _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
     _evaluate_candidates_with_rubrics, _recruiter_agent,
     ExperienceDTO, EducationDTO, LanguageDTO, CandidateSearchResultDTO, SearchResponseDTO,
+    SearchRequestDTO, ImportCandidateExperienceDTO, ImportCandidateDTO,
+    ImportCandidatesRequest, IdMapping, ImportCandidatesResponse,
+    CreditEstimateDTO, EvaluateForJobRequest, EvaluateForJobResult, EvaluateForJobResponse,
 )
 
 router = APIRouter()
+
+class ArchetypeDTO(BaseModel):
+    """DTO for archetype data in API responses."""
+    id: str
+    name: str
+    description: Optional[str] = None
+    emoji: str = "🎯"
+    query: str
+    filters: dict = Field(default_factory=dict)
+    tags: List[str] = Field(default_factory=list)
+    industry: Optional[str] = None
+    seniority: Optional[str] = None
+    is_default: bool = False
+    is_active: bool = True
+    usage_count: int = 0
+    created_at: Optional[str] = None
+
+
+class ArchetypeListResponse(BaseModel):
+    """Response for listing archetypes."""
+    archetypes: List[ArchetypeDTO]
+    total: int
+    default_count: int
+
+
+class ArchetypeCreateRequest(BaseModel):
+    """Request to create a new archetype."""
+    id: Optional[str] = Field(None, description="ID único, gerado automaticamente se não fornecido")
+    name: str = Field(..., min_length=2, max_length=100)
+    description: Optional[str] = None
+    emoji: str = Field("🎯", max_length=10)
+    query: str = Field(..., min_length=5)
+    filters: dict = Field(default_factory=dict)
+    tags: List[str] = Field(default_factory=list)
+    industry: Optional[str] = None
+    seniority: Optional[str] = None
+
+
+class ArchetypeUpdateRequest(BaseModel):
+    """Request to update an existing archetype."""
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    description: Optional[str] = None
+    emoji: Optional[str] = Field(None, max_length=10)
+    query: Optional[str] = Field(None, min_length=5)
+    filters: Optional[dict] = None
+    tags: Optional[List[str]] = None
+    industry: Optional[str] = None
+    seniority: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class ArchetypeSearchRequest(BaseModel):
+    """Request to search using an archetype."""
+    search_local: bool = Field(True, description="Buscar no banco local")
+    search_pearch: bool = Field(True, description="Buscar na Pearch AI")
+    pearch_type: str = Field("fast", pattern="^(fast|pro)$")
+    local_limit: int = Field(20, ge=1, le=100)
+    pearch_limit: int = Field(15, ge=1, le=50)
+    show_emails: bool = False
+    show_phone_numbers: bool = False
+    calculate_lia_score: bool = Field(True, description="Calcular score LIA para cada candidato")
+
+
+class ArchetypeSearchResultDTO(CandidateSearchResultDTO):
+    """Extended search result with LIA score."""
+    lia_score: Optional[float] = None
+    lia_reasoning: Optional[str] = None
+    lia_breakdown: Optional[dict] = None
+    lia_strengths: List[str] = Field(default_factory=list)
+    lia_concerns: List[str] = Field(default_factory=list)
+
+
+class ArchetypeSearchResponse(BaseModel):
+    """Response for archetype-based search."""
+    archetype: ArchetypeDTO
+    query: str
+    thread_id: Optional[str] = None
+    candidates: List[ArchetypeSearchResultDTO] = Field(default_factory=list)
+    local_count: int = 0
+    pearch_count: int = 0
+    total_count: int = 0
+    credits_remaining: Optional[int] = None
+    search_time_seconds: Optional[float] = None
+    warning_message: Optional[str] = None
+
 
 @router.get("/archetypes", response_model=ArchetypeListResponse)
 async def list_archetypes(

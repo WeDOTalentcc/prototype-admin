@@ -17,9 +17,26 @@ from ._shared import (
     _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
     _evaluate_candidates_with_rubrics, _recruiter_agent,
     ExperienceDTO, EducationDTO, LanguageDTO, CandidateSearchResultDTO, SearchResponseDTO,
+    SearchRequestDTO, ImportCandidateExperienceDTO, ImportCandidateDTO,
+    ImportCandidatesRequest, IdMapping, ImportCandidatesResponse,
+    CreditEstimateDTO, EvaluateForJobRequest, EvaluateForJobResult, EvaluateForJobResponse,
 )
 
 router = APIRouter()
+
+class CVSearchResultDTO(BaseModel):
+    """Result from CV-based search."""
+    parsed_cv: dict
+    query_generated: str
+    candidates: List[CandidateSearchResultDTO] = Field(default_factory=list)
+    local_count: int = 0
+    pearch_count: int = 0
+    total_count: int = 0
+    credits_remaining: Optional[int] = None
+    search_time_seconds: Optional[float] = None
+    extracted_skills: List[str] = Field(default_factory=list)
+    extracted_title: Optional[str] = None
+
 
 @router.post("/from-cv", response_model=CVSearchResultDTO)
 async def search_from_cv(
@@ -464,5 +481,4 @@ class VacancyGoalResponse(BaseModel):
     suggested_actions: List[Dict[str, Any]]
 
 
-from app.services.candidate_goal_service import candidate_goal_service as _recruiter_agent
 

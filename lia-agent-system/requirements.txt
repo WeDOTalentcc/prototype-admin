@@ -88,6 +88,4 @@ google-auth-oauthlib==1.2.1
 pytest==8.3.4
 pytest-asyncio==0.24.0
 
-# Communication providers
-twilio==9.3.7
 APScheduler==3.10.4

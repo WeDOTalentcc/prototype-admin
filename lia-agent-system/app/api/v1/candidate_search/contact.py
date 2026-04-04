@@ -17,9 +17,52 @@ from ._shared import (
     _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
     _evaluate_candidates_with_rubrics, _recruiter_agent,
     ExperienceDTO, EducationDTO, LanguageDTO, CandidateSearchResultDTO, SearchResponseDTO,
+    SearchRequestDTO, ImportCandidateExperienceDTO, ImportCandidateDTO,
+    ImportCandidatesRequest, IdMapping, ImportCandidatesResponse,
+    CreditEstimateDTO, EvaluateForJobRequest, EvaluateForJobResult, EvaluateForJobResponse,
 )
 
 router = APIRouter()
+
+class RevealType(str):
+    EMAIL = "email"
+    PHONE = "phone"
+
+
+class RevealContactRequest(BaseModel):
+    """Request para revelar email ou telefone de um candidato Pearch."""
+    candidate_id: str = Field(..., description="ID do candidato (docid do Pearch)")
+    candidate_name: str = Field(..., description="Nome do candidato para busca")
+    reveal_type: str = Field(..., description="Tipo: 'email' ou 'phone'", pattern="^(email|phone)$")
+    linkedin_slug: Optional[str] = Field(None, description="LinkedIn slug para busca mais precisa")
+
+
+class RevealContactResponse(BaseModel):
+    """Response com dados de contato revelados."""
+    success: bool
+    candidate_id: str
+    reveal_type: str
+    
+    # Dados revelados
+    email: Optional[str] = None
+    emails: List[str] = Field(default_factory=list)
+    phone: Optional[str] = None
+    phones: List[str] = Field(default_factory=list)
+    
+    # Custos
+    credits_used: int = 0
+    credits_remaining: Optional[int] = None
+    
+    # Mensagem
+    message: str = ""
+
+
+class RevealCostEstimate(BaseModel):
+    """Estimativa de custo para reveal."""
+    reveal_type: str
+    credits_required: int
+    description: str
+
 
 @router.get("/reveal/cost")
 async def get_reveal_cost(

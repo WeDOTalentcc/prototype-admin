@@ -19,7 +19,7 @@ from .archetypes import router as archetypes_router
 from .misc_search import router as misc_search_router
 from .calibration import router as calibration_router
 
-router = APIRouter(prefix=/search, tags=[candidate-search])
+router = APIRouter(prefix='/search', tags=['candidate-search'])
 
 router.include_router(core_search_router)
 router.include_router(jd_search_router)
@@ -28,4 +28,4 @@ router.include_router(archetypes_router)
 router.include_router(misc_search_router)
 router.include_router(calibration_router)
 
-__all__ = [router]
+__all__ = ['router']

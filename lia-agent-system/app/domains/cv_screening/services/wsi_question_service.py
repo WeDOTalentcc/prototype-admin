@@ -742,39 +742,20 @@ class WSIQuestionService:
     @staticmethod
     def _get_bloom_label(level: int) -> str:
         """Get Bloom's Taxonomy level label."""
-        labels = {
-            1: "Lembrar",
-            2: "Compreender",
-            3: "Aplicar",
-            4: "Analisar",
-            5: "Avaliar",
-            6: "Criar"
-        }
-        return labels.get(level, "Aplicar")
+        from app.domains.cv_screening.constants.wsi_constants import BLOOM_LEVEL_LABELS
+        return BLOOM_LEVEL_LABELS.get(level, "Aplicar")
     
     @staticmethod
     def _get_dreyfus_stage(seniority: str) -> int:
         """Map seniority to Dreyfus model stage."""
-        mapping = {
-            "junior": 2,
-            "pleno": 3,
-            "senior": 4,
-            "lead": 5,
-            "executive": 5
-        }
-        return mapping.get(seniority.lower(), 3)
+        from app.domains.cv_screening.constants.wsi_constants import SENIORITY_TO_DREYFUS
+        return SENIORITY_TO_DREYFUS.get(seniority.lower(), 3)
     
     @staticmethod
     def _get_dreyfus_label(stage: int) -> str:
         """Get Dreyfus model stage label."""
-        labels = {
-            1: "Novato",
-            2: "Iniciante Avançado",
-            3: "Competente",
-            4: "Proficiente",
-            5: "Especialista"
-        }
-        return labels.get(stage, "Competente")
+        from app.domains.cv_screening.constants.wsi_constants import DREYFUS_STAGE_LABELS
+        return DREYFUS_STAGE_LABELS.get(stage, "Intermediário")
     
     @staticmethod
     def _create_scoring_criteria(bloom_level: int) -> Dict[str, str]:

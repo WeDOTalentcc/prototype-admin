@@ -19,10 +19,10 @@ from app.schemas.screening import (
     ScreeningQuestionRequest,
     BigFiveProfile,
 )
-from app.services.wsi_question_generator import (
-    wsi_screening_generator,
-    BLOOM_LEVELS,
-    DREYFUS_STAGES,
+from app.services.wsi_question_generator import wsi_screening_generator
+from app.domains.cv_screening.constants.wsi_constants import (
+    BLOOM_LEVEL_LABELS as BLOOM_LEVELS,
+    DREYFUS_STAGE_LABELS as DREYFUS_STAGES,
     SENIORITY_TO_DREYFUS,
     SENIORITY_TO_BLOOM,
 )

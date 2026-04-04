@@ -17,9 +17,44 @@ from ._shared import (
     _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
     _evaluate_candidates_with_rubrics, _recruiter_agent,
     ExperienceDTO, EducationDTO, LanguageDTO, CandidateSearchResultDTO, SearchResponseDTO,
+    SearchRequestDTO, ImportCandidateExperienceDTO, ImportCandidateDTO,
+    ImportCandidatesRequest, IdMapping, ImportCandidatesResponse,
+    CreditEstimateDTO, EvaluateForJobRequest, EvaluateForJobResult, EvaluateForJobResponse,
 )
 
 router = APIRouter()
+
+class JobDescriptionSearchRequest(BaseModel):
+    """Request para busca por job description."""
+    job_description: str = Field(..., min_length=50, description="Descrição completa da vaga")
+    location: Optional[str] = Field(None, description="Localização preferida")
+    limit: int = Field(20, ge=1, le=50)
+    search_pearch: bool = Field(True, description="Buscar também na Pearch AI")
+    pearch_type: str = Field("fast", description="Tipo: 'fast' ou 'pro'")
+
+
+class ExtractedCriteria(BaseModel):
+    """Critérios extraídos da job description."""
+    job_title: Optional[str] = None
+    seniority: Optional[str] = None
+    skills: List[str] = Field(default_factory=list)
+    experience_years: Optional[int] = None
+    location: Optional[str] = None
+    languages: List[str] = Field(default_factory=list)
+    certifications: List[str] = Field(default_factory=list)
+
+
+class JobDescriptionSearchResponse(BaseModel):
+    """Response da busca por job description."""
+    extracted_criteria: ExtractedCriteria
+    query_generated: str
+    candidates: List[CandidateSearchResultDTO] = Field(default_factory=list)
+    local_count: int = 0
+    pearch_count: int = 0
+    total_count: int = 0
+    credits_remaining: Optional[int] = None
+    search_time_seconds: Optional[float] = None
+
 
 @router.post("/by-job-description", response_model=JobDescriptionSearchResponse)
 async def search_by_job_description(

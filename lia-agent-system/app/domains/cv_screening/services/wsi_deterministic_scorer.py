@@ -40,22 +40,11 @@ DREYFUS_LEVELS = {
     5: {"name": "Especialista", "description": "Intuição transcende análise",     "years_range": (5, 99)}
 }
 
-DREYFUS_RECRUITER_LABELS = {
-    1: "Iniciante",
-    2: "Básico",
-    3: "Intermediário",
-    4: "Avançado",
-    5: "Especialista",
-}
+from app.domains.cv_screening.constants.wsi_constants import (
+    BLOOM_LEVEL_LABELS as BLOOM_RECRUITER_LABELS,
+    DREYFUS_STAGE_LABELS as DREYFUS_RECRUITER_LABELS,
+)
 
-BLOOM_RECRUITER_LABELS = {
-    1: "Recordar",
-    2: "Compreender",
-    3: "Aplicar",
-    4: "Analisar",
-    5: "Avaliar",
-    6: "Criar",
-}
 
 BIG_FIVE_RECRUITER_LABELS = {
     "openness":          "Abertura a mudanças",

@@ -1010,29 +1010,22 @@ async def generate_job_screening_questions(request: GenerateJobScreeningQuestion
     from app.services.llm import llm_service
     
     try:
-        # Seniority mappings for Bloom and Dreyfus levels
+        from app.domains.cv_screening.constants.wsi_constants import (
+            BLOOM_LEVEL_LABELS,
+            DREYFUS_STAGE_LABELS,
+            SENIORITY_TO_DREYFUS as _BASE_S2D,
+            SENIORITY_TO_BLOOM as _BASE_S2B,
+        )
+        _BLOOM_TARGET = {"junior": 2, "pleno": 3, "senior": 4, "lead": 5, "executive": 6}
         SENIORITY_TO_BLOOM = {
-            "junior": {"range": [2, 3], "target": 2},
-            "pleno": {"range": [3, 4], "target": 3},
-            "senior": {"range": [4, 5], "target": 4},
-            "lead": {"range": [5, 6], "target": 5},
-            "executive": {"range": [5, 6], "target": 6}
+            k: {"range": v, "target": _BLOOM_TARGET.get(k, v[0])} for k, v in _BASE_S2B.items()
         }
         SENIORITY_TO_DREYFUS = {
-            "junior": {"stage": 2, "name": "Iniciante Avançado"},
-            "pleno": {"stage": 3, "name": "Competente"},
-            "senior": {"stage": 4, "name": "Proficiente"},
-            "lead": {"stage": 5, "name": "Especialista"},
-            "executive": {"stage": 5, "name": "Especialista"}
+            k: {"stage": v, "name": DREYFUS_STAGE_LABELS.get(v, "Intermediário")}
+            for k, v in _BASE_S2D.items()
         }
-        BLOOM_NAMES = {
-            1: "Lembrar", 2: "Compreender", 3: "Aplicar", 
-            4: "Analisar", 5: "Avaliar", 6: "Criar"
-        }
-        DREYFUS_NAMES = {
-            1: "Novato", 2: "Iniciante Avançado", 3: "Competente",
-            4: "Proficiente", 5: "Especialista"
-        }
+        BLOOM_NAMES = BLOOM_LEVEL_LABELS
+        DREYFUS_NAMES = DREYFUS_STAGE_LABELS
         
         seniority = normalize_seniority(request.seniority_level) if request.seniority_level else "pleno"
         

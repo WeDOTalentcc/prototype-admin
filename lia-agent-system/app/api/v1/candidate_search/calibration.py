@@ -17,9 +17,99 @@ from ._shared import (
     _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
     _evaluate_candidates_with_rubrics, _recruiter_agent,
     ExperienceDTO, EducationDTO, LanguageDTO, CandidateSearchResultDTO, SearchResponseDTO,
+    SearchRequestDTO, ImportCandidateExperienceDTO, ImportCandidateDTO,
+    ImportCandidatesRequest, IdMapping, ImportCandidatesResponse,
+    CreditEstimateDTO, EvaluateForJobRequest, EvaluateForJobResult, EvaluateForJobResponse,
 )
 
 router = APIRouter()
+
+class CalibrationFeedbackRequest(BaseModel):
+    """Request para feedback de calibração."""
+    candidate_id: str = Field(..., description="ID do candidato")
+    feedback: str = Field(..., pattern="^(like|dislike)$", description="Tipo: 'like' ou 'dislike'")
+    vacancy_id: Optional[str] = Field(None, description="ID da vaga (opcional)")
+    session_id: Optional[str] = Field(None, description="ID da sessão de calibração")
+    reason: Optional[str] = Field(None, description="Motivo do feedback")
+    candidate_snapshot: Optional[Dict[str, Any]] = Field(None, description="Dados do candidato")
+
+
+class CalibrationFeedbackResponse(BaseModel):
+    """Response do feedback de calibração."""
+    status: str
+    total_feedbacks: int
+    likes_count: int
+    dislikes_count: int
+    calibration_complete: bool
+    confidence_level: float
+    learned_patterns: Dict[str, Any]
+    message: str
+    feedback_id: str
+    sourcing_blocked: bool = True
+    ready_to_source: bool = False
+    feedbacks_remaining: int = 0
+    min_feedbacks_required: int = 5
+
+
+class CalibrationStartRequest(BaseModel):
+    """Request para iniciar sessão de calibração."""
+    vacancy_id: Optional[str] = Field(None, description="ID da vaga")
+    search_criteria: Optional[Dict[str, Any]] = Field(None, description="Critérios de busca")
+    sample_size: int = Field(5, ge=3, le=10, description="Quantidade de candidatos para avaliar")
+
+
+class CalibrationStartResponse(BaseModel):
+    """Response do início da calibração."""
+    session_id: str
+    vacancy_id: Optional[str]
+    status: str
+    candidates: List[CandidateSearchResultDTO]
+    message: str
+
+
+class CalibrationStatusResponse(BaseModel):
+    """Response do status da calibração."""
+    session_id: str
+    vacancy_id: Optional[str]
+    status: str
+    total_shown: int
+    likes_count: int
+    dislikes_count: int
+    calibration_complete: bool
+    confidence_level: float
+    learned_patterns: Optional[Dict[str, Any]]
+    message: str
+    created_at: Optional[str]
+    completed_at: Optional[str]
+    sourcing_blocked: bool = True
+    ready_to_source: bool = False
+    feedbacks_remaining: int = 0
+    min_feedbacks_required: int = 5
+
+
+class VacancyGoalRequest(BaseModel):
+    """Request para verificar meta da vaga."""
+    vacancy_id: str = Field(..., description="ID da vaga")
+    current_count: int = Field(..., ge=0, description="Contagem atual de candidatos")
+    target_min: int = Field(50, ge=1, description="Meta mínima")
+    target_max: int = Field(70, ge=1, description="Meta máxima")
+
+
+class VacancyGoalResponse(BaseModel):
+    """Response da verificação de meta."""
+    status: str
+    vacancy_id: str
+    current_count: int
+    target_range: List[int]
+    deficit: int
+    surplus: int
+    progress_percentage: int
+    recommendation: str
+    message: str
+    suggested_actions: List[Dict[str, Any]]
+
+
+
 
 @router.post("/calibration/feedback", response_model=CalibrationFeedbackResponse)
 async def submit_calibration_feedback(

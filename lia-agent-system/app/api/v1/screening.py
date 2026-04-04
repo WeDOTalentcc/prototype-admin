@@ -96,21 +96,22 @@ async def regenerate_questions(
 async def get_screening_frameworks(
     current_user: User = Depends(get_current_active_user)
 ):
+    from app.domains.cv_screening.constants.wsi_constants import (
+        BLOOM_LEVEL_LABELS,
+        DREYFUS_STAGE_LABELS,
+        SENIORITY_TO_DREYFUS,
+        SENIORITY_TO_BLOOM,
+    )
+    from app.api.v1.wsi._shared import BLOOM_LEVELS as BLOOM_RICH, DREYFUS_LEVELS as DREYFUS_RICH
+
     return {
         "bloom_levels": {
-            1: {"label": "Lembrar", "description": "Recordar fatos e conceitos básicos"},
-            2: {"label": "Compreender", "description": "Explicar ideias ou conceitos"},
-            3: {"label": "Aplicar", "description": "Usar informação em novas situações"},
-            4: {"label": "Analisar", "description": "Estabelecer conexões entre ideias"},
-            5: {"label": "Avaliar", "description": "Justificar decisões ou posições"},
-            6: {"label": "Criar", "description": "Produzir trabalho original"}
+            k: {"label": BLOOM_LEVEL_LABELS[k], "description": BLOOM_RICH[k]["description"]}
+            for k in BLOOM_LEVEL_LABELS
         },
         "dreyfus_stages": {
-            1: {"label": "Novato", "description": "Segue regras rígidas, precisa de supervisão"},
-            2: {"label": "Iniciante Avançado", "description": "Reconhece aspectos situacionais"},
-            3: {"label": "Competente", "description": "Planeja e age conscientemente"},
-            4: {"label": "Proficiente", "description": "Vê situações de forma holística"},
-            5: {"label": "Especialista", "description": "Age intuitivamente, transcende regras"}
+            k: {"label": DREYFUS_STAGE_LABELS[k], "description": DREYFUS_RICH[k]["description"]}
+            for k in DREYFUS_STAGE_LABELS
         },
         "big_five_traits": {
             "openness": {"label": "Abertura", "description": "Criatividade, curiosidade, inovação"},
@@ -120,11 +121,8 @@ async def get_screening_frameworks(
             "stability": {"label": "Estabilidade", "description": "Calma, resiliência, equilíbrio emocional"}
         },
         "seniority_mapping": {
-            "junior": {"dreyfus": 2, "bloom_range": [1, 2, 3]},
-            "pleno": {"dreyfus": 3, "bloom_range": [3, 4]},
-            "senior": {"dreyfus": 4, "bloom_range": [4, 5]},
-            "lead": {"dreyfus": 5, "bloom_range": [5, 6]},
-            "executive": {"dreyfus": 5, "bloom_range": [5, 6]}
+            k: {"dreyfus": SENIORITY_TO_DREYFUS[k], "bloom_range": SENIORITY_TO_BLOOM[k]}
+            for k in SENIORITY_TO_DREYFUS
         }
     }
 

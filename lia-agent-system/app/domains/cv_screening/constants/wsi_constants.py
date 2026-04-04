@@ -50,6 +50,57 @@ WSI_BLOCK_NAMES: dict[int, str] = {
 # Fonte canônica: importar aqui em vez de definir localmente em cada módulo.
 # Referência: Guia WeDOTalent v3.4 — Metodologia WSI F5.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Taxonomia Bloom — labels simples para uso em perguntas e relatórios
+# Canonical labels em PT-BR. Módulos que precisam de estrutura rica (com
+# indicadores ou descriptions) mantêm suas próprias dicts estendidas,
+# mas DEVEM usar esses labels como fonte dos nomes.
+# ---------------------------------------------------------------------------
+BLOOM_LEVEL_LABELS: dict[int, str] = {
+    1: "Recordar",
+    2: "Compreender",
+    3: "Aplicar",
+    4: "Analisar",
+    5: "Avaliar",
+    6: "Criar",
+}
+
+# ---------------------------------------------------------------------------
+# Dreyfus Model — labels simples para uso em perguntas e relatórios
+# ---------------------------------------------------------------------------
+DREYFUS_STAGE_LABELS: dict[int, str] = {
+    1: "Iniciante",
+    2: "Básico",
+    3: "Intermediário",
+    4: "Avançado",
+    5: "Especialista",
+}
+
+# ---------------------------------------------------------------------------
+# Seniority → Dreyfus/Bloom mappings (base, uncalibrated)
+# Usado em: wsi_question_generator, wsi_screening_pipeline,
+#           seniority_context_calibrator (como base antes de ajustes),
+#           wsi_endpoints
+# ---------------------------------------------------------------------------
+SENIORITY_TO_DREYFUS: dict[str, int] = {
+    "junior": 2,
+    "pleno": 3,
+    "senior": 4,
+    "lead": 5,
+    "executive": 5,
+}
+
+SENIORITY_TO_BLOOM: dict[str, list[int]] = {
+    "junior": [1, 2, 3],
+    "pleno": [3, 4],
+    "senior": [4, 5],
+    "lead": [5, 6],
+    "executive": [5, 6],
+}
+
+# ---------------------------------------------------------------------------
+# F5 — Distribuição adaptativa de perguntas técnicas vs. comportamentais
+# ---------------------------------------------------------------------------
 SENIORITY_DISTRIBUTIONS: dict[str, dict[str, dict[str, int]]] = {
     "compact": {
         "estagiario": {"technical": 5, "behavioral": 2, "total": 7},

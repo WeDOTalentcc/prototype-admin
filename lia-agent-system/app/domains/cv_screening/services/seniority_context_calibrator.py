@@ -42,13 +42,10 @@ logger = logging.getLogger(__name__)
 
 WSI_CONTEXTUAL_CALIBRATION_ENABLED = True
 
-BASE_SENIORITY_TO_DREYFUS = {
-    "junior": 2, "pleno": 3, "senior": 4, "lead": 5, "executive": 5
-}
-
-BASE_SENIORITY_TO_BLOOM = {
-    "junior": [1, 2, 3], "pleno": [3, 4], "senior": [4, 5], "lead": [5, 6], "executive": [5, 6]
-}
+from app.domains.cv_screening.constants.wsi_constants import (
+    SENIORITY_TO_DREYFUS as BASE_SENIORITY_TO_DREYFUS,
+    SENIORITY_TO_BLOOM as BASE_SENIORITY_TO_BLOOM,
+)
 
 _TECH_AGE_YEARS_MULTIPLIERS = {
     "very_new": 0.8,
