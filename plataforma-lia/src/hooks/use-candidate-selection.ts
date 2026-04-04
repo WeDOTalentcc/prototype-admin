@@ -1,26 +1,13 @@
-/**
- * useCandidateSelection — Sprint E god object extraction
- *
- * Extracted from candidates-page.tsx (12375 lines).
- * Contains candidate selection state and bulk action logic.
- *
- * TODO (Sprint E phase 2): Replace the scattered useState declarations
- * (lines ~901-902) and related selection handlers in CandidatesPage with
- * a call to this hook.
- */
 "use client"
 
-import React, { useState, useCallback } from "react"
-
-// ── Types ─────────────────────────────────────────────────────────────────────
+import React, { useCallback } from "react"
+import { useCandidatesStore } from "@/stores/candidates-store"
 
 export interface BulkActionResult {
   successCount: number
   failureCount: number
   errors: string[]
 }
-
-// ── Hook ─────────────────────────────────────────────────────────────────────
 
 export interface UseCandidateSelectionReturn {
   selectedCandidates: Set<string>
@@ -35,21 +22,17 @@ export interface UseCandidateSelectionReturn {
   isSelected: (id: string) => boolean
 }
 
-/**
- * Manages multi-select state for the candidates table.
- * Supports shift-click range selection.
- * Ready to be imported in CandidatesPage as part of Sprint E phase 2 extraction.
- */
 export function useCandidateSelection(): UseCandidateSelectionReturn {
-  const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set())
-  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
+  const selectedCandidates = useCandidatesStore((s) => s.selectedCandidates)
+  const setSelectedCandidates = useCandidatesStore((s) => s.setSelectedCandidates) as React.Dispatch<React.SetStateAction<Set<string>>>
+  const lastSelectedIndex = useCandidatesStore((s) => s.lastSelectedIndex)
+  const setLastSelectedIndex = useCandidatesStore((s) => s.setLastSelectedIndex)
 
   const selectCandidate = useCallback(
     (id: string, shiftKey = false, index?: number, allIds: string[] = []) => {
-      setSelectedCandidates(prev => {
+      setSelectedCandidates((prev: Set<string>) => {
         const next = new Set(prev)
         if (shiftKey && lastSelectedIndex !== null && index !== undefined && allIds.length > 0) {
-          // Range selection
           const start = Math.min(lastSelectedIndex, index)
           const end = Math.max(lastSelectedIndex, index)
           for (let i = start; i <= end; i++) {
@@ -62,30 +45,30 @@ export function useCandidateSelection(): UseCandidateSelectionReturn {
       })
       if (index !== undefined) setLastSelectedIndex(index)
     },
-    [lastSelectedIndex]
+    [lastSelectedIndex, setSelectedCandidates, setLastSelectedIndex]
   )
 
   const deselectCandidate = useCallback((id: string) => {
-    setSelectedCandidates(prev => {
+    setSelectedCandidates((prev: Set<string>) => {
       const next = new Set(prev)
       next.delete(id)
       return next
     })
-  }, [])
+  }, [setSelectedCandidates])
 
   const toggleSelectAll = useCallback((allIds: string[]) => {
-    setSelectedCandidates(prev => {
+    setSelectedCandidates((prev: Set<string>) => {
       const allSelected = allIds.every(id => prev.has(id))
-      if (allSelected) return new Set()
+      if (allSelected) return new Set<string>()
       return new Set(allIds)
     })
     setLastSelectedIndex(null)
-  }, [])
+  }, [setSelectedCandidates, setLastSelectedIndex])
 
   const clearSelection = useCallback(() => {
-    setSelectedCandidates(new Set())
+    setSelectedCandidates(new Set<string>())
     setLastSelectedIndex(null)
-  }, [])
+  }, [setSelectedCandidates, setLastSelectedIndex])
 
   const isSelected = useCallback(
     (id: string) => selectedCandidates.has(id),
@@ -96,7 +79,7 @@ export function useCandidateSelection(): UseCandidateSelectionReturn {
     selectedCandidates,
     setSelectedCandidates,
     lastSelectedIndex,
-    isAllSelected: false, // computed by caller based on current page
+    isAllSelected: false,
     selectedCount: selectedCandidates.size,
     selectCandidate,
     deselectCandidate,

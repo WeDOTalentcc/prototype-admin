@@ -1,0 +1,107 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.17",
+  "version": "1.0.0",
+  "id": "{{TEAMS_APP_ID}}",
+  "packageName": "com.wedotalent.lia",
+  "developer": {
+    "name": "WeDOTalent",
+    "websiteUrl": "{{PLATFORM_URL}}",
+    "privacyUrl": "{{PLATFORM_URL}}/privacy",
+    "termsOfUseUrl": "{{PLATFORM_URL}}/terms"
+  },
+  "icons": {
+    "color": "icon-color.png",
+    "outline": "icon-outline.png"
+  },
+  "name": {
+    "short": "LIA - WeDOTalent",
+    "full": "LIA Assistente de Recrutamento — WeDOTalent"
+  },
+  "description": {
+    "short": "IA de recrutamento inteligente",
+    "full": "LIA é a assistente de recrutamento da WeDOTalent. Busca candidatos, dispara triagens, agenda entrevistas e envia relatórios — tudo pelo Teams."
+  },
+  "accentColor": "#6366F1",
+  "bots": [
+    {
+      "botId": "{{TEAMS_BOT_APP_ID}}",
+      "scopes": ["personal", "team", "groupChat"],
+      "supportsFiles": true,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": ["personal", "team", "groupChat"],
+          "commands": [
+            { "title": "ajuda",       "description": "Ver todas as funcionalidades da LIA" },
+            { "title": "buscar",      "description": "Buscar candidatos para uma vaga" },
+            { "title": "triagem",     "description": "Ver candidatos aguardando triagem WSI" },
+            { "title": "relatorio",   "description": "Gerar relatório semanal de recrutamento" },
+            { "title": "pipeline",    "description": "Ver saúde do pipeline de recrutamento" },
+            { "title": "vagas",       "description": "Ver vagas ativas e seus status" },
+            { "title": "candidatos",  "description": "Ver candidatos aguardando retorno" },
+            { "title": "resumo",      "description": "Resumo das atividades do dia" }
+          ]
+        }
+      ]
+    }
+  ],
+  "staticTabs": [
+    {
+      "entityId": "tab-vagas",
+      "name": "📋 Vagas",
+      "contentUrl": "{{PLATFORM_URL}}/teams-tab/vagas",
+      "websiteUrl": "{{PLATFORM_URL}}/vagas",
+      "scopes": ["personal"]
+    },
+    {
+      "entityId": "tab-candidatos",
+      "name": "👥 Candidatos",
+      "contentUrl": "{{PLATFORM_URL}}/teams-tab/candidatos",
+      "websiteUrl": "{{PLATFORM_URL}}/candidatos",
+      "scopes": ["personal"]
+    },
+    {
+      "entityId": "tab-pipeline",
+      "name": "🔀 Pipeline",
+      "contentUrl": "{{PLATFORM_URL}}/teams-tab/pipeline",
+      "websiteUrl": "{{PLATFORM_URL}}/pipeline",
+      "scopes": ["personal"]
+    },
+    {
+      "entityId": "tab-dashboard",
+      "name": "📊 Dashboard",
+      "contentUrl": "{{PLATFORM_URL}}/teams-tab/dashboard",
+      "websiteUrl": "{{PLATFORM_URL}}/dashboard",
+      "scopes": ["personal"]
+    }
+  ],
+  "configurableTabs": [
+    {
+      "configurationUrl": "{{PLATFORM_URL}}/teams-tab/configure",
+      "canUpdateConfiguration": true,
+      "scopes": ["team", "groupChat"],
+      "meetingSurfaces": []
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": [
+    "{{PLATFORM_DOMAIN}}",
+    "token.botframework.com",
+    "login.microsoftonline.com"
+  ],
+  "webApplicationInfo": {
+    "id": "{{AZURE_CLIENT_ID}}",
+    "resource": "api://{{PLATFORM_DOMAIN}}/{{AZURE_CLIENT_ID}}"
+  },
+  "authorization": {
+    "permissions": {
+      "resourceSpecific": [
+        { "name": "ChannelMessage.Read.Group",    "type": "Application" },
+        { "name": "ChatMessage.Read.Chat",        "type": "Application" },
+        { "name": "TeamSettings.Read.Group",      "type": "Delegated"  },
+        { "name": "ChannelSettings.Read.Group",   "type": "Delegated"  }
+      ]
+    }
+  }
+}

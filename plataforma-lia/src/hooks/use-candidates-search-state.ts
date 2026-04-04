@@ -1,18 +1,7 @@
-/**
- * use-candidates-search-state.ts — Sprint 4.11
- *
- * Centraliza todos os estados relacionados à busca de candidatos,
- * extraídos de CandidatesPage para reduzir o tamanho do componente.
- *
- * Portabilidade Vue: retorna { state, actions } → mapeia para data() + methods() em Vue 3.
- */
+"use client"
 
-import { useState } from "react"
-import type { ParsedEntities, SearchMode, SearchMetadata } from "@/components/search/smart-search-input"
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+import { useCandidatesStore } from "@/stores/candidates-store"
+import type { ParsedEntities, SearchMetadata } from "@/components/search/smart-search-input"
 
 type SearchSource = "local" | "global" | "hybrid"
 
@@ -98,125 +87,77 @@ interface UseCandidatesSearchStateReturn {
   actions: SearchActions
 }
 
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
-
 export function useCandidatesSearchState(): UseCandidatesSearchStateReturn {
-  const [searchTerm, setSearchTerm] = useState<string>("")
-  const [quickFilters, setQuickFilters] = useState<Set<string>>(new Set())
-
-  const [activeTab, setActiveTab] = useState<SearchState["activeTab"]>("search")
-  const [lastSearchQuery, setLastSearchQuery] = useState<string>("")
-  const [lastSearchEntities, setLastSearchEntities] = useState<ParsedEntities | null>(null)
-  const [lastSearchMode, setLastSearchMode] = useState<string>("")
-  const [lastSearchMetadata, setLastSearchMetadata] = useState<SearchMetadata | undefined>(undefined)
-  const [lastSearchUsedPearch, setLastSearchUsedPearch] = useState<boolean>(false)
-  const [hasSearchResults, setHasSearchResults] = useState<boolean>(false)
-  const [searchResultsCount, setSearchResultsCount] = useState<number>(0)
-  const [localResultsCount, setLocalResultsCount] = useState<number>(0)
-  const [pearchResultsCount, setPearchResultsCount] = useState<number>(0)
-  const [creditsUsedInSearch, setCreditsUsedInSearch] = useState<number>(0)
-  const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null)
-  const [showExpandGlobalOption, setShowExpandGlobalOption] = useState<boolean>(false)
-
-  const [openCreditModals, setOpenCreditModals] = useState<CreditModalsState>({
-    hybrid: false,
-    global: false,
-    email: false,
-    phone: false,
-  })
-
-  const [showEditQueryModal, setShowEditQueryModal] = useState<boolean>(false)
-  const [editQueryValue, setEditQueryValue] = useState<string>("")
-
-  const [showSearchResults, setShowSearchResults] = useState<boolean>(false)
-  const [searchSource, setSearchSource] = useState<SearchSource>("hybrid")
-
-  const [currentSearchSource, setCurrentSearchSource] = useState<SearchSource>("local")
-  const [showGlobalExpansionConfirm, setShowGlobalExpansionConfirm] = useState<boolean>(false)
-  const [hasSearched, setHasSearched] = useState<boolean>(false)
-  const [isExpandingToGlobal, setIsExpandingToGlobal] = useState<boolean>(false)
-
-  const [searchExecutionId, setSearchExecutionId] = useState<number>(0)
-
-  const [searchSortBy, setSearchSortBy] = useState<string>("relevance")
-  const [searchFeedbacks, setSearchFeedbacks] = useState<Record<string, "like" | "dislike">>({})
-  const [displayedResultsCount, setDisplayedResultsCount] = useState<number>(10)
-  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false)
-
-  const [showOnlyNew, setShowOnlyNew] = useState<boolean>(false)
-  const [isDroppingCV, setIsDroppingCV] = useState<boolean>(false)
-  const [cvUploadLoading, setCvUploadLoading] = useState<boolean>(false)
+  const store = useCandidatesStore()
 
   return {
     state: {
-      searchTerm,
-      quickFilters,
-      activeTab,
-      lastSearchQuery,
-      lastSearchEntities,
-      lastSearchMode,
-      lastSearchMetadata,
-      lastSearchUsedPearch,
-      hasSearchResults,
-      searchResultsCount,
-      localResultsCount,
-      pearchResultsCount,
-      creditsUsedInSearch,
-      creditsRemaining,
-      showExpandGlobalOption,
-      openCreditModals,
-      showEditQueryModal,
-      editQueryValue,
-      showSearchResults,
-      searchSource,
-      currentSearchSource,
-      showGlobalExpansionConfirm,
-      hasSearched,
-      isExpandingToGlobal,
-      searchExecutionId,
-      searchSortBy,
-      searchFeedbacks,
-      displayedResultsCount,
-      isLoadingMore,
-      showOnlyNew,
-      isDroppingCV,
-      cvUploadLoading,
+      searchTerm: store.searchTerm,
+      quickFilters: store.quickFilters,
+      activeTab: store.activeTab,
+      lastSearchQuery: store.lastSearchQuery,
+      lastSearchEntities: store.lastSearchEntities,
+      lastSearchMode: store.lastSearchMode,
+      lastSearchMetadata: store.lastSearchMetadata,
+      lastSearchUsedPearch: store.lastSearchUsedPearch,
+      hasSearchResults: store.hasSearchResults,
+      searchResultsCount: store.searchResultsCount,
+      localResultsCount: store.localResultsCount,
+      pearchResultsCount: store.pearchResultsCount,
+      creditsUsedInSearch: store.creditsUsedInSearch,
+      creditsRemaining: store.creditsRemaining,
+      showExpandGlobalOption: store.showExpandGlobalOption,
+      openCreditModals: store.openCreditModals,
+      showEditQueryModal: store.showEditQueryModal,
+      editQueryValue: store.editQueryValue,
+      showSearchResults: store.showSearchResults,
+      searchSource: store.searchSource,
+      currentSearchSource: store.currentSearchSource,
+      showGlobalExpansionConfirm: store.showGlobalExpansionConfirm,
+      hasSearched: store.hasSearched,
+      isExpandingToGlobal: store.isExpandingToGlobal,
+      searchExecutionId: store.searchExecutionId,
+      searchSortBy: store.searchSortBy,
+      searchFeedbacks: store.searchFeedbacks,
+      displayedResultsCount: store.displayedResultsCount,
+      isLoadingMore: store.isLoadingMore,
+      showOnlyNew: store.showOnlyNew,
+      isDroppingCV: store.isDroppingCV,
+      cvUploadLoading: store.cvUploadLoading,
     },
     actions: {
-      setSearchTerm,
-      setQuickFilters,
-      setActiveTab,
-      setLastSearchQuery,
-      setLastSearchEntities,
-      setLastSearchMode,
-      setLastSearchMetadata,
-      setLastSearchUsedPearch,
-      setHasSearchResults,
-      setSearchResultsCount,
-      setLocalResultsCount,
-      setPearchResultsCount,
-      setCreditsUsedInSearch,
-      setCreditsRemaining,
-      setShowExpandGlobalOption,
-      setOpenCreditModals,
-      setShowEditQueryModal,
-      setEditQueryValue,
-      setShowSearchResults,
-      setSearchSource,
-      setCurrentSearchSource,
-      setShowGlobalExpansionConfirm,
-      setHasSearched,
-      setIsExpandingToGlobal,
-      setSearchExecutionId,
-      setSearchSortBy,
-      setSearchFeedbacks,
-      setDisplayedResultsCount,
-      setIsLoadingMore,
-      setShowOnlyNew,
-      setIsDroppingCV,
-      setCvUploadLoading,
+      setSearchTerm: store.setSearchTerm,
+      setQuickFilters: store.setQuickFilters,
+      setActiveTab: store.setActiveTab,
+      setLastSearchQuery: store.setLastSearchQuery,
+      setLastSearchEntities: store.setLastSearchEntities,
+      setLastSearchMode: store.setLastSearchMode,
+      setLastSearchMetadata: store.setLastSearchMetadata,
+      setLastSearchUsedPearch: store.setLastSearchUsedPearch,
+      setHasSearchResults: store.setHasSearchResults,
+      setSearchResultsCount: store.setSearchResultsCount,
+      setLocalResultsCount: store.setLocalResultsCount,
+      setPearchResultsCount: store.setPearchResultsCount,
+      setCreditsUsedInSearch: store.setCreditsUsedInSearch,
+      setCreditsRemaining: store.setCreditsRemaining,
+      setShowExpandGlobalOption: store.setShowExpandGlobalOption,
+      setOpenCreditModals: store.setOpenCreditModals,
+      setShowEditQueryModal: store.setShowEditQueryModal,
+      setEditQueryValue: store.setEditQueryValue,
+      setShowSearchResults: store.setShowSearchResults,
+      setSearchSource: store.setSearchSource,
+      setCurrentSearchSource: store.setCurrentSearchSource,
+      setShowGlobalExpansionConfirm: store.setShowGlobalExpansionConfirm,
+      setHasSearched: store.setHasSearched,
+      setIsExpandingToGlobal: store.setIsExpandingToGlobal,
+      setSearchExecutionId: store.setSearchExecutionId,
+      setSearchSortBy: store.setSearchSortBy,
+      setSearchFeedbacks: store.setSearchFeedbacks,
+      setDisplayedResultsCount: store.setDisplayedResultsCount,
+      setIsLoadingMore: store.setIsLoadingMore,
+      setShowOnlyNew: store.setShowOnlyNew,
+      setIsDroppingCV: store.setIsDroppingCV,
+      setCvUploadLoading: store.setCvUploadLoading,
     },
   }
 }

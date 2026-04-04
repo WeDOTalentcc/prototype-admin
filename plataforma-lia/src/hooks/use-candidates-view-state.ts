@@ -1,18 +1,7 @@
-/**
- * use-candidates-view-state.ts — Sprint 4.11
- *
- * Centraliza todos os estados relacionados à visualização de candidatos,
- * extraídos de CandidatesPage para reduzir o tamanho do componente.
- *
- * Portabilidade Vue: retorna { state, actions } → mapeia para data() + methods() em Vue 3.
- */
+"use client"
 
-import { useState } from "react"
+import { useCandidatesStore } from "@/stores/candidates-store"
 import type { Candidate } from "@/components/pages/candidates/types"
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 interface ViewState {
   selectedCandidate: Candidate | null
@@ -67,79 +56,55 @@ interface UseCandidatesViewStateReturn {
   actions: ViewActions
 }
 
-// ---------------------------------------------------------------------------
-// Hook
-// ---------------------------------------------------------------------------
-
 export function useCandidatesViewState(): UseCandidatesViewStateReturn {
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
-  const [showPreview, setShowPreview] = useState<boolean>(false)
-  const [isPreviewMaximized, setIsPreviewMaximized] = useState<boolean>(false)
-  const [showCandidatePage, setShowCandidatePage] = useState<boolean>(false)
-  const [showCandidatePreview, setShowCandidatePreview] = useState<boolean>(false)
-  const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(null)
-  const [showSidePreview, setShowSidePreview] = useState<boolean>(false)
-  const [sidePreviewCandidate, setSidePreviewCandidate] = useState<Candidate | null>(null)
-  const [selectedCandidateForLIA, setSelectedCandidateForLIA] = useState<Candidate | null>(null)
-  const [showLIAPromptForCandidate, setShowLIAPromptForCandidate] = useState<boolean>(false)
-  const [showExpandedLIA, setShowExpandedLIA] = useState<boolean>(false)
-  const [liaPromptValue, setLiaPromptValue] = useState<string>("")
-  const [userCollapsedLIA, setUserCollapsedLIA] = useState<boolean>(false)
-  const [talentConversationId, setTalentConversationId] = useState<string | undefined>(undefined)
-  const [viewedCandidateIds, setViewedCandidateIds] = useState<Set<string>>(new Set())
-  const [currentPage, setCurrentPage] = useState<number>(1)
-  const [crossTabFilter, setCrossTabFilter] = useState<Record<string, unknown> | null>(null)
-  const [showCrossTabBanner, setShowCrossTabBanner] = useState<boolean>(false)
-  const [viewingList, setViewingList] = useState<{ id: string; name: string; color?: string } | null>(null)
-  const [sortBy, setSortBy] = useState<string>("score")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const store = useCandidatesStore()
 
   return {
     state: {
-      selectedCandidate,
-      showPreview,
-      isPreviewMaximized,
-      showCandidatePage,
-      showCandidatePreview,
-      previewCandidate,
-      showSidePreview,
-      sidePreviewCandidate,
-      selectedCandidateForLIA,
-      showLIAPromptForCandidate,
-      showExpandedLIA,
-      liaPromptValue,
-      userCollapsedLIA,
-      talentConversationId,
-      viewedCandidateIds,
-      currentPage,
-      crossTabFilter,
-      showCrossTabBanner,
-      viewingList,
-      sortBy,
-      sortOrder,
+      selectedCandidate: store.selectedCandidate as Candidate | null,
+      showPreview: store.showPreview,
+      isPreviewMaximized: store.isPreviewMaximized,
+      showCandidatePage: store.showCandidatePage,
+      showCandidatePreview: store.showCandidatePreview,
+      previewCandidate: store.previewCandidate as Candidate | null,
+      showSidePreview: store.showSidePreview,
+      sidePreviewCandidate: store.sidePreviewCandidate as Candidate | null,
+      selectedCandidateForLIA: store.selectedCandidateForLIA as Candidate | null,
+      showLIAPromptForCandidate: store.showLIAPromptForCandidate,
+      showExpandedLIA: store.showExpandedLIA,
+      liaPromptValue: store.liaPromptValue,
+      userCollapsedLIA: store.userCollapsedLIA,
+      talentConversationId: store.talentConversationId,
+      viewedCandidateIds: store.viewedCandidateIds,
+      currentPage: store.currentPage,
+      crossTabFilter: store.crossTabFilter,
+      showCrossTabBanner: store.showCrossTabBanner,
+      viewingList: store.viewingList,
+      sortBy: store.sortBy,
+      sortOrder: store.sortOrder,
     },
     actions: {
-      setSelectedCandidate,
-      setShowPreview,
-      setIsPreviewMaximized,
-      setShowCandidatePage,
-      setShowCandidatePreview,
-      setPreviewCandidate,
-      setShowSidePreview,
-      setSidePreviewCandidate,
-      setSelectedCandidateForLIA,
-      setShowLIAPromptForCandidate,
-      setShowExpandedLIA,
-      setLiaPromptValue,
-      setUserCollapsedLIA,
-      setTalentConversationId,
-      setViewedCandidateIds,
-      setCurrentPage,
-      setCrossTabFilter,
-      setShowCrossTabBanner,
-      setViewingList,
-      setSortBy,
-      setSortOrder,
+      setSelectedCandidate: store.setSelectedCandidate as ViewActions['setSelectedCandidate'],
+      setShowPreview: store.setShowPreview,
+      setIsPreviewMaximized: store.setIsPreviewMaximized,
+      setShowCandidatePage: store.setShowCandidatePage,
+      setShowCandidatePreview: store.setShowCandidatePreview,
+      setPreviewCandidate: store.setPreviewCandidate as ViewActions['setPreviewCandidate'],
+      setShowSidePreview: store.setShowSidePreview,
+      setSidePreviewCandidate: store.setSidePreviewCandidate as ViewActions['setSidePreviewCandidate'],
+      setSelectedCandidateForLIA: store.setSelectedCandidateForLIA as ViewActions['setSelectedCandidateForLIA'],
+      setShowLIAPromptForCandidate: store.setShowLIAPromptForCandidate,
+      setShowExpandedLIA: store.setShowExpandedLIA,
+      setLiaPromptValue: store.setLiaPromptValue,
+      setUserCollapsedLIA: store.setUserCollapsedLIA,
+      setTalentConversationId: store.setTalentConversationId,
+      setViewedCandidateIds: store.setViewedCandidateIds,
+      setCurrentPage: store.setCurrentPage,
+      setCrossTabFilter: store.setCrossTabFilter,
+      setShowCrossTabBanner: store.setShowCrossTabBanner,
+      setViewingList: store.setViewingList,
+      setSortBy: store.setSortBy,
+      setSortOrder: store.setSortOrder,
     },
   }
 }

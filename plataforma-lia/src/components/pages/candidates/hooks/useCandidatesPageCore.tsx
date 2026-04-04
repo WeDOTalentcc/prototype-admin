@@ -5,7 +5,7 @@
 // a single flat object consumed by CandidatesPage.
 // Business logic lives in domain hooks — this file is pure composition.
 
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
@@ -125,7 +125,10 @@ const hideViewedCandidates = useHideViewedCandidates({
   const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
 
   const candidates = useCandidatesStore((s) => s.candidates) as Candidate[]
-  const setCandidates = useCandidatesStore((s) => s.setCandidates) as unknown as React.Dispatch<React.SetStateAction<Candidate[]>>
+  const storeCandidatesSetter = useCandidatesStore((s) => s.setCandidates)
+  const setCandidates = useCallback((v: Candidate[] | ((prev: Candidate[]) => Candidate[])) => {
+    storeCandidatesSetter(v as Record<string, unknown>[] | ((prev: Record<string, unknown>[]) => Record<string, unknown>[]))
+  }, [storeCandidatesSetter])
   const isLoading = useCandidatesStore((s) => s.isLoading)
   const setIsLoading = useCandidatesStore((s) => s.setIsLoading)
   const isSearchActive = useCandidatesStore((s) => s.isSearchActive)

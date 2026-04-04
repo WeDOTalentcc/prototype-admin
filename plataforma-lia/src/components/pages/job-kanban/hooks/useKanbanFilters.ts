@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useEffect, useCallback } from "react"
+import { useState } from "react"
+import { useKanbanStore } from "@/stores/kanban-store"
 import type { ShortList } from "@/hooks/use-short-list"
-
-// ── Types ──────────────────────────────────────────────────────────────────
 
 interface TalentFunnelLike {
   getFavoriteIds: () => Set<string>
@@ -21,8 +21,6 @@ export interface UseKanbanFiltersParams {
   jobTitle: string | undefined
 }
 
-// ── Hook ──────────────────────────────────────────────────────────────────
-
 export function useKanbanFilters({
   talentFunnel,
   shortLists,
@@ -32,16 +30,14 @@ export function useKanbanFilters({
   jobId,
   jobTitle,
 }: UseKanbanFiltersParams) {
-  // ── Search ───────────────────────────────────────────────────────────────
-  const [searchQuery, setSearchQuery] = useState("")
+  const searchQuery = useKanbanStore((s) => s.searchQuery)
+  const setSearchQuery = useKanbanStore((s) => s.setSearchQuery)
 
-  // ── Candidate selection ──────────────────────────────────────────────────
-  const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(new Set())
+  const selectedCandidates = useKanbanStore((s) => s.selectedCandidates)
+  const setSelectedCandidates = useKanbanStore((s) => s.setSelectedCandidates)
 
-  // ── Favorites ────────────────────────────────────────────────────────────
   const [favoriteCandidates, setFavoriteCandidates] = useState<Set<string>>(new Set())
 
-  // Sync favorites from useTalentFunnel hook
   useEffect(() => {
     const favoriteIds = talentFunnel.getFavoriteIds()
     setFavoriteCandidates(favoriteIds)
@@ -49,10 +45,8 @@ export function useKanbanFilters({
 
   const handleToggleFavorite = useCallback((candidateId: string) => {
     talentFunnel.toggleFavoriteCandidate(candidateId)
-    // Local state will be synced via the useEffect above
   }, [talentFunnel])
 
-  // ── Short lists ──────────────────────────────────────────────────────────
   const [shortListedCandidateIds, setShortListedCandidateIds] = useState<Set<string>>(new Set())
   const [activeShortListId, setActiveShortListId] = useState<string | null>(null)
 
@@ -76,8 +70,6 @@ export function useKanbanFilters({
     }
   }, [shortListedCandidateIds, activeShortListId, shortLists, createShortList, addCandidateToShortList, removeCandidateFromShortList, jobId, jobTitle])
 
-  // ── Filter helpers ───────────────────────────────────────────────────────
-
   const filterCandidates = useCallback((candidates: Record<string, unknown>[]) => {
     if (!searchQuery) return candidates
 
@@ -98,20 +90,15 @@ export function useKanbanFilters({
     })
   }, [searchQuery])
 
-  // ── Return ───────────────────────────────────────────────────────────────
   return {
-    // Search
     searchQuery,
     setSearchQuery,
     filterCandidates,
-    // Selection
     selectedCandidates,
     setSelectedCandidates,
-    // Favorites
     favoriteCandidates,
     setFavoriteCandidates,
     handleToggleFavorite,
-    // Short lists
     shortListedCandidateIds,
     setShortListedCandidateIds,
     activeShortListId,

@@ -1024,3 +1024,298 @@ async def receive_card_feedback(
     # TODO: persist to feedback table for LIA training
     return {"status": "received", "feedback": feedback_type}
 
+
+# ============================================================================
+# SSO — Azure AD Identity (Sprint Azure)
+# ============================================================================
+
+@router.get("/auth/sso-page")
+async def teams_sso_page(
+    conversation_id: str,
+    client_id: str = "",
+    tenant_id: str = "",
+):
+    """
+    OAuth start page — user is redirected here when clicking "Conectar conta".
+    Redirects to Azure AD consent page.
+    """
+    import os
+    azure_client_id = client_id or os.environ.get("AZURE_CLIENT_ID", "")
+    azure_tenant_id = tenant_id or os.environ.get("AZURE_TENANT_ID", "")
+    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com")
+    redirect_uri = f"{platform_url}/api/v1/teams/auth/callback"
+
+    if not azure_client_id or not azure_tenant_id:
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(
+            "<h2>⚠️ Azure AD não configurado.</h2>"
+            "<p>Defina AZURE_CLIENT_ID e AZURE_TENANT_ID nas variáveis de ambiente.</p>",
+            status_code=503,
+        )
+
+    auth_url = (
+        f"https://login.microsoftonline.com/{azure_tenant_id}/oauth2/v2.0/authorize"
+        f"?client_id={azure_client_id}"
+        f"&response_type=code"
+        f"&redirect_uri={redirect_uri}"
+        f"&scope=openid+profile+email+User.Read"
+        f"&state={conversation_id}"
+        f"&prompt=select_account"
+    )
+
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url=auth_url)
+
+
+@router.get("/auth/callback")
+async def teams_sso_callback(
+    code: str = "",
+    state: str = "",  # conversation_id
+    error: str = "",
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    OAuth callback — Azure AD redirects here after user signs in.
+    Exchanges code for profile, maps identity, sends confirmation to Teams.
+    """
+    from fastapi.responses import HTMLResponse
+    import os
+
+    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com")
+    redirect_uri = f"{platform_url}/api/v1/teams/auth/callback"
+
+    if error:
+        return HTMLResponse(f"<h2>❌ Erro de autenticação: {error}</h2>", status_code=400)
+
+    if not code:
+        return HTMLResponse("<h2>❌ Código de autorização ausente.</h2>", status_code=400)
+
+    try:
+        from app.domains.communication.services.teams_sso_service import teams_sso_service
+        profile = await teams_sso_service.exchange_auth_code(code, redirect_uri)
+
+        if not profile:
+            return HTMLResponse("<h2>❌ Falha ao obter perfil do Azure AD.</h2>", status_code=500)
+
+        # state = conversation_id sent in the SSO page request
+        conversation_id = state
+
+        # Send confirmation card to the Teams conversation
+        from app.domains.communication.services.teams_card_renderer import teams_card_renderer
+        confirm_card = teams_card_renderer.render_notification_card(
+            title="✅ Conta conectada!",
+            body_text=(
+                f"Olá, **{profile.get('display_name', 'Recrutador')}**! "
+                f"Sua conta WeDOTalent foi conectada com sucesso. "
+                f"Agora posso responder no contexto correto da sua empresa."
+            ),
+            actions=[
+                {"type": "Action.Submit", "title": "☀️ Resumo do dia", "data": {"message": "Me dê um resumo das atividades de hoje"}},
+                {"type": "Action.Submit", "title": "📋 Ver vagas", "data": {"message": "Quais são as vagas ativas?"}},
+            ],
+            color="#22C55E",
+            emoji="✅",
+        )
+
+        # Try to send card to the conversation
+        try:
+            from app.services.teams_simple import simple_teams_bot
+            await simple_teams_bot.send_adaptive_card(
+                service_url="",  # Will need stored service_url
+                conversation_id=conversation_id,
+                card=confirm_card,
+            )
+        except Exception as send_err:
+            logger.warning(f"[TeamsSSO] Could not send confirmation card: {send_err}")
+
+        return HTMLResponse(
+            f"""
+            <html>
+            <body style="font-family:sans-serif;text-align:center;padding:40px">
+              <h1>✅ Autenticado com sucesso!</h1>
+              <p>Olá, <strong>{profile.get("display_name","")}</strong>!</p>
+              <p>Você pode fechar esta janela e voltar ao Teams.</p>
+              <script>setTimeout(() => window.close(), 3000);</script>
+            </body>
+            </html>
+            """,
+            status_code=200,
+        )
+
+    except Exception as e:
+        logger.error(f"[TeamsSSO] Callback error: {e}", exc_info=True)
+        return HTMLResponse(f"<h2>❌ Erro interno: {str(e)}</h2>", status_code=500)
+
+
+# ============================================================================
+# Calendar — Interview Scheduling via Microsoft Graph
+# ============================================================================
+
+class ScheduleInterviewRequest(BaseModel):
+    candidate_name: str
+    vacancy_title: str
+    recruiter_email: str
+    candidate_email: Optional[str] = None
+    interview_date: str   # "2026-04-10"
+    interview_time: str   # "14:00"
+    duration: int = 60
+    candidate_id: Optional[str] = None
+    vacancy_id: Optional[str] = None
+    notes: Optional[str] = None
+
+
+@router.post("/calendar/schedule")
+async def schedule_interview_via_teams(
+    request: ScheduleInterviewRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Schedule an interview via Microsoft Graph Calendar.
+    Called from Teams card button (Action.Submit with action=schedule_interview)
+    or directly from the orchestrator.
+
+    Creates:
+    - Outlook calendar event for recruiter (and candidate if email provided)
+    - Teams Meeting link embedded in the event
+    - Platform deep link in event description
+    """
+    from app.domains.communication.services.teams_calendar_service import teams_calendar_service
+    from datetime import datetime
+
+    try:
+        dt_str = f"{request.interview_date}T{request.interview_time}:00"
+        start_time = datetime.fromisoformat(dt_str)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Data/hora inválida. Use formato YYYY-MM-DD e HH:MM.")
+
+    title = f"Entrevista — {request.candidate_name}"
+    if request.vacancy_title:
+        title += f" ({request.vacancy_title})"
+
+    result = await teams_calendar_service.schedule_interview(
+        title=title,
+        recruiter_email=request.recruiter_email,
+        candidate_name=request.candidate_name,
+        candidate_email=request.candidate_email,
+        start_time=start_time,
+        duration_minutes=request.duration,
+        vacancy_title=request.vacancy_title,
+        candidate_id=request.candidate_id,
+        vacancy_id=request.vacancy_id,
+        notes=request.notes,
+    )
+    return result
+
+
+@router.post("/calendar/cancel")
+async def cancel_interview_via_teams(
+    event_id: str,
+    organizer_email: str,
+    message: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Cancel a previously scheduled interview event."""
+    from app.domains.communication.services.teams_calendar_service import teams_calendar_service
+    return await teams_calendar_service.cancel_interview(
+        event_id=event_id,
+        organizer_email=organizer_email,
+        cancellation_message=message,
+    )
+
+
+# ============================================================================
+# Teams App Manifest — generate manifest.json for Teams App Studio
+# ============================================================================
+
+@router.get("/manifest")
+async def get_teams_manifest():
+    """
+    Generate and return the Teams app manifest.json.
+    Download this file and upload to Teams Admin Center / App Studio.
+
+    Requires env vars:
+      TEAMS_APP_ID        — generate a UUID for your app
+      TEAMS_BOT_APP_ID    — Microsoft App ID of the bot
+      AZURE_CLIENT_ID     — for SSO
+      WEDOTALENT_PLATFORM_URL — e.g. https://app.wedotalent.com
+    """
+    import json, os, uuid
+    from fastapi.responses import JSONResponse
+
+    platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com").rstrip("/")
+    try:
+        from urllib.parse import urlparse
+        platform_domain = urlparse(platform_url).netloc
+    except Exception:
+        platform_domain = "app.wedotalent.com"
+
+    manifest = {
+        "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+        "manifestVersion": "1.17",
+        "version": "1.0.0",
+        "id": os.environ.get("TEAMS_APP_ID", str(uuid.uuid4())),
+        "packageName": "com.wedotalent.lia",
+        "developer": {
+            "name": "WeDOTalent",
+            "websiteUrl": platform_url,
+            "privacyUrl": f"{platform_url}/privacy",
+            "termsOfUseUrl": f"{platform_url}/terms",
+        },
+        "icons": {"color": "icon-color.png", "outline": "icon-outline.png"},
+        "name": {"short": "LIA - WeDOTalent", "full": "LIA Assistente de Recrutamento — WeDOTalent"},
+        "description": {
+            "short": "IA de recrutamento inteligente",
+            "full": "LIA busca candidatos, dispara triagens, agenda entrevistas e envia relatórios — direto no Teams.",
+        },
+        "accentColor": "#6366F1",
+        "bots": [{
+            "botId": os.environ.get("TEAMS_BOT_APP_ID", os.environ.get("TEAMS_APP_ID", "")),
+            "scopes": ["personal", "team", "groupChat"],
+            "supportsFiles": True,
+            "isNotificationOnly": False,
+            "commandLists": [{
+                "scopes": ["personal", "team", "groupChat"],
+                "commands": [
+                    {"title": "ajuda",      "description": "Ver todas as funcionalidades da LIA"},
+                    {"title": "buscar",     "description": "Buscar candidatos para uma vaga"},
+                    {"title": "triagem",    "description": "Ver candidatos aguardando triagem WSI"},
+                    {"title": "relatorio",  "description": "Gerar relatório semanal de recrutamento"},
+                    {"title": "pipeline",   "description": "Ver saúde do pipeline de recrutamento"},
+                    {"title": "vagas",      "description": "Ver vagas ativas e seus status"},
+                    {"title": "candidatos", "description": "Ver candidatos aguardando retorno"},
+                    {"title": "resumo",     "description": "Resumo das atividades do dia"},
+                ],
+            }],
+        }],
+        "staticTabs": [
+            {"entityId": "tab-vagas",      "name": "Vagas",       "contentUrl": f"{platform_url}/teams-tab/vagas",      "websiteUrl": f"{platform_url}/vagas",      "scopes": ["personal"]},
+            {"entityId": "tab-candidatos", "name": "Candidatos",  "contentUrl": f"{platform_url}/teams-tab/candidatos", "websiteUrl": f"{platform_url}/candidatos", "scopes": ["personal"]},
+            {"entityId": "tab-pipeline",   "name": "Pipeline",    "contentUrl": f"{platform_url}/teams-tab/pipeline",   "websiteUrl": f"{platform_url}/pipeline",   "scopes": ["personal"]},
+            {"entityId": "tab-dashboard",  "name": "Dashboard",   "contentUrl": f"{platform_url}/teams-tab/dashboard",  "websiteUrl": f"{platform_url}/dashboard",  "scopes": ["personal"]},
+        ],
+        "configurableTabs": [{
+            "configurationUrl": f"{platform_url}/teams-tab/configure",
+            "canUpdateConfiguration": True,
+            "scopes": ["team", "groupChat"],
+        }],
+        "permissions": ["identity", "messageTeamMembers"],
+        "validDomains": [platform_domain, "token.botframework.com", "login.microsoftonline.com"],
+        "webApplicationInfo": {
+            "id": os.environ.get("AZURE_CLIENT_ID", ""),
+            "resource": f"api://{platform_domain}/{os.environ.get('AZURE_CLIENT_ID', '')}",
+        },
+        "authorization": {
+            "permissions": {
+                "resourceSpecific": [
+                    {"name": "ChannelMessage.Read.Group",  "type": "Application"},
+                    {"name": "ChatMessage.Read.Chat",      "type": "Application"},
+                    {"name": "TeamSettings.Read.Group",    "type": "Delegated"},
+                ]
+            }
+        },
+    }
+
+    return JSONResponse(
+        content=manifest,
+        headers={"Content-Disposition": "attachment; filename=manifest.json"},
+    )

@@ -21,12 +21,14 @@ interface AuthState {
   isLoading: boolean
   isAuthenticated: boolean
   isSSO: boolean
+  permissions: string[]
 }
 
 interface AuthActions {
   setUser: (user: AuthenticatedUser | null) => void
   setAuthMethod: (method: AuthMethod | null) => void
   setIsLoading: (loading: boolean) => void
+  setPermissions: (permissions: string[]) => void
   login: (email: string, password: string) => Promise<void>
   loginWithSSO: (options: { organization?: string; connection?: string; email?: string }) => void
   register: (email: string, password: string, name: string) => Promise<void>
@@ -45,6 +47,7 @@ export const useAuthStore = create<AuthStore>()(
       isLoading: true,
       isAuthenticated: false,
       isSSO: false,
+      permissions: [],
 
       setUser: (user) => set({
         user,
@@ -57,6 +60,8 @@ export const useAuthStore = create<AuthStore>()(
       }, false, 'auth/setAuthMethod'),
 
       setIsLoading: (loading) => set({ isLoading: loading }, false, 'auth/setIsLoading'),
+
+      setPermissions: (permissions) => set({ permissions }, false, 'auth/setPermissions'),
 
       login: async (email, password) => {
         await authService.login(email, password)
@@ -87,6 +92,7 @@ export const useAuthStore = create<AuthStore>()(
           authMethod: null,
           isAuthenticated: false,
           isSSO: false,
+          permissions: [],
         }, false, 'auth/logout')
       },
 
