@@ -18,7 +18,8 @@ class TestConfigureLangsmith:
     def test_no_api_key_returns_false(self):
         from app.config.langsmith import configure_langsmith
         with patch.dict(os.environ, {}, clear=False):
-            env = {k: v for k, v in os.environ.items() if k != "LANGSMITH_API_KEY"}
+            env = {k: v for k, v in os.environ.items()
+                   if k not in ("LANGSMITH_API_KEY", "LANGCHAIN_API_KEY")}
             with patch.dict(os.environ, env, clear=True):
                 result = configure_langsmith()
         assert result is False
@@ -92,6 +93,34 @@ class TestConfigureLangsmith:
         with patch.dict(os.environ, env_patch):
             configure_langsmith()
             assert os.environ.get("LANGCHAIN_PROJECT") == "my-custom-project"
+
+    def test_langchain_api_key_fallback(self):
+        from app.config.langsmith import configure_langsmith
+        env = {k: v for k, v in os.environ.items() if k != "LANGSMITH_API_KEY"}
+        env["LANGCHAIN_API_KEY"] = "lsv2__fallback_key"
+        with patch.dict(os.environ, env, clear=True):
+            result = configure_langsmith()
+        assert result is True
+
+    def test_langchain_api_key_sets_tracing(self):
+        from app.config.langsmith import configure_langsmith
+        env = {k: v for k, v in os.environ.items() if k != "LANGSMITH_API_KEY"}
+        env["LANGCHAIN_API_KEY"] = "lsv2__tracing_test"
+        with patch.dict(os.environ, env, clear=True):
+            configure_langsmith()
+            assert os.environ.get("LANGCHAIN_TRACING_V2") == "true"
+            assert os.environ.get("LANGCHAIN_API_KEY") == "lsv2__tracing_test"
+            assert os.environ.get("LANGCHAIN_PROJECT") == "lia-agent-system"
+
+    def test_langsmith_api_key_takes_precedence(self):
+        from app.config.langsmith import configure_langsmith
+        env_patch = {
+            "LANGSMITH_API_KEY": "ls__primary",
+            "LANGCHAIN_API_KEY": "ls__fallback",
+        }
+        with patch.dict(os.environ, env_patch):
+            configure_langsmith()
+            assert os.environ.get("LANGCHAIN_API_KEY") == "ls__primary"
 
 
 class TestIsLangsmithEnabled:
