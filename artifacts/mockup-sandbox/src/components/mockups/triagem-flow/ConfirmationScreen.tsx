@@ -1,4 +1,4 @@
-import { Send, ClipboardCheck } from "lucide-react";
+import { Send, ClipboardCheck, Mic } from "lucide-react";
 
 function LIAAvatar() {
   return (
@@ -124,6 +124,14 @@ export function ConfirmationScreen() {
             className="flex-1 resize-none w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 opacity-50 font-['Open_Sans',sans-serif]"
             readOnly
           />
+          <button
+            type="button"
+            disabled
+            title="Gravar resposta por voz"
+            className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 opacity-50"
+          >
+            <Mic className="w-4 h-4" />
+          </button>
           <button
             type="button"
             disabled

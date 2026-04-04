@@ -1,4 +1,4 @@
-import { Send } from "lucide-react";
+import { Send, Mic } from "lucide-react";
 
 function LIAAvatar() {
   return (
@@ -145,6 +145,13 @@ export function ChatScreen() {
             className="flex-1 resize-none w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:border-[#00BCD4] focus:ring-2 focus:ring-[#00BCD4]/20 focus:outline-none font-['Open_Sans',sans-serif]"
             readOnly
           />
+          <button
+            type="button"
+            title="Gravar resposta por voz"
+            className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-[#00BCD4] transition-colors"
+          >
+            <Mic className="w-4 h-4" />
+          </button>
           <button
             type="button"
             className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#00BCD4] text-white hover:bg-[#00ACC1] transition-colors opacity-50"
