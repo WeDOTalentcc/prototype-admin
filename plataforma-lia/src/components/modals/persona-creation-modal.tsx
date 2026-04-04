@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { formatBRL } from "@/lib/pricing"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -87,7 +88,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
           `• ${preview.estimatedCandidates} candidatos estimados\n` +
           `• ${preview.estimatedTimeToHire} dias tempo médio\n` +
           `• ${preview.estimatedSuccessRate}% taxa de sucesso estimada\n` +
-          `• R$ ${preview.estimatedCostPerHire.toLocaleString()} custo por hire\n\n` +
+          `• ${formatBRL(preview.estimatedCostPerHire)} custo por hire\n\n` +
           `🚀 Sourcing automático iniciado!`)
     onClose()
   }
@@ -353,7 +354,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                         <p className="text-xs text-lia-text-secondary">Taxa Sucesso</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-wedo-orange">R$ {(preview.estimatedCostPerHire/1000).toFixed(0)}k</p>
+                        <p className="text-lg font-semibold text-wedo-orange">{formatBRL(preview.estimatedCostPerHire)}</p>
                         <p className="text-xs text-lia-text-secondary">Custo/Hire</p>
                       </div>
                     </div>
@@ -372,7 +373,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
 
                       <div className="flex justify-between text-xs text-lia-text-primary">
                         <span>Experiência: {personaData.experienceMin}-{personaData.experienceMax} anos</span>
-                        <span>Salário: R$ {personaData.salaryMin.toLocaleString()}-{personaData.salaryMax.toLocaleString()}</span>
+                        <span>Salário: {formatBRL(personaData.salaryMin)}-{formatBRL(personaData.salaryMax)}</span>
                       </div>
                     </div>
                   </CardContent>

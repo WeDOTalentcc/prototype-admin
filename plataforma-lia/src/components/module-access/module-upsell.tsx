@@ -70,7 +70,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   {moduleInfo.category === 'premium' ? 'Premium' : 'Enterprise'}
                 </Badge>
                 <Badge variant="secondary" className="bg-lia-bg-primary/20 text-white">
-                  R$ {moduleInfo.price}/mês
+                  {moduleInfo.price}
                 </Badge>
               </div>
             </div>
@@ -118,8 +118,7 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
                   <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md p-6 mb-6">
                     <div className="text-center mb-4">
                       <div className="text-3xl font-bold text-lia-text-primary">
-                        R$ {moduleInfo.price}
-                        <span className="text-lg font-normal text-lia-text-primary">/mês</span>
+                        {moduleInfo.price}
                       </div>
                       <p className="text-lia-text-primary">por empresa</p>
                     </div>
