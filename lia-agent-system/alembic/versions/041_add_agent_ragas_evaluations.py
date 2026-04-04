@@ -9,7 +9,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 
 revision = "041"
-down_revision = "040"
+down_revision = "040_add_rls_multi_tenant"
 branch_labels = None
 depends_on = None
 
