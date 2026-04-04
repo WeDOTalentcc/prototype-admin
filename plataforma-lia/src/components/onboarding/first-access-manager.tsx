@@ -76,17 +76,21 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
       const raw = await response.json()
       const data: FirstAccessData = {
         token: raw.token || tokenValue,
-        companyName: raw.companyName || '',
-        contactName: raw.contactName || '',
-        contactEmail: raw.contactEmail || '',
-        contactPhone: raw.contactPhone || '',
+        companyName: raw.companyName || raw.company_name || '',
+        contactName: raw.contactName || raw.contact_name || '',
+        contactEmail: raw.contactEmail || raw.contact_email || '',
+        contactPhone: raw.contactPhone || raw.contact_phone || '',
         companyData: {
-          razaoSocial: raw.companyData?.razaoSocial || raw.companyName || '',
-          endereco: raw.companyData?.endereco || '',
-          telefone: raw.companyData?.telefone || '',
+          razaoSocial: raw.companyData?.razaoSocial || raw.company_data?.razao_social || raw.companyName || raw.company_name || '',
+          endereco: raw.companyData?.endereco || raw.company_data?.endereco || '',
+          telefone: raw.companyData?.telefone || raw.company_data?.telefone || '',
         },
-        expiresAt: raw.expiresAt || new Date(0).toISOString(),
-        createdAt: raw.createdAt || new Date().toISOString(),
+        expiresAt: raw.expiresAt || raw.expires_at || '',
+        createdAt: raw.createdAt || raw.created_at || new Date().toISOString(),
+      }
+
+      if (!data.expiresAt) {
+        throw new Error('Resposta inválida do servidor')
       }
 
       if (new Date(data.expiresAt) < new Date()) {
