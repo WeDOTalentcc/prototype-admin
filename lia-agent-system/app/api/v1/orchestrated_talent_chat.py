@@ -522,9 +522,10 @@ async def orchestrated_talent_chat(
                 target_job=request.target_job,
             )
 
-            result = await orchestrator.route_message(
-                message=enriched_message,
+            result = await orchestrator.process_request(
                 user_id=request.user_id,
+                message=enriched_message,
+                conversation_id=conv_id,
                 context={
                     "source": "talent_funnel",
                     "intent": cmd_type,
@@ -533,6 +534,7 @@ async def orchestrated_talent_chat(
                     "search_context": request.search_context,
                     "target_job": request.target_job,
                     "conversation_id": conv_id,
+                    "company_id": request.company_id if hasattr(request, "company_id") else "",
                 },
             )
 
