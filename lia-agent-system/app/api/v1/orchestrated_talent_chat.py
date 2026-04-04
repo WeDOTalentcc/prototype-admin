@@ -102,6 +102,7 @@ class OrchestratedTalentChatResponse(BaseModel):
     needs_confirmation: bool = Field(default=False, description="Whether action awaits user confirmation")
     needs_params: bool = Field(default=False, description="Whether action needs more parameters from user")
     pending_action_id: Optional[str] = Field(None, description="ID for pending multi-turn action")
+    execution_plan: Optional[Dict[str, Any]] = Field(None, description="Multi-step plan summary if a plan was executed")
 
 
 def detect_actionable_intent(message: str) -> Optional[tuple[str, Optional[str], Optional[Dict[str, Any]]]]:
@@ -616,17 +617,19 @@ async def orchestrated_talent_chat(
                         pending_action_id=action_exec_result.pending_action_id,
                     )
 
+            _plan_content = result.get("message") or result.get("response", "Processando sua solicitação...")
             return OrchestratedTalentChatResponse(
                 success=True,
-                content=result.get("response", "Processando sua solicitação..."),
-                agent_used=result.get("agent_used", "Orchestrator"),
+                content=_plan_content,
+                agent_used=result.get("agent", result.get("agent_used", "Orchestrator")),
                 agents_consulted=result.get("agents_consulted", ["Orchestrator"]),
-                intent_detected=cmd_type,
+                intent_detected=result.get("intent", cmd_type),
                 confidence=result.get("confidence", 0.8),
                 structured_data=result.get("structured_data"),
-                suggested_prompts=_get_suggested_prompts(cmd_type, candidates_count, selected_count),
+                suggested_prompts=result.get("suggested_prompts") or _get_suggested_prompts(cmd_type, candidates_count, selected_count),
                 actions=result.get("actions", []),
                 conversation_id=conv_id,
+                execution_plan=result.get("execution_plan"),
             )
 
         except Exception as orch_error:
