@@ -11,6 +11,7 @@ import {
   Clock, Brain, BarChart3, Workflow
 } from "lucide-react"
 import { LicenseModule, getModuleInfo } from "@/utils/license-manager"
+import { MODULE_TIERS } from "@/lib/pricing"
 
 interface ModuleUpsellProps {
   moduleId: string
@@ -194,77 +195,27 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
 
           {showDetails && (
             <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="">
+              {MODULE_TIERS.map((tier) => (
+              <Card key={tier.id} className={tier.recommended ? "ring-2 ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20" : ""}>
                 <CardHeader>
-                  <CardTitle className="text-lg">Starter</CardTitle>
-                  <p className="text-lia-text-primary">Funcionalidades básicas</p>
+                  <CardTitle className={`text-lg ${tier.recommended ? 'text-lia-text-secondary' : ''}`}>{tier.name}</CardTitle>
+                  <p className="text-lia-text-primary">{tier.label}</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold mb-4">R$ 99/mês</div>
+                  <div className="text-2xl font-bold mb-4">{tier.price.formatted}</div>
                   <ul className="space-y-2 text-sm">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-status-success" />
-                      Recrutamento Core
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <X className="w-4 h-4 text-status-error" />
-                      Onboarding Automatizado
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <X className="w-4 h-4 text-status-error" />
-                      Analytics ML
-                    </li>
+                    {tier.features.map((f) => (
+                      <li key={f.name} className="flex items-center gap-2">
+                        {f.included
+                          ? <Check className="w-4 h-4 text-status-success" />
+                          : <X className="w-4 h-4 text-status-error" />}
+                        {f.name}
+                      </li>
+                    ))}
                   </ul>
                 </CardContent>
               </Card>
-
-              <Card className="ring-2 ring-lia-btn-primary-bg/20 dark:ring-lia-border-subtle/20">
-                <CardHeader>
-                  <CardTitle className="text-lg text-lia-text-secondary">Professional</CardTitle>
-                  <p className="text-lia-text-primary">Recomendado</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold mb-4">R$ 299/mês</div>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-status-success" />
-                      Recrutamento Core
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-status-success" />
-                      Onboarding Automatizado
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-status-success" />
-                      Analytics Avançado
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-
-              <Card className="">
-                <CardHeader>
-                  <CardTitle className="text-lg">Enterprise</CardTitle>
-                  <p className="text-lia-text-primary">Recursos completos</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold mb-4">R$ 699/mês</div>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-status-success" />
-                      Todos os módulos
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-status-success" />
-                      Analytics ML
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-status-success" />
-                      Integrações ATS
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+              ))}
             </div>
           )}
         </div>

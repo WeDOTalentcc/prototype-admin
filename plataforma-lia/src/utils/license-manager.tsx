@@ -1,4 +1,5 @@
-// License Manager - Sistema de controle de módulos premium
+import { MODULE_PRICES } from '@/lib/pricing'
+
 export type LicenseModule =
   | 'onboarding_automation'
   | 'communication_center'
@@ -30,86 +31,22 @@ const availableModules: LicenseModule[] = DEMO_MODE ? [
 ] : []
 
 // Informações dos módulos
-const moduleInfo: Record<LicenseModule, ModuleInfo> = {
-  onboarding_automation: {
-    id: 'onboarding_automation',
-    name: 'Onboarding Automatizado',
-    description: 'Sistema completo de integração de novos colaboradores',
-    price: 'R$ 299/mês',
-    features: [
-      'Fluxos de onboarding personalizados',
-      'Automação de documentos',
-      'Acompanhamento de progresso',
-      'Integração com HRIS'
-    ],
-    category: 'automation'
-  },
-  communication_center: {
-    id: 'communication_center',
-    name: 'Central de Comunicação',
-    description: 'Sistema unificado de comunicação multi-canal',
-    price: 'R$ 199/mês',
-    features: [
-      'Chat omnichannel',
-      'Templates personalizados',
-      'Automação de mensagens',
-      'Analytics de comunicação'
-    ],
-    category: 'premium'
-  },
-  ml_prediction: {
-    id: 'ml_prediction',
-    name: 'Analytics com ML',
-    description: 'Predição inteligente e analytics avançado',
-    price: 'R$ 499/mês',
-    features: [
-      'Predição de sucesso',
-      'Analytics preditivo',
-      'Machine Learning',
-      'Insights automatizados'
-    ],
-    category: 'analytics'
-  },
-  ats_integrations: {
-    id: 'ats_integrations',
-    name: 'Integrações ATS',
-    description: 'Conecte com principais ATS do mercado',
-    price: 'R$ 149/mês',
-    features: [
-      'Integração com ATS populares',
-      'Sincronização automática',
-      'API unificada',
-      'Suporte técnico'
-    ],
-    category: 'integrations'
-  },
-  workflow_automation: {
-    id: 'workflow_automation',
-    name: 'Automação de Workflows',
-    description: 'Automações inteligentes para RH',
-    price: 'R$ 249/mês',
-    features: [
-      'Workflows personalizados',
-      'Triggers automáticos',
-      'Regras de negócio',
-      'Integrações avançadas'
-    ],
-    category: 'automation'
-  },
-  advanced_analytics: {
-    id: 'advanced_analytics',
-    name: 'Analytics Avançado',
-    description: 'Relatórios e dashboards personalizados',
-    price: 'R$ 199/mês',
-    features: [
-      'Dashboards personalizados',
-      'Relatórios avançados',
-      'Exportação de dados',
-      'APIs de analytics'
-    ],
-    category: 'analytics'
-  }
+function buildModuleInfo(): Record<LicenseModule, ModuleInfo> {
+  const entries = Object.entries(MODULE_PRICES).map(([id, mp]) => [
+    id,
+    {
+      id: id as LicenseModule,
+      name: mp.name,
+      description: mp.description,
+      price: mp.price.formatted,
+      features: mp.features,
+      category: mp.category as ModuleInfo['category'],
+    },
+  ])
+  return Object.fromEntries(entries) as Record<LicenseModule, ModuleInfo>
 }
+
+const moduleInfo: Record<LicenseModule, ModuleInfo> = buildModuleInfo()
 
 // Funções de verificação de acesso
 export function hasModuleAccess(moduleId: LicenseModule): boolean {

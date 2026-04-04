@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, ArrowRight, Brain } from "lucide-react"
 import Link from "next/link"
-import { PLANS } from "@/config/pricing"
+import { PLANS, getPlanDisplayPrice } from "@/lib/pricing"
 
 export default function UpgradePage() {
   return (
@@ -41,8 +41,7 @@ export default function UpgradePage() {
               )}
               <h2 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">{plan.name}</h2>
               <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{plan.price}</span>
-                <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{plan.period}</span>
+                <span className="text-2xl font-bold text-lia-text-primary dark:text-lia-text-primary">{plan.price ? plan.price.formatted : 'Sob consulta'}</span>
               </div>
             </div>
 
