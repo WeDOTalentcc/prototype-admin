@@ -43,6 +43,16 @@ except ImportError:
     VoiceResponse = None
     logger.warning("[TWILIO VOICE] twilio package not available — voice calls disabled")
 
+try:
+    from twilio.jwt.access_token import AccessToken
+    from twilio.jwt.access_token.grants import VoiceGrant
+    TWILIO_JWT_AVAILABLE = True
+except ImportError:
+    AccessToken = None
+    VoiceGrant = None
+    TWILIO_JWT_AVAILABLE = False
+    logger.warning("[TWILIO VOICE] twilio.jwt not available — VoIP browser tokens disabled")
+
 
 class TwilioVoiceError(Exception):
     """Error during Twilio Voice operations."""
@@ -141,6 +151,7 @@ class TwilioVoiceService:
         self.account_sid = os.getenv("TWILIO_ACCOUNT_SID")
         self.auth_token = os.getenv("TWILIO_AUTH_TOKEN")
         self.voice_number = os.getenv("TWILIO_VOICE_NUMBER")
+        self.twiml_app_sid = os.getenv("TWILIO_TWIML_APP_SID")
         self.base_url = os.getenv("APP_BASE_URL", "").rstrip("/")
         self._client: Optional[TwilioClient] = None
         self._validator: Optional[RequestValidator] = None
@@ -153,6 +164,28 @@ class TwilioVoiceService:
             and self.account_sid
             and self.auth_token
             and self.voice_number
+        )
+
+    @property
+    def is_voip_configured(self) -> bool:
+        """
+        Check if Twilio VoIP (browser client) is fully configured.
+
+        Requires:
+        - Base Twilio credentials (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VOICE_NUMBER)
+        - TWILIO_TWIML_APP_SID (TwiML App configured in Twilio Console)
+        - TWILIO_API_KEY + TWILIO_API_SECRET (required for Twilio Client Access Tokens;
+          account_sid/auth_token fallback is rejected by Twilio for client token signing)
+        - twilio JWT library installed
+        """
+        has_api_credentials = bool(
+            os.getenv("TWILIO_API_KEY") and os.getenv("TWILIO_API_SECRET")
+        )
+        return bool(
+            self.is_configured
+            and TWILIO_JWT_AVAILABLE
+            and self.twiml_app_sid
+            and has_api_credentials
         )
 
     @property
@@ -427,6 +460,133 @@ class TwilioVoiceService:
         except Exception as e:
             logger.error("[TWILIO VOICE] End call error: %s", e)
             return {"success": False, "error": str(e), "call_sid": call_sid}
+
+    def generate_voip_access_token(
+        self,
+        session_id: str,
+        candidate_id: str,
+        identity: Optional[str] = None,
+        expires_in: int = 3600,
+    ) -> Dict[str, Any]:
+        """
+        Generate a Twilio Access Token for the browser VoIP client (Twilio Client SDK).
+
+        The token grants the browser permission to place a Twilio Client call
+        routed through the configured TwiML App (TWILIO_TWIML_APP_SID), which
+        in turn calls the /voip-connect endpoint to stream audio to the same
+        WebSocket pipeline used by PSTN calls.
+
+        Args:
+            session_id: Voice screening session ID (passed as custom parameter to TwiML)
+            candidate_id: Candidate UUID (used to build a unique identity)
+            identity: Optional custom identity string (defaults to candidate_{session_id[:8]})
+            expires_in: Token TTL in seconds (default: 3600)
+
+        Returns:
+            Dict with token (JWT), identity, twiml_app_sid, expires_in.
+
+        Raises:
+            TwilioVoiceUnconfiguredError: If Twilio or JWT libs are not configured.
+        """
+        if not self.is_configured:
+            raise TwilioVoiceUnconfiguredError(
+                "Twilio Voice not configured — set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, "
+                "TWILIO_VOICE_NUMBER and TWILIO_TWIML_APP_SID."
+            )
+
+        if not TWILIO_JWT_AVAILABLE or AccessToken is None or VoiceGrant is None:
+            raise TwilioVoiceUnconfiguredError(
+                "Twilio JWT library not available — install twilio>=7.0 for VoIP browser tokens."
+            )
+
+        if not self.twiml_app_sid:
+            raise TwilioVoiceUnconfiguredError(
+                "TWILIO_TWIML_APP_SID not configured — required for VoIP browser calls. "
+                "Create a TwiML App in the Twilio Console pointing to /api/v1/twilio-voice/voip-connect."
+            )
+
+        api_key = os.getenv("TWILIO_API_KEY")
+        api_secret = os.getenv("TWILIO_API_SECRET")
+        if not api_key or not api_secret:
+            raise TwilioVoiceUnconfiguredError(
+                "TWILIO_API_KEY and TWILIO_API_SECRET are required for VoIP Access Token signing. "
+                "Create an API Key in the Twilio Console (API Keys & Tokens) and set both env vars."
+            )
+
+        client_identity = identity or f"candidate_{session_id[:8]}"
+
+        token = AccessToken(
+            self.account_sid,
+            api_key,
+            api_secret,
+            identity=client_identity,
+            ttl=expires_in,
+        )
+
+        voice_grant = VoiceGrant(
+            outgoing_application_sid=self.twiml_app_sid,
+            incoming_allow=False,
+        )
+        token.add_grant(voice_grant)
+
+        logger.info(
+            "[TWILIO VOIP] Access token generated: identity=%s session=%s ttl=%ds",
+            client_identity,
+            session_id,
+            expires_in,
+        )
+
+        return {
+            "token": token.to_jwt(),
+            "identity": client_identity,
+            "twiml_app_sid": self.twiml_app_sid,
+            "expires_in": expires_in,
+        }
+
+    def generate_voip_connect_twiml(
+        self,
+        session_id: str,
+        language: str = "pt-BR",
+    ) -> str:
+        """
+        Generate TwiML for when a browser VoIP client places a call.
+
+        This TwiML connects the browser client call directly to the bidirectional
+        audio-stream WebSocket (same pipeline as PSTN calls). No greeting/consent
+        is needed here because the candidate already consented via the web UI.
+
+        Args:
+            session_id: Voice screening session ID (to route to correct WebSocket session)
+            language: Language for any fallback Say verbs
+
+        Returns:
+            TwiML XML string
+        """
+        if not TWILIO_AVAILABLE:
+            raise TwilioVoiceError("Twilio SDK not available")
+
+        response = VoiceResponse()
+
+        lang_code = "pt-BR" if language.startswith("pt") else "en-US"
+        voice_name = "Polly.Camila" if lang_code == "pt-BR" else "Polly.Joanna"
+
+        response.say(
+            "Conectando à LIA. Um momento.",
+            voice=voice_name,
+            language=lang_code,
+        )
+
+        connect = Connect()
+        ws_url = (
+            self._twiml_url("/audio-stream")
+            .replace("https://", "wss://")
+            .replace("http://", "ws://")
+        )
+        stream = Stream(url=f"{ws_url}?session_id={session_id}")
+        connect.append(stream)
+        response.append(connect)
+
+        return str(response)
 
     def parse_status_webhook(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Parse Twilio Voice call status callback payload."""

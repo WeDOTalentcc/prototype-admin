@@ -10,6 +10,8 @@ These endpoints are called by Twilio during the call lifecycle:
 - /initiate            : REST endpoint to start an outbound call (with DB consent check)
 - /sessions/{id}       : Session status/results
 - /health              : Service health check
+- /voip-token          : Generate Twilio Access Token for browser/VoIP calls (Twilio Client SDK)
+- /voip-connect        : TwiML webhook called when browser client places a VoIP call (routes to audio-stream)
 
 Security:
 - Twilio webhook signature validated via X-Twilio-Signature header
@@ -426,12 +428,29 @@ async def audio_stream_websocket(
 
                         elif event == "start":
                             stream_sid = data.get("streamSid")
+                            start_payload = data.get("start", {})
+                            twilio_call_sid = start_payload.get("callSid") or data.get("callSid")
                             logger.info(
-                                "[TWILIO VOICE WS] Stream started: sid=%s session=%s",
+                                "[TWILIO VOICE WS] Stream started: sid=%s session=%s call_sid=%s",
                                 stream_sid,
                                 session_id,
+                                twilio_call_sid,
                             )
                             session.status = "in_progress"
+                            if twilio_call_sid and not session.call_sid:
+                                session.call_sid = twilio_call_sid
+                                try:
+                                    from sqlalchemy import text as _sql_text
+                                    await db.execute(
+                                        _sql_text(
+                                            "UPDATE wsi_sessions SET call_id = :call_id, updated_at = CURRENT_TIMESTAMP "
+                                            "WHERE id = :session_id"
+                                        ),
+                                        {"call_id": twilio_call_sid, "session_id": session_id},
+                                    )
+                                    await db.commit()
+                                except Exception as _bind_err:
+                                    logger.warning("[TWILIO VOICE WS] Failed to bind call_sid to wsi_session: %s", _bind_err)
                             await voice_screening_orchestrator._persist_session_state(session, db)
 
                         elif event == "media":
@@ -513,8 +532,26 @@ async def audio_stream_websocket(
                     mime_type="audio/mulaw",
                 )
 
+            is_voip_session = getattr(session, "phone_number", None) == "voip"
+            session_was_active = session.status in ("in_progress", "pending")
             await voice_screening_orchestrator._persist_session_state(session, db)
             logger.info("[TWILIO VOICE WS] Stream closed session=%s", session_id)
+
+            if is_voip_session and session_was_active and session.status not in ("completed", "finalized"):
+                logger.info(
+                    "[TWILIO VOICE WS] VoIP session ended — triggering finalization session=%s",
+                    session_id,
+                )
+                try:
+                    from app.core.database import AsyncSessionLocal as _FinalizeASL
+                    async with _FinalizeASL() as _fdb:
+                        await voice_screening_orchestrator.finalize_screening(session_id, db=_fdb)
+                except Exception as _finalize_err:
+                    logger.error(
+                        "[TWILIO VOICE WS] VoIP finalization failed session=%s: %s",
+                        session_id,
+                        _finalize_err,
+                    )
 
 
 # ── Management endpoints ───────────────────────────────────────────────────────
@@ -569,6 +606,158 @@ async def get_session_status(session_id: str):
     }
 
 
+# ── VoIP (Browser Client) endpoints ───────────────────────────────────────────
+
+class VoIPTokenRequest(BaseModel):
+    """Request to generate a Twilio Access Token for the browser VoIP client."""
+    session_id: str
+    candidate_id: str
+    identity: Optional[str] = None
+
+
+class VoIPTokenResponse(BaseModel):
+    """Response with Twilio Access Token for the browser VoIP client."""
+    token: str
+    identity: str
+    session_id: str
+    twiml_app_sid: Optional[str] = None
+    expires_in: int = 3600
+    voip_available: bool
+
+
+@router.post("/twilio-voice/voip-token", response_model=VoIPTokenResponse)
+async def generate_voip_token(request_body: VoIPTokenRequest) -> VoIPTokenResponse:
+    """
+    Generate a Twilio Access Token for the browser VoIP client (Twilio Client SDK).
+
+    This token allows the frontend to place a VoIP call directly from the browser
+    via WebRTC — without requiring a phone number. The call is routed through the
+    same audio pipeline as PSTN calls (Twilio → WebSocket → Gemini STT → LIA → TTS).
+
+    The token is scoped to:
+    - A specific identity (candidate session)
+    - TWILIO_TWIML_APP_SID (configured TwiML App that routes to /voip-connect)
+    - 1-hour expiry
+
+    Security: session_id must correspond to a known session created by the
+    voice_screening_orchestrator (via /triagem/{token}/voip-start or /initiate).
+    Requests for unknown sessions are rejected to prevent token minting abuse.
+
+    Returns voip_available=False when Twilio is not configured (graceful degradation).
+    """
+    existing_session = voice_screening_orchestrator._sessions.get(request_body.session_id)
+    if not existing_session:
+        logger.warning(
+            "[TWILIO VOIP] Token request for unknown session=%s — rejected",
+            request_body.session_id,
+        )
+        raise HTTPException(status_code=404, detail="Sessão não encontrada")
+
+    if existing_session.candidate_id != request_body.candidate_id:
+        logger.warning(
+            "[TWILIO VOIP] Token request session=%s candidate mismatch — rejected",
+            request_body.session_id,
+        )
+        raise HTTPException(status_code=403, detail="Sessão não pertence ao candidato")
+
+    if not twilio_voice_service.is_configured:
+        logger.warning(
+            "[TWILIO VOIP] Token request but Twilio not configured — returning unavailable. "
+            "session=%s candidate=%s",
+            request_body.session_id,
+            mask_pii(request_body.candidate_id),
+        )
+        return VoIPTokenResponse(
+            token="",
+            identity="",
+            session_id=request_body.session_id,
+            twiml_app_sid=None,
+            expires_in=0,
+            voip_available=False,
+        )
+
+    try:
+        token_result = twilio_voice_service.generate_voip_access_token(
+            session_id=request_body.session_id,
+            candidate_id=request_body.candidate_id,
+            identity=request_body.identity,
+        )
+        logger.info(
+            "[TWILIO VOIP] Access token generated: session=%s identity=%s",
+            request_body.session_id,
+            token_result["identity"],
+        )
+        return VoIPTokenResponse(
+            token=token_result["token"],
+            identity=token_result["identity"],
+            session_id=request_body.session_id,
+            twiml_app_sid=token_result.get("twiml_app_sid"),
+            expires_in=token_result.get("expires_in", 3600),
+            voip_available=True,
+        )
+    except TwilioVoiceUnconfiguredError:
+        return VoIPTokenResponse(
+            token="",
+            identity="",
+            session_id=request_body.session_id,
+            voip_available=False,
+        )
+    except Exception as e:
+        logger.error("[TWILIO VOIP] Token generation failed: %s", e)
+        raise HTTPException(status_code=500, detail=f"Failed to generate VoIP token: {e}")
+
+
+@router.post("/twilio-voice/voip-connect")
+async def twiml_voip_connect(
+    request: Request,
+    session_id: Optional[str] = Query(None),
+    language: str = Query("pt-BR"),
+):
+    """
+    TwiML webhook: called by Twilio when the browser VoIP client places a call.
+
+    Routes the browser VoIP call directly to the bidirectional audio-stream
+    WebSocket (same pipeline as PSTN calls). No greeting/consent step is needed
+    here because the candidate already consented via the web UI before clicking
+    the VoIP call button.
+
+    The session must have been pre-created via /initiate or already exist in
+    memory/DB (the frontend creates the session before requesting the token).
+
+    Note: Twilio Client SDK sends custom connect() params in the POST form body,
+    NOT as query params. We read session_id from form body first, falling back
+    to the query param (useful for direct TwiML App URL configuration).
+    """
+    form_data = await request.form()
+    params = dict(form_data)
+
+    if not _verify_twilio_signature(request, params):
+        raise HTTPException(status_code=403, detail="Invalid Twilio signature")
+
+    resolved_session_id = params.get("session_id") or session_id
+    resolved_language = params.get("language") or language
+
+    if not resolved_session_id:
+        logger.error("[TWILIO VOIP] Missing session_id in voip-connect request (form=%s)", list(params.keys()))
+        raise HTTPException(status_code=400, detail="session_id is required")
+
+    logger.info(
+        "[TWILIO VOIP] Browser VoIP call connected: session=%s language=%s",
+        resolved_session_id,
+        resolved_language,
+    )
+
+    try:
+        twiml = twilio_voice_service.generate_voip_connect_twiml(
+            session_id=resolved_session_id,
+            language=resolved_language,
+        )
+        return _twiml_response(twiml)
+    except (TwilioVoiceError, TwilioVoiceUnconfiguredError) as e:
+        logger.error("[TWILIO VOIP] VoIP connect TwiML error: %s", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/twilio-voice/health")
 async def voice_health():
     """Health check for Twilio Voice service."""
@@ -579,7 +768,9 @@ async def voice_health():
         "base_url": twilio_voice_service.base_url or "not configured",
         "status": "ready" if twilio_voice_service.is_configured else "unconfigured",
         "fallback_channels": ["whatsapp", "chat"],
+        "voip_available": twilio_voice_service.is_voip_configured,
         "note": (
-            "When unconfigured, /initiate returns status='fallback' with fallback_channel='whatsapp'"
+            "When unconfigured, /initiate returns status='fallback' with fallback_channel='whatsapp'. "
+            "VoIP requires TWILIO_TWIML_APP_SID in addition to standard Twilio config."
         ),
     }

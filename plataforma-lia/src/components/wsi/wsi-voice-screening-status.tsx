@@ -35,6 +35,7 @@ interface WSIVoiceScreeningStatusProps {
   sessionId?: string
   onComplete?: (result: Record<string, unknown>) => void
   autoStart?: boolean
+  voipSessionId?: string
 }
 
 type VoiceStatus = 'idle' | 'initiating' | 'calling' | 'in_progress' | 'processing' | 'completed' | 'failed'
@@ -111,15 +112,29 @@ export function WSIVoiceScreeningStatus({
   jobVacancy,
   sessionId: initialSessionId,
   onComplete,
-  autoStart = false
+  autoStart = false,
+  voipSessionId,
 }: WSIVoiceScreeningStatusProps) {
-  const [status, setStatus] = useState<VoiceStatus>('idle')
-  const [sessionId, setSessionId] = useState<string | null>(initialSessionId || null)
+  const isVoipMode = Boolean(voipSessionId)
+  const [status, setStatus] = useState<VoiceStatus>(
+    voipSessionId ? 'in_progress' : 'idle'
+  )
+  const [sessionId, setSessionId] = useState<string | null>(
+    voipSessionId || initialSessionId || null
+  )
   const [callId, setCallId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<WSIScreeningResult | null>(null)
   const [elapsedTime, setElapsedTime] = useState(0)
   const [questionsCount, setQuestionsCount] = useState(0)
+
+  useEffect(() => {
+    if (voipSessionId && voipSessionId !== sessionId) {
+      setSessionId(voipSessionId)
+      setStatus('in_progress')
+      setError(null)
+    }
+  }, [voipSessionId])
 
   const pollStatus = useCallback(async () => {
     if (!sessionId) return
@@ -186,6 +201,10 @@ export function WSIVoiceScreeningStatus({
   }, [isOpen, autoStart])
 
   const startVoiceScreening = async () => {
+    if (isVoipMode) {
+      return
+    }
+
     if (!candidate.phone) {
       setError('Candidato não possui telefone cadastrado')
       setStatus('failed')
@@ -252,8 +271,16 @@ export function WSIVoiceScreeningStatus({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Phone className="w-5 h-5 text-lia-text-secondary" />
+            {isVoipMode
+              ? <Volume2 className="w-5 h-5 text-lia-text-secondary" />
+              : <Phone className="w-5 h-5 text-lia-text-secondary" />
+            }
             Triagem por Voz WSI
+            {isVoipMode && (
+              <span className="text-xs font-normal text-lia-text-tertiary bg-lia-bg-tertiary px-1.5 py-0.5 rounded">
+                VoIP
+              </span>
+            )}
           </DialogTitle>
           <DialogDescription>
             {candidate.name} • {jobVacancy.title}
@@ -287,9 +314,15 @@ export function WSIVoiceScreeningStatus({
                     </div>
                   )}
 
-                  {status === 'calling' && (
+                  {status === 'calling' && !isVoipMode && (
                     <p className="text-sm text-muted-foreground mt-2">
                       Ligando para {candidate.phone}...
+                    </p>
+                  )}
+
+                  {isVoipMode && status === 'in_progress' && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Candidato conectado via navegador (VoIP)
                     </p>
                   )}
 
@@ -348,14 +381,14 @@ export function WSIVoiceScreeningStatus({
         </div>
 
         <div className="flex gap-2">
-          {status === 'idle' && (
+          {status === 'idle' && !isVoipMode && (
             <Button onClick={startVoiceScreening} className="flex-1 gap-2">
               <PhoneCall className="w-4 h-4" />
               Iniciar Chamada
             </Button>
           )}
 
-          {status === 'failed' && (
+          {status === 'failed' && !isVoipMode && (
             <Button onClick={startVoiceScreening} variant="outline" className="flex-1 gap-2">
               <RefreshCw className="w-4 h-4" />
               Tentar novamente

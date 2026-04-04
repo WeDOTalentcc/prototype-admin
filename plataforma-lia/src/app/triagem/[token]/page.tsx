@@ -16,6 +16,7 @@ import { MultipleChoiceCard } from "@/components/triagem/MultipleChoiceCard"
 import { LikertScaleCard } from "@/components/triagem/LikertScaleCard"
 import type { TriagemMessage } from "@/components/triagem/types"
 import { AlertTriangle, Clock, Link2Off, Phone, ShieldAlert, ServerCrash } from "lucide-react"
+import { VoIPCallButton } from "@/components/triagem/VoIPCallButton"
 
 const VOICE_AUTOPLAY_KEY = "lia-triagem-voice-autoplay"
 
@@ -150,6 +151,7 @@ export default function TriagemPage() {
   const [phoneCallLoading, setPhoneCallLoading] = useState(false)
   const [phoneCallError, setPhoneCallError] = useState<string | null>(null)
   const [phoneCallStatus, setPhoneCallStatus] = useState<"idle" | "done">("idle")
+  const [voipCallActive, setVoipCallActive] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -252,6 +254,8 @@ export default function TriagemPage() {
   }
 
   if (pageState === "welcome" && config) {
+    const showVoipButton = true
+
     return (
       <ChatContainer>
         {phoneCallStatus === "done" ? (
@@ -268,15 +272,51 @@ export default function TriagemPage() {
               <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
                 Você receberá uma ligação da LIA em instantes. Fique atento ao seu telefone.
               </p>
+              {showVoipButton && (
+                <div className="pt-2">
+                  <p className="text-xs text-lia-text-tertiary mb-3 font-['Open_Sans',sans-serif]">
+                    Ou ligue diretamente pelo navegador:
+                  </p>
+                  <VoIPCallButton
+                    token={token}
+                    onCallStarted={() => setVoipCallActive(true)}
+                    onCallEnded={() => setVoipCallActive(false)}
+                    className="w-full"
+                  />
+                </div>
+              )}
             </div>
           </div>
         ) : (
-          <WelcomeCard
-            config={config}
-            onStart={handleStartChat}
-            onRequestCall={handleOpenPhoneModal}
-            isStarting={isSending}
-          />
+          <div className="flex-1 flex flex-col">
+            <WelcomeCard
+              config={config}
+              onStart={handleStartChat}
+              onRequestCall={handleOpenPhoneModal}
+              isStarting={isSending}
+            />
+            {showVoipButton && (
+              <div className="px-4 pb-4 flex justify-center">
+                <div className="w-full max-w-md">
+                  {!voipCallActive && (
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="flex-1 h-px bg-lia-border-subtle" />
+                      <span className="text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif] whitespace-nowrap">
+                        ou ligue pelo navegador
+                      </span>
+                      <div className="flex-1 h-px bg-lia-border-subtle" />
+                    </div>
+                  )}
+                  <VoIPCallButton
+                    token={token}
+                    onCallStarted={() => setVoipCallActive(true)}
+                    onCallEnded={() => setVoipCallActive(false)}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         )}
         <PhoneConfirmModal
           open={phoneModalOpen}
