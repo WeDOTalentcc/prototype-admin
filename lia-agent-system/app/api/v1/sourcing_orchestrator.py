@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-from app.shared.agents.agent_interface import AgentInput
+from lia_agents_core.agent_interface import AgentInput
 import logging
 import os
 

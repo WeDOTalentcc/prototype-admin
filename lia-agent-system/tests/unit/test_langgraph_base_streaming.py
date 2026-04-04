@@ -25,8 +25,8 @@ class TestRunGraphCallbacks:
 
     def _make_concrete_base(self):
         """Cria instância concreta de LangGraphBase para testes."""
-        from app.shared.agents.langgraph_base import LangGraphBase
-        from app.shared.agents.agent_interface import AgentInput, AgentOutput
+        from lia_agents_core.langgraph_base import LangGraphBase
+        from lia_agents_core.agent_interface import AgentInput, AgentOutput
 
         class ConcreteBase(LangGraphBase):
             @property
@@ -43,7 +43,7 @@ class TestRunGraphCallbacks:
             async def process(self, input: AgentInput) -> AgentOutput:
                 return AgentOutput(message="ok")
 
-        with patch("app.shared.agents.langgraph_base.get_checkpointer", return_value=None):
+        with patch("lia_agents_core.langgraph_base.get_checkpointer", return_value=None):
             return ConcreteBase()
 
     @pytest.mark.asyncio
@@ -149,7 +149,7 @@ class TestRunGraphCallbacks:
 class TestStreamingCallbackCreation:
 
     def test_streaming_callback_instantiates(self):
-        from app.shared.agents.streaming_callback import StreamingCallback
+        from lia_agents_core.streaming_callback import StreamingCallback
         cb = StreamingCallback(
             session_id="sess-cb-001",
             company_id="comp-001",
@@ -160,7 +160,7 @@ class TestStreamingCallbackCreation:
         assert cb.user_id == "user-001"
 
     def test_streaming_callback_inherits_base_callback_handler(self):
-        from app.shared.agents.streaming_callback import StreamingCallback
+        from lia_agents_core.streaming_callback import StreamingCallback
         try:
             from langchain_core.callbacks.base import BaseCallbackHandler
         except ImportError:
@@ -169,17 +169,17 @@ class TestStreamingCallbackCreation:
         assert isinstance(cb, BaseCallbackHandler)
 
     def test_streaming_callback_has_on_llm_new_token(self):
-        from app.shared.agents.streaming_callback import StreamingCallback
+        from lia_agents_core.streaming_callback import StreamingCallback
         cb = StreamingCallback(session_id="test", company_id="", user_id="")
         assert callable(cb.on_llm_new_token)
 
     def test_streaming_callback_has_on_llm_end(self):
-        from app.shared.agents.streaming_callback import StreamingCallback
+        from lia_agents_core.streaming_callback import StreamingCallback
         cb = StreamingCallback(session_id="test", company_id="", user_id="")
         assert callable(cb.on_llm_end)
 
     def test_streaming_callback_has_on_llm_error(self):
-        from app.shared.agents.streaming_callback import StreamingCallback
+        from lia_agents_core.streaming_callback import StreamingCallback
         cb = StreamingCallback(session_id="test", company_id="", user_id="")
         assert callable(cb.on_llm_error)
 
@@ -191,7 +191,7 @@ class TestStreamingCallbackCreation:
 class TestStreamingCallbackTokenScheduling:
 
     def test_on_llm_new_token_schedules_send(self):
-        from app.shared.agents.streaming_callback import StreamingCallback
+        from lia_agents_core.streaming_callback import StreamingCallback
         cb = StreamingCallback(session_id="sess-token", company_id="c1", user_id="u1")
 
         with patch.object(cb, "_schedule_send") as mock_schedule:
@@ -202,7 +202,7 @@ class TestStreamingCallbackTokenScheduling:
             assert "hello" in args["content"]
 
     def test_on_llm_new_token_ignores_empty_token(self):
-        from app.shared.agents.streaming_callback import StreamingCallback
+        from lia_agents_core.streaming_callback import StreamingCallback
         cb = StreamingCallback(session_id="sess-token", company_id="c1", user_id="u1")
 
         with patch.object(cb, "_schedule_send") as mock_schedule:
@@ -210,7 +210,7 @@ class TestStreamingCallbackTokenScheduling:
             mock_schedule.assert_not_called()
 
     def test_on_llm_end_sends_token_done(self):
-        from app.shared.agents.streaming_callback import StreamingCallback
+        from lia_agents_core.streaming_callback import StreamingCallback
         cb = StreamingCallback(session_id="sess-token", company_id="c1", user_id="u1")
 
         sent = []
@@ -220,7 +220,7 @@ class TestStreamingCallbackTokenScheduling:
         assert any(m.get("type") == "token_done" for m in sent)
 
     def test_on_llm_error_sends_error_type(self):
-        from app.shared.agents.streaming_callback import StreamingCallback
+        from lia_agents_core.streaming_callback import StreamingCallback
         cb = StreamingCallback(session_id="sess-token", company_id="c1", user_id="u1")
 
         with patch.object(cb, "_schedule_send") as mock_schedule:
@@ -231,7 +231,7 @@ class TestStreamingCallbackTokenScheduling:
 
     def test_on_llm_end_flushes_buffer(self):
         """Tokens pendentes no buffer devem ser enviados antes de token_done."""
-        from app.shared.agents.streaming_callback import StreamingCallback
+        from lia_agents_core.streaming_callback import StreamingCallback
         cb = StreamingCallback(
             session_id="sess-buffer",
             company_id="c1",
@@ -261,8 +261,8 @@ class TestStreamingCallbackTokenScheduling:
 class TestProcessLangGraphCreatesStreaming:
 
     def _make_react_agent(self):
-        from app.shared.agents.langgraph_react_base import LangGraphReActBase
-        from app.shared.agents.agent_interface import AgentInput, AgentOutput
+        from lia_agents_core.langgraph_react_base import LangGraphReActBase
+        from lia_agents_core.agent_interface import AgentInput, AgentOutput
 
         class ConcreteReAct(LangGraphReActBase):
             @property
@@ -279,11 +279,11 @@ class TestProcessLangGraphCreatesStreaming:
             async def process(self, input: AgentInput) -> AgentOutput:
                 return AgentOutput(message="ok")
 
-        with patch("app.shared.agents.langgraph_base.get_checkpointer", return_value=None):
+        with patch("lia_agents_core.langgraph_base.get_checkpointer", return_value=None):
             return ConcreteReAct()
 
     def _make_agent_input(self):
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
         return AgentInput(
             message="Olá LIA",
             session_id="sess-react-001",

@@ -27,7 +27,7 @@ class TestInterviewGraphBuildLangGraph:
     def test_build_langgraph_returns_compiled_graph(self):
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
         g = InterviewGraph()
-        with patch("app.shared.agents.checkpointer.get_checkpointer") as mock_cp:
+        with patch("lia_agents_core.checkpointer.get_checkpointer") as mock_cp:
             mock_cp.return_value = None
             with patch("langgraph.graph.StateGraph.compile") as mock_compile:
                 mock_compile.return_value = MagicMock()
@@ -38,7 +38,7 @@ class TestInterviewGraphBuildLangGraph:
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
         g = InterviewGraph()
         mock_checkpointer = MagicMock()
-        with patch("app.shared.agents.checkpointer.get_checkpointer") as mock_cp:
+        with patch("lia_agents_core.checkpointer.get_checkpointer") as mock_cp:
             mock_cp.return_value = mock_checkpointer
             with patch("langgraph.graph.StateGraph.compile") as mock_compile:
                 mock_compile.return_value = MagicMock()

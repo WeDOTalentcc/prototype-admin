@@ -19,7 +19,7 @@ def _make_agent_input(
     user_id: str = "user-001",
     context: dict | None = None,
 ):
-    from app.shared.agents.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput
     return AgentInput(
         message=message,
         session_id=session_id,
@@ -38,7 +38,7 @@ class TestAnalyticsAgentContract:
     def test_analytics_agent_output_is_agent_output_type(self):
         """AnalyticsReActAgent.process() sempre retorna AgentOutput."""
         from app.domains.analytics.agents.analytics_react_agent import AnalyticsReActAgent
-        from app.shared.agents.agent_interface import AgentOutput
+        from lia_agents_core.agent_interface import AgentOutput
         agent = AnalyticsReActAgent()
         assert hasattr(agent, "process")
         # Verify return type annotation
@@ -51,7 +51,7 @@ class TestAnalyticsAgentContract:
     async def test_analytics_agent_returns_agent_output_on_error(self):
         """process() nunca levanta exceção — sempre retorna AgentOutput."""
         from app.domains.analytics.agents.analytics_react_agent import AnalyticsReActAgent
-        from app.shared.agents.agent_interface import AgentOutput
+        from lia_agents_core.agent_interface import AgentOutput
 
         agent = AnalyticsReActAgent()
         inp = _make_agent_input(message="trigger error")
@@ -106,7 +106,7 @@ class TestCommunicationAgentContract:
     @pytest.mark.asyncio
     async def test_communication_agent_returns_agent_output_on_error(self):
         from app.domains.communication.agents.communication_react_agent import CommunicationReActAgent
-        from app.shared.agents.agent_interface import AgentOutput
+        from lia_agents_core.agent_interface import AgentOutput
 
         agent = CommunicationReActAgent()
         inp = _make_agent_input(message="enviar email")
@@ -176,7 +176,7 @@ class TestATSIntegrationAgentContract:
     @pytest.mark.asyncio
     async def test_ats_agent_returns_agent_output_on_error(self):
         from app.domains.ats_integration.agents.ats_integration_react_agent import ATSIntegrationReActAgent
-        from app.shared.agents.agent_interface import AgentOutput
+        from lia_agents_core.agent_interface import AgentOutput
 
         agent = ATSIntegrationReActAgent()
         inp = _make_agent_input(message="sync candidate")

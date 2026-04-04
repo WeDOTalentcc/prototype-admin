@@ -343,7 +343,7 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
         # Caminho principal: agente autônomo com acesso real ao banco de dados.
         try:
             from app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent import JobsManagementReActAgent
-            from app.shared.agents.agent_interface import AgentInput as ReactAgentInput
+            from lia_agents_core.agent_interface import AgentInput as ReactAgentInput
 
             agent_input = ReactAgentInput(
                 message=request.message,

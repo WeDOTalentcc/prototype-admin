@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from app.shared.agents.react_loop import ReActConfig, ToolDefinition
-from app.shared.agents.observability import ReActObserver
+from lia_agents_core.react_loop import ReActConfig, ReActLoop, ToolDefinition
+from lia_agents_core.observability import ReActObserver
 
 
 @pytest.fixture

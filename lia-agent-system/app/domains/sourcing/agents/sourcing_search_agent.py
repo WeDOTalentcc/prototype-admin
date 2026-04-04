@@ -26,6 +26,6 @@ class SourcingSearchAgent(SourcingReActAgent):
         return "sourcing_search"
 
     def _get_tools(self) -> list:
-        from app.shared.agents.react_loop import tool_definition_to_langchain_tool
+        from lia_agents_core.react_loop import tool_definition_to_langchain_tool
         tool_defs = get_search_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]

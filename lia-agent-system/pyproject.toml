@@ -106,3 +106,22 @@ lia-services    = { workspace = true }
 lia-contexts    = { workspace = true }
 lia-auth        = { workspace = true }
 lia-orchestrator = { workspace = true }
+
+# ---------------------------------------------------------------------------
+# Lint configuration — enforces architectural boundaries
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+# TID251: ban specific imports — prevents re-introduction of app.shared.agents shims.
+# Any import from app.shared.agents.* is forbidden; use lia_agents_core.* directly.
+extend-select = ["TID"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+# Ban imports from the removed shim layer.
+# Violations appear as TID251 and fail CI.
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"app.shared.agents" = { msg = "Import from lia_agents_core.* directly — app.shared.agents shims were removed in task-124." }

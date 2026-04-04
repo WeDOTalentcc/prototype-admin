@@ -25,7 +25,7 @@ class TestSourcingAgentObservability:
 
     def test_react_observer_accepts_company_user_id(self):
         """ReActObserver deve aceitar company_id e user_id."""
-        from app.shared.agents.observability import ReActObserver
+        from lia_agents_core.observability import ReActObserver
         observer = ReActObserver(
             session_id="session-sourcing-test",
             domain="sourcing",
@@ -38,7 +38,7 @@ class TestSourcingAgentObservability:
 
     def test_agent_execution_log_has_company_user(self):
         """AgentExecutionLog deve ter campos company_id e user_id."""
-        from app.shared.agents.observability import AgentExecutionLog
+        from lia_agents_core.observability import AgentExecutionLog
         log = AgentExecutionLog(
             session_id="session-test-001",
             domain="sourcing",

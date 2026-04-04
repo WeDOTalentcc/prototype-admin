@@ -143,7 +143,7 @@ class TestEtapa10Auditoria:
     def test_observability_no_truncation(self):
         """Logs de observabilidade não devem truncar reasoning."""
         import inspect
-        from app.shared.agents import observability as obs_module
+        from lia_agents_core import observability as obs_module
         source = inspect.getsource(obs_module)
         # Verificar que não há truncamento de 500 chars (B2 fix)
         assert "reasoning[:500]" not in source, "Truncamento de reasoning removido pelo fix"

@@ -494,7 +494,7 @@ class TestPolicyHITL:
 
     def _make_agent_input(self):
         """Cria um AgentInput mock."""
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
         return AgentInput(
             message="Defina o prazo de feedback como 3 dias",
             context={
@@ -515,7 +515,7 @@ class TestPolicyHITL:
         """
         import sys
         from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
-        from app.shared.agents.agent_interface import AgentOutput
+        from lia_agents_core.agent_interface import AgentOutput
 
         # Verificar que a lógica HITL existe no source code do agente
         import inspect
@@ -539,7 +539,7 @@ class TestPolicyHITL:
     async def test_hitl_not_called_when_no_policy_updates(self):
         """HITL não deve ser solicitado quando não há state_updates."""
         from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent
-        from app.shared.agents.agent_interface import AgentOutput
+        from lia_agents_core.agent_interface import AgentOutput
 
         agent = PolicyReActAgent()
         input_data = self._make_agent_input()

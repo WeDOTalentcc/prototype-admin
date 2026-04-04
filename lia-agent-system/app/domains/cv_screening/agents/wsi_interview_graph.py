@@ -875,7 +875,7 @@ class WSIInterviewGraph:
     def _build_langgraph(self) -> Any:
         """Constrói StateGraph com nós wrapper (dict ↔ WSIInterviewState)."""
         from langgraph.graph import StateGraph, END as LEND
-        from app.shared.agents.checkpointer import get_checkpointer
+        from lia_agents_core.checkpointer import get_checkpointer
 
         nodes_ref = self.nodes
 

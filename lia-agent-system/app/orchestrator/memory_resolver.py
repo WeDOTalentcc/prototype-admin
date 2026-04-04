@@ -242,7 +242,7 @@ class MemoryResolver:
 
         # ── Resolução via WorkingMemory (async, com I/O) ──
         try:
-            from app.shared.agents.working_memory import WorkingMemoryService
+            from lia_agents_core.working_memory import WorkingMemoryService
             memory_service = WorkingMemoryService()
             context = await memory_service.get_context_summary(
                 session_id=session_id,

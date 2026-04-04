@@ -7,7 +7,7 @@ check_rejection_fairness is MANDATORY in this registry (compliance).
 """
 from typing import List
 
-from app.shared.agents.react_loop import ToolDefinition
+from lia_agents_core.react_loop import ToolDefinition
 from app.domains.recruiter_assistant.agents.kanban_tool_registry import _TOOL_MAP
 
 _ACTION_TOOL_NAMES: List[str] = [

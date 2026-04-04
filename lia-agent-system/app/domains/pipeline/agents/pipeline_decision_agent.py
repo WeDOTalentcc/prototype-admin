@@ -37,6 +37,6 @@ class PipelineDecisionAgent(PipelineTransitionAgent):
 
     def _get_tools(self) -> list:
         """Return only the 7 decision/preference tools for this subagent."""
-        from app.shared.agents.react_loop import tool_definition_to_langchain_tool
+        from lia_agents_core.react_loop import tool_definition_to_langchain_tool
         tool_defs = get_pipeline_decision_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]

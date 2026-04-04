@@ -43,7 +43,7 @@ def _probe_graph(name: str, factory) -> GraphHealthItem:
     """Tenta compilar um graph e retorna o resultado."""
     t0 = time.perf_counter()
     try:
-        from app.shared.agents.checkpointer import get_checkpointer
+        from lia_agents_core.checkpointer import get_checkpointer
         cp = get_checkpointer()
         cp_type = type(cp).__name__ if cp is not None else "MemorySaver(default)"
 
@@ -96,7 +96,7 @@ async def langgraph_health(
             )
 
     try:
-        from app.shared.agents.checkpointer import get_checkpointer
+        from lia_agents_core.checkpointer import get_checkpointer
         cp = get_checkpointer()
         cp_type = type(cp).__name__ if cp is not None else "MemorySaver(default)"
     except Exception as exc:

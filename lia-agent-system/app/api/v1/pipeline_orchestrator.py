@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent
-from app.shared.agents.agent_interface import AgentInput
+from lia_agents_core.agent_interface import AgentInput
 import logging
 import os
 

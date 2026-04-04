@@ -20,7 +20,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 def _make_event(**kwargs):
-    from app.shared.agents.agent_bus import AgentEvent
+    from lia_agents_core.agent_bus import AgentEvent
 
     defaults = dict(
         from_agent="sourcing",
@@ -40,7 +40,7 @@ def _make_event(**kwargs):
 
 def test_agent_event_to_dict():
     """AgentEvent.to_dict() must contain all required keys."""
-    from app.shared.agents.agent_bus import AgentEvent
+    from lia_agents_core.agent_bus import AgentEvent
 
     event = _make_event()
     d = event.to_dict()
@@ -61,7 +61,7 @@ def test_agent_event_to_dict():
 
 def test_agent_event_from_dict():
     """AgentEvent roundtrip: to_dict → from_dict preserves all fields."""
-    from app.shared.agents.agent_bus import AgentEvent
+    from lia_agents_core.agent_bus import AgentEvent
 
     original = _make_event()
     d = original.to_dict()
@@ -78,7 +78,7 @@ def test_agent_event_from_dict():
 
 def test_agent_event_channel_format():
     """AgentBus.channel() must return lia:agent_bus:{company_id}:{to_agent}."""
-    from app.shared.agents.agent_bus import AgentBus, CHANNEL_PREFIX
+    from lia_agents_core.agent_bus import AgentBus, CHANNEL_PREFIX
 
     bus = AgentBus()
     ch = bus.channel("co-xyz", "pipeline")
@@ -93,7 +93,7 @@ def test_agent_event_channel_format():
 @pytest.mark.asyncio
 async def test_publish_fail_open_on_redis_error():
     """publish() returns False when Redis raises — no exception propagates."""
-    from app.shared.agents.agent_bus import AgentBus
+    from lia_agents_core.agent_bus import AgentBus
 
     bus = AgentBus()
 
@@ -115,7 +115,7 @@ async def test_publish_fail_open_on_redis_error():
 @pytest.mark.asyncio
 async def test_publish_success_returns_true():
     """publish() returns True when Redis.publish() succeeds."""
-    from app.shared.agents.agent_bus import AgentBus
+    from lia_agents_core.agent_bus import AgentBus
 
     bus = AgentBus()
 
@@ -147,7 +147,7 @@ async def test_publish_success_returns_true():
 
 def test_subscribe_registers_handler():
     """subscribe() adds handler to the internal subscribers dict."""
-    from app.shared.agents.agent_bus import AgentBus
+    from lia_agents_core.agent_bus import AgentBus
 
     bus = AgentBus()
     handler = AsyncMock()
@@ -161,7 +161,7 @@ def test_subscribe_registers_handler():
 @pytest.mark.asyncio
 async def test_dispatch_local_calls_handler():
     """dispatch_local() calls the subscribed handler with the event."""
-    from app.shared.agents.agent_bus import AgentBus
+    from lia_agents_core.agent_bus import AgentBus
 
     bus = AgentBus()
     received: list = []
@@ -180,7 +180,7 @@ async def test_dispatch_local_calls_handler():
 @pytest.mark.asyncio
 async def test_dispatch_local_isolates_by_agent():
     """Handler registered for 'pipeline' is NOT called for event targeting 'sourcing'."""
-    from app.shared.agents.agent_bus import AgentBus
+    from lia_agents_core.agent_bus import AgentBus
 
     bus = AgentBus()
     pipeline_calls: list = []
@@ -205,7 +205,7 @@ async def test_dispatch_local_isolates_by_agent():
 @pytest.mark.asyncio
 async def test_dispatch_local_fail_open_handler_error():
     """If one handler raises, other handlers still get called (fail-open)."""
-    from app.shared.agents.agent_bus import AgentBus
+    from lia_agents_core.agent_bus import AgentBus
 
     bus = AgentBus()
     second_called: list = []
@@ -265,7 +265,7 @@ async def test_emit_mixin_method_calls_publish():
     mock_bus = MagicMock()
     mock_bus.publish = AsyncMock(return_value=True)
 
-    with patch("app.shared.agents.agent_bus.agent_bus", mock_bus):
+    with patch("lia_agents_core.agent_bus.agent_bus", mock_bus):
         result = await obj.emit(
             to_agent="pipeline",
             event_type="candidate_imported",
@@ -300,7 +300,7 @@ async def test_emit_fail_open_on_error():
     mock_bus = MagicMock()
     mock_bus.publish = AsyncMock(side_effect=RuntimeError("bus exploded"))
 
-    with patch("app.shared.agents.agent_bus.agent_bus", mock_bus):
+    with patch("lia_agents_core.agent_bus.agent_bus", mock_bus):
         result = await obj.emit(
             to_agent="jobs_management",
             event_type="job_creation_ready",
@@ -318,7 +318,7 @@ async def test_emit_fail_open_on_error():
 
 def test_list_subscribers_returns_counts():
     """list_subscribers() returns a dict mapping agent name → handler count."""
-    from app.shared.agents.agent_bus import AgentBus
+    from lia_agents_core.agent_bus import AgentBus
 
     bus = AgentBus()
 

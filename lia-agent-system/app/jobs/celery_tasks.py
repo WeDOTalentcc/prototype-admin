@@ -179,7 +179,7 @@ def wizard_process_async_task(self, message: str, context: dict, session_id: str
     Returns:
         AgentOutput serializado como dict.
     """
-    from app.shared.agents.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput
 
     async def _run() -> dict:
         from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent
@@ -230,7 +230,7 @@ def pipeline_transition_async_task(self, transition_data: dict, session_id: str,
         company_id: ID da empresa.
         user_id: ID do usuário.
     """
-    from app.shared.agents.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput
 
     async def _run() -> dict:
         from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
@@ -260,7 +260,7 @@ def pipeline_transition_async_task(self, transition_data: dict, session_id: str,
 
 def _build_agent_input(agent_input_dict: dict):
     """Constrói AgentInput a partir de dict serializado."""
-    from app.shared.agents.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput
     return AgentInput(**agent_input_dict)
 
 

@@ -23,7 +23,7 @@ class FairnessCheckResultStub:
 
 
 def _make_agent_input(message: str, company_id: str = "co-1"):
-    from app.shared.agents.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput
     return AgentInput(
         message=message,
         context={},
@@ -107,7 +107,7 @@ class TestPipelineFairnessGuard:
     """FairnessGuard no PipelineTransitionAgent."""
 
     def _make_input(self, message: str):
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
         return AgentInput(
             message=message,
             context={"action_behavior": "passive"},

@@ -1495,7 +1495,7 @@ async def interpret_transition_context(
             # --- Layer 3: ReAct Agent ---
             try:
                 from app.domains.pipeline.agents.pipeline_transition_agent import get_pipeline_transition_agent
-                from app.shared.agents.agent_interface import AgentInput
+                from lia_agents_core.agent_interface import AgentInput
 
                 conversation_history = []
                 if request.message_history:

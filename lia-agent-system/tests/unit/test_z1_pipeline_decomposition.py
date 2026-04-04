@@ -106,8 +106,8 @@ def test_action_guardrail_tools_present():
 # Subagent instantiation tests
 # ---------------------------------------------------------------------------
 
-@patch("app.shared.agents.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
-@patch("app.shared.agents.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
+@patch("lia_agents_core.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
+@patch("lia_agents_core.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
 def test_pipeline_context_agent_instantiates(mock_init, mock_setup):
     from app.domains.pipeline.agents.pipeline_context_agent import PipelineContextAgent
     agent = PipelineContextAgent.__new__(PipelineContextAgent)
@@ -115,8 +115,8 @@ def test_pipeline_context_agent_instantiates(mock_init, mock_setup):
     assert agent.__class__.__name__ == "PipelineContextAgent"
 
 
-@patch("app.shared.agents.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
-@patch("app.shared.agents.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
+@patch("lia_agents_core.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
+@patch("lia_agents_core.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
 def test_pipeline_decision_agent_instantiates(mock_init, mock_setup):
     from app.domains.pipeline.agents.pipeline_decision_agent import PipelineDecisionAgent
     agent = PipelineDecisionAgent.__new__(PipelineDecisionAgent)
@@ -124,8 +124,8 @@ def test_pipeline_decision_agent_instantiates(mock_init, mock_setup):
     assert agent.__class__.__name__ == "PipelineDecisionAgent"
 
 
-@patch("app.shared.agents.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
-@patch("app.shared.agents.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
+@patch("lia_agents_core.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
+@patch("lia_agents_core.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
 def test_pipeline_action_agent_instantiates(mock_init, mock_setup):
     from app.domains.pipeline.agents.pipeline_action_agent import PipelineActionAgent
     agent = PipelineActionAgent.__new__(PipelineActionAgent)

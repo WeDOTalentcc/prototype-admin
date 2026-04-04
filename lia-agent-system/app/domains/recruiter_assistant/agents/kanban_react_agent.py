@@ -7,16 +7,19 @@ Migração completa concluída — path legado ReActLoop removido.
 import logging
 from typing import Any, Dict, List, Optional
 
-from app.shared.agents.agent_interface import (
+from lia_agents_core.agent_interface import (
     AgentAction,
     AgentInput,
     AgentOutput,
     BaseAgent,
     NavigationCommand,
 )
-from app.shared.agents.enhanced_agent_mixin import EnhancedAgentMixin
-from app.shared.agents.langgraph_react_base import LangGraphReActBase
-from app.shared.agents.working_memory import WorkingMemoryService
+from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
+from lia_agents_core.langgraph_react_base import LangGraphReActBase
+from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
+from app.shared.compliance.audit_callback import AuditCallback
+from lia_agents_core.working_memory import WorkingMemoryService
+from lia_agents_core.observability import ReActObserver
 from app.services.confidence_policy_service import confidence_policy_service
 
 from app.domains.recruiter_assistant.agents.kanban_stage_context import (
@@ -60,7 +63,8 @@ class KanbanReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return list(self._all_tool_names)
 
     def _get_tools(self) -> list:
-        from app.shared.agents.react_loop import tool_definition_to_langchain_tool
+        """Todos os tools do domínio Kanban (LangGraph usa set completo)."""
+        from lia_agents_core.react_loop import tool_definition_to_langchain_tool
         tool_defs = get_kanban_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]
 

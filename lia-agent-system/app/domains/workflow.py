@@ -580,8 +580,8 @@ class DomainWorkflow:
         ou None se o domínio não tem agente registrado (fallback para execute_action).
         """
         try:
-            from app.shared.agents.react_agent_registry import ReactAgentRegistry, AgentFactory
-            from app.shared.agents.agent_interface import AgentInput
+            from lia_agents_core.react_agent_registry import ReactAgentRegistry, AgentFactory
+            from lia_agents_core.agent_interface import AgentInput
 
             registry = ReactAgentRegistry()
             domain_id = state.domain.domain_id

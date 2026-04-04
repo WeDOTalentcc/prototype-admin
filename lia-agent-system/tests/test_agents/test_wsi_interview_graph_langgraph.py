@@ -43,7 +43,7 @@ class TestWSIBuildLangGraph:
     def test_build_langgraph_returns_compiled(self):
         from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
         g = WSIInterviewGraph()
-        with patch("app.shared.agents.checkpointer.get_checkpointer") as mock_cp:
+        with patch("lia_agents_core.checkpointer.get_checkpointer") as mock_cp:
             mock_cp.return_value = None
             with patch("langgraph.graph.StateGraph.compile") as mock_compile:
                 mock_compiled = MagicMock()
@@ -56,7 +56,7 @@ class TestWSIBuildLangGraph:
         from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
         g = WSIInterviewGraph()
         mock_cp = MagicMock()
-        with patch("app.shared.agents.checkpointer.get_checkpointer") as mock_get_cp:
+        with patch("lia_agents_core.checkpointer.get_checkpointer") as mock_get_cp:
             mock_get_cp.return_value = mock_cp
             with patch("langgraph.graph.StateGraph.compile") as mock_compile:
                 mock_compile.return_value = MagicMock()
@@ -85,7 +85,7 @@ class TestWSIRouteDispatcher:
             compiled.ainvoke = AsyncMock()
             return compiled
 
-        with patch("app.shared.agents.checkpointer.get_checkpointer") as mock_cp:
+        with patch("lia_agents_core.checkpointer.get_checkpointer") as mock_cp:
             mock_cp.return_value = None
             with patch("langgraph.graph.StateGraph.compile", side_effect=fake_compile):
                 from langgraph.graph import StateGraph

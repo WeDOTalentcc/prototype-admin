@@ -7,7 +7,7 @@ Este arquivo re-exporta todas as definições para manter compatibilidade
 com imports existentes (app.agents.base_agent.*).
 Não adicionar nova lógica aqui.
 """
-from app.shared.agents.agent_types import (  # noqa: F401
+from lia_agents_core.agent_types import (  # noqa: F401
     AgentType,
     TaskPriority,
     TaskStatus,

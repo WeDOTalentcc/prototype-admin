@@ -12,7 +12,7 @@ from sqlalchemy import text as sql_text
 
 from app.core.database import AsyncSessionLocal
 
-from app.shared.agents.react_loop import ToolDefinition
+from lia_agents_core.react_loop import ToolDefinition
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.domains.job_management.tools.job_wizard_tools import (
     search_salary_benchmark as _search_salary_benchmark,

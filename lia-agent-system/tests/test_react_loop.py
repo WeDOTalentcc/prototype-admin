@@ -2,9 +2,9 @@ import json
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.shared.agents.react_loop import ReActLoop, ReActState, ReActConfig, ToolDefinition
-from app.shared.agents.agent_interface import AgentInput, AgentOutput
-from app.shared.agents.observability import ReActObserver
+from lia_agents_core.react_loop import ReActLoop, ReActState, ReActConfig, ToolDefinition
+from lia_agents_core.agent_interface import AgentInput, AgentOutput
+from lia_agents_core.observability import ReActObserver
 
 
 class TestReActState:
@@ -101,7 +101,7 @@ class TestReActLoop:
                 })
             return generate_response
 
-        with patch("app.shared.agents.react_loop.llm_service.generate", side_effect=mock_generate):
+        with patch("lia_agents_core.react_loop.llm_service.generate", side_effect=mock_generate):
             state = await react_loop.run(
                 message="test message",
                 context={},
@@ -141,7 +141,7 @@ class TestReActLoop:
                 return tool_call_response
             return respond_response
 
-        with patch("app.shared.agents.react_loop.llm_service.generate", side_effect=mock_generate):
+        with patch("lia_agents_core.react_loop.llm_service.generate", side_effect=mock_generate):
             state = await react_loop.run(
                 message="test",
                 context={},
@@ -191,7 +191,7 @@ class TestReActLoop:
                 return tool_call_response
             return generate_response
 
-        with patch("app.shared.agents.react_loop.llm_service.generate", side_effect=mock_generate):
+        with patch("lia_agents_core.react_loop.llm_service.generate", side_effect=mock_generate):
             state = await loop.run(
                 message="test",
                 context={},
@@ -211,7 +211,7 @@ class TestReActLoop:
             "response": "Here is my direct response",
         })
 
-        with patch("app.shared.agents.react_loop.llm_service.generate", new_callable=AsyncMock, return_value=respond_response):
+        with patch("lia_agents_core.react_loop.llm_service.generate", new_callable=AsyncMock, return_value=respond_response):
             state = await react_loop.run(
                 message="hello",
                 context={},
@@ -250,7 +250,7 @@ class TestReActLoop:
                 return unknown_tool_response
             return respond_response
 
-        with patch("app.shared.agents.react_loop.llm_service.generate", side_effect=mock_generate):
+        with patch("lia_agents_core.react_loop.llm_service.generate", side_effect=mock_generate):
             state = await react_loop.run(
                 message="test",
                 context={},
@@ -275,7 +275,7 @@ class TestReActLoop:
             "response": "Direct response",
         })
 
-        with patch("app.shared.agents.react_loop.llm_service.generate", new_callable=AsyncMock, return_value=respond_response):
+        with patch("lia_agents_core.react_loop.llm_service.generate", new_callable=AsyncMock, return_value=respond_response):
             state = await react_loop.run(
                 message="hello",
                 context={},
@@ -299,7 +299,7 @@ class TestReActLoop:
             "response": None,
         })
 
-        with patch("app.shared.agents.react_loop.llm_service.generate", new_callable=AsyncMock, return_value=tool_call_response):
+        with patch("lia_agents_core.react_loop.llm_service.generate", new_callable=AsyncMock, return_value=tool_call_response):
             state = await react_loop.run(
                 message="test",
                 context={},
@@ -328,7 +328,7 @@ class TestReActLoop:
         async def failing_generate(*args, **kwargs):
             raise RuntimeError("LLM service down")
 
-        with patch("app.shared.agents.react_loop.llm_service.generate", side_effect=failing_generate):
+        with patch("lia_agents_core.react_loop.llm_service.generate", side_effect=failing_generate):
             state = await react_loop.run(
                 message="test",
                 context={},

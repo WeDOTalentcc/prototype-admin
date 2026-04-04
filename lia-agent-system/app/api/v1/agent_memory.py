@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 from sqlalchemy import select, desc
 from app.core.database import AsyncSessionLocal
-from app.shared.agents.working_memory import AgentWorkingMemory, WorkingMemorySchema
+from lia_agents_core.working_memory import AgentWorkingMemory, WorkingMemorySchema
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 import logging

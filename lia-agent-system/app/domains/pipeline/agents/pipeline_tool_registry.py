@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import select, text, update
 
 from app.core.database import AsyncSessionLocal
-from app.shared.agents.react_loop import ToolDefinition
+from lia_agents_core.react_loop import ToolDefinition
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 logger = logging.getLogger(__name__)

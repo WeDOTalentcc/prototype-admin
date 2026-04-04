@@ -129,7 +129,7 @@ class InterviewGraph:
     def _build_langgraph(self):
         """Constrói e compila o StateGraph nativo do LangGraph."""
         from langgraph.graph import StateGraph, END as LEND
-        from app.shared.agents.checkpointer import get_checkpointer
+        from lia_agents_core.checkpointer import get_checkpointer
 
         state_schema = _InterviewStateDict if _HAS_TYPED_DICT else dict
         builder = StateGraph(state_schema)

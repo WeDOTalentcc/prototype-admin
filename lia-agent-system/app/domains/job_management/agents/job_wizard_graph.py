@@ -23,7 +23,7 @@ except ImportError:
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.shared.agents.state_machine import (
+from lia_agents_core.state_machine import (
     JobWizardState,
     WizardStage,
     WizardIntent,
@@ -176,7 +176,7 @@ class JobWizardGraph:
     def _build_langgraph(self):
         """Constrói StateGraph nativo substituindo checkpoint_service por PostgresSaver."""
         from langgraph.graph import StateGraph, END as LEND
-        from app.shared.agents.checkpointer import get_checkpointer
+        from lia_agents_core.checkpointer import get_checkpointer
 
         nodes_ref = self.nodes
 
@@ -281,7 +281,7 @@ class JobWizardGraph:
         # LangGraph retorna {"__interrupt__": [...]} quando pausa num nó
         if isinstance(result, dict) and result.get("__interrupt__"):
             intent = state.get("intent", "")
-            from app.shared.agents.state_machine import WizardIntent
+            from lia_agents_core.state_machine import WizardIntent
             if intent == WizardIntent.CONFIRM.value and not state.get("hitl_approved"):
                 # Solicitar aprovação humana antes de criar a vaga
                 try:
@@ -366,6 +366,253 @@ class JobWizardGraph:
         """
         return await self._invoke_langgraph(state, audit_callback)
 
+    @_traceable(name="JobWizardGraph._invoke_legacy", run_type="chain")
+    async def _invoke_legacy(
+        self,
+        state: JobWizardState,
+        start_node: Optional[str] = None,
+        db: Optional[AsyncSession] = None,
+        audit_callback=None,
+    ) -> JobWizardState:
+        """
+        Run the graph to completion.
+
+        Restores persisted state from the database at the start of each call
+        (A3 — checkpoint recovery). Saves the final state at the end so the
+        next call can resume from where it left off even after a process restart.
+
+        Args:
+            state: Incoming state slice (typically contains the new user_message)
+            start_node: Optional starting node (defaults to START_NODE)
+            db: AsyncSession for checkpoint persistence (optional — skips if None)
+
+        Returns:
+            Final state after graph execution
+        """
+        session_id = state.get("session_id", str(uuid4()))
+        company_id = state.get("company_id")
+
+        # A3 — restore prior state so accumulated job data survives restarts
+        if db is not None:
+            prior = await restore_checkpoint(db, session_id, "job_wizard")
+            if prior:
+                self.logger.info(f"Checkpoint restored for session {session_id}")
+                # Merge: incoming state is the base; prior preserved fields fill in gaps
+                # Ephemeral fields (user_message, session_id) come from incoming state
+                merged = {**state, **{k: v for k, v in prior.items() if k not in EPHEMERAL_FIELDS}}
+                state = merged  # type: ignore[assignment]
+
+        execution_id = str(uuid4())
+        start_time = datetime.utcnow()
+
+        execution_log = GraphExecutionLog(
+            session_id=session_id,
+            execution_id=execution_id,
+            start_time=start_time,
+            nodes_visited=[],
+            reasoning_steps=[],
+        )
+
+        current_node = start_node or self.START_NODE
+        iteration = 0
+
+        if audit_callback:
+            audit_callback.on_chain_start_manual()
+
+        self.logger.info(f"[JobWizardGraph] Starting graph execution (legado): {execution_id}")
+
+        try:
+            async with asyncio.timeout(120):
+                while current_node != self.END_NODE and iteration < self.MAX_ITERATIONS:
+                    iteration += 1
+
+                    state, duration = await self._execute_node(current_node, state, audit_callback=audit_callback)
+
+                    execution_log.nodes_visited.append(current_node)
+                    execution_log.reasoning_steps.append(ReasoningStep(
+                        step_number=iteration,
+                        node_name=current_node,
+                        action=f"Executed {current_node}",
+                        duration_ms=duration,
+                    ))
+
+                    if state.get("error"):
+                        self.logger.error(f"Graph error at node {current_node}: {state['error']}")
+                        break
+
+                    current_node = self._get_next_node(current_node, state)
+                    self.logger.debug(f"Next node: {current_node}")
+
+        except asyncio.TimeoutError:
+            self.logger.error(f"JobWizardGraph timeout após 120s", extra={"execution_id": execution_id})
+            state["error"] = "Timeout: graph execution exceeded 120s"
+
+        if iteration >= self.MAX_ITERATIONS:
+            self.logger.warning(f"Graph reached max iterations ({self.MAX_ITERATIONS})")
+            state["error"] = f"Max iterations reached ({self.MAX_ITERATIONS})"
+
+        end_time = datetime.utcnow()
+        execution_log.end_time = end_time
+        execution_log.total_duration_ms = (end_time - start_time).total_seconds() * 1000
+        execution_log.final_state = dict(state)
+        execution_log.success = state.get("error") is None
+
+        self._execution_logs[execution_id] = execution_log
+
+        # A3 — persist state; delete checkpoint if wizard is complete (vaga publicada)
+        if db is not None:
+            wizard_done = state.get("current_stage") in ("published", "completed", "cancelled")
+            if wizard_done:
+                await delete_checkpoint(db, session_id, "job_wizard")
+            else:
+                await save_checkpoint(db, session_id, "job_wizard", dict(state), company_id)
+
+        # E12: Event store — JobCreated event (dual write, immutable audit trail)
+        try:
+            _job_id = state.get("job_id") or state.get("fields", {}).get("job_id")
+            _company_id_es = state.get("company_id", "")
+            _user_id_es = state.get("user_id")
+            _intent_es = state.get("intent", "")
+            _is_confirm = _intent_es in ("confirm", "CONFIRM")
+            if db is not None and _job_id and _company_id_es and _is_confirm:
+                import asyncio as _asyncio
+                from app.services.event_store_service import event_store_service as _es
+                _asyncio.create_task(_es.append(
+                    aggregate_type="job",
+                    aggregate_id=str(_job_id),
+                    event_type="JobCreated",
+                    data={"source": "wizard"},
+                    company_id=str(_company_id_es),
+                    db=db,
+                    created_by=str(_user_id_es) if _user_id_es else "wizard_agent",
+                ))
+        except Exception:
+            pass
+
+        if audit_callback:
+            error = state.get("error")
+            try:
+                await audit_callback.on_chain_end_manual(
+                    confidence=0.9 if not error else 0.3,
+                    success=not bool(error),
+                    error=error,
+                )
+            except Exception:
+                pass
+
+        self.logger.info(
+            f"Graph execution complete: {execution_id} "
+            f"(nodes: {len(execution_log.nodes_visited)}, "
+            f"duration: {execution_log.total_duration_ms:.1f}ms)"
+        )
+
+        # E10: emit job_creation_ready to jobs_management agent when wizard completes
+        try:
+            _wizard_done = state.get("current_stage") in ("published", "completed")
+            _company_id_val = state.get("company_id", "")
+            if _wizard_done and _company_id_val:
+                from lia_agents_core.agent_bus import agent_bus
+                _job_id_val = state.get("job_id", "")
+                asyncio.create_task(agent_bus.publish(
+                    from_agent="wizard",
+                    to_agent="jobs_management",
+                    event_type="job_creation_ready",
+                    payload={"job_id": _job_id_val, "source": "wizard_briefing"},
+                    company_id=_company_id_val,
+                ))
+        except Exception:
+            pass
+
+        return state
+    
+    async def stream(
+        self,
+        state: JobWizardState,
+        start_node: Optional[str] = None
+    ) -> AsyncIterator[Dict[str, Any]]:
+        """
+        Stream execution for real-time updates.
+        
+        Yields state updates after each node execution,
+        allowing clients to receive progress updates.
+        
+        Args:
+            state: Initial state for the graph
+            start_node: Optional starting node
+            
+        Yields:
+            Dict with node name, state update, and execution info
+        """
+        execution_id = str(uuid4())
+        start_time = datetime.utcnow()
+        
+        current_node = start_node or self.START_NODE
+        iteration = 0
+        
+        yield {
+            "type": "start",
+            "execution_id": execution_id,
+            "start_node": current_node,
+            "timestamp": start_time.isoformat()
+        }
+        
+        while current_node != self.END_NODE and iteration < self.MAX_ITERATIONS:
+            iteration += 1
+            
+            yield {
+                "type": "node_start",
+                "node": current_node,
+                "iteration": iteration,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            
+            state, duration = await self._execute_node(current_node, state)
+            
+            yield {
+                "type": "node_complete",
+                "node": current_node,
+                "iteration": iteration,
+                "duration_ms": duration,
+                "state_update": {
+                    "current_stage": state.get("current_stage"),
+                    "intent": state.get("intent"),
+                    "extracted_fields": state.get("extracted_fields"),
+                    "response_text": state.get("response_text"),
+                    "error": state.get("error")
+                },
+                "reasoning_steps": state.get("reasoning_steps", [])[-3:],
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            
+            if state.get("error"):
+                yield {
+                    "type": "error",
+                    "node": current_node,
+                    "error": state["error"],
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+                break
+            
+            current_node = self._get_next_node(current_node, state)
+        
+        end_time = datetime.utcnow()
+        total_duration = (end_time - start_time).total_seconds() * 1000
+        
+        yield {
+            "type": "complete",
+            "execution_id": execution_id,
+            "total_iterations": iteration,
+            "total_duration_ms": total_duration,
+            "final_state": {
+                "current_stage": state.get("current_stage"),
+                "job_draft": state.get("job_draft"),
+                "response_text": state.get("response_text"),
+                "reasoning_steps": state.get("reasoning_steps"),
+                "error": state.get("error")
+            },
+            "timestamp": end_time.isoformat()
+        }
+    
     def get_execution_log(self, execution_id: str) -> Optional[GraphExecutionLog]:
         """Get the execution log for a specific run."""
         return self._execution_logs.get(execution_id)

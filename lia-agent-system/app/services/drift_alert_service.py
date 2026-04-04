@@ -114,7 +114,7 @@ class DriftAlertService:
         Returns:
             dict com `healthy`, `degraded`, `stale` e lista `domains`.
         """
-        from app.shared.agents.execution_log_store import ExecutionLogStore
+        from lia_agents_core.execution_log_store import ExecutionLogStore
         store = ExecutionLogStore()
         domains = await store.get_domain_health(company_id=company_id, days=days)
 

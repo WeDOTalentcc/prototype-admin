@@ -105,8 +105,8 @@ def test_action_guardrail_tools_present():
 # Subagent instantiation tests
 # ---------------------------------------------------------------------------
 
-@patch("app.shared.agents.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
-@patch("app.shared.agents.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
+@patch("lia_agents_core.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
+@patch("lia_agents_core.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
 def test_kanban_search_agent_instantiates(mock_init, mock_setup):
     from app.domains.recruiter_assistant.agents.kanban_search_agent import KanbanSearchAgent
     agent = KanbanSearchAgent.__new__(KanbanSearchAgent)
@@ -115,8 +115,8 @@ def test_kanban_search_agent_instantiates(mock_init, mock_setup):
     assert agent.__class__.__name__ == "KanbanSearchAgent"
 
 
-@patch("app.shared.agents.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
-@patch("app.shared.agents.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
+@patch("lia_agents_core.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
+@patch("lia_agents_core.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
 def test_kanban_insight_agent_instantiates(mock_init, mock_setup):
     from app.domains.recruiter_assistant.agents.kanban_insight_agent import KanbanInsightAgent
     agent = KanbanInsightAgent.__new__(KanbanInsightAgent)
@@ -125,8 +125,8 @@ def test_kanban_insight_agent_instantiates(mock_init, mock_setup):
     assert agent.__class__.__name__ == "KanbanInsightAgent"
 
 
-@patch("app.shared.agents.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
-@patch("app.shared.agents.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
+@patch("lia_agents_core.enhanced_agent_mixin.EnhancedAgentMixin._setup_enhanced")
+@patch("lia_agents_core.langgraph_react_base.LangGraphReActBase.__init__", return_value=None)
 def test_kanban_action_agent_instantiates(mock_init, mock_setup):
     from app.domains.recruiter_assistant.agents.kanban_action_agent import KanbanActionAgent
     agent = KanbanActionAgent.__new__(KanbanActionAgent)

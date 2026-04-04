@@ -134,7 +134,7 @@ class DomainDispatcher:
         Returns:
             task_id do Celery.
         """
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
 
         agent_input_dict = {
             "message": message.message,

@@ -14,7 +14,7 @@ Services wrapped:
 import logging
 from typing import Any, Dict, List
 
-from app.shared.agents.react_loop import ToolDefinition
+from lia_agents_core.react_loop import ToolDefinition
 
 logger = logging.getLogger(__name__)
 

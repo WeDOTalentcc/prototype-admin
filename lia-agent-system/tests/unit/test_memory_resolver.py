@@ -235,7 +235,7 @@ class TestMemoryResolverPositional:
     async def test_positional_out_of_range_falls_to_working_memory(self):
         state = make_state(last_candidates_shown=[10])
 
-        with patch("app.shared.agents.working_memory.WorkingMemoryService") as MockWMS:
+        with patch("lia_agents_core.working_memory.WorkingMemoryService") as MockWMS:
             mock_service = AsyncMock()
             mock_service.get_context_summary = AsyncMock(return_value=None)
             MockWMS.return_value = mock_service
@@ -258,7 +258,7 @@ class TestMemoryResolverPositional:
 class TestMemoryResolverPronouns:
     @pytest.mark.asyncio
     async def test_pronoun_resolved_via_working_memory(self):
-        with patch("app.shared.agents.working_memory.WorkingMemoryService") as MockWMS:
+        with patch("lia_agents_core.working_memory.WorkingMemoryService") as MockWMS:
             mock_service = AsyncMock()
             mock_service.get_context_summary = AsyncMock(return_value={
                 "last_candidate": {"id": 42, "name": "Beatriz Santos"},
@@ -286,7 +286,7 @@ class TestMemoryResolverPronouns:
 
     @pytest.mark.asyncio
     async def test_working_memory_unavailable_returns_original(self):
-        with patch("app.shared.agents.working_memory.WorkingMemoryService") as MockWMS:
+        with patch("lia_agents_core.working_memory.WorkingMemoryService") as MockWMS:
             MockWMS.side_effect = Exception("DB unavailable")
             resolver = MemoryResolver()
             enriched, was_resolved = await resolver.resolve(
@@ -301,7 +301,7 @@ class TestMemoryResolverPronouns:
         state = make_state()
         state.update_last_entity("job", "j-10", "Engenheiro de Dados")
 
-        with patch("app.shared.agents.working_memory.WorkingMemoryService") as MockWMS:
+        with patch("lia_agents_core.working_memory.WorkingMemoryService") as MockWMS:
             mock_service = AsyncMock()
             mock_service.get_context_summary = AsyncMock(return_value={
                 "last_candidate": {"id": 1, "name": "X"},

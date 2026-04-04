@@ -36,7 +36,7 @@ class TestLayer3Integration:
     async def test_sourcing_agent_uses_check_with_layer3(self):
         """SourcingReActAgent.process() deve chamar check_with_layer3, não check()."""
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        from app.shared.agents.agent_interface import AgentInput, AgentOutput
+        from lia_agents_core.agent_interface import AgentInput, AgentOutput
         from app.shared.compliance.fairness_guard import FairnessCheckResult
 
         agent = SourcingReActAgent()

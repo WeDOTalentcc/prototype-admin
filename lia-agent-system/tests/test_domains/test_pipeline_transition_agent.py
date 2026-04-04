@@ -89,11 +89,11 @@ class TestPipelineAgentInterface:
     """Interface AgentInput/AgentOutput do pipeline."""
 
     def test_agent_input_importable(self):
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
         assert AgentInput is not None
 
     def test_agent_output_importable(self):
-        from app.shared.agents.agent_interface import AgentOutput
+        from lia_agents_core.agent_interface import AgentOutput
         assert AgentOutput is not None
 
     def test_pipeline_agent_has_process(self):

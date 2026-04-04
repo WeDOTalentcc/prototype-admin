@@ -28,7 +28,7 @@ class TestPipelineMoveHighImpact:
     async def test_pipeline_agent_uses_check_with_layer3(self):
         """PipelineTransitionAgent.process() deve chamar check_with_layer3."""
         from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-        from app.shared.agents.agent_interface import AgentInput, AgentOutput
+        from lia_agents_core.agent_interface import AgentInput, AgentOutput
         from app.shared.compliance.fairness_guard import FairnessCheckResult
 
         agent = PipelineTransitionAgent()
@@ -67,7 +67,7 @@ class TestPipelineMoveHighImpact:
     async def test_pipeline_agent_layer3_blocks_discriminatory(self):
         """Pipeline agent deve bloquear mensagens discriminatórias via check_with_layer3."""
         from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-        from app.shared.agents.agent_interface import AgentInput, AgentOutput
+        from lia_agents_core.agent_interface import AgentInput, AgentOutput
         from app.shared.compliance.fairness_guard import FairnessCheckResult
 
         agent = PipelineTransitionAgent()
@@ -202,7 +202,7 @@ class TestFairnessWarningsBEIntegration:
     async def test_sourcing_agent_soft_warnings_in_output_metadata(self):
         """SourcingReActAgent deve propagar soft_warnings ao output.metadata."""
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        from app.shared.agents.agent_interface import AgentInput, AgentOutput
+        from lia_agents_core.agent_interface import AgentInput, AgentOutput
 
         agent = SourcingReActAgent()
         mock_output = AgentOutput(message="OK", confidence=0.9, metadata={})

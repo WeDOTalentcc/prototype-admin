@@ -81,16 +81,16 @@ class TestWizardBaseStateMachine:
     """BaseStateMachine — Sprint 5 contract tests."""
 
     def test_base_state_machine_importable(self):
-        from app.shared.agents.base_state_machine import BaseStateMachine
+        from lia_agents_core.base_state_machine import BaseStateMachine
         assert BaseStateMachine is not None
 
     def test_base_state_machine_is_abstract(self):
         import inspect
-        from app.shared.agents.base_state_machine import BaseStateMachine
+        from lia_agents_core.base_state_machine import BaseStateMachine
         assert inspect.isabstract(BaseStateMachine)
 
     def test_base_state_machine_abstract_methods(self):
-        from app.shared.agents.base_state_machine import BaseStateMachine
+        from lia_agents_core.base_state_machine import BaseStateMachine
         abstract = getattr(BaseStateMachine, "__abstractmethods__", set())
         required = {"get_initial_state", "get_stage_order", "get_next_stage",
                     "can_transition", "apply_transition"}

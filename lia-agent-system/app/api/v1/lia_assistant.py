@@ -77,7 +77,7 @@ from app.services.multimodal_service import (
     VideoAnalysisError,
     DocumentAnalysisError
 )
-from app.shared.agents.state_machine import WizardStage
+from lia_agents_core.state_machine import WizardStage
 from app.domains.recruiter_assistant.services.wizard_analytics_service import (
     wizard_analytics, detect_wizard_analytics_command,
 )

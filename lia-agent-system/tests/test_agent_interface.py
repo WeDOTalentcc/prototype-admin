@@ -1,12 +1,12 @@
 import pytest
-from app.shared.agents.agent_interface import (
+from lia_agents_core.agent_interface import (
     AgentInput,
     AgentOutput,
     AgentAction,
     NavigationCommand,
     BaseAgent,
 )
-from app.shared.agents.working_memory import AgentWorkingMemory, WorkingMemorySchema
+from lia_agents_core.working_memory import AgentWorkingMemory, WorkingMemorySchema
 
 
 class TestAgentInterface:

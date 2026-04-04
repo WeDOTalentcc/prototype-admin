@@ -46,7 +46,7 @@ class TestJobWizardBuildLangGraph:
     def test_build_langgraph_returns_compiled(self):
         from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
         g = JobWizardGraph()
-        with patch("app.shared.agents.checkpointer.get_checkpointer") as mock_cp:
+        with patch("lia_agents_core.checkpointer.get_checkpointer") as mock_cp:
             mock_cp.return_value = None
             with patch("langgraph.graph.StateGraph.compile") as mock_compile:
                 mock_compile.return_value = MagicMock()
@@ -57,7 +57,7 @@ class TestJobWizardBuildLangGraph:
         from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
         g = JobWizardGraph()
         mock_cp = MagicMock()
-        with patch("app.shared.agents.checkpointer.get_checkpointer") as mock_get_cp:
+        with patch("lia_agents_core.checkpointer.get_checkpointer") as mock_get_cp:
             mock_get_cp.return_value = mock_cp
             with patch("langgraph.graph.StateGraph.compile") as mock_compile:
                 mock_compile.return_value = MagicMock()
@@ -86,7 +86,7 @@ def _capture_routing_functions():
     def fake_compile(checkpointer=None):
         return MagicMock()
 
-    with patch("app.shared.agents.checkpointer.get_checkpointer") as mock_cp:
+    with patch("lia_agents_core.checkpointer.get_checkpointer") as mock_cp:
         mock_cp.return_value = None
         with patch("langgraph.graph.StateGraph.compile", side_effect=fake_compile):
             with patch.object(StateGraph, "add_conditional_edges", capture_conditional):

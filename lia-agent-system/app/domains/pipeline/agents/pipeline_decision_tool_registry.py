@@ -7,7 +7,7 @@ Focus: validate transitions, suggest sub-statuses, extract preferences,
 """
 from typing import List
 
-from app.shared.agents.react_loop import ToolDefinition
+from lia_agents_core.react_loop import ToolDefinition
 from app.domains.pipeline.agents.pipeline_tool_registry import _TOOL_MAP
 
 _DECISION_TOOL_NAMES: List[str] = [

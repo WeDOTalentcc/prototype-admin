@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel
 
-from app.shared.agents.execution_log_store import ExecutionLogStore
+from lia_agents_core.execution_log_store import ExecutionLogStore
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 

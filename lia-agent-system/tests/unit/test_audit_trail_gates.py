@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 
 def _make_pipeline_input(behavior="active", to_stage="entrevista"):
-    from app.shared.agents.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput
     return AgentInput(
         message="Mover candidato para entrevista",
         context={
@@ -35,7 +35,7 @@ def _make_pipeline_input(behavior="active", to_stage="entrevista"):
 
 
 def _make_sourcing_input():
-    from app.shared.agents.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput
     return AgentInput(
         message="Buscar candidatos seniores em Python",
         context={"current_stage": "search-criteria"},
@@ -114,6 +114,7 @@ class TestAuditTrailSourcing:
     async def test_audit_called_after_sourcing_completes(self):
         """log_decision deve ser chamado ao final da execução do sourcing via LangGraph."""
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
+        from lia_agents_core.react_loop import ReActState
         agent = SourcingReActAgent()
         inp = _make_sourcing_input()
 

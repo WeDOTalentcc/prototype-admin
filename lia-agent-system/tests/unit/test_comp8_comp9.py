@@ -13,7 +13,7 @@ class TestBypassGate1:
     async def test_web_source_bypasses_hitl_on_first_stage(self):
         """Candidatos com source=web na primeira etapa não devem acionar HITL."""
         from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
 
         agent = PipelineTransitionAgent()
         inp = AgentInput(
@@ -57,7 +57,7 @@ class TestBypassGate1:
     async def test_ats_source_bypasses_hitl(self):
         """Candidatos com source=ats também devem ter bypass Gate 1."""
         from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
 
         agent = PipelineTransitionAgent()
         inp = AgentInput(
@@ -97,7 +97,7 @@ class TestBypassGate1:
     async def test_no_source_still_triggers_hitl(self):
         """Sem source= HITL deve ser acionado normalmente."""
         from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
 
         agent = PipelineTransitionAgent()
         inp = AgentInput(

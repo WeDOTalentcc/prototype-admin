@@ -11,7 +11,7 @@ from typing import Any, Dict, List
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from app.shared.agents.react_loop import ToolDefinition
+from lia_agents_core.react_loop import ToolDefinition
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.domains.hiring_policy.agents.policy_tool_registry import INDUSTRY_BENCHMARKS
 

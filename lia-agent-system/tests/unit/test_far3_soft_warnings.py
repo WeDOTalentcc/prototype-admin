@@ -17,7 +17,7 @@ class TestSoftWarningsPropagation:
     async def test_sourcing_agent_propagates_soft_warnings_to_metadata(self):
         """Se a mensagem contém viés implícito, output.metadata deve ter fairness_warnings."""
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        from app.shared.agents.agent_interface import AgentInput, AgentOutput
+        from lia_agents_core.agent_interface import AgentInput, AgentOutput
 
         agent = SourcingReActAgent()
 
@@ -49,7 +49,7 @@ class TestSoftWarningsPropagation:
     async def test_pipeline_agent_propagates_soft_warnings_to_metadata(self):
         """PipelineTransitionAgent também propaga soft_warnings."""
         from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-        from app.shared.agents.agent_interface import AgentInput, AgentOutput
+        from lia_agents_core.agent_interface import AgentInput, AgentOutput
 
         agent = PipelineTransitionAgent()
 
@@ -77,7 +77,7 @@ class TestSoftWarningsPropagation:
     async def test_no_warnings_when_query_is_neutral(self):
         """Query neutra não deve adicionar fairness_warnings ao metadata."""
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        from app.shared.agents.agent_interface import AgentInput, AgentOutput
+        from lia_agents_core.agent_interface import AgentInput, AgentOutput
 
         agent = SourcingReActAgent()
 

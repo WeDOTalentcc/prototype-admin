@@ -381,7 +381,7 @@ from app.models.ab_testing import (
     PromptVariant,
     ABTestResult,
 )
-from app.shared.agents.working_memory import AgentWorkingMemory
+from lia_agents_core.working_memory import AgentWorkingMemory
 from app.models.guardrail import Guardrail
 from app.models.triagem import TriagemSession, TriagemMessage
 

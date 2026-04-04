@@ -122,7 +122,7 @@ class TestJobWizardGraphHITL:
         """Quando __interrupt__ presente e intent=confirm → HITL request_approval chamado."""
         try:
             from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-            from app.shared.agents.state_machine import WizardIntent
+            from lia_agents_core.state_machine import WizardIntent
         except ImportError:
             pytest.skip("JobWizardGraph não disponível")
 
@@ -182,7 +182,7 @@ class TestPipelineTransitionAgentHITL:
         """action_behavior='active' com to_stage → HITL solicitado."""
         try:
             from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-            from app.shared.agents.agent_interface import AgentInput
+            from lia_agents_core.agent_interface import AgentInput
         except ImportError:
             pytest.skip("PipelineTransitionAgent não disponível")
 
@@ -214,7 +214,7 @@ class TestPipelineTransitionAgentHITL:
         """action_behavior='passive' → não dispara HITL."""
         try:
             from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-            from app.shared.agents.agent_interface import AgentInput
+            from lia_agents_core.agent_interface import AgentInput
         except ImportError:
             pytest.skip("PipelineTransitionAgent não disponível")
 
@@ -228,7 +228,7 @@ class TestPipelineTransitionAgentHITL:
         )
 
         with patch.object(agent, "_process_langgraph", new_callable=AsyncMock) as mock_lg:
-            from app.shared.agents.agent_interface import AgentOutput
+            from lia_agents_core.agent_interface import AgentOutput
             mock_lg.return_value = AgentOutput(message="3 candidatos em triagem", confidence=0.9)
             output = await agent.process(agent_input)
 
@@ -241,7 +241,7 @@ class TestPipelineTransitionAgentHITL:
         """context.hitl_approved=True → ignora HITL, executa agente direto."""
         try:
             from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-            from app.shared.agents.agent_interface import AgentInput, AgentOutput
+            from lia_agents_core.agent_interface import AgentInput, AgentOutput
         except ImportError:
             pytest.skip("PipelineTransitionAgent não disponível")
 
@@ -270,7 +270,7 @@ class TestPipelineTransitionAgentHITL:
         """Sem to_stage → não há transição real, HITL não é acionado."""
         try:
             from app.domains.pipeline.agents.pipeline_transition_agent import PipelineTransitionAgent
-            from app.shared.agents.agent_interface import AgentInput, AgentOutput
+            from lia_agents_core.agent_interface import AgentInput, AgentOutput
         except ImportError:
             pytest.skip("PipelineTransitionAgent não disponível")
 

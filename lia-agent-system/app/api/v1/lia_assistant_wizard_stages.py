@@ -189,7 +189,7 @@ async def wizard_stage8_search(
 ) -> Stage8CandidateSearchResponse:
     try:
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
 
         search_id = str(uuid4())
 
@@ -349,7 +349,7 @@ async def wizard_stage9_evaluate(
 ) -> Stage9CalibrationResponse:
     try:
         from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
 
         # Resolve calibration cutoffs via learning_hub_service (replaces _get_calibration_context)
         learning_enhanced = False
@@ -567,7 +567,7 @@ async def wizard_stage10_start_sourcing(
 ) -> Stage10ActiveSourcingResponse:
     try:
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
 
         search_id = str(uuid4())
 

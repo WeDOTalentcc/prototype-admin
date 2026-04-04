@@ -217,7 +217,7 @@ async def get_domains_health(
     Retorna métricas reais de execução (taxa de falha de tools, confiança,
     iterações, uptime) agrupadas por domínio nos últimos N dias.
     """
-    from app.shared.agents.execution_log_store import ExecutionLogStore
+    from lia_agents_core.execution_log_store import ExecutionLogStore
     store = ExecutionLogStore()
     domains = await store.get_domain_health(company_id=company_id, days=days)
     return {
@@ -238,7 +238,7 @@ async def get_domain_metrics(
     """
     Métricas detalhadas de um domínio específico — baseado em AgentExecutionRecord.
     """
-    from app.shared.agents.execution_log_store import ExecutionLogStore
+    from lia_agents_core.execution_log_store import ExecutionLogStore
     store = ExecutionLogStore()
     all_domains = await store.get_domain_health(company_id=company_id, days=days)
     domain_data = next((d for d in all_domains if d["domain"] == domain), None)

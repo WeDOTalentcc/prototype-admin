@@ -88,7 +88,7 @@ def _build_agent_input(
     conversation_history: list,
 ):
     """Constrói AgentInput a partir dos dados da mensagem WS."""
-    from app.shared.agents.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput
     return AgentInput(
         message=content,
         context=context,
@@ -429,7 +429,7 @@ async def agent_chat_ws(
                                 else:
                                     resume_agent = _get_agent(resume_domain)
                                     if resume_agent:
-                                        from app.shared.agents.agent_interface import AgentInput
+                                        from lia_agents_core.agent_interface import AgentInput
                                         resume_agent_input = AgentInput(
                                             message=resume_input_dict.get("message", ""),
                                             context=resume_context,

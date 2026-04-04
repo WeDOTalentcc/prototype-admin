@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Any, Dict, List
 from uuid import uuid4
 
-from app.shared.agents.react_loop import ToolDefinition
+from lia_agents_core.react_loop import ToolDefinition
 
 logger = logging.getLogger(__name__)
 

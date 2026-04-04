@@ -1,1 +1,1 @@
-from app.shared.agents.nodes import *
+from lia_agents_core.nodes import *

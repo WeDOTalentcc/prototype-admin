@@ -46,7 +46,7 @@ GRAPH_AGENTS = [
 # ---------------------------------------------------------------------------
 
 def _make_input(session_id: str = "sess-e2e-001", company_id: str = "company-e2e"):
-    from app.shared.agents.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput
     return AgentInput(
         message="Criar vaga de desenvolvedor senior Python",
         context={},
@@ -57,7 +57,7 @@ def _make_input(session_id: str = "sess-e2e-001", company_id: str = "company-e2e
 
 
 def _make_output(session_id: str = "sess-e2e-001", company_id: str = "company-e2e"):
-    from app.shared.agents.agent_interface import AgentOutput
+    from lia_agents_core.agent_interface import AgentOutput
     return AgentOutput(
         message="Vaga criada com sucesso via LangGraph nativo.",
         actions=[],
@@ -84,8 +84,8 @@ class TestReActAgentsLangGraphNativeE2E:
     @pytest.mark.asyncio
     @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
     async def test_process_returns_agent_output(self, module_path, class_name):
-        """process() via LangGraph nativo retorna AgentOutput válido."""
-        from app.shared.agents.agent_interface import AgentOutput
+        """process() com USE_LANGGRAPH_NATIVE=True retorna AgentOutput válido."""
+        from lia_agents_core.agent_interface import AgentOutput
         import importlib
         mod = importlib.import_module(module_path)
         AgentClass = getattr(mod, class_name)
@@ -118,7 +118,7 @@ class TestReActAgentsLangGraphNativeE2E:
     @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
     async def test_agent_output_has_required_fields(self, module_path, class_name):
         """AgentOutput retornado tem message, confidence e metadata."""
-        from app.shared.agents.agent_interface import AgentOutput
+        from lia_agents_core.agent_interface import AgentOutput
         import importlib
         mod = importlib.import_module(module_path)
         AgentClass = getattr(mod, class_name)

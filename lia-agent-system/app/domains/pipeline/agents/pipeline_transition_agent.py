@@ -14,15 +14,18 @@ Follows the 4-file pattern:
 import logging
 from typing import Any, Dict, List, Optional
 
-from app.shared.agents.agent_interface import (
+from lia_agents_core.agent_interface import (
     AgentAction,
     AgentInput,
     AgentOutput,
     BaseAgent,
 )
-from app.shared.agents.enhanced_agent_mixin import EnhancedAgentMixin
-from app.shared.agents.langgraph_react_base import LangGraphReActBase
-from app.shared.agents.working_memory import WorkingMemoryService
+from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
+from lia_agents_core.langgraph_react_base import LangGraphReActBase
+from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
+from app.shared.compliance.audit_callback import AuditCallback
+from lia_agents_core.working_memory import WorkingMemoryService
+from lia_agents_core.observability import ReActObserver
 
 from app.domains.pipeline.agents.pipeline_stage_context import (
     get_stage_capabilities,
@@ -66,7 +69,7 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
 
     def _get_tools(self) -> list:
         """Todos os tools do domínio Pipeline Transition (LangGraph usa set completo)."""
-        from app.shared.agents.react_loop import tool_definition_to_langchain_tool
+        from lia_agents_core.react_loop import tool_definition_to_langchain_tool
         from app.domains.pipeline.agents.pipeline_tool_registry import ALL_TOOLS
         enhanced = self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in list(ALL_TOOLS) + enhanced]

@@ -31,7 +31,7 @@ class TestKanbanObservability:
 
     def test_observer_fields_present(self):
         """ReActObserver deve expor company_id e user_id."""
-        from app.shared.agents.observability import ReActObserver
+        from lia_agents_core.observability import ReActObserver
         obs = ReActObserver(
             session_id="session-kanban-test",
             domain="recruiter_assistant",
@@ -53,7 +53,7 @@ class TestKanbanGuardrails:
 
     def test_enhanced_agent_mixin_importable(self):
         """EnhancedAgentMixin deve ser importável."""
-        from app.shared.agents.enhanced_agent_mixin import EnhancedAgentMixin
+        from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
         assert EnhancedAgentMixin is not None
 
 
@@ -61,13 +61,13 @@ class TestKanbanTokenBudget:
     """Token budget guard (Sprint 2B)."""
 
     def test_react_config_has_token_budget_field(self):
-        from app.shared.agents.react_loop import ReActConfig
+        from lia_agents_core.react_loop import ReActConfig
         import inspect
         fields = ReActConfig.model_fields if hasattr(ReActConfig, "model_fields") else {}
         assert "max_tokens_per_session" in fields
 
     def test_react_state_has_token_estimate_field(self):
-        from app.shared.agents.react_loop import ReActState
+        from lia_agents_core.react_loop import ReActState
         fields = ReActState.model_fields if hasattr(ReActState, "model_fields") else {}
         assert "tokens_used_estimate" in fields
 

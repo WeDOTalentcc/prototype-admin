@@ -10,7 +10,7 @@ process com LangGraph mockado, erros de tool.
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.shared.agents.agent_interface import AgentInput, AgentOutput
+from lia_agents_core.agent_interface import AgentInput, AgentOutput
 
 
 # ---------------------------------------------------------------------------

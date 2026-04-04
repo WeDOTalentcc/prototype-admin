@@ -213,7 +213,7 @@ async def lifespan(app: FastAPI):
 
     # Initialize ReAct Agent Registry (7 domains: wizard, pipeline, sourcing, talent, jobs_management, kanban, policy)
     try:
-        from app.shared.agents.react_agent_registry import register_react_agents
+        from lia_agents_core.react_agent_registry import register_react_agents
         register_react_agents()
         logger.info("✅ ReAct Agent Registry inicializado")
     except Exception as e:

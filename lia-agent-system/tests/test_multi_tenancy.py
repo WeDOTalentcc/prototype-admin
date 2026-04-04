@@ -173,12 +173,12 @@ class TestLearningConfirmationTenantIsolation:
 class TestReActContextPropagation:
 
     def test_react_state_has_session_id_field(self):
-        from app.shared.agents.react_loop import ReActState
+        from lia_agents_core.react_loop import ReActState
         fields = ReActState.model_fields if hasattr(ReActState, "model_fields") else {}
         assert "session_id" in fields
 
     def test_react_config_is_pydantic_model(self):
-        from app.shared.agents.react_loop import ReActConfig
+        from lia_agents_core.react_loop import ReActConfig
         from pydantic import BaseModel
         assert issubclass(ReActConfig, BaseModel)
 

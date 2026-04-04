@@ -12,7 +12,7 @@ from uuid import uuid4
 import logging
 
 from app.domains.job_management.agents.job_wizard_graph import job_wizard_graph
-from app.shared.agents.state_machine import (
+from lia_agents_core.state_machine import (
     JobWizardState,
     WizardStage,
     create_initial_state,
@@ -626,7 +626,7 @@ async def react_orchestrate(
     )
 
     try:
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
         from app.domains.job_management.agents.wizard_react_agent import (
             WizardReActAgent,
         )

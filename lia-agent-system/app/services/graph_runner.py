@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph, job_wizard_graph
-from app.shared.agents.state_machine import (
+from lia_agents_core.state_machine import (
     JobWizardState,
     WizardStage,
     create_initial_state,

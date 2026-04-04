@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../.."))
 
 def _make_agent_input(session_id: str = "sess-regression-001", company_id: str = "company-test"):
     """Cria AgentInput mínimo válido."""
-    from app.shared.agents.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput
     return AgentInput(
         message="Quero criar uma nova vaga de desenvolvedor",
         context={},
@@ -37,7 +37,7 @@ def _make_agent_input(session_id: str = "sess-regression-001", company_id: str =
 
 def _make_agent_output(session_id: str = "sess-regression-001", company_id: str = "company-test") -> Any:
     """Cria AgentOutput mock válido."""
-    from app.shared.agents.agent_interface import AgentOutput
+    from lia_agents_core.agent_interface import AgentOutput
     return AgentOutput(
         message="Resposta mock do agente LangGraph nativo.",
         actions=[],
@@ -98,7 +98,7 @@ class TestReActAgentsLangGraphNative:
     @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
     async def test_process_returns_valid_agent_output(self, module_path, class_name):
         """process() retorna AgentOutput com campos obrigatórios."""
-        from app.shared.agents.agent_interface import AgentOutput
+        from lia_agents_core.agent_interface import AgentOutput
         import importlib
         mod = importlib.import_module(module_path)
         AgentClass = getattr(mod, class_name)

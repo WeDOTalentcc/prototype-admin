@@ -234,7 +234,7 @@ class EnhancedAgentMixin:
         Returns True if published, False on failure (fail-open).
         """
         try:
-            from app.shared.agents.agent_bus import agent_bus
+            from lia_agents_core.agent_bus import agent_bus
             return await agent_bus.publish(
                 from_agent=self._enhanced_domain,
                 to_agent=to_agent,

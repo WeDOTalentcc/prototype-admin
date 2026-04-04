@@ -66,7 +66,7 @@ class TestSourcingHITL:
     """SourcingReActAgent must request HITL approval for outreach sends."""
 
     def _make_input(self, message: str, stage: str, hitl_approved: bool = False):
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
         return AgentInput(
             message=message,
             session_id="test-session-src",
@@ -190,7 +190,7 @@ class TestCommunicationHITL:
     """CommunicationReActAgent must request HITL for sensitive message types."""
 
     def _make_input(self, message_type: str, hitl_approved: bool = False):
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
         return AgentInput(
             message="Enviar mensagem de contato inicial",
             session_id="test-session-comm",
@@ -330,7 +330,7 @@ class TestCommunicationLangGraphAudit:
     @pytest.mark.asyncio
     async def test_langgraph_override_calls_audit(self):
         from app.domains.communication.agents.communication_react_agent import CommunicationReActAgent
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
 
         agent = CommunicationReActAgent()
         inp = AgentInput(
@@ -346,7 +346,7 @@ class TestCommunicationLangGraphAudit:
         mock_output.confidence = 0.9
 
         with (
-            patch("app.shared.agents.langgraph_react_base.LangGraphReActBase._process_langgraph",
+            patch("lia_agents_core.langgraph_react_base.LangGraphReActBase._process_langgraph",
                   new_callable=AsyncMock, return_value=mock_output),
             patch("app.shared.compliance.audit_service.audit_service") as mock_audit,
         ):
@@ -363,7 +363,7 @@ class TestCommunicationLangGraphAudit:
     async def test_langgraph_override_audit_fail_safe(self):
         """Audit failure must not break the langgraph execution."""
         from app.domains.communication.agents.communication_react_agent import CommunicationReActAgent
-        from app.shared.agents.agent_interface import AgentInput
+        from lia_agents_core.agent_interface import AgentInput
 
         agent = CommunicationReActAgent()
         inp = AgentInput(
@@ -377,7 +377,7 @@ class TestCommunicationLangGraphAudit:
         mock_output = MagicMock()
 
         with (
-            patch("app.shared.agents.langgraph_react_base.LangGraphReActBase._process_langgraph",
+            patch("lia_agents_core.langgraph_react_base.LangGraphReActBase._process_langgraph",
                   new_callable=AsyncMock, return_value=mock_output),
             patch("app.shared.compliance.audit_service.audit_service") as mock_audit,
         ):

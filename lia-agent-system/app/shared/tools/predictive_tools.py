@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
-from app.shared.agents.react_loop import ToolDefinition
+from lia_agents_core.react_loop import ToolDefinition
 
 logger = logging.getLogger(__name__)
 

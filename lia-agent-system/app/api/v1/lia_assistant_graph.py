@@ -18,7 +18,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.services.graph_runner import graph_runner_service
-from app.shared.agents.state_machine import WizardStage
+from lia_agents_core.state_machine import WizardStage
 from app.domains.recruiter_assistant.services.wizard_analytics_service import (
     wizard_analytics,
     detect_wizard_analytics_command,
