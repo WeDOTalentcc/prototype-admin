@@ -101,6 +101,14 @@ def get_orchestrator() -> Orchestrator:
     return orchestrator
 
 
+def get_main_orchestrator():
+    """Dependency to get MainOrchestrator (consolidated entry-point)."""
+    from app.orchestrator.main_orchestrator import MainOrchestrator
+    if orchestrator is None:
+        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
+    return MainOrchestrator(orchestrator)
+
+
 def initialize_orchestrator(llm_service: LLMService, db_service=None):
     """Initialize global orchestrator instance."""
     global orchestrator

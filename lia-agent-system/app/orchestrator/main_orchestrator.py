@@ -1,20 +1,21 @@
 """
 MainOrchestrator — entry point único para todas as mensagens da LIA.
 
-Consolida a lógica que hoje está espalhada em:
+Pipeline unificado (eliminando a dupla delegação MainOrchestrator → Orchestrator):
+
+  UniversalContext
+    → FairnessGuard (pré-check bloqueio + soft warnings)
+    → TenantContext enrichment
+    → Phase 0: PendingAction (multi-turn / confirmação)
+    → Phase 1: ActionExecutor (ações fechadas detectadas por intent)
+    → Phase 2: ConversationMemory + CascadedRouter → DomainWorkflow → ReAct Agent
+
+Consolida a lógica que antes estava espalhada em:
 - orchestrated_talent_chat.py (500 linhas, 7 fases)
 - orchestrated_job_chat.py
 - pipeline_orchestrator.py
 - agent_chat_ws.py
-
-Fluxo unificado:
-  UniversalContext
-    → Phase 0: PendingAction (multi-turn / confirmação)
-    → Phase 1: ActionExecutor (ações fechadas detectadas por intent)
-    → Phase 2: Orchestrator.process_request_with_memory()
-               → CascadedRouter (6 tiers)
-               → DomainWorkflow (PRE_CHECK → ... → POST_CHECK + FairnessGuard)
-               → ReAct Agent (execute step)
+- Orchestrator.process_request_with_memory() (intermediário eliminado)
 """
 from __future__ import annotations
 
@@ -67,14 +68,14 @@ class ChatResponse(BaseModel):
 
     @classmethod
     def from_orchestrator_result(cls, result: Dict[str, Any], conv_id: str) -> "ChatResponse":
-        """Converte o dict retornado por Orchestrator.process_request_with_memory()."""
+        """Converte o dict retornado por Orchestrator.process_request()."""
         # Se o resultado tem score_breakdown, incluir em structured_data
         _structured = result.get("structured_data", result.get("data")) or {}
         if result.get("score_breakdown"):
             _structured["score_breakdown"] = result["score_breakdown"]
         return cls(
             success=result.get("success", True),
-            content=result.get("response", result.get("content", "")),
+            content=result.get("response", result.get("message", result.get("content", ""))),
             agent_used=result.get("agent_used", result.get("domain_id", "orchestrator")),
             agents_consulted=result.get("agents_consulted", []),
             intent_detected=result.get("intent_detected", result.get("intent", "general")),
@@ -120,9 +121,13 @@ class ChatResponse(BaseModel):
 
 class MainOrchestrator:
     """
-    Entry point único para todas as mensagens da LIA.
-    Recebe UniversalContext (normalizado pelo ContextAdapter) e processa
-    através das fases consolidadas.
+    Entry point único consolidado para todas as mensagens da LIA.
+
+    Recebe UniversalContext (normalizado pelo ContextAdapter) e processa através
+    do pipeline unificado, sem delegar para Orchestrator.process_request_with_memory
+    como camada intermediária. O Orchestrator permanece como motor de roteamento
+    e execução de domínio, mas a gestão de memória e o fluxo de fases são
+    controlados aqui.
     """
 
     def __init__(self, orchestrator: Any) -> None:
@@ -377,7 +382,7 @@ class MainOrchestrator:
         return None
 
     # ------------------------------------------------------------------
-    # Phase 2 — Orchestrator completo
+    # Phase 2 — Pipeline consolidado (sem delegação intermediária)
     # ------------------------------------------------------------------
 
     async def _process_via_orchestrator(
@@ -387,25 +392,100 @@ class MainOrchestrator:
         db: Any,
         streaming_callback: Optional[Callable],
     ) -> ChatResponse:
+        """
+        Pipeline consolidado: ConversationMemory → CascadedRouter → DomainWorkflow.
+
+        Elimina a delegação intermediária para Orchestrator.process_request_with_memory,
+        inlining a gestão de memória diretamente aqui enquanto usa o Orchestrator
+        somente para process_request (roteamento + execução de domínio).
+        """
+        from app.core.config import settings
+        from app.services.conversation_memory import conversation_memory
+
         orchestrator_context = ctx.to_orchestrator_context()
         if streaming_callback:
             orchestrator_context["streaming_callback"] = streaming_callback
 
-        result = await self._orchestrator.process_request_with_memory(
-            db=db,
+        # ── Memória de conversa (inlined de Orchestrator.process_request_with_memory) ──
+        try:
+            if conv_id:
+                conv = await conversation_memory.get_conversation(
+                    db=db, conversation_id=conv_id, include_messages=True
+                )
+                if not conv:
+                    conv = await conversation_memory.get_or_create_conversation(
+                        db=db,
+                        user_id=ctx.user_id,
+                        context_type=ctx.context_type,
+                        context_id=ctx.entity_id,
+                    )
+                    conv_id = str(conv.id)
+            else:
+                conv = await conversation_memory.get_or_create_conversation(
+                    db=db,
+                    user_id=ctx.user_id,
+                    context_type=ctx.context_type,
+                    context_id=ctx.entity_id,
+                )
+                conv_id = str(conv.id)
+
+            await conversation_memory.add_message(
+                db=db, conversation_id=conv_id, role="user", content=ctx.message
+            )
+            llm_ctx = await conversation_memory.get_context_for_llm(
+                db=db, conversation_id=conv_id, max_messages=20
+            )
+            orchestrator_context.update({
+                "conversation_history": llm_ctx.get("messages", []),
+                "conversation_summary": llm_ctx.get("summary"),
+                "context_type": ctx.context_type,
+                "context_id": ctx.entity_id,
+            })
+        except Exception as _mem_exc:
+            logger.debug("[MainOrchestrator] ConversationMemory setup skipped: %s", _mem_exc)
+            conv = None
+
+        # ── Roteamento + execução de domínio via Orchestrator.process_request ──
+        result = await self._orchestrator.process_request(
             user_id=ctx.user_id,
             message=ctx.message,
             conversation_id=conv_id,
-            context_type=ctx.context_type,
-            context_id=ctx.entity_id,
             context=orchestrator_context,
         )
 
-        # Persiste lista completa de candidatos no Redis (TTL 30min) para
-        # resolução posicional na próxima mensagem ("e o terceiro?")
+        # ── Persistir resposta na memória + commit ──
+        try:
+            if result.get("success") and conv is not None:
+                await conversation_memory.add_message(
+                    db=db,
+                    conversation_id=conv_id,
+                    role="assistant",
+                    content=result.get("message", result.get("content", "")),
+                    intent=result.get("intent"),
+                )
+                if (
+                    getattr(conv, "message_count", None)
+                    and conv.message_count % settings.ROUTER_SUMMARY_EVERY_N_MESSAGES == 0
+                ):
+                    try:
+                        await conversation_memory.update_summary(
+                            db=db,
+                            conversation_id=conv_id,
+                            llm_service=self._orchestrator.llm_service,
+                        )
+                    except Exception:
+                        pass
+            await db.commit()
+        except Exception as _persist_exc:
+            logger.debug("[MainOrchestrator] Memory persist skipped: %s", _persist_exc)
+
+        result.update({"conversation_id": conv_id})
+
+        # ── Persiste lista de candidatos no Redis (TTL 30min) ──
+        _structured = result.get("structured_data") or {}
         candidates_in_result = (
             result.get("candidates")
-            or result.get("structured_data", {}).get("candidates") if isinstance(result.get("structured_data"), dict) else None
+            or (_structured.get("candidates") if isinstance(_structured, dict) else None)
             or []
         )
         if candidates_in_result:

@@ -846,6 +846,36 @@ class ActionExecutorService:
         domain_id = config["domain_id"]
         action_id = config["action_id"]
 
+        # Delegate to specialized action handler modules
+        try:
+            from app.orchestrator.action_handlers.communication_actions import execute_communication_action
+            from app.orchestrator.action_handlers.candidate_actions import execute_candidate_action
+            from app.orchestrator.action_handlers.job_actions import execute_job_action
+            from app.orchestrator.action_handlers.pipeline_actions import execute_pipeline_action
+
+            _COMMUNICATION_ACTIONS = {"send_email", "schedule_interview", "create_generic_event"}
+            _CANDIDATE_ACTIONS = {"move_candidate", "update_candidate_field", "start_screening", "analyze_profile"}
+            _JOB_ACTIONS = {"pause_job", "close_job", "duplicate_job", "reopen_job"}
+            _PIPELINE_ACTIONS = {"create_task", "create_note", "generate_daily_briefing"}
+
+            handler_result = None
+            if action_id in _COMMUNICATION_ACTIONS:
+                handler_result = await execute_communication_action(action_id, params, context)
+            elif action_id in _CANDIDATE_ACTIONS:
+                handler_result = await execute_candidate_action(action_id, params, context)
+            elif action_id in _JOB_ACTIONS:
+                handler_result = await execute_job_action(action_id, params, context)
+            elif action_id in _PIPELINE_ACTIONS:
+                handler_result = await execute_pipeline_action(action_id, params, context)
+
+            if handler_result is not None:
+                if handler_result.status not in ("error",):
+                    self.execution_count += 1
+                return handler_result
+        except Exception as _handler_exc:
+            logger.warning(f"Action handler delegation failed for {action_id}: {_handler_exc}")
+
+        # Legacy inline fallback below (kept for backward compat with unknown action_ids)
         if action_id == "send_email":
             try:
                 tenant_id = context.get("tenant_id", "default") if context else "default"

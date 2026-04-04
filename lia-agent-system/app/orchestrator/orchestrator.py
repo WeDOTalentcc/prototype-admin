@@ -77,13 +77,10 @@ class Orchestrator:
         logger.info("Orchestrator initialized with CascadedRouter + DomainWorkflow")
 
     def _init_cascaded_router(self):
-        try:
-            from .intent_router import IntentRouter
-            llm_fallback = IntentRouter(self.llm_service)
-        except Exception:
-            llm_fallback = None
+        # IntentRouter (v2.2 legacy) removed — LLM Cascade (Haiku→Sonnet→Opus)
+        # covers all routing paths via CascadedRouter Tier 5.
         self._cascaded_router = CascadedRouter(
-            intent_router=llm_fallback, domain_registry=self._domain_registry,
+            intent_router=None, domain_registry=self._domain_registry,
         )
 
     def _initialize_tools(self) -> None:
