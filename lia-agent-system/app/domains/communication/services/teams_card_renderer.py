@@ -25,7 +25,7 @@ class TeamsCardRenderer:
     Provides the same richness as the web UI but in card format.
     """
 
-    def render(self, result: Dict[str, Any], source_text: str = "") -> Optional[Dict[str, Any]]:
+    def render(self, result: Dict[str, Any], source_text: str = "", deep_link_path: str = "") -> Optional[Dict[str, Any]]:
         """
         Main entry point. Returns Adaptive Card JSON or None for plain text.
         """
@@ -50,7 +50,7 @@ class TeamsCardRenderer:
             # Default: rich text card (better than plain text)
             message = result.get("message") or result.get("response") or result.get("content", "")
             if message:
-                return self._render_text_card(message, result.get("suggested_prompts") or result.get("next_actions") or [])
+                return self._render_text_card(message, result.get("suggested_prompts") or result.get("next_actions") or [], deep_link_path=deep_link_path)
 
             return None
 

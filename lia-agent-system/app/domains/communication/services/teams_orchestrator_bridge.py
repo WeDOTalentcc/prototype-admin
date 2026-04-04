@@ -9,6 +9,47 @@ from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
+# ------------------------------------------------------------------ #
+# Smart Routing — intents that require the full platform (browser URL)
+# ------------------------------------------------------------------ #
+_PLATFORM_ROUTES: list[tuple[list[str], str]] = [
+    # Job creation
+    (["criar vaga", "nova vaga", "abrir vaga", "criar uma vaga", "new job", "criar job",
+      "cadastrar vaga", "adicionar vaga", "job description", "criar jd"],
+     "/jobs/new"),
+    # Job editing
+    (["editar vaga", "alterar vaga", "modificar vaga", "atualizar vaga", "edit job"],
+     "/jobs"),
+    # Pipeline / stages
+    (["editar pipeline", "configurar pipeline", "configurar etapas", "etapas do funil",
+      "editar funil", "mudar etapas", "criar etapa", "nova etapa"],
+     "/configuracoes/pipeline"),
+    # General settings
+    (["configurações", "configuracoes", "acessar configurações", "abrir configurações",
+      "ir para configurações", "settings"],
+     "/configuracoes"),
+    # Bulk operations
+    (["exportar candidatos", "exportar vagas", "baixar relatório", "download relatório"],
+     "/candidatos"),
+    # Integrations
+    (["integrar", "configurar integração", "webhook", "api key", "conectar sistema"],
+     "/configuracoes/integracoes"),
+]
+
+
+def _detect_platform_route(text: str) -> str:
+    """
+    Returns a platform deep-link path if the message contains a platform-required intent.
+    Returns empty string if the request can be handled in chat.
+    """
+    lowered = text.lower()
+    for keywords, path in _PLATFORM_ROUTES:
+        if any(kw in lowered for kw in keywords):
+            return path
+    return ""
+
+
+
 
 class TeamsOrchestratorBridge:
     """
@@ -57,6 +98,12 @@ class TeamsOrchestratorBridge:
                     "tenant_id": tenant_id,
                 },
             )
+            # Smart Routing: if the message requires a platform action, attach the
+            # deep_link_path so the card renderer adds an "Abrir na plataforma →" button.
+            deep_link = _detect_platform_route(text)
+            if deep_link:
+                result["_deep_link_path"] = deep_link
+                logger.info(f"[TeamsOrchestratorBridge] Smart routing → {deep_link} for: {text[:60]}")
             return result
         except Exception as e:
             logger.error(f"[TeamsOrchestratorBridge] Error: {e}", exc_info=True)

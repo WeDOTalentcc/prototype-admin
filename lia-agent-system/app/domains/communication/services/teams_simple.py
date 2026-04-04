@@ -143,7 +143,8 @@ class SimpleTeamsBot:
             logger.info(f"[Teams] Message from {from_user.get('name')}: {text[:80]}")
 
             result = await teams_orchestrator_bridge.process_message(activity)
-            card = teams_card_renderer.render(result, source_text=text)
+            deep_link = result.pop("_deep_link_path", "")
+            card = teams_card_renderer.render(result, source_text=text, deep_link_path=deep_link)
 
             if card:
                 return {"type": "card", "card": card}
