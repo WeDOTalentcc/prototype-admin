@@ -1,9 +1,6 @@
 "use client"
 
-
 import { CURRENCY_SYMBOL } from "@/lib/pricing"
-"use client"
-
 import React, { useState } from "react"
 import type { ComponentType, CSSProperties } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import {  DEMO_VALUES , formatBRL } from "@/lib/pricing"
+import {  DEMO_VALUES , formatBRL, formatBRLCompact } from "@/lib/pricing"
 import {
   Users,
   Building,
@@ -60,13 +60,7 @@ const quickActions: QuickAction[] = [
 ]
 
 function formatCurrency(value: number): string {
-  if (value >= 1000000) {
-    return `${formatBRL(value / 1000000)}M`
-  }
-  if (value >= 1000) {
-    return `${formatBRL(value / 1000)}k`
-  }
-  return `${formatBRL(value)}`
+  return formatBRLCompact(value)
 }
 
 function formatDate(dateString?: string): string {
