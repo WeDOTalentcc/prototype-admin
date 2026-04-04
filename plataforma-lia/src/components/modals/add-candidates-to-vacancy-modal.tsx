@@ -33,74 +33,6 @@ interface VacancyDisplay {
   recruiter_email?: string
 }
 
-const mockVacancies: VacancyDisplay[] = [
-  {
-    id: 'vacancy-1',
-    title: 'UX Designer Sênior',
-    department: 'Design',
-    location: 'São Paulo, SP',
-    status: 'open',
-    priority: 'alta',
-    candidates_count: 15,
-    recruiter_name: 'Ana Silva',
-    recruiter_email: 'ana.silva@empresa.com'
-  },
-  {
-    id: 'vacancy-2',
-    title: 'Tech Lead Mobile',
-    department: 'Tecnologia',
-    location: 'Remoto',
-    status: 'open',
-    priority: 'alta',
-    candidates_count: 8,
-    recruiter_name: 'Ana Silva',
-    recruiter_email: 'ana.silva@empresa.com'
-  },
-  {
-    id: 'vacancy-3',
-    title: 'Product Manager',
-    department: 'Produto',
-    location: 'Rio de Janeiro, RJ',
-    status: 'open',
-    priority: 'media',
-    candidates_count: 12,
-    recruiter_name: 'Carlos Mendes',
-    recruiter_email: 'carlos.mendes@empresa.com'
-  },
-  {
-    id: 'vacancy-4',
-    title: 'Frontend Developer',
-    department: 'Tecnologia',
-    location: 'São Paulo, SP',
-    status: 'open',
-    priority: 'alta',
-    candidates_count: 20,
-    recruiter_name: 'Ana Silva',
-    recruiter_email: 'ana.silva@empresa.com'
-  },
-  {
-    id: 'vacancy-5',
-    title: 'Data Analyst',
-    department: 'Dados',
-    location: 'Híbrido - SP',
-    status: 'open',
-    priority: 'media',
-    candidates_count: 5,
-    recruiter_name: 'Roberto Costa',
-    recruiter_email: 'roberto.costa@empresa.com'
-  },
-  {
-    id: 'vacancy-6',
-    title: 'Backend Developer Python',
-    department: 'Tecnologia',
-    location: 'Remoto',
-    status: 'open',
-    priority: 'baixa',
-    candidates_count: 18,
-    recruiter_name: 'Ana Silva',
-    recruiter_email: 'ana.silva@empresa.com'
-  }
-]
 
 function mapApiVacancyToDisplay(vacancy: JobVacancy): VacancyDisplay {
   return {
@@ -203,10 +135,11 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
         const mapped = response.items.map(mapApiVacancyToDisplay)
         setVacancies(mapped)
       } else {
-        setVacancies(mockVacancies)
+        setVacancies([])
       }
     } catch (error) {
-      setVacancies(mockVacancies)
+      setLoadError("Não foi possível carregar as vagas. Tente novamente.")
+      setVacancies([])
     } finally {
       setIsLoading(false)
     }

@@ -37,24 +37,16 @@ export async function POST(request: NextRequest) {
       }
 
     } catch (backendError) {
+      return NextResponse.json(
+        { success: false, error: "Backend service unavailable. Please try again later." },
+        { status: 503 }
+      )
     }
 
-    const mockAnalysis = {
-      success: true,
-      filename: file.name,
-      extractedText: "Texto extraído do documento para análise...",
-      keywords: ["Python", "AWS", "Data Engineer", "SQL", "Spark"],
-      summary: "Documento analisado com sucesso",
-      entities: {
-        skills: ["Python", "AWS", "SQL", "Spark", "Airflow"],
-        job_titles: ["Data Engineer", "Software Engineer"],
-        companies: [],
-        locations: ["São Paulo"],
-        experience_years: 5,
-      },
-    }
-
-    return NextResponse.json(mockAnalysis)
+    return NextResponse.json(
+      { success: false, error: "Failed to analyze file" },
+      { status: 502 }
+    )
   } catch (error) {
     return NextResponse.json(
       { success: false, error: "Failed to analyze file" },

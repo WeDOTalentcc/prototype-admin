@@ -32,83 +32,10 @@ interface CommandTemplate {
   estimatedTime: number // segundos economizados
 }
 
-// Mock de templates iniciais
-const mockTemplates: CommandTemplate[] = [
-  {
-    id: 'template-1',
-    name: 'Devs React Sênior SP',
-    description: 'Busca desenvolvedores React sênior em São Paulo com 5+ anos de experiência',
-    category: 'search',
-    command: 'Buscar desenvolvedores React sênior em São Paulo com 5+ anos de experiência e inglês fluente',
-    filters: {
-      skills: ['React', 'TypeScript', 'Node.js'],
-      seniority: ['Sênior'],
-      locations: ['São Paulo, SP'],
-      years_experience: ['6-10 anos', '10+ anos'],
-      spoken_languages: ['Inglês']
-    },
-    actions: ['filter_react', 'filter_senior_sp', 'filter_english'],
-    createdBy: 'Ana Silva',
-    isShared: true,
-    usageCount: 47,
-    successRate: 92,
-    createdAt: new Date('2024-12-01'),
-    updatedAt: new Date('2024-12-15'),
-    tags: ['frontend', 'react', 'senior'],
-    estimatedTime: 180
-  },
-  {
-    id: 'template-2',
-    name: 'Convite Padrão Frontend',
-    description: 'Email personalizado para desenvolvedores frontend com agendamento automático',
-    category: 'communication',
-    command: 'Enviar convite personalizado para vaga de Frontend Developer com agendamento para próxima semana',
-    actions: ['send_individual_email', 'schedule_interview', 'add_priority'],
-    createdBy: 'Carlos Mendes',
-    isShared: false,
-    usageCount: 23,
-    successRate: 87,
-    createdAt: new Date('2024-11-20'),
-    updatedAt: new Date('2024-12-10'),
-    tags: ['email', 'frontend', 'agendamento'],
-    estimatedTime: 300
-  },
-  {
-    id: 'template-3',
-    name: 'Pipeline UX Designer',
-    description: 'Workflow completo para candidatos UX: portfolio → teste → entrevista',
-    category: 'workflow',
-    command: 'Candidatos UX com portfolio, enviar teste de usabilidade e agendar apresentação',
-    actions: ['filter_design', 'send_test', 'schedule_interview', 'create_shortlist'],
-    createdBy: 'Maria Santos',
-    isShared: true,
-    usageCount: 15,
-    successRate: 94,
-    createdAt: new Date('2024-11-15'),
-    updatedAt: new Date('2024-12-05'),
-    tags: ['ux', 'design', 'workflow'],
-    estimatedTime: 420
-  },
-  {
-    id: 'template-4',
-    name: 'Relatório Mensal Tech',
-    description: 'Análise completa de candidatos tech do mês com métricas de conversão',
-    category: 'analysis',
-    command: 'Gerar relatório mensal de candidatos tech com métricas de conversão e insights',
-    actions: ['group_analysis', 'export_candidates', 'generate_report'],
-    createdBy: 'Ana Silva',
-    isShared: true,
-    usageCount: 8,
-    successRate: 100,
-    createdAt: new Date('2024-10-30'),
-    updatedAt: new Date('2024-12-01'),
-    tags: ['relatório', 'tech', 'análise'],
-    estimatedTime: 600
-  }
-]
+const EMPTY_TEMPLATES: CommandTemplate[] = []
 
 export function TemplatesPage() {
-  const [templates, setTemplates] = useState<CommandTemplate[]>(mockTemplates)
+  const [templates, setTemplates] = useState<CommandTemplate[]>(EMPTY_TEMPLATES)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [sortBy, setSortBy] = useState<'usage' | 'recent' | 'success'>('usage')

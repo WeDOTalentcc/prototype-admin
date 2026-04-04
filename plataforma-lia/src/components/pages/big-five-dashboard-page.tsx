@@ -41,8 +41,7 @@ ChartJS.register(
   Filler
 )
 
-// Dados mock para o dashboard
-const mockCompanyData = {
+const PLACEHOLDER_COMPANY_DATA = {
   totalEmployees: 247,
   totalCandidates: 1834,
   hiredLastMonth: 23,
@@ -120,11 +119,11 @@ export function BigFiveDashboardPage() {
     labels: ['Abertura', 'Conscienciosidade', 'Extroversão', 'Amabilidade', 'Estabilidade'],
     datasets: [{
       data: [
-        mockCompanyData.bigFiveDistribution.openness.avg,
-        mockCompanyData.bigFiveDistribution.conscientiousness.avg,
-        mockCompanyData.bigFiveDistribution.extraversion.avg,
-        mockCompanyData.bigFiveDistribution.agreeableness.avg,
-        100 - mockCompanyData.bigFiveDistribution.neuroticism.avg
+        PLACEHOLDER_COMPANY_DATA.bigFiveDistribution.openness.avg,
+        PLACEHOLDER_COMPANY_DATA.bigFiveDistribution.conscientiousness.avg,
+        PLACEHOLDER_COMPANY_DATA.bigFiveDistribution.extraversion.avg,
+        PLACEHOLDER_COMPANY_DATA.bigFiveDistribution.agreeableness.avg,
+        100 - PLACEHOLDER_COMPANY_DATA.bigFiveDistribution.neuroticism.avg
       ],
       backgroundColor: COLORS,
       borderWidth: 2,
@@ -492,7 +491,7 @@ export function BigFiveDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-lia-text-secondary">Tempo p/ Contratar</p>
-                <p className="text-2xl font-bold text-lia-text-primary">{mockCompanyData.averageTimeToHire}d</p>
+                <p className="text-2xl font-bold text-lia-text-primary">{PLACEHOLDER_COMPANY_DATA.averageTimeToHire}d</p>
                 <p className="text-xs text-status-success flex items-center gap-1">
                   <ArrowDownRight className="w-3 h-3" />
                   -23% vs anterior

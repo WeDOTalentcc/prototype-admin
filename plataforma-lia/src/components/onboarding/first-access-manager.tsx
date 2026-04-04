@@ -50,7 +50,6 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
     acceptTerms: false
   })
 
-  // Simular validação do token
   useEffect(() => {
     if (token) {
       validateToken(token)
@@ -64,36 +63,29 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
     setIsLoading(true)
 
     try {
-      // Simular chamada API para validar token
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const response = await fetch(`/api/backend-proxy/onboarding/validate-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tokenValue }),
+      })
 
-      // Mock data - em produção viria da API
-      const mockData: FirstAccessData = {
-        token: tokenValue,
-        companyName: 'Sodexo Enterprise',
-        contactName: 'Contato Principal',
-        contactEmail: 'contato@empresa.com',
-        contactPhone: '+55 11 0000-0000',
-        companyData: {
-          razaoSocial: 'Sodexo do Brasil Comercial Ltda',
-          endereco: 'Av. Paulista, 1000 - São Paulo, SP',
-          telefone: '+55 11 3000-0000'
-        },
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        createdAt: new Date().toISOString()
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Token inválido ou expirado')
       }
 
-      // Verificar se token não expirou
-      if (new Date(mockData.expiresAt) < new Date()) {
+      const data: FirstAccessData = await response.json()
+
+      if (new Date(data.expiresAt) < new Date()) {
         throw new Error('Token expirado')
       }
 
-      setAccessData(mockData)
+      setAccessData(data)
       setUserData(prev => ({
         ...prev,
-        name: mockData.contactName,
-        email: mockData.contactEmail,
-        phone: mockData.contactPhone || ''
+        name: data.contactName,
+        email: data.contactEmail,
+        phone: data.contactPhone || ''
       }))
       setStep('register')
 
@@ -111,20 +103,23 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
     setIsLoading(true)
 
     try {
-      // Simular registro do usuário
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const response = await fetch('/api/backend-proxy/onboarding/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...userData,
+          token: accessData?.token,
+          companyName: accessData?.companyName,
+        }),
+      })
 
-      const newUser = {
-        id: Date.now().toString(),
-        ...userData,
-        companyId: accessData?.token,
-        companyName: accessData?.companyName,
-        isFirstAccess: true,
-        permissions: ['admin', 'recruitment', 'users', 'settings'],
-        createdAt: new Date().toISOString()
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Erro ao criar conta')
       }
 
-      // Salvar flag de primeiro acesso
+      const newUser = await response.json()
+
       localStorage.setItem('lia_first_access', 'true')
       localStorage.setItem('lia_user_data', JSON.stringify(newUser))
 

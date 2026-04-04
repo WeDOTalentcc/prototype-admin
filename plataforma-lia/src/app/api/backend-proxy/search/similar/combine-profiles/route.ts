@@ -57,52 +57,20 @@ export async function POST(request: NextRequest) {
       }
       
     } catch (backendError) {
+      return NextResponse.json(
+        { error: "Backend service unavailable. Please try again later." },
+        { status: 503 }
+      )
     }
-    
-    const mockResponse = generateMockCombinedProfile(urls, cvFiles.length)
-    return NextResponse.json(mockResponse)
+
+    return NextResponse.json(
+      { error: "Failed to combine profiles" },
+      { status: 502 }
+    )
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to process profiles" },
       { status: 500 }
     )
-  }
-}
-
-function generateMockCombinedProfile(urls: string[], cvCount: number) {
-  const baseKeywords = [
-    "Sênior",
-    "Python",
-    "AWS",
-    "Data Engineer",
-    "Fintech",
-    "SQL",
-    "Spark",
-    "Inglês Avançado"
-  ]
-
-  const additionalKeywords = [
-    "Machine Learning",
-    "Docker",
-    "Kubernetes",
-    "PostgreSQL",
-    "ETL",
-    "Airflow"
-  ]
-
-  const sourceCount = urls.length + cvCount
-  const keywordCount = Math.min(5 + sourceCount * 2, baseKeywords.length + additionalKeywords.length)
-  const keywords = [...baseKeywords, ...additionalKeywords].slice(0, keywordCount)
-
-  return {
-    keywords,
-    title: "Data Engineer",
-    seniority: "Sênior",
-    skills_technical: ["Python", "SQL", "AWS", "Spark", "Airflow"],
-    skills_soft: ["Comunicação", "Trabalho em equipe"],
-    industries: ["Fintech", "Tecnologia"],
-    location: "São Paulo",
-    summary: `Perfil combinado baseado em ${sourceCount} fonte(s): profissional sênior com forte experiência em engenharia de dados e cloud.`,
-    source_count: sourceCount
   }
 }

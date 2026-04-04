@@ -24,5 +24,3 @@ export type {
   WorkHistoryEntry, 
   EducationEntry 
 } from "./mock/data-generators"
-
-export { mockJobData, mockCandidates } from "./mock/candidates"

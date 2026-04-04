@@ -18,7 +18,6 @@ import {
   getCompanyPipelineStages,
 } from "@/lib/recruitment-stages"
 import { type BulkActionType } from "@/components/ui/bulk-actions-bar"
-import { mockJobData } from "@/components/kanban/mock/candidates"
 import { useCompanyDefaults } from "@/hooks/use-company-defaults"
 import { usePipelineInheritance } from "@/hooks/use-pipeline-inheritance"
 import { useRecruitmentStages } from "@/hooks/use-recruitment-stages"
@@ -50,7 +49,15 @@ import { useKanbanTransitionHandlers } from "@/components/pages/job-kanban/hooks
 import { useKanbanNavigation } from "@/components/pages/job-kanban/hooks/useKanbanNavigation"
 import { toast } from "sonner"
 
-const jobData = mockJobData
+const EMPTY_JOB_FALLBACK: Record<string, unknown> = {
+  id: 0,
+  jobId: "",
+  title: "Vaga não carregada",
+  department: "",
+  location: "",
+  status: "Inativa",
+  funnel: { total: 0, screening: 0, interview: 0, final: 0, hired: 0 },
+}
 
 export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknown>; onBack?: () => void }) {
   const router = useRouter()
@@ -364,7 +371,7 @@ const { saveJobsState } = useNavigationPersistence()
   const getPaginatedCandidates = () => _getPaginatedCandidates(searchQuery)
 
   const [jobLocalOverrides, setJobLocalOverrides] = useState<Record<string, unknown>>({})
-  const currentJob = (job ? { ...job, ...jobLocalOverrides } : jobData) as Record<string, unknown>
+  const currentJob = (job ? { ...job, ...jobLocalOverrides } : EMPTY_JOB_FALLBACK) as Record<string, unknown>
 
   const [showJobEditor, setShowJobEditor] = useState(false)
   const [editingSection, setEditingSection] = useState<string | null>(null)
@@ -627,7 +634,7 @@ const { saveJobsState } = useNavigationPersistence()
     setShowReport,
     setCandidatesData,
     candidatesData,
-    jobDataId: jobData?.id,
+    jobDataId: currentJob?.id,
     openTransition,
   })
 
@@ -958,7 +965,7 @@ const { saveJobsState } = useNavigationPersistence()
     getDataRequestForCandidate,
     handleTableColumnResize,
     currentJob,
-    jobData,
+    jobData: currentJob,
     getFilteredAndSortedCandidates,
     calculateNotaLiaGeral,
     getStageDisplayName,
