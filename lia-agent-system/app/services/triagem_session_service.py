@@ -1,4 +1,5 @@
 import uuid
+import json
 import logging
 import random
 import base64
@@ -6,12 +7,23 @@ from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any, Tuple
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, text
 
 from app.models.triagem import TriagemSession, TriagemMessage
 from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
+
+
+_event_dispatcher_cache = None
+
+
+def _get_event_dispatcher():
+    global _event_dispatcher_cache
+    if _event_dispatcher_cache is None:
+        from app.services.event_dispatcher import event_dispatcher
+        _event_dispatcher_cache = event_dispatcher
+    return _event_dispatcher_cache
 
 
 async def _generate_tts_audio(text: str) -> Optional[str]:
@@ -35,33 +47,104 @@ async def _generate_tts_audio(text: str) -> Optional[str]:
         logger.warning(f"[Triagem] TTS generation failed: {exc}")
         return None
 
-WSI_BLOCKS = [
-    {"index": 0, "name": "Técnico", "block_type": "technical", "competency": "technical_skills", "questions": [
+WSI_BLOCKS_FALLBACK = [
+    {"index": 0, "name": "Abordagem Inicial", "block_type": "technical", "competency": "technical_skills", "questions": [
         "Para começar, gostaria de confirmar algumas informações. Você tem disponibilidade para início imediato ou em qual prazo?",
         "Qual sua pretensão salarial para esta posição?",
+    ]},
+    {"index": 1, "name": "Apresentação da Oportunidade", "block_type": "behavioral", "competency": "motivation", "questions": [
+        "O que te motivou a se candidatar para esta vaga?",
+        "O que você sabe sobre a nossa empresa?",
+    ]},
+    {"index": 2, "name": "Perguntas Padrão da Empresa", "block_type": "behavioral", "competency": "cultural_fit", "questions": [
+        "Descreva seu estilo de trabalho em equipe.",
+    ]},
+    {"index": 3, "name": "Competências Técnicas", "block_type": "technical", "competency": "technical_skills", "questions": [
         "Conte-me sobre sua experiência mais relevante para esta vaga. Quais tecnologias ou ferramentas você domina?",
         "Descreva um projeto técnico desafiador que você liderou ou participou. Qual foi seu papel e o resultado?",
     ]},
-    {"index": 1, "name": "Comportamental", "block_type": "behavioral", "competency": "interpersonal_skills", "questions": [
+    {"index": 4, "name": "Competências Comportamentais e Fit", "block_type": "behavioral", "competency": "interpersonal_skills", "questions": [
         "Me conte sobre uma situação em que você precisou lidar com um conflito no ambiente de trabalho. Como você agiu?",
         "Descreva um momento em que você recebeu um feedback difícil. Como reagiu e o que mudou?",
-    ]},
-    {"index": 2, "name": "Situacional", "block_type": "situational", "competency": "problem_solving", "questions": [
         "Imagine que você recebe uma demanda urgente de dois gestores diferentes ao mesmo tempo. Como você priorizaria?",
-        "Se você percebesse que um colega está cometendo um erro que pode impactar o projeto, como abordaria a situação?",
     ]},
-    {"index": 3, "name": "Autodeclaração", "block_type": "behavioral", "competency": "self_assessment", "questions": [
-        "Em uma escala de 1 a 5, como você avalia sua capacidade de trabalhar sob pressão?",
-        "Quais são seus três principais pontos fortes profissionais?",
-    ]},
-    {"index": 4, "name": "Motivação", "block_type": "behavioral", "competency": "motivation", "questions": [
-        "O que te motivou a se candidatar para esta vaga?",
+    {"index": 5, "name": "Resultado e Encerramento", "block_type": "behavioral", "competency": "self_assessment", "questions": [
         "Onde você se vê profissionalmente nos próximos 2-3 anos?",
-    ]},
-    {"index": 5, "name": "Encerramento", "block_type": "behavioral", "competency": "cultural_fit", "questions": [
         "Há algo mais que você gostaria de compartilhar sobre seu perfil ou experiência?",
     ]},
 ]
+
+WSI_BLOCKS = WSI_BLOCKS_FALLBACK
+
+
+def _build_wsi_blocks_from_question_set(questions_snapshot: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Build WSI blocks structure from a question set snapshot.
+    Maps questions to canonical WSI blocks (0-5) based on block_id or category.
+    Falls back to distributing by category if block_id is missing.
+    """
+    from app.domains.cv_screening.constants.wsi_constants import WSI_BLOCK_NAMES
+
+    block_map: Dict[int, List[str]] = {i: [] for i in range(6)}
+    block_meta: Dict[int, Dict[str, str]] = {
+        0: {"block_type": "behavioral", "competency": "initial_approach"},
+        1: {"block_type": "behavioral", "competency": "motivation"},
+        2: {"block_type": "behavioral", "competency": "cultural_fit"},
+        3: {"block_type": "technical", "competency": "technical_skills"},
+        4: {"block_type": "behavioral", "competency": "interpersonal_skills"},
+        5: {"block_type": "behavioral", "competency": "self_assessment"},
+    }
+
+    for q in questions_snapshot:
+        text = q.get("text", q.get("question", q.get("question_text", "")))
+        if not text:
+            continue
+
+        block_id = q.get("block_id")
+        if block_id is not None:
+            try:
+                bid = int(block_id)
+                if 0 <= bid <= 5:
+                    block_map[bid].append(text)
+                    continue
+            except (ValueError, TypeError):
+                pass
+
+        category = q.get("category", "").lower()
+        if category == "technical":
+            block_map[3].append(text)
+        elif category in ("behavioral", "situational", "contextual"):
+            block_map[4].append(text)
+        elif category == "company":
+            block_map[2].append(text)
+        else:
+            block_map[4].append(text)
+
+    blocks = []
+    for idx in range(6):
+        questions_for_block = block_map[idx]
+        if not questions_for_block and idx not in (0, 5):
+            continue
+        if not questions_for_block:
+            for fb in WSI_BLOCKS_FALLBACK:
+                if fb["index"] == idx:
+                    questions_for_block = fb["questions"]
+                    break
+
+        meta = block_meta[idx]
+        blocks.append({
+            "index": idx,
+            "name": WSI_BLOCK_NAMES.get(idx, f"Bloco {idx}"),
+            "block_type": meta["block_type"],
+            "competency": meta["competency"],
+            "questions": questions_for_block,
+        })
+
+    if not blocks:
+        logger.warning("[Triagem] Question set mapping produced empty blocks, using fallback")
+        return WSI_BLOCKS_FALLBACK
+
+    return blocks
 
 WELCOME_MESSAGE = (
     "Vou conduzir sua triagem para a vaga de {job_title} na {company_name}. "
@@ -101,20 +184,129 @@ PRE_COMPLETION_MESSAGE = (
 TOTAL_QUESTIONS = sum(len(b["questions"]) for b in WSI_BLOCKS)
 
 
-def _build_progress(current_block: int, questions_answered: int) -> Dict[str, Any]:
+def _build_progress(
+    current_block: int,
+    questions_answered: int,
+    blocks: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
+    active_blocks = blocks if blocks is not None else WSI_BLOCKS
+    total_questions = sum(len(b["questions"]) for b in active_blocks)
     block_name = "Concluído"
-    if current_block < len(WSI_BLOCKS):
-        block_name = WSI_BLOCKS[current_block]["name"]
-    remaining = max(0, TOTAL_QUESTIONS - questions_answered)
+    if current_block < len(active_blocks):
+        block_name = active_blocks[current_block]["name"]
+    remaining = max(0, total_questions - questions_answered)
     estimated_minutes = int(remaining * 1.5) if remaining > 0 else 0
     return {
         "current_block": current_block,
-        "total_blocks": len(WSI_BLOCKS),
+        "total_blocks": len(active_blocks),
         "block_name": block_name,
         "questions_answered": questions_answered,
-        "total_questions": TOTAL_QUESTIONS,
+        "total_questions": total_questions,
         "estimated_minutes_remaining": estimated_minutes,
     }
+
+
+async def _load_or_generate_blocks(
+    db: AsyncSession,
+    job_id: str,
+    job: Optional[Any] = None,
+) -> Tuple[List[Dict[str, Any]], Optional[str], Optional[str]]:
+    """
+    Load WSI blocks for a job from:
+    1. Active question set version (preferred)
+    2. wsi_service.generate_screening_questions() (fallback)
+    3. WSI_BLOCKS_FALLBACK hardcoded (emergency fallback)
+
+    Returns:
+        (blocks, wsi_question_set_id, wsi_question_set_version)
+    """
+    try:
+        from app.domains.cv_screening.services.screening_question_set_service import (
+            screening_question_set_service,
+        )
+        active_qs = await screening_question_set_service.get_active_version(db, job_id)
+        if active_qs and active_qs.questions_snapshot:
+            blocks = _build_wsi_blocks_from_question_set(active_qs.questions_snapshot)
+            if blocks:
+                logger.info(
+                    f"[Triagem] Loaded question set v{active_qs.version} "
+                    f"with {sum(len(b['questions']) for b in blocks)} questions for job {job_id}"
+                )
+                return blocks, str(active_qs.id), str(active_qs.version)
+            logger.warning(f"[Triagem] Question set for job {job_id} produced empty blocks, trying wsi_service")
+    except Exception as exc:
+        logger.warning(f"[Triagem] Could not load question set for job {job_id}: {exc}")
+
+    try:
+        from app.services.wsi_service import wsi_service, Competency
+        competencies = []
+        if job and getattr(job, "screening_config", None):
+            skills = job.screening_config.get("skills") or {}
+            for skill_name, skill_data in list(skills.items())[:10]:
+                comp_type = skill_data.get("type", "technical") if isinstance(skill_data, dict) else "technical"
+                competencies.append(Competency(
+                    name=skill_name,
+                    type=comp_type if comp_type in ("technical", "behavioral", "cultural") else "technical",
+                    weight=0.5,
+                    seniority_level=getattr(job, "seniority_level", "pleno") or "pleno",
+                ))
+        if not competencies:
+            competencies = [
+                Competency(name="Experiência Relevante", type="technical", weight=0.5, seniority_level="pleno"),
+                Competency(name="Comunicação", type="behavioral", weight=0.5, seniority_level="pleno"),
+            ]
+        seniority = getattr(job, "seniority_level", "pleno") or "pleno" if job else "pleno"
+        job_description = (job.description or "")[:1000] if job and job.description else ""
+        sc = getattr(job, "screening_config", None) or {} if job else {}
+        mode = sc.get("format", "compact")
+        generated_qs = await wsi_service.generate_screening_questions(
+            competencies=competencies,
+            mode=mode,
+            job_description=job_description,
+            seniority=seniority,
+        )
+        if generated_qs:
+            snapshot = [
+                {"text": q.question_text, "category": _map_question_type_to_category(q.question_type), "block_id": None, "weight": q.weight}
+                for q in generated_qs
+            ]
+            blocks = _build_wsi_blocks_from_question_set(snapshot)
+            if blocks:
+                logger.info(f"[Triagem] Generated {len(generated_qs)} questions via wsi_service for job {job_id}")
+                return blocks, None, None
+    except Exception as exc:
+        logger.warning(f"[Triagem] wsi_service question generation failed for job {job_id}: {exc}")
+
+    logger.warning(f"[Triagem] Using hardcoded fallback blocks for job {job_id}")
+    return WSI_BLOCKS_FALLBACK, None, None
+
+
+def _map_question_type_to_category(question_type: str) -> str:
+    mapping = {
+        "autodeclaration": "technical",
+        "situational": "behavioral",
+        "contextual": "behavioral",
+        "open": "technical",
+    }
+    return mapping.get(question_type, "behavioral")
+
+
+def _get_session_blocks(session: Any) -> List[Dict[str, Any]]:
+    """
+    Retrieve the WSI blocks for a session from its metadata_json cache.
+    Falls back to global WSI_BLOCKS if not cached.
+    """
+    meta = session.metadata_json or {}
+    cached_blocks = meta.get("wsi_blocks_cache")
+    if cached_blocks and isinstance(cached_blocks, list) and len(cached_blocks) > 0:
+        return cached_blocks
+    return WSI_BLOCKS_FALLBACK
+
+
+def _get_screening_config(session: Any) -> Dict[str, Any]:
+    """Get the screening_config stored in session metadata, or empty dict."""
+    meta = session.metadata_json or {}
+    return meta.get("screening_config", {}) or {}
 
 
 MAX_CONSECUTIVE_OFF_SCRIPT = 3
@@ -403,7 +595,7 @@ class TriagemSessionService:
                 candidate_name=session_data.get("candidate_name", "Candidato"),
                 job_title=session_data.get("job_title", "a vaga"),
                 company_name=session_data.get("company_name", "a empresa"),
-                total_blocks=len(WSI_BLOCKS),
+                total_blocks=session_data.get("total_blocks", len(WSI_BLOCKS_FALLBACK)),
             ),
             **job_info,
         }
@@ -464,6 +656,70 @@ class TriagemSessionService:
         expires_days: int = 7,
         voice_mode: bool = False,
     ) -> TriagemSession:
+        job = None
+        screening_config: Dict[str, Any] = {}
+        try:
+            q = select(JobVacancy).where(JobVacancy.job_id == job_id)
+            if company_id and hasattr(JobVacancy, "company_id"):
+                q = q.where(JobVacancy.company_id == company_id)
+            job_result = await db.execute(q)
+            job = job_result.scalar_one_or_none()
+            if not job:
+                try:
+                    q2 = select(JobVacancy).where(JobVacancy.id == uuid.UUID(job_id))
+                    if company_id and hasattr(JobVacancy, "company_id"):
+                        q2 = q2.where(JobVacancy.company_id == company_id)
+                    job_result2 = await db.execute(q2)
+                    job = job_result2.scalar_one_or_none()
+                except Exception:
+                    pass
+            if job:
+                screening_config = getattr(job, "screening_config", None) or {}
+        except Exception as exc:
+            logger.warning(f"[Triagem] Could not load job for session creation (job_id={job_id}): {exc}")
+
+        blocks, qs_id, qs_version = await _load_or_generate_blocks(db, job_id, job)
+        total_blocks = len(blocks)
+
+        settings = screening_config.get("settings") or {}
+        seniority_level = None
+        is_affirmative = False
+        affirmative_criteria = None
+        eliminatory_keywords: List[str] = []
+        if job:
+            seniority_level = getattr(job, "seniority_level", None)
+            is_affirmative = bool(getattr(job, "is_affirmative", False))
+            affirmative_criteria = getattr(job, "affirmative_criteria_primary", None)
+        eliminatory_questions = []
+        for q in (screening_config.get("eliminatory_questions") or []):
+            if isinstance(q, dict):
+                eliminatory_keywords.extend(
+                    str(k).lower() for k in (q.get("eliminatory_keywords") or []) if k
+                )
+                eliminatory_questions.append(q)
+        feedback_enabled = settings.get("feedback_enabled", True)
+        show_salary = settings.get("show_salary", False)
+        show_benefits = settings.get("show_benefits", False)
+
+        session_meta: Dict[str, Any] = {
+            "wsi_blocks_cache": blocks,
+            "wsi_question_set_id": qs_id,
+            "wsi_question_set_version": qs_version,
+            "screening_config": screening_config,
+            "seniority_level": seniority_level,
+            "is_affirmative": is_affirmative,
+            "affirmative_criteria": affirmative_criteria,
+            "eliminatory_keywords": eliminatory_keywords,
+            "eliminatory_questions": eliminatory_questions,
+            "feedback_enabled": feedback_enabled,
+            "show_salary": show_salary,
+            "show_benefits": show_benefits,
+        }
+        if not qs_id and not qs_version:
+            session_meta["question_source"] = "fallback"
+        else:
+            session_meta["question_source"] = "question_set"
+
         token = str(uuid.uuid4())
         session = TriagemSession(
             token=token,
@@ -477,11 +733,12 @@ class TriagemSessionService:
             company_logo_url=company_logo_url,
             status="invited",
             current_block=0,
-            total_blocks=len(WSI_BLOCKS),
+            total_blocks=total_blocks,
             invite_channel=invite_channel,
             voice_mode=voice_mode,
             expires_at=datetime.utcnow() + timedelta(days=expires_days),
             created_by=created_by,
+            metadata_json=session_meta,
         )
         db.add(session)
         await db.flush()
@@ -491,7 +748,7 @@ class TriagemSessionService:
             candidate_name=candidate_name or "candidato(a)",
             job_title=job_title or "a vaga",
             company_name=company_name or "a empresa",
-            total_blocks=len(WSI_BLOCKS),
+            total_blocks=total_blocks,
         )
         welcome_msg = TriagemMessage(
             session_id=session.id,
@@ -523,7 +780,8 @@ class TriagemSessionService:
 
         use_voice = voice_mode if voice_mode is not None else session.voice_mode
 
-        first_block = WSI_BLOCKS[0]
+        active_blocks = _get_session_blocks(session)
+        first_block = active_blocks[0]
         first_question = first_block["questions"][0]
         transition = f"Vamos começar pela etapa de **{first_block['name']}**.\n\n{first_question}"
 
@@ -537,7 +795,7 @@ class TriagemSessionService:
             content=transition,
             message_type="question",
             wsi_block=0,
-            wsi_question_id=f"block_0_q_0",
+            wsi_question_id="block_0_q_0",
             audio_base64=audio_b64,
         )
         db.add(lia_msg)
@@ -546,7 +804,7 @@ class TriagemSessionService:
         return {
             "session": session.to_dict(),
             "lia_response": lia_msg.to_dict(),
-            "progress": _build_progress(session.current_block, 0),
+            "progress": _build_progress(session.current_block, 0, active_blocks),
         }
 
     async def process_message(
@@ -614,11 +872,12 @@ class TriagemSessionService:
             )
         )
         answered_count = len(all_cand_result.scalars().all())
+        active_blocks = _get_session_blocks(session)
 
         return {
             "candidate_message": candidate_msg.to_dict(),
             "lia_response": lia_msg.to_dict(),
-            "progress": _build_progress(session.current_block, answered_count),
+            "progress": _build_progress(session.current_block, answered_count, active_blocks),
             "is_pre_completion": lia_response.get("is_pre_completion", False),
         }
 
@@ -636,11 +895,12 @@ class TriagemSessionService:
         candidate_msgs = msg_result.scalars().all()
         candidate_count = len(candidate_msgs)
 
+        active_blocks = _get_session_blocks(session)
         current_block_idx = session.current_block
-        if current_block_idx >= len(WSI_BLOCKS):
+        if current_block_idx >= len(active_blocks):
             return self._pre_completion_response(session, candidate_count)
 
-        current_block = WSI_BLOCKS[current_block_idx]
+        current_block = active_blocks[current_block_idx]
         questions = current_block["questions"]
         block_name = current_block["name"]
         block_type = current_block.get("block_type", "behavioral")
@@ -751,10 +1011,10 @@ class TriagemSessionService:
         session.current_block = next_block_idx
         await db.flush()
 
-        if next_block_idx >= len(WSI_BLOCKS):
+        if next_block_idx >= len(active_blocks):
             return self._pre_completion_response(session, candidate_count)
 
-        next_block = WSI_BLOCKS[next_block_idx]
+        next_block = active_blocks[next_block_idx]
         transition = random.choice(BLOCK_TRANSITION_MESSAGES).format(block_name=next_block["name"])
         first_question = next_block["questions"][0]
 
@@ -825,18 +1085,57 @@ class TriagemSessionService:
         )
         candidate_msgs = scored_msgs_result.scalars().all()
 
+        lia_msgs_result = await db.execute(
+            select(TriagemMessage).where(
+                and_(
+                    TriagemMessage.session_id == session.id,
+                    TriagemMessage.sender == "lia",
+                    TriagemMessage.message_type == "question",
+                )
+            ).order_by(TriagemMessage.created_at)
+        )
+        lia_question_msgs = lia_msgs_result.scalars().all()
+        lia_by_block: Dict[int, List[TriagemMessage]] = {}
+        for lm in lia_question_msgs:
+            bidx = lm.wsi_block if lm.wsi_block is not None else 0
+            lia_by_block.setdefault(bidx, []).append(lm)
+
+        active_blocks = _get_session_blocks(session)
+        session_meta_for_scoring = session.metadata_json or {}
+        eliminatory_keywords: List[str] = [
+            str(k).lower() for k in (session_meta_for_scoring.get("eliminatory_keywords") or [])
+        ]
+
+        candidate_by_block: Dict[int, List[TriagemMessage]] = {}
+        for msg in candidate_msgs:
+            bidx = msg.wsi_block if msg.wsi_block is not None else 0
+            candidate_by_block.setdefault(bidx, []).append(msg)
+
         response_scores = []
         for msg in candidate_msgs:
             block_idx = msg.wsi_block if msg.wsi_block is not None else 0
-            if block_idx < len(WSI_BLOCKS):
-                block = WSI_BLOCKS[block_idx]
+            if block_idx < len(active_blocks):
+                block = active_blocks[block_idx]
+                block_type = block.get("block_type", "behavioral")
+                competency = block.get("competency", "general")
                 score_result = _score_response_deterministic(
                     msg.content,
-                    block.get("block_type", "behavioral"),
-                    block.get("competency", "general"),
+                    block_type,
+                    competency,
                 )
-                score_result["competency"] = block.get("competency", "general")
+                score_result["competency"] = competency
+                score_result["block_type"] = block_type
                 score_result["block_index"] = block_idx
+                score_result["response_text"] = (msg.content or "")[:2000]
+                block_lia_msgs = lia_by_block.get(block_idx, [])
+                block_candidate_pos = candidate_by_block.get(block_idx, []).index(msg) if msg in candidate_by_block.get(block_idx, []) else 0
+                if block_lia_msgs and block_candidate_pos < len(block_lia_msgs):
+                    score_result["question_text"] = (block_lia_msgs[block_candidate_pos].content or "")[:500]
+                else:
+                    score_result["question_text"] = block.get("questions", [""])[0][:500] if block.get("questions") else ""
+                if eliminatory_keywords:
+                    response_lower = (msg.content or "").lower()
+                    score_result["has_eliminatory_hit"] = any(kw in response_lower for kw in eliminatory_keywords)
                 response_scores.append(score_result)
 
         final_score, recommendation = _calculate_final_score(response_scores)
@@ -884,6 +1183,7 @@ class TriagemSessionService:
             "email_confirmation": "queued",
             "recruiter_notification": "queued",
             "pipeline_update": "queued",
+            "wsi_persistence": "queued",
             "audit_log": "created",
         }
 
@@ -1112,84 +1412,312 @@ class TriagemSessionService:
                 score=session.wsi_final_score,
                 classification=session.recommendation or "pendente",
             )
-            actions["recruiter_notification"] = "sent"
             logger.info(
                 f"[Triagem] Recruiter Teams notification sent: "
                 f"'Candidato {session.candidate_name} concluiu triagem (score: {session.wsi_final_score})'"
             )
         except Exception as e:
             logger.warning(f"[Triagem] Failed to send Teams recruiter notification: {e}")
-            actions["recruiter_notification"] = "failed"
 
         try:
-            updated = await self._update_pipeline_stage(db, session)
-            if not updated:
-                actions["pipeline_update"] = "skipped_no_pipeline_row"
-            elif session.wsi_final_score and session.wsi_final_score >= 7.5:
-                actions["pipeline_update"] = "auto_moved_to_interview"
-            elif session.wsi_final_score and session.wsi_final_score < 5.5:
-                actions["pipeline_update"] = "marked_rejected"
-            else:
-                actions["pipeline_update"] = "marked_screened_pending"
+            from app.services.notification_service import (
+                notification_service,
+                NotificationType,
+            )
+            score_val = session.wsi_final_score or 0.0
+            recommendation = session.recommendation or "pendente"
+            notif_type = NotificationType.SUCCESS if score_val >= 7.5 else (
+                NotificationType.WARNING if score_val < 5.5 else NotificationType.INFO
+            )
+            await notification_service.create_notification(
+                user_id=session.created_by or "default_user",
+                title=f"Triagem concluída: {session.candidate_name or 'Candidato'}",
+                message=(
+                    f"{session.candidate_name or 'Candidato'} concluiu a triagem para "
+                    f"'{session.job_title or 'Vaga'}'. "
+                    f"Score WSI: {score_val:.1f} — {recommendation.upper()}."
+                ),
+                notification_type=notif_type,
+                category="screening_completed",
+                source_agent="triagem_session_service",
+                source_trigger="screening_completed",
+                related_job_id=session.job_id,
+                related_candidate_id=session.candidate_id,
+                action_url=f"/candidates/{session.candidate_id}",
+                action_label="Ver Candidato",
+                metadata={
+                    "wsi_score": score_val,
+                    "recommendation": recommendation,
+                    "screening_type": "web_chat",
+                    "session_token": session.token,
+                },
+                db=db,
+            )
+            actions["recruiter_notification"] = "sent"
+            logger.info(f"[Triagem] Recruiter notification sent via notification_service for session {session.token}")
         except Exception as e:
-            logger.warning(f"[Triagem] Failed to update pipeline: {e}")
-            actions["pipeline_update"] = "failed"
+            logger.warning(f"[Triagem] Failed to send recruiter notification via notification_service: {e}")
+            actions["recruiter_notification"] = "failed"
+
+        wsi_session_id: Optional[str] = None
+        try:
+            wsi_session_id = await self._persist_wsi_results(db, session, response_scores)
+            if wsi_session_id:
+                actions["wsi_persistence"] = "done"
+                meta = session.metadata_json or {}
+                meta["wsi_session_id"] = wsi_session_id
+                meta["wsi_channel"] = "web_chat"
+                session.metadata_json = meta
+                await db.flush()
+            else:
+                actions["wsi_persistence"] = "skipped"
+        except Exception as e:
+            logger.warning(f"[Triagem] Failed to persist WSI results: {e}")
+            actions["wsi_persistence"] = "failed"
+
+        if not wsi_session_id:
+            logger.warning(
+                f"[Triagem] Skipping screening-completed event dispatch — "
+                f"wsi_session_id not available (persistence failed or was skipped)"
+            )
+            actions["pipeline_update"] = "skipped_no_wsi_session"
+        else:
+            try:
+                score_val = session.wsi_final_score or 0.0
+                recommendation = session.recommendation or "aguardando"
+                passed = score_val >= 7.5
+                classification_map = {
+                    "aprovado": "recommended",
+                    "reprovado": "not_recommended",
+                    "aguardando": "pending_review",
+                    "pendente": "pending_review",
+                }
+                classification = classification_map.get(recommendation, "pending_review")
+
+                wsi_scores: Dict[str, Any] = {
+                    "overall_wsi": score_val,
+                }
+                for rs in (response_scores or []):
+                    bt = rs.get("block_type", "behavioral")
+                    if bt == "technical":
+                        wsi_scores.setdefault("technical_wsi", []).append(rs.get("score", 0.0))
+                    else:
+                        wsi_scores.setdefault("behavioral_wsi", []).append(rs.get("score", 0.0))
+                if "technical_wsi" in wsi_scores and isinstance(wsi_scores["technical_wsi"], list):
+                    lst = wsi_scores["technical_wsi"]
+                    wsi_scores["technical_wsi"] = round(sum(lst) / len(lst) / 2.0, 2) if lst else 0.0
+                if "behavioral_wsi" in wsi_scores and isinstance(wsi_scores["behavioral_wsi"], list):
+                    lst = wsi_scores["behavioral_wsi"]
+                    wsi_scores["behavioral_wsi"] = round(sum(lst) / len(lst) / 2.0, 2) if lst else 0.0
+
+                dispatcher = _get_event_dispatcher()
+                await dispatcher.on_screening_completed(
+                    candidate_id=session.candidate_id,
+                    vacancy_id=session.job_id,
+                    company_id=session.company_id,
+                    wsi_scores=wsi_scores,
+                    screening_type="web_chat",
+                    passed=passed,
+                    classification=classification,
+                    session_id=session.token,
+                    wsi_session_id=wsi_session_id,
+                )
+                actions["pipeline_update"] = "dispatched_via_event_dispatcher"
+                logger.info(
+                    f"[Triagem] screening-completed event dispatched for "
+                    f"candidate={session.candidate_id}, score={score_val}, passed={passed}"
+                )
+            except Exception as e:
+                logger.warning(f"[Triagem] Failed to dispatch screening-completed event: {e}")
+                actions["pipeline_update"] = "event_dispatch_failed"
 
         return actions
 
+    async def _persist_wsi_results(
+        self,
+        db: AsyncSession,
+        session: TriagemSession,
+        response_scores: List[Dict[str, Any]],
+    ) -> Optional[str]:
+        """
+        Persist screening results to WSI tables (wsi_sessions, wsi_questions,
+        wsi_response_analyses, wsi_results) following the canonical WSI schema.
 
-    async def _update_pipeline_stage(
-        self, db: AsyncSession, session: TriagemSession
-    ) -> bool:
-        from sqlalchemy import text as sql_text
+        Schema constraints respected:
+        - wsi_sessions.screening_type IN ('voice', 'chat', 'hybrid')
+        - wsi_sessions.mode IN ('compact', 'compact_plus')
+        - wsi_response_analyses.question_id FK → wsi_questions(id)
+        - scores in [1..5] range
+        - wsi_results.classification IN ('excelente', 'alto', 'medio', 'regular', 'baixo')
 
+        Returns the wsi_session_id string if the wsi_sessions row was successfully
+        created; returns None on any critical failure so callers can skip the
+        event-dispatcher dispatch.
+        """
         if not session.candidate_id or not session.job_id:
-            logger.warning("[Triagem] Cannot update pipeline: missing candidate_id or job_id")
-            return False
+            logger.warning("[Triagem] Cannot persist WSI results: missing candidate_id or job_id")
+            return None
 
-        score = session.wsi_final_score or 0.0
+        wsi_session_id = str(uuid.uuid4())
+        meta = session.metadata_json or {}
+        qs_version = meta.get("wsi_question_set_version")
+        qs_id = meta.get("wsi_question_set_id")
+        score_val = session.wsi_final_score or 0.0
 
-        if score >= 7.5:
-            target_stage = "interview"
-            target_status = "approved"
-        elif score < 5.5:
-            target_stage = "screened"
-            target_status = "rejected"
-        else:
-            target_stage = "screened"
-            target_status = "pending"
+        screening_config = _get_screening_config(session)
+        raw_mode = screening_config.get("format") or "compact"
+        _mode_map = {"compact": "compact", "compact_plus": "compact_plus", "full": "compact_plus"}
+        mode = _mode_map.get(raw_mode, "compact")
 
-        result = await db.execute(
-            sql_text(
-                "UPDATE vacancy_candidates "
-                "SET stage = :target_stage, status = :target_status, "
-                "    lia_score = :score, stage_entered_at = NOW(), updated_at = NOW() "
-                "WHERE candidate_id = CAST(:candidate_id AS UUID) "
-                "  AND vacancy_id = CAST(:job_id AS UUID)"
-            ),
-            {
-                "target_stage": target_stage,
-                "target_status": target_status,
-                "score": score,
+        try:
+            await db.execute(text(
+                "INSERT INTO wsi_sessions "
+                "    (id, candidate_id, job_vacancy_id, screening_type, mode, status, "
+                "     question_set_version, question_set_id, completed_at) "
+                "VALUES "
+                "    (:id, :candidate_id, :job_vacancy_id, :screening_type, :mode, :status, "
+                "     :question_set_version, :question_set_id, :completed_at)"
+            ), {
+                "id": wsi_session_id,
                 "candidate_id": session.candidate_id,
-                "job_id": session.job_id,
-            },
-        )
-        rows = result.rowcount
-        await db.flush()
-        if rows:
-            logger.info(
-                f"[Triagem] Pipeline updated: candidate={session.candidate_id} "
-                f"→ stage={target_stage} status={target_status} score={score}"
-            )
-            return True
+                "job_vacancy_id": session.job_id,
+                "screening_type": "chat",
+                "mode": mode,
+                "status": "completed",
+                "question_set_version": int(qs_version) if qs_version else None,
+                "question_set_id": qs_id,
+                "completed_at": session.completed_at or datetime.utcnow(),
+            })
+        except Exception as exc:
+            logger.error(f"[Triagem] wsi_sessions insert failed — aborting WSI persistence: {exc}")
+            return None
+
+        technical_scores: List[float] = []
+        behavioral_scores: List[float] = []
+
+        for seq, rs in enumerate(response_scores or [], start=1):
+            block_type = rs.get("block_type", "behavioral")
+            competency = rs.get("competency", "general")
+            raw_score = float(rs.get("score", 6.0))
+            score_1_5 = max(1.0, min(5.0, round(raw_score / 2.0, 2)))
+            question_text = rs.get("question_text") or f"Questão {seq} — {competency}"
+            response_text = rs.get("response_text") or ""
+
+            question_id = str(uuid.uuid4())
+            if block_type == "technical":
+                framework = "CBI"
+                q_type = "autodeclaration"
+            else:
+                framework = "CBI"
+                q_type = "contextual"
+
+            try:
+                await db.execute(text(
+                    "INSERT INTO wsi_questions "
+                    "    (id, session_id, competency, framework, question_type, question_text, "
+                    "     weight, sequence_order) "
+                    "VALUES "
+                    "    (:id, :session_id, :competency, :framework, :question_type, :question_text, "
+                    "     :weight, :sequence_order)"
+                ), {
+                    "id": question_id,
+                    "session_id": wsi_session_id,
+                    "competency": competency,
+                    "framework": framework,
+                    "question_type": q_type,
+                    "question_text": question_text[:2000],
+                    "weight": 1.0,
+                    "sequence_order": seq,
+                })
+            except Exception as exc:
+                logger.warning(f"[Triagem] wsi_questions insert failed (seq={seq}): {exc}")
+                if block_type == "technical":
+                    technical_scores.append(score_1_5)
+                else:
+                    behavioral_scores.append(score_1_5)
+                continue
+
+            analysis_id = str(uuid.uuid4())
+            try:
+                await db.execute(text(
+                    "INSERT INTO wsi_response_analyses "
+                    "    (id, session_id, question_id, competency, response_text, "
+                    "     autodeclaration_score, context_score, bloom_level, dreyfus_level, "
+                    "     evidences, red_flags, consistency_penalty, final_score, justification) "
+                    "VALUES "
+                    "    (:id, :session_id, :question_id, :competency, :response_text, "
+                    "     :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level, "
+                    "     :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification)"
+                ), {
+                    "id": analysis_id,
+                    "session_id": wsi_session_id,
+                    "question_id": question_id,
+                    "competency": competency,
+                    "response_text": response_text,
+                    "autodeclaration_score": score_1_5,
+                    "context_score": score_1_5,
+                    "bloom_level": max(1, min(5, rs.get("bloom_level", 2))),
+                    "dreyfus_level": max(1, min(5, rs.get("dreyfus_level", 2))),
+                    "evidences": json.dumps(rs.get("evidences", [])),
+                    "red_flags": json.dumps(rs.get("red_flags", [])),
+                    "consistency_penalty": 0.0,
+                    "final_score": score_1_5,
+                    "justification": rs.get("justification", "Score calculado a partir da resposta no chat web"),
+                })
+            except Exception as exc:
+                logger.warning(f"[Triagem] wsi_response_analyses insert failed (seq={seq}): {exc}")
+
+            if block_type == "technical":
+                technical_scores.append(score_1_5)
+            else:
+                behavioral_scores.append(score_1_5)
+
+        tech_wsi = max(1.0, min(5.0, round(sum(technical_scores) / len(technical_scores), 2))) if technical_scores else max(1.0, min(5.0, round(score_val / 2.0, 2)))
+        beh_wsi = max(1.0, min(5.0, round(sum(behavioral_scores) / len(behavioral_scores), 2))) if behavioral_scores else max(1.0, min(5.0, round(score_val / 2.0, 2)))
+        overall_wsi = max(1.0, min(5.0, round(score_val / 2.0, 2)))
+
+        recommendation = session.recommendation or "aguardando"
+        if overall_wsi >= 4.5:
+            wsi_classification = "excelente"
+        elif overall_wsi >= 3.75:
+            wsi_classification = "alto"
+        elif overall_wsi >= 2.75:
+            wsi_classification = "medio"
+        elif overall_wsi >= 2.0:
+            wsi_classification = "regular"
         else:
-            logger.warning(
-                f"[Triagem] No vacancy_candidates row found for "
-                f"candidate={session.candidate_id} job={session.job_id} — "
-                f"pipeline not updated (candidate may not be in pipeline yet)"
-            )
-            return False
+            wsi_classification = "baixo"
+
+        try:
+            result_id = str(uuid.uuid4())
+            await db.execute(text(
+                "INSERT INTO wsi_results "
+                "    (id, session_id, candidate_id, job_vacancy_id, "
+                "     technical_wsi, behavioral_wsi, overall_wsi, classification, percentile) "
+                "VALUES "
+                "    (:id, :session_id, :candidate_id, :job_vacancy_id, "
+                "     :technical_wsi, :behavioral_wsi, :overall_wsi, :classification, :percentile)"
+            ), {
+                "id": result_id,
+                "session_id": wsi_session_id,
+                "candidate_id": session.candidate_id,
+                "job_vacancy_id": session.job_id,
+                "technical_wsi": tech_wsi,
+                "behavioral_wsi": beh_wsi,
+                "overall_wsi": overall_wsi,
+                "classification": wsi_classification,
+                "percentile": None,
+            })
+        except Exception as exc:
+            logger.error(f"[Triagem] wsi_results insert failed: {exc}")
+            return None
+
+        await db.flush()
+        logger.info(
+            f"[Triagem] WSI results persisted: wsi_session={wsi_session_id}, "
+            f"tech={tech_wsi}, beh={beh_wsi}, overall={overall_wsi}, class={wsi_classification}"
+        )
+        return wsi_session_id
 
 
     async def generate_tts_for_message(

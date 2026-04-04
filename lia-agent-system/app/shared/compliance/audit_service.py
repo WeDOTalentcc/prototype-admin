@@ -300,7 +300,7 @@ class AuditService:
         self,
         audit_log_id: str,
         reviewed_by: str,
-        override: Optional[str] = None
+        override: Optional[str] = None,
     ) -> Optional[AuditLog]:
         """
         Record when a human reviews/overrides an AI decision.
