@@ -1,4 +1,4 @@
-import { Clock, Shield, CheckSquare, MapPin, Briefcase, DollarSign, Gift } from "lucide-react";
+import { Clock, Shield, CheckSquare, MapPin, Briefcase, DollarSign, Gift, Phone } from "lucide-react";
 
 export function WelcomeScreen() {
   return (
@@ -75,12 +75,21 @@ export function WelcomeScreen() {
             </span>
           </label>
 
-          <button
-            type="button"
-            className="w-full h-11 flex items-center justify-center rounded-lg bg-[#00BCD4] text-white text-sm font-medium hover:bg-[#00ACC1] transition-colors font-['Open_Sans',sans-serif]"
-          >
-            Iniciar Conversa
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              className="flex-1 h-11 flex items-center justify-center rounded-lg bg-[#00BCD4] text-white text-sm font-medium hover:bg-[#00ACC1] transition-colors font-['Open_Sans',sans-serif]"
+            >
+              Iniciar Conversa
+            </button>
+            <button
+              type="button"
+              className="h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-gray-200 text-gray-900 text-sm font-medium hover:bg-gray-50 transition-colors font-['Open_Sans',sans-serif]"
+            >
+              <Phone className="w-4 h-4" />
+              Receber Ligação
+            </button>
+          </div>
 
           <a
             href="#"

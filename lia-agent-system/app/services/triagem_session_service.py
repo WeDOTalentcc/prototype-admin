@@ -383,6 +383,9 @@ class TriagemSessionService:
                         job_info["benefits"] = job.benefits
                     job_info["showSalary"] = show_salary
                     job_info["showBenefits"] = show_benefits
+                    sc = getattr(job, "screening_config", None) or {}
+                    phone_ch = (sc.get("channels") or {}).get("phone") or {}
+                    job_info["phoneEnabled"] = bool(phone_ch.get("enabled", False))
             except Exception as e:
                 logger.warning(f"[Triagem] Could not fetch job info for job_id={job_id}: {e}")
 
@@ -1045,6 +1048,117 @@ class TriagemSessionService:
         await db.commit()
 
         return {"audio_base64": audio_b64, "message_id": str(message.id)}
+
+
+    async def request_phone_call(
+        self, db: AsyncSession, token: str, candidate_phone: str
+    ) -> Dict[str, Any]:
+        result = await db.execute(
+            select(TriagemSession).where(TriagemSession.token == token)
+        )
+        session = result.scalar_one_or_none()
+        if not session:
+            return {"error": "not_found"}
+
+        if session.status == "completed":
+            return {"error": "already_completed"}
+
+        job_id = session.job_id
+        company_id = session.company_id
+        job = None
+        if job_id:
+            try:
+                q = select(JobVacancy).where(JobVacancy.job_id == job_id)
+                if company_id and hasattr(JobVacancy, "company_id"):
+                    q = q.where(JobVacancy.company_id == company_id)
+                r = await db.execute(q)
+                job = r.scalar_one_or_none()
+                if not job:
+                    q2 = select(JobVacancy).where(JobVacancy.id == uuid.UUID(job_id))
+                    if company_id and hasattr(JobVacancy, "company_id"):
+                        q2 = q2.where(JobVacancy.company_id == company_id)
+                    r2 = await db.execute(q2)
+                    job = r2.scalar_one_or_none()
+            except Exception as e:
+                logger.warning(f"[Triagem] Could not fetch job for phone call: {e}")
+
+        sc = (getattr(job, "screening_config", None) or {}) if job else {}
+        phone_ch = (sc.get("channels") or {}).get("phone") or {}
+        if not phone_ch.get("enabled", False):
+            return {"error": "phone_not_enabled"}
+
+        existing_call = (session.metadata_json or {}).get("phone_call")
+        if existing_call:
+            requested_at = existing_call.get("requested_at")
+            if requested_at:
+                try:
+                    last_req = datetime.fromisoformat(requested_at)
+                    cooldown_seconds = 120
+                    if (datetime.utcnow() - last_req).total_seconds() < cooldown_seconds:
+                        return {
+                            "error": "call_already_requested",
+                            "message": "Uma ligação já foi solicitada recentemente. Aguarde alguns minutos.",
+                        }
+                except (ValueError, TypeError):
+                    pass
+
+        try:
+            from app.services.openmic_service import openmic_service
+
+            job_title = session.job_title or "a vaga"
+            job_description = (job.description or "")[:1000] if job and job.description else ""
+            required_skills: List[str] = []
+            if job and getattr(job, "screening_config", None):
+                required_skills = list(
+                    (job.screening_config.get("skills") or {}).keys()
+                )[:10]
+
+            agent = await openmic_service.create_screening_agent(
+                job_title=job_title,
+                job_description=job_description,
+                required_skills=required_skills or ["experiência relevante"],
+            )
+            agent_id = agent.get("agent_id")
+            if not agent_id:
+                return {"error": "agent_creation_failed", "detail": str(agent)}
+
+            call = await openmic_service.start_screening_call(
+                agent_id=agent_id,
+                candidate_phone=candidate_phone,
+                candidate_name=session.candidate_name or "Candidato",
+                candidate_id=session.candidate_id,
+                job_title=job_title,
+            )
+            call_id = call.get("call_id")
+            if not call_id:
+                return {"error": "call_failed", "detail": str(call)}
+
+            meta = session.metadata_json or {}
+            meta["phone_call"] = {
+                "call_id": call_id,
+                "agent_id": agent_id,
+                "candidate_phone": candidate_phone,
+                "requested_at": datetime.utcnow().isoformat(),
+            }
+            session.metadata_json = meta
+            session.status = "started" if session.status == "invited" else session.status
+            session.started_at = session.started_at or datetime.utcnow()
+            await db.commit()
+
+            logger.info(
+                f"[Triagem] Phone call requested: token={token}, call_id={call_id}"
+            )
+
+            return {
+                "status": "call_initiated",
+                "call_id": call_id,
+                "agent_id": agent_id,
+                "message": "Ligação sendo realizada. Você receberá uma chamada em instantes.",
+            }
+
+        except Exception as e:
+            logger.error(f"[Triagem] Phone call request failed: {e}", exc_info=True)
+            return {"error": "call_failed", "detail": str(e)}
 
 
 triagem_service = TriagemSessionService()

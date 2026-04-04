@@ -8,13 +8,14 @@ import { MessageBubble } from "@/components/triagem/MessageBubble"
 import { InputBar } from "@/components/triagem/InputBar"
 import { ProgressBar } from "@/components/triagem/ProgressBar"
 import { WelcomeCard } from "@/components/triagem/WelcomeCard"
+import { PhoneConfirmModal } from "@/components/triagem/PhoneConfirmModal"
 import { CompletionCard } from "@/components/triagem/CompletionCard"
 import { ConfirmationCard } from "@/components/triagem/ConfirmationCard"
 import { TypingIndicator } from "@/components/triagem/TypingIndicator"
 import { MultipleChoiceCard } from "@/components/triagem/MultipleChoiceCard"
 import { LikertScaleCard } from "@/components/triagem/LikertScaleCard"
 import type { TriagemMessage } from "@/components/triagem/types"
-import { AlertTriangle, Clock, Link2Off, ShieldAlert, ServerCrash } from "lucide-react"
+import { AlertTriangle, Clock, Link2Off, Phone, ShieldAlert, ServerCrash } from "lucide-react"
 
 const VOICE_AUTOPLAY_KEY = "lia-triagem-voice-autoplay"
 
@@ -145,6 +146,11 @@ export default function TriagemPage() {
     }
   })
 
+  const [phoneModalOpen, setPhoneModalOpen] = useState(false)
+  const [phoneCallLoading, setPhoneCallLoading] = useState(false)
+  const [phoneCallError, setPhoneCallError] = useState<string | null>(null)
+  const [phoneCallStatus, setPhoneCallStatus] = useState<"idle" | "calling" | "done">("idle")
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
@@ -201,6 +207,36 @@ export default function TriagemPage() {
     })
   }, [])
 
+  const handleOpenPhoneModal = useCallback(() => {
+    setPhoneCallError(null)
+    setPhoneModalOpen(true)
+  }, [])
+
+  const handleRequestCall = useCallback(
+    async (phone: string) => {
+      setPhoneCallLoading(true)
+      setPhoneCallError(null)
+      try {
+        const res = await fetch(`/api/backend-proxy/triagem/${token}/request-call`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ candidate_phone: phone }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.detail || "Falha ao solicitar ligação")
+        }
+        setPhoneCallStatus("done")
+        setPhoneModalOpen(false)
+      } catch (err: any) {
+        setPhoneCallError(err.message || "Erro ao solicitar ligação")
+      } finally {
+        setPhoneCallLoading(false)
+      }
+    },
+    [token]
+  )
+
   const handleClose = useCallback(() => {
     if (typeof window !== "undefined") {
       window.close()
@@ -218,7 +254,37 @@ export default function TriagemPage() {
   if (pageState === "welcome" && config) {
     return (
       <ChatContainer>
-        <WelcomeCard config={config} onStart={handleStartChat} isStarting={isSending} />
+        {phoneCallStatus === "done" ? (
+          <div className="flex-1 flex items-center justify-center px-4 py-8">
+            <div className="w-full max-w-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl shadow-lia-sm p-6 text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="w-12 h-12 rounded-full bg-wedo-cyan/10 flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-wedo-cyan" />
+                </div>
+              </div>
+              <h2 className="text-base font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+                Ligação solicitada
+              </h2>
+              <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
+                Você receberá uma ligação da LIA em instantes. Fique atento ao seu telefone.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <WelcomeCard
+            config={config}
+            onStart={handleStartChat}
+            onRequestCall={handleOpenPhoneModal}
+            isStarting={isSending}
+          />
+        )}
+        <PhoneConfirmModal
+          open={phoneModalOpen}
+          onClose={() => setPhoneModalOpen(false)}
+          onConfirm={handleRequestCall}
+          isLoading={phoneCallLoading}
+          error={phoneCallError}
+        />
         <LGPDFooter />
       </ChatContainer>
     )

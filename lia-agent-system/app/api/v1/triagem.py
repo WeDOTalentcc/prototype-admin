@@ -1,9 +1,11 @@
+import re
+import logging
+from typing import Optional, Any
+
 from fastapi import APIRouter, HTTPException, Depends, Header, UploadFile, File, Form, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
-from typing import Optional
-import logging
 
 from app.core.database import get_db
 from app.services.triagem_session_service import triagem_service
@@ -176,6 +178,68 @@ async def create_invite(
             "message": f"Convite de triagem criado. Link: {triagem_url}",
         },
     )
+
+
+_E164_BR_PATTERN = re.compile(r"^\+55\d{10,11}$")
+
+
+class RequestCallRequest(BaseModel):
+    candidate_phone: str
+
+    @classmethod
+    def __get_validators__(cls):
+        yield from super().__get_validators__()
+
+    def model_post_init(self, __context: Any = None) -> None:
+        phone = self.candidate_phone.strip()
+        digits = re.sub(r"\D", "", phone)
+        if not phone.startswith("+"):
+            if len(digits) == 10 or len(digits) == 11:
+                phone = f"+55{digits}"
+            elif len(digits) == 12 or len(digits) == 13:
+                phone = f"+{digits}"
+        if not _E164_BR_PATTERN.match(phone):
+            raise ValueError("Telefone inválido. Use formato (DDD) + número, ex: (11) 99999-9999")
+        object.__setattr__(self, "candidate_phone", phone)
+
+
+@router.post("/{token}/request-call")
+async def request_phone_call(
+    token: str,
+    request: RequestCallRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Request an automated phone call from LIA to the candidate via OpenMic.ai."""
+    validation = await triagem_service.validate_token(db, token)
+
+    if not validation.get("valid"):
+        error = validation.get("error")
+        if error == "not_found":
+            raise HTTPException(status_code=404, detail="Token inválido")
+        if error == "expired":
+            raise HTTPException(status_code=410, detail="Link expirado")
+
+    if validation.get("completed"):
+        raise HTTPException(status_code=409, detail="Triagem já foi concluída")
+
+    result = await triagem_service.request_phone_call(
+        db, token, request.candidate_phone
+    )
+
+    if result.get("error") == "not_found":
+        raise HTTPException(status_code=404, detail="Sessão não encontrada")
+    if result.get("error") == "already_completed":
+        raise HTTPException(status_code=409, detail="Triagem já foi concluída")
+    if result.get("error") == "phone_not_enabled":
+        raise HTTPException(status_code=403, detail="Canal de ligação não habilitado para esta vaga")
+    if result.get("error") == "call_already_requested":
+        raise HTTPException(status_code=429, detail=result.get("message", "Ligação já solicitada recentemente"))
+    if result.get("error") == "agent_creation_failed":
+        raise HTTPException(status_code=502, detail="Falha ao criar agente de voz")
+    if result.get("error") == "call_failed":
+        raise HTTPException(status_code=502, detail="Falha ao iniciar ligação")
+
+    return JSONResponse(content=result)
 
 
 class StartSessionRequest(BaseModel):

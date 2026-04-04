@@ -89,6 +89,7 @@ export interface TriagemConfig {
   benefits?: string[] | null
   showSalary?: boolean
   showBenefits?: boolean
+  phoneEnabled?: boolean
 }
 
 export interface TriagemError {

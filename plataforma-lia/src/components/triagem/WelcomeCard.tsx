@@ -3,12 +3,13 @@
 import React, { useState } from "react"
 import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
-import { Clock, Shield, CheckSquare, Square, MapPin, Briefcase, DollarSign, Gift } from "lucide-react"
+import { Clock, Shield, CheckSquare, Square, MapPin, Briefcase, DollarSign, Gift, Phone } from "lucide-react"
 import type { TriagemConfig } from "@/components/triagem/types"
 
 interface WelcomeCardProps {
   config: TriagemConfig
   onStart: (voiceMode?: boolean) => void
+  onRequestCall?: () => void
   isStarting?: boolean
   className?: string
 }
@@ -29,7 +30,7 @@ const WORK_MODEL_LABELS: Record<string, string> = {
   presencial: "Presencial",
 }
 
-export function WelcomeCard({ config, onStart, isStarting = false, className }: WelcomeCardProps) {
+export function WelcomeCard({ config, onStart, onRequestCall, isStarting = false, className }: WelcomeCardProps) {
   const [consentChecked, setConsentChecked] = useState(false)
 
   const hasJobDetails = config.jobDescription || config.location || config.workModel
@@ -155,15 +156,33 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
           </span>
         </label>
 
-        <button
-          type="button"
-          onClick={() => onStart(false)}
-          disabled={isStarting || !consentChecked}
-          aria-label="Iniciar conversa de triagem"
-          className="w-full h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
-        >
-          {isStarting ? "Iniciando..." : "Iniciar Conversa"}
-        </button>
+        <div className={config.phoneEnabled ? "flex gap-3" : ""}>
+          <button
+            type="button"
+            onClick={() => onStart(false)}
+            disabled={isStarting || !consentChecked}
+            aria-label="Iniciar conversa de triagem"
+            className={cn(
+              "h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]",
+              config.phoneEnabled ? "flex-1" : "w-full"
+            )}
+          >
+            {isStarting ? "Iniciando..." : "Iniciar Conversa"}
+          </button>
+
+          {config.phoneEnabled && onRequestCall && (
+            <button
+              type="button"
+              onClick={onRequestCall}
+              disabled={isStarting || !consentChecked}
+              aria-label="Solicitar ligação telefônica"
+              className="h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
+            >
+              <Phone className="w-4 h-4" />
+              Receber Ligação
+            </button>
+          )}
+        </div>
 
         <a
           href={config.privacyPolicyUrl}

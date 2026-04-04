@@ -36,7 +36,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **ReAct Agent System**: Implements autonomous agents using ReAct loops across 7 distinct domains.
 - **Progressive Automation & CompanyHiringPolicy**: Implements `CompanyHiringPolicy` to control automation levels with a confidence-based decision engine and conversational onboarding.
 - **WSI Saturation Intelligence**: Manages and displays candidate pipeline saturation for organic and sourcing pools.
-- **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT). Features on-demand TTS per LIA message (speaker button), voice auto-play toggle in InputBar (localStorage-persisted), single "Iniciar Conversa" button (no separate voice mode entry).
+- **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT). Features on-demand TTS per LIA message (speaker button), voice auto-play toggle in InputBar (localStorage-persisted), single "Iniciar Conversa" button (no separate voice mode entry). Phone call screening channel via OpenMic.ai — "Receber Ligação" button conditionally shown when recruiter enables phone channel in screening config; PhoneConfirmModal collects BR phone number and triggers automated call with 2-min cooldown rate limit.
 - **Multi-Channel Communication Dispatcher**: Sends messages to all available channels (email + WhatsApp) by default.
 - **Celery Scheduler & Automations**: Handles background automations for follow-ups, abandoned WSI checks, and feedback sending.
 - **Voice Analysis Integration**: Uses Deepgram STT + OpenAI TTS for voice mode in triagem.
