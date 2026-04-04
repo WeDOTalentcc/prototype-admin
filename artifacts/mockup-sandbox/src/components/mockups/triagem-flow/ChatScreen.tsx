@@ -2,15 +2,15 @@ import { Send, Mic } from "lucide-react";
 
 function LIAAvatar() {
   return (
-    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#00BCD4]/20 flex items-center justify-center">
-      <span className="text-[10px] font-bold text-[#00BCD4]">LIA</span>
+    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#00BCD4]/20 flex items-center justify-center">
+      <span className="text-[9px] font-bold text-[#00BCD4]">LIA</span>
     </div>
   );
 }
 
 function CandidateAvatar() {
   return (
-    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-500 font-['Inter',sans-serif]">
+    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-500 font-['Inter',sans-serif]">
       MS
     </div>
   );
@@ -18,17 +18,18 @@ function CandidateAvatar() {
 
 function LiaMessage({ text, time }: { text: string; time: string }) {
   return (
-    <div className="flex gap-3 justify-start">
-      <div className="mt-1">
+    <div className="flex gap-2.5 justify-start">
+      <div className="mt-0.5">
         <LIAAvatar />
       </div>
-      <div className="flex flex-col gap-1 max-w-[80%]">
-        <div className="px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-lg bg-[#00BCD4]/[0.04] text-gray-900">
+      <div className="flex flex-col gap-1 max-w-[80%] items-start">
+        <div className="flex items-center gap-1.5 px-1">
+          <span className="text-xs font-bold text-gray-900 font-['Inter',sans-serif]">LIA</span>
+          <span className="text-xs text-gray-300 font-['Inter',sans-serif] tabular-nums">{time}</span>
+        </div>
+        <div className="px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-[14px] rounded-bl-[4px] bg-[#00BCD4]/[0.04] text-gray-900">
           <span dangerouslySetInnerHTML={{ __html: text }} />
         </div>
-        <span className="text-[10px] font-['Inter',sans-serif] text-gray-300 text-left">
-          {time}
-        </span>
       </div>
     </div>
   );
@@ -36,16 +37,16 @@ function LiaMessage({ text, time }: { text: string; time: string }) {
 
 function CandidateMessage({ text, time }: { text: string; time: string }) {
   return (
-    <div className="flex gap-3 justify-end">
-      <div className="flex flex-col gap-1 max-w-[80%]">
-        <div className="px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-lg bg-[#00BCD4] text-white">
+    <div className="flex gap-2.5 justify-end">
+      <div className="flex flex-col gap-1 max-w-[80%] items-end">
+        <div className="px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-[14px] rounded-br-[4px] bg-gray-100 text-gray-600">
           {text}
         </div>
-        <span className="text-[10px] font-['Inter',sans-serif] text-gray-300 text-right">
+        <span className="text-xs text-gray-300 font-['Inter',sans-serif] tabular-nums px-1">
           {time}
         </span>
       </div>
-      <div className="mt-1">
+      <div className="mt-0.5">
         <CandidateAvatar />
       </div>
     </div>
@@ -54,26 +55,28 @@ function CandidateMessage({ text, time }: { text: string; time: string }) {
 
 function TypingDots() {
   return (
-    <div className="flex items-center gap-3">
-      <div className="mt-1">
+    <div className="flex items-center gap-2.5">
+      <div className="mt-0.5">
         <LIAAvatar />
       </div>
-      <div className="flex items-center gap-3 rounded-lg bg-white border border-gray-200 px-4 py-3">
-        <div className="flex items-center gap-1">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="w-2 h-2 rounded-full bg-[#00BCD4]"
-              style={{
-                animation: "typingDot 1.4s ease-in-out infinite",
-                animationDelay: `${i * 0.2}s`,
-              }}
-            />
-          ))}
+      <div className="flex flex-col gap-1 items-start">
+        <div className="flex items-center gap-1.5 px-1">
+          <span className="text-xs font-bold text-gray-900 font-['Inter',sans-serif]">LIA</span>
         </div>
-        <span className="text-xs font-['Open_Sans',sans-serif] text-gray-500">
-          LIA está digitando...
-        </span>
+        <div className="flex items-center gap-3 rounded-[14px] rounded-bl-[4px] bg-[#00BCD4]/[0.04] px-3.5 py-2.5">
+          <div className="flex items-center gap-1">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="w-2 h-2 rounded-full bg-[#00BCD4]"
+                style={{
+                  animation: "typingDot 1.4s ease-in-out infinite",
+                  animationDelay: `${i * 0.2}s`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
       </div>
       <style>{`
         @keyframes typingDot {
@@ -93,44 +96,44 @@ export function ChatScreen() {
           <span className="text-xs font-medium font-['Open_Sans',sans-serif] text-gray-600">
             Etapa{" "}
             <span className="font-['Inter',sans-serif]">3</span> de{" "}
-            <span className="font-['Inter',sans-serif]">7</span>
+            <span className="font-['Inter',sans-serif]">6</span>
             {" · "}Habilidades Técnicas
           </span>
           <span className="text-[10px] font-['Inter',sans-serif] text-gray-300">
-            43%
+            50%
           </span>
         </div>
         <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
           <div
             className="h-full bg-[#00BCD4] rounded-full transition-all duration-500 ease-out"
-            style={{ width: "43%" }}
+            style={{ width: "50%" }}
           />
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         <LiaMessage
-          text="Olá, <strong>Maria</strong>! Que bom te ter aqui! 😊<br /><br />Vamos começar com algumas perguntas sobre sua <strong>experiência profissional</strong>. Pode ficar à vontade, é uma conversa tranquila."
+          text="Vamos começar falando sobre sua <strong>experiência profissional</strong>. Conte-me um pouco sobre sua trajetória."
           time="14:32"
         />
 
         <CandidateMessage
-          text="Oi LIA! Obrigada, estou animada com essa oportunidade. Pode perguntar!"
+          text="Trabalho na área de dados há 4 anos. Comecei como analista júnior e hoje atuo como pleno no time de BI de uma empresa de tecnologia."
           time="14:33"
         />
 
         <LiaMessage
-          text="Ótimo! 🎉 Me conta, há quanto tempo você trabalha com <strong>análise de dados</strong>? Quais ferramentas e linguagens você domina?"
+          text="Entendido. Quais ferramentas e linguagens de programação você utiliza no dia a dia para <strong>análise de dados</strong>?"
           time="14:33"
         />
 
         <CandidateMessage
-          text="Trabalho com dados há 4 anos. Domino Python (pandas, scikit-learn), SQL avançado, Power BI e tenho experiência com Databricks e dbt."
+          text="Domino Python (pandas, scikit-learn), SQL avançado, Power BI e tenho experiência com Databricks e dbt."
           time="14:35"
         />
 
         <LiaMessage
-          text="Muito bom, Maria! Experiência sólida com ferramentas relevantes. 💪<br /><br />Agora, como você avalia sua capacidade de <strong>trabalhar sob pressão</strong> com prazos apertados?"
+          text="Obrigada. Agora, como você lida com <strong>prazos apertados</strong> e demandas simultâneas no seu trabalho?"
           time="14:35"
         />
 

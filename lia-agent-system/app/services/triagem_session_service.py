@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
 from app.models.triagem import TriagemSession, TriagemMessage
+from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -63,30 +64,36 @@ WSI_BLOCKS = [
 ]
 
 WELCOME_MESSAGE = (
-    "Vou conduzir sua triagem para a vaga de {job_title} na {company_name}. "
+    "Vou conduzir sua triagem para a vaga de **{job_title}** na **{company_name}**. "
     "A conversa tem {total_blocks} etapas e dura aproximadamente 15-20 minutos. "
-    "Você pode responder por texto ou áudio. Vamos começar?"
+    "Você pode responder por texto ou gravar áudio. Vamos começar?"
 )
 
 COMPLETION_MESSAGE = (
-    "✅ **Triagem concluída com sucesso!**\n\n"
-    "Obrigada, {candidate_name}! Suas respostas foram registradas.\n\n"
+    "**Triagem concluída com sucesso.**\n\n"
+    "Obrigada, {candidate_name}. Suas respostas foram registradas.\n\n"
     "**Próximos passos:**\n"
-    "• Você receberá um email de confirmação em instantes\n"
-    "• Nossa equipe avaliará seu perfil em até 5 dias úteis\n"
-    "• Fique atento ao seu email para novidades\n\n"
-    "Boa sorte! 🍀"
+    "- Você receberá um e-mail de confirmação em instantes\n"
+    "- A equipe da {company_name} avaliará seu perfil nos próximos dias\n"
+    "- Fique atento ao seu e-mail para atualizações\n\n"
+    "Agradecemos sua participação e desejamos sucesso."
 )
 
+COMPLETION_NEXT_STEPS = [
+    "Você receberá um e-mail de confirmação em instantes",
+    "A equipe da {company_name} avaliará seu perfil nos próximos dias",
+    "Fique atento ao seu e-mail para atualizações",
+]
+
 BLOCK_TRANSITION_MESSAGES = [
-    "Ótimo! Vamos para a próxima etapa: **{block_name}**.",
-    "Perfeito! Agora vamos falar sobre **{block_name}**.",
-    "Muito bem! Seguindo para **{block_name}**.",
-    "Excelente! Próxima etapa: **{block_name}**.",
+    "Certo. Vamos para a próxima etapa: **{block_name}**.",
+    "Entendido. Agora vamos falar sobre **{block_name}**.",
+    "Obrigada. Seguindo para **{block_name}**.",
+    "Anotado. Próxima etapa: **{block_name}**.",
 ]
 
 PRE_COMPLETION_MESSAGE = (
-    "Chegamos ao final da triagem! 🎉\n\n"
+    "Chegamos ao final da triagem.\n\n"
     "Foram **{total_questions} perguntas** respondidas em **{duration_minutes} minutos**.\n\n"
     "Deseja revisar alguma resposta antes de finalizar?"
 )
@@ -127,9 +134,9 @@ Responda em português brasileiro. Seja acolhedora e profissional.
 Limite sua resposta a 3-4 frases, incluindo a retomada da pergunta original."""
 
 FORCE_RESUME_MESSAGE = (
-    "Entendo sua curiosidade! 😊 Essas informações adicionais podem ser discutidas com o recrutador "
-    "nas próximas etapas do processo. Por agora, vamos continuar com a triagem para que possamos "
-    "avaliar melhor o seu perfil.\n\n{original_question}"
+    "Entendo sua curiosidade. Essas informações adicionais podem ser discutidas com o recrutador "
+    "nas próximas etapas do processo. Vamos prosseguir com a triagem para avaliar melhor o seu perfil."
+    "\n\n{original_question}"
 )
 
 CONTEXTUAL_QUESTION_PROMPT = """Você é a LIA, assistente de recrutamento.
@@ -323,12 +330,12 @@ class TriagemSessionService:
             return {"valid": False, "error": "not_found", "status_code": 404}
 
         if session.expires_at and session.expires_at < datetime.utcnow():
-            return {"valid": False, "error": "expired", "status_code": 410, "session": session.to_dict()}
+            return {"valid": False, "error": "expired", "status_code": 410, "session": session.to_dict(), "_orm": session}
 
         if session.status == "completed":
-            return {"valid": True, "completed": True, "session": session.to_dict()}
+            return {"valid": True, "completed": True, "session": session.to_dict(), "_orm": session}
 
-        return {"valid": True, "completed": False, "session": session.to_dict()}
+        return {"valid": True, "completed": False, "session": session.to_dict(), "_orm": session}
 
     async def get_session_config(self, db: AsyncSession, token: str) -> Optional[Dict[str, Any]]:
         validation = await self.validate_token(db, token)
@@ -336,12 +343,45 @@ class TriagemSessionService:
             return validation
 
         session_data = validation["session"]
+        session_orm: Optional[TriagemSession] = validation.get("_orm")
         msg_result = await db.execute(
             select(TriagemMessage).where(
                 TriagemMessage.session_id == uuid.UUID(session_data["id"])
             ).order_by(TriagemMessage.created_at)
         )
         messages = msg_result.scalars().all()
+
+        job_info: Dict[str, Any] = {}
+        job_id = session_data.get("job_id")
+        company_id = session_data.get("company_id")
+        if job_id:
+            try:
+                query = select(JobVacancy).where(JobVacancy.job_id == job_id)
+                if company_id and hasattr(JobVacancy, "company_id"):
+                    query = query.where(JobVacancy.company_id == company_id)
+                job_result = await db.execute(query)
+                job = job_result.scalar_one_or_none()
+                if not job:
+                    query2 = select(JobVacancy).where(JobVacancy.id == uuid.UUID(job_id))
+                    if company_id and hasattr(JobVacancy, "company_id"):
+                        query2 = query2.where(JobVacancy.company_id == company_id)
+                    job_result2 = await db.execute(query2)
+                    job = job_result2.scalar_one_or_none()
+                if job:
+                    job_info["jobDescription"] = (job.description or "")[:500] if job.description else None
+                    job_info["location"] = job.location
+                    job_info["workModel"] = job.work_model
+                    meta = (session_orm.metadata_json if session_orm else None) or {}
+                    show_salary = meta.get("show_salary", False)
+                    show_benefits = meta.get("show_benefits", False)
+                    if show_salary and job.salary_range:
+                        job_info["salaryRange"] = job.salary_range
+                    if show_benefits and job.benefits:
+                        job_info["benefits"] = job.benefits
+                    job_info["showSalary"] = show_salary
+                    job_info["showBenefits"] = show_benefits
+            except Exception as e:
+                logger.warning(f"[Triagem] Could not fetch job info for job_id={job_id}: {e}")
 
         config = {
             "companyName": session_data.get("company_name", ""),
@@ -359,6 +399,7 @@ class TriagemSessionService:
                 company_name=session_data.get("company_name", "a empresa"),
                 total_blocks=len(WSI_BLOCKS),
             ),
+            **job_info,
         }
 
         messages_data = [m.to_dict() for m in messages]
@@ -390,13 +431,12 @@ class TriagemSessionService:
                     duration = max(1, int((c - s).total_seconds() / 60))
                 except Exception:
                     duration = 15
+            company = session_data.get("company_name", "a empresa")
             response["completion_summary"] = {
                 "questionsAnswered": len(candidate_msgs),
                 "durationMinutes": duration,
                 "nextSteps": [
-                    "Você receberá um email de confirmação em instantes",
-                    "Nossa equipe avaliará seu perfil em até 5 dias úteis",
-                    "Fique atento ao seu email para novidades",
+                    s.format(company_name=company) for s in COMPLETION_NEXT_STEPS
                 ],
             }
 
@@ -648,13 +688,13 @@ class TriagemSessionService:
                         "question_id": None,
                     }
                 return {
-                    "content": f"Boa pergunta! Infelizmente não tenho essa informação no momento, mas o recrutador poderá te ajudar. Voltando à nossa conversa... {current_question_text}",
+                    "content": f"Entendo sua dúvida, mas no momento não tenho essa informação. O recrutador poderá esclarecer após a triagem. Vamos prosseguir: {current_question_text}",
                     "type": "off_script_response",
                     "question_id": None,
                 }
 
             return {
-                "content": f"Olá! Que bom ter você aqui! 😊 Vamos continuar com a triagem. {current_question_text}",
+                "content": f"Olá! Vamos prosseguir com a triagem. {current_question_text}",
                 "type": "off_script_response",
                 "question_id": None,
             }
@@ -797,6 +837,7 @@ class TriagemSessionService:
 
         completion_content = COMPLETION_MESSAGE.format(
             candidate_name=session.candidate_name or "candidato(a)",
+            company_name=session.company_name or "a empresa",
         )
         completion_msg = TriagemMessage(
             session_id=session.id,
@@ -823,9 +864,8 @@ class TriagemSessionService:
                 "questionsAnswered": len(candidate_msgs),
                 "durationMinutes": duration,
                 "nextSteps": [
-                    "Você receberá um email de confirmação em instantes",
-                    "Nossa equipe avaliará seu perfil em até 5 dias úteis",
-                    "Fique atento ao seu email para novidades",
+                    s.format(company_name=session.company_name or "a empresa")
+                    for s in COMPLETION_NEXT_STEPS
                 ],
             },
             "post_actions": post_actions,

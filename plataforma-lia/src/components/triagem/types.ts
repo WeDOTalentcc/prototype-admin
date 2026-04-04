@@ -65,6 +65,12 @@ export interface TriagemMessage {
   audioUrl: string | null
 }
 
+export interface TriagemSalaryRange {
+  min?: number
+  max?: number
+  currency?: string
+}
+
 export interface TriagemConfig {
   companyName: string
   companyLogoUrl: string | null
@@ -76,6 +82,13 @@ export interface TriagemConfig {
   feedbackEnabled: boolean
   welcomeMessage: string
   voiceMode: boolean
+  jobDescription?: string | null
+  location?: string | null
+  workModel?: string | null
+  salaryRange?: TriagemSalaryRange | null
+  benefits?: string[] | null
+  showSalary?: boolean
+  showBenefits?: boolean
 }
 
 export interface TriagemError {

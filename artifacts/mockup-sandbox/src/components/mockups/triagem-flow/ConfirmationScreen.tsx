@@ -2,15 +2,15 @@ import { Send, ClipboardCheck, Mic } from "lucide-react";
 
 function LIAAvatar() {
   return (
-    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#00BCD4]/20 flex items-center justify-center">
-      <span className="text-[10px] font-bold text-[#00BCD4]">LIA</span>
+    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[#00BCD4]/20 flex items-center justify-center">
+      <span className="text-[9px] font-bold text-[#00BCD4]">LIA</span>
     </div>
   );
 }
 
 function CandidateAvatar() {
   return (
-    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-500 font-['Inter',sans-serif]">
+    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold text-gray-500 font-['Inter',sans-serif]">
       MS
     </div>
   );
@@ -18,13 +18,16 @@ function CandidateAvatar() {
 
 function LiaMessage({ text, time }: { text: string; time: string }) {
   return (
-    <div className="flex gap-3 justify-start">
-      <div className="mt-1"><LIAAvatar /></div>
-      <div className="flex flex-col gap-1 max-w-[80%]">
-        <div className="px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-lg bg-[#00BCD4]/[0.04] text-gray-900">
+    <div className="flex gap-2.5 justify-start">
+      <div className="mt-0.5"><LIAAvatar /></div>
+      <div className="flex flex-col gap-1 max-w-[80%] items-start">
+        <div className="flex items-center gap-1.5 px-1">
+          <span className="text-xs font-bold text-gray-900 font-['Inter',sans-serif]">LIA</span>
+          <span className="text-xs text-gray-300 font-['Inter',sans-serif] tabular-nums">{time}</span>
+        </div>
+        <div className="px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-[14px] rounded-bl-[4px] bg-[#00BCD4]/[0.04] text-gray-900">
           <span dangerouslySetInnerHTML={{ __html: text }} />
         </div>
-        <span className="text-[10px] font-['Inter',sans-serif] text-gray-300 text-left">{time}</span>
       </div>
     </div>
   );
@@ -32,14 +35,14 @@ function LiaMessage({ text, time }: { text: string; time: string }) {
 
 function CandidateMessage({ text, time }: { text: string; time: string }) {
   return (
-    <div className="flex gap-3 justify-end">
-      <div className="flex flex-col gap-1 max-w-[80%]">
-        <div className="px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-lg bg-[#00BCD4] text-white">
+    <div className="flex gap-2.5 justify-end">
+      <div className="flex flex-col gap-1 max-w-[80%] items-end">
+        <div className="px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-[14px] rounded-br-[4px] bg-gray-100 text-gray-600">
           {text}
         </div>
-        <span className="text-[10px] font-['Inter',sans-serif] text-gray-300 text-right">{time}</span>
+        <span className="text-xs text-gray-300 font-['Inter',sans-serif] tabular-nums px-1">{time}</span>
       </div>
-      <div className="mt-1"><CandidateAvatar /></div>
+      <div className="mt-0.5"><CandidateAvatar /></div>
     </div>
   );
 }
@@ -50,8 +53,8 @@ export function ConfirmationScreen() {
       <div className="sticky top-0 z-20 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium font-['Open_Sans',sans-serif] text-gray-600">
-            Etapa <span className="font-['Inter',sans-serif]">7</span> de{" "}
-            <span className="font-['Inter',sans-serif]">7</span>
+            Etapa <span className="font-['Inter',sans-serif]">6</span> de{" "}
+            <span className="font-['Inter',sans-serif]">6</span>
             {" · "}Encerramento
           </span>
           <span className="text-[10px] font-['Inter',sans-serif] text-gray-300">100%</span>
@@ -68,12 +71,12 @@ export function ConfirmationScreen() {
         />
 
         <CandidateMessage
-          text="Estou buscando um ambiente que valorize dados como motor de decisões estratégicas. A cultura da WeDO se alinha muito com o que procuro."
+          text="Estou buscando um ambiente que valorize dados como motor de decisões estratégicas. A cultura da empresa se alinha com o que procuro."
           time="14:54"
         />
 
         <LiaMessage
-          text="Muito obrigada pelas suas respostas, Maria! 🙏<br /><br />Foi ótimo conversar com você. Sua experiência é muito relevante para essa posição."
+          text="Obrigada pelas suas respostas, Maria. Foi uma conversa produtiva."
           time="14:54"
         />
 
@@ -84,10 +87,10 @@ export function ConfirmationScreen() {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-gray-900 font-['Open_Sans',sans-serif]">
-                Chegamos ao final!
+                Chegamos ao final.
               </h3>
               <p className="text-xs text-gray-400 mt-1 font-['Open_Sans',sans-serif]">
-                Quer revisar algo antes de concluir?
+                Deseja revisar algo antes de concluir?
               </p>
             </div>
           </div>

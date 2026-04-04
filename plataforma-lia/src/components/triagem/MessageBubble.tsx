@@ -57,14 +57,14 @@ const MessageBubble = memo(function MessageBubble({ message, candidateName = "Ca
   return (
     <div
       className={cn(
- "flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300",
+        "flex gap-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300",
         isLia ? "justify-start" : "justify-end",
         className
       )}
       aria-label={isLia ? "Mensagem da LIA" : "Sua mensagem"}
     >
       {isLia && (
-        <div className="flex-shrink-0 mt-1">
+        <div className="flex-shrink-0 mt-0.5">
           <LIAIcon
             size="sm"
             className="bg-wedo-cyan/10"
@@ -73,13 +73,21 @@ const MessageBubble = memo(function MessageBubble({ message, candidateName = "Ca
         </div>
       )}
 
-      <div className="flex flex-col gap-1 max-w-[80%]">
+      <div className={cn("flex flex-col gap-1 max-w-[80%]", isLia ? "items-start" : "items-end")}>
+        {isLia && (
+          <div className="flex items-center gap-1.5 px-1">
+            <span className="text-xs font-bold text-lia-text-primary font-['Inter',sans-serif]">LIA</span>
+            <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums">
+              {formatTimestamp(message.timestamp)}
+            </span>
+          </div>
+        )}
         <div
           className={cn(
- "px-4 py-3 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-lg",
+            "px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed",
             isLia
-              ? "bg-chat-cyan/[0.04] text-lia-text-primary"
-              : "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+              ? "bg-chat-cyan/[0.04] text-lia-text-primary rounded-[14px] rounded-bl-[4px]"
+              : "bg-lia-bg-tertiary text-lia-text-secondary rounded-[14px] rounded-br-[4px]"
           )}
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(parseSimpleMarkdown(message.content)) }}
         />
@@ -93,20 +101,17 @@ const MessageBubble = memo(function MessageBubble({ message, candidateName = "Ca
             onEnded={() => setIsAudioPlaying(false)}
           />
         )}
-        <span
-          className={cn(
- "text-micro font-['Inter',sans-serif] text-lia-text-disabled",
-            isLia ? "text-left" : "text-right"
-          )}
-        >
-          {formatTimestamp(message.timestamp)}
-        </span>
+        {!isLia && (
+          <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums px-1">
+            {formatTimestamp(message.timestamp)}
+          </span>
+        )}
       </div>
 
       {!isLia && (
-        <div className="flex-shrink-0 mt-1">
+        <div className="flex-shrink-0 mt-0.5">
           <div
-            className="w-8 h-8 rounded-lg bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center text-xs font-semibold text-lia-text-secondary font-['Inter',sans-serif]"
+            className="w-7 h-7 rounded-full bg-lia-interactive-active flex items-center justify-center text-xs font-semibold text-lia-text-tertiary font-['Inter',sans-serif]"
             aria-hidden="true"
           >
             {getInitials(candidateName)}

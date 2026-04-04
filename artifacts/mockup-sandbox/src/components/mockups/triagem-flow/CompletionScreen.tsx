@@ -10,10 +10,10 @@ export function CompletionScreen() {
               <CheckCircle2 className="w-7 h-7 text-emerald-500" />
             </div>
             <h2 className="text-lg font-semibold text-gray-900 font-['Open_Sans',sans-serif]">
-              Triagem concluída com sucesso!
+              Triagem concluída com sucesso.
             </h2>
             <p className="text-sm text-gray-600 font-['Open_Sans',sans-serif]">
-              Obrigada, Maria Silva! Suas respostas foram registradas.
+              Obrigada, Maria Silva. Suas respostas foram registradas.
             </p>
           </div>
 
@@ -29,9 +29,9 @@ export function CompletionScreen() {
             </h3>
             <ul className="space-y-2">
               {[
-                "Suas respostas serão analisadas pela equipe de recrutamento da WeDO Talent.",
-                "Caso aprovada, você receberá um e-mail com instruções para a próxima etapa.",
-                "O prazo estimado de retorno é de até 5 dias úteis.",
+                "Você receberá um e-mail de confirmação em instantes",
+                "A equipe da Acme Corp avaliará seu perfil nos próximos dias",
+                "Fique atento ao seu e-mail para atualizações",
               ].map((step, i) => (
                 <li
                   key={i}

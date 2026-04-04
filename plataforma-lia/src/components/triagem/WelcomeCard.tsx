@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
-import { Clock, Shield, Mic, CheckSquare, Square } from "lucide-react"
+import { Clock, Shield, Mic, CheckSquare, Square, MapPin, Briefcase, DollarSign, Gift } from "lucide-react"
 import type { TriagemConfig } from "@/components/triagem/types"
 
 interface WelcomeCardProps {
@@ -13,17 +13,37 @@ interface WelcomeCardProps {
   className?: string
 }
 
+function formatSalary(range: { min?: number; max?: number; currency?: string }): string {
+  const currency = range.currency || "BRL"
+  const fmt = (v: number) =>
+    v.toLocaleString("pt-BR", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0 })
+  if (range.min && range.max) return `${fmt(range.min)} - ${fmt(range.max)}`
+  if (range.min) return `A partir de ${fmt(range.min)}`
+  if (range.max) return `Até ${fmt(range.max)}`
+  return ""
+}
+
+const WORK_MODEL_LABELS: Record<string, string> = {
+  remoto: "Remoto",
+  "híbrido": "Híbrido",
+  presencial: "Presencial",
+}
+
 export function WelcomeCard({ config, onStart, isStarting = false, className }: WelcomeCardProps) {
   const [consentChecked, setConsentChecked] = useState(false)
+
+  const hasJobDetails = config.jobDescription || config.location || config.workModel
+  const hasSalary = config.showSalary && config.salaryRange && (config.salaryRange.min || config.salaryRange.max)
+  const hasBenefits = config.showBenefits && config.benefits && config.benefits.length > 0
 
   return (
     <div
       className={cn(
- "flex-1 flex items-center justify-center px-4 py-8",
+        "flex-1 flex items-center justify-center px-4 py-8",
         className
       )}
     >
-      <div className="w-full max-w-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-6 space-y-6">
+      <div className="w-full max-w-md bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-6 space-y-5">
         <div className="flex flex-col items-center gap-4 text-center">
           {config.companyLogoUrl ? (
             <img
@@ -44,13 +64,53 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
           </h1>
         </div>
 
+        {hasJobDetails && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+            {config.location && (
+              <span className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                {config.location}
+              </span>
+            )}
+            {config.workModel && (
+              <span className="flex items-center gap-1">
+                <Briefcase className="w-3.5 h-3.5 flex-shrink-0" />
+                {WORK_MODEL_LABELS[config.workModel] || config.workModel}
+              </span>
+            )}
+          </div>
+        )}
+
+        {config.jobDescription && (
+          <p className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed line-clamp-4">
+            {config.jobDescription}
+          </p>
+        )}
+
+        {(hasSalary || hasBenefits) && (
+          <div className="space-y-2">
+            {hasSalary && config.salaryRange && (
+              <div className="flex items-center gap-2 text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+                <DollarSign className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>{formatSalary(config.salaryRange)}</span>
+              </div>
+            )}
+            {hasBenefits && config.benefits && (
+              <div className="flex items-start gap-2 text-xs text-lia-text-tertiary font-['Open_Sans',sans-serif]">
+                <Gift className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                <span>{config.benefits.join(" · ")}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex items-start gap-3 p-4 bg-wedo-cyan/10 dark:bg-wedo-cyan/15 rounded-lg">
           <LIAIcon size="sm" className="flex-shrink-0 bg-wedo-cyan/10" />
           <div className="text-sm text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
             <p className="font-semibold text-lia-text-primary mb-1">
-              Olá, {config.candidateName}! Eu sou a LIA 👋
+              Olá, {config.candidateName}. Eu sou a LIA.
             </p>
-            <p>{config.welcomeMessage || "Vou conduzir sua triagem para esta vaga. Será uma conversa rápida e descontraída sobre sua experiência e habilidades."}</p>
+            <p>{config.welcomeMessage || "Vou conduzir sua triagem para esta vaga. A conversa abordará sua experiência e habilidades de forma objetiva."}</p>
           </div>
         </div>
 
@@ -115,7 +175,7 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
               className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-default dark:border-lia-border-default bg-transparent text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
             >
               <Mic className="w-4 h-4" />
-              {isStarting ? "Iniciando..." : "Iniciar Conversa por Voz"}
+              {isStarting ? "Iniciando..." : "Iniciar por Gravação de Voz"}
             </button>
           )}
         </div>
