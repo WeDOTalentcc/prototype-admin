@@ -3,6 +3,7 @@
 
 import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState } from "react"
+import { useModalA11y } from "@/hooks/use-modal-a11y"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -135,6 +136,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
   const [activeTab, setActiveTab] = useState("overview")
   const [newNote, setNewNote] = useState("")
   const [noteType, setNoteType] = useState<"positive" | "neutral" | "negative">("neutral")
+  const dialogRef = useModalA11y(isOpen, onClose)
 
   if (!isOpen || !candidate) return null
 
@@ -203,8 +205,8 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
   }
 
   return (
-    <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-6xl max-h-[90vh] bg-lia-bg-primary rounded-md overflow-hidden">
+    <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="candidate-modal-title" className="w-full max-w-6xl max-h-[90vh] bg-lia-bg-primary rounded-md overflow-hidden" onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle bg-lia-bg-secondary">
@@ -218,7 +220,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
             />
 
             <div>
-              <h2 className="text-2xl font-semibold text-lia-text-primary">
+              <h2 id="candidate-modal-title" className="text-2xl font-semibold text-lia-text-primary">
                 {candidateData.fullName}
               </h2>
               <div className="flex items-center gap-3 mt-1">

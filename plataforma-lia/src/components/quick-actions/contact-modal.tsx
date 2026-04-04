@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { useModalA11y } from "@/hooks/use-modal-a11y"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -187,6 +188,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
     }
   }, [isOpen])
 
+  const dialogRef = useModalA11y(isOpen, onClose)
   if (!isOpen || !candidate) return null
 
   const handleTemplateSelect = (template: { id?: string; subject?: string; message?: string }) => {
@@ -347,8 +349,8 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
   }
 
   return (
-    <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
-      <div className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-4xl max-h-[90vh] overflow-y-auto`}>
+    <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="contact-modal-title" className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-4xl max-h-[90vh] overflow-y-auto`} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
@@ -356,7 +358,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               <AvatarFallback>{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className={`${textStyles.title}`}>
+              <h3 id="contact-modal-title" className={`${textStyles.title}`}>
                 Contatar {candidate.name}
               </h3>
               <p className={textStyles.bodySmall}>

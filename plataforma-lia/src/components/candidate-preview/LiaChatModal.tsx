@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { textStyles, formatScorePercent } from "@/lib/design-tokens"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
+import { useModalA11y } from "@/hooks/use-modal-a11y"
 
 interface LiaAction {
   id: string
@@ -65,6 +66,7 @@ export function LiaChatModal({
   onAddToList,
   onAddToVacancy,
 }: LiaChatModalProps) {
+  const dialogRef = useModalA11y(isOpen, onClose)
   if (!isOpen) return null
 
   const handleContact = () => {
@@ -91,8 +93,8 @@ export function LiaChatModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-lia-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary rounded-md max-w-2xl w-full max-h-[85vh] overflow-hidden">
+    <div className="fixed inset-0 bg-lia-overlay backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Chat com LIA" className="bg-lia-bg-primary rounded-md max-w-2xl w-full max-h-[85vh] overflow-hidden" onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="bg-lia-bg-primary border-b border-lia-border-subtle">

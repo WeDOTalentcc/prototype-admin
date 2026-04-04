@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { useModalA11y } from "@/hooks/use-modal-a11y"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ChevronRight, CheckCircle, X, User, Star, Zap } from "lucide-react"
@@ -28,6 +29,7 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
   const [comment, setComment] = useState('')
   const [assignTo, setAssignTo] = useState('')
   const [sendNotification, setSendNotification] = useState(true)
+  const dialogRef = useModalA11y(isOpen, onClose)
 
   if (!isOpen || selectedCandidates.length === 0) return null
 
@@ -96,11 +98,11 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
   }
 
   return (
-    <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="batch-action-modal-title" className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-6 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div>
-            <h3 className="text-lg font-semibold text-lia-text-primary">
+            <h3 id="batch-action-modal-title" className="text-lg font-semibold text-lia-text-primary">
               Ações em Lote
             </h3>
             <p className="text-sm text-lia-text-secondary">

@@ -744,6 +744,7 @@ export function CompanyDataSection({
             fieldKey="employment_types"
             label="Modelos de Contratação"
             category="Trabalho & Contratação"
+            grouped
             
             isActive={companyData.lia_field_toggles?.employment_types ?? true}
             currentInstruction={companyData.lia_instructions?.employment_types || ''}
@@ -786,6 +787,7 @@ export function CompanyDataSection({
             fieldKey="seniority_levels"
             label="Níveis de Senioridade"
             category="Trabalho & Contratação"
+            grouped
             
             isActive={companyData.lia_field_toggles?.seniority_levels ?? true}
             currentInstruction={companyData.lia_instructions?.seniority_levels || ''}
@@ -956,6 +958,7 @@ export function CompanyDataSection({
           fieldKey="company_big_five"
           label="Perfil Cultural Big Five"
           category="Cultura Organizacional"
+          grouped
           
           isActive={companyData.lia_field_toggles?.company_big_five ?? true}
           currentInstruction={companyData.lia_instructions?.company_big_five || ''}

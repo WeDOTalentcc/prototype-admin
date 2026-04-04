@@ -3,6 +3,7 @@
 
 import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState } from "react"
+import { useModalA11y } from "@/hooks/use-modal-a11y"
 import {
   FileText,
   FileVideo,
@@ -54,12 +55,13 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
   const [imageZoom, setImageZoom] = useState(100)
   const [videoPlaying, setVideoPlaying] = useState(false)
   const [audioPlaying, setAudioPlaying] = useState(false)
+  const dialogRef = useModalA11y(showPreview, onClose)
 
   if (!showPreview || !selectedFile) return null
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-overlay flex items-center justify-center p-4">
-      <div className="bg-lia-bg-primary rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-overlay flex items-center justify-center p-4" onClick={onClose}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={`Preview: ${selectedFile.name}`} className="bg-lia-bg-primary rounded-md max-w-4xl w-full max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Header do Preview */}
         <div className="flex items-center justify-between p-3 border-b border-lia-border-subtle bg-lia-bg-primary">
           <div className="flex items-center gap-2">

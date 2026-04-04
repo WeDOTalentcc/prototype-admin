@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { useModalA11y } from "@/hooks/use-modal-a11y"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -45,6 +46,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
   const [isScheduling, setIsScheduling] = useState(false)
   const [createdInterviewId, setCreatedInterviewId] = useState<string | null>(null)
+  const dialogRef = useModalA11y(isOpen, onClose)
   if (!isOpen || !candidate) return null
 
   const interviewTypes = [
@@ -324,8 +326,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
   }
 
   return (
-    <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4">
-      <div className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-3xl max-h-[90vh] overflow-y-auto`}>
+    <div className="fixed inset-0 bg-lia-overlay/70 backdrop-blur-[1px] z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="schedule-modal-title" className={`${cardStyles.default} dark:bg-lia-bg-primary dark:border-lia-border-subtle rounded-md w-full max-w-3xl max-h-[90vh] overflow-y-auto`} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
@@ -333,7 +335,7 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
               <AvatarFallback>{candidate.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className={`${textStyles.title}`}>
+              <h3 id="schedule-modal-title" className={`${textStyles.title}`}>
                 Agendar Entrevista - {candidate.name}
               </h3>
               <p className={textStyles.bodySmall}>

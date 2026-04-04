@@ -27,6 +27,7 @@ interface CompanyDataCardProps {
   children: ReactNode
   className?: string
   fullWidth?: boolean
+  grouped?: boolean
 }
 
 export function CompanyDataCard({
@@ -41,6 +42,7 @@ export function CompanyDataCard({
   children,
   className,
   fullWidth = false,
+  grouped = false,
 }: CompanyDataCardProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [instruction, setInstruction] = useState(currentInstruction)
@@ -85,9 +87,15 @@ export function CompanyDataCard({
     >
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 flex-shrink-0 min-w-[140px]">
-          <label htmlFor={`field-${fieldKey}`} className={textStyles.label}>
-            {label}
-          </label>
+          {grouped ? (
+            <span role="group" aria-label={label} className={textStyles.label}>
+              {label}
+            </span>
+          ) : (
+            <label htmlFor={`field-${fieldKey}`} className={textStyles.label}>
+              {label}
+            </label>
+          )}
           {category && (
             <span className={cn(textStyles.caption, "bg-lia-bg-tertiary dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full")}>
               {category}
@@ -95,7 +103,7 @@ export function CompanyDataCard({
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0" role={grouped ? "group" : undefined} aria-label={grouped ? label : undefined}>
           {children}
         </div>
 

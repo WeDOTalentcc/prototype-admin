@@ -3,6 +3,7 @@
 
 import { formatBRL } from "@/lib/pricing"
 import { useState } from "react"
+import { useModalA11y } from "@/hooks/use-modal-a11y"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -64,6 +65,7 @@ export function QuickViewModal({
   onContactCandidate
 }: QuickViewModalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'experience' | 'analysis'>('overview')
+  const dialogRef = useModalA11y(isOpen, onClose)
 
   if (!isOpen || !candidate) return null
 
@@ -97,9 +99,9 @@ export function QuickViewModal({
   return (
     <div 
       className="fixed inset-0 bg-lia-overlay backdrop-blur-[1px] flex items-center justify-center z-50 p-4"
-     
+      onClick={onClose}
     >
-      <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={`Visualização rápida: ${candidate.name}`} className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle w-full max-w-4xl max-h-[90vh] overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center gap-4">
