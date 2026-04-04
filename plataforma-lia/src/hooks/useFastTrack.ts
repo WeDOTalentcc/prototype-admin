@@ -7,7 +7,7 @@
  * - Ask only for sensitive fields (affirmative, manager, location)
  * - Regenerate WSI questions if competencies change
  */
-import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
+import { formatBRL, formatBRLCompact, CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState, useCallback, useEffect, useRef } from 'react'
 import type { 
   TechnicalSkill, 
@@ -399,7 +399,7 @@ Quer usar uma delas como base? Vai ser bem mais rápido!`
     const behavioralList = job.behavioral_competencies || []
     const behavioralCount = behavioralList.length
     const salaryInfo = job.salary_min && job.salary_max
-      ? `${formatBRL(job.salary_min / 1000)}k - ${(job.salary_max / 1000).toFixed(0)}k`
+      ? `${formatBRLCompact(job.salary_min)} - ${formatBRLCompact(job.salary_max)}`
       : ''
     const wsiCount = job.wsi_questions?.length || 0
     const gestorName = job.manager || job.gestor

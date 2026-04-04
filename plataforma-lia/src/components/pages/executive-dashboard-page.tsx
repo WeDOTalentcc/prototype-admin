@@ -1,7 +1,7 @@
 "use client"
 
 
-import { formatBRL } from "@/lib/pricing"
+import { formatBRL, formatBRLCompact } from "@/lib/pricing"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -587,7 +587,7 @@ export function ExecutiveDashboardPage() {
                           <div className="text-xs text-status-success">ROI</div>
                         </div>
                         <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md text-center">
-                          <div className="text-2xl font-bold text-status-success">{formatBRL((data.financialMetrics.costSavings / 1000))}</div>
+                          <div className="text-2xl font-bold text-status-success">{formatBRLCompact(data.financialMetrics.costSavings)}</div>
                           <div className="text-xs text-status-success">Economia</div>
                         </div>
                       </div>

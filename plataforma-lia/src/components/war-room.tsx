@@ -1,7 +1,7 @@
 "use client"
 
 
-import { formatBRL } from "@/lib/pricing"
+import { formatBRL, formatBRLCompact } from "@/lib/pricing"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -238,7 +238,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
 
                       <div className="flex justify-between text-xs">
                         <span>{campaign.targets.length} alvos</span>
-                        <span>{formatBRL((campaign.budget / 1000))} budget</span>
+                        <span>{formatBRLCompact(campaign.budget)} budget</span>
                       </div>
                     </CardContent>
                   </Card>
