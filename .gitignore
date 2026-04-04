@@ -74,3 +74,4 @@ plataforma-lia/src/stories/assets/*.png
 # Temporary
 /tmp/
 *.tmp
+.coverage
