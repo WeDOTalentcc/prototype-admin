@@ -152,6 +152,32 @@ class TenantBudget:
             "month": datetime.now(timezone.utc).strftime("%Y-%m"),
         }
 
+    def get_provider_container(self, company_id: str):
+        """
+        Return the LLM ProviderContainer configured for this tenant.
+
+        Delegates to TenantProviderRegistry, which sources provider config
+        from tool_permissions.yaml (per-tenant llm_provider + llm_fallback_order).
+
+        This wires tenant token budget management with per-tenant provider
+        selection (Task #125).
+
+        Usage in orchestration paths:
+            budget = TenantBudget()
+            container = budget.get_provider_container(company_id)
+            result = await container.generate_with_fallback(prompt)
+            await budget.check_and_record(company_id, tokens_used)
+        """
+        try:
+            from app.shared.providers.llm_factory import TenantProviderRegistry
+            return TenantProviderRegistry.get_instance().get_container(company_id)
+        except Exception as exc:
+            logger.warning(
+                "[TenantBudget] Could not get provider container for company=%s: %s",
+                company_id, exc,
+            )
+            return None
+
 
 # Singleton compartilhado
 tenant_budget = TenantBudget()

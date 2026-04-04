@@ -6,11 +6,19 @@ Defines which tools are available in each prompt context:
 - JOB_TABLE: Vacancy management and analysis
 - IN_JOB: Pipeline actions within specific job vacancy
 
-This ensures strict separation between candidate and vacancy domains
-for architectural clarity and user experience consistency.
+Configuration is loaded from tool_permissions.yaml (declarative, per-tenant).
+Hardcoded Set[str] definitions remain as fallback constants for backward compatibility.
+
+Task #125: Replaced hardcoded Sets with YAML-driven ToolPermissionsLoader.
 """
-from typing import Dict, List, Set
+from typing import Dict, List, Optional, Set
 from enum import Enum
+
+from app.tools.tool_permissions_loader import (
+    get_tools_for_scope as _yaml_get_tools,
+    is_tool_allowed as _yaml_is_tool_allowed,
+    get_permissions,
+)
 
 
 class PromptScope(str, Enum):
@@ -21,96 +29,25 @@ class PromptScope(str, Enum):
     GLOBAL = "global"
 
 
-FUNNEL_QUERY_TOOLS: Set[str] = {
-    "search_candidates",
-    "get_candidate_details",
-    "get_candidate_stats",
-    "compare_candidates",
-    "get_talent_quality",
-    "get_talent_engagement",
-    "get_talent_availability",
-    "get_diversity_metrics",
-    "get_candidate_history",
-    "get_ml_predictions",
-    "get_conversion_patterns",
-}
+# ---------------------------------------------------------------------------
+# Backward-compatible constants — derived from YAML global defaults.
+# These are computed once at import time from the declarative config.
+# ---------------------------------------------------------------------------
 
-FUNNEL_ACTION_TOOLS: Set[str] = {
-    "add_candidate_to_vacancy",
-    "reject_candidate",
-    "shortlist_candidate",
-    "add_to_list",
-    "hide_candidate",
-    "send_email",
-    "send_whatsapp",
-    "send_bulk_email",
-    "export_candidates",
-}
+def _load_global_set(scope: str, tool_type: str) -> Set[str]:
+    try:
+        return _yaml_get_tools(scope, tool_type, tenant_id=None)
+    except Exception:
+        return set()
 
-VACANCY_QUERY_TOOLS: Set[str] = {
-    "search_jobs",
-    "get_job_details",
-    "get_pipeline_stats",
-    "get_recruiter_metrics",
-    "get_velocity_metrics",
-    "get_efficiency_metrics",
-    "get_comparative_metrics",
-    "get_workload_distribution",
-    "get_hiring_quality",
-    "get_cost_metrics",
-    "get_trends",
-    "get_market_benchmarks",
-}
 
-VACANCY_ACTION_TOOLS: Set[str] = {
-    "create_job",
-    "update_job",
-    "pause_job",
-    "close_job",
-    "publish_job",
-    "export_job_analytics",
-    "generate_report",
-}
-
-IN_JOB_QUERY_TOOLS: Set[str] = {
-    "get_job_details",
-    "get_vacancy_funnel",
-    "get_candidate_details",
-    "get_activity_summary",
-    "get_pending_actions",
-    "compare_candidates",
-    "get_candidate_stats",
-    "get_bottleneck_analysis",
-    "get_job_velocity",
-    "get_job_quality_metrics",
-    "get_stakeholder_metrics",
-    "get_prediction_metrics",
-    "get_job_benchmark",
-    "get_smart_alerts",
-}
-
-IN_JOB_ACTION_TOOLS: Set[str] = {
-    "update_candidate_stage",
-    "bulk_update_candidates_stage",
-    "reject_candidate",
-    "shortlist_candidate",
-    "add_to_list",
-    "hide_candidate",
-    "wsi_screening",
-    "send_email",
-    "send_whatsapp",
-    "schedule_interview",
-    "send_feedback",
-}
-
-GLOBAL_TOOLS: Set[str] = {
-    "generate_report",
-    "schedule_report",
-    "analyze_cv_match",         # Opção B: BARS rubric from any context
-    "create_and_screen_candidate",  # Opção C: CV upload → create → score
-    "parse_and_create_candidate",   # Step 1 of upload flow
-    "add_to_vacancy",               # Step 2 of upload flow
-}
+FUNNEL_QUERY_TOOLS: Set[str] = _load_global_set("talent_funnel", "query")
+FUNNEL_ACTION_TOOLS: Set[str] = _load_global_set("talent_funnel", "action")
+VACANCY_QUERY_TOOLS: Set[str] = _load_global_set("job_table", "query")
+VACANCY_ACTION_TOOLS: Set[str] = _load_global_set("job_table", "action")
+IN_JOB_QUERY_TOOLS: Set[str] = _load_global_set("in_job", "query")
+IN_JOB_ACTION_TOOLS: Set[str] = _load_global_set("in_job", "action")
+GLOBAL_TOOLS: Set[str] = _load_global_set("global", "action")
 
 
 SCOPE_TOOL_MAPPING: Dict[PromptScope, Dict[str, Set[str]]] = {
@@ -137,7 +74,7 @@ SCOPE_TOOL_MAPPING: Dict[PromptScope, Dict[str, Set[str]]] = {
 }
 
 
-SCOPE_DESCRIPTIONS: Dict[PromptScope, Dict[str, str]] = {
+SCOPE_DESCRIPTIONS: Dict[PromptScope, Dict[str, object]] = {
     PromptScope.TALENT_FUNNEL: {
         "name": "Funil de Talentos",
         "description": "Foco em candidatos: busca, avaliação, comparação e comunicação.",
@@ -191,82 +128,88 @@ SCOPE_DESCRIPTIONS: Dict[PromptScope, Dict[str, str]] = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Public API — tenant-aware wrappers over ToolPermissionsLoader
+# ---------------------------------------------------------------------------
+
 def get_tools_for_scope(
     scope: PromptScope,
-    tool_type: str = "all"
+    tool_type: str = "all",
+    tenant_id: Optional[str] = None,
 ) -> Set[str]:
     """
     Get the set of tools available for a given scope.
-    
+
     Args:
-        scope: The prompt scope (TALENT_FUNNEL, JOB_TABLE, IN_JOB)
-        tool_type: Type of tools ("query", "action", or "all")
-        
+        scope: The prompt scope (TALENT_FUNNEL, JOB_TABLE, IN_JOB, GLOBAL).
+        tool_type: Type of tools ("query", "action", or "all").
+        tenant_id: Optional tenant identifier for per-tenant overrides.
+
     Returns:
-        Set of tool names available in this scope
+        Set of tool names available in this scope.
     """
-    if scope not in SCOPE_TOOL_MAPPING:
-        return set()
-    
-    scope_tools = SCOPE_TOOL_MAPPING[scope]
-    
-    if tool_type not in scope_tools:
-        return scope_tools.get("all", set())
-    
-    return scope_tools[tool_type]
+    scope_str = scope.value if isinstance(scope, PromptScope) else str(scope)
+    return _yaml_get_tools(scope_str, tool_type, tenant_id=tenant_id)
 
 
 def filter_tools_by_scope(
     tools: List[Dict],
-    scope: PromptScope
+    scope: PromptScope,
+    tenant_id: Optional[str] = None,
 ) -> List[Dict]:
     """
     Filter a list of tool definitions to only those allowed in the scope.
-    
+
     Args:
-        tools: List of tool definition dictionaries
-        scope: The prompt scope to filter for
-        
+        tools: List of tool definition dictionaries.
+        scope: The prompt scope to filter for.
+        tenant_id: Optional tenant identifier for per-tenant overrides.
+
     Returns:
-        Filtered list of tool definitions
+        Filtered list of tool definitions.
     """
-    allowed_tools = get_tools_for_scope(scope, "all")
-    return [t for t in tools if t.get("name") in allowed_tools]
+    scope_str = scope.value if isinstance(scope, PromptScope) else str(scope)
+    return get_permissions(tenant_id).filter_tools(tools, scope_str)
 
 
-def is_tool_allowed_in_scope(tool_name: str, scope: PromptScope) -> bool:
+def is_tool_allowed_in_scope(
+    tool_name: str,
+    scope: PromptScope,
+    tenant_id: Optional[str] = None,
+) -> bool:
     """
     Check if a specific tool is allowed in the given scope.
-    
+
     Args:
-        tool_name: Name of the tool
-        scope: The prompt scope to check
-        
+        tool_name: Name of the tool.
+        scope: The prompt scope to check.
+        tenant_id: Optional tenant identifier for per-tenant overrides.
+
     Returns:
-        True if tool is allowed, False otherwise
+        True if tool is allowed, False otherwise.
     """
-    allowed_tools = get_tools_for_scope(scope, "all")
-    return tool_name in allowed_tools
+    scope_str = scope.value if isinstance(scope, PromptScope) else str(scope)
+    return _yaml_is_tool_allowed(tool_name, scope_str, tenant_id=tenant_id)
 
 
 def get_scope_system_prompt_addition(scope: PromptScope) -> str:
     """
     Get additional system prompt text that enforces scope boundaries.
-    
+
     Args:
-        scope: The prompt scope
-        
+        scope: The prompt scope.
+
     Returns:
-        System prompt addition text
+        System prompt addition text.
     """
     if scope not in SCOPE_DESCRIPTIONS:
         return ""
-    
+
     desc = SCOPE_DESCRIPTIONS[scope]
-    
+
     capabilities_text = "\n".join(f"  - {c}" for c in desc["capabilities"])
     restrictions_text = "\n".join(f"  - {r}" for r in desc["restrictions"])
-    
+
     return f"""
 ## Contexto: {desc['name']}
 
@@ -295,7 +238,7 @@ SCOPE_INTENT_MAPPING: Dict[str, PromptScope] = {
     "get_candidate_history": PromptScope.TALENT_FUNNEL,
     "get_ml_predictions": PromptScope.TALENT_FUNNEL,
     "get_conversion_patterns": PromptScope.TALENT_FUNNEL,
-    
+
     "search_jobs": PromptScope.JOB_TABLE,
     "get_job_details": PromptScope.JOB_TABLE,
     "create_job": PromptScope.JOB_TABLE,
@@ -310,7 +253,7 @@ SCOPE_INTENT_MAPPING: Dict[str, PromptScope] = {
     "get_cost_metrics": PromptScope.JOB_TABLE,
     "get_trends": PromptScope.JOB_TABLE,
     "get_market_benchmarks": PromptScope.JOB_TABLE,
-    
+
     "update_candidate_stage": PromptScope.IN_JOB,
     "get_vacancy_funnel": PromptScope.IN_JOB,
     "get_activity_summary": PromptScope.IN_JOB,
@@ -329,11 +272,11 @@ SCOPE_INTENT_MAPPING: Dict[str, PromptScope] = {
 def get_suggested_scope_for_intent(intent: str) -> PromptScope:
     """
     Get the suggested scope for a given intent/tool name.
-    
+
     Args:
-        intent: Intent or tool name
-        
+        intent: Intent or tool name.
+
     Returns:
-        Suggested PromptScope
+        Suggested PromptScope.
     """
     return SCOPE_INTENT_MAPPING.get(intent, PromptScope.GLOBAL)

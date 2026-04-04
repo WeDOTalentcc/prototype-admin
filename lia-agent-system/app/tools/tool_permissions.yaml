@@ -1,0 +1,125 @@
+# Tool Permissions Schema — Task #125
+# Declarative YAML for tool scope permissions per tenant.
+# Supports global defaults and per-tenant overrides.
+#
+# Structure:
+#   global: default permissions for all tenants
+#     scopes.<SCOPE>.query: list of tool names
+#     scopes.<SCOPE>.action: list of tool names
+#   tenants.<tenant_id>: per-tenant overrides
+#     overrides.<SCOPE>.add_query: extra tools to allow (query)
+#     overrides.<SCOPE>.add_action: extra tools to allow (action)
+#     overrides.<SCOPE>.remove: tools to deny (override global)
+#     llm_provider: preferred LLM provider (claude|gemini|openai)
+#     llm_fallback_order: ordered list of fallback providers
+
+version: "1.0"
+
+global:
+  scopes:
+    talent_funnel:
+      query:
+        - search_candidates
+        - get_candidate_details
+        - get_candidate_stats
+        - compare_candidates
+        - get_talent_quality
+        - get_talent_engagement
+        - get_talent_availability
+        - get_diversity_metrics
+        - get_candidate_history
+        - get_ml_predictions
+        - get_conversion_patterns
+      action:
+        - add_candidate_to_vacancy
+        - reject_candidate
+        - shortlist_candidate
+        - add_to_list
+        - hide_candidate
+        - send_email
+        - send_whatsapp
+        - send_bulk_email
+        - export_candidates
+
+    job_table:
+      query:
+        - search_jobs
+        - get_job_details
+        - get_pipeline_stats
+        - get_recruiter_metrics
+        - get_velocity_metrics
+        - get_efficiency_metrics
+        - get_comparative_metrics
+        - get_workload_distribution
+        - get_hiring_quality
+        - get_cost_metrics
+        - get_trends
+        - get_market_benchmarks
+      action:
+        - create_job
+        - update_job
+        - pause_job
+        - close_job
+        - publish_job
+        - export_job_analytics
+        - generate_report
+
+    in_job:
+      query:
+        - get_job_details
+        - get_vacancy_funnel
+        - get_candidate_details
+        - get_activity_summary
+        - get_pending_actions
+        - compare_candidates
+        - get_candidate_stats
+        - get_bottleneck_analysis
+        - get_job_velocity
+        - get_job_quality_metrics
+        - get_stakeholder_metrics
+        - get_prediction_metrics
+        - get_job_benchmark
+        - get_smart_alerts
+      action:
+        - update_candidate_stage
+        - bulk_update_candidates_stage
+        - reject_candidate
+        - shortlist_candidate
+        - add_to_list
+        - hide_candidate
+        - wsi_screening
+        - send_email
+        - send_whatsapp
+        - schedule_interview
+        - send_feedback
+
+    global:
+      query: []
+      action:
+        - generate_report
+        - schedule_report
+        - analyze_cv_match
+        - create_and_screen_candidate
+        - parse_and_create_candidate
+        - add_to_vacancy
+
+  llm_provider: gemini
+  llm_fallback_order:
+    - gemini
+    - claude
+    - openai
+
+# Per-tenant overrides — each entry is optional and additive/subtractive.
+# Tenants not listed here inherit the global defaults.
+tenants: {}
+# Example per-tenant override:
+#   acme_corp:
+#     llm_provider: claude
+#     llm_fallback_order: [claude, openai, gemini]
+#     overrides:
+#       talent_funnel:
+#         remove:
+#           - send_bulk_email
+#       in_job:
+#         add_action:
+#           - custom_acme_action

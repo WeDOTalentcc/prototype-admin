@@ -1,13 +1,15 @@
 # LIA-T07 — GlobalToolRegistry: acesso cross-domain a ferramentas com permissões read-only
 # OWASP LLM06: Excessive Agency — GlobalToolRegistry limita escopo de ferramentas
 # acessíveis por domínios externos, prevenindo side effects não autorizados.
+#
+# Task #125: Added tenant-aware tool filtering via declarative YAML permissions.
 
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from typing import Any, Optional
 
 from langchain_core.tools import BaseTool
 
@@ -39,6 +41,9 @@ class GlobalToolRegistry:
 
     LIA-T07: Previne Excessive Agency (OWASP LLM06) restringindo
     quais ferramentas podem ser acessadas cross-domain.
+
+    Task #125: list_tools_for_scope() and get_tool_in_scope() add
+    tenant-aware filtering via ToolPermissionsLoader (declarative YAML).
     """
 
     _instance: "GlobalToolRegistry | None" = None
@@ -68,8 +73,10 @@ class GlobalToolRegistry:
             description=tool.description,
             tags=tags or [],
         )
-        logger.debug("[GlobalToolRegistry] Registered %s (%s) from domain %s",
-                     tool.name, permission.value, domain)
+        logger.debug(
+            "[GlobalToolRegistry] Registered %s (%s) from domain %s",
+            tool.name, permission.value, domain,
+        )
 
     def get_tool(
         self,
@@ -81,20 +88,19 @@ class GlobalToolRegistry:
 
         External domains can only access READ_ONLY tools by default.
         """
-        # Search all domains for tool_name
         for key, reg in self._registry.items():
             if not key.endswith(f".{tool_name}"):
                 continue
             if not reg.enabled:
                 continue
-            # Same-domain access is unrestricted
             if reg.domain == requesting_domain:
                 return reg.tool
-            # Cross-domain: enforce max_permission
             if reg.permission == ToolPermission.READ_ONLY:
                 return reg.tool
-            if (reg.permission == ToolPermission.READ_WRITE
-                    and max_permission in (ToolPermission.READ_WRITE, ToolPermission.ADMIN)):
+            if (
+                reg.permission == ToolPermission.READ_WRITE
+                and max_permission in (ToolPermission.READ_WRITE, ToolPermission.ADMIN)
+            ):
                 return reg.tool
             logger.warning(
                 "[GlobalToolRegistry] Access denied: domain '%s' requested '%s' (permission=%s)",
@@ -114,17 +120,116 @@ class GlobalToolRegistry:
         for key, reg in self._registry.items():
             if not reg.enabled:
                 continue
-            # Permission check
             if reg.domain != requesting_domain:
                 if reg.permission != ToolPermission.READ_ONLY:
-                    if not (reg.permission == ToolPermission.READ_WRITE
-                            and max_permission != ToolPermission.READ_ONLY):
+                    if not (
+                        reg.permission == ToolPermission.READ_WRITE
+                        and max_permission != ToolPermission.READ_ONLY
+                    ):
                         continue
-            # Tag filter
             if tags and not any(t in reg.tags for t in tags):
                 continue
             accessible.append(reg.tool)
         return accessible
+
+    def list_tools_for_scope(
+        self,
+        requesting_domain: str,
+        scope: str,
+        tenant_id: Optional[str] = None,
+        max_permission: ToolPermission = ToolPermission.READ_ONLY,
+        tags: list[str] | None = None,
+    ) -> list[BaseTool]:
+        """
+        List tools accessible to a domain AND allowed in the given scope for a tenant.
+
+        Combines cross-domain permission checks with declarative scope permissions
+        from ToolPermissionsLoader (tool_permissions.yaml).
+
+        Args:
+            requesting_domain: The domain requesting tool access.
+            scope: Prompt scope string (talent_funnel, job_table, in_job, global).
+            tenant_id: Tenant identifier for per-tenant scope overrides.
+            max_permission: Maximum cross-domain permission level to allow.
+            tags: Optional tag filter applied after scope filtering.
+
+        Returns:
+            List of BaseTool objects that pass both cross-domain and scope checks.
+        """
+        try:
+            from app.tools.tool_permissions_loader import get_tools_for_scope
+            scope_allowed: set[str] = get_tools_for_scope(scope, "all", tenant_id=tenant_id)
+        except Exception as exc:
+            logger.error(
+                "[GlobalToolRegistry] SECURITY: Could not load scope permissions for "
+                "scope=%s tenant=%s: %s — denying all tools (fail-closed)",
+                scope, tenant_id, exc,
+            )
+            return []
+
+        accessible = []
+        for key, reg in self._registry.items():
+            if not reg.enabled:
+                continue
+
+            # Scope filter from declarative YAML
+            if scope_allowed is not None and reg.tool.name not in scope_allowed:
+                continue
+
+            # Cross-domain permission check
+            if reg.domain != requesting_domain:
+                if reg.permission != ToolPermission.READ_ONLY:
+                    if not (
+                        reg.permission == ToolPermission.READ_WRITE
+                        and max_permission != ToolPermission.READ_ONLY
+                    ):
+                        continue
+
+            if tags and not any(t in reg.tags for t in tags):
+                continue
+
+            accessible.append(reg.tool)
+
+        return accessible
+
+    def get_tool_in_scope(
+        self,
+        tool_name: str,
+        requesting_domain: str,
+        scope: str,
+        tenant_id: Optional[str] = None,
+        max_permission: ToolPermission = ToolPermission.READ_ONLY,
+    ) -> BaseTool | None:
+        """
+        Get a tool only if it passes both cross-domain permission AND scope checks.
+
+        Args:
+            tool_name: Name of the requested tool.
+            requesting_domain: Domain making the request.
+            scope: Prompt scope string.
+            tenant_id: Tenant identifier for per-tenant overrides.
+            max_permission: Maximum cross-domain permission.
+
+        Returns:
+            BaseTool if allowed, None otherwise.
+        """
+        try:
+            from app.tools.tool_permissions_loader import is_tool_allowed
+            if not is_tool_allowed(tool_name, scope, tenant_id=tenant_id):
+                logger.warning(
+                    "[GlobalToolRegistry] Scope denied: tool '%s' not in scope '%s' for tenant=%s",
+                    tool_name, scope, tenant_id,
+                )
+                return None
+        except Exception as exc:
+            logger.error(
+                "[GlobalToolRegistry] SECURITY: Scope check failed for tool '%s' "
+                "scope=%s tenant=%s: %s — denying access (fail-closed)",
+                tool_name, scope, tenant_id, exc,
+            )
+            return None
+
+        return self.get_tool(tool_name, requesting_domain, max_permission)
 
     def disable_tool(self, domain: str, tool_name: str) -> bool:
         """Disable a tool (e.g., during compliance review)."""
