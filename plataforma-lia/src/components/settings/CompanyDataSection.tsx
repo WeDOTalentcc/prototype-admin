@@ -542,6 +542,7 @@ export function CompanyDataSection({
                 ))}
               </div>
               <input
+                id="field-values"
                 type="text"
                 placeholder="Adicionar valor e pressionar Enter..."
                 disabled={!isEditingCompanyData}
@@ -585,12 +586,14 @@ export function CompanyDataSection({
                           coreCompetencies: prev.coreCompetencies?.filter((_: string, i: number) => i !== idx),
                         }))}
                         className="ml-1 hover:text-status-error"
+                        aria-label={`Remover ${comp}`}
                       >×</button>
                     )}
                   </Badge>
                 ))}
               </div>
               <input
+                id="field-core_competencies"
                 type="text"
                 placeholder="Adicionar competência e pressionar Enter..."
                 disabled={!isEditingCompanyData}
@@ -621,13 +624,15 @@ export function CompanyDataSection({
           {/* Nº de Funcionários */}
           <SimpleDataCard
             label="Nº de Funcionários"
+            fieldId="field-employee-count"
             category="Estrutura"
             
             isEditing={isEditingCompanyData}
           >
             <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-lia-text-tertiary" />
+              <Users className="w-4 h-4 text-lia-text-tertiary" aria-hidden="true" />
               <input
+                id="field-employee-count"
                 type="number"
                 value={companyData.employee_count || ''}
                 onChange={(e) => setCompanyData((prev) => ({
@@ -645,13 +650,15 @@ export function CompanyDataSection({
           {/* Porte da Empresa */}
           <SimpleDataCard
             label="Porte da Empresa"
+            fieldId="field-company-size"
             category="Estrutura"
             
             isEditing={isEditingCompanyData}
           >
             <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-lia-text-tertiary" />
+              <Building2 className="w-4 h-4 text-lia-text-tertiary" aria-hidden="true" />
               <select
+                id="field-company-size"
                 value={companyData.company_size || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, company_size: e.target.value }))}
                 disabled={!isEditingCompanyData}
@@ -670,13 +677,15 @@ export function CompanyDataSection({
           {/* Ano de Fundação */}
           <SimpleDataCard
             label="Ano de Fundação"
+            fieldId="field-founded-year"
             category="História"
             
             isEditing={isEditingCompanyData}
           >
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-lia-text-tertiary" />
+              <Calendar className="w-4 h-4 text-lia-text-tertiary" aria-hidden="true" />
               <input
+                id="field-founded-year"
                 type="number"
                 value={companyData.founded_year || ''}
                 onChange={(e) => setCompanyData((prev) => ({
@@ -713,8 +722,9 @@ export function CompanyDataSection({
             onInstructionSave={updateLiaInstruction}
           >
             <div className="flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-lia-text-tertiary" />
+              <Briefcase className="w-4 h-4 text-lia-text-tertiary" aria-hidden="true" />
               <select
+                id="field-work_model"
                 value={companyData.work_model || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, work_model: e.target.value }))}
                 disabled={!isEditingCompanyData}
@@ -848,8 +858,9 @@ export function CompanyDataSection({
             onInstructionSave={updateLiaInstruction}
           >
             <div className="flex items-start gap-2">
-              <Users className="w-4 h-4 text-lia-text-tertiary mt-2" />
+              <Users className="w-4 h-4 text-lia-text-tertiary mt-2" aria-hidden="true" />
               <textarea
+                id="field-dei_initiatives"
                 value={companyData.dei_initiatives || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, dei_initiatives: e.target.value }))}
                 disabled={!isEditingCompanyData}
@@ -873,8 +884,9 @@ export function CompanyDataSection({
             onInstructionSave={updateLiaInstruction}
           >
             <div className="flex items-start gap-2">
-              <Leaf className="w-4 h-4 text-lia-text-tertiary mt-2" />
+              <Leaf className="w-4 h-4 text-lia-text-tertiary mt-2" aria-hidden="true" />
               <textarea
+                id="field-sustainability"
                 value={companyData.sustainability || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, sustainability: e.target.value }))}
                 disabled={!isEditingCompanyData}
@@ -898,8 +910,9 @@ export function CompanyDataSection({
             onInstructionSave={updateLiaInstruction}
           >
             <div className="flex items-start gap-2">
-              <Heart className="w-4 h-4 text-lia-text-tertiary mt-2" />
+              <Heart className="w-4 h-4 text-lia-text-tertiary mt-2" aria-hidden="true" />
               <textarea
+                id="field-social_impact"
                 value={companyData.social_impact || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, social_impact: e.target.value }))}
                 disabled={!isEditingCompanyData}

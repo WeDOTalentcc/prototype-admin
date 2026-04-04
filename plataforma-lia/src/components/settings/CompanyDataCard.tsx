@@ -104,15 +104,16 @@ export function CompanyDataCard({
             <button
               type="button"
               disabled={!localIsActive || !isEditing}
+              aria-label={`Configurar instrução LIA para ${label}`}
               className={cn(
-                "inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors flex-shrink-0",
+                "inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan",
                 (!localIsActive || !isEditing) && "opacity-40 cursor-not-allowed",
                 localIsActive && isEditing && hasInstruction
  ? "text-lia-text-secondary hover:bg-lia-bg-tertiary"
                   : "bg-lia-bg-secondary text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-secondary dark:bg-lia-bg-elevated dark:hover:bg-lia-border-medium"
               )}
             >
-              <Bot className="w-4 h-4" />
+              <Bot className="w-4 h-4" aria-hidden="true" />
             </button>
           </PopoverTrigger>
           <PopoverContent 
@@ -128,9 +129,10 @@ export function CompanyDataCard({
                 </div>
                 <button
                   onClick={() => setIsPopoverOpen(false)}
-                  className="text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
+                  className="text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan rounded-sm"
+                  aria-label="Fechar instrução LIA"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
 
