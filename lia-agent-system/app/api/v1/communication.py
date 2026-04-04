@@ -182,9 +182,9 @@ async def send_email(
     x_company_id: Optional[str] = Header(None, alias="X-Company-ID")
 ):
     """
-    Send an email via the CommunicationDispatcher (SendGrid).
+    Send an email via the CommunicationDispatcher (Mailgun primary, Resend fallback).
     
-    - Uses SendGrid when configured
+    - Uses Mailgun when configured, Resend as automatic fallback
     - Falls back to mock success in development when API keys not set
     - Logs the communication to CommunicationHistory
     """
@@ -415,7 +415,7 @@ async def send_screening_invite(
     Send a WSI (Work Sample Interview) screening invite to a candidate.
     
     Supports email and WhatsApp channels:
-    - Email: Uses SendGrid via CommunicationDispatcher
+    - Email: Uses Mailgun via CommunicationDispatcher
     - WhatsApp: Uses Twilio via CommunicationDispatcher
     - Telefone: Logs the script for phone call (no actual call made)
     

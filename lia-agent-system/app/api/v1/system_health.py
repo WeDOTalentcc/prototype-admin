@@ -207,7 +207,7 @@ async def system_health(db: AsyncSession = Depends(get_db)):
         "openai": "configured" if os.getenv("OPENAI_API_KEY") else "not_configured",
         "gemini": "configured" if (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")) else "not_configured",
         "workos": "configured" if os.getenv("WORKOS_API_KEY") else "not_configured",
-        "sendgrid": "configured" if os.getenv("SENDGRID_API_KEY") else "not_configured",
+        "mailgun": "configured" if (os.getenv("MAILGUN_API_KEY") and os.getenv("MAILGUN_DOMAIN")) else "not_configured",
     }
 
     status_code = 200 if overall_healthy else 503

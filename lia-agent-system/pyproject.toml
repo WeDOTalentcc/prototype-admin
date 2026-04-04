@@ -50,7 +50,6 @@ dependencies = [
     # Communication
     "twilio==9.4.0",
     "resend==2.19.0",
-    "sendgrid==6.11.0",
     # Monitoring
     "prometheus-client==0.21.0",
     "sentry-sdk[fastapi]==2.19.2",

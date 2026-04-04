@@ -999,7 +999,7 @@ class TriagemSessionService:
                           </div>
                         </div>"""
 
-                    platform_email = _os.getenv("SENDGRID_FROM_EMAIL", "noreply@wedotalent.com")
+                    platform_email = _os.getenv("MAILGUN_FROM_EMAIL", "noreply@wedotalent.com")
                     html_body = (html_template
                         .replace("{{ candidate_name }}", feedback_report["first_name"])
                         .replace("{{ job_title }}", feedback_report["job_title"])

@@ -273,11 +273,11 @@ class IntegrationSettings(BaseSettings):
     GOOGLE_CALENDAR_DEFAULT_TIMEZONE: str = "America/Sao_Paulo"
     GOOGLE_CALENDAR_OAUTH_REDIRECT_URI: Optional[str] = None
 
-    # SendGrid / email
-    SENDGRID_API_KEY: Optional[str] = None
-    RESEND_API_KEY: Optional[str] = None
-    MAILGUN_API_KEY: Optional[str] = None
-    MAILGUN_DOMAIN: Optional[str] = None
+    # Email (Mailgun primary, Resend fallback)
+    MAILGUN_API_KEY: Optional[str] = None     # Required for email sending
+    MAILGUN_DOMAIN: Optional[str] = None      # Required for email sending (ex: mg.wedotalent.com)
+    MAILGUN_API_BASE: str = "https://api.mailgun.net/v3"
+    RESEND_API_KEY: Optional[str] = None      # Fallback when Mailgun is unavailable
     EMAIL_FROM_ADDRESS: str = "noreply@wedotalent.com"
     EMAIL_FROM_NAME: str = "WeDOTalent"
 

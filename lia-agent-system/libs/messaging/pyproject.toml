@@ -11,9 +11,8 @@ dependencies = [
 
 [project.optional-dependencies]
 email-resend = ["resend>=2.19.0"]
-email-sendgrid = ["sendgrid>=6.11.0"]
 whatsapp-twilio = ["twilio>=9.4.0"]
-all = ["resend>=2.19.0", "sendgrid>=6.11.0", "twilio>=9.4.0"]
+all = ["resend>=2.19.0", "twilio>=9.4.0"]
 
 [tool.uv.sources]
 lia-config = { workspace = true }

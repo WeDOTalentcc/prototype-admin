@@ -37,11 +37,11 @@ class TestCircuitBreakerCoverage:
         names_lower = [k.lower() for k in ALL_CIRCUITS]
         assert any("gupy" in n for n in names_lower)
 
-    def test_sendgrid_circuit_exists(self):
-        """Circuit para SendGrid deve existir."""
+    def test_mailgun_circuit_exists(self):
+        """Circuit para Mailgun deve existir."""
         from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
         names_lower = [k.lower() for k in ALL_CIRCUITS]
-        assert any("sendgrid" in n for n in names_lower)
+        assert any("mailgun" in n for n in names_lower)
 
     def test_workos_circuit_exists(self):
         """Circuit para WorkOS deve existir."""

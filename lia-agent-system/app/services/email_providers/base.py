@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # LGPD — Footer obrigatório em todos os emails enviados pela plataforma (K1)
 #
-# Identifica o sistema de IA, sub-processador SendGrid, e oferece opt-out.
+# Identifica o sistema de IA, sub-processador Mailgun, e oferece opt-out.
 # Deve ser injetado via EmailProvider.with_lgpd_footer() antes de envio.
 # ---------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@ BASE_EMAIL_FOOTER_HTML = (
     '<hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>'
     '<p style="font-size:11px;color:#9ca3af;font-family:sans-serif;line-height:1.5">'
     "Este email foi gerado por <strong>LIA</strong>, assistente de recrutamento com inteligência artificial da WeDOTalent. "
-    "O envio é realizado via <strong>Twilio SendGrid</strong> (sub-processador de dados — LGPD Lei 13.709/2018). "
+    "O envio é realizado via <strong>Mailgun</strong> (sub-processador de dados — LGPD Lei 13.709/2018). "
     "Para exercer seus direitos de titular (acesso, correção, exclusão) ou cancelar o recebimento de comunicações, "
     "responda este email com o assunto <strong>PRIVACIDADE</strong> ou acesse "
     '<a href="https://wedotalent.com.br/privacidade" style="color:#6b7280">wedotalent.com.br/privacidade</a>.'
@@ -31,7 +31,7 @@ BASE_EMAIL_FOOTER_HTML = (
 BASE_EMAIL_FOOTER_TEXT = (
     "\n\n---\n"
     "Este email foi gerado por LIA, assistente de recrutamento com IA da WeDOTalent. "
-    "Envio via Twilio SendGrid (sub-processador LGPD). "
+    "Envio via Mailgun (sub-processador LGPD). "
     "Para exercer direitos de titular ou cancelar comunicações, responda com assunto PRIVACIDADE "
     "ou acesse wedotalent.com.br/privacidade."
 )
@@ -157,10 +157,10 @@ class EmailProvider(ABC):
     @staticmethod
     def with_lgpd_footer(message: "EmailMessage") -> "EmailMessage":
         """
-        Retorna uma cópia do EmailMessage com footer LGPD/SendGrid obrigatório.
+        Retorna uma cópia do EmailMessage com footer LGPD/Mailgun obrigatório.
 
         LGPD — K1: Todo email enviado pela plataforma deve identificar o sistema
-        de IA e o sub-processador Twilio SendGrid, e oferecer opt-out ao titular.
+        de IA e o sub-processador Mailgun, e oferecer opt-out ao titular.
 
         Uso nos providers:
             message = EmailProvider.with_lgpd_footer(message)

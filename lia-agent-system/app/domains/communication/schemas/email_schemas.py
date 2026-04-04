@@ -2,7 +2,7 @@
 Email-related Pydantic models and schemas.
 
 Extracted from email_service.py for better modularity.
-Used by SendGridEmailService and API endpoints.
+Used by MailgunEmailService and API endpoints.
 """
 from datetime import datetime
 from enum import Enum
@@ -11,7 +11,7 @@ from typing import Dict, Any, List, Optional
 from pydantic import BaseModel, Field
 
 
-class SendGridEmailStatus(str, Enum):
+class EmailDeliveryStatus(str, Enum):
     PENDING = "pending"
     QUEUED = "queued"
     SENT = "sent"
@@ -77,7 +77,7 @@ class EmailSendResult(BaseModel):
     success: bool
     message_id: Optional[str] = None
     status: str = "pending"
-    provider: str = "sendgrid"
+    provider: str = "mailgun"
     error: Optional[str] = None
     error_code: Optional[str] = None
     sent_at: Optional[datetime] = None

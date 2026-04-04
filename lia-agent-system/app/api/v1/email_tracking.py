@@ -4,7 +4,7 @@ Email Tracking endpoints — COMP-7.
 GET  /api/v1/email-tracking/pixel/{token}.gif  — pixel 1x1 (open tracking)
 GET  /api/v1/email-tracking/click/{token}      — redirect com click tracking
 GET  /api/v1/email-tracking/stats/{notification_id} — stats agregadas
-POST /api/v1/email-tracking/webhook             — SendGrid Event Webhook
+POST /api/v1/email-tracking/webhook             — Mailgun Event Webhook
 
 LGPD disclosure obrigatória nos emails:
 "Este email contém pixels de rastreamento para medir abertura. Veja nossa Política de Privacidade."
@@ -19,7 +19,7 @@ from app.core.database import get_db as get_async_db
 router = APIRouter(prefix="/email-tracking", tags=["Email Tracking"])
 communication_webhook_router = APIRouter(prefix="/communication/webhook", tags=["Email Tracking"])
 
-_SENDGRID_WEBHOOK_VERIFICATION_KEY = os.getenv("SENDGRID_WEBHOOK_VERIFICATION_KEY", "")
+_MAILGUN_WEBHOOK_SIGNING_KEY = os.getenv("MAILGUN_WEBHOOK_SIGNING_KEY", "")
 
 logger = logging.getLogger(__name__)
 
@@ -107,53 +107,59 @@ async def tracking_click(
         return RedirectResponse(url=url, status_code=302)
 
 
-def _verify_sendgrid_signature(request: Request, body: bytes) -> bool:
-    """Verify SendGrid Event Webhook signature using ECDSA (v3).
+def _verify_mailgun_signature(request: Request, body: bytes) -> bool:
+    """Verify Mailgun webhook signature using HMAC-SHA256.
 
-    SendGrid signs payloads with ECDSA P-256 and provides:
-      - x-twilio-email-event-webhook-signature: base64-encoded ECDSA signature
-      - x-twilio-email-event-webhook-timestamp: Unix timestamp string
-    Verification key is the public ECDSA key from SendGrid's Event Webhook settings.
+    Mailgun signs payloads with HMAC-SHA256 using the webhook signing key and provides:
+      - timestamp: Unix timestamp string
+      - token: A randomly generated string with 50 characters
+      - signature: SHA256 HMAC of concatenated timestamp and token values
 
-    If SENDGRID_WEBHOOK_VERIFICATION_KEY is not set, verification is skipped
+    Verification key is MAILGUN_WEBHOOK_SIGNING_KEY from your Mailgun dashboard.
+
+    If MAILGUN_WEBHOOK_SIGNING_KEY is not set, verification is skipped
     (dev/staging only — production MUST set the key).
     """
-    if not _SENDGRID_WEBHOOK_VERIFICATION_KEY:
+    if not _MAILGUN_WEBHOOK_SIGNING_KEY:
         _env = os.getenv("ENVIRONMENT", "development")
         if _env in ("production", "staging"):
-            logger.warning("[EmailTracking] SENDGRID_WEBHOOK_VERIFICATION_KEY not set — rejecting in %s", _env)
+            logger.warning("[EmailTracking] MAILGUN_WEBHOOK_SIGNING_KEY not set — rejecting in %s", _env)
             return False
         logger.debug("[EmailTracking] signature verification skipped (dev mode, key not set)")
         return True
 
-    signature = request.headers.get("x-twilio-email-event-webhook-signature", "")
-    timestamp = request.headers.get("x-twilio-email-event-webhook-timestamp", "")
-
-    if not signature or not timestamp:
-        logger.warning("[EmailTracking] webhook missing signature headers")
-        return False
-
     try:
-        import base64
-        from cryptography.hazmat.primitives import hashes, serialization
-        from cryptography.hazmat.primitives.asymmetric.ec import ECDSA
-        from cryptography.exceptions import InvalidSignature
+        import json
+        import hmac
+        import hashlib
 
-        payload = timestamp.encode("utf-8") + body
-        decoded_signature = base64.b64decode(signature)
+        try:
+            data = json.loads(body)
+        except Exception:
+            logger.warning("[EmailTracking] webhook: invalid JSON body for signature verification")
+            return False
 
-        public_key_pem = _SENDGRID_WEBHOOK_VERIFICATION_KEY
-        if not public_key_pem.startswith("-----"):
-            public_key_pem = base64.b64decode(public_key_pem)
-            public_key = serialization.load_der_public_key(public_key_pem)
-        else:
-            public_key = serialization.load_pem_public_key(public_key_pem.encode("utf-8"))
+        signature_data = data.get("signature", {})
+        timestamp = str(signature_data.get("timestamp", ""))
+        token = str(signature_data.get("token", ""))
+        signature = str(signature_data.get("signature", ""))
 
-        public_key.verify(decoded_signature, payload, ECDSA(hashes.SHA256()))
+        if not timestamp or not token or not signature:
+            logger.warning("[EmailTracking] webhook missing Mailgun signature fields")
+            return False
+
+        value = (timestamp + token).encode("utf-8")
+        expected = hmac.new(
+            _MAILGUN_WEBHOOK_SIGNING_KEY.encode("utf-8"),
+            value,
+            hashlib.sha256
+        ).hexdigest()
+
+        if not hmac.compare_digest(expected, signature):
+            logger.warning("[EmailTracking] Mailgun webhook HMAC signature mismatch")
+            return False
+
         return True
-    except InvalidSignature:
-        logger.warning("[EmailTracking] webhook ECDSA signature verification failed — invalid signature")
-        return False
     except Exception as exc:
         logger.warning("[EmailTracking] webhook signature verification error: %s", exc)
         return False
@@ -165,37 +171,44 @@ async def tracking_webhook(
     db: AsyncSession = Depends(get_async_db),
 ):
     """
-    SendGrid Event Webhook — receives delivery/open/click/bounce events.
+    Mailgun Event Webhook — receives delivery/open/click/bounce events.
 
-    SendGrid posts batched JSON arrays of event objects.
-    Each event contains: email, event, sg_message_id, timestamp, etc.
+    Mailgun posts individual JSON event objects with a 'signature' block.
+    Each event contains: event-data.event, event-data.message.headers.message-id, etc.
     Mapped to internal EmailTrackingEvent records.
 
-    Security: Validates SendGrid webhook signature when SENDGRID_WEBHOOK_VERIFICATION_KEY is set.
+    Security: Validates Mailgun webhook HMAC signature when MAILGUN_WEBHOOK_SIGNING_KEY is set.
     LGPD: email addresses are stored as SHA256 hashes only.
     """
     from app.services.email_tracking_service import email_tracking_service
 
     body = await request.body()
 
-    if not _verify_sendgrid_signature(request, body):
+    if not _verify_mailgun_signature(request, body):
         raise HTTPException(status_code=403, detail="Invalid webhook signature")
 
     try:
         import json
-        events = json.loads(body)
+        payload = json.loads(body)
     except Exception:
         logger.warning("[EmailTracking] webhook: invalid JSON body")
         return {"accepted": 0, "errors": 1}
 
-    if not isinstance(events, list):
-        events = [events]
+    event_data = payload.get("event-data", payload)
+    events = event_data if isinstance(event_data, list) else [event_data]
 
     accepted = 0
     errors = 0
 
     _EVENT_MAP = {
         "delivered": "delivered",
+        "opened": "open",
+        "clicked": "click",
+        "failed": "bounce",
+        "unsubscribed": "unsubscribe",
+        "complained": "spam",
+        "rejected": "dropped",
+        "queued": "deferred",
         "open": "open",
         "click": "click",
         "bounce": "bounce",
@@ -207,21 +220,26 @@ async def tracking_webhook(
 
     for event in events:
         try:
-            sg_event = event.get("event", "")
-            mapped_type = _EVENT_MAP.get(sg_event)
+            mg_event = event.get("event", "")
+            mapped_type = _EVENT_MAP.get(mg_event)
             if not mapped_type:
                 continue
 
-            sg_message_id = event.get("sg_message_id", "")
-            email_addr = event.get("email", "")
+            message_headers = event.get("message", {}).get("headers", {})
+            message_id = (
+                event.get("id")
+                or message_headers.get("message-id")
+                or event.get("sg_message_id", "")
+            )
+            email_addr = event.get("recipient", event.get("email", ""))
 
             await email_tracking_service.record_webhook_event(
                 db=db,
-                sg_message_id=sg_message_id,
+                sg_message_id=message_id,
                 event_type=mapped_type,
                 email=email_addr,
                 ip=event.get("ip"),
-                user_agent=event.get("useragent", ""),
+                user_agent=event.get("client-info", {}).get("user-agent", event.get("useragent", "")),
                 url=event.get("url"),
                 timestamp=event.get("timestamp"),
                 raw_event=event,
@@ -235,7 +253,7 @@ async def tracking_webhook(
 
                 try:
                     ab_data = await email_tracking_service.resolve_ab_data(
-                        db=db, sg_message_id=sg_message_id
+                        db=db, sg_message_id=message_id
                     )
                     company_id = ab_data.get("company_id", "")
                     template_id = ab_data.get("template_id", "")
@@ -247,7 +265,7 @@ async def tracking_webhook(
                 if not company_id or not template_id:
                     try:
                         company_id, template_id = await email_tracking_service.resolve_company_template(
-                            db=db, sg_message_id=sg_message_id
+                            db=db, sg_message_id=message_id
                         )
                     except Exception:
                         pass

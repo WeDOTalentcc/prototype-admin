@@ -37,7 +37,7 @@ class CommunicationSettingsUpdate(BaseModel):
     auto_unsubscribe_after_days: Optional[int] = None
     default_email_from_name: Optional[str] = None
     default_reply_to: Optional[str] = None
-    sendgrid_enabled: Optional[bool] = None
+    mailgun_enabled: Optional[bool] = None
     twilio_enabled: Optional[bool] = None
 
 
@@ -59,7 +59,7 @@ class CommunicationSettingsResponse(BaseModel):
     auto_unsubscribe_after_days: int
     default_email_from_name: Optional[str] = None
     default_reply_to: Optional[str] = None
-    sendgrid_enabled: bool
+    mailgun_enabled: bool
     twilio_enabled: bool
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
@@ -118,7 +118,7 @@ async def get_communication_settings(
                 auto_unsubscribe_after_days=settings.auto_unsubscribe_after_days,
                 default_email_from_name=settings.default_email_from_name,
                 default_reply_to=settings.default_reply_to,
-                sendgrid_enabled=settings.sendgrid_enabled,
+                mailgun_enabled=settings.mailgun_enabled,
                 twilio_enabled=settings.twilio_enabled,
                 created_at=settings.created_at.isoformat() if settings.created_at else None,
                 updated_at=settings.updated_at.isoformat() if settings.updated_at else None,
@@ -197,7 +197,7 @@ async def update_communication_settings(
             auto_unsubscribe_after_days=settings.auto_unsubscribe_after_days,
             default_email_from_name=settings.default_email_from_name,
             default_reply_to=settings.default_reply_to,
-            sendgrid_enabled=settings.sendgrid_enabled,
+            mailgun_enabled=settings.mailgun_enabled,
             twilio_enabled=settings.twilio_enabled,
             created_at=settings.created_at.isoformat() if settings.created_at else None,
             updated_at=settings.updated_at.isoformat() if settings.updated_at else None,

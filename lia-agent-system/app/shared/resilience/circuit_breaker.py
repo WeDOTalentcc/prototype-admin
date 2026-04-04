@@ -415,8 +415,18 @@ PANDAPE_CIRCUIT = CircuitBreaker(
     )
 )
 
-SENDGRID_CIRCUIT = CircuitBreaker(
-    "sendgrid",
+STACKONE_CIRCUIT = CircuitBreaker(
+    "stackone",
+    CircuitBreakerConfig(
+        failure_threshold=5,
+        recovery_timeout=45.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
+MAILGUN_CIRCUIT = CircuitBreaker(
+    "mailgun",
     CircuitBreakerConfig(
         failure_threshold=5,
         recovery_timeout=30.0,
@@ -465,7 +475,8 @@ ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
     "google_calendar": GOOGLE_CALENDAR_CIRCUIT,
     "gupy": GUPY_CIRCUIT,
     "pandape": PANDAPE_CIRCUIT,
-    "sendgrid": SENDGRID_CIRCUIT,
+    "stackone": STACKONE_CIRCUIT,
+    "mailgun": MAILGUN_CIRCUIT,
     "resend": RESEND_CIRCUIT,
     "iugu": IUGU_CIRCUIT,
     "vindi": VINDI_CIRCUIT,
@@ -537,19 +548,26 @@ CIRCUIT_BREAKER_SLOS: Dict[str, Dict[str, Any]] = {
         "tier": "high",
         "description": "ATS — Pandapé",
     },
-    "sendgrid": {
+    "stackone": {
+        "availability_target": 0.99,
+        "latency_p95_ms": 5000,
+        "error_budget_pct": 1.0,
+        "tier": "medium",
+        "description": "Conector ATS — StackOne",
+    },
+    "mailgun": {
         "availability_target": 0.999,
         "latency_p95_ms": 2000,
         "error_budget_pct": 0.1,
         "tier": "critical",
-        "description": "Email transacional — SendGrid",
+        "description": "Email transacional primário — Mailgun",
     },
     "resend": {
         "availability_target": 0.999,
         "latency_p95_ms": 2000,
         "error_budget_pct": 0.1,
         "tier": "high",
-        "description": "Email transacional alternativo — Resend",
+        "description": "Email transacional fallback — Resend",
     },
     "iugu": {
         "availability_target": 0.995,
@@ -607,7 +625,11 @@ DEGRADED_MODE_RESPONSES: Dict[str, str] = {
         "A integração com Pandapé está temporariamente indisponível. "
         "Os dados locais continuam acessíveis."
     ),
-    "sendgrid": (
+    "stackone": (
+        "A integração ATS via StackOne está temporariamente indisponível. "
+        "Os dados locais continuam acessíveis."
+    ),
+    "mailgun": (
         "O envio de emails está temporariamente indisponível. "
         "As mensagens serão reenviadas assim que o serviço for restaurado."
     ),

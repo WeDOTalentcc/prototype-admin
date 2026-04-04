@@ -1,5 +1,5 @@
 """
-Communication Dispatcher Service - Low-level API wrappers for SendGrid and Twilio.
+Communication Dispatcher Service - Low-level API wrappers for Mailgun and Twilio.
 
 This service provides direct access to email and messaging APIs with:
 - Graceful fallback when API keys are not configured (mock success for development)
@@ -15,12 +15,11 @@ from datetime import datetime
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
 
 try:
-    from sendgrid import SendGridAPIClient
-    from sendgrid.helpers.mail import Mail, Email, To, Content, ReplyTo
-    SENDGRID_AVAILABLE = True
+    import httpx as _httpx
+    MAILGUN_HTTPX_AVAILABLE = True
 except ImportError:
-    SENDGRID_AVAILABLE = False
-    SendGridAPIClient = None
+    MAILGUN_HTTPX_AVAILABLE = False
+    _httpx = None  # type: ignore[assignment]
 
 try:
     from twilio.rest import Client as TwilioClient
@@ -36,30 +35,21 @@ logger = logging.getLogger(__name__)
 
 class CommunicationDispatcher:
     """
-    Low-level dispatcher for sending emails via SendGrid and SMS/WhatsApp via Twilio.
-    
+    Low-level dispatcher for sending emails via Mailgun and SMS/WhatsApp via Twilio.
+
     Each method checks for API key availability and returns mock success in development
     when keys are not configured.
     """
-    
+
     def __init__(self):
-        self._sendgrid_client: Optional[SendGridAPIClient] = None
         self._twilio_client: Optional[TwilioClient] = None
         self._initialized = False
-    
+
     def _ensure_initialized(self):
         """Lazy initialization of API clients."""
         if self._initialized:
             return
-        
-        sendgrid_api_key = os.getenv("SENDGRID_API_KEY")
-        if sendgrid_api_key and SENDGRID_AVAILABLE:
-            try:
-                self._sendgrid_client = SendGridAPIClient(api_key=sendgrid_api_key)
-                logger.info("SendGrid client initialized successfully")
-            except Exception as e:
-                logger.warning(f"Failed to initialize SendGrid client: {e}")
-        
+
         twilio_account_sid = os.getenv("TWILIO_ACCOUNT_SID")
         twilio_auth_token = os.getenv("TWILIO_AUTH_TOKEN")
         if twilio_account_sid and twilio_auth_token and TWILIO_AVAILABLE:
@@ -68,15 +58,18 @@ class CommunicationDispatcher:
                 logger.info("Twilio client initialized successfully")
             except Exception as e:
                 logger.warning(f"Failed to initialize Twilio client: {e}")
-        
+
         self._initialized = True
-    
+
     @property
-    def is_sendgrid_enabled(self) -> bool:
-        """Check if SendGrid is configured and available."""
-        self._ensure_initialized()
-        return self._sendgrid_client is not None
-    
+    def is_mailgun_enabled(self) -> bool:
+        """Check if Mailgun is configured and available."""
+        return bool(
+            os.getenv("MAILGUN_API_KEY")
+            and os.getenv("MAILGUN_DOMAIN")
+            and MAILGUN_HTTPX_AVAILABLE
+        )
+
     @property
     def is_twilio_enabled(self) -> bool:
         """Check if Twilio is configured and available."""
@@ -93,8 +86,12 @@ class CommunicationDispatcher:
         reply_to: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Send an email via SendGrid.
-        
+        Send an email via Mailgun with automatic Resend fallback.
+
+        Attempts Mailgun first. If the MAILGUN_CIRCUIT is open, Mailgun is not
+        configured, or Mailgun returns a failure, automatically retries via Resend
+        (when RESEND_API_KEY is set and RESEND_CIRCUIT is closed).
+
         Args:
             to_email: Recipient email address
             subject: Email subject line
@@ -102,76 +99,204 @@ class CommunicationDispatcher:
             body_text: Plain text fallback (optional)
             from_name: Sender display name (optional)
             reply_to: Reply-to email address (optional)
-        
+
         Returns:
             Dict with keys:
                 - success: bool
                 - message_id: str (if successful or mock)
                 - error: str (if failed)
                 - mock: bool (true if mock response for development)
+                - provider: str (mailgun|resend|mock)
         """
-        self._ensure_initialized()
-        
-        from_email_address = os.getenv("SENDGRID_FROM_EMAIL", "noreply@example.com")
-        default_from_name = os.getenv("SENDGRID_FROM_NAME", "LIA Recruitment")
+        from app.shared.resilience.circuit_breaker import (
+            MAILGUN_CIRCUIT,
+            RESEND_CIRCUIT,
+            CircuitState,
+        )
+
+        from_email_address = os.getenv("MAILGUN_FROM_EMAIL", "noreply@wedotalent.com")
+        default_from_name = os.getenv("MAILGUN_FROM_NAME", "LIA Recruitment")
         sender_name = from_name or default_from_name
-        
+        sender = f"{sender_name} <{from_email_address}>" if sender_name else from_email_address
+
         logger.info(f"Attempting to send email to {to_email} with subject: {subject[:50]}...")
-        
-        if not self.is_sendgrid_enabled:
+
+        mailgun_circuit_open = MAILGUN_CIRCUIT.state == CircuitState.OPEN
+        mailgun_skip = not self.is_mailgun_enabled or mailgun_circuit_open
+
+        if mailgun_circuit_open:
+            logger.warning("[DISPATCHER] MAILGUN_CIRCUIT is OPEN — routing to Resend fallback")
+
+        mailgun_error: Optional[str] = None
+
+        if not mailgun_skip:
+            api_key = os.getenv("MAILGUN_API_KEY", "")
+            domain = os.getenv("MAILGUN_DOMAIN", "")
+            api_base = os.getenv("MAILGUN_API_BASE", "https://api.mailgun.net/v3")
+
+            data: Dict[str, Any] = {
+                "from": sender,
+                "to": to_email,
+                "subject": subject,
+                "html": body_html,
+            }
+            if body_text:
+                data["text"] = body_text
+            if reply_to:
+                data["h:Reply-To"] = reply_to
+
+            try:
+                import httpx
+                with httpx.Client(timeout=30) as client:
+                    response = client.post(
+                        f"{api_base}/{domain}/messages",
+                        auth=("api", api_key),
+                        data=data,
+                    )
+
+                if response.status_code == 200:
+                    payload = response.json()
+                    message_id = payload.get("id", f"mg-{uuid.uuid4().hex[:12]}")
+                    logger.info(f"[MAILGUN] Email sent to {to_email}. ID: {message_id}")
+                    return {
+                        "success": True,
+                        "message_id": message_id,
+                        "mock": False,
+                        "provider": "mailgun",
+                        "channel": "email",
+                        "recipient": to_email,
+                        "status_code": response.status_code,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }
+                else:
+                    mailgun_error = f"status {response.status_code}: {response.text}"
+                    logger.error(
+                        f"[MAILGUN] Failed for {to_email}: {mailgun_error} — trying Resend fallback"
+                    )
+
+            except Exception as e:
+                mailgun_error = str(e)
+                logger.error(
+                    f"[MAILGUN] Exception for {to_email}: {mailgun_error} — trying Resend fallback",
+                    exc_info=True
+                )
+
+        resend_circuit_open = RESEND_CIRCUIT.state == CircuitState.OPEN
+        resend_api_key = os.getenv("RESEND_API_KEY")
+
+        if resend_api_key and not resend_circuit_open:
+            resend_result = self._send_via_resend(
+                to_email=to_email,
+                subject=subject,
+                body_html=body_html,
+                body_text=body_text,
+                from_name=sender_name,
+                from_email=from_email_address,
+                reply_to=reply_to,
+                resend_api_key=resend_api_key,
+            )
+            if resend_result.get("success"):
+                return resend_result
+            logger.error(f"[RESEND FALLBACK] Also failed for {to_email}: {resend_result.get('error')}")
+
+        elif resend_circuit_open:
+            logger.warning("[DISPATCHER] RESEND_CIRCUIT is OPEN — both providers unavailable")
+        elif not resend_api_key:
+            if not mailgun_skip:
+                logger.warning("[DISPATCHER] RESEND_API_KEY not set — no fallback available")
+
+        if not self.is_mailgun_enabled and not resend_api_key:
             mock_id = f"mock-email-{uuid.uuid4().hex[:12]}"
-            logger.warning(f"SendGrid not configured. Returning mock success for email to {to_email}")
+            logger.warning(f"No email provider configured. Returning mock for {to_email}")
             return {
                 "success": True,
                 "message_id": mock_id,
                 "mock": True,
+                "provider": "mock",
                 "channel": "email",
                 "recipient": to_email,
                 "timestamp": datetime.utcnow().isoformat()
             }
-        
+
+        return {
+            "success": False,
+            "error": mailgun_error or "All email providers failed or unavailable",
+            "mock": False,
+            "provider": "none",
+            "channel": "email",
+            "recipient": to_email,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+    def _send_via_resend(
+        self,
+        to_email: str,
+        subject: str,
+        body_html: str,
+        resend_api_key: str,
+        body_text: Optional[str] = None,
+        from_name: Optional[str] = None,
+        from_email: Optional[str] = None,
+        reply_to: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Send email via Resend as fallback provider."""
         try:
-            from_email = Email(from_email_address, sender_name)
-            to = To(to_email)
-            
-            message = Mail(
-                from_email=from_email,
-                to_emails=to,
-                subject=subject,
-                html_content=body_html
-            )
-            
-            if body_text:
-                message.add_content(Content("text/plain", body_text))
-            
-            if reply_to:
-                message.reply_to = ReplyTo(reply_to)
-            
-            response = self._sendgrid_client.send(message)
-            message_id = response.headers.get("X-Message-Id", f"sg-{uuid.uuid4().hex[:12]}")
-            
-            logger.info(f"Email sent successfully to {to_email}. Message ID: {message_id}, Status: {response.status_code}")
-            
-            return {
-                "success": True,
-                "message_id": message_id,
-                "mock": False,
-                "channel": "email",
-                "recipient": to_email,
-                "status_code": response.status_code,
-                "timestamp": datetime.utcnow().isoformat()
-            }
-            
-        except Exception as e:
-            error_msg = str(e)
-            logger.error(f"Failed to send email to {to_email}: {error_msg}")
+            import resend as resend_sdk
+        except ImportError:
             return {
                 "success": False,
-                "error": error_msg,
-                "mock": False,
-                "channel": "email",
-                "recipient": to_email,
-                "timestamp": datetime.utcnow().isoformat()
+                "error": "Resend SDK not installed",
+                "provider": "resend",
+                "mock": False
+            }
+
+        try:
+            resend_sdk.api_key = resend_api_key
+            resend_from_email = from_email or os.getenv("RESEND_FROM_EMAIL", "onboarding@resend.dev")
+            resend_from_name = from_name or os.getenv("RESEND_FROM_NAME", "LIA Recruitment")
+            resend_sender = (
+                f"{resend_from_name} <{resend_from_email}>" if resend_from_name else resend_from_email
+            )
+
+            params: Dict[str, Any] = {
+                "from": resend_sender,
+                "to": [to_email],
+                "subject": subject,
+                "html": body_html,
+            }
+            if body_text:
+                params["text"] = body_text
+            if reply_to:
+                params["reply_to"] = reply_to
+
+            response = resend_sdk.Emails.send(params)
+
+            if response and response.get("id"):
+                msg_id = response["id"]
+                logger.info(f"[RESEND FALLBACK] Email sent to {to_email}. ID: {msg_id}")
+                return {
+                    "success": True,
+                    "message_id": msg_id,
+                    "mock": False,
+                    "provider": "resend",
+                    "channel": "email",
+                    "recipient": to_email,
+                    "fallback": True,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            return {
+                "success": False,
+                "error": f"Unexpected Resend response: {response}",
+                "provider": "resend",
+                "mock": False
+            }
+        except Exception as exc:
+            logger.error(f"[RESEND FALLBACK] Exception for {to_email}: {exc}", exc_info=True)
+            return {
+                "success": False,
+                "error": str(exc),
+                "provider": "resend",
+                "mock": False
             }
     
     def send_whatsapp(

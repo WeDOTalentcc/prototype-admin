@@ -2,7 +2,7 @@
 Testes unitários para conformidade LGPD nos templates de comunicação — Sprint K1.
 
 Cobertura:
-- DATA_PROCESSING_NOTICE menciona Twilio e SendGrid como sub-processadores
+- DATA_PROCESSING_NOTICE menciona Twilio e Mailgun como sub-processadores
 - EmailTemplates.initial_contact inclui aviso de tratamento de dados
 - WhatsAppTemplates.initial_contact inclui aviso de sub-processador Twilio
 - BASE_EMAIL_FOOTER_HTML contém identificação de IA e link de privacidade
@@ -28,8 +28,8 @@ class TestDataProcessingNotice:
     def test_mentions_twilio(self):
         assert "Twilio" in self._notice()
 
-    def test_mentions_sendgrid(self):
-        assert "SendGrid" in self._notice()
+    def test_mentions_mailgun(self):
+        assert "Mailgun" in self._notice()
 
     def test_mentions_lgpd(self):
         assert "LGPD" in self._notice() or "13.709" in self._notice()
@@ -64,7 +64,7 @@ class TestEmailInitialContact:
     def test_body_mentions_sub_processor(self):
         result = self._call()
         body = result["body"]
-        assert any(w in body for w in ["Twilio", "SendGrid", "sub-processad"])
+        assert any(w in body for w in ["Twilio", "Mailgun", "sub-processad"])
 
     def test_body_mentions_lgpd_or_privacy(self):
         result = self._call()
@@ -123,9 +123,9 @@ class TestWhatsAppInitialContact:
 
 class TestBaseEmailFooter:
 
-    def test_html_footer_mentions_sendgrid(self):
+    def test_html_footer_mentions_mailgun(self):
         from app.services.email_providers.base import BASE_EMAIL_FOOTER_HTML
-        assert "SendGrid" in BASE_EMAIL_FOOTER_HTML
+        assert "Mailgun" in BASE_EMAIL_FOOTER_HTML
 
     def test_html_footer_mentions_lia(self):
         from app.services.email_providers.base import BASE_EMAIL_FOOTER_HTML
@@ -184,11 +184,11 @@ class TestWithLgpdFooter:
         assert result.to == msg.to
         assert result.subject == msg.subject
 
-    def test_sendgrid_in_html_after_footer(self):
+    def test_mailgun_in_html_after_footer(self):
         from app.services.email_providers.base import EmailProvider
         msg = self._make_message()
         result = EmailProvider.with_lgpd_footer(msg)
-        assert "SendGrid" in result.html_content
+        assert "Mailgun" in result.html_content
 
     def test_wsi_initial_contact_notice_present(self):
         from app.templates.communication_templates import WSI_INITIAL_CONTACT_LGPD_NOTICE

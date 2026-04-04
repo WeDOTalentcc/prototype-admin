@@ -5,7 +5,7 @@ Funcional - Aguardando Configuração SMTP/Calendar
 This endpoint provides a simpler interface for email operations:
 - Direct email sending (logged/simulated for now)
 - Email history by candidate
-- Ready for future SMTP/SendGrid integration
+- Ready for Mailgun/Resend integration
 """
 from fastapi import APIRouter, HTTPException, Query, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -79,14 +79,14 @@ async def send_direct_email(
     
     Current Status: SIMULATED/LOGGED
     - Emails are stored in the database for audit trail
-    - Actual sending requires SMTP/SendGrid configuration
-    - Status will be 'queued' until SMTP is configured
+    - Actual sending requires Mailgun/Resend configuration
+    - Status will be 'queued' until provider is configured
     
-    Future Integration:
-    - SendGrid API
+    Integration:
+    - Mailgun API (primary)
+    - Resend (automatic fallback via circuit breaker)
     - Amazon SES
     - Direct SMTP
-    - Resend.com
     """
     try:
         if request.candidate_id:
@@ -259,24 +259,25 @@ async def get_email_system_status():
     import os
     
     smtp_host = os.getenv("SMTP_HOST")
-    sendgrid_key = os.getenv("SENDGRID_API_KEY")
+    mailgun_key = os.getenv("MAILGUN_API_KEY")
+    mailgun_domain = os.getenv("MAILGUN_DOMAIN")
     resend_key = os.getenv("RESEND_API_KEY")
-    
+
     smtp_configured = bool(smtp_host)
-    sendgrid_configured = bool(sendgrid_key)
+    mailgun_configured = bool(mailgun_key) and bool(mailgun_domain)
     resend_configured = bool(resend_key)
-    any_configured = smtp_configured or sendgrid_configured or resend_configured
-    
+    any_configured = smtp_configured or mailgun_configured or resend_configured
+
     return {
-        "status": "Funcional - Aguardando Configuração SMTP/Calendar",
+        "status": "Funcional - Aguardando Configuração SMTP/Mailgun",
         "mode": "live" if any_configured else "simulated",
         "providers": {
             "smtp": {
                 "configured": smtp_configured,
                 "host": smtp_host if smtp_configured else None
             },
-            "sendgrid": {
-                "configured": sendgrid_configured
+            "mailgun": {
+                "configured": mailgun_configured
             },
             "resend": {
                 "configured": resend_configured
@@ -285,7 +286,7 @@ async def get_email_system_status():
         "message": (
             "Sistema de email operacional. Emails são armazenados no banco de dados."
             if any_configured else
-            "Sistema de email em modo simulado. Configure SMTP_HOST, SENDGRID_API_KEY ou RESEND_API_KEY para habilitar envio real."
+            "Sistema de email em modo simulado. Configure SMTP_HOST, MAILGUN_API_KEY+MAILGUN_DOMAIN ou RESEND_API_KEY para habilitar envio real."
         ),
         "database_logging": True,
         "audit_trail": True

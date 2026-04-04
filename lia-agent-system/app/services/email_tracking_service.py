@@ -219,7 +219,7 @@ class EmailTrackingService:
         raw_event: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
-        Record an event received from SendGrid Event Webhook.
+        Record an event received from Mailgun Event Webhook.
 
         Maps sg_message_id to a notification_id by looking up MessageQueue.
         Falls back to storing with sg_message_id as notification_id.

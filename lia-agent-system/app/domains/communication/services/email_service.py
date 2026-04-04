@@ -1,6 +1,6 @@
 """
 Email Service for managing email templates and sending emails.
-Supports multiple email providers (Resend, SendGrid) with abstraction layer.
+Supports multiple email providers (Mailgun primary, Resend fallback) with abstraction layer.
 """
 import re
 import os
@@ -21,10 +21,15 @@ from app.services.email_providers import (
     get_provider_for_client,
     get_all_providers_status
 )
+from app.domains.communication.services.email_providers import (
+    MailgunProvider as _DomainMailgunProvider,
+    ResendProvider as _DomainResendProvider,
+    FallbackEmailProvider as _FallbackEmailProvider,
+)
 
 logger = logging.getLogger(__name__)
 
-EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "resend")
+EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "mailgun")
 logger.info(f"Email provider configured: {EMAIL_PROVIDER}")
 
 
@@ -35,16 +40,16 @@ class EmailService:
     Service for managing email templates and sending emails.
 
     .. deprecated::
-        Legacy class — use ``SendGridEmailService`` for new code.
+        Legacy class — use ``MailgunProvider`` via ``get_email_provider()`` for new code.
         This class is kept for backward compatibility with existing callers
         (clients.py, automation.py, report_service.py, etc.) and will be
         removed in a future release.
     """
-    
+
     def __init__(self):
         import warnings
         warnings.warn(
-            "EmailService is deprecated. Use SendGridEmailService instead.",
+            "EmailService is deprecated. Use get_email_provider() with MailgunProvider instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -152,7 +157,7 @@ class EmailService:
         """
         Send an email using a template.
         Currently simulates sending and logs the attempt.
-        Prepared for future integration with SendGrid, Replit Mail, etc.
+        Prepared for future integration with Mailgun, Resend, etc.
         
         Args:
             subject_override: Custom subject that overrides the template subject
@@ -244,8 +249,13 @@ class EmailService:
         client_config: Optional[Dict[str, Any]] = None
     ) -> bool:
         """
-        Send email using configured provider (Resend or SendGrid).
-        
+        Send email using Mailgun as primary provider with automatic Resend fallback.
+
+        Uses FallbackEmailProvider to compose Mailgun+Resend into a single
+        circuit-breaker-aware call. If MAILGUN_CIRCUIT opens or Mailgun returns
+        a failure, FallbackEmailProvider automatically retries via Resend
+        (when RESEND_CIRCUIT is closed and RESEND_API_KEY is set).
+
         Args:
             to_email: Recipient email address
             subject: Email subject line
@@ -254,16 +264,18 @@ class EmailService:
             from_email: Sender email (optional, uses provider default)
             client_id: Optional client ID for per-client provider config
             client_config: Optional client configuration for email provider
-        
+
         Returns:
             True if email was sent successfully, False otherwise
         """
         try:
             if client_id and client_config:
-                provider = get_provider_for_client(client_id, client_config)
+                provider: EmailProvider = get_provider_for_client(client_id, client_config)
             else:
-                provider = get_email_provider()
-            
+                mailgun = _DomainMailgunProvider()
+                resend = _DomainResendProvider()
+                provider = _FallbackEmailProvider(primary=mailgun, fallback=resend)
+
             result = await provider.send_email(
                 to=to_email,
                 subject=subject,
@@ -271,7 +283,7 @@ class EmailService:
                 text_content=body_text,
                 from_email=from_email
             )
-            
+
             if result.success:
                 logger.info(
                     f"Email sent via {result.provider} to {to_email}, "
@@ -284,7 +296,7 @@ class EmailService:
                     f"{result.error} (code: {result.error_code})"
                 )
                 return False
-                
+
         except Exception as e:
             logger.error(f"Failed to send email: {str(e)}")
             raise
@@ -582,7 +594,6 @@ class EmailService:
 email_service = EmailService()
 
 from app.domains.communication.schemas.email_schemas import (
-    SendGridEmailStatus,
     EmailRecipient,
     EmailAttachment,
     SendEmailRequest,
@@ -593,60 +604,47 @@ from app.domains.communication.schemas.email_schemas import (
     BulkEmailResult,
 )
 
-try:
-    from sendgrid import SendGridAPIClient
-    from sendgrid.helpers.mail import Mail, Email, To, Content
-    SENDGRID_SDK_AVAILABLE = True
-except ImportError:
-    SENDGRID_SDK_AVAILABLE = False
-    SendGridAPIClient = None
-
-
 import asyncio
 
 
-class SendGridEmailService:
+class MailgunEmailService:
     """
-    SendGrid-based Email Service for LIA Platform.
-    
+    Mailgun-based Email Service for LIA Platform.
+
     Features:
     - Development mode: logs emails without sending
-    - Production mode: sends via SendGrid API
+    - Production mode: sends via Mailgun HTTP API
     - Template support using EmailTemplates from communication_templates.py
     - Bulk email with personalization
     - Status tracking: sent, delivered, failed
-    
+
     Environment Variables:
-    - SENDGRID_API_KEY: SendGrid API key
-    - SENDGRID_FROM_EMAIL: Sender email (default: noreply@wedotalent.com)
-    - SENDGRID_FROM_NAME: Sender name (default: WeDo Talent)
+    - MAILGUN_API_KEY: Mailgun API key (required)
+    - MAILGUN_DOMAIN: Mailgun sending domain (required)
+    - MAILGUN_FROM_EMAIL: Sender email (default: noreply@wedotalent.com)
+    - MAILGUN_FROM_NAME: Sender name (default: WeDo Talent)
+    - MAILGUN_API_BASE: Mailgun API base URL (default: https://api.mailgun.net/v3)
     - ENVIRONMENT: 'development' for logging only, 'production' for real sending
     """
-    
+
     def __init__(self):
-        self.api_key = os.environ.get("SENDGRID_API_KEY")
-        self.from_email = os.environ.get("SENDGRID_FROM_EMAIL", "noreply@wedotalent.com")
-        self.from_name = os.environ.get("SENDGRID_FROM_NAME", "WeDo Talent")
+        self.api_key = os.environ.get("MAILGUN_API_KEY")
+        self.domain = os.environ.get("MAILGUN_DOMAIN")
+        self.from_email = os.environ.get("MAILGUN_FROM_EMAIL", "noreply@wedotalent.com")
+        self.from_name = os.environ.get("MAILGUN_FROM_NAME", "WeDo Talent")
+        self.api_base = os.environ.get("MAILGUN_API_BASE", "https://api.mailgun.net/v3")
         self.environment = os.environ.get("ENVIRONMENT", "development")
-        self._client = None
-    
+
     @property
     def is_development(self) -> bool:
         """Check if running in development mode."""
         return self.environment.lower() in ("development", "dev", "local", "test")
-    
+
     @property
     def is_configured(self) -> bool:
-        """Check if SendGrid is properly configured."""
-        return bool(self.api_key) and SENDGRID_SDK_AVAILABLE
-    
-    @property
-    def client(self):
-        """Lazy initialization of SendGrid client."""
-        if self._client is None and self.is_configured:
-            self._client = SendGridAPIClient(self.api_key)
-        return self._client
-    
+        """Check if Mailgun is properly configured."""
+        return bool(self.api_key) and bool(self.domain)
+
     async def send_email(
         self,
         to_email: str,
@@ -661,11 +659,11 @@ class SendGridEmailService:
         metadata: Optional[Dict[str, Any]] = None
     ) -> EmailSendResult:
         """
-        Send a single email via SendGrid.
-        
+        Send a single email via Mailgun.
+
         In development mode, logs the email without actual sending.
-        In production mode, sends via SendGrid API.
-        
+        In production mode, sends via Mailgun HTTP API.
+
         Args:
             to_email: Recipient email address
             subject: Email subject
@@ -675,9 +673,9 @@ class SendGridEmailService:
             cc: Optional list of CC emails
             bcc: Optional list of BCC emails
             reply_to: Optional reply-to address
-            categories: Optional SendGrid categories for tracking
+            categories: Optional tracking tags
             metadata: Optional custom metadata
-        
+
         Returns:
             EmailSendResult with success status, message_id, and error details
         """
@@ -692,7 +690,7 @@ class SendGridEmailService:
                 bcc=bcc,
                 metadata=metadata
             )
-        
+
         return await self._send_production(
             to_email=to_email,
             to_name=to_name,
@@ -705,7 +703,7 @@ class SendGridEmailService:
             categories=categories,
             metadata=metadata
         )
-    
+
     async def send_template_email(
         self,
         to_email: str,
@@ -719,7 +717,7 @@ class SendGridEmailService:
     ) -> EmailSendResult:
         """
         Send an email using a predefined template from EmailTemplates.
-        
+
         Args:
             to_email: Recipient email address
             template_name: Name of the template method in EmailTemplates
@@ -727,14 +725,14 @@ class SendGridEmailService:
             to_name: Optional recipient name
             cc: Optional CC recipients
             reply_to: Optional reply-to address
-            categories: Optional SendGrid categories
+            categories: Optional tracking tags
             metadata: Optional custom metadata
-        
+
         Returns:
             EmailSendResult with success status and message_id
         """
         from app.templates.communication_templates import EmailTemplates
-        
+
         template_method = getattr(EmailTemplates, template_name, None)
         if not template_method:
             return EmailSendResult(
@@ -743,7 +741,7 @@ class SendGridEmailService:
                 error=f"Template not found: {template_name}",
                 error_code="TEMPLATE_NOT_FOUND"
             )
-        
+
         try:
             template_result = template_method(**template_data)
             subject = template_result.get("subject", "")
@@ -764,13 +762,13 @@ class SendGridEmailService:
                 error=f"Template rendering error: {str(e)}",
                 error_code="TEMPLATE_ERROR"
             )
-        
+
         enriched_metadata = {
             **(metadata or {}),
             "template_name": template_name,
             "template_data": template_data
         }
-        
+
         return await self.send_email(
             to_email=to_email,
             to_name=to_name,
@@ -781,7 +779,7 @@ class SendGridEmailService:
             categories=categories or [template_name],
             metadata=enriched_metadata
         )
-    
+
     async def send_bulk_email(
         self,
         recipients: List[BulkEmailRecipient],
@@ -793,28 +791,28 @@ class SendGridEmailService:
     ) -> BulkEmailResult:
         """
         Send bulk emails to multiple recipients with optional personalization.
-        
+
         Emails are sent sequentially with a small delay to avoid rate limits.
         In development mode, logs all emails without sending.
-        
+
         Args:
             recipients: List of BulkEmailRecipient with email, name, and personalization
             subject: Email subject (can contain {{variable}} placeholders)
             body: Plain text body (can contain {{variable}} placeholders)
             body_html: Optional HTML body
-            categories: Optional SendGrid categories
+            categories: Optional tracking tags
             metadata: Optional custom metadata
-        
+
         Returns:
             BulkEmailResult with total, successful, failed counts and individual results
         """
         results: List[EmailSendResult] = []
-        
+
         for recipient in recipients:
             personalized_subject = subject
             personalized_body = body
             personalized_html = body_html
-            
+
             if recipient.personalization:
                 for key, value in recipient.personalization.items():
                     placeholder = f"{{{{{key}}}}}"
@@ -822,13 +820,13 @@ class SendGridEmailService:
                     personalized_body = personalized_body.replace(placeholder, str(value))
                     if personalized_html:
                         personalized_html = personalized_html.replace(placeholder, str(value))
-            
+
             recipient_metadata = {
                 **(metadata or {}),
                 "bulk_send": True,
                 "personalization": recipient.personalization
             }
-            
+
             result = await self.send_email(
                 to_email=recipient.email,
                 to_name=recipient.name,
@@ -839,19 +837,19 @@ class SendGridEmailService:
                 metadata=recipient_metadata
             )
             results.append(result)
-            
+
             await asyncio.sleep(0.1)
-        
+
         successful = sum(1 for r in results if r.success)
         failed = sum(1 for r in results if not r.success)
-        
+
         return BulkEmailResult(
             total=len(recipients),
             successful=successful,
             failed=failed,
             results=results
         )
-    
+
     async def _send_development(
         self,
         to_email: str,
@@ -864,10 +862,10 @@ class SendGridEmailService:
         metadata: Optional[Dict[str, Any]] = None
     ) -> EmailSendResult:
         """Send email in development mode (logging only, no real sending)."""
-        message_id = f"dev_sg_{uuid.uuid4().hex[:12]}"
-        
+        message_id = f"dev_mg_{uuid.uuid4().hex[:12]}"
+
         logger.info("=" * 70)
-        logger.info("[DEV EMAIL - SENDGRID] Email enviado (modo desenvolvimento)")
+        logger.info("[DEV EMAIL - MAILGUN] Email enviado (modo desenvolvimento)")
         logger.info(f"[DEV EMAIL] Message ID: {message_id}")
         logger.info(f"[DEV EMAIL] De: {self.from_name} <{self.from_email}>")
         logger.info(f"[DEV EMAIL] Para: {to_name or 'N/A'} <{to_email}>")
@@ -883,7 +881,7 @@ class SendGridEmailService:
         if metadata:
             logger.info(f"[DEV EMAIL] Metadata: {metadata}")
         logger.info("=" * 70)
-        
+
         return EmailSendResult(
             success=True,
             message_id=message_id,
@@ -896,7 +894,7 @@ class SendGridEmailService:
                 "subject": subject
             }
         )
-    
+
     async def _send_production(
         self,
         to_email: str,
@@ -910,112 +908,237 @@ class SendGridEmailService:
         categories: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None
     ) -> EmailSendResult:
-        """Send email via SendGrid API in production mode."""
-        if not SENDGRID_SDK_AVAILABLE:
-            logger.warning("SendGrid SDK not installed")
-            return EmailSendResult(
-                success=False,
-                status="failed",
-                error="SendGrid SDK not installed. Run: pip install sendgrid",
-                error_code="SDK_NOT_AVAILABLE"
-            )
-        
-        if not self.is_configured:
-            logger.warning("SendGrid not configured - falling back to development mode")
-            return await self._send_development(
-                to_email=to_email,
-                to_name=to_name,
-                subject=subject,
-                body=body,
-                body_html=body_html,
-                cc=cc,
-                bcc=bcc,
-                metadata=metadata
-            )
-        
-        try:
-            from_email_obj = Email(self.from_email, self.from_name)
-            to_email_obj = To(to_email, to_name)
-            
-            message = Mail(
-                from_email=from_email_obj,
-                to_emails=to_email_obj,
-                subject=subject,
-                plain_text_content=Content("text/plain", body)
-            )
-            
-            if body_html:
-                message.add_content(Content("text/html", body_html))
-            
-            if reply_to:
-                message.reply_to = Email(reply_to)
-            
-            if categories:
-                for category in categories:
-                    message.add_category(category)
+        """Send email via Mailgun HTTP API with automatic Resend fallback.
 
-            if metadata:
-                from sendgrid.helpers.mail import CustomArg
-                for key, value in metadata.items():
-                    message.add_custom_arg(CustomArg(key=str(key), value=str(value)))
+        If Mailgun is not configured, the MAILGUN_CIRCUIT is open, or Mailgun returns
+        a failure, the service automatically retries via Resend (if RESEND_API_KEY is set).
+        Only falls back to development logging as a last resort.
+        """
+        from app.shared.resilience.circuit_breaker import (
+            MAILGUN_CIRCUIT,
+            RESEND_CIRCUIT,
+            CircuitState,
+        )
 
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: self.client.send(message)
+        mailgun_circuit_open = MAILGUN_CIRCUIT.state == CircuitState.OPEN
+
+        if mailgun_circuit_open:
+            logger.warning(
+                "[MAILGUN] Circuit is OPEN — routing to Resend fallback immediately"
             )
-            
-            message_id = None
-            if response.headers:
-                message_id = response.headers.get("X-Message-Id")
-            if not message_id:
-                message_id = f"sg_{uuid.uuid4().hex[:12]}"
-            
-            status_code = response.status_code
-            
-            if 200 <= status_code < 300:
-                logger.info(f"[SENDGRID] Email sent to: {to_email}, ID: {message_id}")
-                return EmailSendResult(
-                    success=True,
-                    message_id=message_id,
-                    status="sent",
-                    provider="sendgrid",
-                    sent_at=datetime.utcnow(),
-                    metadata={
-                        "status_code": status_code,
-                        "to_email": to_email
-                    }
+        elif not self.is_configured:
+            logger.warning(
+                "Mailgun not configured (MAILGUN_API_KEY/MAILGUN_DOMAIN missing) — trying Resend fallback"
+            )
+
+        mailgun_result: Optional[EmailSendResult] = None
+
+        if self.is_configured and not mailgun_circuit_open:
+            try:
+                import httpx
+
+                sender = f"{self.from_name} <{self.from_email}>" if self.from_name else self.from_email
+                to_addr = f"{to_name} <{to_email}>" if to_name else to_email
+
+                data: Dict[str, Any] = {
+                    "from": sender,
+                    "to": to_addr,
+                    "subject": subject,
+                    "text": body,
+                }
+
+                if body_html:
+                    data["html"] = body_html
+                if reply_to:
+                    data["h:Reply-To"] = reply_to
+                if cc:
+                    data["cc"] = ",".join(cc)
+                if bcc:
+                    data["bcc"] = ",".join(bcc)
+                if categories:
+                    for tag in categories:
+                        data.setdefault("o:tag", [])
+                        if isinstance(data["o:tag"], list):
+                            data["o:tag"].append(tag)
+                if metadata:
+                    for key, value in metadata.items():
+                        data[f"v:{key}"] = str(value)
+
+                async with httpx.AsyncClient(timeout=30) as client:
+                    response = await client.post(
+                        f"{self.api_base}/{self.domain}/messages",
+                        auth=("api", self.api_key),
+                        data=data,
+                    )
+
+                if response.status_code == 200:
+                    payload = response.json()
+                    message_id = payload.get("id", f"mg_{uuid.uuid4().hex[:12]}")
+                    logger.info(f"[MAILGUN] Email sent to: {to_email}, ID: {message_id}")
+                    return EmailSendResult(
+                        success=True,
+                        message_id=message_id,
+                        status="sent",
+                        provider="mailgun",
+                        sent_at=datetime.utcnow(),
+                        metadata={
+                            "status_code": response.status_code,
+                            "to_email": to_email
+                        }
+                    )
+                else:
+                    logger.error(
+                        f"[MAILGUN] Failed: {to_email}, status: {response.status_code} — "
+                        "will attempt Resend fallback"
+                    )
+                    mailgun_result = EmailSendResult(
+                        success=False,
+                        status="failed",
+                        provider="mailgun",
+                        error=f"Mailgun returned status {response.status_code}: {response.text}",
+                        error_code=str(response.status_code)
+                    )
+
+            except Exception as e:
+                logger.error(
+                    f"[MAILGUN] Error sending to {to_email}: {e} — will attempt Resend fallback",
+                    exc_info=True
                 )
-            else:
-                logger.error(f"[SENDGRID] Failed: {to_email}, status: {status_code}")
-                return EmailSendResult(
+                mailgun_result = EmailSendResult(
                     success=False,
                     status="failed",
-                    provider="sendgrid",
-                    error=f"SendGrid returned status {status_code}",
-                    error_code=str(status_code)
+                    provider="mailgun",
+                    error=str(e),
+                    error_code=type(e).__name__
                 )
-        
-        except Exception as e:
-            logger.error(f"[SENDGRID] Error sending to {to_email}: {e}", exc_info=True)
+
+        resend_circuit_open = RESEND_CIRCUIT.state == CircuitState.OPEN
+        resend_api_key = os.environ.get("RESEND_API_KEY")
+
+        if resend_api_key and not resend_circuit_open:
+            try:
+                resend_result = await self._send_via_resend_fallback(
+                    to_email=to_email,
+                    to_name=to_name,
+                    subject=subject,
+                    body=body,
+                    body_html=body_html,
+                    cc=cc,
+                    bcc=bcc,
+                    reply_to=reply_to,
+                    metadata=metadata,
+                )
+                if resend_result.success:
+                    logger.info(
+                        f"[RESEND FALLBACK] Email delivered to {to_email}, "
+                        f"ID: {resend_result.message_id}"
+                    )
+                    return resend_result
+                logger.error(f"[RESEND FALLBACK] Also failed for {to_email}: {resend_result.error}")
+            except Exception as exc:
+                logger.error(f"[RESEND FALLBACK] Exception for {to_email}: {exc}", exc_info=True)
+        elif resend_circuit_open:
+            logger.warning("[RESEND] Circuit is OPEN — both providers unavailable")
+        elif not resend_api_key:
+            logger.warning("[RESEND] RESEND_API_KEY not set — no fallback provider available")
+
+        if mailgun_result is not None:
+            return mailgun_result
+
+        logger.warning(
+            "All email providers unavailable — falling back to development logging for %s",
+            to_email
+        )
+        return await self._send_development(
+            to_email=to_email,
+            to_name=to_name,
+            subject=subject,
+            body=body,
+            body_html=body_html,
+            cc=cc,
+            bcc=bcc,
+            metadata=metadata
+        )
+
+    async def _send_via_resend_fallback(
+        self,
+        to_email: str,
+        subject: str,
+        body: str,
+        to_name: Optional[str] = None,
+        body_html: Optional[str] = None,
+        cc: Optional[List[str]] = None,
+        bcc: Optional[List[str]] = None,
+        reply_to: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> EmailSendResult:
+        """Send via Resend as automatic fallback when Mailgun is unavailable."""
+        try:
+            import resend as resend_sdk
+        except ImportError:
             return EmailSendResult(
                 success=False,
                 status="failed",
-                provider="sendgrid",
-                error=str(e),
-                error_code=type(e).__name__
+                provider="resend",
+                error="Resend SDK not installed",
+                error_code="IMPORT_ERROR"
             )
-    
+
+        resend_api_key = os.environ.get("RESEND_API_KEY")
+        resend_from_email = os.environ.get("RESEND_FROM_EMAIL", "onboarding@resend.dev")
+        resend_from_name = os.environ.get("RESEND_FROM_NAME", self.from_name)
+
+        resend_sdk.api_key = resend_api_key
+
+        sender = f"{resend_from_name} <{resend_from_email}>" if resend_from_name else resend_from_email
+
+        params: Dict[str, Any] = {
+            "from": sender,
+            "to": [to_email],
+            "subject": subject,
+            "html": body_html or f"<pre>{body}</pre>",
+        }
+
+        if body:
+            params["text"] = body
+        if reply_to:
+            params["reply_to"] = reply_to
+        if cc:
+            params["cc"] = cc
+        if bcc:
+            params["bcc"] = bcc
+
+        import asyncio as _asyncio
+        response = await _asyncio.to_thread(resend_sdk.Emails.send, params)
+
+        if response and response.get("id"):
+            return EmailSendResult(
+                success=True,
+                message_id=response["id"],
+                status="sent",
+                provider="resend_fallback",
+                sent_at=datetime.utcnow(),
+                metadata={"fallback": True, "primary_provider": "mailgun"}
+            )
+
+        return EmailSendResult(
+            success=False,
+            status="failed",
+            provider="resend_fallback",
+            error=f"Resend returned unexpected response: {response}",
+            error_code="UNEXPECTED_RESPONSE"
+        )
+
     async def check_status(self, message_id: str) -> Tuple[str, Dict[str, Any]]:
         """
         Check email delivery status.
-        
-        Note: SendGrid requires Event Webhooks for real-time delivery status.
+
+        Note: Mailgun requires Event Webhooks for real-time delivery status.
         This method returns basic status info only.
-        
+
         Args:
             message_id: The message ID to check
-        
+
         Returns:
             Tuple of (status, additional_data)
         """
@@ -1024,13 +1147,12 @@ class SendGridEmailService:
                 "provider": "development",
                 "note": "Development emails are always marked as delivered"
             }
-        
+
         return "sent", {
-            "provider": "sendgrid",
+            "provider": "mailgun",
             "message_id": message_id,
-            "note": "SendGrid status tracking requires Event Webhook configuration. "
-                    "Configure at: https://app.sendgrid.com/settings/mail_settings/event_webhook"
+            "note": "Mailgun status tracking requires Event Webhook configuration."
         }
 
 
-sendgrid_email_service = SendGridEmailService()
+mailgun_email_service = MailgunEmailService()

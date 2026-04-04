@@ -15,7 +15,7 @@ This service handles:
    - Track all communications in audit log
 
 3. Provider Abstraction:
-   - Abstract email provider interface (SendGrid, AWS SES, SMTP)
+   - Abstract email provider interface (Mailgun primary, Resend fallback, AWS SES)
    - Abstract WhatsApp provider interface (Twilio, WhatsApp Business API)
    - Fallback handling when provider fails
    - Retry logic with exponential backoff
@@ -31,12 +31,11 @@ import os
 import random
 
 try:
-    from sendgrid import SendGridAPIClient
-    from sendgrid.helpers.mail import Mail, Email, To, Content, HtmlContent
-    SENDGRID_AVAILABLE = True
+    import httpx as _httpx_comm
+    MAILGUN_HTTPX_COMM_AVAILABLE = True
 except ImportError:
-    SENDGRID_AVAILABLE = False
-    SendGridAPIClient = None
+    MAILGUN_HTTPX_COMM_AVAILABLE = False
+    _httpx_comm = None  # type: ignore[assignment]
 
 try:
     from twilio.rest import Client as TwilioClient
@@ -477,42 +476,37 @@ class MockEmailProvider(MessageProvider):
         return True
 
 
-class SendGridProvider(MessageProvider):
+class MailgunMessageProvider(MessageProvider):
     """
-    SendGrid email provider implementation using the official SendGrid Python SDK.
-    
+    Mailgun email provider implementation using the Mailgun HTTP API.
+
     Requires:
-        - SENDGRID_API_KEY environment variable
-        - Optional: SENDGRID_FROM_EMAIL (defaults to noreply@wedotalent.com)
-        - Optional: SENDGRID_FROM_NAME (defaults to WeDo Talent)
-    
+        - MAILGUN_API_KEY environment variable
+        - MAILGUN_DOMAIN environment variable
+        - Optional: MAILGUN_FROM_EMAIL (defaults to noreply@wedotalent.com)
+        - Optional: MAILGUN_FROM_NAME (defaults to WeDo Talent)
+        - Optional: MAILGUN_API_BASE (defaults to https://api.mailgun.net/v3)
+
     Note on check_status:
-        SendGrid does not provide a synchronous API to check individual message status.
-        Email delivery status is typically tracked via webhooks (Event Webhook).
+        Mailgun delivery status is tracked via webhooks (Event Webhook).
         The check_status method returns 'unknown' status and recommends webhook setup.
     """
-    
+
     def __init__(self):
-        self.api_key = os.environ.get("SENDGRID_API_KEY")
-        self.from_email = os.environ.get("SENDGRID_FROM_EMAIL", "noreply@wedotalent.com")
-        self.from_name = os.environ.get("SENDGRID_FROM_NAME", "WeDo Talent")
-        self._client: Optional[SendGridAPIClient] = None
-    
-    @property
-    def client(self) -> Optional[SendGridAPIClient]:
-        """Lazy initialization of SendGrid client."""
-        if self._client is None and self.is_available() and SENDGRID_AVAILABLE:
-            self._client = SendGridAPIClient(self.api_key)
-        return self._client
-    
+        self.api_key = os.environ.get("MAILGUN_API_KEY")
+        self.domain = os.environ.get("MAILGUN_DOMAIN")
+        self.from_email = os.environ.get("MAILGUN_FROM_EMAIL", "noreply@wedotalent.com")
+        self.from_name = os.environ.get("MAILGUN_FROM_NAME", "WeDo Talent")
+        self.api_base = os.environ.get("MAILGUN_API_BASE", "https://api.mailgun.net/v3")
+
     @property
     def name(self) -> str:
-        return "sendgrid"
-    
+        return "mailgun"
+
     @property
     def channel(self) -> MessageChannel:
         return MessageChannel.EMAIL
-    
+
     async def send(
         self,
         to: str,
@@ -522,8 +516,8 @@ class SendGridProvider(MessageProvider):
         **kwargs
     ) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
         """
-        Send email via SendGrid API.
-        
+        Send email via Mailgun HTTP API.
+
         Args:
             to: Recipient email address
             subject: Email subject line
@@ -532,111 +526,98 @@ class SendGridProvider(MessageProvider):
             **kwargs: Additional options:
                 - reply_to: Reply-to email address
                 - categories: List of categories for tracking
-                - custom_args: Custom arguments for webhook tracking
-        
+
         Returns:
             Tuple of (success, message_id, response_data)
         """
-        if not SENDGRID_AVAILABLE:
-            logger.warning("SendGrid SDK not installed, falling back to mock")
-            return False, None, {"error": "SendGrid SDK not installed. Install with: pip install sendgrid"}
-        
+        if not MAILGUN_HTTPX_COMM_AVAILABLE:
+            logger.warning("httpx not available — Mailgun send disabled")
+            return False, None, {"error": "httpx not installed. Install with: pip install httpx"}
+
         if not self.is_available():
-            logger.warning("SendGrid not configured (missing SENDGRID_API_KEY), falling back")
-            return False, None, {"error": "SendGrid not configured - SENDGRID_API_KEY not set"}
-        
+            logger.warning("Mailgun not configured (missing MAILGUN_API_KEY/MAILGUN_DOMAIN)")
+            return False, None, {"error": "Mailgun not configured — MAILGUN_API_KEY and MAILGUN_DOMAIN required"}
+
         try:
-            from_email_obj = Email(self.from_email, self.from_name)
-            to_email_obj = To(to)
-            
-            message = Mail(
-                from_email=from_email_obj,
-                to_emails=to_email_obj,
-                subject=subject or "(No Subject)",
-                plain_text_content=Content("text/plain", body)
-            )
-            
+            import httpx
+
+            sender = f"{self.from_name} <{self.from_email}>" if self.from_name else self.from_email
+            data: Dict[str, Any] = {
+                "from": sender,
+                "to": to,
+                "subject": subject or "(No Subject)",
+                "text": body,
+            }
+
             if body_html:
-                message.add_content(Content("text/html", body_html))
-            
+                data["html"] = body_html
+
             reply_to = kwargs.get("reply_to")
             if reply_to:
-                message.reply_to = Email(reply_to)
-            
+                data["h:Reply-To"] = reply_to
+
             categories = kwargs.get("categories", [])
-            for category in categories:
-                message.add_category(category)
-            
+            for tag in categories:
+                data.setdefault("o:tag", [])
+                if isinstance(data["o:tag"], list):
+                    data["o:tag"].append(tag)
+
             custom_args = kwargs.get("custom_args", {})
-            if custom_args:
-                for key, value in custom_args.items():
-                    message.add_custom_arg(key, str(value))
-            
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: self.client.send(message)
-            )
-            
-            message_id = None
-            if response.headers:
-                message_id = response.headers.get("X-Message-Id")
-            
-            if not message_id:
-                message_id = f"sg_{uuid.uuid4().hex[:12]}"
-            
-            status_code = response.status_code
-            
-            if 200 <= status_code < 300:
-                logger.info(f"[SENDGRID] Successfully sent email to: {to}, message_id: {message_id}")
+            for key, value in custom_args.items():
+                data[f"v:{key}"] = str(value)
+
+            async with httpx.AsyncClient(timeout=30) as client:
+                response = await client.post(
+                    f"{self.api_base}/{self.domain}/messages",
+                    auth=("api", self.api_key),
+                    data=data,
+                )
+
+            if response.status_code == 200:
+                payload = response.json()
+                message_id = payload.get("id", f"mg_{uuid.uuid4().hex[:12]}")
+                logger.info(f"[MAILGUN] Successfully sent email to: {to}, message_id: {message_id}")
                 return True, message_id, {
-                    "provider": "sendgrid",
-                    "status_code": status_code,
+                    "provider": "mailgun",
+                    "status_code": response.status_code,
                     "message_id": message_id
                 }
             else:
-                logger.error(f"[SENDGRID] Failed to send email to: {to}, status: {status_code}")
+                logger.error(f"[MAILGUN] Failed to send email to: {to}, status: {response.status_code}")
                 return False, None, {
-                    "provider": "sendgrid",
-                    "error": f"SendGrid returned status {status_code}",
-                    "status_code": status_code,
-                    "body": response.body
+                    "provider": "mailgun",
+                    "error": f"Mailgun returned status {response.status_code}: {response.text}",
+                    "status_code": response.status_code,
                 }
-                
+
         except Exception as e:
-            logger.error(f"[SENDGRID] Error sending email to {to}: {str(e)}", exc_info=True)
+            logger.error(f"[MAILGUN] Error sending email to {to}: {str(e)}", exc_info=True)
             return False, None, {
-                "provider": "sendgrid",
+                "provider": "mailgun",
                 "error": str(e),
                 "error_type": type(e).__name__
             }
-    
+
     async def check_status(self, message_id: str) -> Tuple[str, Optional[Dict[str, Any]]]:
         """
-        Check SendGrid email status.
-        
-        Note: SendGrid does not provide a real-time API to check individual message delivery status.
-        Email delivery tracking is handled via SendGrid's Event Webhook, which sends delivery
-        events (delivered, opened, clicked, bounced, etc.) to a configured endpoint.
-        
-        For production use, configure SendGrid Event Webhook at:
-        https://app.sendgrid.com/settings/mail_settings/event_webhook
-        
+        Check Mailgun email status.
+
+        Note: Mailgun does not provide a real-time API to check individual message delivery status.
+        Email delivery tracking is handled via Mailgun's Event Webhook.
+
         Returns:
             Tuple of (status, additional_data) - status will be 'unknown' with webhook setup info
         """
         return "unknown", {
-            "provider": "sendgrid",
+            "provider": "mailgun",
             "message_id": message_id,
-            "note": "SendGrid email status tracking requires Event Webhook configuration. "
-                    "Individual message status cannot be queried via API. "
-                    "Configure webhooks at: https://app.sendgrid.com/settings/mail_settings/event_webhook",
+            "note": "Mailgun email status tracking requires Event Webhook configuration.",
             "recommendation": "Set up a webhook endpoint to receive delivery events"
         }
-    
+
     def is_available(self) -> bool:
-        """Check if SendGrid is configured and SDK is available."""
-        return bool(self.api_key) and SENDGRID_AVAILABLE
+        """Check if Mailgun is configured."""
+        return bool(self.api_key) and bool(self.domain) and MAILGUN_HTTPX_COMM_AVAILABLE
 
 
 class AWSEmailProvider(MessageProvider):
@@ -1019,7 +1000,7 @@ class CommunicationService:
         self.notification_service = NotificationService()
         
         self._email_providers: List[MessageProvider] = [
-            SendGridProvider(),
+            MailgunMessageProvider(),
             AWSEmailProvider(),
             MockEmailProvider(),
         ]

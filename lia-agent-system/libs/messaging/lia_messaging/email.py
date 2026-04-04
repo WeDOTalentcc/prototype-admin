@@ -1,14 +1,13 @@
 """
 lia_messaging.email — Provider-agnostic email sending interface.
 
-Detects active provider via environment variables (priority: Resend > SendGrid > Mailgun).
+Detects active provider via environment variables (priority: Mailgun > Resend).
 All functions are async-safe and return a consistent result dict.
 
 Environment variables (read via os.environ — lia_config not required):
-    RESEND_API_KEY       → use Resend provider
-    SENDGRID_API_KEY     → use SendGrid provider
     MAILGUN_API_KEY +
-    MAILGUN_DOMAIN       → use Mailgun provider
+    MAILGUN_DOMAIN       → use Mailgun provider (primary)
+    RESEND_API_KEY       → use Resend provider (fallback)
     DEFAULT_FROM_EMAIL   → fallback sender address (default: noreply@wedotalent.com)
 """
 from __future__ import annotations
@@ -23,13 +22,11 @@ _DEFAULT_FROM = "noreply@wedotalent.com"
 
 
 def _detect_provider() -> str:
-    """Return the first configured provider: resend | sendgrid | mailgun | none."""
-    if os.environ.get("RESEND_API_KEY"):
-        return "resend"
-    if os.environ.get("SENDGRID_API_KEY"):
-        return "sendgrid"
+    """Return the first configured provider: mailgun | resend | none."""
     if os.environ.get("MAILGUN_API_KEY") and os.environ.get("MAILGUN_DOMAIN"):
         return "mailgun"
+    if os.environ.get("RESEND_API_KEY"):
+        return "resend"
     return "none"
 
 
@@ -53,7 +50,7 @@ async def send_email(
         html_body: Optional HTML body (fallback to body if omitted).
         from_email: Sender address (defaults to DEFAULT_FROM_EMAIL env var).
         reply_to: Reply-to address.
-        provider: Override auto-detected provider ('resend', 'sendgrid', 'mailgun').
+        provider: Override auto-detected provider ('mailgun', 'resend').
 
     Returns:
         {"success": bool, "provider": str, "message_id": str | None, "error": str | None}
@@ -63,12 +60,10 @@ async def send_email(
     active_provider = provider or _detect_provider()
 
     try:
-        if active_provider == "resend":
-            return await _send_via_resend(recipients, subject, body, html_body, sender, reply_to)
-        if active_provider == "sendgrid":
-            return await _send_via_sendgrid(recipients, subject, body, html_body, sender, reply_to)
         if active_provider == "mailgun":
             return await _send_via_mailgun(recipients, subject, body, html_body, sender, reply_to)
+        if active_provider == "resend":
+            return await _send_via_resend(recipients, subject, body, html_body, sender, reply_to)
 
         logger.warning("No email provider configured — email NOT sent (subject=%r)", subject)
         return {"success": False, "provider": "none", "message_id": None,
@@ -82,6 +77,43 @@ async def send_email(
 # ---------------------------------------------------------------------------
 # Provider implementations
 # ---------------------------------------------------------------------------
+
+async def _send_via_mailgun(
+    recipients: List[str],
+    subject: str,
+    body: str,
+    html_body: Optional[str],
+    sender: str,
+    reply_to: Optional[str],
+) -> Dict[str, Any]:
+    import httpx
+
+    api_key = os.environ["MAILGUN_API_KEY"]
+    domain = os.environ["MAILGUN_DOMAIN"]
+    api_base = os.environ.get("MAILGUN_API_BASE", "https://api.mailgun.net/v3")
+
+    data: Dict[str, Any] = {
+        "from": sender,
+        "to": ",".join(recipients),
+        "subject": subject,
+        "text": body,
+    }
+    if html_body:
+        data["html"] = html_body
+    if reply_to:
+        data["h:Reply-To"] = reply_to
+
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await client.post(
+            f"{api_base}/{domain}/messages",
+            auth=("api", api_key),
+            data=data,
+        )
+        resp.raise_for_status()
+
+    payload = resp.json()
+    return {"success": True, "provider": "mailgun", "message_id": payload.get("id"), "error": None}
+
 
 async def _send_via_resend(
     recipients: List[str],
@@ -108,72 +140,3 @@ async def _send_via_resend(
     response = resend.Emails.send(params)
     message_id = response.get("id") if isinstance(response, dict) else getattr(response, "id", None)
     return {"success": True, "provider": "resend", "message_id": message_id, "error": None}
-
-
-async def _send_via_sendgrid(
-    recipients: List[str],
-    subject: str,
-    body: str,
-    html_body: Optional[str],
-    sender: str,
-    reply_to: Optional[str],
-) -> Dict[str, Any]:
-    import httpx
-
-    api_key = os.environ["SENDGRID_API_KEY"]
-    payload: Dict[str, Any] = {
-        "personalizations": [{"to": [{"email": r} for r in recipients]}],
-        "from": {"email": sender},
-        "subject": subject,
-        "content": [{"type": "text/plain", "value": body}],
-    }
-    if html_body:
-        payload["content"].append({"type": "text/html", "value": html_body})
-    if reply_to:
-        payload["reply_to"] = {"email": reply_to}
-
-    async with httpx.AsyncClient(timeout=15) as client:
-        resp = await client.post(
-            "https://api.sendgrid.com/v3/mail/send",
-            json=payload,
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-        )
-        resp.raise_for_status()
-
-    message_id = resp.headers.get("X-Message-Id")
-    return {"success": True, "provider": "sendgrid", "message_id": message_id, "error": None}
-
-
-async def _send_via_mailgun(
-    recipients: List[str],
-    subject: str,
-    body: str,
-    html_body: Optional[str],
-    sender: str,
-    reply_to: Optional[str],
-) -> Dict[str, Any]:
-    import httpx
-
-    api_key = os.environ["MAILGUN_API_KEY"]
-    domain = os.environ["MAILGUN_DOMAIN"]
-    data: Dict[str, Any] = {
-        "from": sender,
-        "to": ",".join(recipients),
-        "subject": subject,
-        "text": body,
-    }
-    if html_body:
-        data["html"] = html_body
-    if reply_to:
-        data["h:Reply-To"] = reply_to
-
-    async with httpx.AsyncClient(timeout=15) as client:
-        resp = await client.post(
-            f"https://api.mailgun.net/v3/{domain}/messages",
-            auth=("api", api_key),
-            data=data,
-        )
-        resp.raise_for_status()
-
-    payload = resp.json()
-    return {"success": True, "provider": "mailgun", "message_id": payload.get("id"), "error": None}

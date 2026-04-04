@@ -47,7 +47,7 @@ class CommunicationSettings(Base):
     default_email_from_name = Column(String(255), nullable=True)
     default_reply_to = Column(String(255), nullable=True)
     
-    sendgrid_enabled = Column(Boolean, default=False)
+    mailgun_enabled = Column("mailgun_enabled", Boolean, default=True)
     twilio_enabled = Column(Boolean, default=False)
     
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -76,7 +76,7 @@ class CommunicationSettings(Base):
             "auto_unsubscribe_after_days": self.auto_unsubscribe_after_days,
             "default_email_from_name": self.default_email_from_name,
             "default_reply_to": self.default_reply_to,
-            "sendgrid_enabled": self.sendgrid_enabled,
+            "mailgun_enabled": self.mailgun_enabled,
             "twilio_enabled": self.twilio_enabled,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
@@ -178,6 +178,6 @@ DEFAULT_COMMUNICATION_SETTINGS = {
     "auto_unsubscribe_after_days": 90,
     "default_email_from_name": None,
     "default_reply_to": None,
-    "sendgrid_enabled": False,
+    "mailgun_enabled": True,
     "twilio_enabled": False,
 }

@@ -1,23 +1,18 @@
 """
-Email Providers Package.
+Email Providers Package — Communication Domain.
 
 Provides a unified interface for different email sending services
 with factory pattern for provider selection.
 
 Supported providers:
-- resend: Resend API (default)
-- sendgrid: SendGrid API
+- mailgun: Mailgun API (primary)
+- resend: Resend API (automatic fallback via circuit breaker)
 
 Usage:
-    from app.services.email_providers import get_email_provider, EmailProvider
-    
-    # Get provider based on environment/client config
+    from app.domains.communication.services.email_providers import get_email_provider, EmailProvider
+
     provider = get_email_provider()
-    
-    # Or specify provider explicitly
-    provider = get_email_provider("sendgrid")
-    
-    # Send email
+
     result = await provider.send_email(
         to="user@example.com",
         subject="Hello",
@@ -25,9 +20,10 @@ Usage:
     )
 
 Environment Variables:
-- EMAIL_PROVIDER: Default provider to use (resend|sendgrid)
-- RESEND_API_KEY: Resend API key
-- SENDGRID_API_KEY: SendGrid API key
+- EMAIL_PROVIDER: Default provider to use (mailgun|resend)
+- MAILGUN_API_KEY: Mailgun API key (required for Mailgun)
+- MAILGUN_DOMAIN: Mailgun sending domain (required for Mailgun)
+- RESEND_API_KEY: Resend API key (required for Resend fallback)
 """
 import os
 import logging
@@ -35,24 +31,26 @@ from typing import Dict, Optional, Type
 
 from .base import EmailProvider, EmailMessage, EmailResult
 from .resend_provider import ResendProvider
-from .sendgrid_provider import SendGridProvider
+from .mailgun_provider import MailgunProvider
+from .fallback_provider import FallbackEmailProvider
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "EmailProvider",
-    "EmailMessage", 
+    "EmailMessage",
     "EmailResult",
     "ResendProvider",
-    "SendGridProvider",
+    "MailgunProvider",
+    "FallbackEmailProvider",
     "get_email_provider",
     "get_provider_for_client",
     "AVAILABLE_PROVIDERS"
 ]
 
 AVAILABLE_PROVIDERS: Dict[str, Type[EmailProvider]] = {
+    "mailgun": MailgunProvider,
     "resend": ResendProvider,
-    "sendgrid": SendGridProvider,
 }
 
 _provider_instances: Dict[str, EmailProvider] = {}
@@ -67,52 +65,52 @@ def get_email_provider(
 ) -> EmailProvider:
     """
     Factory function to get an email provider instance.
-    
+
     Args:
-        provider_name: Provider to use ('resend' or 'sendgrid'). 
-                      Defaults to EMAIL_PROVIDER env var or 'resend'.
+        provider_name: Provider to use ('mailgun' or 'resend').
+                      Defaults to EMAIL_PROVIDER env var or 'mailgun'.
         api_key: Optional API key override
         from_email: Optional sender email override
         from_name: Optional sender name override
         use_cache: Whether to cache and reuse provider instances
-    
+
     Returns:
         Configured EmailProvider instance
-    
+
     Raises:
         ValueError: If provider_name is not supported
     """
     if provider_name is None:
-        provider_name = os.getenv("EMAIL_PROVIDER", "resend").lower()
-    
+        provider_name = os.getenv("EMAIL_PROVIDER", "mailgun").lower()
+
     provider_name = provider_name.lower()
-    
+
     if provider_name not in AVAILABLE_PROVIDERS:
         raise ValueError(
             f"Unknown email provider: {provider_name}. "
             f"Available: {list(AVAILABLE_PROVIDERS.keys())}"
         )
-    
+
     cache_key = f"{provider_name}:{api_key or 'default'}"
-    
+
     if use_cache and cache_key in _provider_instances:
         return _provider_instances[cache_key]
-    
+
     provider_class = AVAILABLE_PROVIDERS[provider_name]
-    
-    kwargs = {}
+
+    kwargs: Dict = {}
     if api_key:
         kwargs["api_key"] = api_key
     if from_email:
         kwargs["from_email"] = from_email
     if from_name:
         kwargs["from_name"] = from_name
-    
+
     provider = provider_class(**kwargs)
-    
+
     if use_cache:
         _provider_instances[cache_key] = provider
-    
+
     logger.info(f"Created email provider: {provider_name}")
     return provider
 
@@ -123,34 +121,31 @@ def get_provider_for_client(
 ) -> EmailProvider:
     """
     Get email provider configured for a specific client.
-    
-    This allows different clients to use different email providers
-    based on their configuration.
-    
+
     Args:
         client_id: Client identifier
         client_config: Optional client configuration dict with:
-            - email_provider: Provider name (resend|sendgrid)
+            - email_provider: Provider name (mailgun|resend)
             - email_api_key: Provider-specific API key
             - email_from: Sender email
             - email_from_name: Sender name
-    
+
     Returns:
         Configured EmailProvider for the client
     """
     if client_config is None:
         client_config = {}
-    
+
     provider_name = client_config.get("email_provider")
     api_key = client_config.get("email_api_key")
     from_email = client_config.get("email_from")
     from_name = client_config.get("email_from_name")
-    
+
     cache_key = f"client:{client_id}"
-    
+
     if cache_key in _provider_instances:
         return _provider_instances[cache_key]
-    
+
     provider = get_email_provider(
         provider_name=provider_name,
         api_key=api_key,
@@ -158,9 +153,9 @@ def get_provider_for_client(
         from_name=from_name,
         use_cache=False
     )
-    
+
     _provider_instances[cache_key] = provider
-    
+
     logger.info(f"Created email provider for client {client_id}: {provider.provider_name}")
     return provider
 

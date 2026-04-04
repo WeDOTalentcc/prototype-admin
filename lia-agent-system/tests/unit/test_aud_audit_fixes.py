@@ -69,9 +69,13 @@ class TestCircuitBreakerRegistration:
         from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
         assert "pandape" in ALL_CIRCUITS
 
-    def test_sendgrid_circuit_in_all_circuits(self):
+    def test_stackone_circuit_in_all_circuits(self):
         from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
-        assert "sendgrid" in ALL_CIRCUITS
+        assert "stackone" in ALL_CIRCUITS
+
+    def test_mailgun_circuit_in_all_circuits(self):
+        from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
+        assert "mailgun" in ALL_CIRCUITS
 
     def test_resend_circuit_in_all_circuits(self):
         from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
@@ -84,12 +88,13 @@ class TestCircuitBreakerRegistration:
 
     def test_circuit_constants_exported(self):
         from app.shared.resilience.circuit_breaker import (
-            GUPY_CIRCUIT, PANDAPE_CIRCUIT,
-            SENDGRID_CIRCUIT, RESEND_CIRCUIT,
+            GUPY_CIRCUIT, PANDAPE_CIRCUIT, STACKONE_CIRCUIT,
+            MAILGUN_CIRCUIT, RESEND_CIRCUIT,
         )
         assert GUPY_CIRCUIT is not None
         assert PANDAPE_CIRCUIT is not None
-        assert SENDGRID_CIRCUIT is not None
+        assert STACKONE_CIRCUIT is not None
+        assert MAILGUN_CIRCUIT is not None
         assert RESEND_CIRCUIT is not None
 
 
@@ -169,11 +174,11 @@ class TestATSCircuitBreakers:
 class TestEmailCircuitBreakers:
     """Email providers must import and use their circuit breakers."""
 
-    def test_sendgrid_imports_circuit_breaker(self):
-        import app.services.email_providers.sendgrid_provider as mod
+    def test_mailgun_imports_circuit_breaker(self):
+        import app.services.email_providers.mailgun_provider as mod
         import inspect
         source = inspect.getsource(mod)
-        assert "SENDGRID_CIRCUIT" in source
+        assert "MAILGUN_CIRCUIT" in source
 
     def test_resend_imports_circuit_breaker(self):
         import app.services.email_providers.resend_provider as mod

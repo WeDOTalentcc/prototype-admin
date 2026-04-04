@@ -39,10 +39,10 @@ class TestDomainATSCircuitBreakers:
 class TestDomainEmailCircuitBreakers:
     """Domain communication email providers must use circuit breakers."""
 
-    def test_domain_sendgrid_imports_circuit_breaker(self):
-        import app.domains.communication.services.email_providers.sendgrid_provider as mod
+    def test_domain_mailgun_imports_circuit_breaker(self):
+        import app.domains.communication.services.email_providers.mailgun_provider as mod
         source = inspect.getsource(mod)
-        assert "SENDGRID_CIRCUIT" in source
+        assert "MAILGUN_CIRCUIT" in source
         assert "circuit_breaker_decorator" in source
 
     def test_domain_resend_imports_circuit_breaker(self):

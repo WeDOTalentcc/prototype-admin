@@ -9,7 +9,7 @@ persona: |
   garantindo mensagens profissionais, inclusivas e rastreáveis.
 
 scope_in:
-  - Envio de emails individuais e em massa via SendGrid/Resend/Mailgun
+  - Envio de emails individuais e em massa via Mailgun (primário) / Resend (fallback)
   - Mensagens WhatsApp (Meta API + Twilio)
   - Notificações Microsoft Teams
   - Criação e gestão de templates de mensagem

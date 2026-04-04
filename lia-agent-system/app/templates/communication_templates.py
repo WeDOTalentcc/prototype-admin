@@ -9,10 +9,10 @@ from datetime import datetime
 # LGPD — Aviso de sub-processadores de dados (K1 — Sprint K)
 #
 # Este aviso deve ser incluído em toda comunicação inicial com candidatos
-# que envolva envio via Twilio (WhatsApp/SMS) ou SendGrid (email).
+# que envolva envio via Twilio (WhatsApp/SMS) ou Mailgun (email).
 #
 # Base legal: LGPD Art. 7º, II (consentimento) + Art. 41 (encarregado)
-# Revisão jurídica necessária antes de atualizar DPA com Twilio/SendGrid
+# Revisão jurídica necessária antes de atualizar DPA com Twilio/Mailgun
 # e Política de Privacidade pública.
 # ---------------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ DATA_PROCESSING_NOTICE = (
     "Seus dados pessoais fornecidos neste processo seletivo são tratados pela WeDOTalent "
     "em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei 13.709/2018). "
     "Para viabilizar a comunicação, utilizamos os seguintes sub-processadores de dados: "
-    "Twilio Inc. (envio de mensagens WhatsApp/SMS) e Twilio SendGrid (envio de e-mails). "
+    "Twilio Inc. (envio de mensagens WhatsApp/SMS) e Mailgun Inc. (envio de e-mails). "
     "Esses parceiros atuam exclusivamente sob nossas instruções e estão sujeitos a acordos "
     "de proteção de dados compatíveis com a LGPD. "
     "Você pode exercer seus direitos de titular (acesso, correção, exclusão, portabilidade) "

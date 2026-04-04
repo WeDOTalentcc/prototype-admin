@@ -28,7 +28,7 @@ from app.shared.resilience.circuit_breaker import (
 # 1. SLOs contém circuits críticos
 # -------------------------------------------------------------------
 def test_slos_contains_critical_circuits():
-    critical = ["anthropic", "openai", "workos", "sendgrid"]
+    critical = ["anthropic", "openai", "workos", "mailgun"]
     for name in critical:
         assert name in CIRCUIT_BREAKER_SLOS, f"SLO não definido para circuit crítico: {name}"
 

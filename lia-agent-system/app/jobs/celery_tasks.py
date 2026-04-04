@@ -469,7 +469,7 @@ def send_bulk_email_task(self, email_data: dict, company_id: str) -> dict:
     """
     Envio de email em massa com controle de rate limiting e retry.
 
-    Para listas grandes (> 100 destinatários), usa envio em chunks via SendGrid.
+    Para listas grandes (> 100 destinatários), usa envio em chunks via Mailgun.
     Retries com exponential backoff em caso de falha de API.
 
     Args:
@@ -763,9 +763,9 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
             PersonalizedFeedbackStatus,
             personalized_feedback_service,
         )
-        from app.domains.communication.services.email_service import SendGridEmailService
+        from app.domains.communication.services.email_service import MailgunEmailService
 
-        email_service = SendGridEmailService()
+        email_service = MailgunEmailService()
 
         async with AsyncSessionLocal() as db:
             result = await db.execute(

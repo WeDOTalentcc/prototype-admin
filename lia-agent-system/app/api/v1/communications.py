@@ -2,7 +2,7 @@
 Communications API Endpoints
 
 Handles communication history for candidates - emails, WhatsApp, screening invites, etc.
-Also provides direct email and WhatsApp sending via SendGrid and Twilio integrations.
+Also provides direct email and WhatsApp sending via Mailgun and Twilio integrations.
 """
 
 from fastapi import APIRouter, HTTPException, Query, status, Header, Depends
@@ -19,7 +19,7 @@ from app.schemas.communication import (
     CommunicationStatusUpdate,
 )
 from app.services.email_service import (
-    sendgrid_email_service,
+    mailgun_email_service,
     SendEmailRequest,
     SendTemplateEmailRequest,
     SendBulkEmailRequest,
@@ -291,12 +291,12 @@ async def send_email(
     company_id: str = Depends(require_company_id)
 ):
     """
-    Send an email via SendGrid.
+    Send an email via Mailgun (primary) with Resend as automatic fallback.
     
     Requires X-Company-ID header for multi-tenant security.
     
     In development mode, logs the email without sending.
-    In production mode, sends via SendGrid API.
+    In production mode, sends via Mailgun API.
     
     Request body:
     - to_email: Recipient email address (required)
@@ -307,12 +307,12 @@ async def send_email(
     - cc: List of CC emails (optional)
     - bcc: List of BCC emails (optional)
     - reply_to: Reply-to address (optional)
-    - categories: SendGrid categories for tracking (optional)
+    - categories: Categories for tracking (optional)
     - metadata: Custom metadata (optional)
     
     Returns:
     - success: Whether the email was sent successfully
-    - message_id: SendGrid message ID (if successful)
+    - message_id: Mailgun message ID (if successful)
     - status: Email status (sent, failed)
     - provider: Email provider used
     - error: Error message (if failed)
@@ -321,7 +321,7 @@ async def send_email(
         metadata = request.metadata or {}
         metadata["company_id"] = company_id
         
-        result = await sendgrid_email_service.send_email(
+        result = await mailgun_email_service.send_email(
             to_email=request.to_email,
             to_name=request.to_name,
             subject=request.subject,
@@ -368,14 +368,14 @@ async def send_template_email(
     - template_data: Template variables dictionary (required)
     - cc: CC recipients (optional)
     - reply_to: Reply-to address (optional)
-    - categories: SendGrid categories (optional)
+    - categories: Categories (optional)
     - metadata: Custom metadata (optional)
     """
     try:
         metadata = request.metadata or {}
         metadata["company_id"] = company_id
         
-        result = await sendgrid_email_service.send_template_email(
+        result = await mailgun_email_service.send_template_email(
             to_email=request.to_email,
             to_name=request.to_name,
             template_name=request.template_name,
@@ -418,14 +418,14 @@ async def send_bulk_email(
     - subject: Email subject (required)
     - body: Plain text body (required)
     - body_html: HTML body (optional)
-    - categories: SendGrid categories (optional)
+    - categories: Categories (optional)
     - metadata: Custom metadata (optional)
     """
     try:
         metadata = request.metadata or {}
         metadata["company_id"] = company_id
         
-        result = await sendgrid_email_service.send_bulk_email(
+        result = await mailgun_email_service.send_bulk_email(
             recipients=request.recipients,
             subject=request.subject,
             body=request.body,
