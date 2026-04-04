@@ -302,6 +302,7 @@ export function CompanyDataSection({
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="https://www.empresa.com.br"
+                aria-label="Website da empresa"
               />
             </div>
           </CompanyDataCard>
@@ -326,6 +327,7 @@ export function CompanyDataSection({
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="https://linkedin.com/company/..."
+                aria-label="LinkedIn da empresa"
               />
             </div>
           </CompanyDataCard>
@@ -345,6 +347,7 @@ export function CompanyDataSection({
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="contato@empresa.com.br"
+                aria-label="Email de contato"
               />
             </div>
           </SimpleDataCard>
@@ -364,6 +367,7 @@ export function CompanyDataSection({
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="(11) 9999-9999"
+                aria-label="Telefone de contato"
               />
             </div>
           </SimpleDataCard>
@@ -382,7 +386,7 @@ export function CompanyDataSection({
             className="md:col-span-2"
           >
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-lia-text-tertiary" />
+              <MapPin className="w-4 h-4 text-lia-text-tertiary" aria-hidden="true" />
               <input
                 type="text"
                 value={companyData.address || ''}
@@ -390,6 +394,7 @@ export function CompanyDataSection({
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="Endereço completo"
+                aria-label="Endereço da empresa"
               />
             </div>
           </CompanyDataCard>

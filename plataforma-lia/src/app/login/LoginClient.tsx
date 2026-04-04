@@ -170,12 +170,13 @@ export default function LoginPage() {
           {step === "email" && (
             <form onSubmit={handleEmailStep} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-800 dark:text-lia-text-secondary mb-1.5">
+                <label htmlFor="login-email" className="block text-xs font-medium text-gray-800 dark:text-lia-text-secondary mb-1.5">
                   Email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-lia-text-tertiary w-4 h-4" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-lia-text-tertiary w-4 h-4" aria-hidden="true" />
                   <input
+                    id="login-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -183,6 +184,7 @@ export default function LoginPage() {
                     placeholder="seu@email.com"
                     required
                     autoFocus
+                    autoComplete="email"
                   />
                 </div>
               </div>
@@ -214,12 +216,13 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-800 dark:text-lia-text-secondary mb-1.5">
+                <label htmlFor="login-password" className="block text-xs font-medium text-gray-800 dark:text-lia-text-secondary mb-1.5">
                   Senha
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-lia-text-tertiary w-4 h-4" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-lia-text-tertiary w-4 h-4" aria-hidden="true" />
                   <input
+                    id="login-password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -233,9 +236,10 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-lia-text-tertiary hover:text-gray-600 dark:hover:text-lia-text-secondary"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-lia-text-tertiary hover:text-gray-600 dark:hover:text-lia-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan rounded-sm"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
                   </button>
                 </div>
               </div>

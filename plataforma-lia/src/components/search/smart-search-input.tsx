@@ -260,9 +260,10 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
                 <TooltipTrigger asChild>
                   <button
                     onClick={onGoToResults}
-                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-lia-bg-tertiary transition-[width,height] text-lia-text-primary"
+                    className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-lia-bg-tertiary transition-[width,height] text-lia-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan"
+                    aria-label="Ir para Resultados"
                   >
-                    <Table2 className="w-4 h-4" />
+                    <Table2 className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="!animate-none !duration-0">

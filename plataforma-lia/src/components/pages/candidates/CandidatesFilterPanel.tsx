@@ -65,9 +65,10 @@ export function CandidatesFilterPanel({
           </div>
           <button
             onClick={onClose}
-            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none text-lia-text-primary hover:text-lia-text-primary hover:bg-lia-bg-tertiary"
+            className="h-8 w-8 rounded-md flex items-center justify-center transition-colors motion-reduce:transition-none text-lia-text-primary hover:text-lia-text-primary hover:bg-lia-bg-tertiary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan"
+            aria-label="Fechar painel de filtros"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
 
@@ -153,8 +154,9 @@ export function CandidatesFilterPanel({
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs text-lia-text-primary mb-1 block">Mín. Anos</label>
+                <label htmlFor="filter-min-experience" className="text-xs text-lia-text-primary mb-1 block">Mín. Anos</label>
                 <Input
+                  id="filter-min-experience"
                   type="number"
                   min={0}
                   max={30}
@@ -170,8 +172,9 @@ export function CandidatesFilterPanel({
                 />
               </div>
               <div>
-                <label className="text-xs text-lia-text-primary mb-1 block">Máx. Anos</label>
+                <label htmlFor="filter-max-experience" className="text-xs text-lia-text-primary mb-1 block">Máx. Anos</label>
                 <Input
+                  id="filter-max-experience"
                   type="number"
                   min={0}
                   max={30}
@@ -200,8 +203,9 @@ export function CandidatesFilterPanel({
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs text-lia-text-primary mb-1 block">Mín. Score</label>
+                <label htmlFor="filter-min-score" className="text-xs text-lia-text-primary mb-1 block">Mín. Score</label>
                 <Input
+                  id="filter-min-score"
                   type="number"
                   min={0}
                   max={100}
@@ -217,8 +221,9 @@ export function CandidatesFilterPanel({
                 />
               </div>
               <div>
-                <label className="text-xs text-lia-text-primary mb-1 block">Máx. Score</label>
+                <label htmlFor="filter-max-score" className="text-xs text-lia-text-primary mb-1 block">Máx. Score</label>
                 <Input
+                  id="filter-max-score"
                   type="number"
                   min={0}
                   max={100}
@@ -348,8 +353,9 @@ export function CandidatesFilterPanel({
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className={`${textStyles.label} mb-1 block`}>Mín. ({CURRENCY_SYMBOL})</label>
+                <label htmlFor="filter-min-salary" className={`${textStyles.label} mb-1 block`}>Mín. ({CURRENCY_SYMBOL})</label>
                 <Input
+                  id="filter-min-salary"
                   type="number"
                   min={0}
                   value={tableFilters.minSalary ?? ""}
@@ -364,8 +370,9 @@ export function CandidatesFilterPanel({
                 />
               </div>
               <div>
-                <label className={`${textStyles.label} mb-1 block`}>Máx. ({CURRENCY_SYMBOL})</label>
+                <label htmlFor="filter-max-salary" className={`${textStyles.label} mb-1 block`}>Máx. ({CURRENCY_SYMBOL})</label>
                 <Input
+                  id="filter-max-salary"
                   type="number"
                   min={0}
                   value={tableFilters.maxSalary ?? ""}
