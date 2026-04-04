@@ -456,19 +456,25 @@ IMPORTANTE:
     async def _reconcile_triagem_session(
         self, call_id: str, call_result: Dict[str, Any]
     ) -> None:
-        """Update TriagemSession when a phone call initiated from triagem completes."""
-        from sqlalchemy import text as sql_text
-
+        """Update TriagemSession when a phone call initiated from triagem completes.
+        
+        Uses the same post-completion pipeline as chat-based triagem (email confirmation,
+        recruiter notification, pipeline update, audit log).
+        """
         async with AsyncSessionLocal() as db:
             from app.models.triagem import TriagemSession
-
             from sqlalchemy import select
+
             stmt = select(TriagemSession).where(
                 TriagemSession.metadata_json["phone_call"]["call_id"].as_string() == call_id
             )
             r = await db.execute(stmt)
             session = r.scalar_one_or_none()
             if not session:
+                return
+
+            if session.status == "completed":
+                logger.info(f"[Triagem] Session {session.token} already completed, skipping reconciliation")
                 return
 
             logger.info(f"[Triagem] Reconciling phone call {call_id} with triagem session {session.token}")
@@ -498,11 +504,18 @@ IMPORTANTE:
             session.metadata_json = meta
             session.status = "completed"
             session.completed_at = datetime.utcnow()
+
+            from app.services.triagem_session_service import triagem_service
+            post_actions = await triagem_service._trigger_post_completion(db, session)
+            phone_call["post_actions"] = post_actions
+            session.metadata_json = meta
+
             await db.commit()
 
             logger.info(
                 f"[Triagem] Phone triagem completed: token={session.token}, "
-                f"wsi={session.wsi_final_score}, recommendation={session.recommendation}"
+                f"wsi={session.wsi_final_score}, recommendation={session.recommendation}, "
+                f"post_actions={list(post_actions.keys())}"
             )
     
     async def _save_screening_to_database(

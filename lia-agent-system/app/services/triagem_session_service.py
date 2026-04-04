@@ -1103,58 +1103,47 @@ class TriagemSessionService:
                     pass
 
         try:
-            from app.services.openmic_service import openmic_service
+            from app.domains.cv_screening.services.wsi_voice_orchestrator import wsi_voice_orchestrator
+            from app.domains.cv_screening.services.wsi_service import Competency
 
             job_title = session.job_title or "a vaga"
             job_description = (job.description or "")[:1000] if job and job.description else ""
-            required_skills: List[str] = []
+
+            competencies: List[Competency] = []
             if job and getattr(job, "screening_config", None):
-                required_skills = list(
-                    (job.screening_config.get("skills") or {}).keys()
-                )[:10]
+                skills = job.screening_config.get("skills") or {}
+                for skill_name, skill_data in list(skills.items())[:10]:
+                    if isinstance(skill_data, dict):
+                        comp_type = skill_data.get("type", "technical")
+                    else:
+                        comp_type = "technical"
+                    competencies.append(Competency(
+                        name=skill_name,
+                        type=comp_type if comp_type in ("technical", "behavioral", "cultural") else "technical",
+                        weight=0.5,
+                        seniority_level="pleno",
+                    ))
+            if not competencies:
+                competencies = [
+                    Competency(name="Experiência Relevante", type="technical", weight=0.5, seniority_level="pleno"),
+                    Competency(name="Comunicação", type="behavioral", weight=0.5, seniority_level="pleno"),
+                ]
 
-            agent = await openmic_service.create_screening_agent(
-                job_title=job_title,
-                job_description=job_description,
-                required_skills=required_skills or ["experiência relevante"],
-            )
-            agent_id = agent.get("agent_id")
-            if not agent_id:
-                return {"error": "agent_creation_failed", "detail": str(agent)}
-
-            call = await openmic_service.start_screening_call(
-                agent_id=agent_id,
+            voice_result = await wsi_voice_orchestrator.start_voice_screening(
+                candidate_id=session.candidate_id,
+                job_vacancy_id=session.job_id,
+                competencies=competencies,
                 candidate_phone=candidate_phone,
                 candidate_name=session.candidate_name or "Candidato",
-                candidate_id=session.candidate_id,
                 job_title=job_title,
+                job_description=job_description,
+                mode="compact",
+                db=db,
             )
-            call_id = call.get("call_id")
-            if not call_id:
-                return {"error": "call_failed", "detail": str(call)}
 
-            from sqlalchemy import text as sql_text
-            wsi_session_id = str(uuid.uuid4())
-            job_vacancy_id = session.job_id
-            await db.execute(sql_text("""
-                INSERT INTO wsi_sessions (
-                    id, candidate_id, job_vacancy_id, screening_type, mode,
-                    status, call_id, agent_id
-                )
-                VALUES (
-                    :id, :candidate_id, :job_vacancy_id, :screening_type, :mode,
-                    :status, :call_id, :agent_id
-                )
-            """), {
-                "id": wsi_session_id,
-                "candidate_id": session.candidate_id,
-                "job_vacancy_id": job_vacancy_id,
-                "screening_type": "voice",
-                "mode": "compact",
-                "status": "in_progress",
-                "call_id": call_id,
-                "agent_id": agent_id,
-            })
+            call_id = voice_result.call_id
+            agent_id = voice_result.agent_id
+            wsi_session_id = voice_result.session_id
 
             meta = session.metadata_json or {}
             meta["phone_call"] = {
@@ -1171,13 +1160,15 @@ class TriagemSessionService:
             await db.commit()
 
             logger.info(
-                f"[Triagem] Phone call requested: token={token}, call_id={call_id}"
+                f"[Triagem] Phone call requested: token={token}, call_id={call_id}, "
+                f"wsi_session={wsi_session_id}, questions={voice_result.questions_generated}"
             )
 
             return {
                 "status": "call_initiated",
                 "call_id": call_id,
                 "agent_id": agent_id,
+                "wsi_session_id": wsi_session_id,
                 "message": "Ligação sendo realizada. Você receberá uma chamada em instantes.",
             }
 
