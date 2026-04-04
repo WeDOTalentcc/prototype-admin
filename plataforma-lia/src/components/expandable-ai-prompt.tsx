@@ -152,8 +152,7 @@ import { EAPModals } from './expandable-ai-prompt/EAPModals'
 import { toast } from "sonner"
 
 export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
-  // @ts-ignore TODO: fix type — Argument of type 'ExpandableAIPromptProps' is not assignable to parameter of typ
-  const core = useExpandableAIPromptCore(props)
+  const core = useExpandableAIPromptCore(props as Parameters<typeof useExpandableAIPromptCore>[0])
   const {
     MAX_CV_FILES, MAX_SIMILAR_URLS, activeSearchTab, advancedFilters, archetypeToDelete,
     buildSearchSpecFromEntities, candidateContext, candidateLimit,
@@ -217,8 +216,7 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
           </div>
           <div className="flex flex-wrap gap-2">
             {selectedCandidates.slice(0, 3).map((candidate, index) => (
-              // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'Key | null | undefined'.
-              <div key={candidate.name || index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
+              <div key={(candidate as Record<string, unknown>).name as string || index} className="flex items-center gap-1 bg-lia-bg-primary rounded-md px-2 py-1 border border-lia-border-subtle">
                 <Avatar className="w-4 h-4">
                   <AvatarFallback className="bg-lia-interactive-active text-lia-text-secondary text-xs">
                     {(candidate.name as string)?.charAt(0) || 'C'}
@@ -768,15 +766,12 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {suggestions.map((suggestion) => (
                   <button
-                    // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'Key | null | undefined'.
-                    key={suggestion.id}
+                    key={suggestion.id as string}
                     onClick={() => handleSuggestionClick(suggestion)}
                     disabled={isProcessing}
-                    // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'ReactNode'.
                     className={`flex items-start gap-3 p-3 text-left rounded-md border border-lia-border-subtle bg-lia-bg-primary transition-colors motion-reduce:transition-none group ${
  isProcessing
                         ? 'opacity-50 cursor-not-allowed'
-                        // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'ReactNode'.
                         : 'hover:border-lia-border-medium hover:'
                     }`}
                   >
@@ -862,16 +857,13 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
         showSourceChangeModal={showSourceChangeModal}
         setShowSourceChangeModal={setShowSourceChangeModal}
         pendingSourceChange={pendingSourceChange}
-        // @ts-ignore TODO: fix type — Type 'Dispatch<SetStateAction<"hybrid" | "global" | null>>' is not assignable to
-        setPendingSourceChange={setPendingSourceChange}
+        setPendingSourceChange={setPendingSourceChange as (v: string | null) => void}
         confirmSourceChange={confirmSourceChange}
         showSaveArchetypeModal={showSaveArchetypeModal}
         setShowSaveArchetypeModal={setShowSaveArchetypeModal}
-        // @ts-ignore TODO: fix type — Type 'SearchSpec | null' is not assignable to type 'SearchSpec'.
-        buildSearchSpecFromEntities={buildSearchSpecFromEntities}
+        buildSearchSpecFromEntities={buildSearchSpecFromEntities as () => Record<string, unknown>}
         naturalSearchValue={naturalSearchValue}
-        // @ts-ignore TODO: fix type — Type '(newArchetype: ArchetypeData) => void' is not assignable to type '() => vo
-        handleArchetypeSaved={handleArchetypeSaved}
+        handleArchetypeSaved={handleArchetypeSaved as () => void}
       />
     </div>
   )

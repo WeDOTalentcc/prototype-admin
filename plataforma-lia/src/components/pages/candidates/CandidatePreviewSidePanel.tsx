@@ -85,30 +85,22 @@ export function CandidatePreviewSidePanel({
             }
           }}
           onOpenFullPage={onCandidatePageOpen as any}
-          onScheduleInterview={(candidate: any) => {
-            // @ts-ignore TODO: fix type
-            setSelectedCandidateForAction(candidate)
+          onScheduleInterview={(candidate: unknown) => {
+            setSelectedCandidateForAction(candidate as Record<string, unknown>)
             setShowScheduleModal(true)
           }}
-          onAddToVacancy={(candidate: any) => {
-            // @ts-ignore TODO: fix type
-            setSelectedCandidatesForBatch(new Set([candidate.id]))
+          onAddToVacancy={(candidate: unknown) => {
+            setSelectedCandidatesForBatch(new Set([(candidate as Record<string, unknown>).id as string]))
             setShowAddToVacancyModal(true)
           }}
-          onToggleFavorite={(candidateId: any) => onToggleFavorite(candidateId)}
-          // @ts-ignore TODO: fix type
-          onWSIScreening={(candidate: any) => onStartWSITextScreening(candidate)}
+          onToggleFavorite={(candidateId: unknown) => onToggleFavorite(candidateId as string)}
+          onWSIScreening={(candidate: unknown) => (onStartWSITextScreening as (c: unknown) => void)(candidate)}
           isFavorite={favorites.has(previewCandidate.id)}
-          // @ts-ignore TODO: fix type
-          onSendEmail={(candidate: any) => onSendEmail(candidate)}
-          // @ts-ignore TODO: fix type
-          onSendWhatsApp={(candidate: any) => onSendWhatsApp(candidate)}
-          // @ts-ignore TODO: fix type
-          onSendTriagem={(candidate: any) => onSendTriagem(candidate)}
-          // @ts-ignore TODO: fix type
-          onSendAgendamento={(candidate: any) => onSendAgendamento(candidate)}
-          // @ts-ignore TODO: fix type
-          onSendFeedback={(candidate: any) => onSendFeedback(candidate)}
+          onSendEmail={(candidate: unknown) => (onSendEmail as (c: unknown) => void)(candidate)}
+          onSendWhatsApp={(candidate: unknown) => (onSendWhatsApp as (c: unknown) => void)(candidate)}
+          onSendTriagem={(candidate: unknown) => (onSendTriagem as (c: unknown) => void)(candidate)}
+          onSendAgendamento={(candidate: unknown) => (onSendAgendamento as (c: unknown) => void)(candidate)}
+          onSendFeedback={(candidate: unknown) => (onSendFeedback as (c: unknown) => void)(candidate)}
         />
       </div>
     </div>

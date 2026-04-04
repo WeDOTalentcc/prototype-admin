@@ -59,7 +59,6 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
       if (response.ok) {
         const backendDepts = await response.json()
         if (Array.isArray(backendDepts) && backendDepts.length > 0) {
-          // @ts-ignore TODO: fix type — Argument of type '(prevDepts: DepartmentData[]) => { id: unknown; name: unknown;
           setDepartments(prevDepts => {
             const existingPositionsMap = new Map(prevDepts.map(d => [d.id, d.positions]))
             const existingByName = new Map(prevDepts.map(d => [d.name.toLowerCase(), d.positions]))
@@ -67,9 +66,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
             return backendDepts.map((d: Record<string, unknown>) => ({
               id: d.id,
               name: d.name,
-              // @ts-ignore TODO: fix type — 'd.name' is of type 'unknown'.
-              // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'string'.
-              positions: existingPositionsMap.get(d.id) || existingByName.get(d.name.toLowerCase()) || [],
+              positions: existingPositionsMap.get(d.id as string) || existingByName.get(String(d.name).toLowerCase()) || [],
               expanded: false
             }))
           })
@@ -143,8 +140,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
       if (workforceRes.ok) {
         const workforceResult = await workforceRes.json()
         if (Array.isArray(workforceResult) && workforceResult.length > 0) {
-          // @ts-ignore TODO: fix type — Argument of type '{ month: unknown; department: unknown; planned: {}; actual: {}
-          setWorkforce(workforceResult.map((w: Record<string, unknown>) => ({
+          (setWorkforce as (v: unknown[]) => void)(workforceResult.map((w: Record<string, unknown>) => ({
             month: w.month,
             department: w.department,
             planned: w.planned || 0,
@@ -191,8 +187,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
         if (workforceRes.ok) {
           const workforceResult = await workforceRes.json()
           if (Array.isArray(workforceResult) && workforceResult.length > 0) {
-            // @ts-ignore TODO: fix type — Argument of type '{ month: unknown; department: unknown; planned: {}; actual: {}
-            setWorkforce(workforceResult.map((w: Record<string, unknown>) => ({
+            (setWorkforce as (v: unknown[]) => void)(workforceResult.map((w: Record<string, unknown>) => ({
               month: w.month,
               department: w.department,
               planned: w.planned || 0,
@@ -393,11 +388,11 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
     const tempId = `temp-${Date.now()}`
     const newName = 'Novo Departamento'
     
+    const emptyPlanning = { jan: 0, fev: 0, mar: 0, abr: 0, mai: 0, jun: 0, jul: 0, ago: 0, set: 0, out: 0, nov: 0, dez: 0 }
     const newDept: DepartmentData = {
       id: tempId,
       name: newName,
-      // @ts-ignore TODO: fix type — Cannot find name 'emptyMonthlyPlanning'.
-      positions: [{ id: `${tempId}-0`, name: 'Nova Posição', salary_min: undefined, salary_max: undefined, monthlyPlanned: { ...emptyMonthlyPlanning } }],
+      positions: [{ id: `${tempId}-0`, name: 'Nova Posição', salary_min: undefined, salary_max: undefined, monthlyPlanned: { ...emptyPlanning } }],
       expanded: true
     }
     setDepartments(prev => [...prev, newDept])
@@ -417,8 +412,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
   const addPositionToDepartment = (deptId: string) => {
     setDepartments(prev => prev.map(d => 
       d.id === deptId 
-        // @ts-ignore TODO: fix type — Cannot find name 'emptyMonthlyPlanning'.
-        ? { ...d, positions: [...d.positions, { id: Date.now().toString(), name: 'Nova Posição', salary_min: undefined, salary_max: undefined, monthlyPlanned: { ...emptyMonthlyPlanning } }] }
+        ? { ...d, positions: [...d.positions, { id: Date.now().toString(), name: 'Nova Posição', salary_min: undefined, salary_max: undefined, monthlyPlanned: { jan: 0, fev: 0, mar: 0, abr: 0, mai: 0, jun: 0, jul: 0, ago: 0, set: 0, out: 0, nov: 0, dez: 0 } }] }
         : d
     ))
   }
@@ -484,8 +478,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
       <GoalsManagement 
         key={goalsRefreshKey}
         users={effectiveUsers} 
-        // @ts-ignore TODO: fix type — Type '(userId: string, goals: Record<string, unknown>) => void' is not assignabl
-        onGoalUpdate={onGoalUpdate || (() => {})} 
+        onGoalUpdate={(onGoalUpdate || (() => {})) as (userId: string, goals: Record<string, unknown>) => void} 
       />
     </div>
   )

@@ -131,10 +131,8 @@ export function JobScreeningSection({
                         </div>
                         {!collapsedPreviewSections.includes('competencias') && (<>
                         {(() => {
-                          // @ts-ignore TODO: fix type
-                          const technicalSkills = (previewJob.technicalRequirements || [] as TechnicalRequirement[]).map((tr: TechnicalRequirement) => typeof tr === 'string' ? tr : tr.technology || tr.name).filter(Boolean)
-                          // @ts-ignore TODO: fix type
-                          const behavioralSkills = (previewJob.behavioralCompetencies || [] as BehavioralCompetency[]).map((bc: BehavioralCompetency) => typeof bc === 'string' ? bc : bc.competency || bc.name).filter(Boolean)
+                          const technicalSkills = ((previewJob.technicalRequirements || []) as TechnicalRequirement[]).map((tr: TechnicalRequirement) => typeof tr === 'string' ? tr : tr.technology || tr.name).filter(Boolean)
+                          const behavioralSkills = ((previewJob.behavioralCompetencies || []) as BehavioralCompetency[]).map((bc: BehavioralCompetency) => typeof bc === 'string' ? bc : bc.competency || bc.name).filter(Boolean)
                           const responsibilitySkills = (previewJob.requirements || [] as Requirement[]).map((r: Requirement) => typeof r === 'string' ? r : r.requirement || r.text || r.name).filter(Boolean)
                           const hasData = technicalSkills.length > 0 || behavioralSkills.length > 0 || responsibilitySkills.length > 0
 
@@ -255,15 +253,14 @@ export function JobScreeningSection({
                         {!collapsedPreviewSections.includes('remuneracao') && (
                           <div className="space-y-2 mt-2">
                             {(() => {
-                              // @ts-ignore TODO: fix type
-                              const salaryMin = previewJob.salaryRange?.min ?? previewJob.salaryMin
-                              // @ts-ignore TODO: fix type
-                              const salaryMax = previewJob.salaryRange?.max ?? previewJob.salaryMax
+                              const jobRec = previewJob as Record<string, unknown>
+                              const salaryRange = jobRec.salaryRange as { min?: number; max?: number } | undefined
+                              const salaryMin = salaryRange?.min ?? (jobRec.salaryMin as number | undefined)
+                              const salaryMax = salaryRange?.max ?? (jobRec.salaryMax as number | undefined)
                               const hasSalary = salaryMin || salaryMax
-                              // @ts-ignore TODO: fix type
-                              const bonusMin = previewJob.bonusRange?.min ?? previewJob.bonus_range?.min ?? previewJob.bonusMin
-                              // @ts-ignore TODO: fix type
-                              const bonusMax = previewJob.bonusRange?.max ?? previewJob.bonus_range?.max ?? previewJob.bonusMax
+                              const bonusRange = (jobRec.bonusRange ?? jobRec.bonus_range) as { min?: number; max?: number } | undefined
+                              const bonusMin = bonusRange?.min ?? (jobRec.bonusMin as number | undefined)
+                              const bonusMax = bonusRange?.max ?? (jobRec.bonusMax as number | undefined)
                               const hasBonus = bonusMin || bonusMax
                               const benefits = previewJob.benefits || []
                               const fmt = (v: number | string | null | undefined) => {
@@ -434,8 +431,7 @@ export function JobScreeningSection({
                         {!collapsedPreviewSections.includes('fluxo-wsi') && (
                         <div className="space-y-2">
                           {WSI_BLOCKS.map((block) => {
-                            // @ts-ignore TODO: fix type
-                            const isExpanded = expandedBlocks.includes(block.id)
+                            const isExpanded = (expandedBlocks as (string | number)[]).includes(block.id)
                             
                             const allQuestions = previewJob.screeningQuestions || []
                             const cat = (q: ScreeningQuestion) => (q.category || '').toLowerCase()
@@ -488,8 +484,7 @@ export function JobScreeningSection({
                                       ? 'bg-lia-bg-secondary hover:bg-lia-bg-tertiary' 
                                       : 'bg-lia-bg-tertiary/80'
                                   }`}
-                                  // @ts-ignore TODO: fix type
-                                  onClick={() => onToggleBlock(block.id)}
+                                  onClick={() => onToggleBlock(block.id as number)}
                                 >
                                   <div className="flex items-center gap-2">
                                     <span className={`w-5 h-5 rounded-full text-white text-micro font-bold flex items-center justify-center ${
@@ -614,14 +609,13 @@ export function JobScreeningSection({
                                                 <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">
                                                   <MessageSquare className="w-2.5 h-2.5 text-lia-text-disabled" />
                                                   {item.type === 'eliminatory' ? 'Sim/Não' 
-                                                    // @ts-ignore TODO: fix type
-                                                    : item.options?.length ? 'Múltipla escolha'
+                                                    : ((item as Record<string, unknown>).options as unknown[] | undefined)?.length ? 'Múltipla escolha'
                                                     : 'Texto livre'}
                                                 </span>
-                                                {item.weight != null && (
+                                                {(item as Record<string, unknown>).weight != null && (
                                                   <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">
                                                     <BarChart3 className="w-2.5 h-2.5 text-lia-text-disabled" />
-                                                    Peso {typeof (item as any).weight === 'number' ? (item as any).weight.toFixed(2) : (item as any).weight}
+                                                    Peso {typeof (item as Record<string, unknown>).weight === 'number' ? ((item as Record<string, unknown>).weight as number).toFixed(2) : String((item as Record<string, unknown>).weight)}
                                                   </span>
                                                 )}
                                                 <span className="inline-flex items-center gap-0.5 text-micro text-lia-text-tertiary">

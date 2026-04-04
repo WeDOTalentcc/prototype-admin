@@ -303,10 +303,8 @@ export function useChatPageCore() {
     switch (chatCardType) {
       case "candidate_summary":
         return (
-        // @ts-ignore
           <CandidateSummaryCard
-            data={chatCardData as unknown as any}
-            // @ts-ignore TODO: fix type
+            data={chatCardData as Record<string, unknown>}
             onScheduleInterview={() => handleCardAction("schedule")}
             onViewDetails={() => handleCardAction("view_details")}
             onAddToShortlist={() => handleCardAction("add_shortlist")}
@@ -315,26 +313,22 @@ export function useChatPageCore() {
       case "wsi_score":
         return (
           <WSIScoreCard
-            data={chatCardData as unknown as any}
+            data={chatCardData as Record<string, unknown>}
             onViewDetails={() => handleCardAction("view_details")}
           />
         )
       case "compensation_summary":
         return (
-        // @ts-ignore
           <CompensationSummaryCard
-            data={chatCardData as unknown as any}
+            data={chatCardData as Record<string, unknown>}
             onEdit={() => handleCardAction("edit")}
-            // @ts-ignore TODO: fix type
             onApprove={() => handleCardAction("approve")}
           />
         )
       case "interview_confirmation":
         return (
-        // @ts-ignore
           <InterviewConfirmationCard
-            data={chatCardData as unknown as any}
-            // @ts-ignore TODO: fix type
+            data={chatCardData as Record<string, unknown>}
             onReschedule={() => handleCardAction("reschedule")}
             onCancel={() => handleCardAction("cancel")}
             onConfirm={() => handleCardAction("confirm")}
@@ -342,21 +336,17 @@ export function useChatPageCore() {
         )
       case "progress_tracker":
         return (
-        // @ts-ignore
           <ProgressTrackerCard
-            data={chatCardData as unknown as any}
-            // @ts-ignore TODO: fix type
+            data={chatCardData as Record<string, unknown>}
             onViewDetails={() => handleCardAction("view_details")}
           />
         )
       case "job_summary":
         return (
-        // @ts-ignore
           <JobSummaryCard
-            data={chatCardData as unknown as any}
+            data={chatCardData as Record<string, unknown>}
             onEdit={() => handleCardAction("edit")}
             onPublish={() => handleCardAction("publish")}
-            // @ts-ignore TODO: fix type
             onViewCandidates={() => handleCardAction("view_candidates")}
           />
         )

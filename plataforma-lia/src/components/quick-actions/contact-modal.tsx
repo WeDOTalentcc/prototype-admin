@@ -193,16 +193,12 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
 
   const handleTemplateSelect = (template: { id?: string; subject?: string; message?: string }) => {
     if (activeTab === 'email') {
-      // @ts-ignore TODO: fix type — Argument of type 'string | undefined' is not assignable to parameter of type 'Se
-      setSubject(template.subject)
-      // @ts-ignore TODO: fix type — Argument of type 'string | undefined' is not assignable to parameter of type 'Se
-      setMessage(template.message)
+      setSubject(template.subject || '')
+      setMessage(template.message || '')
     } else {
-      // @ts-ignore TODO: fix type — Argument of type 'string | undefined' is not assignable to parameter of type 'Se
-      setMessage(template.message)
+      setMessage(template.message || '')
     }
-    // @ts-ignore TODO: fix type — Argument of type 'string | undefined' is not assignable to parameter of type 'Se
-    setTemplateType(template.id)
+    setTemplateType(template.id || '')
   }
 
   const generateLiaSuggestions = async (context: string) => {
@@ -294,19 +290,15 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
     }
   }
 
-  const applyLiaSuggestion = (suggestion: { content?: { subject?: string; message?: string } }) => {
+  const applyLiaSuggestion = (suggestion: { content?: { subject?: string; message?: string }; id?: string }) => {
     if (activeTab === 'email') {
-      // @ts-ignore TODO: fix type — 'suggestion.content' is possibly 'undefined'.
-      setSubject(suggestion.content.subject || '')
-      // @ts-ignore TODO: fix type — 'suggestion.content' is possibly 'undefined'.
-      setMessage(suggestion.content.message || '')
+      setSubject(suggestion.content?.subject || '')
+      setMessage(suggestion.content?.message || '')
     } else {
-      // @ts-ignore TODO: fix type — 'suggestion.content' is possibly 'undefined'.
-      setMessage(suggestion.content.message || '')
+      setMessage(suggestion.content?.message || '')
     }
     setShowLiaSuggestions(false)
-    // @ts-ignore TODO: fix type — Property 'id' does not exist on type '{ content?: { subject?: string | undefined
-    setTemplateType(`lia-${suggestion.id}`)
+    setTemplateType(`lia-${suggestion.id || ''}`)
   }
 
   const handleSend = async () => {

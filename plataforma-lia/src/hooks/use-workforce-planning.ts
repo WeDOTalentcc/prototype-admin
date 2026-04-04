@@ -94,22 +94,16 @@ export function useWorkforcePlanning(): UseWorkforcePlanningResult {
         
         if (headcounts && Array.isArray(headcounts)) {
           headcounts.forEach((hc: Record<string, unknown>) => {
-            vacancies.push({              // @ts-ignore // TODO: fix type
-              id: hc.id || `${planItem.id}-${vacancies.length}`,              // @ts-ignore // TODO: fix type
-              title: hc.title || 'Posição Planejada',
-              // @ts-ignore // TODO: fix type
-              department: hc.department_name || hc.department || '',              // @ts-ignore // TODO: fix type
-              plannedMonth: hc.target_month || 1,
-              // @ts-ignore // TODO: fix type
-              plannedYear: hc.target_year || planItem.fiscal_year || currentYear,
-              // @ts-ignore // TODO: fix type
-              status: hc.status || 'planned',
-              // @ts-ignore // TODO: fix type
-              priority: hc.priority || 'medium',
-              // @ts-ignore // TODO: fix type
-              budgetApproved: hc.budget_approved ?? true,
-              // @ts-ignore // TODO: fix type
-              headcountType: hc.headcount_type || 'expansion'
+            vacancies.push({
+              id: (hc.id as string) || `${planItem.id}-${vacancies.length}`,
+              title: (hc.title as string) || 'Posição Planejada',
+              department: (hc.department_name as string) || (hc.department as string) || '',
+              plannedMonth: (hc.target_month as number) || 1,
+              plannedYear: (hc.target_year as number) || (planItem.fiscal_year as number) || currentYear,
+              status: (hc.status as string) || 'planned',
+              priority: (hc.priority as string) || 'medium',
+              budgetApproved: (hc.budget_approved as boolean) ?? true,
+              headcountType: (hc.headcount_type as string) || 'expansion'
             })
             
             if (hc.status === 'open') totalOpen++

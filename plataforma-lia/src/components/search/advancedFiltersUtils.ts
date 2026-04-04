@@ -7,10 +7,8 @@ export function convertToPearchFilters(filters: SearchFilters): {
   apiOptions: Record<string, unknown>
   hideViewedOptions?: {
     enabled: boolean
-    // @ts-ignore TODO: fix type — Cannot find name 'HideViewedScope'.
-    scope: HideViewedScope
-    // @ts-ignore TODO: fix type — Cannot find name 'HideViewedPeriod'.
-    period: HideViewedPeriod
+    scope: string
+    period: string
   }
 } {
   const customFilters: Record<string, unknown> = {}
@@ -199,8 +197,7 @@ export function normalizeFiltersFromServer(filters: SearchFilters & Record<strin
   }
   
   if (normalized.company_funding_stages && !normalized.company.fundingStages) {
-    // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
-    normalized.company.fundingStages = normalized.company_funding_stages
+    normalized.company.fundingStages = normalized.company_funding_stages as string[]
   }
   
   if (normalized.company_tags && !normalized.company.companyTags) {
@@ -213,33 +210,27 @@ export function normalizeFiltersFromServer(filters: SearchFilters & Record<strin
   }
   
   if (normalized.company_hq_locations && !normalized.company.companyHQLocations) {
-    // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
-    normalized.company.companyHQLocations = normalized.company_hq_locations
+    normalized.company.companyHQLocations = normalized.company_hq_locations as string[]
   }
   
   if (normalized.company_sizes && !normalized.company.companySizes) {
-    // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
-    normalized.company.companySizes = normalized.company_sizes
+    normalized.company.companySizes = normalized.company_sizes as string[]
   }
   
   if (normalized.industries && !normalized.company.industries) {
-    // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
-    normalized.company.industries = normalized.industries
+    normalized.company.industries = normalized.industries as string[]
   }
   
   if (normalized.industry_time_filter && !normalized.company.industryTimeFilter) {
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'IndustryTimeFilter | undefined'.
-    normalized.company.industryTimeFilter = normalized.industry_time_filter
+    normalized.company.industryTimeFilter = normalized.industry_time_filter as SearchFilters['company']['industryTimeFilter']
   }
   
   if (normalized.company_tags_time_filter && !normalized.company.companyTagsTimeFilter) {
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'CompanyTagsTimeFilter | undefined'.
-    normalized.company.companyTagsTimeFilter = normalized.company_tags_time_filter
+    normalized.company.companyTagsTimeFilter = normalized.company_tags_time_filter as SearchFilters['company']['companyTagsTimeFilter']
   }
   
   if (normalized.company_hq_time_filter && !normalized.company.companyHQTimeFilter) {
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'CompanyHQTimeFilter | undefined'.
-    normalized.company.companyHQTimeFilter = normalized.company_hq_time_filter
+    normalized.company.companyHQTimeFilter = normalized.company_hq_time_filter as SearchFilters['company']['companyHQTimeFilter']
   }
   
   const { 

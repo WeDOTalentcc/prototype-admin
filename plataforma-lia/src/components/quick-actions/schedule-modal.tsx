@@ -219,26 +219,25 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
 
     switch (type) {
       case 'duration':
-        // @ts-ignore TODO: fix type
-        setDuration(liaRecommendations.recommendedDuration)
+        setDuration((liaRecommendations as Record<string, unknown>).recommendedDuration as string)
         break
       case 'platform':
-        // @ts-ignore TODO: fix type
-        setPlatform(liaRecommendations.recommendedPlatform)
+        setPlatform((liaRecommendations as Record<string, unknown>).recommendedPlatform as string)
         break
       case 'type':
-        // @ts-ignore TODO: fix type
-        setScheduleType(liaRecommendations.recommendedType)
+        setScheduleType((liaRecommendations as Record<string, unknown>).recommendedType as string)
         break
-      case 'notes':
-        // @ts-ignore TODO: fix type
-        const focusAreas = Object.entries(liaRecommendations.interviewFocus as Record<string, unknown>)
+      case 'notes': {
+        const focusAreas = Object.entries((liaRecommendations as Record<string, unknown>).interviewFocus as Record<string, unknown>)
           .sort(([,a], [,b]) => ((b as { weight?: number }).weight ?? 0) - ((a as { weight?: number }).weight ?? 0))
           .slice(0, 2)
           .map(([key, value]) => `${key}: ${(value as { approach?: string }).approach ?? ''}`)
           .join('\n')
-        setNotes(`Foco da entrevista (sugerido pela LIA):\n\n${focusAreas}\n\nPontos de atenção:\n${(liaRecommendations as any).attentionPoints.strengths[0]}`)
+        const attentionPoints = (liaRecommendations as Record<string, unknown>).attentionPoints as Record<string, unknown> | undefined
+        const strengths = (attentionPoints?.strengths as string[]) || []
+        setNotes(`Foco da entrevista (sugerido pela LIA):\n\n${focusAreas}\n\nPontos de atenção:\n${strengths[0] || ''}`)
         break
+      }
     }
   }
 
@@ -401,9 +400,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                   <div className="space-y-4">
                     {/* Quick Recommendations */}
                     <div className="grid grid-cols-3 gap-3">
-                      {/* @ts-ignore TODO: fix type */}
                       <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
-                        <div className="text-lg font-semibold text-lia-text-primary">{(liaRecommendations.recommendedDuration as React.ReactNode)}min</div>
+                        <div className="text-lg font-semibold text-lia-text-primary">{String((liaRecommendations as Record<string, unknown>).recommendedDuration ?? '')}min</div>
                         <div className="text-micro text-lia-text-secondary">Duração sugerida</div>
                         <button
                           onClick={() => applyLiaRecommendation('duration')}
@@ -412,9 +410,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                           Aplicar
                         </button>
                       </div>
-                      {/* @ts-ignore TODO: fix type */}
                       <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
-                        <div className="text-lg font-semibold text-lia-text-primary capitalize">{(liaRecommendations.recommendedType as React.ReactNode)}</div>
+                        <div className="text-lg font-semibold text-lia-text-primary capitalize">{String((liaRecommendations as Record<string, unknown>).recommendedType ?? '')}</div>
                         <div className="text-micro text-lia-text-secondary">Tipo recomendado</div>
                         <button
                           onClick={() => applyLiaRecommendation('type')}
@@ -423,9 +420,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                           Aplicar
                         </button>
                       </div>
-                      {/* @ts-ignore TODO: fix type */}
                       <div className="text-center p-3 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
-                        <div className="text-lg font-semibold text-lia-text-primary capitalize">{(liaRecommendations.recommendedPlatform as React.ReactNode)}</div>
+                        <div className="text-lg font-semibold text-lia-text-primary capitalize">{String((liaRecommendations as Record<string, unknown>).recommendedPlatform ?? '')}</div>
                         <div className="text-micro text-lia-text-secondary">Plataforma sugerida</div>
                         <button
                           onClick={() => applyLiaRecommendation('platform')}
@@ -460,9 +456,8 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                     {/* Interview Focus */}
                     <div>
                       <h5 className="text-xs font-medium text-lia-text-primary mb-2">Foco da Entrevista:</h5>
-                      {/* @ts-ignore TODO: fix type */}
                       <div className="grid grid-cols-2 gap-2">
-                        {Object.entries(liaRecommendations.interviewFocus as Record<string, unknown>)
+                        {Object.entries((liaRecommendations as Record<string, unknown>).interviewFocus as Record<string, unknown>)
                           .sort(([,a], [,b]) => ((b as { weight?: number }).weight ?? 0) - ((a as { weight?: number }).weight ?? 0))
                           .slice(0, 4)
                           .map(([key, value]: [string, unknown]) => {
@@ -476,7 +471,6 @@ export function ScheduleModal({ isOpen, onClose, candidate, onSchedule }: Schedu
                             <p className="text-micro text-lia-text-secondary">{v.approach}</p>
                           </div>
                             )
-                          // @ts-ignore TODO: fix type
                           })}
                       </div>
                       <button

@@ -228,10 +228,8 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                    <TaskCard
                                      key={task.id}
                                      task={task}
-                                     // @ts-ignore TODO: fix type
-                                     onConfirm={handleConfirmTask}
-                                     // @ts-ignore TODO: fix type
-                                     onReject={handleRejectTask}
+                                     onConfirm={handleConfirmTask as (taskId: string) => void}
+                                     onReject={handleRejectTask as (taskId: string) => void}
                                    />
                                  ))}
                               </div>
@@ -255,10 +253,8 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                                    <TaskCard
                                      key={task.id}
                                      task={task}
-                                     // @ts-ignore TODO: fix type
-                                     onConfirm={handleConfirmTask}
-                                     // @ts-ignore TODO: fix type
-                                     onReject={handleRejectTask}
+                                     onConfirm={handleConfirmTask as (taskId: string) => void}
+                                     onReject={handleRejectTask as (taskId: string) => void}
                                    />
                                  ))}
                         
@@ -288,8 +284,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
               {/* Card: Alertas Ativos */}
               <ActiveAlertsCard
                 activeAlerts={activeAlerts}
-                // @ts-ignore TODO: fix type
-                onAlertAction={handleAlertAction}
+                onAlertAction={handleAlertAction as (alertId: string, action: string) => void}
                 textStyles={textStyles}
               />
             </div>
@@ -332,8 +327,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
                     {/* Botão de Filtros */}
                     <Button
-                      // @ts-ignore TODO: fix type
-                      variant={showJobFilters || activeJobFiltersCount > 0 ? "default" : "outline"}
+                      variant={(showJobFilters || activeJobFiltersCount > 0 ? "default" : "outline") as "default" | "outline"}
                       size="sm"
                       onClick={() => setShowJobFilters(!showJobFilters)}
                       className="gap-1.5 h-8 px-3 text-xs"
@@ -787,10 +781,8 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
                           {/* Alerta LIA */}
                           <div 
-                            // @ts-ignore TODO: fix type
-                            className={`flex items-center gap-1 ${getAlertColor(job.alert.type)} rounded-md px-1.5 py-1 flex-1`}
-                            // @ts-ignore TODO: fix type
-                            style={getAlertStyle(job.alert.type)}
+                            className={`flex items-center gap-1 ${getAlertColor((job as Record<string, unknown> & { alert: { type: string; message: string } }).alert.type)} rounded-md px-1.5 py-1 flex-1`}
+                            style={getAlertStyle((job as Record<string, unknown> & { alert: { type: string; message: string } }).alert.type) as React.CSSProperties}
                           >
                             {getAlertIcon(job.alert.type)}
                             <span className="text-xs font-medium truncate flex-1">{job.alert.message}</span>

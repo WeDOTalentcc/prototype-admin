@@ -672,31 +672,23 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
       const createdJob = await liaApi.createJobVacancy(jobData as JobVacancyCreateRequest)
 
       const jobId = ((createdJob as unknown) as Record<string, unknown>).job_id || ((createdJob as unknown) as Record<string, unknown>).id
-      // @ts-ignore TODO: fix type
-      // @ts-ignore TODO: fix type
-      // @ts-ignore TODO: fix type
-      setPublishedJobId(jobId)
+      setPublishedJobId(String(jobId))
 
       if (wizardFastTrackSourceJobId && jobId && jobId !== wizardFastTrackSourceJobId) {
         const tenantId = user?.company || 'default'
         liaApi.recordFastTrackUsage({
-          // @ts-ignore TODO: fix type
-          company_id: tenantId,
-          // @ts-ignore TODO: fix type
-          source_job_id: wizardFastTrackSourceJobId,
-          // @ts-ignore TODO: fix type
-          new_job_id: jobId,
+          company_id: tenantId as string,
+          source_job_id: wizardFastTrackSourceJobId as string,
+          new_job_id: String(jobId),
           modified_fields: [],
           was_published: true
         }).catch(() => {})
         setWizardFastTrackSourceJobId(null)
       }
 
-      // @ts-ignore TODO: fix type
       try {
         await liaApi.sendJobCreatedNotification({
-          // @ts-ignore TODO: fix type
-          job_id: jobId,
+          job_id: String(jobId),
           job_title: basicInfoFields.cargo || 'Nova Vaga',
           department: basicInfoFields.area || undefined,
           location: basicInfoFields.localidade || undefined,

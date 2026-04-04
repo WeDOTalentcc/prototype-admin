@@ -531,37 +531,30 @@ export function CandidateSearchResultsView({
             setLiaWidth={setLiaWidth}
             isResizingLIA={isResizingLIA}
             setIsResizingLIA={setIsResizingLIA}
-            // @ts-ignore TODO: fix type
-            activeSearchTab={activeSearchTab}
-            // @ts-ignore TODO: fix type
-            setActiveSearchTab={setActiveSearchTab}
+            activeSearchTab={activeSearchTab as string}
+            setActiveSearchTab={setActiveSearchTab as (tab: string) => void}
             liaPromptValue={liaPromptValue}
-            // @ts-ignore TODO: fix type
-            setLiaPromptValue={setLiaPromptValue}
+            setLiaPromptValue={setLiaPromptValue as (value: string) => void}
             chatMessages={chatMessages}
             setChatMessages={setChatMessages}
             searchResults={searchResults}
-            // @ts-ignore TODO: fix type
-            setSearchResults={setSearchResults}
+            setSearchResults={setSearchResults as (results: unknown[]) => void}
             currentSearchSource={currentSearchSource}
             searchSource={searchSource}
             pearchSearchOptions={pearchSearchOptions}
-            // @ts-ignore TODO: fix type
-            activeSearchFilters={activeSearchFilters}
+            activeSearchFilters={activeSearchFilters as Record<string, unknown>}
             setActiveSearchFilters={setActiveSearchFilters}
             showTableFiltersPanel={showTableFiltersPanel}
             setShowTableFiltersPanel={setShowTableFiltersPanel}
             isCreatingArchetype={isCreatingArchetype}
             setIsCreatingArchetype={setIsCreatingArchetype}
             archetypeCreationStep={archetypeCreationStep}
-            // @ts-ignore TODO: fix type
-            setArchetypeCreationStep={setArchetypeCreationStep}
+            setArchetypeCreationStep={setArchetypeCreationStep as (step: number) => void}
             setNewArchetypeData={setNewArchetypeData}
             setShowSaveAsArchetypeModal={setShowSaveAsArchetypeModal}
             setShowGlobalExpansionConfirm={setShowGlobalExpansionConfirm}
             selectedCandidatesForBatch={selectedCandidatesForBatch}
-            // @ts-ignore TODO: fix type
-            setCandidates={setCandidates}
+            setCandidates={setCandidates as (candidates: unknown[]) => void}
             setHasSearchResults={setHasSearchResults}
             setSearchResultsCount={setSearchResultsCount}
             setLocalResultsCount={setLocalResultsCount}
@@ -570,14 +563,10 @@ export function CandidateSearchResultsView({
             setDisplayedResultsCount={setDisplayedResultsCount}
             onLIAChatMessage={onLIAChatMessage}
             onAICommand={onAICommand}
-            // @ts-ignore TODO: fix type
-            onQuickAction={onQuickAction}
-            // @ts-ignore TODO: fix type
-            onCalibrationLike={onCalibrationLike}
-            // @ts-ignore TODO: fix type
-            onCalibrationDislike={onCalibrationDislike}
-            // @ts-ignore TODO: fix type
-            chatScrollRef={chatScrollRef}
+            onQuickAction={onQuickAction as (action: string, data?: unknown) => void}
+            onCalibrationLike={onCalibrationLike as (id: string) => void}
+            onCalibrationDislike={onCalibrationDislike as (id: string) => void}
+            chatScrollRef={chatScrollRef as React.RefObject<HTMLDivElement>}
             onClose={() => {
               setShowExpandedLIA(false)
               setUserCollapsedLIA(true)

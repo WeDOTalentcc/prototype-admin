@@ -199,27 +199,19 @@ export function BenefitsTab() {
 
   const normalizeBenefit = (benefit: Record<string, unknown>): Benefit => ({
     ...benefit,
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'string'.
-    description: benefit.description || "",
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'string'.
-    value_type: benefit.value_type || "informative",
+    description: String(benefit.description || ""),
+    value_type: String(benefit.value_type || "informative"),
     seniority_levels: Array.isArray(benefit.seniority_levels) 
       ? benefit.seniority_levels 
       : benefit.seniority_levels 
         ? [benefit.seniority_levels] 
         : ["all"],
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'number'.
-    waiting_period_days: benefit.waiting_period_days ?? 0,
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'boolean'.
-    is_mandatory: benefit.is_mandatory ?? false,
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'boolean'.
-    is_active: benefit.is_active ?? true,
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'boolean'.
-    is_highlighted: benefit.is_highlighted ?? false,
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'boolean'.
-    is_discount: benefit.is_discount ?? false,
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'string'.
-    provider: benefit.provider || "",
+    waiting_period_days: Number(benefit.waiting_period_days ?? 0),
+    is_mandatory: Boolean(benefit.is_mandatory ?? false),
+    is_active: Boolean(benefit.is_active ?? true),
+    is_highlighted: Boolean(benefit.is_highlighted ?? false),
+    is_discount: Boolean(benefit.is_discount ?? false),
+    provider: String(benefit.provider || ""),
   })
 
   const loadBenefits = useCallback(async () => {

@@ -371,8 +371,7 @@ export function normalizeFiltersFromServer(filters: SearchFilters & Record<strin
   }
   
   if (normalized.company_funding_stages && !normalized.company.fundingStages) {
-    // @ts-ignore TODO: fix type
-    normalized.company.fundingStages = normalized.company_funding_stages
+    (normalized.company as Record<string, unknown>).fundingStages = normalized.company_funding_stages
   }
   
   if (normalized.company_tags && !normalized.company.companyTags) {
@@ -385,33 +384,27 @@ export function normalizeFiltersFromServer(filters: SearchFilters & Record<strin
   }
   
   if (normalized.company_hq_locations && !normalized.company.companyHQLocations) {
-    // @ts-ignore TODO: fix type
-    normalized.company.companyHQLocations = normalized.company_hq_locations
+    (normalized.company as Record<string, unknown>).companyHQLocations = normalized.company_hq_locations
   }
   
   if (normalized.company_sizes && !normalized.company.companySizes) {
-    // @ts-ignore TODO: fix type
-    normalized.company.companySizes = normalized.company_sizes
+    (normalized.company as Record<string, unknown>).companySizes = normalized.company_sizes
   }
   
   if (normalized.industries && !normalized.company.industries) {
-    // @ts-ignore TODO: fix type
-    normalized.company.industries = normalized.industries
+    (normalized.company as Record<string, unknown>).industries = normalized.industries
   }
   
   if (normalized.industry_time_filter && !normalized.company.industryTimeFilter) {
-    // @ts-ignore TODO: fix type
-    normalized.company.industryTimeFilter = normalized.industry_time_filter
+    (normalized.company as Record<string, unknown>).industryTimeFilter = normalized.industry_time_filter
   }
   
   if (normalized.company_tags_time_filter && !normalized.company.companyTagsTimeFilter) {
-    // @ts-ignore TODO: fix type
-    normalized.company.companyTagsTimeFilter = normalized.company_tags_time_filter
+    (normalized.company as Record<string, unknown>).companyTagsTimeFilter = normalized.company_tags_time_filter
   }
   
   if (normalized.company_hq_time_filter && !normalized.company.companyHQTimeFilter) {
-    // @ts-ignore TODO: fix type
-    normalized.company.companyHQTimeFilter = normalized.company_hq_time_filter
+    (normalized.company as Record<string, unknown>).companyHQTimeFilter = normalized.company_hq_time_filter
   }
   
   const { 
@@ -682,8 +675,7 @@ export function useAdvancedFiltersCore(props: AdvancedFiltersModalProps) {
 
   useEffect(() => {
     if (isOpen) {
-      // @ts-ignore TODO: fix type
-      const normalizedFilters = normalizeFiltersFromServer(initialFilters)
+      const normalizedFilters = normalizeFiltersFromServer(initialFilters as Record<string, unknown>)
       setFilters(normalizedFilters)
     }
   }, [isOpen, initialFilters])

@@ -179,9 +179,7 @@ const validationRules: {[section: string]: ValidationRule[]} = {
     {
       field: 'session_timeout',
       type: 'custom',
-      // @ts-ignore TODO: fix type — 'value' is of type 'unknown'.
-      // @ts-ignore TODO: fix type — 'value' is of type 'unknown'.
-      validator: (value) => value > 0 && value <= 480, // max 8 hours
+      validator: (value) => (value as number) > 0 && (value as number) <= 480,
       message: 'Timeout de sessão deve ser entre 1 e 480 minutos',
       severity: 'warning',
       category: 'security'
@@ -283,19 +281,16 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
             break
 
           case 'email':
-            // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'string'.
-            isValid = validators.email(value)
+            isValid = validators.email(String(value ?? ''))
             if (!isValid && value) {
               suggestions.push('Verifique se o email contém @ e um domínio válido')
             }
             break
 
           case 'cnpj':
-            // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'string'.
-            isValid = validators.cnpj(value)
+            isValid = validators.cnpj(String(value ?? ''))
             if (!isValid && value && autoCorrectEnabled) {
-              // @ts-ignore TODO: fix type — Argument of type '{}' is not assignable to parameter of type 'string'.
-              correctedValue = autoCorrections.cnpj(value)
+              correctedValue = autoCorrections.cnpj(String(value))
               if (validators.cnpj(correctedValue)) {
                 isValid = true
                 suggestions.push('CNPJ formatado automaticamente')
@@ -304,11 +299,9 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
             break
 
           case 'url':
-            // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'string'.
-            isValid = validators.url(value)
+            isValid = validators.url(String(value ?? ''))
             if (!isValid && value && autoCorrectEnabled) {
-              // @ts-ignore TODO: fix type — Argument of type '{}' is not assignable to parameter of type 'string'.
-              correctedValue = autoCorrections.website(value)
+              correctedValue = autoCorrections.website(String(value))
               if (validators.url(correctedValue)) {
                 isValid = true
                 suggestions.push('Protocolo https:// adicionado automaticamente')
@@ -317,11 +310,9 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
             break
 
           case 'phone':
-            // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'string'.
-            isValid = validators.phone(value)
+            isValid = validators.phone(String(value ?? ''))
             if (!isValid && value && autoCorrectEnabled) {
-              // @ts-ignore TODO: fix type — Argument of type '{}' is not assignable to parameter of type 'string'.
-              correctedValue = autoCorrections.phone(value)
+              correctedValue = (autoCorrections as Record<string, (v: string) => string>).phone?.(String(value)) ?? String(value)
               if (validators.phone(correctedValue)) {
                 isValid = true
                 suggestions.push('Código do país (+55) adicionado automaticamente')
@@ -346,8 +337,7 @@ export function ValidationSystem({ data, section, onValidationChange, onAutoCorr
           case 'pattern':
             if (rule.pattern && value) {
               const regex = new RegExp(rule.pattern)
-              // @ts-ignore TODO: fix type — Argument of type '{}' is not assignable to parameter of type 'string'.
-              isValid = regex.test(value)
+              isValid = regex.test(String(value))
             }
             break
 

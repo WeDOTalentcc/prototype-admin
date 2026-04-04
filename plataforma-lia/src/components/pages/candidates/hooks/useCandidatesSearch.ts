@@ -361,10 +361,8 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
             linkedin: c.linkedin_url || '',
             avatar: c.avatar_url || c.picture_url,
             // Mapeamento de experiências profissionais da Pearch
-            // @ts-ignore TODO: fix type
-            experiences: c.experiences || [],
-            // @ts-ignore TODO: fix type
-            workHistory: (c.experiences || []).map((exp: {
+            experiences: (c as Record<string, unknown>).experiences as unknown[] || [],
+            workHistory: ((c as Record<string, unknown>).experiences as Array<Record<string, unknown>> || []).map((exp: {
               company_info?: { name?: string; location?: string }
               company?: string
               company_roles?: Array<{ title?: string; start_date?: string; end_date?: string; description?: string }>
@@ -384,8 +382,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
               description: exp.company_roles?.[0]?.description || exp.description || ''
             })),
             // Mapeamento de formação acadêmica da Pearch
-            // @ts-ignore TODO: fix type
-            education: (c.education || []).map((edu: {
+            education: ((c as Record<string, unknown>).education as Array<Record<string, unknown>> || []).map((edu: {
               school?: string
               degree?: string
               field_of_study?: string
@@ -423,8 +420,7 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
         const globalCandidates = mappedCandidates.filter(c => isGlobalSource(c.source, Boolean(c.pearch_profile_id)))
 
         // Atualizar estados
-        // @ts-ignore TODO: fix type
-        setCandidates(mappedCandidates)
+        (setCandidates as (c: unknown[]) => void)(mappedCandidates)
         setCurrentSearchSource('hybrid')
         setSearchResultsCount(searchResponse.total_count || mappedCandidates.length)
         setLocalResultsCount(searchResponse.local_count || localCandidates.length)
@@ -432,9 +428,8 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
         setCreditsUsedInSearch(searchResponse.credits_used || 0)
 
         // Atualizar searchResults para exibição no painel LIA
-        // @ts-ignore TODO: fix type
-        setSearchResults(prev => ({
-          ...prev,
+        (setSearchResults as (fn: (prev: unknown) => unknown) => void)((prev: unknown) => ({
+          ...(prev as Record<string, unknown>),
           local: localCandidates,
           global: globalCandidates,
           localCount: searchResponse.local_count || localCandidates.length,
@@ -525,15 +520,11 @@ export function useCandidatesSearch(ctx: CandidatesSearchContext) {
   const buildQueryFromFilters = (filters: SearchFilters): string => {
     const parts: string[] = []
 
-    // @ts-ignore TODO: fix type
-    if (filters.skills?.skills && filters.skills.skills.length > 0) {
-      // @ts-ignore TODO: fix type
-      parts.push(`skills: ${filters.skills.skills.join(', ')}`)
+    if ((filters.skills as Record<string, unknown>)?.skills && ((filters.skills as Record<string, unknown>).skills as string[]).length > 0) {
+      parts.push(`skills: ${((filters.skills as Record<string, unknown>).skills as string[]).join(', ')}`)
     }
-    // @ts-ignore TODO: fix type
-    if (filters.locations?.locations && filters.locations.locations.length > 0) {
-      // @ts-ignore TODO: fix type
-      parts.push(`localização: ${filters.locations.locations.join(', ')}`)
+    if ((filters.locations as Record<string, unknown>)?.locations && ((filters.locations as Record<string, unknown>).locations as string[]).length > 0) {
+      parts.push(`localização: ${((filters.locations as Record<string, unknown>).locations as string[]).join(', ')}`)
     }
     if (filters.general?.minExperience || filters.general?.maxExperience) {
       const min = filters.general.minExperience || 0

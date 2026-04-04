@@ -122,8 +122,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
               <Badge 
                 variant="secondary" 
                 className="text-xs px-2 py-0.5 font-semibold border-0 text-lia-text-primary"
-                // @ts-ignore TODO: fix type
-                style={{backgroundColor: 'var(--lia-border-default)'}}
+                style={{backgroundColor: 'var(--lia-border-default)'} as React.CSSProperties}
               >
                 {formatScorePercent((candidate as any).liaScore ?? (candidate as any).score, 0)}
               </Badge>
@@ -134,7 +133,6 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
         </div>
       </td>
 
-      {/* @ts-ignore TODO: fix type */}
       <td className="px-2 py-2">
         <div className="flex items-center gap-1 justify-center">
           <Target className="w-3 h-3 text-lia-text-primary" />
@@ -155,7 +153,6 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
               variant="secondary"
               className="text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none text-lia-text-primary"
               style={{backgroundColor: (candidate as any).technicalTestScore >= 80 ? 'var(--status-success)' :
-                                 // @ts-ignore TODO: fix type
                                  (candidate as any).technicalTestScore >= 60 ? 'var(--status-warning)' :
                                  (candidate as any).technicalTestScore >= 40 ? 'var(--lia-text-tertiary)' :
                                  'var(--lia-text-secondary)'}}
@@ -166,7 +163,6 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
             >
               {formatScorePercent((candidate as any).technicalTestScore, 0)}
             </Badge>
-            {/* @ts-ignore TODO: fix type */}
             <Eye className="w-3 h-3 text-lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
           </div>
         ) : (
@@ -187,7 +183,6 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
               onClick={(e) => {
                 e.stopPropagation()
               }}
-              // @ts-ignore TODO: fix type
               title="Clique para ver detalhes"
             >
               {formatScorePercent((candidate as any).englishTestScore, 0)}
@@ -202,7 +197,6 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
       <td className="px-3 py-2">
         {(candidate as any).bigFive || (candidate as any).bigFiveScores ? (
           <div 
-            // @ts-ignore TODO: fix type
             className="flex gap-1 justify-center cursor-pointer group"
             onClick={(e) => {
               e.stopPropagation()
@@ -222,7 +216,6 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
                   className="w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-opacity motion-reduce:transition-none group-hover:opacity-80 text-lia-text-primary"
                   style={{backgroundColor: value >= 70 ? (index === 0 ? 'var(--status-success)' : index === 1 ? 'var(--lia-text-tertiary)' : 'var(--lia-border-default)') :
                                      value >= 40 ? (index === 0 ? 'var(--lia-text-secondary)' : index === 1 ? 'var(--lia-border-default)' : 'var(--lia-text-secondary)') :
-                                     // @ts-ignore TODO: fix type
                                      'var(--lia-text-secondary)'}}
                 >
                   {value}
@@ -326,8 +319,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
             {candidate.status || 'Novo'}
           </div>
           <CandidateBadges
-            // @ts-ignore TODO: fix type
-            subStatus={candidate.subStatus || candidate.status}
+            subStatus={(candidate as Record<string, unknown>).subStatus as string || candidate.status}
             actionBehavior={candidate.actionBehavior}
             stageId={candidate.stageId}
             needsAction={candidate.needsAction}

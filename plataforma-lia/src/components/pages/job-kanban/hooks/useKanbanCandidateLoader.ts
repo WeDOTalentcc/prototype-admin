@@ -38,9 +38,7 @@ export function useKanbanCandidateLoader({
 
   // Atualizar etapas dinâmicas quando job.interviewStages mudar
   useEffect(() => {
-    // @ts-ignore // TODO: fix type
-    // @ts-ignore // TODO: fix type
-    const newStages = mapInterviewStagesToKanban(job?.interviewStages)
+    const newStages = mapInterviewStagesToKanban((job as Record<string, unknown>)?.interviewStages as Array<{ stageName: string; type: string; order: number }>)
     setCandidatesData(prev => {
       const newData = createInitialCandidatesData(newStages)
       Object.keys(prev).forEach(stageId => {
@@ -71,13 +69,9 @@ export function useKanbanCandidateLoader({
                 ? `${c.location_city}, ${c.location_state}`
                 : c.location_city || 'Não especificado'
               let educationData: Record<string, unknown>[] = []
-              // @ts-ignore // TODO: fix type
               let workHistoryData: Record<string, unknown>[] = []
-              // @ts-ignore // TODO: fix type
-              // @ts-ignore // TODO: fix type
-              try { educationData = generateEducation(c, experience) } catch { educationData = [] }
-              // @ts-ignore // TODO: fix type
-              try { workHistoryData = generateWorkHistory(c, experience) } catch { workHistoryData = [] }
+              try { educationData = generateEducation(c as Record<string, unknown>, experience) } catch { educationData = [] }
+              try { workHistoryData = generateWorkHistory(c as Record<string, unknown>, experience) } catch { workHistoryData = [] }
 
               const rawStatus = (c.status || 'novo').toLowerCase()
               let mappedStage = 'funil'
@@ -124,12 +118,10 @@ export function useKanbanCandidateLoader({
                 },
                 status: c.status || 'novo'
               }
-            // @ts-ignore // TODO: fix type
             } catch { return null }
           }
 
-          // @ts-ignore // TODO: fix type
-          const currentDynamicStages = mapInterviewStagesToKanban(job?.interviewStages)
+          const currentDynamicStages = mapInterviewStagesToKanban((job as Record<string, unknown>)?.interviewStages as Array<{ stageName: string; type: string; order: number }>)
           const backendCandidates = response.items
             .map(mapCandidateToKanban)
             .filter((c): c is NonNullable<typeof c> => c !== null)

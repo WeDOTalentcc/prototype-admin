@@ -223,14 +223,11 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
     return [...dataToSort].sort((a, b) => {
       switch (sortBy) {
         case 'total':
-          // @ts-ignore TODO: union type property access
-          return (b.totalCandidatos || b.total) - (a.totalCandidatos || a.total)
+          return ((b as Record<string, unknown>).totalCandidatos as number || (b as Record<string, unknown>).total as number || 0) - ((a as Record<string, unknown>).totalCandidatos as number || (a as Record<string, unknown>).total as number || 0)
         case 'salario':
           return b.salarioMedio - a.salarioMedio
-        // @ts-ignore TODO: union type property access
         case 'crescimento':
-          // @ts-ignore TODO: fix type
-          return (b.crescimentoMedio || b.crescimento) - (a.crescimentoMedio || a.crescimento)
+          return ((b as Record<string, unknown>).crescimentoMedio as number || (b as Record<string, unknown>).crescimento as number || 0) - ((a as Record<string, unknown>).crescimentoMedio as number || (a as Record<string, unknown>).crescimento as number || 0)
         default:
           return 0
       }
@@ -320,8 +317,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
           <div className="space-y-4">
             {sortedData.map((item, index) => {
               const isRegion = 'estados' in item
-              // @ts-ignore TODO: fix type
-              const isExpanded = expandedRegions.has(item.regiao || item.estado)
+              const isExpanded = expandedRegions.has((item as Record<string, unknown>).regiao as string || (item as Record<string, unknown>).estado as string || '')
               const percentages = getWorkModelPercentage(
                 item.remoto,
                 item.hibrido,
@@ -373,19 +369,21 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                         </div>
 
                         <div className="text-center">
-                          <div className={`text-lg font-bold flex items-center gap-1 ${
- // @ts-ignore TODO: fix type
- (item.crescimentoMedio || item.crescimento) > 0 ? 'text-status-success' : 'text-status-error'
-                          // @ts-ignore TODO: fix type
-                          }`}>
-                            {((item as any).crescimentoMedio || (item as any).crescimento) > 0 ?
-                              <ArrowUp className="w-4 h-4" /> :
-                              <ArrowDown className="w-4 h-4" />
-                            }
-                            {/* @ts-ignore TODO: fix type */}
-                            {Math.abs((item as any).crescimentoMedio || (item as any).crescimento).toFixed(1)}%
-                          </div>
-                          <div className="text-xs text-lia-text-primary">Crescimento</div>
+                          {(() => {
+                            const crescimento = ((item as Record<string, unknown>).crescimentoMedio as number) || ((item as Record<string, unknown>).crescimento as number) || 0
+                            return (
+                              <>
+                                <div className={`text-lg font-bold flex items-center gap-1 ${crescimento > 0 ? 'text-status-success' : 'text-status-error'}`}>
+                                  {crescimento > 0 ?
+                                    <ArrowUp className="w-4 h-4" /> :
+                                    <ArrowDown className="w-4 h-4" />
+                                  }
+                                  {Math.abs(crescimento).toFixed(1)}%
+                                </div>
+                                <div className="text-xs text-lia-text-primary">Crescimento</div>
+                              </>
+                            )
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -394,7 +392,6 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                     <div className="mt-4">
                       <div className="flex rounded-full overflow-hidden h-3 bg-lia-interactive-active dark:bg-lia-bg-elevated">
                         <div
-                          // @ts-ignore TODO: fix type
                           className="bg-status-success"
                           style={{width: `${percentages.remoto}%`}}
                           title={`Remoto: ${item.remoto} (${percentages.remoto.toFixed(1)}%)`}
@@ -405,8 +402,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                           title={`Híbrido: ${item.hibrido} (${percentages.hibrido.toFixed(1)}%)`}
                         />
                         <div
-                          // @ts-ignore TODO: fix type
-                          className="bg-lia-bg-secondary0"
+                          className="bg-lia-bg-secondary"
                           style={{width: `${percentages.presencial}%`}}
                           title={`Presencial: ${item.presencial} (${percentages.presencial.toFixed(1)}%)`}
                         />

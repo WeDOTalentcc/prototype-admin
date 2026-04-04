@@ -16,12 +16,38 @@ import { SCMSectionPerguntasEdit } from './SCMSectionPerguntasEdit'
 
 type SCMSectionContentProps = ReturnType<typeof useScreeningConfigManagerCore>
 
+interface JobFields {
+  title: string
+  requirements: string[]
+  technicalRequirements: Array<Record<string, unknown>>
+  behavioralCompetencies: Array<Record<string, unknown>>
+  level: string
+  seniority: string
+  department: string
+  description: string
+  screeningQuestions: ScreeningQuestionItem[]
+  enrichedJd: unknown
+  benefits: string[]
+  liaMetrics: { triagens_realizadas?: number }
+  backendId: string | number
+  jobId: string | number
+  id: string | number
+  companyId: string
+  companyName: string
+  industry: string
+  interviewStages: Array<Record<string, unknown>>
+  disabled_eligibility_question_ids: string[]
+}
+
+type TypedJob = Record<string, unknown> & Partial<JobFields>
+
 export function SCMSectionContent(props: SCMSectionContentProps) {
-  const { activeSection, isEditingScreening, job, onJobUpdate,
+  const { activeSection, isEditingScreening, job: rawJob, onJobUpdate,
     companyQuestions, disabledCompanyQIds, selectedBankQuestions, bankQuestionOverrides,
     customQuestions, handleToggleBankQuestion, handleToggleCompanyDefault,
     generatedQuestions, acceptedQuestions, setActiveSection,
   } = props
+  const job = rawJob as TypedJob
 
   return (
     <>
@@ -34,28 +60,19 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
           <div className="flex-1 min-w-0">
             <JDEvaluationPanel
               className="!mx-0 !mt-0"
-              // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'string'.
-              jobTitle={job.title}
-              // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
-              responsibilities={job.requirements || []}
-              // @ts-ignore TODO: fix type — Property 'map' does not exist on type '{}'.
-              technicalSkills={(job.technicalRequirements || []).map((r: Record<string, unknown>) => r.technology || r.skill || r.name || (typeof r === 'string' ? r : '')).filter(Boolean)}
-              // @ts-ignore TODO: fix type — Property 'map' does not exist on type '{}'.
-              behavioralCompetencies={(job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || (typeof c === 'string' ? c : '')).filter(Boolean)}
-              // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'string | undefined'.
-              seniority={job.level || job.seniority}
-              // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'string | undefined'.
-              department={job.department}
-              // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'string | undefined'.
-              description={job.description}
-              // @ts-ignore TODO: fix type — Property 'length' does not exist on type '{}'.
-              hasQuestions={(job.screeningQuestions?.length || 0) > 0}
+              jobTitle={job.title as string}
+              responsibilities={(job.requirements as string[]) || []}
+              technicalSkills={(job.technicalRequirements || []).map((r: Record<string, unknown>) => r.technology || r.skill || r.name || (typeof r === 'string' ? r : '')).filter(Boolean) as string[]}
+              behavioralCompetencies={(job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || (typeof c === 'string' ? c : '')).filter(Boolean) as string[]}
+              seniority={(job.level || job.seniority) as string | undefined}
+              department={job.department as string | undefined}
+              description={job.description as string | undefined}
+              hasQuestions={((job.screeningQuestions as unknown[])?.length || 0) > 0}
               onGenerateQuestions={async () => {
                 setActiveSection('perguntas')
                 toast.success('Acesse "Perguntas de Triagem" para gerar as perguntas WSI e escolher o modo (Compacto ou Completo).')
               }}
-              // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'EnrichedJD | undefined'.
-              enrichedJd={job.enrichedJd}
+              enrichedJd={job.enrichedJd as Record<string, unknown> | undefined}
               onSaveEnrichedJD={async (enrichedData) => {
                 if (!job) return
                 const jobId = job.backendId || job.jobId || String(job.id)
@@ -79,8 +96,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               companyName={(job as Record<string, unknown>).companyName as string || undefined}
               companyDescription={undefined}
               companyIndustry={(job as Record<string, unknown>).industry as string || undefined}
-              // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
-              benefits={job.benefits || []}
+              benefits={(job.benefits as string[]) || []}
               interviewStages={((job as Record<string, unknown>).interviewStages as Array<Record<string, unknown>> || []).map((s: Record<string, unknown>) => typeof s === 'string' ? s : (s.stageName || s.name || '') as string)}
               onUpdateJobDescription={async (jdText) => {
                 if (!job) return
@@ -101,7 +117,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 <div>
                   <h4 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider font-['Open_Sans',sans-serif] mb-3">Blocos WSI</h4>
                   <div className="flex items-center gap-3 text-micro text-lia-text-secondary flex-wrap mb-3">
-                    <span>Total: {(job as any).screeningQuestions?.length || 0} perguntas WSI</span>
+                    <span>Total: {(job.screeningQuestions as unknown[] | undefined)?.length || 0} perguntas WSI</span>
                     <span>•</span>
                     <span>{((job.screeningQuestions as ScreeningQuestionItem[]) || []).filter((q: ScreeningQuestionItem) => q.type === 'eliminatory' || q.required).length} eliminatórias</span>
                     <span>•</span>
@@ -167,12 +183,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
         </Card>
       )}
 
-      {/* @ts-ignore TODO: fix type */}
-      {(job.liaMetrics?.triagens_realizadas ?? 0) > 0 && (
+      {((job.liaMetrics as { triagens_realizadas?: number } | undefined)?.triagens_realizadas ?? 0) > 0 && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-status-warning/10 border border-status-warning/30 rounded-md dark:bg-status-warning/10 dark:border-status-warning/30">
           <AlertTriangle className="w-3.5 h-3.5 text-status-warning shrink-0" />
           <p className="text-xs text-status-warning">
-            <span className="font-bold">Triagem em andamento</span> — <span className="font-semibold" aria-live="polite" aria-atomic="true">{(job as any).liaMetrics?.triagens_realizadas} candidatos</span> já triados. Alterar perguntas pode afetar a comparabilidade entre candidatos.
+            <span className="font-bold">Triagem em andamento</span> — <span className="font-semibold" aria-live="polite" aria-atomic="true">{(job.liaMetrics as { triagens_realizadas?: number } | undefined)?.triagens_realizadas} candidatos</span> já triados. Alterar perguntas pode afetar a comparabilidade entre candidatos.
           </p>
         </div>
       )}

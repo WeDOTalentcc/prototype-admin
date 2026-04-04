@@ -2,7 +2,7 @@
 
 import { useCallback } from "react"
 import type React from "react"
-import { callKanbanAssistant, callOrchestratedJobChat } from "@/lib/api/kanban-assistant"
+import { callKanbanAssistant, callOrchestratedJobChat, type KanbanAssistantRequest, type OrchestratedJobChatRequest } from "@/lib/api/kanban-assistant"
 import { isClearChatCommand } from "@/lib/chat-commands"
 import { type KanbanCandidate } from "@/components/kanban"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
@@ -184,8 +184,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
       } else if (selectedCandidates.size === 1) {
         return `⚖️ **Comparar Candidatos**\n\nVocê selecionou apenas 1 candidato. Selecione mais candidatos para fazer uma comparação.`
       } else {
-        // @ts-ignore TODO: fix type
-        const selectedList = allTableCandidates.filter(c => selectedCandidates.has(c.id))
+        const selectedList = allTableCandidates.filter(c => selectedCandidates.has(String(c.id)))
         return `⚖️ **Comparação - ${selectedList.length} Candidatos**\n\n` +
           selectedList.map(c => {
             const score = c.score ? `Score: ${c.score}` : `Fit: ${c.fitScore || 'N/A'}%`
@@ -224,8 +223,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
   const handleLiaUiAction = useCallback((action: string, params: Record<string, unknown>) => {
     if (action === 'start_job_wizard') return
 
-    // @ts-ignore TODO: fix type
-    const candidateIds: string[] = params.candidate_ids || []
+    const candidateIds: string[] = (params.candidate_ids as string[]) || []
     const matchedCandidates = candidateIds.map(id => findCandidateById(id)).filter(Boolean)
     const firstCandidate = matchedCandidates.length > 0 ? matchedCandidates[0] : null
 
@@ -356,10 +354,8 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
 
       const response = await callOrchestratedJobChat({
         message: command,
-        // @ts-ignore TODO: fix type
-        job_context: jobContext,
-        // @ts-ignore TODO: fix type
-        candidates: candidatesForApi,
+        job_context: jobContext as OrchestratedJobChatRequest['job_context'],
+        candidates: candidatesForApi as OrchestratedJobChatRequest['candidates'],
         selected_candidate_ids: selectedIds,
         conversation_id: liaConversationId,
         company_id: user?.company || 'default',
@@ -434,8 +430,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
           }
           handleLiaUiAction(response.ui_action, enrichedParams)
         }
-      // @ts-ignore TODO: fix type
-      } else if (response.error === 'auth_error') {
+      } else if ((response as Record<string, unknown>).error === 'auth_error') {
         const authMsg = {
           id: `auth-error-${timestamp}`,
           type: 'response' as const,
@@ -480,10 +475,8 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         const selectedIds = selectedCandidates.size > 0 ? Array.from(selectedCandidates) : undefined
         const fallbackResponse = await callKanbanAssistant({
           command,
-          // @ts-ignore TODO: fix type
-          job_context: jobContext,
-          // @ts-ignore TODO: fix type
-          candidates: candidatesForApi,
+          job_context: jobContext as KanbanAssistantRequest['job_context'],
+          candidates: candidatesForApi as KanbanAssistantRequest['candidates'],
           selected_candidate_ids: selectedIds
         })
         if (fallbackResponse.success) {
@@ -564,17 +557,14 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
     try {
       const response = await callOrchestratedJobChat({
         message,
-        // @ts-ignore TODO: fix type
-        job_context: jobContext,
-        // @ts-ignore TODO: fix type
-        candidates: candidatesForApi,
+        job_context: jobContext as OrchestratedJobChatRequest['job_context'],
+        candidates: candidatesForApi as OrchestratedJobChatRequest['candidates'],
         selected_candidate_ids: selectedIds,
         conversation_id: liaConversationId,
         company_id: user?.company || 'default',
       })
 
-      // @ts-ignore TODO: fix type
-      if (response.error === 'auth_error') {
+      if ((response as Record<string, unknown>).error === 'auth_error') {
         return {
           content: response.content || 'Sessao expirada. Recarregue a pagina para continuar.',
           ui_action: null

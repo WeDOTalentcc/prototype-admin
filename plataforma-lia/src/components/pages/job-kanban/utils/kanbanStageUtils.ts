@@ -134,22 +134,15 @@ export const mapInterviewStagesToKanban = (
       }))
   }
 
-  const systemInitialStages: DynamicStage[] = [
-    // @ts-ignore // TODO: fix type
-    // @ts-ignore // TODO: fix type
-    { id: 'sourcing', name: 'sourcing', displayName: 'Funil', order: 0, stageType: 'active', isInitial: true, actionBehavior: 'intake' },
-    { id: 'screening', name: 'screening', displayName: 'Triagem', order: 1, color: 'var(--lia-text-secondary)', stageType: 'active', isInitial: false, actionBehavior: 'screening' }
-  ]
-  // @ts-ignore // TODO: fix type
-  const systemFinalStages: DynamicStage[] = [
-    // @ts-ignore // TODO: fix type
-    // @ts-ignore // TODO: fix type
-    { id: 'hired', name: 'hired', displayName: 'Contratado', order: 900, stageType: 'final', isFinal: true, isHired: true, actionBehavior: 'conclusion_hired' },
-    // @ts-ignore TODO: fix type — Property 'color' is missing in type '{ id: string; name: string; displayName: st
-    { id: 'rejected', name: 'rejected', displayName: 'Reprovado', order: 901, stageType: 'final', isFinal: true, isRejection: true, actionBehavior: 'conclusion_rejected' },
-    // @ts-ignore // TODO: fix type
-    { id: 'offer_declined', name: 'offer_declined', displayName: 'Proposta Recusada', order: 902, stageType: 'final', isFinal: true, actionBehavior: 'conclusion_declined' }
-  ]
+  const systemInitialStages = [
+    { id: 'sourcing', name: 'sourcing', displayName: 'Funil', order: 0, stageType: 'active' as const, isInitial: true, actionBehavior: 'intake' },
+    { id: 'screening', name: 'screening', displayName: 'Triagem', order: 1, color: 'var(--lia-text-secondary)', stageType: 'active' as const, isInitial: false, actionBehavior: 'screening' }
+  ] as DynamicStage[]
+  const systemFinalStages = [
+    { id: 'hired', name: 'hired', displayName: 'Contratado', order: 900, stageType: 'final' as const, isFinal: true, isHired: true, actionBehavior: 'conclusion_hired' },
+    { id: 'rejected', name: 'rejected', displayName: 'Reprovado', order: 901, stageType: 'final' as const, isFinal: true, isRejection: true, actionBehavior: 'conclusion_rejected' },
+    { id: 'offer_declined', name: 'offer_declined', displayName: 'Proposta Recusada', order: 902, stageType: 'final' as const, isFinal: true, actionBehavior: 'conclusion_declined' }
+  ] as DynamicStage[]
   const customStages: DynamicStage[] = interviewStages
     .filter(stage => {
       const slug = createStageSlug(stage.stageName)
@@ -195,13 +188,11 @@ export const organizeCandidatesByDynamicStages = (
     'contratado': 'hired',
     'reprovados': 'rejected',
     'reprovado': 'rejected',
-    // @ts-ignore // TODO: fix type
     'proposta_recusada': 'offer_declined'
   }
   
   candidates.forEach(candidate => {
-    // @ts-ignore // TODO: fix type
-    const rawStage = (candidate.stage || candidate.status || 'sourcing').toLowerCase().trim()
+    const rawStage = String(candidate.stage || candidate.status || 'sourcing').toLowerCase().trim()
     let targetStageId = legacyMapping[rawStage] || rawStage
     
     if (!organized[targetStageId]) {

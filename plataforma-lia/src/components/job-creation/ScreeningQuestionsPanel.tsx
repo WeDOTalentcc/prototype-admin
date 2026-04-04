@@ -307,8 +307,7 @@ export function ScreeningQuestionsPanel({
     if (onQuestionsChangeRef.current) {
       const pipelineSelected = getSelectedQuestions()
       const companySelected = (questionsByBlock[2] || []).filter(q => q.is_selected)
-      // @ts-ignore TODO: fix type
-      onQuestionsChangeRef.current([...companySelected, ...pipelineSelected])
+      onQuestionsChangeRef.current([...companySelected, ...pipelineSelected] as unknown[])
     }
   }, [pipelineQuestions, companyQuestions, getSelectedQuestions, questionsByBlock])
 
@@ -675,22 +674,15 @@ export function ScreeningQuestionsPanel({
       const isAffirmativeSuggestion = question.id?.includes('affirmative') || false
       const cat = (question.category || '').toLowerCase()
       if (isAffirmativeSuggestion) {
-        // @ts-ignore TODO: fix type
         badges.push({ label: 'Inclusão', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' })
       } else if (cat.includes('elig') && question.is_eliminatory !== false) {
-        // @ts-ignore TODO: fix type
         badges.push({ label: 'Eliminatória', color: 'bg-status-error/10 text-status-error border-status-error/30' })
       } else if (cat.includes('elig')) {
-        // @ts-ignore TODO: fix type
         badges.push({ label: 'Informativa', color: 'bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle' })
       }
-      // @ts-ignore TODO: fix type
       if (cat.includes('tech')) badges.push({ label: 'Skills', color: 'bg-wedo-cyan/10 text-wedo-cyan-dark border-wedo-cyan/30 dark:border-wedo-cyan/30' })
-      // @ts-ignore TODO: fix type
       if (cat.includes('behav') || cat.includes('situa')) badges.push({ label: 'Experiência', color: 'bg-wedo-purple/10 text-wedo-purple border-wedo-purple/30' })
-      // @ts-ignore TODO: fix type
       if (cat.includes('cult')) badges.push({ label: 'Cultural', color: 'bg-status-success/10 text-status-success border-status-success/30' })
-      // @ts-ignore TODO: fix type
       if (badges.length === 0) badges.push({ label: 'Geral', color: 'bg-wedo-orange/10 text-wedo-orange border-wedo-orange/30' })
       return badges
     }
@@ -729,7 +721,6 @@ export function ScreeningQuestionsPanel({
   }
 
   if (isLoading && !hasGenerated) {
-    // @ts-ignore TODO: fix type
     return (
       <Card className={cn("w-full", className)}>
         <CardContent className="flex items-center justify-center py-12">
