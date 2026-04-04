@@ -330,12 +330,12 @@ class TriagemSessionService:
             return {"valid": False, "error": "not_found", "status_code": 404}
 
         if session.expires_at and session.expires_at < datetime.utcnow():
-            return {"valid": False, "error": "expired", "status_code": 410, "session": session.to_dict(), "_orm": session}
+            return {"valid": False, "error": "expired", "status_code": 410, "session": session.to_dict()}
 
         if session.status == "completed":
-            return {"valid": True, "completed": True, "session": session.to_dict(), "_orm": session}
+            return {"valid": True, "completed": True, "session": session.to_dict()}
 
-        return {"valid": True, "completed": False, "session": session.to_dict(), "_orm": session}
+        return {"valid": True, "completed": False, "session": session.to_dict()}
 
     async def get_session_config(self, db: AsyncSession, token: str) -> Optional[Dict[str, Any]]:
         validation = await self.validate_token(db, token)
@@ -343,7 +343,10 @@ class TriagemSessionService:
             return validation
 
         session_data = validation["session"]
-        session_orm: Optional[TriagemSession] = validation.get("_orm")
+        session_result = await db.execute(
+            select(TriagemSession).where(TriagemSession.token == token)
+        )
+        session_orm: Optional[TriagemSession] = session_result.scalar_one_or_none()
         msg_result = await db.execute(
             select(TriagemMessage).where(
                 TriagemMessage.session_id == uuid.UUID(session_data["id"])
@@ -372,8 +375,8 @@ class TriagemSessionService:
                     job_info["location"] = job.location
                     job_info["workModel"] = job.work_model
                     meta = (session_orm.metadata_json if session_orm else None) or {}
-                    show_salary = meta.get("show_salary", bool(job.salary_range))
-                    show_benefits = meta.get("show_benefits", bool(job.benefits))
+                    show_salary = meta.get("show_salary", False)
+                    show_benefits = meta.get("show_benefits", False)
                     if show_salary and job.salary_range:
                         job_info["salaryRange"] = job.salary_range
                     if show_benefits and job.benefits:
