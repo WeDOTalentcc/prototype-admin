@@ -246,7 +246,7 @@ INTERVIEWER_INTENTS = [
     IntentSchema(
         intent="voice_screening",
         agent_type=AgentType.INTERVIEWER,
-        description="Triagem por voz (OpenMic/Deepgram)",
+        description="Triagem por voz (Twilio Voice / Gemini STT)",
         entity_requirements=[
             EntityRequirement(EntityType.CANDIDATE_ID, EntityImportance.REQUIRED, "ID do candidato"),
         ],

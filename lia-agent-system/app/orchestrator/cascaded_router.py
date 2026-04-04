@@ -28,14 +28,9 @@ logger = logging.getLogger(__name__)
 
 
 def _get_metrics():
-    """Lazy import de métricas Prometheus para evitar import circular."""
+    """Metrics stub — Prometheus removed (Task #138). Returns None."""
     try:
-        from app.observability.metrics import (
-            router_tier_hit_total,
-            router_latency_ms,
-            router_confidence_histogram,
-        )
-        return router_tier_hit_total, router_latency_ms, router_confidence_histogram
+        return None, None, None
     except Exception:
         return None, None, None
 

@@ -852,7 +852,7 @@ async def start_voice_screening(
     This endpoint orchestrates:
     1. Generates WSI questions based on competencies
     2. Creates a WSI session with screening_type="voice"
-    3. Creates an OpenMic.ai agent with the questions
+    3. Initiates a Twilio voice call with the questions
     4. Initiates the voice call to the candidate
     5. Returns session_id and call_id for tracking
     
@@ -934,7 +934,7 @@ async def get_voice_screening_by_call(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get voice screening session by OpenMic call ID.
+    Get voice screening session by voice call ID.
     
     Useful for correlating webhook events with WSI sessions.
     """

@@ -205,7 +205,7 @@ async def request_phone_call(
     request: RequestCallRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Request an automated phone call from LIA to the candidate via OpenMic.ai."""
+    """Request an automated phone call from LIA to the candidate via Twilio Voice."""
     validation = await triagem_service.validate_token(db, token)
 
     if not validation.get("valid"):
@@ -276,7 +276,7 @@ async def transcribe_audio(
     question_index: Optional[int] = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Transcribe candidate audio using Deepgram STT (fallback OpenAI Whisper)."""
+    """Transcribe candidate audio using OpenAI Whisper STT."""
     validation = await triagem_service.validate_token(db, token)
     if not validation.get("valid"):
         error = validation.get("error")
@@ -291,14 +291,23 @@ async def transcribe_audio(
     if not audio_data:
         raise HTTPException(status_code=400, detail="Arquivo de áudio vazio")
 
-    from app.domains.cv_screening.services.deepgram_service import deepgram_triagem_service
+    from app.services.voice_service import voice_service
 
-    result = await deepgram_triagem_service.transcribe_candidate_audio(
-        audio_data=audio_data,
-        session_token=token,
-        question_index=question_index,
-        filename=audio.filename,
-    )
+    try:
+        transcription = await voice_service.transcribe_audio(
+            audio_data=audio_data,
+            language="pt-BR",
+            filename=audio.filename,
+        )
+        result = {
+            "text": transcription.get("text", ""),
+            "confidence": transcription.get("confidence", 0.0),
+            "duration_seconds": transcription.get("duration", 0.0),
+            "session_token": token,
+            "question_index": question_index,
+        }
+    except Exception as e:
+        result = {"text": "", "error": str(e)}
 
     if result.get("error") and not result.get("text"):
         raise HTTPException(status_code=502, detail=f"Falha na transcrição: {result['error']}")
@@ -378,10 +387,11 @@ async def voice_status(token: str, db: AsyncSession = Depends(get_db)):
     if not validation.get("valid"):
         raise HTTPException(status_code=404, detail="Token inválido")
 
-    from app.domains.cv_screening.services.deepgram_service import deepgram_triagem_service
+    from app.services.voice_service import voice_service
     from app.domains.cv_screening.services.voice_service import triagem_voice_service
 
+    availability = voice_service.is_available()
     return JSONResponse(content={
-        "stt_available": deepgram_triagem_service.is_available(),
+        "stt_available": availability.get("any_transcription", False),
         "tts_available": triagem_voice_service.is_available(),
     })

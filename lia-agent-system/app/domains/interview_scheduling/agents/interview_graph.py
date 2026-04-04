@@ -224,11 +224,7 @@ class InterviewGraph:
         _wfd_lg = result.get("workflow_data", {})
         _error_lg = _wfd_lg.get("interview_graph_error")
         _conf_lg = _wfd_lg.get("confidence_score", 0.5 if not _error_lg else 0.3)
-        try:
-            from app.shared.observability.agent_metrics import record_confidence
-            record_confidence(agent="interview_graph", domain="interview_scheduling", confidence=_conf_lg)
-        except Exception:
-            pass
+        pass
         if audit_callback:
             await audit_callback.on_chain_end_manual(
                 confidence=_conf_lg,

@@ -270,12 +270,8 @@ class TestInterviewGraphConfidenceWiring:
         mock_compiled.ainvoke = AsyncMock(return_value=state)
 
         with patch.object(ig, "_build_langgraph", return_value=mock_compiled):
-            with patch(
-                "app.shared.observability.agent_metrics.record_confidence",
-                MagicMock(),
-            ):
-                ig._compiled = mock_compiled
-                result = await ig._invoke_langgraph(state, mock_callback)
+            ig._compiled = mock_compiled
+            result = await ig._invoke_langgraph(state, mock_callback)
 
         mock_callback.on_chain_end_manual.assert_called_once()
         call_kwargs = mock_callback.on_chain_end_manual.call_args

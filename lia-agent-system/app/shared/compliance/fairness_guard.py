@@ -19,11 +19,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-try:
-    from app.observability.metrics import fairness_blocks_total
-    _METRICS_AVAILABLE = True
-except ImportError:
-    _METRICS_AVAILABLE = False
+_METRICS_AVAILABLE = False
 
 
 def _normalize_text(text: str) -> str:

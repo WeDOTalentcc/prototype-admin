@@ -36,10 +36,10 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **LangGraph Agent System**: All agents use LangGraph natively (legacy ReActLoop removed). `react_loop.py` kept as compatibility shim for `ToolDefinition`/`ReActState`/`ReActConfig` re-exports. `agent_scaffold.py` generates `LangGraphReActBase`-based boilerplate. `USE_LANGGRAPH_NATIVE` feature flag removed from `.env`/config.
 - **Progressive Automation & CompanyHiringPolicy**: Implements `CompanyHiringPolicy` to control automation levels with a confidence-based decision engine and conversational onboarding.
 - **WSI Saturation Intelligence**: Manages and displays candidate pipeline saturation for organic and sourcing pools.
-- **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT). Features on-demand TTS per LIA message (speaker button), voice auto-play toggle in InputBar (localStorage-persisted), single "Iniciar Conversa" button (no separate voice mode entry). Phone call screening channel via OpenMic.ai — "Receber Ligação" button conditionally shown when recruiter enables phone channel in screening config; PhoneConfirmModal collects BR phone number and triggers automated call with 2-min cooldown rate limit.
+- **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT). Features on-demand TTS per LIA message (speaker button), voice auto-play toggle in InputBar (localStorage-persisted), single "Iniciar Conversa" button (no separate voice mode entry). Phone call screening channel via Twilio Voice — "Receber Ligação" button conditionally shown when recruiter enables phone channel in screening config; PhoneConfirmModal collects BR phone number and triggers automated call with 2-min cooldown rate limit.
 - **Multi-Channel Communication Dispatcher**: Sends messages to all available channels (email + WhatsApp) by default.
 - **Celery Scheduler & Automations**: Handles background automations for follow-ups, abandoned WSI checks, and feedback sending.
-- **Voice Analysis Integration**: Uses Deepgram STT + OpenAI TTS for voice mode in triagem.
+- **Voice Analysis Integration**: Uses OpenAI Whisper STT + OpenAI TTS for voice mode in triagem.
 - **Microsoft Teams Notifications**: TeamsBot provides adaptive cards for various notifications.
 - **Apify Candidate Enrichment**: Enriches candidate profiles via LinkedIn and email discovery.
 - **Gate 2 Re-Discovery Embedding**: Automatically generates Gemini embeddings for rejected candidates for future vector-similarity matching.
@@ -72,14 +72,13 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **localStorage → Zustand Migration (93%)**: 16 Zustand stores total (auth, kanban, candidates, onboarding, ui-preferences, job-ui, navigation, job-filters, talent-funnel, wizard, template, triagem, recent-items, table-features, chat-state). Migrated 259 of 278 localStorage usages to centralized stores (19 remaining: session-cleanup, auth-service, SearchPresetsModal prop interface).
 - **StackOne Removal (Task #133)**: Removed all StackOne integration code, config, tests, and documentation. Merge.dev is now the sole universal ATS connector. ATS providers: Gupy (native), Pandapé (native), Merge.dev (universal). Webhook endpoint updated to support merge platform.
 - **Sentry Error Monitoring (Task #136)**: Activated Sentry integration for both backend (FastAPI) and frontend (Next.js). Backend uses `SENTRY_DSN` env var with PII scrubbing (email, CPF, phone) via `before_send` hook. Frontend uses `NEXT_PUBLIC_SENTRY_DSN` with client/server/edge configs. Both use `SENTRY_TRACES_SAMPLE_RATE=0.1` (10%). Config: `app/core/sentry.py`, `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`.
+- **Dead Integration Cleanup (Task #138)**: Removed OpenMic.ai, Deepgram, SynthFlow, StackOne, Neon, Prometheus, and Grafana integrations. Voice transcription now uses OpenAI Whisper only. Voice calls use Twilio Voice. Observability uses Sentry + LangSmith + OpenTelemetry (Prometheus/Grafana removed). Deleted service files, test files, config entries, routers, and cleaned all imports/references across the codebase.
 
 # External Dependencies
 - Anthropic (Claude API)
 - WorkOS
-- OpenMic.ai
 - Google Gemini
 - Pearch AI
-- Deepgram
 - Microsoft Graph
 - Gupy ATS
 - Pandapé ATS

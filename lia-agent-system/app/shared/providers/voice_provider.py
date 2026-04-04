@@ -1,7 +1,7 @@
 """
 Voice Provider Abstract Interface
 
-Defines a common interface for voice/transcription providers (Deepgram, OpenMic, Gemini).
+Defines a common interface for voice/transcription providers (Gemini, Twilio).
 Concrete implementations wrap specific provider SDKs while exposing a unified API.
 """
 from abc import ABC, abstractmethod
@@ -12,9 +12,8 @@ from enum import Enum
 
 
 class VoiceProviderType(str, Enum):
-    DEEPGRAM = "deepgram"
-    OPENMIC = "openmic"
     GEMINI = "gemini"
+    TWILIO = "twilio"
 
 
 @dataclass

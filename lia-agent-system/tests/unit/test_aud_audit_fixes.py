@@ -69,10 +69,6 @@ class TestCircuitBreakerRegistration:
         from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
         assert "pandape" in ALL_CIRCUITS
 
-    def test_stackone_circuit_in_all_circuits(self):
-        from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
-        assert "stackone" in ALL_CIRCUITS
-
     def test_mailgun_circuit_in_all_circuits(self):
         from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
         assert "mailgun" in ALL_CIRCUITS
@@ -88,12 +84,11 @@ class TestCircuitBreakerRegistration:
 
     def test_circuit_constants_exported(self):
         from app.shared.resilience.circuit_breaker import (
-            GUPY_CIRCUIT, PANDAPE_CIRCUIT, STACKONE_CIRCUIT,
+            GUPY_CIRCUIT, PANDAPE_CIRCUIT,
             MAILGUN_CIRCUIT, RESEND_CIRCUIT,
         )
         assert GUPY_CIRCUIT is not None
         assert PANDAPE_CIRCUIT is not None
-        assert STACKONE_CIRCUIT is not None
         assert MAILGUN_CIRCUIT is not None
         assert RESEND_CIRCUIT is not None
 

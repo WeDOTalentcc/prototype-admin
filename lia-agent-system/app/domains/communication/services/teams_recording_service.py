@@ -40,7 +40,7 @@ class TeamsRecordingService:
     Service to fetch Teams meeting recordings and transcripts via Microsoft Graph API.
     
     Teams transcription is FREE (included in Microsoft 365).
-    No need for Deepgram for Teams meetings!
+    No need for external STT for Teams meetings!
     
     Required scopes (application permissions):
     - OnlineMeetingTranscript.Read.All (for transcripts)

@@ -122,7 +122,7 @@ DOMAIN_PATTERNS: Dict[str, List[str]] = {
         r"entrevistar?",
         r"entrevista\b",
         r"transcrever?\s+\w*\s*entrevista",
-        r"openmic",
+        r"voice\s+screening",
         r"voice\s+interview",
         r"gravar?\s+\w*\s*entrevista",
         r"iniciar?\s+\w*\s*entrevista",

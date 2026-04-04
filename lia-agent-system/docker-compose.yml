@@ -247,42 +247,7 @@ services:
     command: celery flower --broker=${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672//}
     restart: unless-stopped
 
-  # Prometheus — métricas (scrape do /metrics do FastAPI via prometheus-fastapi-instrumentator)
-  prometheus:
-    image: prom/prometheus:v2.51.2
-    container_name: lia_prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
-      - "--web.console.templates=/usr/share/prometheus/consoles"
-    restart: unless-stopped
-
-  # Grafana — dashboards (http://localhost:3001, admin/wedotalent)
-  grafana:
-    image: grafana/grafana:10.4.2
-    container_name: lia_grafana
-    ports:
-      - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=wedotalent
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3001
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
-    depends_on:
-      - prometheus
-    restart: unless-stopped
-
 volumes:
   postgres_data:
   redis_data:
   rabbitmq_data:
-  prometheus_data:
-  grafana_data:

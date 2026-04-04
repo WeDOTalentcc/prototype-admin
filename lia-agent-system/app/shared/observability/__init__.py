@@ -1,1 +1,1 @@
-# Observability — métricas Prometheus por agente LIA
+# Observability — Sentry, LangSmith, OpenTelemetry

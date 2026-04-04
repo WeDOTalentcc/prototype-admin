@@ -14,7 +14,7 @@ init_sentry()
 
 from app.core.config import settings
 from app.core.database import init_db
-from app.api.v1 import chat, teams, calendar, candidates, voice, openmic, activities, test_activities, job_vacancies, job_drafts, credits, interviews, ats, auth, email_templates, bulk_actions, cv_parser, tasks, task_lifecycle, alerts, reports, sourcing_pipeline, admin, briefing, notifications, automation, pipeline, agent_monitoring, predictive_analytics, calibration, candidate_search, company, workforce, applications, recruitment_stages, voice_screening_test, company_culture, goals, benefits, search_assistant, candidate_lists, analysis, email, scheduling, communications, attachments, approvals, kanban_assistant, file_analysis, transcription, autocomplete, opinions, journey_mapping, integrations_hub, recruitment_journey, admin_settings, settings_progress, screening, search_archetypes, dashboard_data, automations, webhooks, integrations, communication_settings, communication, admin_templates, policies, communication_matrix, clients, billing, observability, client_users, ai_consumption, saas_metrics, lgpd_compliance, compliance_controls, trust_center, audit_logs, default_templates, global_policies, technical_tests, workforce_planning, big_five, experience_highlights, lia_profile_analysis, data_subject_requests, consent_management, insurance, risk_register, sod_matrix, continuity, health_check, rubric_evaluation, task_planner, policy_engine, semantic_search, workos, interview_notes, external_webhooks, automation_rules, merge_webhooks, whatsapp, company_benefits, screening_questions, pipeline_templates, sourcing, job_board, job_status_webhooks, recruitment_email_templates, interview_analysis, data_request, lia_assistant, job_analytics, orchestrated_job_chat, orchestrated_talent_chat, orchestrated_jobs_management, shared_searches, lia_field_toggles, organization_catalog, intelligence, recruiter_profiles, microsoft_graph, cache, ml_predictions, affirmative, conversations, skills_catalog, multi_channel, admin_token_budget
+from app.api.v1 import chat, teams, calendar, candidates, voice, activities, test_activities, job_vacancies, job_drafts, credits, interviews, ats, auth, email_templates, bulk_actions, cv_parser, tasks, task_lifecycle, alerts, reports, sourcing_pipeline, admin, briefing, notifications, automation, pipeline, agent_monitoring, predictive_analytics, calibration, candidate_search, company, workforce, applications, recruitment_stages, company_culture, goals, benefits, search_assistant, candidate_lists, analysis, email, scheduling, communications, attachments, approvals, kanban_assistant, file_analysis, autocomplete, opinions, journey_mapping, integrations_hub, recruitment_journey, admin_settings, settings_progress, screening, search_archetypes, dashboard_data, automations, webhooks, integrations, communication_settings, communication, admin_templates, policies, communication_matrix, clients, billing, observability, client_users, ai_consumption, saas_metrics, lgpd_compliance, compliance_controls, trust_center, audit_logs, default_templates, global_policies, technical_tests, workforce_planning, big_five, experience_highlights, lia_profile_analysis, data_subject_requests, consent_management, insurance, risk_register, sod_matrix, continuity, health_check, rubric_evaluation, task_planner, policy_engine, semantic_search, workos, interview_notes, external_webhooks, automation_rules, merge_webhooks, whatsapp, company_benefits, screening_questions, pipeline_templates, sourcing, job_board, job_status_webhooks, recruitment_email_templates, interview_analysis, data_request, lia_assistant, job_analytics, orchestrated_job_chat, orchestrated_talent_chat, orchestrated_jobs_management, shared_searches, lia_field_toggles, organization_catalog, intelligence, recruiter_profiles, microsoft_graph, cache, ml_predictions, affirmative, conversations, skills_catalog, multi_channel, admin_token_budget
 from app.api.v1 import communication_optout
 from app.api.v1 import twilio_voice
 from app.api.v1 import digest
@@ -120,14 +120,6 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning("⚠️  Pearch AI NOT configured (PEARCH_API_KEY missing)")
         logger.warning("   Candidate search features will not work until API key is added")
-    
-    # Validate OpenMic.ai configuration
-    openmic_api_key = os.getenv("OPENMIC_API_KEY")
-    if openmic_api_key:
-        logger.info("✅ OpenMic.ai configured (voice screening enabled)")
-    else:
-        logger.warning("⚠️  OpenMic.ai NOT configured (OPENMIC_API_KEY missing)")
-        logger.warning("   Voice screening features will not work until API key is added")
     
     # Initialize database
     try:
@@ -405,7 +397,7 @@ app.include_router(candidates.router, prefix="/api/v1/candidates", tags=["candid
 app.include_router(toon_router, prefix="/api/v1", tags=["toon"])
 app.include_router(voice.router, prefix="/api/v1", tags=["voice"])
 app.include_router(twilio_voice.router, prefix="/api/v1", tags=["twilio-voice"])
-app.include_router(openmic.router, prefix="/api/v1", tags=["openmic"])
+
 app.include_router(activities.router, prefix="/api/v1", tags=["activities"])
 app.include_router(test_activities.router, prefix="/api/v1", tags=["testing"])
 app.include_router(job_vacancies.router, prefix="/api/v1", tags=["job_vacancies"])
@@ -443,7 +435,7 @@ app.include_router(workforce.router, prefix="/api/v1", tags=["workforce"])
 app.include_router(applications.router, prefix="/api/v1", tags=["applications"])
 app.include_router(recruitment_stages.router, prefix="/api/v1/recruitment-stages", tags=["recruitment-stages"])
 app.include_router(recruitment_stages.screening_questions_router, prefix="/api/v1", tags=["screening-questions"])
-app.include_router(voice_screening_test.router, prefix="/api/v1")
+
 app.include_router(company_culture.router, prefix="/api/v1", tags=["company-culture"])
 app.include_router(goals.router, prefix="/api/v1", tags=["goals"])
 app.include_router(benefits.router, prefix="/api/v1", tags=["benefits"])
@@ -460,7 +452,6 @@ app.include_router(attachments.candidate_attachments_router, prefix="/api/v1", t
 app.include_router(approvals.router, prefix="/api/v1", tags=["approvals"])
 app.include_router(kanban_assistant.router, prefix="/api/v1", tags=["kanban-assistant"])
 app.include_router(file_analysis.router, prefix="/api/v1", tags=["file-analysis"])
-app.include_router(transcription.router, prefix="/api/v1", tags=["transcription"])
 app.include_router(autocomplete.router, prefix="/api/v1", tags=["autocomplete"])
 app.include_router(opinions.router, prefix="/api/v1", tags=["opinions"])
 app.include_router(journey_mapping.router, prefix="/api/v1", tags=["journey-mapping"])
@@ -647,9 +638,6 @@ app.include_router(recruiter_behavior_router, prefix="/api/v1")
 from app.api.v1.salary_benchmark import router as salary_benchmark_router
 app.include_router(salary_benchmark_router, prefix="/api/v1", tags=["salary-benchmark"])
 
-from app.api.v1.metrics import router as metrics_router
-app.include_router(metrics_router)
-
 from app.api.v1.cultural_fit import router as cultural_fit_router
 app.include_router(cultural_fit_router, prefix="/api/v1", tags=["cultural-fit"])
 
@@ -668,16 +656,6 @@ from fastapi.responses import RedirectResponse, Response as FastAPIResponse
 async def app_health_check():
     """Root health check - redirects to comprehensive system health endpoint."""
     return RedirectResponse(url="/api/v1/health", status_code=307)
-
-
-@app.get("/metrics", include_in_schema=False)
-async def prometheus_metrics():
-    """Prometheus metrics endpoint. Scrape with: prometheus.yml targets: [host:8000]"""
-    from app.observability.metrics import generate_latest_metrics, PROMETHEUS_CONTENT_TYPE
-    return FastAPIResponse(
-        content=generate_latest_metrics(),
-        media_type=PROMETHEUS_CONTENT_TYPE,
-    )
 
 
 @app.get("/")

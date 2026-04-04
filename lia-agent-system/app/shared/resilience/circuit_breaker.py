@@ -29,11 +29,7 @@ from functools import wraps
 
 logger = logging.getLogger(__name__)
 
-try:
-    from app.observability.metrics import circuit_breaker_state as _cb_state_metric
-    _METRICS_AVAILABLE = True
-except ImportError:
-    _METRICS_AVAILABLE = False
+_METRICS_AVAILABLE = False
 
 _CB_STATE_VALUES = {"closed": 0, "half_open": 1, "open": 2}
 
@@ -415,16 +411,6 @@ PANDAPE_CIRCUIT = CircuitBreaker(
     )
 )
 
-STACKONE_CIRCUIT = CircuitBreaker(
-    "stackone",
-    CircuitBreakerConfig(
-        failure_threshold=5,
-        recovery_timeout=45.0,
-        success_threshold=2,
-        timeout=30.0,
-    )
-)
-
 MAILGUN_CIRCUIT = CircuitBreaker(
     "mailgun",
     CircuitBreakerConfig(
@@ -485,7 +471,6 @@ ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
     "google_calendar": GOOGLE_CALENDAR_CIRCUIT,
     "gupy": GUPY_CIRCUIT,
     "pandape": PANDAPE_CIRCUIT,
-    "stackone": STACKONE_CIRCUIT,
     "mailgun": MAILGUN_CIRCUIT,
     "resend": RESEND_CIRCUIT,
     "iugu": IUGU_CIRCUIT,
@@ -558,13 +543,6 @@ CIRCUIT_BREAKER_SLOS: Dict[str, Dict[str, Any]] = {
         "error_budget_pct": 1.0,
         "tier": "high",
         "description": "ATS — Pandapé",
-    },
-    "stackone": {
-        "availability_target": 0.99,
-        "latency_p95_ms": 5000,
-        "error_budget_pct": 1.0,
-        "tier": "medium",
-        "description": "Conector ATS — StackOne",
     },
     "mailgun": {
         "availability_target": 0.999,
@@ -641,10 +619,6 @@ DEGRADED_MODE_RESPONSES: Dict[str, str] = {
     ),
     "pandape": (
         "A integração com Pandapé está temporariamente indisponível. "
-        "Os dados locais continuam acessíveis."
-    ),
-    "stackone": (
-        "A integração ATS via StackOne está temporariamente indisponível. "
         "Os dados locais continuam acessíveis."
     ),
     "mailgun": (

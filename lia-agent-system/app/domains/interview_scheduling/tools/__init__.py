@@ -72,14 +72,14 @@ INTERVIEW_SCHEDULING_TOOLS = [
     {
         "tool_id": "scheduling_transcribe_audio",
         "name": "Transcrever Áudio",
-        "description": "Transcreve áudio de entrevista usando Deepgram Nova-2",
-        "handler": "app.services.deepgram_service.deepgram_service.transcribe_audio_url",
+        "description": "Transcreve áudio de entrevista usando Gemini STT",
+        "handler": "app.services.voice_service.voice_service.transcribe_audio",
     },
     {
         "tool_id": "scheduling_analyze_voice",
         "name": "Analisar Voz",
         "description": "Analisa tom de voz e confiança do candidato na entrevista",
-        "handler": "app.services.deepgram_service.deepgram_service.transcribe_audio_url",
+        "handler": "app.services.voice_service.voice_service.transcribe_audio",
     },
 ]
 

@@ -4,11 +4,9 @@ from app.domains.interview_scheduling.services.scheduling_service import Schedul
 from app.domains.interview_scheduling.services.interview_transcript_analysis_service import (
     InterviewTranscriptAnalysisService,
 )
-from app.domains.interview_scheduling.services.deepgram_service import DeepgramService
 
 __all__ = [
     "CalendarService",
     "SchedulingService",
     "InterviewTranscriptAnalysisService",
-    "DeepgramService",
 ]

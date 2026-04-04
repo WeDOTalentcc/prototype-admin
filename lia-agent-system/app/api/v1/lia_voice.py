@@ -45,7 +45,6 @@ class VoiceChatResponse(BaseModel):
 
 class VoiceAvailabilityResponse(BaseModel):
     """Response showing which voice services are available."""
-    transcription_deepgram: bool
     transcription_openai: bool
     synthesis_openai: bool
     any_transcription: bool
@@ -74,7 +73,7 @@ async def transcribe_audio(
     if not availability["any_transcription"]:
         raise HTTPException(
             status_code=503,
-            detail="No transcription service available. Please configure DEEPGRAM_API_KEY or OPENAI_API_KEY."
+            detail="No transcription service available. Please configure OPENAI_API_KEY."
         )
     try:
         audio_data = await file.read()

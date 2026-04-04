@@ -84,8 +84,6 @@ def _make_fake_settings(
         LLM_CASCADE_MID_THRESHOLD = mid_threshold
         LLM_CASCADE_FALLBACK_THRESHOLD = fallback_threshold
         LLM_ROUTER_TEMPERATURE = router_temperature
-        OPENMIC_API_KEY = None
-        OPENMIC_API_URL = "https://api.openmic.ai"
 
     return _Settings()
 
@@ -497,13 +495,6 @@ async def test_gemini_reaches_fast_cascade_threshold(scenario):
 # ---------------------------------------------------------------------------
 # Validação de exceções justificadas (não alteradas por esta task)
 # ---------------------------------------------------------------------------
-
-def test_openmic_config_present():
-    """OpenMic (screening por voz) deve ter config independente — não alterado."""
-    settings = _make_fake_settings()
-    assert hasattr(settings, "OPENMIC_API_KEY")
-    assert hasattr(settings, "OPENMIC_API_URL")
-
 
 def test_llm_agent_model_remains_claude():
     """LLM_AGENT_MODEL deve permanecer claude-sonnet para agentes complexos."""

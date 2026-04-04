@@ -234,17 +234,12 @@ class LangGraphReActBase(LangGraphBase):
         except Exception as exc:
             logger.debug("[%s] StreamingCallback indisponível: %s", self.__class__.__name__, exc)
 
-        # C4: agent_latency_timer (agent_metrics.py) — wiring para Prometheus
         _agent_class = self.__class__.__name__
-        try:
-            from app.shared.observability.agent_metrics import agent_latency_timer
-            _latency_ctx = agent_latency_timer(agent=_agent_class, domain=self.domain_name)
-        except Exception:
-            from contextlib import asynccontextmanager
-            @asynccontextmanager
-            async def _noop():
-                yield
-            _latency_ctx = _noop()
+        from contextlib import asynccontextmanager
+        @asynccontextmanager
+        async def _noop():
+            yield
+        _latency_ctx = _noop()
 
         # LIA-C04: Sanitização de PII nas mensagens antes de enviar ao LLM
         initial_state["messages"] = await self._sanitize_messages_pii(
@@ -262,27 +257,9 @@ class LangGraphReActBase(LangGraphBase):
                     streaming_callback=streaming_cb,
                 )
         except Exception as _graph_exc:
-            _duration = _time.monotonic() - _t0
-            try:
-                from app.observability.metrics import agent_request_duration_seconds, agent_errors_total
-                agent_request_duration_seconds.labels(
-                    domain=self.domain_name, agent_class=_agent_class
-                ).observe(_duration)
-                agent_errors_total.labels(
-                    domain=self.domain_name, error_type=type(_graph_exc).__name__
-                ).inc()
-            except Exception:
-                pass
             raise
 
         _duration = _time.monotonic() - _t0
-        try:
-            from app.observability.metrics import agent_request_duration_seconds
-            agent_request_duration_seconds.labels(
-                domain=self.domain_name, agent_class=_agent_class
-            ).observe(_duration)
-        except Exception:
-            pass
 
         output = self._state_to_output(result, input)
 

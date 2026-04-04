@@ -3,10 +3,7 @@ External Webhook Endpoints - Inbound webhooks from external services.
 
 Receives events from:
 - ATS platforms (Gupy, Pandapé, Merge)
-- Deepgram (transcription completion)
 - Other external integrations
-
-Note: OpenMic.ai webhooks are handled in openmic.py
 """
 from fastapi import APIRouter, Request, HTTPException, Header, BackgroundTasks, status
 from pydantic import BaseModel
@@ -42,14 +39,6 @@ class ATSWebhookEvent(BaseModel):
     new_stage: Optional[str] = None
     previous_stage: Optional[str] = None
     candidate_data: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
-
-
-class DeepgramWebhookEvent(BaseModel):
-    """Deepgram transcription webhook payload."""
-    request_id: str
-    status: str
-    results: Optional[Dict[str, Any]] = None
     metadata: Optional[Dict[str, Any]] = None
 
 
@@ -300,83 +289,6 @@ async def process_ats_candidate_rejected(platform: str, payload: Dict[str, Any])
         logger.error(f"❌ Error processing ATS candidate rejected: {e}", exc_info=True)
 
 
-@router.post("/deepgram")
-async def handle_deepgram_webhook(
-    request: Request,
-    background_tasks: BackgroundTasks,
-    x_deepgram_signature: Optional[str] = Header(None, alias="X-Deepgram-Signature")
-):
-    """
-    Receive webhook from Deepgram when transcription is complete.
-    
-    Events:
-    - transcription_completed: Audio transcription finished
-    - transcription_failed: Transcription failed
-    """
-    raw_body = await request.body()
-    
-    secret = os.getenv("DEEPGRAM_WEBHOOK_SECRET")
-    if x_deepgram_signature and not verify_webhook_signature(raw_body, x_deepgram_signature, secret or ""):
-        logger.error("❌ Invalid Deepgram webhook signature")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid webhook signature"
-        )
-    
-    try:
-        payload = await request.json()
-    except Exception as e:
-        logger.error(f"❌ Failed to parse Deepgram webhook payload: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid JSON payload"
-        )
-    
-    request_id = payload.get("request_id") or payload.get("requestId")
-    status_val = payload.get("status", "unknown")
-    
-    logger.info(f"[WEBHOOK] Deepgram transcription: {request_id} - {status_val}")
-    
-    background_tasks.add_task(
-        process_deepgram_transcription,
-        payload
-    )
-    
-    return {
-        "status": "received",
-        "request_id": request_id
-    }
-
-
-async def process_deepgram_transcription(data: Dict[str, Any]):
-    """Process Deepgram transcription result."""
-    try:
-        request_id = data.get("request_id") or data.get("requestId")
-        status_val = data.get("status")
-        
-        if status_val == "completed":
-            results = data.get("results", {})
-            transcript = ""
-            
-            if "channels" in results:
-                for channel in results.get("channels", []):
-                    for alternative in channel.get("alternatives", []):
-                        transcript += alternative.get("transcript", "") + " "
-            
-            logger.info(f"[DEEPGRAM] Transcription completed for {request_id}: {len(transcript)} chars")
-            
-            metadata = data.get("metadata", {})
-            if metadata.get("candidate_id"):
-                pass
-            
-        elif status_val == "failed":
-            error = data.get("error", "Unknown error")
-            logger.error(f"[DEEPGRAM] Transcription failed for {request_id}: {error}")
-        
-    except Exception as e:
-        logger.error(f"❌ Error processing Deepgram transcription: {e}", exc_info=True)
-
-
 @router.post("/interview/{provider}")
 async def handle_interview_webhook(
     provider: str,
@@ -385,7 +297,7 @@ async def handle_interview_webhook(
 ):
     """
     Receive webhook from interview scheduling tools.
-    Supported providers: calendly, openmic, custom
+    Supported providers: calendly, custom
     """
     if not is_webhook_adapter_enabled(f"interview_{provider}"):
         return {"status": "disabled", "provider": provider}
@@ -467,7 +379,6 @@ async def external_webhooks_health():
         "status": "healthy",
         "endpoints": {
             "ats": "/external-webhooks/ats/{platform}",
-            "deepgram": "/external-webhooks/deepgram",
             "interview": "/external-webhooks/interview/{provider}",
             "test": "/external-webhooks/test/{provider}",
             "document": "/external-webhooks/document/{provider}",
@@ -478,11 +389,9 @@ async def external_webhooks_health():
             "gupy": bool(os.getenv("GUPY_WEBHOOK_SECRET")),
             "pandape": bool(os.getenv("PANDAPE_WEBHOOK_SECRET")),
             "merge": bool(os.getenv("MERGE_WEBHOOK_SECRET")),
-            "deepgram": bool(os.getenv("DEEPGRAM_WEBHOOK_SECRET"))
         },
         "feature_flags": {
             "interview_calendly": is_webhook_adapter_enabled("interview_calendly"),
-            "interview_openmic": is_webhook_adapter_enabled("interview_openmic"),
             "test_testgorilla": is_webhook_adapter_enabled("test_testgorilla"),
             "test_codility": is_webhook_adapter_enabled("test_codility"),
             "document_custom": is_webhook_adapter_enabled("document_custom"),

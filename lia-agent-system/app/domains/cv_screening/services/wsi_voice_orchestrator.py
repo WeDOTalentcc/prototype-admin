@@ -1,13 +1,12 @@
 """
 WSI Voice Orchestrator Service
 
-Connects OpenMic.ai voice screening with WSI (WeDoTalent Skill Index) scoring.
+Connects Twilio Voice screening with WSI (WeDoTalent Skill Index) scoring.
 Orchestrates the complete voice screening workflow:
 1. Generate WSI questions
-2. Create OpenMic agent with questions
-3. Start voice call
-4. Process completed call transcript
-5. Calculate WSI scores
+2. Start Twilio voice call with questions
+3. Process completed call transcript
+4. Calculate WSI scores
 """
 
 import re
@@ -29,8 +28,6 @@ from app.services.wsi_service import (
     ResponseAnalysis,
     WSIResult
 )
-from app.services.openmic_service import openmic_service
-
 logger = logging.getLogger(__name__)
 
 _event_dispatcher = None
@@ -79,7 +76,6 @@ class WSIVoiceOrchestrator:
     
     def __init__(self):
         self.wsi_service = wsi_service
-        self.openmic_service = openmic_service
         logger.info("✅ WSI Voice Orchestrator initialized")
     
     def _convert_snapshot_to_wsi_questions(self, snapshot: list) -> List[WSIQuestion]:
@@ -132,9 +128,8 @@ class WSIVoiceOrchestrator:
         Steps:
         1. Generate WSI questions based on competencies
         2. Create WSI session with screening_type="voice"
-        3. Create OpenMic agent with WSI questions
-        4. Initiate call to candidate
-        5. Return session and call IDs
+        3. Initiate Twilio voice call with WSI questions
+        4. Return session and call IDs
         
         Args:
             candidate_id: Internal candidate ID
@@ -222,23 +217,16 @@ class WSIVoiceOrchestrator:
                 question_texts = [q.question_text for q in questions]
                 skill_names = list(set(c.name for c in competencies))
                 
-                agent = await self.openmic_service.create_screening_agent(
-                    job_title=job_title or f"Vaga {job_vacancy_id}",
-                    job_description=job_description or self._build_job_context_from_competencies(competencies),
-                    required_skills=skill_names,
-                    questions=question_texts
-                )
-                
-                agent_id = agent.get("agent_id")
-                logger.info(f"🤖 Created OpenMic agent: {agent_id}")
-                
-                call = await self.openmic_service.start_screening_call(
-                    agent_id=agent_id,
+                from app.domains.communication.services.twilio_voice_service import twilio_voice_service
+                call = await twilio_voice_service.start_screening_call(
                     candidate_phone=candidate_phone,
                     candidate_name=candidate_name,
                     candidate_id=candidate_id,
-                    job_title=job_title
+                    job_title=job_title or f"Vaga {job_vacancy_id}",
+                    questions=question_texts,
                 )
+                
+                agent_id = call.get("agent_id", "twilio")
                 
                 call_id = call.get("call_id")
                 logger.info(f"📞 Started call: {call_id} to {candidate_name}")
@@ -305,7 +293,7 @@ class WSIVoiceOrchestrator:
         5. Persist results to database
         
         Args:
-            call_id: OpenMic call ID
+            call_id: Voice call ID
             transcript: Full call transcript text
             transcript_object: Optional structured transcript with speaker labels
             db: Optional AsyncSession - if not provided, creates own session
@@ -550,7 +538,7 @@ class WSIVoiceOrchestrator:
             return "unknown"
     
     def _build_job_context_from_competencies(self, competencies: List[Competency]) -> str:
-        """Build job context string from competencies for OpenMic agent."""
+        """Build job context string from competencies for voice screening."""
         technical = [c.name for c in competencies if c.type == "technical"]
         behavioral = [c.name for c in competencies if c.type == "behavioral"]
         cultural = [c.name for c in competencies if c.type == "cultural"]
@@ -761,7 +749,7 @@ class WSIVoiceOrchestrator:
         call_id: str,
         db: Optional[AsyncSession] = None
     ) -> Optional[Dict[str, Any]]:
-        """Get session by OpenMic call ID."""
+        """Get session by voice call ID."""
         
         async def _execute_with_db(session: AsyncSession) -> Optional[Dict[str, Any]]:
             result = await session.execute(text("""

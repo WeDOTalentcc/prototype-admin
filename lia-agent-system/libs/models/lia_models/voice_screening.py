@@ -1,5 +1,5 @@
 """
-Voice Screening Database Models (OpenMic.ai Integration)
+Voice Screening Database Models (Twilio Voice Integration)
 """
 import uuid
 from datetime import datetime
@@ -12,14 +12,14 @@ from lia_config.database import Base
 
 class VoiceScreeningCall(Base):
     """
-    Voice screening call record (OpenMic.ai integration).
+    Voice screening call record (Twilio Voice integration).
     Stores call metadata, transcript, and candidate information.
     """
     __tablename__ = "voice_screening_calls"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
-    # OpenMic.ai identifiers
+    # Voice call identifiers
     call_id = Column(String(255), nullable=False, unique=True, index=True)
     agent_id = Column(String(255), nullable=True)
     

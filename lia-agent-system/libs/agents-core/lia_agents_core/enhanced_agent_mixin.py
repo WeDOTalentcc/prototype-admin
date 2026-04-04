@@ -150,16 +150,6 @@ class EnhancedAgentMixin:
             "using static defaults. Verify AutonomyEngine and GuardrailRepository configs.",
             self._enhanced_domain,
         )
-        # C4: Prometheus — registrar fallback para observabilidade
-        try:
-            from app.shared.observability.agent_metrics import record_agent_request
-            record_agent_request(
-                agent=self._enhanced_domain,
-                domain=self._enhanced_domain,
-                status="guardrail_fallback",
-            )
-        except Exception:
-            pass
         return _DEFAULT_GUARDRAIL_TOOLS
     
     def _get_shared_insight_tools(self) -> List[ToolDefinition]:
@@ -339,16 +329,7 @@ class EnhancedAgentMixin:
         Uses state.confidence_score computed by ReActLoop (tool_success_ratio * 0.7
         + completion_ratio * 0.3). Falls back to 0.5 if metric unavailable.
         """
-        try:
-            from app.shared.observability.agent_metrics import record_confidence
-            domain = getattr(self, "_enhanced_domain", "unknown")
-            record_confidence(
-                agent=domain,
-                domain=domain,
-                confidence=getattr(state, "confidence_score", 0.5),
-            )
-        except Exception:
-            pass
+        pass
 
     @property
     def model_id(self) -> str:

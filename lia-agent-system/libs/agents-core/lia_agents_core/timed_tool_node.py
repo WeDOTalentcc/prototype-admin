@@ -29,11 +29,7 @@ except ImportError:
     _HAS_LANGGRAPH = False
     ToolNode = object  # type: ignore[assignment,misc]
 
-try:
-    from app.observability.metrics import agent_iterations_total
-    _METRICS_AVAILABLE = True
-except ImportError:
-    _METRICS_AVAILABLE = False
+_METRICS_AVAILABLE = False
 
 # ---------------------------------------------------------------------------
 # LIA-C03: Feature flag — desative via env FAIRNESS_TOOL_CHECK_ENABLED=false

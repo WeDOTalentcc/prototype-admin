@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     backendFormData.append("audio", audio)
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/v1/transcribe/audio`, {
+      const response = await fetch(`${BACKEND_URL}/api/v1/voice/transcribe`, {
         method: "POST",
         body: backendFormData,
       })

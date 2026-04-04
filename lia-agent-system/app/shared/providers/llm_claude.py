@@ -19,11 +19,7 @@ except ImportError:
             return fn
         return decorator
 
-try:
-    from app.observability.metrics import llm_requests_total, llm_latency_seconds
-    _METRICS_AVAILABLE = True
-except ImportError:
-    _METRICS_AVAILABLE = False
+_METRICS_AVAILABLE = False
 
 
 class ClaudeLLMProvider(LLMProviderABC):

@@ -2,7 +2,7 @@
 Voice Service - Speech-to-text and text-to-speech for LIA voice interactions.
 
 Provides:
-- Audio transcription using Deepgram (primary) or OpenAI Whisper (fallback)
+- Audio transcription using OpenAI Whisper
 - Text-to-speech using OpenAI TTS API
 - Real-time streaming transcription support
 """
@@ -36,13 +36,11 @@ class VoiceService:
     Service for voice processing - speech-to-text and text-to-speech.
     
     Supports:
-    - Deepgram Nova-2 for high-quality transcription (primary)
-    - OpenAI Whisper as fallback transcription
+    - OpenAI Whisper for transcription
     - OpenAI TTS for speech synthesis
     - Multiple audio formats: mp3, wav, webm, m4a, ogg
     """
     
-    DEEPGRAM_API_URL = "https://api.deepgram.com/v1/listen"
     OPENAI_TRANSCRIPTION_URL = "https://api.openai.com/v1/audio/transcriptions"
     OPENAI_TTS_URL = "https://api.openai.com/v1/audio/speech"
     
@@ -51,7 +49,6 @@ class VoiceService:
     SUPPORTED_TTS_MODELS = ["tts-1", "tts-1-hd"]
     
     def __init__(self):
-        self.deepgram_api_key = os.getenv("DEEPGRAM_API_KEY")
         self.openai_api_key = (
             os.getenv("AI_INTEGRATIONS_OPENAI_API_KEY") or 
             os.getenv("OPENAI_API_KEY")
@@ -100,15 +97,12 @@ class VoiceService:
         filename: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Transcribe audio to text using Deepgram or OpenAI Whisper.
-        
-        Tries Deepgram first (better quality, lower latency), falls back
-        to OpenAI Whisper if Deepgram is not available.
+        Transcribe audio to text using OpenAI Whisper.
         
         Args:
             audio_data: Raw audio bytes
             language: Language code (e.g., "pt-BR", "en-US")
-            model: Deepgram model to use (nova-2, nova, base, etc.)
+            model: Model to use (whisper-1, etc.)
             filename: Optional filename for format detection
             
         Returns:
@@ -118,22 +112,14 @@ class VoiceService:
                 "duration": 3.5,
                 "words": [{"word": "olá", "start": 0.0, "end": 0.3}],
                 "language": "pt-BR",
-                "provider": "deepgram" | "openai"
+                "provider": "openai"
             }
             
         Raises:
-            TranscriptionError: If both providers fail
+            TranscriptionError: If transcription fails
         """
         if not audio_data:
             raise TranscriptionError("No audio data provided")
-        
-        if self.deepgram_api_key:
-            try:
-                return await self._transcribe_with_deepgram(
-                    audio_data, language, model, filename
-                )
-            except Exception as e:
-                logger.warning(f"Deepgram transcription failed, trying OpenAI: {e}")
         
         if self.openai_api_key:
             try:
@@ -145,75 +131,8 @@ class VoiceService:
                 raise TranscriptionError(f"Transcription failed: {e}")
         
         raise TranscriptionError(
-            "No transcription provider available. Please configure DEEPGRAM_API_KEY or OPENAI_API_KEY."
+            "No transcription provider available. Please configure OPENAI_API_KEY."
         )
-    
-    async def _transcribe_with_deepgram(
-        self,
-        audio_data: bytes,
-        language: str,
-        model: str,
-        filename: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """Transcribe using Deepgram API."""
-        client = await self._get_client()
-        
-        audio_format = self._detect_audio_format(audio_data, filename)
-        content_type = f"audio/{audio_format}"
-        
-        language_code = language.split("-")[0]
-        
-        params = {
-            "model": model,
-            "language": language_code,
-            "punctuate": "true",
-            "diarize": "false",
-            "smart_format": "true",
-            "filler_words": "false",
-        }
-        
-        headers = {
-            "Authorization": f"Token {self.deepgram_api_key}",
-            "Content-Type": content_type,
-        }
-        
-        response = await client.post(
-            self.DEEPGRAM_API_URL,
-            params=params,
-            headers=headers,
-            content=audio_data
-        )
-        
-        if response.status_code != 200:
-            error_detail = response.text
-            logger.error(f"Deepgram API error: {response.status_code} - {error_detail}")
-            raise TranscriptionError(f"Deepgram API error: {response.status_code}")
-        
-        result = response.json()
-        
-        channel = result.get("results", {}).get("channels", [{}])[0]
-        alternative = channel.get("alternatives", [{}])[0]
-        
-        words = []
-        for word_info in alternative.get("words", []):
-            words.append({
-                "word": word_info.get("word", ""),
-                "start": word_info.get("start", 0.0),
-                "end": word_info.get("end", 0.0),
-                "confidence": word_info.get("confidence", 0.0)
-            })
-        
-        metadata = result.get("metadata", {})
-        duration = metadata.get("duration", 0.0)
-        
-        return {
-            "text": alternative.get("transcript", ""),
-            "confidence": alternative.get("confidence", 0.0),
-            "duration": duration,
-            "words": words,
-            "language": language,
-            "provider": "deepgram"
-        }
     
     async def _transcribe_with_openai(
         self,
@@ -350,7 +269,7 @@ class VoiceService:
         """
         Stream real-time transcription for live audio.
         
-        Uses Deepgram's WebSocket streaming API for low-latency
+        Uses streaming API for low-latency
         real-time transcription.
         
         Args:
@@ -360,10 +279,10 @@ class VoiceService:
             Transcribed text fragments as they become available
             
         Note:
-            Requires DEEPGRAM_API_KEY. Falls back to buffered
-            transcription if Deepgram is not available.
+            Requires OPENAI_API_KEY. Falls back to buffered
+            transcription if streaming is not available.
         """
-        if not self.deepgram_api_key:
+        if not self.openai_api_key:
             buffer = bytearray()
             async for chunk in audio_stream:
                 buffer.extend(chunk)
@@ -406,10 +325,9 @@ class VoiceService:
     def is_available(self) -> Dict[str, bool]:
         """Check which voice services are available."""
         return {
-            "transcription_deepgram": bool(self.deepgram_api_key),
             "transcription_openai": bool(self.openai_api_key),
             "synthesis_openai": bool(self.openai_api_key),
-            "any_transcription": bool(self.deepgram_api_key or self.openai_api_key),
+            "any_transcription": bool(self.openai_api_key),
             "any_synthesis": bool(self.openai_api_key)
         }
 

@@ -187,13 +187,8 @@ class AppSettings(BaseSettings):
     # Default Company (dev/demo)
     DEFAULT_COMPANY_UUID: str = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 
-    # StackOne
-    STACKONE_API_URL: str = "https://api.stackone.com"
-    ENABLE_STACKONE: bool = False
-
     # Feature Flags
     ENABLE_PEARCH_AI: bool = False
-    ENABLE_SYNTHFLOW: bool = False
     ENABLE_TWILIO: bool = False
     ENABLE_MICROSOFT_GRAPH: bool = True
     ENABLE_GOOGLE_CALENDAR: bool = False
@@ -251,16 +246,9 @@ class AppSettings(BaseSettings):
 # ---------------------------------------------------------------------------
 
 class IntegrationSettings(BaseSettings):
-    # Voice
-    DEEPGRAM_API_KEY: Optional[str] = None
-
     # Pearch AI
     PEARCH_API_KEY: Optional[str] = None
     PEARCH_API_URL: str = "https://api.pearch.ai"
-
-    # SynthFlow (voice AI)
-    SYNTHFLOW_API_KEY: Optional[str] = None
-    SYNTHFLOW_API_URL: str = "https://api.synthflow.ai"
 
     # Twilio / WhatsApp
     TWILIO_ACCOUNT_SID: Optional[str] = None
@@ -292,10 +280,6 @@ class IntegrationSettings(BaseSettings):
     STRIPE_SECRET_KEY: Optional[str] = None
     STRIPE_WEBHOOK_SECRET: Optional[str] = None
     STRIPE_PUBLISHABLE_KEY: Optional[str] = None
-
-    # OpenMic.ai (voice screening)
-    OPENMIC_API_KEY: Optional[str] = None
-    OPENMIC_API_URL: str = "https://api.openmic.ai"
 
     # Apify (web scraping)
     APIFY_API_KEY: Optional[str] = None
