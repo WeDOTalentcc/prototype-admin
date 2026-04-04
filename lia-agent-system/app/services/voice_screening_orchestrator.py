@@ -91,6 +91,8 @@ class VoiceScreeningSession:
     wsi_result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
     consent_verified: bool = False
+    job_context: Optional[Dict[str, Any]] = None
+    presentation_done: bool = False
 
 
 class VoiceScreeningOrchestratorError(Exception):
@@ -154,6 +156,8 @@ class VoiceScreeningOrchestrator:
             "wsi_result": session.wsi_result,
             "error": session.error,
             "consent_verified": session.consent_verified,
+            "job_context": session.job_context,
+            "presentation_done": session.presentation_done,
         }
 
     def _state_to_session(self, state: Dict[str, Any]) -> "VoiceScreeningSession":
@@ -182,6 +186,8 @@ class VoiceScreeningOrchestrator:
             wsi_result=state.get("wsi_result"),
             error=state.get("error"),
             consent_verified=state.get("consent_verified", False),
+            job_context=state.get("job_context"),
+            presentation_done=state.get("presentation_done", False),
         )
 
     async def _persist_session_state(self, session: "VoiceScreeningSession", db) -> None:
@@ -281,6 +287,153 @@ class VoiceScreeningOrchestrator:
                 session_id, e,
             )
         return []
+
+    async def _fetch_job_context_from_db(
+        self,
+        job_id: str,
+        db,
+        company_id: str,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Fetch job vacancy context from the database by job_id.
+
+        Returns a dict with the fields relevant for LIA's job presentation:
+        title, description, requirements, benefits, work_model, salary, location,
+        employment_type, seniority_level, behavioral_competencies.
+
+        Tenant isolation (fail-closed): company_id is MANDATORY. The query always
+        includes AND company_id = :company_id so a voice screening session can never
+        read vacancy data belonging to a different tenant. Returns None when
+        company_id is absent rather than falling back to an unscoped query.
+        Always pass session.company_id.
+
+        Returns None if the job is not found, DB is unavailable, or company_id absent.
+        """
+        if db is None or not job_id:
+            return None
+        if not company_id:
+            logger.error(
+                "[VOICE SCREENING] _fetch_job_context_from_db called without company_id "
+                "for job_id=%s — refusing to fetch (tenant isolation fail-closed)",
+                job_id,
+            )
+            return None
+        try:
+            from sqlalchemy import text as _text
+
+            query = _text("""
+                SELECT
+                    title,
+                    description,
+                    requirements,
+                    benefits,
+                    work_model,
+                    salary,
+                    location,
+                    employment_type,
+                    seniority_level,
+                    behavioral_competencies
+                FROM job_vacancies
+                WHERE id = :job_id
+                  AND company_id = :company_id
+                LIMIT 1
+            """)
+            params = {"job_id": job_id, "company_id": company_id}
+
+            result = await db.execute(query, params)
+            row = result.fetchone()
+            if not row:
+                logger.info(
+                    "[VOICE SCREENING] No job vacancy found for job_id=%s company_id=%s",
+                    job_id, company_id,
+                )
+                return None
+
+            (
+                title, description, requirements, benefits, work_model,
+                salary, location, employment_type, seniority_level,
+                behavioral_competencies,
+            ) = row
+
+            context: Dict[str, Any] = {
+                "title": title or "",
+                "description": description or "",
+                "requirements": requirements if isinstance(requirements, list) else [],
+                "benefits": benefits if isinstance(benefits, list) else [],
+                "work_model": work_model or "",
+                "salary": salary or "",
+                "location": location or "",
+                "employment_type": employment_type or "",
+                "seniority_level": seniority_level or "",
+                "behavioral_competencies": (
+                    behavioral_competencies
+                    if isinstance(behavioral_competencies, list)
+                    else []
+                ),
+            }
+            logger.info(
+                "[VOICE SCREENING] Job context fetched for job_id=%s company_id=%s title=%r",
+                job_id, company_id, context["title"],
+            )
+            return context
+
+        except Exception as e:
+            logger.warning(
+                "[VOICE SCREENING] Failed to fetch job context for job_id=%s: %s",
+                job_id, e,
+            )
+            return None
+
+    @staticmethod
+    def _build_job_context_summary(job_context: Dict[str, Any]) -> str:
+        """
+        Build a concise, voice-friendly summary of the job context for the system prompt.
+
+        Includes only fields that are available and non-empty.
+        """
+        lines = []
+        if job_context.get("title"):
+            lines.append(f"Título da vaga: {job_context['title']}")
+        if job_context.get("seniority_level"):
+            lines.append(f"Senioridade: {job_context['seniority_level']}")
+        if job_context.get("location"):
+            lines.append(f"Localização: {job_context['location']}")
+        if job_context.get("work_model"):
+            lines.append(f"Formato de trabalho: {job_context['work_model']}")
+        if job_context.get("employment_type"):
+            lines.append(f"Contratação: {job_context['employment_type']}")
+        if job_context.get("salary"):
+            lines.append(f"Remuneração: {job_context['salary']}")
+        if job_context.get("description"):
+            desc = job_context["description"]
+            # Keep full description up to 2000 chars — truncate only very long JDs
+            # to avoid exhausting Gemini context unnecessarily, while preserving
+            # enough content for the model to accurately answer candidate questions.
+            if len(desc) > 2000:
+                desc = desc[:2000] + "..."
+            lines.append(f"Descrição da vaga:\n{desc}")
+        if job_context.get("requirements"):
+            reqs = job_context["requirements"]
+            if reqs:
+                req_text = ", ".join(str(r) for r in reqs[:20])
+                lines.append(f"Requisitos principais: {req_text}")
+        if job_context.get("benefits"):
+            bens = job_context["benefits"]
+            if bens:
+                ben_text = ", ".join(str(b) for b in bens[:15])
+                lines.append(f"Benefícios: {ben_text}")
+        if job_context.get("behavioral_competencies"):
+            comps = job_context["behavioral_competencies"]
+            if comps:
+                comp_names = []
+                for c in comps[:15]:
+                    if isinstance(c, dict):
+                        comp_names.append(c.get("name", str(c)))
+                    else:
+                        comp_names.append(str(c))
+                if comp_names:
+                    lines.append(f"Competências comportamentais: {', '.join(comp_names)}")
+        return "\n".join(lines) if lines else f"Título da vaga: {job_context.get('title', 'não especificado')}"
 
     async def verify_consent(
         self,
@@ -619,6 +772,17 @@ class VoiceScreeningOrchestrator:
                     session_id,
                 )
 
+        # Load job context from DB if not yet available in session
+        if session.job_context is None and session.job_id:
+            session.job_context = await self._fetch_job_context_from_db(
+                session.job_id, db, company_id=session.company_id
+            )
+            if session.job_context:
+                logger.info(
+                    "[VOICE SCREENING] Job context loaded for session=%s job_id=%s",
+                    session_id, session.job_id,
+                )
+
         try:
             import os
             from google import genai
@@ -628,6 +792,10 @@ class VoiceScreeningOrchestrator:
             base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
 
             if not api_key or not base_url:
+                # If Gemini is unavailable but presentation is pending, generate fallback intro
+                if not session.presentation_done:
+                    session.presentation_done = True
+                    return self._build_fallback_job_presentation(session)
                 return self._get_next_scripted_question(session, wsi_questions if has_wsi_questions else None)
 
             client = genai.Client(
@@ -641,44 +809,85 @@ class VoiceScreeningOrchestrator:
             total_questions = len(wsi_questions) if has_wsi_questions else 5
             is_last = next_q_index >= total_questions - 1
 
+            # Compliance and fairness guardrails injected into system prompt
             fairness_instructions = (
-                "\n=== COMPLIANCE E FAIRNESS ===\n"
-                "REGRAS ABSOLUTAS PARA TRIAGEM POR VOZ:\n"
-                "1. NUNCA pergunte sobre idade, gênero, raça, estado civil, filhos, religião ou aparência\n"
-                "2. NUNCA discrimine candidatos por características protegidas (LGPD, CLT, CF Art. 5º)\n"
-                "3. Avalie APENAS competências, experiências e habilidades relevantes para a vaga\n"
-                "4. Se o candidato mencionar informação protegida, NÃO use para avaliação — registre e siga\n"
-                "5. Mantenha tom neutro e profissional com TODOS os candidatos\n"
+                "\n=== COMPLIANCE E FAIRNESS — REGRAS ABSOLUTAS ===\n"
+                "PERGUNTAS PROIBIDAS (nunca pergunte):\n"
+                "- Idade, data de nascimento, geração\n"
+                "- Gênero, identidade de gênero, orientação sexual\n"
+                "- Raça, cor, etnia, naturalidade\n"
+                "- Estado civil, filhos, gravidez, planos de família\n"
+                "- Religião, crenças, filiação política ou sindical\n"
+                "- Condições de saúde, deficiências, uso de medicamentos\n"
+                "- Situação financeira pessoal, endereço residencial\n"
+                "- Aparência física, peso, altura\n"
+                "\nPERGUNTAS DO CANDIDATO — O QUE VOCÊ PODE RESPONDER:\n"
+                "- Sobre benefícios, salário, formato de trabalho, localização → responda com base no job description acima\n"
+                "- Sobre a descrição do cargo, responsabilidades, competências → responda com base no job description acima\n"
+                "- Sobre as etapas do processo seletivo → explique que é uma triagem inicial e que a empresa entrará em contato\n"
+                "- Sobre a empresa, cultura → use informações do job description se disponíveis; caso contrário, diga que não tem essa informação\n"
+                "\nPERGUNTAS QUE VOCÊ DEVE REDIRECIONAR COM EDUCAÇÃO:\n"
+                "- Sobre informações não presentes no job description → diga 'Não tenho essa informação disponível, mas posso encaminhar sua dúvida ao recrutador.'\n"
+                "- Fora do escopo da triagem → redirecione gentilmente: 'Essa é uma ótima pergunta! Recomendo tirá-la diretamente com o time de RH. Posso continuar com a triagem?'\n"
+                "\nINFORMAÇÕES QUE VOCÊ DEVE RECUSAR:\n"
+                "- Qualquer dado que não foi disponibilizado pela empresa (ex: salário do CEO, detalhes internos)\n"
+                "- Comparações entre candidatos\n"
+                "- Previsão de resultado da triagem ou probabilidade de aprovação\n"
+                "\nANTI-SYCOPHANCY: Nunca elogie excessivamente as respostas do candidato. Valide de forma breve e neutra.\n"
+                "LGPD: Não solicite dados pessoais além dos necessários para a triagem.\n"
+                "(LGPD, CLT Art. 5º, CF Art. 5º, Lei 9.029/95, Lei 13.146/15)\n"
             )
+
+            # Build job description context for the system prompt (Task 2)
+            if session.job_context:
+                job_context_block = (
+                    "\n=== JOB DESCRIPTION — CONTEXTO DA VAGA ===\n"
+                    + self._build_job_context_summary(session.job_context)
+                    + "\n\nUse APENAS estas informações ao responder perguntas do candidato sobre a vaga. "
+                    "Não invente ou presuma informações não presentes acima.\n"
+                )
+            else:
+                job_context_block = (
+                    f"\n=== CONTEXTO DA VAGA ===\n"
+                    f"Título: {session.job_title}\n"
+                    f"(Informações detalhadas da vaga não disponíveis. Use apenas o título.)\n"
+                )
 
             if has_wsi_questions:
                 question_guidance = (
-                    f"Perguntas já feitas: {next_q_index} de {len(wsi_questions)}\n"
-                    f"{'Esta é a última pergunta da triagem.' if is_last else ''}\n"
+                    f"Progresso da triagem: {next_q_index} de {len(wsi_questions)} perguntas realizadas.\n"
+                    f"{'ÚLTIMA PERGUNTA: encerre a triagem com cordialidade após a resposta do candidato.' if is_last else ''}\n"
                 )
             else:
                 question_guidance = (
-                    f"Perguntas já feitas: {next_q_index} de ~{total_questions}\n"
-                    f"{'Esta é a última pergunta da triagem.' if is_last else ''}\n"
+                    f"Progresso da triagem: {next_q_index} de ~{total_questions} perguntas realizadas.\n"
+                    f"{'ÚLTIMA PERGUNTA: encerre a triagem com cordialidade após a resposta do candidato.' if is_last else ''}\n"
                     "IMPORTANTE: Gere perguntas comportamentais e técnicas relevantes para a vaga.\n"
                     "Use a metodologia STAR (Situação, Tarefa, Ação, Resultado).\n"
                 )
 
+            # Build the system prompt with full job context and conversational guidance
             system_prompt = (
-                f"Você é LIA, assistente de recrutamento da WeDO Talent.\n"
-                f"Você está conduzindo uma triagem por voz para a vaga de: {session.job_title}\n"
-                f"{question_guidance}\n"
-                f"Instruções:\n"
-                f"- Seja profissional, empático e conciso (respostas curtas para voz)\n"
-                f"- Faça UMA pergunta por vez\n"
-                f"- Valide brevemente o que o candidato disse antes da próxima pergunta\n"
-                f"- Língua: {session.language}\n"
+                f"Você é LIA, recrutadora inteligente da WeDO Talent. Conduza a triagem por voz com naturalidade, "
+                f"empatia e profissionalismo — como uma recrutadora experiente, não como um robô seguindo um script.\n\n"
+                f"IDIOMA: {session.language}\n\n"
+                f"CANDIDATO: {session.candidate_name}\n"
+                f"{job_context_block}\n"
+                f"PROGRESSO:\n{question_guidance}\n"
+                f"INSTRUÇÕES DE CONDUTA:\n"
+                f"- Respostas curtas e naturais (otimizadas para áudio de voz)\n"
+                f"- Faça UMA pergunta por vez — nunca empilhe perguntas\n"
+                f"- Valide brevemente a resposta anterior com uma transição natural (ex: 'Entendi!', 'Ótimo, obrigada!')\n"
+                f"- Se o candidato fizer uma pergunta sobre a vaga, responda com base no job description antes de continuar\n"
+                f"- Se o candidato quiser pular a apresentação ou ir direto às perguntas, respeite e inicie as perguntas\n"
+                f"- Conduza a conversa com fluidez — valide, faça follow-up quando relevante, depois avance\n"
+                f"- Ao encerrar, agradeça, informe que o time entrará em contato, e despeça-se com cordialidade\n"
                 f"{fairness_instructions}\n"
                 f"{ANTI_SYCOPHANCY_OPERATIONAL}"
             )
 
             conversation_history = []
-            for seg in session.transcript_segments[-6:]:
+            for seg in session.transcript_segments[-8:]:
                 role = "user" if seg.get("role") == "candidate" else "model"
                 conversation_history.append(
                     types.Content(role=role, parts=[types.Part(text=seg["text"])])
@@ -692,22 +901,35 @@ class VoiceScreeningOrchestrator:
                     )
                 )
 
-            if is_last:
-                next_prompt = "Agradeça ao candidato e encerre a triagem de forma cordial."
+            # First turn after consent: present the vacancy before starting questions.
+            # Capture presentation state before generation so we can correctly determine
+            # whether to count this as a question turn when updating questions_asked.
+            is_presentation_turn = not session.presentation_done
+            if is_presentation_turn:
+                next_prompt = self._build_job_presentation_instruction(session)
+            elif is_last:
+                next_prompt = (
+                    "O candidato acabou de responder à última pergunta. "
+                    "Agradeça de forma calorosa e natural, informe que o processo continua e que a empresa entrará em contato. "
+                    "Despeça-se profissionalmente."
+                )
             elif has_wsi_questions:
                 next_q = wsi_questions[next_q_index]
-                next_prompt = f"Responda brevemente e faça esta pergunta: {next_q}"
+                next_prompt = (
+                    f"Valide brevemente a resposta do candidato com uma transição natural, "
+                    f"depois faça esta pergunta exatamente: {next_q}"
+                )
             else:
                 next_prompt = (
-                    "Responda brevemente ao candidato e gere a próxima pergunta "
-                    f"comportamental/técnica relevante para a vaga de {session.job_title}. "
-                    "Use metodologia STAR."
+                    "Valide brevemente a resposta do candidato com uma transição natural. "
+                    "Depois gere a próxima pergunta comportamental ou técnica relevante para a vaga. "
+                    "Use metodologia STAR. Faça UMA pergunta apenas."
                 )
 
             conversation_history.append(
                 types.Content(
                     role="user",
-                    parts=[types.Part(text=f"[INSTRUÇÃO]: {next_prompt}")],
+                    parts=[types.Part(text=f"[INSTRUÇÃO INTERNA — NÃO REPITA]: {next_prompt}")],
                 )
             )
 
@@ -717,7 +939,7 @@ class VoiceScreeningOrchestrator:
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
                     temperature=0.7,
-                    max_output_tokens=200,
+                    max_output_tokens=300,
                 ),
             )
 
@@ -736,12 +958,22 @@ class VoiceScreeningOrchestrator:
                         session_id,
                         fairness_result.blocked_result.category if fairness_result.blocked_result else "unknown",
                     )
+                    # Mark presentation done even on blocked to avoid loop
+                    if not session.presentation_done:
+                        session.presentation_done = True
                     return self._get_next_scripted_question(session, wsi_questions if has_wsi_questions else None)
 
-                if has_wsi_questions and not is_last and next_q_index < len(wsi_questions):
-                    session.questions_asked.append(wsi_questions[next_q_index])
-                elif not has_wsi_questions and not is_last:
-                    session.questions_asked.append(lia_text[:200])
+                # Mark presentation as done after first successful turn
+                if is_presentation_turn:
+                    session.presentation_done = True
+                    # Persist immediately so restart doesn't repeat presentation
+                    await self._persist_session_state(session, db)
+                else:
+                    # Only track question progress on actual question turns (not presentation)
+                    if has_wsi_questions and not is_last and next_q_index < len(wsi_questions):
+                        session.questions_asked.append(wsi_questions[next_q_index])
+                    elif not has_wsi_questions and not is_last:
+                        session.questions_asked.append(lia_text[:200])
 
                 session.transcript_segments.append({
                     "text": lia_text,
@@ -752,6 +984,10 @@ class VoiceScreeningOrchestrator:
             if lia_text:
                 return lia_text
 
+            # Fallback: if Gemini returned empty, use scripted question
+            if not session.presentation_done:
+                session.presentation_done = True
+                return self._build_fallback_job_presentation(session)
             return self._get_next_scripted_question(session, wsi_questions if has_wsi_questions else None)
 
         except Exception as e:
@@ -760,7 +996,74 @@ class VoiceScreeningOrchestrator:
                 session_id,
                 e,
             )
+            if not session.presentation_done:
+                session.presentation_done = True
+                return self._build_fallback_job_presentation(session)
             return self._get_next_scripted_question(session, wsi_questions if has_wsi_questions else None)
+
+    @staticmethod
+    def _build_job_presentation_instruction(session: "VoiceScreeningSession") -> str:
+        """
+        Build the Gemini instruction for the job presentation phase (Task 4).
+
+        This is injected as the first turn instruction: LIA presents the job
+        description, asks if the candidate has questions, and offers to skip.
+        """
+        job = session.job_context or {}
+
+        parts = [
+            "Apresente a vaga ao candidato de forma natural e envolvente (como uma recrutadora experiente, não um leitor de script). "
+            "Use as informações do job description disponíveis no contexto do sistema. "
+            "Inclua: título da vaga, principais responsabilidades/atividades, formato de trabalho (remoto/híbrido/presencial) "
+            "e benefícios principais se disponíveis. "
+            "Seja concisa e conversacional — o candidato está ouvindo por telefone, então seja clara e organizada. "
+            "Após a apresentação, pergunte de forma natural: 'Você tem alguma dúvida sobre a vaga antes de começarmos as perguntas? "
+            "Ou prefere ir direto às perguntas?' — isso permite que o candidato escolha pular a apresentação se quiser."
+        ]
+
+        if not job:
+            parts.append(
+                f"Se não houver detalhes no job description, mencione apenas o título '{session.job_title}' "
+                f"e diga que a vaga oferece uma oportunidade de crescimento. Não invente benefícios ou responsabilidades."
+            )
+
+        return " ".join(parts)
+
+    @staticmethod
+    def _build_fallback_job_presentation(session: "VoiceScreeningSession") -> str:
+        """
+        Build a static fallback job presentation when Gemini is unavailable (Task 4).
+
+        Uses job_context if available, otherwise falls back to job_title only.
+        """
+        job = session.job_context or {}
+        title = job.get("title") or session.job_title
+
+        parts = [f"Ótimo, vou te contar um pouco sobre a vaga de {title}."]
+
+        work_model = job.get("work_model")
+        if work_model:
+            parts.append(f"O formato de trabalho é {work_model}.")
+
+        location = job.get("location")
+        if location:
+            parts.append(f"A posição é em {location}.")
+
+        benefits = job.get("benefits") or []
+        if benefits:
+            ben_text = ", ".join(str(b) for b in benefits[:4])
+            parts.append(f"Entre os benefícios, temos: {ben_text}.")
+
+        salary = job.get("salary")
+        if salary:
+            parts.append(f"A remuneração é {salary}.")
+
+        parts.append(
+            "Você tem alguma dúvida sobre a vaga antes de começarmos? "
+            "Ou prefere ir direto às perguntas da triagem?"
+        )
+
+        return " ".join(parts)
 
     def _get_next_scripted_question(
         self,
@@ -1097,6 +1400,12 @@ class VoiceScreeningOrchestrator:
                 session.session_id,
                 session.call_sid,
             )
+
+            # Fetch job context eagerly so LIA can present the vaga from the first turn
+            if session.job_context is None and session.job_id:
+                session.job_context = await self._fetch_job_context_from_db(
+                    session.job_id, db, company_id=session.company_id
+                )
 
             await self._generate_and_store_wsi_questions(session, db)
 

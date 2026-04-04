@@ -375,7 +375,7 @@ class TwilioVoiceService:
         voice_name = "Polly.Camila" if lang_code == "pt-BR" else "Polly.Joanna"
 
         response.say(
-            "Ótimo! Vamos começar a triagem. Fique à vontade para falar naturalmente.",
+            "Ótimo! Antes de começarmos, vou te apresentar a vaga. Fique à vontade para falar naturalmente.",
             voice=voice_name,
             language=lang_code,
         )
