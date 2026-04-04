@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from "react"
 import { cn } from "@/lib/utils"
-import { Send, Volume2, VolumeX, PhoneOff } from "lucide-react"
+import { Send, Volume2, VolumeX } from "lucide-react"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 
 interface InputBarProps {
@@ -13,10 +13,8 @@ interface InputBarProps {
   audioEnabled?: boolean
   placeholder?: string
   className?: string
-  voiceMode?: boolean
-  isMuted?: boolean
-  onToggleMute?: () => void
-  onEndConversation?: () => void
+  autoPlayVoice?: boolean
+  onToggleAutoPlayVoice?: () => void
   transcriptionUrl?: string
 }
 
@@ -28,10 +26,8 @@ export function InputBar({
   audioEnabled = true,
   placeholder = "Digite sua resposta...",
   className,
-  voiceMode = false,
-  isMuted = false,
-  onToggleMute,
-  onEndConversation,
+  autoPlayVoice = false,
+  onToggleAutoPlayVoice,
   transcriptionUrl,
 }: InputBarProps) {
   const [text, setText] = useState("")
@@ -88,41 +84,24 @@ export function InputBar({
         className
       )}
     >
-      {voiceMode && (
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            {onToggleMute && (
-              <button
-                type="button"
-                onClick={onToggleMute}
-                aria-label={isMuted ? "Ativar áudio da LIA" : "Silenciar áudio da LIA"}
-                className={cn(
- "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors font-['Open_Sans',sans-serif]",
-                  isMuted
-                    ? "bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary hover:bg-lia-border-default dark:hover:bg-lia-border-medium"
-                    : "bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20"
-                )}
-              >
-                {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                {isMuted ? "Áudio desativado" : "Áudio ativado"}
-              </button>
-            )}
-          </div>
-          {onEndConversation && (
-            <button
-              type="button"
-              onClick={onEndConversation}
-              disabled={isDisabled}
-              aria-label="Finalizar conversa"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-status-error/10 dark:bg-status-error/20 text-status-error dark:text-status-error hover:bg-status-error/15 dark:hover:bg-status-error/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
-            >
-              <PhoneOff className="w-3.5 h-3.5" />
-              Finalizar Conversa
-            </button>
-          )}
-        </div>
-      )}
       <div className="flex items-end gap-2">
+        {onToggleAutoPlayVoice && (
+          <button
+            type="button"
+            onClick={onToggleAutoPlayVoice}
+            aria-label={autoPlayVoice ? "Desativar leitura automática" : "Ativar leitura automática"}
+            title={autoPlayVoice ? "Leitura automática ativada" : "Leitura automática desativada"}
+            className={cn(
+              "flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg transition-colors",
+              autoPlayVoice
+                ? "bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20"
+                : "border border-lia-border-default text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary"
+            )}
+          >
+            {autoPlayVoice ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+        )}
+
         <textarea
           ref={textareaRef}
           value={text}

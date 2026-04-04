@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useState, memo } from "react"
+import React, { useState, useCallback, useRef, useEffect, memo } from "react"
 import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { AudioPlayer } from "@/components/ui/audio-player"
+import { Volume2, Loader2 } from "lucide-react"
 import type { TriagemMessage } from "@/components/triagem/types"
 import { sanitizeHtml } from "@/lib/sanitize"
 
@@ -12,6 +13,7 @@ interface MessageBubbleProps {
   candidateName?: string
   className?: string
   autoPlayAudio?: boolean
+  ttsToken?: string
 }
 
 function getInitials(name: string): string {
@@ -50,9 +52,119 @@ function parseSimpleMarkdown(text: string): string {
     .replace(/\n/g, "<br />")
 }
 
-const MessageBubble = memo(function MessageBubble({ message, candidateName = "Candidato", className, autoPlayAudio = false }: MessageBubbleProps) {
+function base64ToAudioUrl(base64Data: string): string {
+  const binaryStr = atob(base64Data)
+  const bytes = new Uint8Array(binaryStr.length)
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i)
+  }
+  const blob = new Blob([bytes], { type: "audio/mp3" })
+  return URL.createObjectURL(blob)
+}
+
+const MessageBubble = memo(function MessageBubble({
+  message,
+  candidateName = "Candidato",
+  className,
+  autoPlayAudio = false,
+  ttsToken,
+}: MessageBubbleProps) {
   const isLia = message.role === "lia"
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
+  const [isTtsLoading, setIsTtsLoading] = useState(false)
+  const [ttsFailed, setTtsFailed] = useState(false)
+  const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null)
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null)
+
+  const effectiveAudioUrl = message.audioUrl || ttsAudioUrl
+
+  useEffect(() => {
+    return () => {
+      if (ttsAudioRef.current) {
+        ttsAudioRef.current.pause()
+        ttsAudioRef.current.src = ""
+        ttsAudioRef.current = null
+      }
+      if (ttsAudioUrl) {
+        URL.revokeObjectURL(ttsAudioUrl)
+      }
+    }
+  }, [])
+
+  const autoPlayTriggeredRef = useRef(false)
+
+  const playAudioFromUrl = useCallback((url: string) => {
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.pause()
+      ttsAudioRef.current.src = ""
+    }
+    const audio = new Audio(url)
+    ttsAudioRef.current = audio
+    audio.addEventListener("play", () => setIsAudioPlaying(true))
+    audio.addEventListener("pause", () => setIsAudioPlaying(false))
+    audio.addEventListener("ended", () => setIsAudioPlaying(false))
+    audio.play().catch(() => {})
+  }, [])
+
+  const fetchAndPlayTts = useCallback(async () => {
+    if (!ttsToken) return
+    setIsTtsLoading(true)
+    try {
+      const response = await fetch(`/api/backend-proxy/triagem/${ttsToken}/tts/${message.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+      if (!response.ok) {
+        setTtsFailed(true)
+        setTimeout(() => setTtsFailed(false), 2000)
+        return
+      }
+      const data = await response.json()
+      if (data.audio_base64) {
+        const url = base64ToAudioUrl(data.audio_base64)
+        setTtsAudioUrl(url)
+        playAudioFromUrl(url)
+      }
+    } catch {
+      setTtsFailed(true)
+      setTimeout(() => setTtsFailed(false), 2000)
+    } finally {
+      setIsTtsLoading(false)
+    }
+  }, [ttsToken, message.id, playAudioFromUrl])
+
+  useEffect(() => {
+    if (!autoPlayAudio || !isLia) return
+    if (autoPlayTriggeredRef.current) return
+
+    if (effectiveAudioUrl) {
+      autoPlayTriggeredRef.current = true
+      playAudioFromUrl(effectiveAudioUrl)
+      return
+    }
+
+    if (ttsToken && !isTtsLoading) {
+      autoPlayTriggeredRef.current = true
+      fetchAndPlayTts()
+    }
+  }, [autoPlayAudio, effectiveAudioUrl, isLia, ttsToken, isTtsLoading, fetchAndPlayTts, playAudioFromUrl])
+
+  const handleTtsPlay = useCallback(async () => {
+    if (isTtsLoading) return
+
+    if (isAudioPlaying && ttsAudioRef.current) {
+      ttsAudioRef.current.pause()
+      setIsAudioPlaying(false)
+      return
+    }
+
+    if (effectiveAudioUrl) {
+      playAudioFromUrl(effectiveAudioUrl)
+      return
+    }
+
+    await fetchAndPlayTts()
+  }, [isTtsLoading, isAudioPlaying, effectiveAudioUrl, playAudioFromUrl, fetchAndPlayTts])
 
   return (
     <div
@@ -82,16 +194,41 @@ const MessageBubble = memo(function MessageBubble({ message, candidateName = "Ca
             </span>
           </div>
         )}
-        <div
-          className={cn(
-            "px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed",
-            isLia
-              ? "bg-chat-cyan/[0.04] text-lia-text-primary rounded-[14px] rounded-bl-[4px]"
-              : "bg-lia-bg-tertiary text-lia-text-secondary rounded-[14px] rounded-br-[4px]"
+        <div className="flex items-end gap-1.5">
+          <div
+            className={cn(
+              "px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed",
+              isLia
+                ? "bg-chat-cyan/[0.04] text-lia-text-primary rounded-[14px] rounded-bl-[4px]"
+                : "bg-lia-bg-tertiary text-lia-text-secondary rounded-[14px] rounded-br-[4px]"
+            )}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(parseSimpleMarkdown(message.content)) }}
+          />
+          {isLia && ttsToken && (
+            <button
+              type="button"
+              onClick={handleTtsPlay}
+              disabled={isTtsLoading}
+              aria-label={isAudioPlaying ? "Pausar áudio" : "Ouvir mensagem"}
+              className={cn(
+                "flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-colors",
+                ttsFailed
+                  ? "text-status-error"
+                  : isAudioPlaying
+                    ? "bg-wedo-cyan/20 text-wedo-cyan"
+                    : "bg-transparent text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-bg-tertiary",
+                isTtsLoading && "cursor-wait"
+              )}
+            >
+              {isTtsLoading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5" />
+              )}
+            </button>
           )}
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(parseSimpleMarkdown(message.content)) }}
-        />
-        {isLia && message.audioUrl && (
+        </div>
+        {isLia && message.audioUrl && !ttsToken && (
           <AudioPlayer
             src={message.audioUrl}
             className="mt-2"

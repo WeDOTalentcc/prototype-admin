@@ -1,4 +1,4 @@
-import { Send, Mic } from "lucide-react";
+import { Send, Mic, Volume2 } from "lucide-react";
 
 function LIAAvatar() {
   return (
@@ -27,8 +27,17 @@ function LiaMessage({ text, time }: { text: string; time: string }) {
           <span className="text-xs font-bold text-gray-900 font-['Inter',sans-serif]">LIA</span>
           <span className="text-xs text-gray-300 font-['Inter',sans-serif] tabular-nums">{time}</span>
         </div>
-        <div className="px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-[14px] rounded-bl-[4px] bg-[#00BCD4]/[0.04] text-gray-900">
-          <span dangerouslySetInnerHTML={{ __html: text }} />
+        <div className="flex items-end gap-1.5">
+          <div className="px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed rounded-[14px] rounded-bl-[4px] bg-[#00BCD4]/[0.04] text-gray-900">
+            <span dangerouslySetInnerHTML={{ __html: text }} />
+          </div>
+          <button
+            type="button"
+            title="Ouvir mensagem"
+            className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-gray-300 hover:text-gray-500 hover:bg-gray-100 transition-colors"
+          >
+            <Volume2 className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </div>
@@ -142,6 +151,13 @@ export function ChatScreen() {
 
       <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 px-4 py-3">
         <div className="flex items-end gap-2">
+          <button
+            type="button"
+            title="Leitura automática desativada"
+            className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            <Volume2 className="w-4 h-4" />
+          </button>
           <textarea
             placeholder="Digite sua resposta..."
             rows={1}

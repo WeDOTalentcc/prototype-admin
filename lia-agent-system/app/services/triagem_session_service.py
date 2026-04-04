@@ -1004,4 +1004,47 @@ class TriagemSessionService:
             return False
 
 
+    async def generate_tts_for_message(
+        self, db: AsyncSession, token: str, message_id: str
+    ) -> Dict[str, Any]:
+        try:
+            msg_uuid = uuid.UUID(message_id)
+        except (ValueError, AttributeError):
+            return {"error": "not_found"}
+
+        result = await db.execute(
+            select(TriagemSession).where(TriagemSession.token == token)
+        )
+        session = result.scalar_one_or_none()
+        if not session:
+            return {"error": "not_found"}
+
+        msg_result = await db.execute(
+            select(TriagemMessage).where(
+                and_(
+                    TriagemMessage.id == msg_uuid,
+                    TriagemMessage.session_id == session.id,
+                )
+            )
+        )
+        message = msg_result.scalar_one_or_none()
+        if not message:
+            return {"error": "not_found"}
+
+        if message.sender != "lia":
+            return {"error": "not_lia_message"}
+
+        if message.audio_base64:
+            return {"audio_base64": message.audio_base64, "message_id": str(message.id)}
+
+        audio_b64 = await _generate_tts_audio(message.content)
+        if not audio_b64:
+            return {"error": "tts_failed"}
+
+        message.audio_base64 = audio_b64
+        await db.commit()
+
+        return {"audio_base64": audio_b64, "message_id": str(message.id)}
+
+
 triagem_service = TriagemSessionService()

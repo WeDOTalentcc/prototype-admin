@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
-import { Clock, Shield, Mic, CheckSquare, Square, MapPin, Briefcase, DollarSign, Gift } from "lucide-react"
+import { Clock, Shield, CheckSquare, Square, MapPin, Briefcase, DollarSign, Gift } from "lucide-react"
 import type { TriagemConfig } from "@/components/triagem/types"
 
 interface WelcomeCardProps {
@@ -155,30 +155,15 @@ export function WelcomeCard({ config, onStart, isStarting = false, className }: 
           </span>
         </label>
 
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={() => onStart(false)}
-            disabled={isStarting || !consentChecked}
-            aria-label="Iniciar conversa de triagem por texto"
-            className="w-full h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
-          >
-            {isStarting ? "Iniciando..." : "Iniciar Conversa"}
-          </button>
-
-          {config.voiceMode && (
-            <button
-              type="button"
-              onClick={() => onStart(true)}
-              disabled={isStarting || !consentChecked}
-              aria-label="Iniciar conversa de triagem por voz"
-              className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-default dark:border-lia-border-default bg-transparent text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
-            >
-              <Mic className="w-4 h-4" />
-              {isStarting ? "Iniciando..." : "Iniciar por Gravação de Voz"}
-            </button>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={() => onStart(false)}
+          disabled={isStarting || !consentChecked}
+          aria-label="Iniciar conversa de triagem"
+          className="w-full h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]"
+        >
+          {isStarting ? "Iniciando..." : "Iniciar Conversa"}
+        </button>
 
         <a
           href={config.privacyPolicyUrl}

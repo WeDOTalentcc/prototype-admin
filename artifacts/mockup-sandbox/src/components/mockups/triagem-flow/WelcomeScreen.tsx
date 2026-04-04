@@ -1,4 +1,4 @@
-import { Clock, Shield, Mic, CheckSquare, MapPin, Briefcase, DollarSign, Gift } from "lucide-react";
+import { Clock, Shield, CheckSquare, MapPin, Briefcase, DollarSign, Gift } from "lucide-react";
 
 export function WelcomeScreen() {
   return (
@@ -75,22 +75,12 @@ export function WelcomeScreen() {
             </span>
           </label>
 
-          <div className="space-y-3">
-            <button
-              type="button"
-              className="w-full h-11 flex items-center justify-center rounded-lg bg-[#00BCD4] text-white text-sm font-medium hover:bg-[#00ACC1] transition-colors font-['Open_Sans',sans-serif]"
-            >
-              Iniciar Conversa
-            </button>
-
-            <button
-              type="button"
-              className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-transparent text-gray-900 text-sm font-medium hover:bg-gray-50 transition-colors font-['Open_Sans',sans-serif]"
-            >
-              <Mic className="w-4 h-4" />
-              Iniciar por Gravação de Voz
-            </button>
-          </div>
+          <button
+            type="button"
+            className="w-full h-11 flex items-center justify-center rounded-lg bg-[#00BCD4] text-white text-sm font-medium hover:bg-[#00ACC1] transition-colors font-['Open_Sans',sans-serif]"
+          >
+            Iniciar Conversa
+          </button>
 
           <a
             href="#"

@@ -16,6 +16,8 @@ import { LikertScaleCard } from "@/components/triagem/LikertScaleCard"
 import type { TriagemMessage } from "@/components/triagem/types"
 import { AlertTriangle, Clock, Link2Off, ShieldAlert, ServerCrash } from "lucide-react"
 
+const VOICE_AUTOPLAY_KEY = "lia-triagem-voice-autoplay"
+
 function LoadingSkeleton() {
   return (
     <ChatContainer>
@@ -72,6 +74,7 @@ function MessageRenderer({
   onLikertSelect,
   disabled,
   autoPlayAudio,
+  ttsToken,
 }: {
   message: TriagemMessage
   candidateName: string
@@ -79,11 +82,12 @@ function MessageRenderer({
   onLikertSelect: (value: number) => void
   disabled: boolean
   autoPlayAudio?: boolean
+  ttsToken?: string
 }) {
   if (message.type === "multiple_choice" && message.role === "lia" && message.options) {
     return (
       <div key={message.id}>
-        <MessageBubble message={message} candidateName={candidateName} autoPlayAudio={autoPlayAudio} />
+        <MessageBubble message={message} candidateName={candidateName} autoPlayAudio={autoPlayAudio} ttsToken={ttsToken} />
         <MultipleChoiceCard
           question=""
           options={message.options}
@@ -97,7 +101,7 @@ function MessageRenderer({
   if (message.type === "likert_scale" && message.role === "lia" && message.likertLabels) {
     return (
       <div key={message.id}>
-        <MessageBubble message={message} candidateName={candidateName} autoPlayAudio={autoPlayAudio} />
+        <MessageBubble message={message} candidateName={candidateName} autoPlayAudio={autoPlayAudio} ttsToken={ttsToken} />
         <LikertScaleCard
           question=""
           labels={message.likertLabels}
@@ -108,7 +112,7 @@ function MessageRenderer({
     )
   }
 
-  return <MessageBubble key={message.id} message={message} candidateName={candidateName} autoPlayAudio={autoPlayAudio} />
+  return <MessageBubble key={message.id} message={message} candidateName={candidateName} autoPlayAudio={autoPlayAudio} ttsToken={ttsToken} />
 }
 
 export default function TriagemPage() {
@@ -132,8 +136,14 @@ export default function TriagemPage() {
     reviewSession,
   } = useTriagemChat(token)
 
-  const [isVoiceMode, setIsVoiceMode] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
+  const [autoPlayVoice, setAutoPlayVoice] = useState(() => {
+    if (typeof window === "undefined") return false
+    try {
+      return localStorage.getItem(VOICE_AUTOPLAY_KEY) === "true"
+    } catch {
+      return false
+    }
+  })
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -147,49 +157,49 @@ export default function TriagemPage() {
   }, [messages, isLiaTyping])
 
   const handleStartChat = useCallback(
-    (voiceMode?: boolean) => {
-      const voice = voiceMode ?? false
-      setIsVoiceMode(voice)
-      startChat(voice)
+    () => {
+      startChat(autoPlayVoice)
     },
-    [startChat]
+    [startChat, autoPlayVoice]
   )
 
   const handleSendText = useCallback(
     (text: string) => {
-      sendMessage({ content: text, type: "text", voiceMode: isVoiceMode })
+      sendMessage({ content: text, type: "text", voiceMode: autoPlayVoice })
     },
-    [sendMessage, isVoiceMode]
+    [sendMessage, autoPlayVoice]
   )
 
   const handleAudioTranscription = useCallback(
     (text: string) => {
-      sendMessage({ content: text, type: "audio", voiceMode: isVoiceMode })
+      sendMessage({ content: text, type: "audio", voiceMode: autoPlayVoice })
     },
-    [sendMessage, isVoiceMode]
+    [sendMessage, autoPlayVoice]
   )
 
   const handleMultipleChoiceSelect = useCallback(
     (optionId: string, optionLabel: string) => {
-      sendMessage({ content: optionLabel, type: "multiple_choice", selectedOption: optionId, voiceMode: isVoiceMode })
+      sendMessage({ content: optionLabel, type: "multiple_choice", selectedOption: optionId, voiceMode: autoPlayVoice })
     },
-    [sendMessage, isVoiceMode]
+    [sendMessage, autoPlayVoice]
   )
 
   const handleLikertSelect = useCallback(
     (value: number) => {
-      sendMessage({ content: String(value), type: "likert_scale", likertValue: value, voiceMode: isVoiceMode })
+      sendMessage({ content: String(value), type: "likert_scale", likertValue: value, voiceMode: autoPlayVoice })
     },
-    [sendMessage, isVoiceMode]
+    [sendMessage, autoPlayVoice]
   )
 
-  const handleToggleMute = useCallback(() => {
-    setIsMuted((prev) => !prev)
+  const handleToggleAutoPlayVoice = useCallback(() => {
+    setAutoPlayVoice((prev) => {
+      const next = !prev
+      try {
+        localStorage.setItem(VOICE_AUTOPLAY_KEY, String(next))
+      } catch {}
+      return next
+    })
   }, [])
-
-  const handleEndConversation = useCallback(() => {
-    completeSession()
-  }, [completeSession])
 
   const handleClose = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -249,7 +259,8 @@ export default function TriagemPage() {
             onMultipleChoiceSelect={handleMultipleChoiceSelect}
             onLikertSelect={handleLikertSelect}
             disabled={isSending || isCompleted}
-            autoPlayAudio={isVoiceMode && !isMuted && msg.role === "lia" && idx === messages.length - 1}
+            autoPlayAudio={autoPlayVoice && msg.role === "lia" && idx === messages.length - 1}
+            ttsToken={token}
           />
         ))}
 
@@ -279,10 +290,8 @@ export default function TriagemPage() {
           isSending={isSending}
           disabled={pageState === "confirmation"}
           audioEnabled={config?.audioEnabled ?? true}
-          voiceMode={isVoiceMode}
-          isMuted={isMuted}
-          onToggleMute={handleToggleMute}
-          onEndConversation={handleEndConversation}
+          autoPlayVoice={autoPlayVoice}
+          onToggleAutoPlayVoice={handleToggleAutoPlayVoice}
           transcriptionUrl={`/api/backend-proxy/triagem/${token}/audio`}
         />
       )}

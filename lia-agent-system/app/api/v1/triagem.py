@@ -284,6 +284,33 @@ async def synthesize_speech(
     return JSONResponse(content=result)
 
 
+@router.post("/{token}/tts/{message_id}")
+async def synthesize_message_speech(
+    token: str,
+    message_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate TTS audio on demand for a specific LIA message."""
+    validation = await triagem_service.validate_token(db, token)
+    if not validation.get("valid"):
+        error = validation.get("error")
+        if error == "not_found":
+            raise HTTPException(status_code=404, detail="Token inválido")
+        if error == "expired":
+            raise HTTPException(status_code=410, detail="Link expirado")
+
+    result = await triagem_service.generate_tts_for_message(db, token, message_id)
+
+    if result.get("error") == "not_found":
+        raise HTTPException(status_code=404, detail="Mensagem não encontrada")
+    if result.get("error") == "not_lia_message":
+        raise HTTPException(status_code=400, detail="TTS disponível apenas para mensagens da LIA")
+    if result.get("error") == "tts_failed":
+        raise HTTPException(status_code=502, detail="Falha na geração de áudio")
+
+    return JSONResponse(content=result)
+
+
 @router.get("/{token}/voice-status")
 async def voice_status(token: str, db: AsyncSession = Depends(get_db)):
     """Check availability of voice services (STT/TTS) for the session."""
