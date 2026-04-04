@@ -220,10 +220,14 @@ const initialState: CandidatesFullState = {
   lastSelectedIndex: null,
 }
 
-function setOrUpdate<T>(set: (partial: Partial<CandidatesFullState>, replace?: boolean, actionName?: string) => void, key: keyof CandidatesFullState, actionName: string) {
+function setOrUpdate<T>(
+  set: (partial: Partial<CandidatesFullState> | ((state: CandidatesFullState) => Partial<CandidatesFullState>), replace?: boolean, actionName?: string) => void,
+  key: keyof CandidatesFullState,
+  actionName: string,
+) {
   return (v: T | ((prev: T) => T)) => {
     if (typeof v === 'function') {
-      set((state: CandidatesFullState) => ({ [key]: (v as (prev: T) => T)(state[key] as T) } as Partial<CandidatesFullState>), false, actionName)
+      set((state) => ({ [key]: (v as (prev: T) => T)(state[key] as T) }), false, actionName)
     } else {
       set({ [key]: v } as Partial<CandidatesFullState>, false, actionName)
     }
@@ -259,7 +263,7 @@ export const useCandidatesStore = create<CandidatesStore>()(
       setLiaPromptValue: (v) => set({ liaPromptValue: v }, false, 'view/setLiaPromptValue'),
       setUserCollapsedLIA: (v) => set({ userCollapsedLIA: v }, false, 'view/setUserCollapsedLIA'),
       setTalentConversationId: (v) => set({ talentConversationId: v }, false, 'view/setTalentConversationId'),
-      setViewedCandidateIds: setOrUpdate<Set<string>>(set as Parameters<typeof setOrUpdate>[0], 'viewedCandidateIds', 'view/setViewedCandidateIds'),
+      setViewedCandidateIds: setOrUpdate<Set<string>>(set, 'viewedCandidateIds', 'view/setViewedCandidateIds'),
       setCurrentPage: (v) => set({ currentPage: v }, false, 'view/setCurrentPage'),
       setCrossTabFilter: (v) => set({ crossTabFilter: v }, false, 'view/setCrossTabFilter'),
       setShowCrossTabBanner: (v) => set({ showCrossTabBanner: v }, false, 'view/setShowCrossTabBanner'),
@@ -268,7 +272,7 @@ export const useCandidatesStore = create<CandidatesStore>()(
       setSortOrder: (v) => set({ sortOrder: v }, false, 'view/setSortOrder'),
 
       setSearchTerm: (v) => set({ searchTerm: v }, false, 'search/setSearchTerm'),
-      setQuickFilters: setOrUpdate<Set<string>>(set as Parameters<typeof setOrUpdate>[0], 'quickFilters', 'search/setQuickFilters'),
+      setQuickFilters: setOrUpdate<Set<string>>(set, 'quickFilters', 'search/setQuickFilters'),
       setActiveTab: (v) => set({ activeTab: v }, false, 'search/setActiveTab'),
       setLastSearchQuery: (v) => set({ lastSearchQuery: v }, false, 'search/setLastSearchQuery'),
       setLastSearchEntities: (v) => set({ lastSearchEntities: v }, false, 'search/setLastSearchEntities'),
@@ -282,7 +286,7 @@ export const useCandidatesStore = create<CandidatesStore>()(
       setCreditsUsedInSearch: (v) => set({ creditsUsedInSearch: v }, false, 'search/setCreditsUsedInSearch'),
       setCreditsRemaining: (v) => set({ creditsRemaining: v }, false, 'search/setCreditsRemaining'),
       setShowExpandGlobalOption: (v) => set({ showExpandGlobalOption: v }, false, 'search/setShowExpandGlobalOption'),
-      setOpenCreditModals: setOrUpdate<CreditModalsState>(set as Parameters<typeof setOrUpdate>[0], 'openCreditModals', 'search/setOpenCreditModals'),
+      setOpenCreditModals: setOrUpdate<CreditModalsState>(set, 'openCreditModals', 'search/setOpenCreditModals'),
       setShowEditQueryModal: (v) => set({ showEditQueryModal: v }, false, 'search/setShowEditQueryModal'),
       setEditQueryValue: (v) => set({ editQueryValue: v }, false, 'search/setEditQueryValue'),
       setShowSearchResults: (v) => set({ showSearchResults: v }, false, 'search/setShowSearchResults'),
@@ -291,16 +295,16 @@ export const useCandidatesStore = create<CandidatesStore>()(
       setShowGlobalExpansionConfirm: (v) => set({ showGlobalExpansionConfirm: v }, false, 'search/setShowGlobalExpansionConfirm'),
       setHasSearched: (v) => set({ hasSearched: v }, false, 'search/setHasSearched'),
       setIsExpandingToGlobal: (v) => set({ isExpandingToGlobal: v }, false, 'search/setIsExpandingToGlobal'),
-      setSearchExecutionId: setOrUpdate<number>(set as Parameters<typeof setOrUpdate>[0], 'searchExecutionId', 'search/setSearchExecutionId'),
+      setSearchExecutionId: setOrUpdate<number>(set, 'searchExecutionId', 'search/setSearchExecutionId'),
       setSearchSortBy: (v) => set({ searchSortBy: v }, false, 'search/setSearchSortBy'),
-      setSearchFeedbacks: setOrUpdate<Record<string, 'like' | 'dislike'>>(set as Parameters<typeof setOrUpdate>[0], 'searchFeedbacks', 'search/setSearchFeedbacks'),
+      setSearchFeedbacks: setOrUpdate<Record<string, 'like' | 'dislike'>>(set, 'searchFeedbacks', 'search/setSearchFeedbacks'),
       setDisplayedResultsCount: (v) => set({ displayedResultsCount: v }, false, 'search/setDisplayedResultsCount'),
       setIsLoadingMore: (v) => set({ isLoadingMore: v }, false, 'search/setIsLoadingMore'),
       setShowOnlyNew: (v) => set({ showOnlyNew: v }, false, 'search/setShowOnlyNew'),
       setIsDroppingCV: (v) => set({ isDroppingCV: v }, false, 'search/setIsDroppingCV'),
       setCvUploadLoading: (v) => set({ cvUploadLoading: v }, false, 'search/setCvUploadLoading'),
 
-      setSelectedCandidates: setOrUpdate<Set<string>>(set as Parameters<typeof setOrUpdate>[0], 'selectedCandidates', 'selection/setSelectedCandidates'),
+      setSelectedCandidates: setOrUpdate<Set<string>>(set, 'selectedCandidates', 'selection/setSelectedCandidates'),
       setLastSelectedIndex: (v) => set({ lastSelectedIndex: v }, false, 'selection/setLastSelectedIndex'),
 
       toggleCandidateSelection: (candidateId) => {

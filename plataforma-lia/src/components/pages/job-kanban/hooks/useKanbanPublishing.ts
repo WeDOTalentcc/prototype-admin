@@ -8,7 +8,7 @@ interface UseKanbanPublishingProps {
   job?: Record<string, unknown>
   jobEditForm: Record<string, unknown>
   setJobEditForm: React.Dispatch<React.SetStateAction<Record<string, unknown>>>
-  setActiveTab: React.Dispatch<React.SetStateAction<"management" | "edit">>
+  setActiveTab: (tab: "management" | "edit") => void
 }
 
 export function useKanbanPublishing({
