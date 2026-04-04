@@ -110,7 +110,7 @@ import {
   seededRandom, 
   getSalaryByExperience,
   type CandidateForDataGeneration 
-} from "@/components/kanban/mock/data-generators"
+} from "@/components/kanban/utils/candidate-data-enrichment"
 import { 
   getUrgencyLevel,
   getScoreColor,

@@ -98,7 +98,7 @@ export function TemplatesPage() {
   // Estatísticas
   const stats = useMemo(() => {
     const totalUsage = templates.reduce((sum, t) => sum + t.usageCount, 0)
-    const avgSuccessRate = templates.reduce((sum, t) => sum + t.successRate, 0) / templates.length
+    const avgSuccessRate = templates.length > 0 ? templates.reduce((sum, t) => sum + t.successRate, 0) / templates.length : 0
     const totalTimeSaved = templates.reduce((sum, t) => sum + (t.usageCount * t.estimatedTime), 0)
     const sharedTemplates = templates.filter(t => t.isShared).length
 

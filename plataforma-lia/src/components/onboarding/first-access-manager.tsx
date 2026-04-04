@@ -63,18 +63,19 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
     setIsLoading(true)
 
     try {
-      const response = await fetch(`/api/backend-proxy/onboarding/validate-token`, {
+      const response = await fetch(`/api/backend-proxy/onboarding/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: tokenValue }),
+        body: JSON.stringify({ token: tokenValue, action: 'validate' }),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Token inválido ou expirado')
-      }
+      let data: FirstAccessData
 
-      const data: FirstAccessData = await response.json()
+      if (response.ok) {
+        data = await response.json()
+      } else {
+        throw new Error('Token inválido ou expirado')
+      }
 
       if (new Date(data.expiresAt) < new Date()) {
         throw new Error('Token expirado')
@@ -103,22 +104,24 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/backend-proxy/onboarding/register', {
+      const response = await fetch('/api/backend-proxy/onboarding/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'register',
           ...userData,
           token: accessData?.token,
           companyName: accessData?.companyName,
         }),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Erro ao criar conta')
-      }
+      let newUser: Record<string, unknown>
 
-      const newUser = await response.json()
+      if (response.ok) {
+        newUser = await response.json()
+      } else {
+        throw new Error('Erro ao criar conta')
+      }
 
       localStorage.setItem('lia_first_access', 'true')
       localStorage.setItem('lia_user_data', JSON.stringify(newUser))

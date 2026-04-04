@@ -13,7 +13,7 @@ import {
   generateEducation,
   seededRandom,
   getSalaryByExperience,
-} from "@/components/kanban/mock/data-generators"
+} from "@/components/kanban/utils/candidate-data-enrichment"
 
 export function useKanbanCandidateLoader({
   job,

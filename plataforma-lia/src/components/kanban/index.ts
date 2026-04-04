@@ -18,9 +18,9 @@ export {
   OTHER_UNIVERSITIES,
   MBA_SCHOOLS,
   SALARY_RANGES as DATA_GENERATOR_SALARY_RANGES
-} from "./mock/data-generators"
+} from "./utils/candidate-data-enrichment"
 export type { 
   CandidateForDataGeneration, 
   WorkHistoryEntry, 
   EducationEntry 
-} from "./mock/data-generators"
+} from "./utils/candidate-data-enrichment"
