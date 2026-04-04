@@ -12,7 +12,7 @@ from ._shared import (
     extract_tags_from_search_spec, build_archetype_from_search,
     ArchetypeFromSearchCreate, ArchetypeFromSearchResponse, ArchetypeResponse,
     rubric_evaluation_service, JobRequirement, JobRequirementCreate, RequirementPriorityEnum,
-    pearch_service, HybridSearchRequest, PearchSearchRequest, SearchType,
+    pearch_service, HybridSearchRequest, PearchSearchRequest, SearchType, CandidateProfile,
     _normalize_priority, _normalize_name, _generate_fingerprint,
     _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
     _evaluate_candidates_with_rubrics, _recruiter_agent,
@@ -481,4 +481,5 @@ class VacancyGoalResponse(BaseModel):
     suggested_actions: List[Dict[str, Any]]
 
 
+from app.services.candidate_goal_service import candidate_goal_service as _recruiter_agent
 
