@@ -167,7 +167,7 @@ export function IndicadoresEstrategicosPlaceholder() {
               <BarChart3 className="w-3.5 h-3.5 text-wedo-orange" />
             </div>
             <div className="text-xl font-inter font-bold text-lia-text-primary">67%</div>
-            <p className={`${textStyles.bodySmall} text-wedo-orange dark:text-wedo-orange mt-1`}>${CURRENCY_SYMBOL} 842k / ${CURRENCY_SYMBOL} 1.25M</p>
+            <p className={`${textStyles.bodySmall} text-wedo-orange dark:text-wedo-orange mt-1`}>{CURRENCY_SYMBOL} 842k / {CURRENCY_SYMBOL} 1.25M</p>
           </CardContent>
         </Card>
       </div>
@@ -393,7 +393,7 @@ export function IndicadoresEstrategicosPlaceholder() {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm font-open-sans font-medium text-lia-text-primary">Tecnologia</span>
-                  <p className={`${textStyles.description}`}>${CURRENCY_SYMBOL} 420k investidos • 47 contratações</p>
+                  <p className={`${textStyles.description}`}>{CURRENCY_SYMBOL} 420k investidos • 47 contratações</p>
                 </div>
                 <Badge className={`${badgeStyles.success} dark:bg-status-success/30 dark:text-status-success`}>
                   112% ROI
@@ -409,7 +409,7 @@ export function IndicadoresEstrategicosPlaceholder() {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm font-open-sans font-medium text-lia-text-primary">Vendas</span>
-                  <p className={`${textStyles.description}`}>${CURRENCY_SYMBOL} 186k investidos • 28 contratações</p>
+                  <p className={`${textStyles.description}`}>{CURRENCY_SYMBOL} 186k investidos • 28 contratações</p>
                 </div>
  <Badge className={`${badgeStyles.info} dark:bg-lia-bg-secondary`}>
                   94% ROI
@@ -425,7 +425,7 @@ export function IndicadoresEstrategicosPlaceholder() {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm font-open-sans font-medium text-lia-text-primary">Marketing</span>
-                  <p className={`${textStyles.description}`}>${CURRENCY_SYMBOL} 124k investidos • 19 contratações</p>
+                  <p className={`${textStyles.description}`}>{CURRENCY_SYMBOL} 124k investidos • 19 contratações</p>
                 </div>
                 <Badge className="bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/30 dark:text-wedo-purple text-micro font-medium">
                   87% ROI
@@ -441,7 +441,7 @@ export function IndicadoresEstrategicosPlaceholder() {
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm font-open-sans font-medium text-lia-text-primary">Operações</span>
-                  <p className={`${textStyles.description}`}>${CURRENCY_SYMBOL} 112k investidos • 15 contratações</p>
+                  <p className={`${textStyles.description}`}>{CURRENCY_SYMBOL} 112k investidos • 15 contratações</p>
                 </div>
                 <Badge className={`${badgeStyles.warning} dark:bg-wedo-orange/30 dark:text-wedo-orange`}>
                   76% ROI
