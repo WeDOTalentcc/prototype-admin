@@ -486,19 +486,30 @@ IMPORTANTE:
 
             wsi_analysis = call_result.get("wsi_analysis")
             if wsi_analysis:
-                phone_call["wsi_overall"] = wsi_analysis.get("overall_wsi")
+                wsi_raw = wsi_analysis.get("overall_wsi", 0)
+                phone_call["wsi_overall"] = wsi_raw
                 phone_call["wsi_classification"] = wsi_analysis.get("classification")
-                session.wsi_final_score = wsi_analysis.get("overall_wsi")
-                session.recommendation = (
-                    "approved" if wsi_analysis.get("classification") in ("A", "B")
-                    else "rejected" if wsi_analysis.get("classification") in ("D", "E")
-                    else "pending"
-                )
+                scaled_score = round(wsi_raw * 2.0, 1)
+                session.wsi_final_score = scaled_score
+                if scaled_score >= 7.5:
+                    session.recommendation = "aprovado"
+                elif scaled_score >= 5.5:
+                    session.recommendation = "aguardando"
+                else:
+                    session.recommendation = "reprovado"
 
             ai_analysis = call_result.get("ai_analysis")
             if ai_analysis and not wsi_analysis:
                 overall_score = ai_analysis.get("overall_evaluation", {}).get("overall_score", 0)
                 phone_call["ai_score"] = overall_score
+                scaled = round(overall_score / 10.0, 1)
+                session.wsi_final_score = scaled
+                if scaled >= 7.5:
+                    session.recommendation = "aprovado"
+                elif scaled >= 5.5:
+                    session.recommendation = "aguardando"
+                else:
+                    session.recommendation = "reprovado"
 
             meta["phone_call"] = phone_call
             session.metadata_json = meta
