@@ -261,8 +261,9 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
               size="sm"
               onClick={onClose}
               className="h-8 w-8 p-0"
+              aria-label="Fechar detalhes do candidato"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
         </div>

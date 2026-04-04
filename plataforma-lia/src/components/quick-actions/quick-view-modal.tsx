@@ -189,8 +189,8 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
               <Eye className="w-4 h-4" />
               Ver Perfil Completo
             </Button>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="w-4 h-4" />
+            <Button variant="ghost" size="sm" onClick={onClose} aria-label="Fechar visualização rápida">
+              <X className="w-4 h-4" aria-hidden="true" />
             </Button>
           </div>
         </div>

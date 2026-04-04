@@ -296,13 +296,13 @@ export function CompanyDataSection({
           >
             <div className="flex items-center gap-2">
               <input
+                id="field-website"
                 type="url"
                 value={companyData.website || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, website: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="https://www.empresa.com.br"
-                aria-label="Website da empresa"
               />
             </div>
           </CompanyDataCard>
@@ -321,13 +321,13 @@ export function CompanyDataSection({
           >
             <div className="flex items-center gap-2">
               <input
+                id="field-linkedin_url"
                 type="url"
                 value={companyData.linkedin_url || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, linkedin_url: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="https://linkedin.com/company/..."
-                aria-label="LinkedIn da empresa"
               />
             </div>
           </CompanyDataCard>
@@ -335,19 +335,20 @@ export function CompanyDataSection({
           {/* Email */}
           <SimpleDataCard
             label="Email"
+            fieldId="field-email"
             category="Contato"
             
             isEditing={isEditingCompanyData}
           >
             <div className="flex items-center gap-2">
               <input
+                id="field-email"
                 type="email"
                 value={companyData.email || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, email: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="contato@empresa.com.br"
-                aria-label="Email de contato"
               />
             </div>
           </SimpleDataCard>
@@ -355,19 +356,20 @@ export function CompanyDataSection({
           {/* Telefone */}
           <SimpleDataCard
             label="Telefone"
+            fieldId="field-telefone"
             category="Contato"
             
             isEditing={isEditingCompanyData}
           >
             <div className="flex items-center gap-2">
               <input
+                id="field-telefone"
                 type="tel"
                 value={companyData.phone || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, phone: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="(11) 9999-9999"
-                aria-label="Telefone de contato"
               />
             </div>
           </SimpleDataCard>
@@ -388,13 +390,13 @@ export function CompanyDataSection({
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-lia-text-tertiary" aria-hidden="true" />
               <input
+                id="field-locations"
                 type="text"
                 value={companyData.address || ''}
                 onChange={(e) => setCompanyData((prev) => ({ ...prev, address: e.target.value }))}
                 disabled={!isEditingCompanyData}
                 className={inputClass(!isEditingCompanyData)}
                 placeholder="Endereço completo"
-                aria-label="Endereço da empresa"
               />
             </div>
           </CompanyDataCard>
@@ -476,6 +478,7 @@ export function CompanyDataSection({
             onInstructionSave={updateLiaInstruction}
           >
             <textarea
+              id="field-mission"
               value={companyData.mission || ''}
               onChange={(e) => setCompanyData((prev) => ({ ...prev, mission: e.target.value }))}
               disabled={!isEditingCompanyData}
@@ -498,6 +501,7 @@ export function CompanyDataSection({
             onInstructionSave={updateLiaInstruction}
           >
             <textarea
+              id="field-vision"
               value={companyData.vision || ''}
               onChange={(e) => setCompanyData((prev) => ({ ...prev, vision: e.target.value }))}
               disabled={!isEditingCompanyData}

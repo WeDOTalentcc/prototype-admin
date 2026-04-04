@@ -107,8 +107,8 @@ export function BatchActionModal({ isOpen, onClose, selectedCandidates, onBatchA
               {selectedCandidates.length} candidatos selecionados
             </p>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-4 h-4" />
+          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Fechar ação em lote">
+            <X className="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
 

@@ -85,9 +85,9 @@ export function CompanyDataCard({
     >
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 flex-shrink-0 min-w-[140px]">
-          <span className={textStyles.label}>
+          <label htmlFor={`field-${fieldKey}`} className={textStyles.label}>
             {label}
-          </span>
+          </label>
           {category && (
             <span className={cn(textStyles.caption, "bg-lia-bg-tertiary dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full")}>
               {category}
@@ -216,6 +216,7 @@ export function CompanyDataCard({
 
 interface SimpleDataCardProps {
   label: string
+  fieldId?: string
   category?: string
   isEditing: boolean
   children: ReactNode
@@ -225,12 +226,14 @@ interface SimpleDataCardProps {
 
 export function SimpleDataCard({
   label,
+  fieldId,
   category,
   isEditing,
   children,
   className,
   fullWidth = false,
 }: SimpleDataCardProps) {
+  const resolvedId = fieldId ?? `field-${label.toLowerCase().replace(/\s+/g, '-')}`
   return (
     <div 
       className={cn(
@@ -240,9 +243,9 @@ export function SimpleDataCard({
     >
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 flex-shrink-0 min-w-[140px]">
-          <span className={textStyles.label}>
+          <label htmlFor={resolvedId} className={textStyles.label}>
             {label}
-          </span>
+          </label>
           {category && (
             <span className={cn(textStyles.caption, "bg-lia-bg-tertiary dark:bg-lia-bg-elevated px-1.5 py-0.5 rounded-full")}>
               {category}

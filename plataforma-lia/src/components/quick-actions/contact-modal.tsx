@@ -364,8 +364,8 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-md text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none">
-            <X className="w-4 h-4" />
+          <button onClick={onClose} className="p-1 rounded-md text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan" aria-label="Fechar contato">
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback, useRef } from "react"
 import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -256,6 +256,57 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
   }, [isOpen])
   
 
+  const dialogRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        onClose()
+        return
+      }
+
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+        if (focusable.length === 0) return
+
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault()
+            last.focus()
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault()
+            first.focus()
+          }
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    requestAnimationFrame(() => {
+      const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+      firstFocusable?.focus()
+    })
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previouslyFocused?.focus()
+    }
+  }, [isOpen, onClose])
+
   if (!isOpen || (!candidate && selectedCandidates.length === 0)) return null
 
   const safeCandidate = candidate!
@@ -460,19 +511,22 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
   }
 
   const modalContent = (
-    <div className="fixed inset-0 bg-lia-overlay backdrop-blur-[1px] z-modal flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-lia-overlay backdrop-blur-[1px] z-modal flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div 
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="comm-modal-title"
         className={`${cardStyles.default} rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col`}
-       
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-lia-bg-secondary/50/50">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-lia-bg-tertiary rounded-full flex items-center justify-center">
-              <modalInfo.icon className="w-4 h-4 text-lia-text-secondary" />
+              <modalInfo.icon className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
             </div>
             <div>
-              <h3 className={textStyles.title}>
+              <h3 id="comm-modal-title" className={textStyles.title}>
                 {modalInfo.title}
               </h3>
               <p className={textStyles.description}>
