@@ -325,7 +325,7 @@ class WSIFeedbackGenerator:
 
         if evidences:
             ev = evidences[0][:110].rstrip(".,!?")
-            phrase += f" Por exemplo, ao falar sobre {ev}."
+            phrase += f" Isso ficou evidente quando {ev}."
 
         return phrase
 
