@@ -6,6 +6,16 @@ Cenários cobertos:
 2. toon_card         — GET /api/v1/candidates/{id}/toon (geração com cache Redis)
 3. wsi_screening_batch — POST /api/v1/wsi/sessions (inicializa entrevistas WSI em lote)
 4. wizard_interaction — POST /api/v1/chat (fluxo de wizard de criação de vaga)
+5. chat_screening    — POST /api/v1/chat (triagem de candidatos via chat)
+6. sourcing_search   — POST /api/v1/sourcing/search (busca de candidatos via sourcing)
+
+Targets de SLA:
+- candidate_search: P95 < 2s
+- toon_card: P95 < 3s
+- wsi_screening: P95 < 5s
+- wizard_interaction: P95 < 4s
+- chat_screening: P95 < 5s
+- sourcing_search: P95 < 3s
 
 Uso:
     locust -f tests/load/locustfile.py --host=http://localhost:8000
@@ -31,6 +41,7 @@ from load_test_config import (
     SAMPLE_JOB_IDS,
     SAMPLE_CANDIDATE_IDS,
     SAMPLE_COMPANY_IDS,
+    SAMPLE_SCREENING_QUERIES,
     SLA,
 )
 
@@ -67,6 +78,10 @@ def _random_candidate_id() -> str:
     return random.choice(SAMPLE_CANDIDATE_IDS)
 
 
+def _random_screening_query() -> str:
+    return random.choice(SAMPLE_SCREENING_QUERIES)
+
+
 # ---------------------------------------------------------------------------
 # User classes
 # ---------------------------------------------------------------------------
@@ -76,19 +91,21 @@ class RecruiterUser(HttpUser):
     Simula um recrutador usando a plataforma LIA.
 
     Distribuição de tarefas reflete uso real:
-    - 40% buscas de candidatos (ação mais comum)
-    - 30% visualização de TOON cards (resultado de busca)
-    - 20% interações com Wizard (criação de vagas)
-    - 10% triagem WSI (menos frequente, mais custosa)
+    - 30% buscas de candidatos (ação mais comum)
+    - 25% visualização de TOON cards (resultado de busca)
+    - 15% interações com Wizard (criação de vagas)
+    - 15% triagem via chat (screening LLM)
+    - 10% sourcing de candidatos
+    - 5%  triagem WSI (menos frequente, mais custosa)
     """
 
-    wait_time = between(1, 3)  # pausa realista entre ações
+    wait_time = between(1, 3)
 
     # ---------------------------------------------------------------------------
     # Tarefa 1: candidate_search — RAG híbrido
     # ---------------------------------------------------------------------------
 
-    @task(4)
+    @task(6)
     def candidate_search(self):
         """
         Busca candidatos via RAG híbrido (BM25 + semântico).
@@ -124,7 +141,6 @@ class RecruiterUser(HttpUser):
             elif resp.status_code == 401:
                 resp.failure("Não autorizado — verificar AUTH_TOKEN")
             elif resp.status_code == 404:
-                # Endpoint pode não estar registrado em ambiente de dev — não conta como falha
                 resp.success()
             else:
                 resp.failure(f"HTTP {resp.status_code}")
@@ -133,7 +149,7 @@ class RecruiterUser(HttpUser):
     # Tarefa 2: toon_card — geração com cache Redis
     # ---------------------------------------------------------------------------
 
-    @task(3)
+    @task(5)
     def toon_card(self):
         """
         Gera ou retorna do cache o TOON Card de um candidato.
@@ -197,7 +213,6 @@ class RecruiterUser(HttpUser):
             catch_response=True,
         ) as resp:
             if resp.status_code in (200, 201, 404, 422):
-                # 404/422 = endpoint pode não existir em dev — aceitável
                 resp.success()
             elif resp.status_code == 401:
                 resp.failure("Não autorizado")
@@ -208,7 +223,7 @@ class RecruiterUser(HttpUser):
     # Tarefa 4: wizard_interaction — fluxo de criação de vaga
     # ---------------------------------------------------------------------------
 
-    @task(2)
+    @task(3)
     def wizard_interaction(self):
         """
         Envia mensagem ao Wizard via chat REST para criar/editar vaga.
@@ -250,6 +265,94 @@ class RecruiterUser(HttpUser):
             else:
                 resp.failure(f"HTTP {resp.status_code}")
 
+    # ---------------------------------------------------------------------------
+    # Tarefa 5: chat_screening — triagem de candidatos via chat (LLM)
+    # ---------------------------------------------------------------------------
+
+    @task(3)
+    def chat_screening(self):
+        """
+        Triagem de candidatos via chat com LLM (domínio cv_screening).
+
+        Endpoint: POST /api/v1/chat
+        SLA: P95 < 5s (inclui análise de CV e scoring via LLM)
+        """
+        company_id = _random_company()
+        thread_id = str(uuid.uuid4())
+        candidate_id = _random_candidate_id()
+        job_id = _random_job_id()
+
+        payload = {
+            "message": _random_screening_query(),
+            "thread_id": thread_id,
+            "session_id": f"screening-{thread_id[:8]}",
+            "company_id": company_id,
+            "user_id": "load-test-user",
+            "domain": "cv_screening",
+            "context": {
+                "candidate_id": candidate_id,
+                "job_id": job_id,
+            },
+        }
+
+        with self.client.post(
+            "/api/v1/chat",
+            json=payload,
+            headers=_headers(company_id),
+            name="chat_screening",
+            catch_response=True,
+        ) as resp:
+            if resp.status_code in (200, 201, 404):
+                resp.success()
+            elif resp.status_code == 429:
+                resp.failure("Rate limit atingido — rever configuração de load test")
+            elif resp.status_code == 401:
+                resp.failure("Não autorizado")
+            else:
+                resp.failure(f"HTTP {resp.status_code}")
+
+    # ---------------------------------------------------------------------------
+    # Tarefa 6: sourcing_search — busca de sourcing
+    # ---------------------------------------------------------------------------
+
+    @task(2)
+    def sourcing_search(self):
+        """
+        Busca de candidatos via sourcing (domínio sourcing).
+
+        Endpoint: POST /api/v1/sourcing/search
+        SLA: P95 < 3s
+        """
+        company_id = _random_company()
+        job_id = _random_job_id()
+
+        payload = {
+            "query": _random_query(),
+            "job_id": job_id,
+            "company_id": company_id,
+            "limit": 10,
+            "filters": {
+                "location": random.choice(["São Paulo", "Rio de Janeiro", "Remoto"]),
+                "seniority": random.choice(["junior", "pleno", "senior"]),
+            },
+        }
+
+        with self.client.post(
+            "/api/v1/sourcing/search",
+            json=payload,
+            headers=_headers(company_id),
+            name="sourcing_search",
+            catch_response=True,
+        ) as resp:
+            if resp.status_code in (200, 201, 404, 422):
+                resp.success()
+            elif resp.status_code == 429:
+                resp.failure("Rate limit atingido")
+            elif resp.status_code == 401:
+                resp.failure("Não autorizado")
+            else:
+                resp.failure(f"HTTP {resp.status_code}")
+
 
 # ---------------------------------------------------------------------------
 # Eventos — validação de SLA ao final do teste
@@ -265,8 +368,10 @@ def validate_sla(environment, **kwargs):
 
     violations = []
     for task_name, sla in SLA.items():
-        entry = stats.entries.get((f"/{task_name}", "GET")) or \
-                stats.entries.get((f"/{task_name}", "POST"))
+        entry = (
+            stats.entries.get((task_name, "GET"))
+            or stats.entries.get((task_name, "POST"))
+        )
         if entry is None:
             continue
 
@@ -283,9 +388,9 @@ def validate_sla(environment, **kwargs):
             )
 
     if violations:
-        print("\n⚠️  VIOLAÇÕES DE SLA DETECTADAS:")
+        print("\n[LOAD TEST] SLA VIOLATIONS DETECTED:")
         for v in violations:
             print(f"  - {v}")
         environment.process_exit_code = 1
     else:
-        print("\n✅ Todos os SLAs validados com sucesso.")
+        print("\n[LOAD TEST] All SLAs validated successfully.")

@@ -17,14 +17,16 @@ class SLAConfig:
     """Thresholds de SLA por endpoint (P95 em ms)."""
     p95_ms: int
     p99_ms: int
-    error_rate_pct: float  # máximo aceitável
+    error_rate_pct: float
 
 
 SLA: Dict[str, SLAConfig] = {
-    "candidate_search": SLAConfig(p95_ms=2000, p99_ms=5000, error_rate_pct=1.0),
-    "toon_card":        SLAConfig(p95_ms=3000, p99_ms=6000, error_rate_pct=1.0),
-    "wsi_screening":    SLAConfig(p95_ms=5000, p99_ms=10000, error_rate_pct=2.0),
-    "wizard":           SLAConfig(p95_ms=4000, p99_ms=8000, error_rate_pct=2.0),
+    "candidate_search":     SLAConfig(p95_ms=2000,  p99_ms=5000,  error_rate_pct=1.0),
+    "toon_card":            SLAConfig(p95_ms=3000,  p99_ms=6000,  error_rate_pct=1.0),
+    "wsi_screening_batch":  SLAConfig(p95_ms=5000,  p99_ms=10000, error_rate_pct=2.0),
+    "wizard_interaction":   SLAConfig(p95_ms=4000,  p99_ms=8000,  error_rate_pct=2.0),
+    "chat_screening":       SLAConfig(p95_ms=5000,  p99_ms=10000, error_rate_pct=2.0),
+    "sourcing_search":      SLAConfig(p95_ms=3000,  p99_ms=6000,  error_rate_pct=1.0),
 }
 
 
@@ -37,7 +39,7 @@ class LoadProfile:
     """Perfil de carga para um cenário de teste."""
     name: str
     users: int
-    spawn_rate: float  # usuários/segundo
+    spawn_rate: float
     duration_seconds: int
     description: str
 
@@ -108,4 +110,12 @@ SAMPLE_CANDIDATE_IDS = [
     "cand-load-003",
     "cand-load-004",
     "cand-load-005",
+]
+
+SAMPLE_SCREENING_QUERIES = [
+    "avaliar candidato para vaga de desenvolvedor python",
+    "triagem de currículo para cargo de analista de dados",
+    "análise de perfil para gerente de projetos",
+    "screening inicial para engenheiro de software",
+    "avaliar fit cultural e técnico para product manager",
 ]
