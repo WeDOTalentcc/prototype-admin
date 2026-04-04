@@ -8,7 +8,7 @@ import { AudioRecordButton } from "@/components/ui/audio-record-button"
 
 interface JobsOverviewPanelProps {
   liaPromptValue: string
-  setLiaPromptValue: any
+  setLiaPromptValue: (value: string | ((prev: string) => string)) => void
   setActiveFilter: (filter: string) => void
   openJobCreationChat: (msg?: string) => void
   openGeneralChat: (msg?: string) => void
@@ -95,7 +95,7 @@ export function JobsOverviewPanel({
               />
               <div className="flex items-center gap-1">
                 <AudioRecordButton
-                  onTranscription={(text: string) => setLiaPromptValue((prev: string) => prev ? `${prev} ${text}` : text) as any}
+                  onTranscription={(text: string) => setLiaPromptValue((prev: string) => prev ? `${prev} ${text}` : text)}
                   className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                 />
               </div>

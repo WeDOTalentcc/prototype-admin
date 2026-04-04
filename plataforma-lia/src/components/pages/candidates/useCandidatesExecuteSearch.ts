@@ -327,7 +327,7 @@ export function createExecuteSearch(deps: ExecuteSearchDeps) {
         }
 
         if (searchResponse.candidates?.length > 0) {
-          mappedCandidates = searchResponse.candidates.map((c: any) => {
+          mappedCandidates = searchResponse.candidates.map((c: RawCandidate) => {
             const candidateSource = c.source || 'pearch'
             return {
               id: c.id || `pearch-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

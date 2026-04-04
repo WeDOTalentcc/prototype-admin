@@ -25,6 +25,7 @@ import {
 import { useLGPDCompliance } from '@/hooks/admin/useLGPDCompliance'
 import { useComplianceControls } from '@/hooks/admin/useComplianceControls'
 import { useBiasAudits } from '@/hooks/admin/useBiasAudits'
+import type { BreachNotification } from '@/hooks/admin/useLGPDCompliance'
 
 interface TabLink {
   name: string
@@ -81,7 +82,7 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
   const upcomingReviews = dashboard?.upcomingReviews ?? 0
   const overdueReviews = dashboard?.overdueReviews ?? 0
   
-  const openIncidents = breaches.filter((b: any) => b.status !== 'closed').length
+  const openIncidents = breaches.filter((b: BreachNotification) => b.status !== 'closed').length
   const dsrPending = (lgpdStats as any)?.pendingDSRs ?? 0
   const consentRate = (lgpdStats as any)?.consentComplianceRate ?? 0
 

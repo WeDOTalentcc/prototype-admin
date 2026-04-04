@@ -17,11 +17,57 @@ import { JobsCompactTableView } from "@/components/pages/jobs/JobsCompactTableVi
 import { ColumnConfigPanel } from "@/components/pages/jobs/ColumnConfigPanel"
 import { toast } from "sonner"
 import type { Job } from "@/components/jobs"
+import type { ScreeningConfig } from "@/hooks/useScreeningConfig"
+import type { JobVacancyMetrics } from "@/services/lia-api"
+
+interface JobFiltersLocal {
+  status?: { statuses?: string[]; stages?: string[]; priorities?: string[] }
+  position?: { workModels?: string[]; levels?: string[]; locations?: string[] }
+  team?: { departments?: string[] }
+  publishing?: { channels?: string[]; unpublished?: boolean }
+  funnel?: { emptyPipeline?: boolean }
+  metrics?: { lowConversion?: boolean }
+}
+
+interface SavedSearchLocal {
+  id: string
+  name: string
+  query?: string
+  createdAt: Date | string
+}
+
+interface LiaInlineMessage {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  timestamp: Date
+  isTyping?: boolean
+}
+
+interface ColumnDefLocal {
+  id: string
+  label: string
+  visible: boolean
+  category?: string
+}
+
+interface ColumnViewLocal {
+  id: string
+  name: string
+}
+
+type RecentItem = {
+  id: string
+  type: "vaga" | "chat" | "candidato"
+  title: string
+  subtitle?: string
+  meta?: Record<string, string | undefined>
+}
 
 interface JobsListContentProps {
   showExpandedLIA: boolean; setShowExpandedLIA: (v: boolean) => void
-  showInlineChat: boolean; chatMode: any; isChatFullscreen: boolean
-  selectedJobsForBatch: any; filteredJobs: Job[]
+  showInlineChat: boolean; chatMode: "general" | "job-creation" | null; isChatFullscreen: boolean
+  selectedJobsForBatch: Set<number>; filteredJobs: Job[]
   isLoadingJobs: boolean; isTableCollapsed: boolean
   searchTerm: string; selectedDaysFilter: string
   showTableFiltersPanel: boolean; setShowTableFiltersPanel: (v: boolean) => void
@@ -31,45 +77,44 @@ interface JobsListContentProps {
   handleJobPublish: () => void; handleJobInsights: () => void
   handleJobDuplicate: () => void; handleJobToggleStatus: () => void
   handleJobAssignRecruiter: () => void; getSelectedJobsHaveActiveStatus: () => boolean
-  toggleTableExpansion: () => void; setChatMode: any
-  setSearchTerm: (v: string) => void; jobFilters: any; toggleJobFilter: any
+  toggleTableExpansion: () => void; setChatMode: (mode: "general" | "job-creation" | null) => void
+  setSearchTerm: (v: string) => void; jobFilters: JobFiltersLocal; toggleJobFilter: (category: string, key: string, value: unknown) => void
   clearAllJobFilters: () => void; hasActiveFilters: () => boolean
-  savedSearches: any[]; saveSearchAsTemplate: any
-  handleApplySavedSearch: any; handleRenameSavedSearch: any; handleDeleteSavedSearch: any
-  inlineChatInitialMessage: any; liaInlineMessages: any[]; liaInlineLoading: boolean
+  savedSearches: SavedSearchLocal[]; saveSearchAsTemplate: (name: string) => void
+  handleApplySavedSearch: (id: string) => void; handleRenameSavedSearch: (id: string, name: string) => void; handleDeleteSavedSearch: (id: string) => void
+  inlineChatInitialMessage?: string; liaInlineMessages: LiaInlineMessage[]; liaInlineLoading: boolean
   liaWidth: number; isResizingLIA: boolean; userCollapsedLIA: boolean
-  liaPromptValue: string; setLiaPromptValue: any
+  liaPromptValue: string; setLiaPromptValue: (value: string | ((prev: string) => string)) => void
   closeChat: () => void; openGeneralChat: (msg?: string) => void
   openJobCreationChat: (msg?: string) => void; returnToGeneralChat: () => void
-  returnToLateralPrompt: () => void; sendLiaInlineMessage: any
+  returnToLateralPrompt: () => void; sendLiaInlineMessage: (content: string) => Promise<void>
   setUserCollapsedLIA: (v: boolean) => void; setIsChatFullscreen: (v: boolean) => void
   setIsResizingLIA: (v: boolean) => void; setLiaWidth: (v: number) => void
-  setLiaInlineMessages: (msgs: any[]) => void
-  liaInlineMessagesEndRef: any
-  onAddRecentItem?: any
-  showJobPreview: boolean; previewJob: any
-  activePreviewTab: any; setActivePreviewTab: any
+  setLiaInlineMessages: (msgs: LiaInlineMessage[]) => void
+  liaInlineMessagesEndRef: React.RefObject<HTMLDivElement>
+  onAddRecentItem?: (item: RecentItem) => void
+  showJobPreview: boolean; previewJob: Job | null
+  activePreviewTab: "screening" | "pipeline"; setActivePreviewTab: (tab: "screening" | "pipeline") => void
   previewWidth: number; setPreviewWidth: (v: number) => void
   setIsResizingPreview: (v: boolean) => void
-  setShowJobPreview: (v: boolean) => void; setPreviewJob: (v: any) => void
+  setShowJobPreview: (v: boolean) => void; setPreviewJob: (v: Job | null) => void
   handleJobClick: (job: Job) => void
-  screeningConfig: any; isLoadingScreeningConfig: boolean
-  jobMetrics: any; isLoadingJobMetrics: boolean
-  columnConfig: any; visibleColumnIds: string[]; savedColumnViews: any[]
-  toggleColumn: any; applyColumnView: any; deleteColumnView: any
-  saveColumnView: any; resetColumnsToDefault: () => void
+  screeningConfig: ScreeningConfig | undefined; isLoadingScreeningConfig: boolean
+  jobMetrics: JobVacancyMetrics | null; isLoadingJobMetrics: boolean
+  columnConfig: ColumnDefLocal[]; visibleColumnIds: string[]; savedColumnViews: ColumnViewLocal[]
+  toggleColumn: (id: string) => void; applyColumnView: (id: string) => void; deleteColumnView: (id: string) => void
+  saveColumnView: (name: string) => void; resetColumnsToDefault: () => void
   statusOrder: readonly string[]; groupedJobs: Record<string, Job[]>
   jobsColumnOrder: string[]; hookToTableColumnMap: Record<string, string>
   jobsColumnWidths: Record<string, number>
-  pinnedJobs: any; urgentJobs: any; favoriteJobs: any
+  pinnedJobs: Set<number>; urgentJobs: Set<number>; favoriteJobs: Set<number>
   draggedJobColumnId: string | null; dragOverJobColumnId: string | null
-  jobsSortColumn: string | null; jobsSortDirection: any
-  toggleJobSelection: any; handleJobPreview: any
-  handleJobsSort: any; handleJobsColumnDragStart: any; handleJobsColumnDragOver: any
-  handleJobsColumnDragLeave: any; handleJobsColumnDrop: any
-  handleJobsColumnDragEnd: any; startJobsColumnResize: any
-  toggleUrgentJob: any; togglePinJob: any; toggleFavoriteJob: any
-  [key: string]: any
+  jobsSortColumn: string | null; jobsSortDirection: "asc" | "desc"
+  toggleJobSelection: (id: number) => void; handleJobPreview: (job: Job) => void
+  handleJobsSort: (column: string) => void; handleJobsColumnDragStart: (id: string, e: React.DragEvent) => void; handleJobsColumnDragOver: (id: string, e: React.DragEvent) => void
+  handleJobsColumnDragLeave: () => void; handleJobsColumnDrop: (id: string, e: React.DragEvent) => void
+  handleJobsColumnDragEnd: () => void; startJobsColumnResize: (column: string, e: React.MouseEvent) => void
+  toggleUrgentJob: (id: number) => void; togglePinJob: (id: number) => void; toggleFavoriteJob: (id: number) => void
 }
 
 export function JobsListContent(props: JobsListContentProps) {
@@ -175,7 +220,7 @@ export function JobsListContent(props: JobsListContentProps) {
           liaInlineLoading={liaInlineLoading} isChatFullscreen={isChatFullscreen} liaWidth={liaWidth}
           isTableCollapsed={isTableCollapsed} isResizingLIA={isResizingLIA} userCollapsedLIA={userCollapsedLIA}
           selectedJobsForBatch={selectedJobsForBatch} liaPromptValue={liaPromptValue}
-          onSetLiaPromptValue={setLiaPromptValue as any} onCloseChat={closeChat}
+          onSetLiaPromptValue={setLiaPromptValue} onCloseChat={closeChat}
           onOpenGeneralChat={openGeneralChat} onOpenJobCreationChat={openJobCreationChat}
           onReturnToGeneralChat={returnToGeneralChat} onReturnToLateralPrompt={returnToLateralPrompt}
           onSendMessage={sendLiaInlineMessage} onSetShowExpandedLIA={setShowExpandedLIA}
@@ -188,7 +233,7 @@ export function JobsListContent(props: JobsListContentProps) {
         <TableFiltersPanel
           isOpen={showTableFiltersPanel} onClose={() => setShowTableFiltersPanel(false)}
           searchTerm={searchTerm} onSearchTermChange={setSearchTerm}
-          jobFilters={jobFilters} onToggleFilter={toggleJobFilter as any}
+          jobFilters={jobFilters} onToggleFilter={toggleJobFilter}
           onClearAllFilters={clearAllJobFilters} getActiveFiltersCount={getActiveJobFiltersCount}
           hasActiveFilters={hasActiveFilters} savedSearches={savedSearches}
           onSaveSearch={saveSearchAsTemplate} onApplySavedSearch={handleApplySavedSearch}

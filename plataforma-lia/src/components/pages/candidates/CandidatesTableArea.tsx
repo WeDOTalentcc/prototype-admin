@@ -166,9 +166,9 @@ export function CandidatesTableArea({
                   setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }))
                 }}
                 onColumnReorder={(reorderedColumns) => {
-                  setTableColumns((prev: any) => prev.map((col: any) => {
+                  setTableColumns((prev: TableColumn[]) => prev.map((col: TableColumn) => {
                     const reordered = reorderedColumns.find(r => r.id === col.id)
-                    return reordered ? { ...col, order: reordered.order } : col
+                    return reordered ? { ...col, order: reordered.order ?? col.order } : col
                   }))
                 }}
                 onCandidateClick={(candidate) => onCandidateClick(candidate as unknown as Candidate)}
@@ -178,7 +178,7 @@ export function CandidatesTableArea({
                   setSortOrder(config.direction)
                 }}
                 onTogglePin={(candidateId) => onTogglePin(candidateId)}
-                onToggleFavorite={(candidateId: any) => onToggleFavorite(candidateId)}
+                onToggleFavorite={(candidateId: string) => onToggleFavorite(candidateId)}
                 renderCustomCell={(candidate, columnId) => renderCellValue(candidate as unknown as Candidate, columnId)}
               />
             )}
@@ -218,7 +218,7 @@ export function CandidatesTableArea({
                               <span className="px-2 text-lia-text-primary">...</span>
                             )}
                             <Button
-                              variant={currentPage === page ? 'default' as any : 'outline'}
+                              variant={currentPage === page ? 'primary' : 'outline'}
                               size="sm"
                               onClick={() => setCurrentPage(page)}
                               className="h-8 w-8 p-0"

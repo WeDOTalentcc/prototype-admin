@@ -331,12 +331,12 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 </div>
                 <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
                   <CandidatePreview
-                    candidate={previewCandidate as any}
+                    candidate={previewCandidate as unknown as Record<string, unknown>}
                     isOpen={showCandidatePreview}
                     onClose={handleCloseCandidatePreview}
                     isMaximized={isPreviewMaximized}
                     onToggleMaximize={handleTogglePreviewMaximize}
-                    candidates={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id)) as any}
+                    candidates={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id)) as unknown as Record<string, unknown>[]}
                     currentIndex={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id)).findIndex(c => c.id === previewCandidate.id)}
                     onNavigateCandidate={(index) => {
                       const favoriteCandidates = candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id))
@@ -344,23 +344,23 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                         setPreviewCandidate(favoriteCandidates[index])
                       }
                     }}
-                    onOpenFullPage={handleCandidatePageOpen as any}
-                    onScheduleInterview={(candidate: any) => {
+                    onOpenFullPage={handleCandidatePageOpen as unknown as (candidate: Record<string, unknown>) => void}
+                    onScheduleInterview={(candidate: Record<string, unknown>) => {
                       setSelectedCandidateForAction(candidate as unknown as Parameters<typeof setSelectedCandidateForAction>[0])
                       setShowScheduleModal(true)
                     }}
-                    onAddToVacancy={(candidate: any) => {
-                      setSelectedCandidatesForBatch(new Set([candidate.id]) as unknown as Parameters<typeof setSelectedCandidatesForBatch>[0])
+                    onAddToVacancy={(candidate: Record<string, unknown>) => {
+                      setSelectedCandidatesForBatch(new Set([candidate.id as string]) as unknown as Parameters<typeof setSelectedCandidatesForBatch>[0])
                       setShowAddToVacancyModal(true)
                     }}
-                    onToggleFavorite={(candidateId: any) => handleToggleFavorite(candidateId)}
-                    onWSIScreening={(candidate: any) => handleStartWSITextScreening(candidate as unknown as Parameters<typeof handleStartWSITextScreening>[0])}
+                    onToggleFavorite={(candidateId: string) => handleToggleFavorite(candidateId)}
+                    onWSIScreening={(candidate: Record<string, unknown>) => handleStartWSITextScreening(candidate as unknown as Parameters<typeof handleStartWSITextScreening>[0])}
                     isFavorite={favorites.has(previewCandidate.id)}
-                    onSendEmail={(candidate: any) => handleSendEmail(candidate as unknown as Parameters<typeof handleSendEmail>[0])}
-                    onSendWhatsApp={(candidate: any) => handleSendWhatsApp(candidate as unknown as Parameters<typeof handleSendWhatsApp>[0])}
-                    onSendTriagem={(candidate: any) => handleSendTriagem(candidate as unknown as Parameters<typeof handleSendTriagem>[0])}
-                    onSendAgendamento={(candidate: any) => handleSendAgendamento(candidate as unknown as Parameters<typeof handleSendAgendamento>[0])}
-                    onSendFeedback={(candidate: any) => handleSendFeedback(candidate as unknown as Parameters<typeof handleSendFeedback>[0])}
+                    onSendEmail={(candidate: Record<string, unknown>) => handleSendEmail(candidate as unknown as Parameters<typeof handleSendEmail>[0])}
+                    onSendWhatsApp={(candidate: Record<string, unknown>) => handleSendWhatsApp(candidate as unknown as Parameters<typeof handleSendWhatsApp>[0])}
+                    onSendTriagem={(candidate: Record<string, unknown>) => handleSendTriagem(candidate as unknown as Parameters<typeof handleSendTriagem>[0])}
+                    onSendAgendamento={(candidate: Record<string, unknown>) => handleSendAgendamento(candidate as unknown as Parameters<typeof handleSendAgendamento>[0])}
+                    onSendFeedback={(candidate: Record<string, unknown>) => handleSendFeedback(candidate as unknown as Parameters<typeof handleSendFeedback>[0])}
                   />
                 </div>
               </div>
@@ -376,8 +376,8 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 setIsLoading(true)
                 const listDetails = await liaApi.getCandidateList(listId, { limit: 100 })
                 
-                const mappedCandidates: Candidate[] = ((listDetails as any).candidates?.items || []).map((member: any) => {
-                  const c = member.candidate
+                const mappedCandidates = (((listDetails as unknown as Record<string, unknown>).candidates as unknown as { items?: Record<string, unknown>[] })?.items?.map((member: Record<string, unknown>) => {
+                  const c = member.candidate as Record<string, unknown>
                   const location = [c.location_city, c.location_state, c.location_country].filter(Boolean).join(', ') || 'Não informado'
                   const workModel = c.work_model_preference === 'remote' ? 'remoto' : 
                                    c.work_model_preference === 'hybrid' ? 'híbrido' : 'presencial'
@@ -431,7 +431,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                     education: '',
                     workHistory: [] as unknown[],
                   }
-                })
+                }) || []) as unknown as Candidate[]
                 
                 setCandidates(mappedCandidates as unknown as Parameters<typeof setCandidates>[0])
                 setViewingList({ 
