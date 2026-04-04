@@ -19,11 +19,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Ajuste imports conforme o projeto
-# from app.auth.dependencies import get_current_user, require_admin
-# from app.db.session import get_db
-# from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
-# from sqlalchemy import select
+from app.auth.dependencies import get_current_user
+from app.core.database import get_db
+from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
+from sqlalchemy import select
 
 router = APIRouter()
 
