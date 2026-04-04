@@ -244,7 +244,59 @@ class AuditService:
             logger.info(f"📋 Retrieved {len(audit_logs)} audit logs for agent {agent_name}")
             return list(audit_logs)
     
-    async def record_human_review(
+    async def log_output(
+        self,
+        *,
+        company_id: str,
+        session_id: str,
+        agent_used: str,
+        input_text: str,
+        output_text: str,
+        action_executed: str = None,
+        candidate_id: str = None,
+        job_vacancy_id: str = None,
+        fairness_flags: list = None,
+    ) -> None:
+        """
+        Registra a saida conversacional da LIA para auditoria completa.
+
+        Chamado pelo MainOrchestrator apos cada resposta que envolva
+        candidate_id ou job_vacancy_id (acoes de alto impacto).
+
+        Compliance: EU AI Act Art. 13, LGPD Art. 18, CLT Art. 373-A.
+        """
+        retention_until = datetime.utcnow() + timedelta(days=1825)  # 5 anos
+
+        async with AsyncSessionLocal() as session:
+            audit_log = AuditLog(
+                id=str(uuid.uuid4()),
+                company_id=company_id,
+                session_id=session_id,
+                agent_name=agent_used,
+                agent_used=agent_used,
+                decision_type="conversational_output",
+                action=action_executed or "lia_response",
+                decision="responded",
+                candidate_id=candidate_id,
+                job_vacancy_id=job_vacancy_id,
+                input_text=input_text[:4000] if input_text else None,
+                output_text=output_text[:8000] if output_text else None,
+                fairness_flags=fairness_flags or [],
+                reasoning=[],
+                criteria_used=[],
+                criteria_ignored=list(PROTECTED_CRITERIA),
+                human_review_required=False,
+                retention_until=retention_until,
+            )
+            session.add(audit_log)
+            await session.commit()
+
+            logger.info(
+                "Output audit logged: agent=%s session=%s candidate=%s",
+                agent_used, session_id, candidate_id
+            )
+
+        async def record_human_review(
         self,
         audit_log_id: str,
         reviewed_by: str,

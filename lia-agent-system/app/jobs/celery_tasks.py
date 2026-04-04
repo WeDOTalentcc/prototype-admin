@@ -1337,3 +1337,115 @@ def send_weekly_digest_task(self) -> dict:
     except Exception as exc:
         logger.error("[Celery] digest.send_weekly failed: %s", exc)
         raise self.retry(exc=exc, countdown=300)
+
+
+# ── Etapa 4 — Data Retention (LGPD Art. 18) ──────────────────────────────────
+
+@celery_app.task(
+    name="data.retention.run",
+    bind=True,
+    max_retries=3,
+    default_retry_delay=300,
+)
+def run_retention_cleanup(self) -> dict:
+    """
+    Job mensal de anonimização de candidatos não contratados (LGPD Art. 18).
+    Roda apenas para empresas com auto_anonymize=True (opt-in).
+    Candidatos contratados (is_hired=True) NUNCA são anonimizados.
+
+    Celery Beat schedule (adicionar em celery_config.py):
+        "data-retention-monthly": {
+            "task": "data.retention.run",
+            "schedule": crontab(day_of_month=1, hour=2, minute=0),
+        }
+    """
+    import asyncio
+    return asyncio.run(_run_retention_cleanup_async())
+
+
+async def _run_retention_cleanup_async() -> dict:
+    from datetime import timezone, timedelta
+    from uuid import uuid4
+    from sqlalchemy import select, update
+
+    try:
+        from lia_config.database import AsyncSessionLocal
+    except ImportError:
+        from app.core.database import AsyncSessionLocal
+
+    from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
+
+    # Candidate model — try multiple import paths
+    try:
+        from libs.models.lia_models.candidate import Candidate
+    except ImportError:
+        from app.models.candidate import Candidate
+
+    total_anonymized = 0
+    companies_processed = 0
+    errors = []
+
+    async with AsyncSessionLocal() as session:
+        policies_result = await session.execute(
+            select(CompanyRetentionPolicy).where(
+                CompanyRetentionPolicy.auto_anonymize == True  # noqa: E712
+            )
+        )
+        policies = policies_result.scalars().all()
+
+        for policy in policies:
+            try:
+                cutoff_date = datetime.now(timezone.utc) - timedelta(
+                    days=policy.retention_months * 30
+                )
+                result = await session.execute(
+                    update(Candidate)
+                    .where(
+                        Candidate.company_id == policy.company_id,
+                        Candidate.is_hired == False,  # noqa: E712
+                        Candidate.created_at < cutoff_date,
+                        Candidate.anonymized_at == None,  # noqa: E711
+                    )
+                    .values(
+                        name=f"ANONIMIZADO-{uuid4().hex[:8]}",
+                        email=None,
+                        phone=None,
+                        cpf=None,
+                        linkedin_url=None,
+                        github_url=None,
+                        portfolio_url=None,
+                        photo_url=None,
+                        address=None,
+                        anonymized_at=datetime.now(timezone.utc),
+                        anonymized_by="data.retention.run",
+                    )
+                )
+                count = result.rowcount
+                total_anonymized += count
+                companies_processed += 1
+                await session.execute(
+                    update(CompanyRetentionPolicy)
+                    .where(CompanyRetentionPolicy.company_id == policy.company_id)
+                    .values(
+                        last_cleanup_at=datetime.now(timezone.utc),
+                        last_cleanup_count=count,
+                    )
+                )
+                logger.info(
+                    "Retention cleanup: company=%s anonymized=%d cutoff=%s",
+                    policy.company_id, count, cutoff_date.date()
+                )
+            except Exception as e:
+                errors.append({"company_id": policy.company_id, "error": str(e)})
+                logger.error("Retention cleanup failed for company=%s: %s", policy.company_id, e)
+
+        await session.commit()
+
+    result_dict = {
+        "companies_processed": companies_processed,
+        "total_anonymized": total_anonymized,
+        "errors": errors,
+        "ran_at": datetime.now(timezone.utc).isoformat(),
+    }
+    logger.info("Retention cleanup complete: %s", result_dict)
+    return result_dict

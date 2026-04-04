@@ -65,6 +65,37 @@ IMPLICIT_BIAS_TERMS: Dict[str, str] = {
 }
 
 
+IMPLICIT_BIAS_TERMS_EN: dict = {
+    # Age proxies
+    "young and dynamic":        "May indicate age bias. Use objective competency criteria.",
+    "young blood":              "Age proxy. Specify behavioral competencies.",
+    "energetic":                "Can be age proxy. Define expected outcomes instead.",
+    "digital native":           "Age proxy. Evaluate specific technical skills instead.",
+    "recent graduate":          "May exclude experienced older candidates. Define skill requirements.",
+    # Class / academic elitism
+    "culture fit":              "Vague — can mask racial or class bias. Define specific values.",
+    "prestigious university":   "Academic elitism proxy. Evaluate competencies and results.",
+    "ivy league":               "Academic elitism. Focus on demonstrated skills.",
+    "top school":               "Academic elitism. Specify required skills, not institution.",
+    "right neighborhood":       "Socioeconomic discrimination proxy.",
+    "proper background":        "Vague — can mask socioeconomic or racial bias.",
+    # Appearance
+    "clean-cut":                "Appearance criterion. Use objective professional conduct standards.",
+    "good looking":             "Appearance discrimination.",
+    "presentable":              "Vague appearance standard. Specify professional conduct.",
+    # Origin / culture
+    "native speaker":           "May be national origin proxy. Only require if operationally justified.",
+    "traditional values":       "May indicate religious or cultural discrimination.",
+    # Disability
+    "without restrictions":     "May discriminate against candidates with disabilities (ADA/CRPD).",
+    "fully able":               "Potential disability discrimination. Specify functional requirements.",
+    # Family status
+    "no family obligations":    "May discriminate by marital or parental status.",
+    "available at all times":   "May discriminate against candidates with caregiving responsibilities.",
+}
+
+
+
 @dataclass
 class FairnessCheckResult:
     is_blocked: bool
@@ -136,6 +167,20 @@ DISCRIMINATORY_CATEGORIES = {
             r"\baté\s+\d+\s+anos\b(?!\s+(?:de|no|na|em)\s+(experiên|experienc|atua|mercado|setor|ramo|empresa|cargo|fun[çc]|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi))",
             r"\bmais\s+de\s+\d+\s+anos\b(?!\s+(?:de|no|na|em)\s+(experiên|experienc|atua|mercado|setor|ramo|empresa|cargo|fun[çc]|pr[aá]tica|trabalho|carreira|vivên|vivenc|profissional|experi))",
             r"\bn[ãa]o\s+(quero|queremos)\s+.*\b(mais\s+de|acima\s+de)\s+\d+\b",
+            # FIX bug: "maiores de X anos" e variações não eram capturadas
+            r"\b(maiores?\s+de|acima\s+de)\s+\d+\s+anos?\b",
+            r"\b(menores?\s+de|abaixo\s+de)\s+\d+\s+anos?\b",
+            r"\bidade\s*(máxima|mínima|maxima|minima|limite)\s*[:\s]*\d+\b",
+            r"\b(limite|faixa)\s+etári[ao]\b",
+            r"\bfaixa\s+etária\s*(de|entre|até)?\s*\d*",
+            r"\b(etário|etária)\b",
+            r"\bidade\s+(superior|inferior)\s+a\s+\d+\b",
+            # EN age patterns
+            r"\bunder\s+\d+\s+(years?|y\.?o\.?)\b",
+            r"\bover\s+\d+\s+(years?|y\.?o\.?)\b",
+            r"\bage\s*[:<]\s*\d+\b",
+            r"\bno\s+older\s+than\s+\d+\b",
+            r"\bage\s+limit\b",
         ],
         "message": (
             "A LIA não pode filtrar candidatos por idade. "
@@ -312,13 +357,52 @@ DISCRIMINATORY_CATEGORIES = {
             "Posso ajudar a definir critérios baseados em capacidade técnica e experiência?"
         ),
     },
+    "gender_en": {
+        "terms": [
+            r"\b(only|just)\s+(men|women|male|female|males|females)\b",
+            r"\b(prefer|preference\s+for)\s+(men|women|male|female)\b",
+            r"\b(male|female)\s+only\b",
+            r"\b(men|women)\s+preferred\b",
+            r"\bgender\s*:\s*(male|female|man|woman)\b",
+        ],
+        "message": (
+            "LIA cannot filter candidates by gender. "
+            "This violates anti-discrimination law (Lei 9.029/95, Title VII, EU Directive 2006/54)."
+        ),
+    },
+    "race_en": {
+        "terms": [
+            r"\b(only|just)\s+(white|black|asian|hispanic|latino|latina)\b",
+            r"\b(race|ethnicity|color)\s*[:\-]\s*(white|black|asian|hispanic)\b",
+            r"\b(white|black|asian)\s+only\b",
+            r"\bprefer\s+(white|black|asian|hispanic)\b",
+        ],
+        "message": (
+            "LIA cannot filter candidates by race or ethnicity. "
+            "This violates Lei 7.716/89, CRFB/88 Art. 5 and international anti-discrimination law."
+        ),
+    },
+    "age_en": {
+        "terms": [
+            r"\bunder\s+\d+\s+(years?|y\.?o\.?)\b",
+            r"\bover\s+\d+\s+(years?|y\.?o\.?)\b",
+            r"\bage\s*[:<]\s*\d+\b",
+            r"\b(young|youthful)\s+(candidate|professional|team\s+member)\b",
+            r"\bno\s+older\s+than\s+\d+\b",
+            r"\bage\s+limit\b",
+        ],
+        "message": (
+            "Age-based filtering may violate age discrimination laws "
+            "(ADEA in the US, EU Directive 2000/78, and Lei 9.029/95 in Brazil)."
+        ),
+    },
 }
 
 _COMPILED_PATTERNS: Dict[str, List[re.Pattern]] = {}
 # Versão dos patterns — incrementar quando patterns forem adicionados para forçar recompilação
 # v3: FAR-1 — 5 novas categorias (antecedentes_criminais, saude_doenca, filiacao_sindical,
 #              aparencia_fisica), expansão IMPLICIT_BIAS_TERMS, fix regex idade
-_PATTERNS_VERSION = 3
+_PATTERNS_VERSION = 4
 
 HIGH_IMPACT_ACTIONS = {
     "rejection", "shortlist", "wsi_score", "policy_save", "bulk_rejection",
@@ -434,7 +518,7 @@ class FairnessGuard:
         text_normalized = _normalize_text(text_lower)
         warnings = []
 
-        for term, warning_message in IMPLICIT_BIAS_TERMS.items():
+        for term, warning_message in {**IMPLICIT_BIAS_TERMS, **IMPLICIT_BIAS_TERMS_EN}.items():
             term_lower = term.lower()
             term_normalized = _normalize_text(term_lower)
             if term_lower in text_lower or term_normalized in text_normalized:

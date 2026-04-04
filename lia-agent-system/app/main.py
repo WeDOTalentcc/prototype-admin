@@ -644,6 +644,14 @@ app.include_router(cultural_fit_router, prefix="/api/v1", tags=["cultural-fit"])
 from app.api.v1.event_history import router as event_history_router
 app.include_router(event_history_router, prefix="/api/v1", tags=["event-sourcing"])
 
+# Etapa 4 — Data Retention (LGPD Art. 18)
+from app.api.v1.company_retention import router as company_retention_router
+app.include_router(company_retention_router, prefix="/api/v1", tags=["company-retention"])
+
+# Etapa 8 — Agent Studio
+from app.api.v1.agent_templates import router as agent_templates_router
+app.include_router(agent_templates_router, prefix="/api/v1", tags=["agent-templates"])
+
 # Public API routes (no /api/v1 prefix, no JWT auth)
 app.include_router(candidate_portal.router, tags=["candidate-portal"])
 app.include_router(public_shared_searches.router, prefix="/api", tags=["public-shared-searches"])

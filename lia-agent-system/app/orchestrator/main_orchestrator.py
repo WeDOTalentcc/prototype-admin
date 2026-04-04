@@ -494,6 +494,30 @@ class MainOrchestrator:
             except Exception as exc:
                 logger.debug("[MainOrchestrator] CandidateListStore set error: %s", exc)
 
+        # Output auditing — apenas para ações sobre candidatos/vagas (alto impacto)
+        _should_audit = bool(
+            result.get("candidate_id")
+            or result.get("job_id")
+            or result.get("job_vacancy_id")
+        )
+        if _should_audit:
+            try:
+                from app.shared.compliance.audit_service import AuditService
+                _audit_svc = AuditService()
+                await _audit_svc.log_output(
+                    company_id=company_id,
+                    session_id=conv_id,
+                    agent_used=result.get("agent_used", "unknown"),
+                    input_text=message,
+                    output_text=result.get("content") or result.get("message", ""),
+                    action_executed=result.get("action_executed"),
+                    candidate_id=result.get("candidate_id"),
+                    job_vacancy_id=result.get("job_id") or result.get("job_vacancy_id"),
+                    fairness_flags=result.get("fairness_flags", []),
+                )
+            except Exception as _audit_err:
+                logger.warning("Output audit failed (non-blocking): %s", _audit_err)
+
         return ChatResponse.from_orchestrator_result(result, conv_id=conv_id)
 
 
