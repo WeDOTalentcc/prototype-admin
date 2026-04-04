@@ -430,6 +430,7 @@ class TeamsCardRenderer:
         actions: List[Dict] = [],
         color: str = "Accent",
         emoji: str = "🔔",
+        deep_link_path: str = "",
     ) -> Dict[str, Any]:
         """Generic proactive notification card."""
         body_items = [
@@ -465,6 +466,7 @@ class TeamsCardRenderer:
         candidate_id: str,
         vacancy_id: str,
         estimated_score: Optional[float] = None,
+        deep_link_path: str = "",
     ) -> Dict[str, Any]:
         """Proactive card: new candidate applied."""
         score_text = f" | Score estimado: **{estimated_score:.0f}%** {self._score_bar(estimated_score)}" if estimated_score else ""
@@ -506,6 +508,7 @@ class TeamsCardRenderer:
         candidates_count: int,
         days_stalled: int,
         vacancy_id: str,
+        deep_link_path: str = "",
     ) -> Dict[str, Any]:
         """Proactive card: pipeline stalled."""
         return self.render_notification_card(
@@ -543,6 +546,7 @@ class TeamsCardRenderer:
         days_remaining: int,
         candidates_in_pipeline: int,
         vacancy_id: str,
+        deep_link_path: str = "",
     ) -> Dict[str, Any]:
         """Proactive card: vacancy deadline approaching."""
         urgency = "🔴" if days_remaining <= 3 else "🟡"
@@ -576,6 +580,7 @@ class TeamsCardRenderer:
         match_score: float,
         recommendation: str,
         candidate_id: str,
+        deep_link_path: str = "",
     ) -> Dict[str, Any]:
         """Proactive card: WSI/BARS screening completed."""
         score_bar = self._score_bar(match_score)
