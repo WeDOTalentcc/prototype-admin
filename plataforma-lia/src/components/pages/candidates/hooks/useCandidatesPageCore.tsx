@@ -1,73 +1,39 @@
 "use client"
 
-// useCandidatesPageCore.tsx
-// Orchestrator hook: composes all candidates-page sub-hooks and returns
-// a single flat object consumed by CandidatesPage.
-// Business logic lives in domain hooks — this file is pure composition.
-
 import React, { useState, useEffect, useRef, useCallback } from "react"
-import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import dynamic from "next/dynamic"
-import { classifyPercentageScore } from "@/lib/score-utils"
-
-// ── Services & API ────────────────────────────────────────────────────────────
-import { mapCandidateToInternal as _mapCandidateToInternal } from "@/components/pages/candidates/hooks/useCandidatesExecuteSearch"
-
-// ── UI components used for JSX returned from the hook ────────────────────────
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { type ParsedEntities } from "@/components/search/smart-search-input"
 
-// ── Global hooks ──────────────────────────────────────────────────────────────
 import { useJWTAuth } from "@/contexts/auth-context"
 import { useCandidatesStore } from "@/stores/candidates-store"
 import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
 import { useHideViewedCandidates } from "@/hooks/useHideViewedCandidates"
-import { useCandidateFilters, type TableFilters, getDefaultTableFilters } from "@/hooks/use-candidate-filters"
+import { useCandidateFilters } from "@/hooks/use-candidate-filters"
 import { useCandidateSelection } from "@/hooks/use-candidate-selection"
 import { useTalentFunnel } from "@/hooks/use-talent-funnel"
 import { useCandidatesSearchState } from "@/hooks/use-candidates-search-state"
 import { useCandidatesViewState } from "@/hooks/use-candidates-view-state"
-
-// ── Feature-level hooks ───────────────────────────────────────────────────────
-import { createCellRenderer } from "@/components/pages/candidates/CandidateTableCellRenderer"
-import { useCandidatesArchetypes } from "@/components/pages/candidates/hooks/useCandidatesArchetypes"
-import { useCandidatesFilterSort } from "@/components/pages/candidates/hooks/useCandidatesFilterSort"
-import { useRevealContact } from "@/components/pages/candidates/hooks/useRevealContact"
-import { useCandidatesColumnConfig } from "@/components/pages/candidates/hooks/useCandidatesColumnConfig"
-import { useCandidatesExecuteSearch } from "@/components/pages/candidates/hooks/useCandidatesExecuteSearch"
-import { useCandidatesCVHandlers } from "@/components/pages/candidates/hooks/useCandidatesCVHandlers"
-import { useCandidatesSearch } from "@/components/pages/candidates/hooks/useCandidatesSearch"
-import { useCandidatesLIAHandlers } from "@/components/pages/candidates/hooks/useCandidatesLIAHandlers"
-import { useCandidatesActions } from "@/components/pages/candidates/hooks/useCandidatesActions"
 import type { Candidate } from "@/components/pages/candidates/types"
 
-// ── Domain sub-hooks (extracted from this file) ───────────────────────────────
-import { useCandidatesUIState, type SearchTab } from "./useCandidatesUIState"
+import { useCandidatesUIState } from "./useCandidatesUIState"
 import { useCandidatesNavigation } from "./useCandidatesNavigation"
-import { useCandidatesInteractions } from "./useCandidatesInteractions"
-
-// ── candidates-core (types, constants, data helpers) ─────────────────────────
+import { useCandidatesPageEffects } from "./useCandidatesPageEffects"
+import { useCandidatesSearchComposition } from "./useCandidatesSearchComposition"
+import { useCandidatesViewComposition } from "./useCandidatesViewComposition"
 import {
   type CandidatesPageCoreProps,
   CANDIDATES_TABS,
   SEARCH_TEMPLATES,
-  LIA_ASSISTANT_TIPS_DEFAULT,
   useCandidatesData,
-  getActiveTableFiltersCount,
-  getActiveAdvancedFiltersCount,
-  getActiveSearchFiltersCount,
-  toggleTableFilterValue,
   type AdvancedFilters,
   DEFAULT_ADVANCED_FILTERS,
 } from "./candidates-core"
 
 export type { CandidatesPageCoreProps }
 
-// Alias for backward compat — consumers receive `tabs` from the hook's return value
 const tabs = CANDIDATES_TABS
 
-// Dynamic imports (kept here as they are component-level lazy-loads, not business logic)
 const CandidatePreview = dynamic(
   () => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })),
   { ssr: false }
@@ -101,13 +67,12 @@ export function useCandidatesPageCore({
   const router = useRouter()
   const { settings: globalSettings, loading: globalSettingsLoading } = useGlobalSearchSettings()
   const { user } = useJWTAuth()
-const hideViewedCandidates = useHideViewedCandidates({
+  const hideViewedCandidates = useHideViewedCandidates({
     userId: user?.id,
     companyId: (user as Record<string, unknown> | null)?.company_id as string | undefined,
     userEmail: user?.email,
   })
 
-  // ── Filter state ──────────────────────────────────────────────────────────
   const {
     tableFilters, setTableFilters,
     showTableFiltersPanel, setShowTableFiltersPanel,
@@ -138,7 +103,6 @@ const hideViewedCandidates = useHideViewedCandidates({
     return () => { resetCandidatesStore() }
   }, [])
 
-  // ── Search state ──────────────────────────────────────────────────────────
   const {
     state: {
       searchTerm, quickFilters, activeTab,
@@ -167,7 +131,6 @@ const hideViewedCandidates = useHideViewedCandidates({
     },
   } = useCandidatesSearchState()
 
-  // ── View state ────────────────────────────────────────────────────────────
   const {
     state: {
       selectedCandidate, showPreview, isPreviewMaximized,
@@ -191,7 +154,6 @@ const hideViewedCandidates = useHideViewedCandidates({
     },
   } = useCandidatesViewState()
 
-  // ── Data fetching ─────────────────────────────────────────────────────────
   const {
     candidateListsForModal, setCandidateListsForModal,
     bulkJobVacancies, bulkEmailTemplates,
@@ -205,11 +167,8 @@ const hideViewedCandidates = useHideViewedCandidates({
   })
 
   const handleBulkActionComplete = refreshCandidates
-
-  // ── Advanced filters ──────────────────────────────────────────────────────
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>(DEFAULT_ADVANCED_FILTERS)
 
-  // ── UI state (modals, LIA flags, preview width, etc.) ─────────────────────
   const ui = useCandidatesUIState()
   const {
     liaPromptEntities, setLiaPromptEntities,
@@ -279,118 +238,72 @@ const hideViewedCandidates = useHideViewedCandidates({
     pendingTabChange, setPendingTabChange,
   } = ui
 
-  // ── Derived ───────────────────────────────────────────────────────────────
   const unsavedPearchCandidates = candidates.filter(c => c.source === 'pearch')
   const hasUnsavedPearchCandidates = unsavedPearchCandidates.length > 0 && showSearchResults
   const searchTemplates = SEARCH_TEMPLATES
   const [itemsPerPage] = useState(50)
   const tableContainerRef = useRef<HTMLDivElement>(null)
 
-  // ── Navigation / URL effects ──────────────────────────────────────────────
   useCandidatesNavigation({
-    setPreviewCandidate,
-    setShowCandidatePreview,
-    activeTab,
-    lastSearchQuery,
-    searchSource,
-    setSearchSource,
-    searchExecutionId,
-    lastSearchEntities: lastSearchEntities as ParsedEntities | null,
-    setTableFilters,
-    candidates,
-    pendingCandidateOpen,
-    onCandidateOpened,
-    showGlobalSearchOptions,
-    setShowSearchResults,
-    setDisplayedResultsCount,
-    setActiveTab,
-    setCrossTabFilter,
-    setShowCrossTabBanner,
-    setSearchTerm,
-    setQuickFilters,
+    setPreviewCandidate, setShowCandidatePreview,
+    activeTab, lastSearchQuery, searchSource, setSearchSource,
+    searchExecutionId, lastSearchEntities: lastSearchEntities as ParsedEntities | null,
+    setTableFilters, candidates, pendingCandidateOpen, onCandidateOpened,
+    showGlobalSearchOptions, setShowSearchResults, setDisplayedResultsCount,
+    setActiveTab, setCrossTabFilter, setShowCrossTabBanner,
+    setSearchTerm, setQuickFilters,
   })
 
-  // ── Reset page when filters change ───────────────────────────────────────
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setCurrentPage(1) }, [searchTerm, quickFilters, advancedFilters, columnFilters, tableFilters])
 
-  // ── Talent funnel ─────────────────────────────────────────────────────────
   const talentFunnel = useTalentFunnel()
   const favorites = talentFunnel.getFavoriteIds()
   const pinnedCandidates = talentFunnel.getPinnedIds()
   const favoriteNotes = talentFunnel.getFavoriteNotes()
 
-  // ── Auto-expand LIA sidebar when candidates selected ──────────────────────
-  const prevSelectedCountRef = useRef(0)
-  useEffect(() => {
-    const currentCount = selectedCandidatesForBatch.size
-    const prevCount = prevSelectedCountRef.current
-    if (currentCount > 0 && !userCollapsedLIA) {
-      setShowExpandedLIA(true)
-      if (currentCount !== prevCount) {
-        const names = candidates
-          .filter(c => selectedCandidatesForBatch.has(c.id))
-          .slice(0, 3)
-          .map(c => c.name)
-        const preview = names.join(', ') + (currentCount > 3 ? ` e mais ${currentCount - 3}` : '')
-        const plural = currentCount > 1
-        setChatMessages(prev => [
-          ...prev,
-          {
-            id: `lia-selection-${Date.now()}`,
-            type: 'lia' as const,
-            content: `Você selecionou **${currentCount} candidato${plural ? 's' : ''}**: ${preview}.\n\nPosso analisar ${plural ? 'estes candidatos' : 'este candidato'} para você:\n\n• **Analisar potencial de crescimento**\n• **Definir tipo de perfil** (executor, estratégico, etc)\n• **Resumo executivo do perfil**`,
-            timestamp: new Date(),
-          },
-        ])
-      }
-    }
-    prevSelectedCountRef.current = currentCount
-  }, [selectedCandidatesForBatch.size, userCollapsedLIA, candidates, selectedCandidatesForBatch])
-
-  // ── LIA entity parsing with debounce ─────────────────────────────────────
-  useEffect(() => {
-    const emptyEntities = {
-      job_title: undefined, location: undefined, skills: [],
-      years_experience: undefined, industry: undefined, seniority: undefined, company: undefined,
-    }
-    if (!liaPromptValue.trim()) { setLiaPromptEntities(emptyEntities); setLiaSuggestions([]); return }
-    const timer = setTimeout(async () => {
-      setLiaIsParsingEntities(true)
-      try {
-        const res = await fetch('/api/backend-proxy/search/parse-query', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: liaPromptValue }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          const e = data.entities || data
-          setLiaPromptEntities({
-            job_title: e.job_title || undefined, location: e.location || undefined,
-            skills: e.skills || [], years_experience: e.years_experience || undefined,
-            industry: e.industry || undefined, seniority: e.seniority || undefined,
-            company: e.company || undefined,
-          })
-          setLiaSuggestions(Array.isArray(data.suggestions) ? data.suggestions : [])
-        }
-      } catch {} finally { setLiaIsParsingEntities(false) }
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [liaPromptValue])
-
-  // ── Open LIA panel on mount ───────────────────────────────────────────────
-  useEffect(() => { setShowExpandedLIA(true) }, [])
-
-  // ── Archetypes ────────────────────────────────────────────────────────────
-  const archetypesHook = useCandidatesArchetypes({
-    searchSource, pearchSearchOptions,
-    setCandidates, setHasSearchResults, setSearchResultsCount,
-    setLocalResultsCount, setPearchResultsCount,
-    setLastSearchQuery, setLastSearchMode,
-    setActiveSearchTab: (_v: string) => setActiveSearchTab(_v as SearchTab),
-    setLiaPromptValue, setChatMessages,
+  useCandidatesPageEffects({
+    selectedCandidatesForBatch, userCollapsedLIA, candidates,
+    liaPromptValue, setShowExpandedLIA, setChatMessages,
+    setLiaPromptEntities, setLiaSuggestions, setLiaIsParsingEntities,
   })
+
+  const searchComposition = useCandidatesSearchComposition({
+    searchSource, pearchSearchOptions, setCandidates,
+    setHasSearchResults, setSearchResultsCount, setLocalResultsCount, setPearchResultsCount,
+    setLastSearchQuery, setLastSearchMode, setActiveSearchTab, setLiaPromptValue, setChatMessages,
+    creditsRemaining, setCreditsRemaining,
+    searchThreadId, setSearchThreadId,
+    hideViewedCandidatesFilter: hideViewedCandidates.filterCandidates,
+    talentFunnel, setSearchResults, setShowSearchResults, setDisplayedResultsCount,
+    setCurrentSearchSource, setHasSearched, setLastSearchEntities, setLastSearchMetadata,
+    setLastSearchUsedPearch, setSearchExecutionId, setShowExpandGlobalOption,
+    setShowExpandedLIA, setUserCollapsedLIA,
+    setIsLoading, setIsSearchActive, setIsDroppingCV, setCvUploadLoading,
+    candidates, searchResults, searchTerm, lastSearchQuery,
+    lastSearchEntities: lastSearchEntities as ParsedEntities | null,
+    lastSearchMode, lastSearchMetadata, lastSearchUsedPearch,
+    currentSearchSource, openCreditModals, setOpenCreditModals,
+    setPearchSearchOptions, creditsUsedInSearch, setCreditsUsedInSearch,
+    pearchResultsCount, localResultsCount, searchResultsCount,
+    showSearchResults, hasSearchResults,
+    showGlobalExpansionConfirm, setShowGlobalExpansionConfirm,
+    isExpandingToGlobal, setIsExpandingToGlobal,
+    displayedResultsCount, isLoadingMore, setIsLoadingMore,
+    searchFeedbacks, setSearchFeedbacks,
+    hasSearched,
+    showExpandGlobalOption, showSourceChangeModal, setShowSourceChangeModal,
+    pendingSourceChange, setPendingSourceChange,
+    showContactFilterModal, setShowContactFilterModal,
+    pendingContactFilter, setPendingContactFilter,
+    showCreditConfirmation, setShowCreditConfirmation,
+    pendingSearchRequest, setPendingSearchRequest,
+    activeSearchFilters, setActiveSearchFilters,
+    setSelectedTemplate, setSearchSource, searchExecutionId,
+    user: user as Record<string, unknown> | null,
+  })
+
+  const { archetypesHook, revealContactHook, executeSearch, cvHandlers, searchHandlers } = searchComposition
   const {
     state: {
       backendArchetypes, isLoadingArchetypes, archetypesLoadError,
@@ -410,76 +323,11 @@ const hideViewedCandidates = useHideViewedCandidates({
       buildFiltersFromTags, loadArchetypesFromBackend, executeArchetypeSearch,
     },
   } = archetypesHook
-
-  // ── Reveal contact ────────────────────────────────────────────────────────
-  const revealContactHook = useRevealContact({
-    setCreditsRemaining: (fn) =>
-      setCreditsRemaining(typeof fn === 'function' ? fn(creditsRemaining) : fn),
-  })
   const { showRevealModal, revealCandidate, revealType, revealedContacts, isRevealing } = revealContactHook.state
   const { setShowRevealModal, setRevealCandidate, setRevealType, setRevealedContacts, openRevealModal, handleRevealContact } = revealContactHook.actions
-
-  // ── Execute search ────────────────────────────────────────────────────────
-  const { executeSearch } = useCandidatesExecuteSearch({
-    searchSource, pearchSearchOptions, searchThreadId, setSearchThreadId,
-    hideViewedCandidatesFilter: hideViewedCandidates.filterCandidates,
-    talentFunnel,
-    setCandidates, setSearchResults, setHasSearchResults, setSearchResultsCount,
-    setLocalResultsCount, setPearchResultsCount, setCreditsUsedInSearch,
-    setCreditsRemaining: (fn) =>
-      setCreditsRemaining(typeof fn === 'function' ? fn(creditsRemaining ?? 0) : fn),
-    setShowSearchResults, setDisplayedResultsCount, setCurrentSearchSource,
-    setHasSearched, setLastSearchEntities, setLastSearchMetadata, setLastSearchUsedPearch,
-    setSearchExecutionId, setShowExpandGlobalOption, setShowExpandedLIA, setUserCollapsedLIA,
-    setLastSuccessfulQuery, setChatMessages, setIsLoading, setIsSearchActive,
-  })
-
-  // ── CV handlers ───────────────────────────────────────────────────────────
-  const cvHandlers = useCandidatesCVHandlers({
-    setCandidates, setIsDroppingCV, setCvUploadLoading,
-    setHasSearchResults, setSearchResultsCount, setShowSearchResults,
-    setDisplayedResultsCount, setChatMessages,
-  })
   const handleCVDrop = cvHandlers.handleCVDrop
   const handleCVDragOver = cvHandlers.handleCVDragOver
   const handleCVDragLeave = cvHandlers.handleCVDragLeave
-
-  // ── Search handlers ───────────────────────────────────────────────────────
-  const searchHandlers = useCandidatesSearch({
-    candidates, setCandidates,
-    searchResults, setSearchResults,
-    searchTerm,
-    lastSearchQuery, lastSearchEntities, lastSearchMode, lastSearchMetadata, lastSearchUsedPearch,
-    searchSource, setSearchSource, currentSearchSource, setCurrentSearchSource,
-    openCreditModals, setOpenCreditModals,
-    pearchSearchOptions, setPearchSearchOptions,
-    creditsRemaining, setCreditsRemaining,
-    creditsUsedInSearch, setCreditsUsedInSearch,
-    pearchResultsCount, setPearchResultsCount,
-    localResultsCount, setLocalResultsCount,
-    searchResultsCount, setSearchResultsCount,
-    showSearchResults, setShowSearchResults,
-    hasSearchResults, setHasSearchResults,
-    showGlobalExpansionConfirm, setShowGlobalExpansionConfirm,
-    isExpandingToGlobal, setIsExpandingToGlobal,
-    displayedResultsCount, setDisplayedResultsCount,
-    isLoadingMore, setIsLoadingMore,
-    searchFeedbacks, setSearchFeedbacks,
-    hasSearched, lastSuccessfulQuery,
-    setSearchThreadId, searchThreadId,
-    showExpandGlobalOption, setShowExpandGlobalOption,
-    setChatMessages,
-    showSourceChangeModal, setShowSourceChangeModal,
-    pendingSourceChange, setPendingSourceChange,
-    showContactFilterModal, setShowContactFilterModal,
-    pendingContactFilter, setPendingContactFilter,
-    showCreditConfirmation, setShowCreditConfirmation,
-    pendingSearchRequest, setPendingSearchRequest,
-    activeSearchFilters, setActiveSearchFilters,
-    setSelectedTemplate,
-    executeSearch,
-user,
-  })
   const handleConfirmPearchSearch = searchHandlers.handleConfirmPearchSearch
   const handleSourceChange = searchHandlers.handleSourceChange
   const confirmSourceChange = searchHandlers.confirmSourceChange
@@ -492,71 +340,81 @@ user,
   const buildQueryFromFilters = searchHandlers.buildQueryFromFilters
   const handleTemplateSelection = searchHandlers.handleTemplateSelection
 
-  // ── Column config ─────────────────────────────────────────────────────────
-  const columnConfigHook = useCandidatesColumnConfig()
+  const handleToggleFavorite = (candidateId: string, note?: string) => { talentFunnel.toggleFavoriteCandidate(candidateId, note) }
+  const handleUpdateFavoriteNote = (candidateId: string, note: string) => { talentFunnel.updateFavoriteNote(candidateId, note) }
+  const handleTogglePin = (candidateId: string) => { talentFunnel.togglePinnedCandidate(candidateId) }
+
+  const viewComposition = useCandidatesViewComposition({
+    candidates, setCandidates, searchResults, searchTerm, hasSearchResults,
+    quickFilters, columnFilters, advancedFilters, tableFilters, setTableFilters,
+    sortBy, setSortBy, sortOrder, setSortOrder, searchSortBy, searchFeedbacks,
+    displayedResultsCount, showSearchResults, setShowSearchResults, currentPage, itemsPerPage,
+    showOnlyNew, viewedCandidateIds, activeTab, setActiveTab,
+    viewingList, setViewingList, candidateListsForModal,
+    selectedCandidatesForBatch, setSelectedCandidatesForBatch,
+    isSavingToBase, setIsSavingToBase, isAddingToList, setIsAddingToList,
+    showAddToListModal, setShowAddToListModal,
+    addToListCandidateIds, setAddToListCandidateIds,
+    addToListCandidateNames, setAddToListCandidateNames,
+    showUnsavedWarningModal, setShowUnsavedWarningModal,
+    pendingTabChange, setPendingTabChange,
+    hasUnsavedPearchCandidates, unsavedPearchCandidates, lastSearchQuery,
+    revealedContacts, expandedRows, setExpandedRows,
+    isPreviewMaximized, setIsPreviewMaximized, previewWidth, setPreviewWidth,
+    setPreviewCandidate, setShowCandidatePreview, setShowPreview,
+    setSelectedCandidate, setShowCandidatePage, setShowSidePreview, setSidePreviewCandidate,
+    setSelectedCandidateForLIA, setShowLIAPromptForCandidate,
+    setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalOpen,
+    setShowScheduleModal, setShowContactModal, setSelectedCandidateForAction,
+    setShowComparisonModal, setShowQuickViewModal, setShowBatchApproval,
+    setParsedCVData, setShowCVPreviewModal, setShowAddCandidateModal,
+    onAddRecentItem, markCandidateAsViewed, handleBulkActionComplete,
+    chatMessages, setChatMessages, liaPromptValue, setLiaPromptValue,
+    liaWidth, setLiaWidth, activeSearchTab, setActiveSearchTab,
+    talentConversationId, setTalentConversationId,
+    liaIsParsingEntities, setLiaIsParsingEntities,
+    liaSuggestions, setLiaSuggestions,
+    showLiaSuggestions, setShowLiaSuggestions,
+    showLiaAssistant, setShowLiaAssistant,
+    activeSearchFilters, liaPromptEntities, setLiaPromptEntities,
+    setShowExpandedLIA, userCollapsedLIA, setUserCollapsedLIA,
+    selectedCandidate, showLIAPromptForCandidate,
+    showQuickViewModal, showComparisonModal,
+    isLIAThinking, setIsLIAThinking,
+    selectedCandidateForLIA,
+    setWsiInviteCandidate, setShowWSIInviteModal,
+    setWsiCandidateForScreening, setShowWSITextModal, setShowWSIVoiceModal,
+    setShowRubricModal, executeSearch, talentFunnel,
+    user: user as Record<string, unknown> | null, router,
+    openRevealModal, handleSearchFeedbackChange, pearchSearchOptions,
+    setSearchTerm, setQuickFilters, setSelectedTemplate, setColumnFilters,
+  })
+
+  const {
+    columnConfigHook, renderCellValue, filterSort, candidatesActions, interactions, liaHandlers,
+    handleLIAChatMessage, handleAICommand, handleAddCandidate,
+    handleStartWSITextScreening, handleOpenWSIModal, handleStartWSIVoiceScreening,
+    handleSort, getSortIcon, toggleTableFilter,
+    clearAllTableFilters, clearAllFilters, saveCurrentSearch, getScoreColor, mapCandidateToInternal,
+  } = viewComposition
+  const getActiveTableFiltersCount = viewComposition.getActiveTableFiltersCount
+  const getActiveAdvancedFiltersCount = viewComposition.getActiveAdvancedFiltersCount
+  const getActiveSearchFiltersCount = viewComposition.getActiveSearchFiltersCount
+
+  const { filteredCandidates, sortedCandidates, paginatedCandidates, searchDisplayCandidates, visibleCandidates, getPaginatedCandidates } = filterSort
   const {
     showColumnConfig, tableColumns, savedColumnViews, columnSearchTerm,
-    columnWidths, draggedColumnId, dragOverColumnId, columnOrder,
-    visibleTableColumns,
+    columnWidths, draggedColumnId, dragOverColumnId, columnOrder, visibleTableColumns,
   } = columnConfigHook.state
   const {
     setShowColumnConfig, setTableColumns, setSavedColumnViews, setColumnSearchTerm,
     setColumnWidths, setDraggedColumnId, setDragOverColumnId, setColumnOrder,
     isColumnVisible, handleToggleColumnConfig, handleSaveColumns,
     handleSaveColumnView, handleLoadColumnView, handleDeleteColumnView,
-    startResize,
-    handleColumnDragStart, handleColumnDragOver, handleColumnDragLeave,
+    startResize, handleColumnDragStart, handleColumnDragOver, handleColumnDragLeave,
     handleColumnDrop, handleColumnDragEnd,
   } = columnConfigHook.actions
 
-  // ── Cell renderer ─────────────────────────────────────────────────────────
-  const renderCellValue = createCellRenderer({
-    searchFeedbacks,
-    revealedContacts,
-    searchQuery: searchResults.query,
-    viewedCandidateIds,
-    expandedRows,
-    onSearchFeedbackChange: handleSearchFeedbackChange,
-    onRevealContact: openRevealModal,
-    onToggleExpandedRow: (candidateId) =>
-      setExpandedRows(prev => {
-        const newSet = new Set(prev)
-        if (newSet.has(candidateId)) newSet.delete(candidateId)
-        else newSet.add(candidateId)
-        return newSet
-      }),
-  })
-
-  // ── Filter/sort ───────────────────────────────────────────────────────────
-  const {
-    filteredCandidates, sortedCandidates, paginatedCandidates,
-    searchDisplayCandidates, visibleCandidates, getPaginatedCandidates,
-  } = useCandidatesFilterSort({
-    candidates, searchTerm, hasSearchResults, quickFilters, columnFilters,
-    advancedFilters, tableFilters, sortBy, sortOrder, searchSortBy, searchFeedbacks,
-    displayedResultsCount, showSearchResults, currentPage, itemsPerPage,
-    showOnlyNew, viewedCandidateIds,
-  })
-
-  // ── Candidate actions ─────────────────────────────────────────────────────
-  const candidatesActions = useCandidatesActions({
-    candidates, setCandidates,
-    activeTab, setActiveTab,
-    viewingList, setViewingList,
-    candidateListsForModal,
-    selectedCandidatesForBatch, setSelectedCandidatesForBatch,
-    isSavingToBase, setIsSavingToBase,
-    isAddingToList, setIsAddingToList,
-    showAddToListModal, setShowAddToListModal,
-    addToListCandidateIds, setAddToListCandidateIds,
-    addToListCandidateNames, setAddToListCandidateNames,
-    showUnsavedWarningModal, setShowUnsavedWarningModal,
-    pendingTabChange, setPendingTabChange,
-    hasUnsavedPearchCandidates, unsavedPearchCandidates,
-    showSearchResults, setShowSearchResults,
-    lastSearchQuery, deselectAllCandidates: () => setSelectedCandidatesForBatch(new Set()),
-user,
-  })
   const handleSaveToLocalBase = candidatesActions.handleSaveToLocalBase
   const handleAddToList = candidatesActions.handleAddToList
   const handleTabChangeWithWarning = candidatesActions.handleTabChangeWithWarning
@@ -567,174 +425,30 @@ user,
     c => selectedCandidatesForBatch.has(c.id) && c.source === 'pearch'
   ).length
 
-  // ── Favorite / pin helpers ────────────────────────────────────────────────
-  const handleToggleFavorite = (candidateId: string, note?: string) => { talentFunnel.toggleFavoriteCandidate(candidateId, note) }
-  const handleUpdateFavoriteNote = (candidateId: string, note: string) => { talentFunnel.updateFavoriteNote(candidateId, note) }
-  const handleTogglePin = (candidateId: string) => { talentFunnel.togglePinnedCandidate(candidateId) }
-
-  // ── LIA chat stubs ────────────────────────────────────────────────────────
-  const liaHandlersRef = React.useRef<ReturnType<typeof useCandidatesLIAHandlers> | null>(null)
-  const handleLIAChatMessage = async (message: string) => {
-    if (liaHandlersRef.current) return liaHandlersRef.current.handleLIAChatMessage(message)
-  }
-  const handleAICommand = async (command: string) => {
-    if (liaHandlersRef.current) return liaHandlersRef.current.handleAICommand(command)
-  }
-
-  // ── Candidate interactions (click, preview, communications) ───────────────
-  const interactions = useCandidatesInteractions({
-    candidates,
-    setCandidates,
-    sortedCandidates,
-    selectedCandidatesForBatch,
-    setSelectedCandidatesForBatch,
-    setPreviewCandidate,
-    setShowCandidatePreview,
-    setIsPreviewMaximized,
-    isPreviewMaximized,
-    setShowPreview,
-    setSelectedCandidate,
-    setShowCandidatePage,
-    setShowSidePreview,
-    setSidePreviewCandidate,
-    setSelectedCandidateForLIA,
-    setShowLIAPromptForCandidate,
-    previewWidth,
-    setPreviewWidth,
-    setUnifiedModalCandidate,
-    setUnifiedModalType,
-    setUnifiedModalOpen,
-    setShowScheduleModal,
-    setShowContactModal,
-    setSelectedCandidateForAction,
-    setShowComparisonModal,
-    setShowQuickViewModal,
-    setShowBatchApproval,
-    setParsedCVData,
-    setShowCVPreviewModal,
-    onAddRecentItem,
-    markCandidateAsViewed,
-    handleBulkActionComplete,
-    handleAICommand,
-    deselectAllCandidates: () => setSelectedCandidatesForBatch(new Set()),
-  })
-
   const {
-    openUnifiedModal,
-    handleCandidateClick,
-    handleCloseCandidatePreview,
-    handleTogglePreviewMaximize,
-    handleCandidatePageOpen,
-    handleCloseSidePreview,
-    handleClosePreview,
-    handleToggleMaximize,
-    handleCloseCandidatePage,
-    handleCandidateSelection,
-    selectAllCandidates,
-    handleLIAClick,
-    handlePreviewResize,
-    handleNavigateToFullProfile,
-    handleScheduleInterview,
-    handleContactCandidate,
-    handleSendMessage,
-    handleScheduleComplete,
-    handleSendEmail,
-    handleSendWhatsApp,
-    handleSendTriagem,
-    handleSendAgendamento,
-    handleSendFeedback,
-    handleBulkEmail,
-    handleBulkWSIScreening,
-    handleBulkScheduleInterview,
-    handleBulkFeedback,
-    handleUnifiedModalClose,
-    handleUnifiedModalSend,
-    handleBatchApprovalComplete,
-    handleWSIScreeningComplete,
-    handleCVParsed,
-    handleCVConfirmed,
-    getCandidateQuickActions,
-    getComparisonCandidates,
-    convertCandidatesForBatch,
+    openUnifiedModal, handleCandidateClick, handleCloseCandidatePreview,
+    handleTogglePreviewMaximize, handleCandidatePageOpen, handleCloseSidePreview,
+    handleClosePreview, handleToggleMaximize, handleCloseCandidatePage,
+    handleCandidateSelection, selectAllCandidates, handleLIAClick,
+    handlePreviewResize, handleNavigateToFullProfile, handleScheduleInterview,
+    handleContactCandidate, handleSendMessage, handleScheduleComplete,
+    handleSendEmail, handleSendWhatsApp, handleSendTriagem, handleSendAgendamento,
+    handleSendFeedback, handleBulkEmail, handleBulkWSIScreening,
+    handleBulkScheduleInterview, handleBulkFeedback,
+    handleUnifiedModalClose, handleUnifiedModalSend,
+    handleBatchApprovalComplete, handleWSIScreeningComplete,
+    handleCVParsed, handleCVConfirmed, getCandidateQuickActions,
+    getComparisonCandidates, convertCandidatesForBatch,
   } = interactions
 
-  const handleAddCandidate = (newCandidate: Record<string, unknown>) => {
-    interactions.handleAddCandidate(newCandidate, setShowAddCandidateModal)
-  }
-
-  const deselectAllCandidates = () => setSelectedCandidatesForBatch(new Set())
-
-  // ── WSI helpers (modal open) ──────────────────────────────────────────────
-  const handleStartWSITextScreening = (candidate: Candidate) => { setWsiInviteCandidate(candidate); setShowWSIInviteModal(true) }
-  const handleOpenWSIModal = (candidate: Candidate) => { setWsiCandidateForScreening(candidate); setShowWSITextModal(true) }
-  const handleStartWSIVoiceScreening = (candidate: Candidate) => { setWsiCandidateForScreening(candidate); setShowWSIVoiceModal(true) }
-
-  // ── LIA handlers (wired last — needs openUnifiedModal, executeSearch, etc) ─
-  const liaHandlers = useCandidatesLIAHandlers({
-    candidates, setCandidates,
-    chatMessages, setChatMessages,
-    liaPromptValue, setLiaPromptValue,
-    liaWidth, setLiaWidth,
-    activeSearchTab, setActiveSearchTab,
-    talentConversationId, setTalentConversationId,
-    liaIsParsingEntities, setLiaIsParsingEntities,
-    liaSuggestions, setLiaSuggestions,
-    showLiaSuggestions, setShowLiaSuggestions,
-    showLiaAssistant, setShowLiaAssistant,
-    selectedCandidatesForBatch, setSelectedCandidatesForBatch,
-    searchResults, lastSearchQuery,
-    activeSearchFilters,
-    liaPromptEntities, setLiaPromptEntities,
-    setShowExpandedLIA, userCollapsedLIA, setUserCollapsedLIA,
-    selectedCandidateForLIA, setSelectedCandidateForLIA,
-    showLIAPromptForCandidate, setShowLIAPromptForCandidate,
-    selectedCandidate, setSelectedCandidate,
-    showQuickViewModal, setShowQuickViewModal,
-    showComparisonModal, setShowComparisonModal,
-    setShowScheduleModal,
-    setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalOpen,
-    setShowAddToListModal,
-    isLIAThinking, setIsLIAThinking,
-    handleStartWSITextScreening, handleOpenWSIModal,
-    openUnifiedModal, handleCandidateClick,
-    executeSearch, talentFunnel,
-user, router,
-  })
-  liaHandlersRef.current = liaHandlers
   const handleQuickAction = liaHandlers.handleQuickAction
   const handleOrchestratedTalentMessage = liaHandlers.handleOrchestratedTalentMessage
   const handleTalentUIAction = liaHandlers.handleTalentUIAction
   const handleCalibrationLike = liaHandlers.handleCalibrationLike
   const handleCalibrationDislike = liaHandlers.handleCalibrationDislike
 
-  // ── Sort helpers ──────────────────────────────────────────────────────────
-  const handleSort = (field: string) => {
-    if (sortBy === field) setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-    else { setSortBy(field); setSortOrder('desc') }
-  }
-  const getSortIcon = (field: string) => {
-    if (sortBy !== field) return <ArrowUpDown className="w-3 h-3 ml-1" />
-    return sortOrder === 'asc' ? <ArrowUp className="w-3 h-3 ml-1" /> : <ArrowDown className="w-3 h-3 ml-1" />
-  }
+  const deselectAllCandidates = () => setSelectedCandidatesForBatch(new Set())
 
-  // ── Filter count / clear helpers ──────────────────────────────────────────
-  const _getActiveTableFiltersCount = () => getActiveTableFiltersCount(tableFilters)
-  const _getActiveAdvancedFiltersCount = () => getActiveAdvancedFiltersCount(advancedFilters)
-  const _getActiveSearchFiltersCount = () => getActiveSearchFiltersCount(quickFilters, advancedFilters)
-  const toggleTableFilter = (category: keyof TableFilters, value: string) => {
-    setTableFilters(prev => toggleTableFilterValue(prev, category, value))
-  }
-  const clearAllTableFilters = () => setTableFilters(getDefaultTableFilters())
-  const clearAllFilters = () => {
-    setSearchTerm('')
-    setQuickFilters(new Set())
-    setSelectedTemplate('')
-    setColumnFilters({
-      position: [], company: [], location: [], scoreRange: [],
-      bigFive: { openness: '', conscientiousness: '', extraversion: '', agreeableness: '', neuroticism: '' },
-    })
-    clearAllTableFilters()
-  }
   const clearCrossTabFilter = () => {
     setCrossTabFilter(null)
     setShowCrossTabBanner(false)
@@ -742,33 +456,13 @@ user, router,
     setQuickFilters(new Set())
     window.history.replaceState({}, '', window.location.pathname)
   }
-  const saveCurrentSearch = () => {
-    sessionStorage.setItem(
-      'current-search-data',
-      JSON.stringify({ name: `Busca ${new Date().toLocaleDateString()}`, searchTerm, quickFilters: Array.from(quickFilters), timestamp: new Date().toISOString() })
-    )
-    setActiveTab('saved-searches')
-    toast.success('Busca salva', { description: `${sortedCandidates.length} candidatos encontrados` })
-  }
-  const getScoreColor = (score: number) => {
-    const cls = classifyPercentageScore(score)
-    switch (cls.level) {
-      case 'excellent': return 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30'
-      case 'good': return 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle'
-      case 'satisfactory': return 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning border-status-warning/30 dark:border-status-warning/30'
-      default: return 'bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error border-status-error/30 dark:border-status-error/30'
-    }
-  }
 
-  const mapCandidateToInternal = _mapCandidateToInternal
-
-  // ── RETURN — same public shape; do not rename anything ───────────────────
   return {
     activeSearchFilters, activeSearchTab, activeTab, addToListCandidateIds, addToListCandidateNames, bulkJobVacancies,
     candidateListsForModal, candidates, chatMessages, clearAllFilters, clearAllTableFilters, clearCrossTabFilter,
     columnSearchTerm, columnWidths, confirmContactFilterChange, confirmSourceChange, contactModalAction, contactModalCandidate,
     convertCandidatesForBatch, creditEstimate, deselectAllCandidates, emailCandidateSelected, executeSearch, favoriteNotes,
-    favorites, getActiveAdvancedFiltersCount: _getActiveAdvancedFiltersCount, getActiveSearchFiltersCount: _getActiveSearchFiltersCount, getActiveTableFiltersCount: _getActiveTableFiltersCount, getPaginatedCandidates, handleAICommand,
+    favorites, getActiveAdvancedFiltersCount, getActiveSearchFiltersCount, getActiveTableFiltersCount, getPaginatedCandidates, handleAICommand,
     handleAddCandidate, handleAddToList, handleBatchApprovalComplete, handleBulkEmail, handleBulkWSIScreening, handleCVConfirmed,
     handleCVDragLeave, handleCVDragOver, handleCVDrop, handleCalibrationDislike, handleCalibrationLike, handleCandidateClick,
     handleCandidatePageOpen, handleCloseCandidatePage, handleCloseCandidatePreview, handleConfirmPearchSearch, handleContactCandidate, handleExitWithoutSaving,

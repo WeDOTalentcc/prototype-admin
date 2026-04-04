@@ -1,7 +1,6 @@
 "use client"
 
-import React, { useState, useCallback, useRef, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import React from "react"
 import {
   Dialog,
   DialogContent,
@@ -9,804 +8,26 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Checkbox } from "@/components/ui/checkbox"
-import { cn } from "@/lib/utils"
-import {
-  User, Mail, Phone, Upload, FileText,
-  X, Brain, CheckCircle, AlertCircle,
-  Linkedin, Loader2, File, ExternalLink, Building, MapPin
-} from "lucide-react"
-import { duplicateDetectionService, type DuplicateCheckResult, type CandidateBasicInfo } from '@/services/duplicate-detection-service'
-import { textStyles, buttonStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { InputStep } from "@/components/modals/new-candidate/InputStep"
-import { toast } from "sonner"
+import { DuplicateFoundStep } from "./DuplicateFoundStep"
+import { ProcessingStep, SuccessStep } from "./ProcessingAndSuccessSteps"
+import { useNewCandidateUnifiedModal } from "./useNewCandidateUnifiedModal"
+import type { NewCandidateUnifiedModalProps } from "./new-candidate-unified-types"
 
-const ACCEPTED_FILE_TYPES = {
-  'application/pdf': ['.pdf'],
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-  'application/msword': ['.doc'],
-  'text/plain': ['.txt'],
-}
+export type { NewCandidateUnifiedModalProps } from "./new-candidate-unified-types"
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024
-
-interface ParsedCV {
-  full_name: string
-  email?: string
-  phone?: string
-  linkedin?: string
-  github?: string
-  portfolio?: string
-  location?: string
-  current_title?: string
-  seniority_level?: string
-  summary?: string
-  experiences: Array<{
-    company: string
-    title: string
-    start_date?: string
-    end_date?: string
-    is_current: boolean
-    description?: string
-    location?: string
-  }>
-  education: Array<{
-    institution: string
-    degree?: string
-    field_of_study?: string
-    start_date?: string
-    end_date?: string
-    is_completed: boolean
-    description?: string
-  }>
-  skills: string[]
-  languages: string[]
-  certifications: string[]
-  raw_text: string
-  file_name?: string
-  file_type?: string
-  file_size_bytes?: number
-  confidence_score: number
-  extraction_notes: string[]
-  parsed_at: string
-}
-
-interface ParsedCVResponse {
-  success: boolean
-  message: string
-  parsed_cv: ParsedCV | null
-  duplicate_warning?: {
-    message: string
-    existing_candidate_id: string
-    existing_candidate_name: string
-    match_type: string
-    similarity_score: number
-  } | null
-  candidate_id?: string | null
-}
-
-interface JobVacancy {
-  id: string
-  title: string
-  department?: string
-  location?: string
-}
-
-interface NewCandidateUnifiedModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onCandidateAdded: (candidate: Record<string, unknown>) => void
-  jobVacancies?: JobVacancy[]
-  candidateLists?: Array<{ id: string; name: string; color?: string }>
-  preSelectedListId?: string
-  preSelectedListName?: string
-  onGoToSearch?: () => void
-  onOpenFullProfile?: (candidateId: string) => void
-}
-
-type Step = 'input' | 'duplicate-found' | 'processing' | 'success'
-type InputTab = 'cv' | 'linkedin' | 'manual'
-
-export function NewCandidateUnifiedModal({ 
-  isOpen, 
-  onClose, 
+export function NewCandidateUnifiedModal({
+  isOpen,
+  onClose,
   onCandidateAdded,
-  jobVacancies = [],
-  candidateLists = [],
-  preSelectedListId = "",
-  preSelectedListName = "",
-  onGoToSearch,
-  onOpenFullProfile
+  onOpenFullProfile,
 }: NewCandidateUnifiedModalProps) {
-  const router = useRouter()
-const [currentStep, setCurrentStep] = useState<Step>('input')
-  const [activeTab, setActiveTab] = useState<InputTab>('cv')
-  
-  const [isDragging, setIsDragging] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [cvText, setCvText] = useState("")
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [isEnriching, setIsEnriching] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [error, setError] = useState<string | null>(null)
-
-  const [parsedCV, setParsedCV] = useState<ParsedCV | null>(null)
-  
-  const [linkedinUrl, setLinkedinUrl] = useState("")
-  
-  const [manualData, setManualData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    linkedinUrl: ""
+  const modal = useNewCandidateUnifiedModal({
+    isOpen,
+    onClose,
+    onCandidateAdded,
+    onOpenFullProfile,
   })
-  
-  const [duplicateResult, setDuplicateResult] = useState<DuplicateCheckResult | null>(null)
-  const [savedCandidateId, setSavedCandidateId] = useState<string>('')
-
-  useEffect(() => {
-    if (!isOpen) {
-      resetModal()
-    }
-  }, [isOpen])
-
-  const resetModal = () => {
-    setCurrentStep('input')
-    setActiveTab('cv')
-    setParsedCV(null)
-    setDuplicateResult(null)
-    setSelectedFile(null)
-    setCvText("")
-    setLinkedinUrl("")
-    setManualData({ name: "", email: "", phone: "", linkedinUrl: "" })
-    setIsProcessing(false)
-    setIsEnriching(false)
-    setUploadProgress(0)
-    setError(null)
-    setSavedCandidateId('')
-  }
-
-  const validateFile = (file: File): string | null => {
-    const acceptedMimeTypes = Object.keys(ACCEPTED_FILE_TYPES)
-    if (!acceptedMimeTypes.includes(file.type)) {
-      const extension = file.name.split('.').pop()?.toLowerCase()
-      const validExtensions = ['pdf', 'docx', 'doc', 'txt']
-      if (!extension || !validExtensions.includes(extension)) {
-        return "Formato de arquivo não suportado. Use PDF, DOCX, DOC ou TXT."
-      }
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      return "Arquivo muito grande. O tamanho máximo é 5MB."
-    }
-    return null
-  }
-
-  const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragging(true)
-  }, [])
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragging(false)
-  }, [])
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }, [])
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsDragging(false)
-    setError(null)
-
-    const files = e.dataTransfer.files
-    if (files.length > 0) {
-      const file = files[0]
-      const validationError = validateFile(file)
-      if (validationError) {
-        setError(validationError)
-        return
-      }
-      setSelectedFile(file)
-    }
-  }, [])
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setError(null)
-    const files = e.target.files
-    if (files && files.length > 0) {
-      const file = files[0]
-      const validationError = validateFile(file)
-      if (validationError) {
-        setError(validationError)
-        return
-      }
-      setSelectedFile(file)
-    }
-  }
-
-  const getFileIcon = (filename: string) => {
-    const ext = filename.split('.').pop()?.toLowerCase()
-    if (ext === 'pdf') return <FileText className="w-4 h-4 text-status-error" />
-    if (['doc', 'docx'].includes(ext || '')) return <FileText className="w-4 h-4 text-wedo-cyan-dark" />
-    return <File className="w-4 h-4 text-lia-text-tertiary" />
-  }
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  }
-
-  const enrichCandidate = async (candidateId: string, linkedinUrlToEnrich: string): Promise<boolean> => {
-    try {
-      setIsEnriching(true)
-      const enrichResponse = await fetch(`/api/backend-proxy/candidates/${candidateId}/enrich`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          linkedin_url: linkedinUrlToEnrich,
-          include_experiences: true,
-          include_education: true,
-          include_email_discovery: true
-        })
-      })
-
-      if (!enrichResponse.ok) {
-        return false
-      }
-
-      return true
-    } catch (err) {
-      return false
-    } finally {
-      setIsEnriching(false)
-    }
-  }
-
-  const handleProcessCV = async (file: File): Promise<ParsedCV | null> => {
-    setUploadProgress(10)
-
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
-
-      setUploadProgress(30)
-
-      const response = await fetch("/api/backend-proxy/cv/upload", {
-        method: "POST",
-        body: formData,
-      })
-
-      setUploadProgress(70)
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || errorData.detail || "Erro ao processar CV")
-      }
-
-      const data: ParsedCVResponse = await response.json()
-      setUploadProgress(100)
-
-      if (data.success && data.parsed_cv) {
-        return data.parsed_cv
-      } else {
-        throw new Error(data.message || "Erro ao processar CV")
-      }
-    } catch (err) {
-      throw err
-    }
-  }
-
-  const handleParseText = async (): Promise<ParsedCV | null> => {
-    if (cvText.trim().length < 50) {
-      throw new Error("O texto do CV deve ter pelo menos 50 caracteres.")
-    }
-
-    setUploadProgress(20)
-
-    try {
-      const response = await fetch("/api/backend-proxy/cv/parse-text", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: cvText, source: "manual_paste" }),
-      })
-
-      setUploadProgress(70)
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || errorData.detail || "Erro ao processar texto")
-      }
-
-      const data: ParsedCVResponse = await response.json()
-      setUploadProgress(100)
-
-      if (data.success && data.parsed_cv) {
-        return data.parsed_cv
-      } else {
-        throw new Error(data.message || "Erro ao processar texto")
-      }
-    } catch (err) {
-      throw err
-    }
-  }
-
-  const createCandidate = async (candidateData: Record<string, unknown>): Promise<string> => {
-    const response = await fetch("/api/backend-proxy/candidates/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(candidateData),
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.error || errorData.detail || "Erro ao criar candidato")
-    }
-
-    const result = await response.json()
-    return result.id
-  }
-
-  const handleSubmitCV = async () => {
-    setIsProcessing(true)
-    setError(null)
-    setCurrentStep('processing')
-
-    try {
-      let parsed: ParsedCV | null = null
-      
-      if (selectedFile) {
-        parsed = await handleProcessCV(selectedFile)
-      } else if (cvText.trim().length >= 50) {
-        parsed = await handleParseText()
-      } else {
-        throw new Error("Selecione um arquivo ou cole o texto do CV")
-      }
-
-      if (!parsed) {
-        throw new Error("Não foi possível extrair dados do CV")
-      }
-
-      setParsedCV(parsed)
-
-      const duplicateCheck = await duplicateDetectionService.checkByParsedCV({
-        full_name: parsed.full_name,
-        email: parsed.email,
-        phone: parsed.phone,
-        linkedin: parsed.linkedin
-      })
-
-      if (duplicateCheck.found) {
-        setDuplicateResult(duplicateCheck)
-        setCurrentStep('duplicate-found')
-        return
-      }
-
-      await createAndOpenCandidate(parsed, !!parsed.linkedin)
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Erro ao processar CV"
-      setError(errorMessage)
-      toast.error("Erro no processamento", { description: errorMessage })
-      setCurrentStep('input')
-    } finally {
-      setIsProcessing(false)
-      setUploadProgress(0)
-    }
-  }
-
-  const handleSubmitLinkedin = async () => {
-    if (!linkedinUrl.trim()) {
-      setError("Cole a URL do LinkedIn")
-      return
-    }
-
-    if (!linkedinUrl.includes('linkedin.com/in/')) {
-      setError("URL inválida. Use o formato: linkedin.com/in/nome-do-usuario")
-      return
-    }
-
-    setIsProcessing(true)
-    setError(null)
-    setCurrentStep('processing')
-
-    try {
-      const duplicateCheck = await duplicateDetectionService.checkDuplicate({
-        linkedinUrl: linkedinUrl.trim()
-      })
-
-      if (duplicateCheck.found) {
-        setDuplicateResult(duplicateCheck)
-        setCurrentStep('duplicate-found')
-        return
-      }
-
-      const candidateData = {
-        name: "Importação LinkedIn",
-        linkedin_url: linkedinUrl.trim(),
-        source: "linkedin",
-        auto_enrich: true
-      }
-
-      const candidateId = await createCandidate(candidateData)
-      setSavedCandidateId(candidateId)
-      
-      onCandidateAdded({ id: candidateId, ...candidateData })
-
-      toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
-
-      openFullProfile(candidateId)
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Erro ao cadastrar via LinkedIn"
-      setError(errorMessage)
-      toast.error("Erro no cadastro", { description: errorMessage })
-      setCurrentStep('input')
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  const handleSubmitManual = async () => {
-    if (!manualData.name.trim()) {
-      setError("O nome é obrigatório")
-      return
-    }
-
-    if (!manualData.email.trim() && !manualData.phone.trim()) {
-      setError("Informe pelo menos um contato (email ou telefone)")
-      return
-    }
-
-    setIsProcessing(true)
-    setError(null)
-    setCurrentStep('processing')
-
-    try {
-      const duplicateCheck = await duplicateDetectionService.checkDuplicate({
-        name: manualData.name.trim(),
-        email: manualData.email.trim() || undefined,
-        phone: manualData.phone.trim() || undefined,
-        linkedinUrl: manualData.linkedinUrl.trim() || undefined
-      })
-
-      if (duplicateCheck.found) {
-        setDuplicateResult(duplicateCheck)
-        setCurrentStep('duplicate-found')
-        return
-      }
-
-      const hasLinkedin = manualData.linkedinUrl.trim() && manualData.linkedinUrl.includes('linkedin.com/in/')
-      const candidateData = {
-        name: manualData.name.trim(),
-        email: manualData.email.trim() || null,
-        phone: manualData.phone.trim() || null,
-        linkedin_url: manualData.linkedinUrl.trim() || null,
-        source: "manual",
-        auto_enrich: hasLinkedin
-      }
-
-      const candidateId = await createCandidate(candidateData)
-      setSavedCandidateId(candidateId)
-      
-      onCandidateAdded({ id: candidateId, ...candidateData })
-
-      if (hasLinkedin) {
-        toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
-      } else {
-        toast.success("Candidato cadastrado com sucesso!", { description: "Abrindo perfil completo..." })
-      }
-
-      openFullProfile(candidateId)
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Erro ao cadastrar candidato"
-      setError(errorMessage)
-      toast.error("Erro no cadastro", { description: errorMessage })
-      setCurrentStep('input')
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  const createAndOpenCandidate = async (parsed: ParsedCV, shouldEnrich: boolean = false) => {
-    const languagesDict: Record<string, string> = {}
-    if (parsed.languages && Array.isArray(parsed.languages)) {
-      parsed.languages.forEach((lang: string) => {
-        languagesDict[lang] = "intermediate"
-      })
-    }
-
-    const candidateData = {
-      name: parsed.full_name,
-      email: parsed.email || null,
-      phone: parsed.phone || null,
-      current_title: parsed.current_title || parsed.experiences?.[0]?.title || null,
-      current_company: parsed.experiences?.[0]?.company || null,
-      location_city: parsed.location || null,
-      linkedin_url: parsed.linkedin || null,
-      github_url: parsed.github || null,
-      portfolio_url: parsed.portfolio || null,
-      technical_skills: parsed.skills || [],
-      languages: languagesDict,
-      certifications: parsed.certifications || [],
-      seniority_level: parsed.seniority_level || null,
-      notes: parsed.summary || null,
-      source: "manual",
-      auto_enrich: shouldEnrich && !!parsed.linkedin
-    }
-
-    const candidateId = await createCandidate(candidateData)
-    setSavedCandidateId(candidateId)
-    
-    onCandidateAdded({ id: candidateId, ...candidateData })
-
-    if (shouldEnrich && parsed.linkedin) {
-      toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
-    } else {
-      toast.success("Candidato cadastrado com sucesso!", { description: "Abrindo perfil completo..." })
-    }
-
-    openFullProfile(candidateId)
-  }
-
-  const openFullProfile = (candidateId: string) => {
-    setCurrentStep('success')
-    setTimeout(() => {
-      if (onOpenFullProfile) {
-        onOpenFullProfile(candidateId)
-      } else {
-        router.push(`/funil-de-talentos/candidato/${candidateId}`)
-      }
-      onClose()
-    }, 800)
-  }
-
-  const handleOpenExistingCandidate = () => {
-    if (duplicateResult?.candidate?.id) {
-      if (onOpenFullProfile) {
-        onOpenFullProfile(duplicateResult.candidate.id)
-      } else {
-        router.push(`/funil-de-talentos/candidato/${duplicateResult.candidate.id}`)
-      }
-      onClose()
-    }
-  }
-
-  const handleCreateAnyway = async () => {
-    setIsProcessing(true)
-    setError(null)
-    setCurrentStep('processing')
-
-    try {
-      if (activeTab === 'cv' && parsedCV) {
-        await createAndOpenCandidate(parsedCV, !!parsedCV.linkedin)
-      } else if (activeTab === 'linkedin') {
-        const candidateData = {
-          name: "Importação LinkedIn",
-          linkedin_url: linkedinUrl.trim(),
-          source: "linkedin",
-          auto_enrich: true
-        }
-        const candidateId = await createCandidate(candidateData)
-        onCandidateAdded({ id: candidateId, ...candidateData })
-        
-        toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
-        
-        openFullProfile(candidateId)
-      } else if (activeTab === 'manual') {
-        const hasLinkedin = manualData.linkedinUrl.trim() && manualData.linkedinUrl.includes('linkedin.com/in/')
-        const candidateData = {
-          name: manualData.name.trim(),
-          email: manualData.email.trim() || null,
-          phone: manualData.phone.trim() || null,
-          linkedin_url: manualData.linkedinUrl.trim() || null,
-          source: "manual",
-          auto_enrich: hasLinkedin
-        }
-        const candidateId = await createCandidate(candidateData)
-        onCandidateAdded({ id: candidateId, ...candidateData })
-        
-        if (hasLinkedin) {
-          toast.success("Candidato cadastrado com sucesso!", { description: "LIA irá buscar os dados do LinkedIn em segundo plano. Abrindo perfil..." })
-        } else {
-          toast.success("Candidato cadastrado com sucesso!", { description: "Abrindo perfil completo..." })
-        }
-        
-        openFullProfile(candidateId)
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Erro ao cadastrar candidato"
-      setError(errorMessage)
-      toast.error("Erro no cadastro", { description: errorMessage })
-      setCurrentStep('input')
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  const canSubmitCV = selectedFile || cvText.trim().length >= 50
-  const canSubmitLinkedin = linkedinUrl.trim().includes('linkedin.com/in/')
-  const canSubmitManual = manualData.name.trim() && (manualData.email.trim() || manualData.phone.trim())
-
-  const renderInputStep = () => (
-    <InputStep
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      setError={setError}
-      selectedFile={selectedFile}
-      setSelectedFile={setSelectedFile}
-      cvText={cvText}
-      setCvText={setCvText}
-      isDragging={isDragging}
-      handleDragEnter={handleDragEnter}
-      handleDragLeave={handleDragLeave}
-      handleDragOver={handleDragOver}
-      handleDrop={handleDrop}
-      handleFileSelect={handleFileSelect}
-      isProcessing={isProcessing}
-      canSubmitCV={!!canSubmitCV}
-      handleSubmitCV={handleSubmitCV}
-      linkedinUrl={linkedinUrl}
-      setLinkedinUrl={setLinkedinUrl}
-      canSubmitLinkedin={canSubmitLinkedin}
-      handleSubmitLinkedin={handleSubmitLinkedin}
-      manualData={manualData}
-      setManualData={setManualData}
-      canSubmitManual={!!canSubmitManual}
-      handleSubmitManual={handleSubmitManual}
-      error={error}
-    />
-  )
-
-  const renderDuplicateFound = () => (
-    <div className="space-y-4">
-      <div className="text-center">
-        <div className="w-12 h-12 rounded-full bg-status-warning/15 dark:bg-status-warning/30 flex items-center justify-center mx-auto mb-3">
-          <AlertCircle className="w-6 h-6 text-status-warning" />
-        </div>
-        <h3 className="text-sm font-semibold text-lia-text-primary">
-          Candidato já existe
-        </h3>
-        <p className="text-xs text-lia-text-secondary mt-1">
-          {duplicateResult?.message}
-        </p>
-      </div>
-
-      {duplicateResult?.candidate && (
-        <Card className="border-status-warning/30 dark:border-status-warning/30 bg-status-warning/10/50 dark:bg-status-warning/20 rounded-md">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-lia-btn-primary-bg flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
-                {duplicateResult.candidate.name?.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || '?'}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-lia-text-primary">
-                  {duplicateResult.candidate.name}
-                </p>
-                {duplicateResult.candidate.current_title && (
-                  <p className="text-xs text-lia-text-secondary mt-0.5">
-                    {duplicateResult.candidate.current_title}
-                  </p>
-                )}
-                <div className="flex flex-wrap items-center gap-2 mt-2">
-                  {duplicateResult.candidate.current_company && (
-                    <Badge variant="outline" className="text-micro py-0 px-1.5">
-                      <Building className="w-2.5 h-2.5 mr-1" />
-                      {duplicateResult.candidate.current_company}
-                    </Badge>
-                  )}
-                  {duplicateResult.candidate.location_city && (
-                    <Badge variant="outline" className="text-micro py-0 px-1.5">
-                      <MapPin className="w-2.5 h-2.5 mr-1" />
-                      {duplicateResult.candidate.location_city}
-                    </Badge>
-                  )}
-                </div>
-                {duplicateResult.matchType && (
-                  <p className="text-micro text-status-warning mt-2">
-                    Encontrado por: {
-                      duplicateResult.matchType === 'email' ? 'E-mail' :
-                      duplicateResult.matchType === 'phone' ? 'Telefone' :
-                      duplicateResult.matchType === 'linkedin' ? 'LinkedIn' :
-                      duplicateResult.matchType === 'name_similarity' ? 'Nome similar' : 
-                      duplicateResult.matchType
-                    }
-                    {duplicateResult.confidence < 1 && ` (${Math.round(duplicateResult.confidence * 100)}% similar)`}
-                  </p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="flex flex-col gap-2">
-        <Button
-          onClick={handleOpenExistingCandidate}
-          className="w-full h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
-        >
-          <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-          Abrir Perfil Existente
-        </Button>
-        <Button
-          onClick={handleCreateAnyway}
-          variant="outline"
-          className="w-full h-9 text-xs"
-          disabled={isProcessing}
-        >
-          {isProcessing ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin motion-reduce:animate-none" />
-              Cadastrando...
-            </>
-          ) : (
-            "Cadastrar Mesmo Assim"
-          )}
-        </Button>
-        <Button
-          onClick={() => { setCurrentStep('input'); setDuplicateResult(null) }}
-          variant="ghost"
-          className="w-full h-9 text-xs text-lia-text-tertiary"
-        >
-          Voltar
-        </Button>
-      </div>
-    </div>
-  )
-
-  const renderProcessing = () => (
-    <div className="py-8 text-center" role="status" aria-live="polite" aria-label="Carregando...">
-      <div className="w-12 h-12 rounded-full bg-lia-bg-tertiary flex items-center justify-center mx-auto mb-4" role="status" aria-live="polite" aria-label="Carregando...">
-        {isEnriching ? (
-          <Brain className="w-6 h-6 text-wedo-cyan animate-pulse motion-reduce:animate-none" />
-        ) : (
-          <Loader2 className="w-6 h-6 text-lia-text-secondary animate-spin motion-reduce:animate-none" />
-        )}
-      </div>
-      <h3 className="text-sm font-semibold text-lia-text-primary mb-2">
-        {isEnriching ? 'Enriquecendo perfil...' : 'Processando...'}
-      </h3>
-      <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
-        {isEnriching 
-          ? 'Buscando dados adicionais via LinkedIn...'
-          : activeTab === 'cv' 
-            ? 'Extraindo dados do CV com IA...' 
-            : 'Verificando e cadastrando candidato...'
-        }
-      </p>
-      {uploadProgress > 0 && !isEnriching && (
-        <Progress value={uploadProgress} className="max-w-sidebar-content mx-auto h-1.5 mt-4" />
-      )}
-    </div>
-  )
-
-  const renderSuccess = () => (
-    <div className="py-8 text-center">
-      <div className="w-12 h-12 rounded-full bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center mx-auto mb-4">
-        <CheckCircle className="w-6 h-6 text-status-success" />
-      </div>
-      <h3 className="text-sm font-semibold text-lia-text-primary mb-2">
-        Candidato cadastrado!
-      </h3>
-      <p className="text-xs text-lia-text-secondary">
-        Abrindo perfil completo...
-      </p>
-    </div>
-  )
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -821,10 +42,55 @@ const [currentStep, setCurrentStep] = useState<Step>('input')
         </DialogHeader>
 
         <div className="p-4">
-          {currentStep === 'input' && renderInputStep()}
-          {currentStep === 'duplicate-found' && renderDuplicateFound()}
-          {currentStep === 'processing' && renderProcessing()}
-          {currentStep === 'success' && renderSuccess()}
+          {modal.currentStep === 'input' && (
+            <InputStep
+              activeTab={modal.activeTab}
+              setActiveTab={modal.setActiveTab}
+              setError={modal.setError}
+              selectedFile={modal.selectedFile}
+              setSelectedFile={modal.setSelectedFile}
+              cvText={modal.cvText}
+              setCvText={modal.setCvText}
+              isDragging={modal.isDragging}
+              handleDragEnter={modal.handleDragEnter}
+              handleDragLeave={modal.handleDragLeave}
+              handleDragOver={modal.handleDragOver}
+              handleDrop={modal.handleDrop}
+              handleFileSelect={modal.handleFileSelect}
+              isProcessing={modal.isProcessing}
+              canSubmitCV={modal.canSubmitCV}
+              handleSubmitCV={modal.handleSubmitCV}
+              linkedinUrl={modal.linkedinUrl}
+              setLinkedinUrl={modal.setLinkedinUrl}
+              canSubmitLinkedin={modal.canSubmitLinkedin}
+              handleSubmitLinkedin={modal.handleSubmitLinkedin}
+              manualData={modal.manualData}
+              setManualData={modal.setManualData}
+              canSubmitManual={modal.canSubmitManual}
+              handleSubmitManual={modal.handleSubmitManual}
+              error={modal.error}
+            />
+          )}
+          {modal.currentStep === 'duplicate-found' && (
+            <DuplicateFoundStep
+              duplicateResult={modal.duplicateResult}
+              isProcessing={modal.isProcessing}
+              onOpenExisting={modal.handleOpenExistingCandidate}
+              onCreateAnyway={modal.handleCreateAnyway}
+              onBack={() => {
+                modal.setCurrentStep('input')
+                modal.setDuplicateResult(null)
+              }}
+            />
+          )}
+          {modal.currentStep === 'processing' && (
+            <ProcessingStep
+              isEnriching={modal.isEnriching}
+              activeTab={modal.activeTab}
+              uploadProgress={modal.uploadProgress}
+            />
+          )}
+          {modal.currentStep === 'success' && <SuccessStep />}
         </div>
       </DialogContent>
     </Dialog>

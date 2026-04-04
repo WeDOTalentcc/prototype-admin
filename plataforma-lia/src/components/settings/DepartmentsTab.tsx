@@ -2,43 +2,15 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Users,
-  Network,
   Plus,
   Edit,
-  Trash2,
   Save,
   CheckCircle,
   AlertCircle,
-  Crown,
-  Building2,
   Loader2,
-  X,
-  Maximize2,
-  Linkedin,
 } from "lucide-react";
 import { LiaFieldToggle, defaultLiaFieldExamples } from './LiaFieldToggle';
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   type Department,
   type DepartmentMember,
@@ -47,14 +19,12 @@ import {
   type NewDepartmentForm,
   type NewMemberForm,
   type NewApproverForm,
-  COLOR_OPTIONS,
-  DEFAULT_NEW_MEMBER,
-  getLevelOrder,
-  getLevelLabel,
-  getLevelColor,
 } from './companyTeamHub.types';
-import { textStyles, actionButtonStyles } from "@/lib/design-tokens";
+import { actionButtonStyles } from "@/lib/design-tokens";
 import { ApproverSection } from "./ApproverSection";
+import { DepartmentFormCard } from "./DepartmentFormCard";
+import { DepartmentGrid } from "./DepartmentGrid";
+import { OrgChartDialog } from "./OrgChartDialog";
 
 export interface DepartmentsTabProps {
   companyData: CompanyData;
@@ -246,339 +216,28 @@ export function DepartmentsTab({
         </div>
 
         {showDepartmentForm && isEditingDepartments && (
-          <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md">
-            <CardContent className="p-3 space-y-2">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-xs font-semibold text-lia-text-primary">
-                  {editingDepartment ? "Editar Departamento" : "Novo Departamento"}
-                </h4>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 rounded-md"
-                  onClick={handleCancelDepartmentForm}
-                >
-                  <X className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                    Nome
-                  </label>
-                  <input
-                    type="text"
-                    value={newDepartment.name}
-                    onChange={(e) =>
-                      setNewDepartment((prev) => ({ ...prev, name: e.target.value }))
-                    }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                    placeholder="Ex: Engenharia"
-                  />
-                </div>
-                <div>
-                  <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                    Gestor
-                  </label>
-                  <input
-                    type="text"
-                    value={newDepartment.manager}
-                    onChange={(e) =>
-                      setNewDepartment((prev) => ({ ...prev, manager: e.target.value }))
-                    }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                    placeholder="Nome do gestor"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                    Cargo do Gestor
-                  </label>
-                  <input
-                    type="text"
-                    value={newDepartment.manager_title}
-                    onChange={(e) =>
-                      setNewDepartment((prev) => ({ ...prev, manager_title: e.target.value }))
-                    }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                    placeholder="Ex: Diretor de Engenharia"
-                  />
-                </div>
-                <div>
-                  <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                    Email do Gestor
-                  </label>
-                  <input
-                    type="email"
-                    value={newDepartment.manager_email}
-                    onChange={(e) =>
-                      setNewDepartment((prev) => ({ ...prev, manager_email: e.target.value }))
-                    }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                    placeholder="gestor@empresa.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                    Telefone/WhatsApp
-                  </label>
-                  <input
-                    type="text"
-                    value={newDepartment.manager_phone}
-                    onChange={(e) =>
-                      setNewDepartment((prev) => ({ ...prev, manager_phone: e.target.value }))
-                    }
-                    className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                    placeholder="+55 11 99999-0000"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                  Descrição
-                </label>
-                <textarea
-                  value={newDepartment.description}
-                  onChange={(e) =>
-                    setNewDepartment((prev) => ({ ...prev, description: e.target.value }))
-                  }
-                  className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                  rows={2}
-                  placeholder="Descrição do departamento"
-                />
-              </div>
-              <div>
-                <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-                  Cor
-                </label>
-                <div className="flex gap-2">
-                  {COLOR_OPTIONS.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() =>
-                        setNewDepartment((prev) => ({ ...prev, color }))
-                      }
-                      className={`w-4 h-4 rounded-full ${color.split(" ")[0]} ${newDepartment.color === color ? "ring-2 ring-offset-2 ring-lia-btn-primary-bg dark:ring-lia-border-subtle" : ""}`}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {editingDepartment && (
-                <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3 mt-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h5 className="text-xs font-semibold text-lia-text-primary">
-                      Colaboradores do Departamento
-                    </h5>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setShowMemberForm(true);
-                        setEditingMember(null);
-                        setNewMember({ ...DEFAULT_NEW_MEMBER });
-                      }}
-                      disabled={!isEditingDepartments}
-                      className={`py-1 px-2 text-micro rounded-full border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse ${!isEditingDepartments ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
-                      Adicionar
-                    </Button>
-                  </div>
-
-                  <div className="space-y-2 max-h-chart-sm overflow-y-auto">
-                    {departmentMembers.length === 0 ? (
-                      <p className="text-micro text-lia-text-secondary text-center py-3">
-                        Nenhum colaborador cadastrado
-                      </p>
-                    ) : (
-                      departmentMembers.map((member) => (
-                        <div
-                          key={member.id}
-                          className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-md"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Avatar className="w-7 h-7">
-                              <AvatarFallback className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary">
-                                {member.name.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-xs font-medium text-lia-text-primary">
-                                {member.name}
-                              </p>
-                              <p className="text-micro text-lia-text-secondary">
-                                {member.title || "Sem cargo"} • {member.level}
-                              </p>
-                            </div>
-                          </div>
-                          {isEditingDepartments && (
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditMember(member)}
-                                className="h-6 w-6 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
-                              >
-                                <Edit className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteMember(member.id)}
-                                className="h-6 w-6 p-0 rounded-md text-status-error hover:text-status-error hover:bg-status-error/10"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {showMemberForm && (
-                    <div className="mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary">
-                      <h6 className="text-micro font-medium text-lia-text-secondary mb-2">
-                        {editingMember ? "Editar Colaborador" : "Novo Colaborador"}
-                      </h6>
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        <input
-                          type="text"
-                          placeholder="Nome"
-                          value={newMember.name}
-                          onChange={(e) =>
-                            setNewMember((prev) => ({ ...prev, name: e.target.value }))
-                          }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Cargo"
-                          value={newMember.title}
-                          onChange={(e) =>
-                            setNewMember((prev) => ({ ...prev, title: e.target.value }))
-                          }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                        />
-                        <input
-                          type="email"
-                          placeholder="Email"
-                          value={newMember.email}
-                          onChange={(e) =>
-                            setNewMember((prev) => ({ ...prev, email: e.target.value }))
-                          }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Telefone"
-                          value={newMember.phone}
-                          onChange={(e) =>
-                            setNewMember((prev) => ({ ...prev, phone: e.target.value }))
-                          }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                        />
-                        <input
-                          type="url"
-                          placeholder="LinkedIn URL"
-                          value={newMember.linkedin_url}
-                          onChange={(e) =>
-                            setNewMember((prev) => ({ ...prev, linkedin_url: e.target.value }))
-                          }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none col-span-2"
-                        />
-                        <select
-                          value={newMember.level}
-                          onChange={(e) =>
-                            setNewMember((prev) => ({ ...prev, level: e.target.value }))
-                          }
-                          className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none col-span-2"
-                        >
-                          <option value="ceo">CEO</option>
-                          <option value="vp">VP</option>
-                          <option value="diretor">Diretor</option>
-                          <option value="gerente_senior">Gerente Sênior</option>
-                          <option value="gerente">Gerente</option>
-                          <option value="lider">Líder</option>
-                          <option value="supervisor">Supervisor</option>
-                          <option value="especialista">Especialista</option>
-                          <option value="analista">Analista</option>
-                          <option value="estagiario">Estagiário</option>
-                          <option value="outros">Outros</option>
-                        </select>
-                      </div>
-                      {memberError && (
-                        <div className="bg-status-error/10 border border-status-error/30 rounded-md p-2 flex items-center gap-2 text-status-error text-micro">
-                          <AlertCircle className="w-3 h-3" />
-                          {memberError}
-                        </div>
-                      )}
-                      {memberSuccess && (
-                        <div className="bg-status-success/10 border border-status-success/30 rounded-md p-2 flex items-center gap-2 text-status-success text-micro">
-                          <CheckCircle className="w-3 h-3" />
-                          {memberSuccess}
-                        </div>
-                      )}
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setShowMemberForm(false);
-                            setEditingMember(null);
-                            setNewMember({ ...DEFAULT_NEW_MEMBER });
-                            setMemberError(null);
-                          }}
-                          className="py-1 px-2 text-micro rounded-full"
-                          disabled={savingMember}
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={handleSaveMember}
-                          className="py-1 px-2 text-micro rounded-full bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
-                          disabled={savingMember}
-                        >
-                          {savingMember ? (
-                            <>
-                              <Loader2 className="w-3 h-3 mr-1 animate-spin motion-reduce:animate-none" />
-                              Salvando...
-                            </>
-                          ) : (
-                            "Salvar"
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCancelDepartmentForm}
-                  className="py-1.5 px-2 text-xs rounded-full"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSaveDepartment}
-                  className="py-1.5 px-2 text-xs rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
-                >
-                  <Save className="w-3.5 h-3.5 mr-1" />
-                  {editingDepartment ? "Atualizar" : "Salvar"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <DepartmentFormCard
+            editingDepartment={editingDepartment}
+            newDepartment={newDepartment}
+            isEditingDepartments={isEditingDepartments}
+            departmentMembers={departmentMembers}
+            showMemberForm={showMemberForm}
+            editingMember={editingMember}
+            savingMember={savingMember}
+            memberError={memberError}
+            memberSuccess={memberSuccess}
+            newMember={newMember}
+            setNewDepartment={setNewDepartment}
+            setShowMemberForm={setShowMemberForm}
+            setEditingMember={setEditingMember}
+            setNewMember={setNewMember}
+            setMemberError={setMemberError}
+            handleCancelDepartmentForm={handleCancelDepartmentForm}
+            handleSaveDepartment={handleSaveDepartment}
+            handleSaveMember={handleSaveMember}
+            handleEditMember={handleEditMember}
+            handleDeleteMember={handleDeleteMember}
+          />
         )}
 
         {successMessage && (
@@ -594,250 +253,23 @@ export function DepartmentsTab({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {departments.length === 0 && !showDepartmentForm ? (
-            <div className="col-span-2 text-center py-8 text-lia-text-secondary">
-              <Network className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-xs font-medium text-lia-text-primary">
-                Nenhum departamento cadastrado
-              </p>
-              <p className="text-xs mt-1 text-lia-text-secondary">
-                Clique em "Novo Departamento" ou importe uma planilha para começar
-              </p>
-            </div>
-          ) : (
-            departments.map((dept) => (
-              <Card
-                key={dept.id}
-                className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-md hover:transition-shadow"
-              >
-                <CardContent className="p-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-9 h-9 rounded-md ${dept.color} flex items-center justify-center`}
-                      >
-                        <Building2 className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-semibold text-lia-text-primary">
-                          {dept.name}
-                        </h4>
-                        <p className="text-micro text-lia-text-secondary">
-                          {dept.description}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
-                        onClick={() => handleOpenOrgChart(dept)}
-                        title="Ver organograma"
-                      >
-                        <Maximize2 className="w-3.5 h-3.5 text-lia-text-secondary" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
-                        onClick={() => handleStartEditDepartment(dept)}
-                        disabled={!isEditingDepartments}
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 rounded-md text-status-error hover:text-status-error hover:bg-status-error/10"
-                        onClick={() => setDepartmentToDelete(dept)}
-                        disabled={!isEditingDepartments}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="mt-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-strong flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-micro text-lia-text-secondary">
-                      <Users className="w-3 h-3" />
-                      <span>{dept.headcount} colaboradores</span>
-                    </div>
-                    {dept.manager && (
-                      <Badge
-                        variant="outline"
-                        className="text-micro rounded-md border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
-                      >
-                        {dept.manager}
-                      </Badge>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+        <DepartmentGrid
+          departments={departments}
+          showDepartmentForm={showDepartmentForm}
+          departmentToDelete={departmentToDelete}
+          isEditingDepartments={isEditingDepartments}
+          setDepartmentToDelete={setDepartmentToDelete}
+          handleStartEditDepartment={handleStartEditDepartment}
+          handleDeleteDepartment={handleDeleteDepartment}
+          handleOpenOrgChart={handleOpenOrgChart}
+        />
 
-        <AlertDialog
-          open={!!departmentToDelete}
-          onOpenChange={() => setDepartmentToDelete(null)}
-        >
-          <AlertDialogContent className="rounded-md">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-sm font-semibold text-lia-text-primary">
-                Excluir Departamento
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja excluir o departamento "
-                {departmentToDelete?.name}"? Esta ação não pode ser desfeita.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="rounded-md text-xs">
-                Cancelar
-              </AlertDialogCancel>
-              <AlertDialogAction
-                className="rounded-md text-xs bg-status-error hover:bg-status-error"
-                onClick={() =>
-                  departmentToDelete &&
-                  handleDeleteDepartment(departmentToDelete.id)
-                }
-              >
-                Excluir
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        <Dialog
-          open={!!orgChartDepartment}
-          onOpenChange={() => setOrgChartDepartment(null)}
-        >
-          <DialogContent className="rounded-md max-w-4xl max-h-[85vh] overflow-hidden">
-            <DialogHeader>
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-md ${orgChartDepartment?.color || "bg-lia-btn-primary-bg text-lia-btn-primary-text"} flex items-center justify-center`}
-                >
-                  <Network className="w-5 h-5" />
-                </div>
-                <div>
-                  <DialogTitle className="text-sm">
-                    Organograma - {orgChartDepartment?.name}
-                  </DialogTitle>
-                  <p className={`${textStyles.description} mt-0.5`}>
-                    {orgChartMembers.length} colaboradores cadastrados
-                  </p>
-                </div>
-              </div>
-            </DialogHeader>
-
-            <div className="overflow-y-auto max-h-[60vh] mt-4" role="status" aria-live="polite" aria-label="Carregando...">
-              {loadingOrgChart ? (
-                <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label="Carregando...">
-                  <Loader2 className="w-6 h-6 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-                </div>
-              ) : orgChartMembers.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="w-12 h-12 mx-auto mb-3 text-lia-text-disabled" />
-                  <p className="text-xs font-medium text-lia-text-secondary">
-                    Nenhum colaborador cadastrado
-                  </p>
-                  <p className={`${textStyles.description} mt-1`}>
-                    Adicione colaboradores através da edição do departamento
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {Object.entries(
-                    orgChartMembers
-                      .sort(
-                        (a, b) => getLevelOrder(a.level) - getLevelOrder(b.level),
-                      )
-                      .reduce(
-                        (acc, member) => {
-                          const level = member.level || "outros";
-                          if (!acc[level]) acc[level] = [];
-                          acc[level].push(member);
-                          return acc;
-                        },
-                        {} as Record<string, DepartmentMember[]>,
-                      ),
-                  )
-                    .sort(([a], [b]) => getLevelOrder(a) - getLevelOrder(b))
-                    .map(([level, members]) => (
-                      <div key={level} className="space-y-2">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge
-                            className={`text-micro px-2 py-0.5 rounded-full border ${getLevelColor(level)}`}
-                          >
-                            {getLevelLabel(level)}
-                          </Badge>
-                          <div className="flex-1 h-px bg-lia-interactive-active"></div>
-                          <span className="text-micro text-lia-text-tertiary">
-                            {members.length}{" "}
-                            {members.length === 1 ? "pessoa" : "pessoas"}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                          {members.map((member) => (
-                            <div
-                              key={member.id}
-                              className="flex items-center gap-3 p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md hover:transition-shadow"
-                            >
-                              <Avatar className="w-10 h-10">
-                                {member.avatar_url ? (
-                                  <img
-                                    src={member.avatar_url}
-                                    alt={member.name}
-                                    className="w-full h-full object-cover rounded-full"
-                                  />
-                                ) : (
-                                  <AvatarFallback className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary">
-                                    {member.name
-                                      .split(" ")
-                                      .map((n) => n[0])
-                                      .slice(0, 2)
-                                      .join("")
-                                      .toUpperCase()}
-                                  </AvatarFallback>
-                                )}
-                              </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <p className="text-xs font-medium text-lia-text-primary truncate">
-                                    {member.name}
-                                  </p>
-                                  {member.linkedin_url && (
-                                    <a
-                                      href={member.linkedin_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-brand-linkedin hover:opacity-80 flex-shrink-0"
-                                    >
-                                      <Linkedin className="w-3 h-3" />
-                                    </a>
-                                  )}
-                                </div>
-                                <p className="text-micro text-lia-text-secondary truncate">
-                                  {member.title || "Sem cargo"}
-                                </p>
-                                {member.email && (
-                                  <p className="text-micro text-lia-text-tertiary truncate">
-                                    {member.email}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+        <OrgChartDialog
+          orgChartDepartment={orgChartDepartment}
+          orgChartMembers={orgChartMembers}
+          loadingOrgChart={loadingOrgChart}
+          setOrgChartDepartment={setOrgChartDepartment}
+        />
       </div>
 
       <ApproverSection
@@ -856,4 +288,3 @@ export function DepartmentsTab({
     </>
   );
 }
-

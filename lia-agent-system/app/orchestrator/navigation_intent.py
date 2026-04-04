@@ -38,17 +38,17 @@ _PATTERNS: list[tuple[list[str], str, str]] = [
         "Quer que eu abra Configurações > Políticas de Recrutamento?",
     ),
 
-    # 2. Indicadores — antes de Vagas para evitar ambiguidade com "relatório de vagas"
-    (
-        ["indicadores", "relatório", "relatorio", "relatórios", "relatorios",
-         "métricas", "metricas", "kpi", "time to hire", "taxa de conversão",
-         "taxa de conversao", "funil de conversão", "performance recrutamento",
-         "análise de vagas", "analise de vagas", "dashboard de métricas",
-         "relatório de vagas", "relatorio de vagas", "relatório de vaga",
-         "análise de recrutamento", "analise de recrutamento"],
-        "Indicadores",
-        "Quer que eu abra a página de Indicadores?",
-    ),
+    # 2. Indicadores — ARQUIVADO: página desativada temporariamente
+    # (
+    #     ["indicadores", "relatório", "relatorio", "relatórios", "relatorios",
+    #      "métricas", "metricas", "kpi", "time to hire", "taxa de conversão",
+    #      "taxa de conversao", "funil de conversão", "performance recrutamento",
+    #      "análise de vagas", "analise de vagas", "dashboard de métricas",
+    #      "relatório de vagas", "relatorio de vagas", "relatório de vaga",
+    #      "análise de recrutamento", "analise de recrutamento"],
+    #     "Indicadores",
+    #     "Quer que eu abra a página de Indicadores?",
+    # ),
 
     # 3. Entrevista / WSI — antes do Funil geral para dar hint específico
     (

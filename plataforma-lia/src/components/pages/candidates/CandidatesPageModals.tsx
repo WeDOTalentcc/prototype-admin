@@ -1,810 +1,184 @@
 "use client"
 
-import { LoadingModal } from "@/components/ui/loading"
-const BatchApprovalModal = dynamic(() => import("@/components/batch-approval-modal").then(m => ({ default: m.BatchApprovalModal })), { ssr: false, loading: () => <LoadingModal /> })
-const RubricEvaluationModal = dynamic(() => import("@/components/rubric-evaluation-modal").then(m => ({ default: m.RubricEvaluationModal })), { ssr: false, loading: () => <LoadingModal /> })
-const ContactModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ContactModal })), { ssr: false, loading: () => <LoadingModal /> })
-const ScheduleModal = dynamic(() => import("@/components/quick-actions-modals").then(m => ({ default: m.ScheduleModal })), { ssr: false, loading: () => <LoadingModal /> })
-import { GlobalExpansionConfirmModal } from "@/components/pages/candidates/GlobalExpansionConfirmModal"
-import { SourceChangeConfirmModal } from "@/components/pages/candidates/SourceChangeConfirmModal"
-import { ContactFilterConfirmModal } from "@/components/pages/candidates/ContactFilterConfirmModal"
-import { DeleteArchetypeModal } from "@/components/pages/candidates/DeleteArchetypeModal"
-import type { CommunicationType } from "@/components/modals/unified-communication-modal"
-const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => <LoadingModal /> })
-const CandidateComparison = dynamic(() => import("@/components/candidate-comparison").then(m => ({ default: m.CandidateComparison })), { ssr: false, loading: () => <LoadingModal /> })
-const AddToListModal = dynamic(() => import("@/components/modals/add-to-list-modal").then(m => ({ default: m.AddToListModal })), { ssr: false, loading: () => <LoadingModal /> })
-const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => <LoadingModal /> })
-const AddCandidatesToVacancyModal = dynamic(() => import("@/components/modals/add-candidates-to-vacancy-modal").then(m => ({ default: m.AddCandidatesToVacancyModal })), { ssr: false, loading: () => <LoadingModal /> })
-const AddListToVacanciesModal = dynamic(() => import("@/components/modals/add-list-to-vacancies-modal").then(m => ({ default: m.AddListToVacanciesModal })), { ssr: false, loading: () => <LoadingModal /> })
-import { UnsavedPearchWarningModal } from "@/components/modals/unsaved-pearch-warning-modal"
-const WSITextScreeningModal = dynamic(() => import("@/components/wsi").then(m => ({ default: m.WSITextScreeningModal })), { ssr: false, loading: () => <LoadingModal /> })
-const WSIVoiceScreeningStatus = dynamic(() => import("@/components/wsi").then(m => ({ default: m.WSIVoiceScreeningStatus })), { ssr: false, loading: () => <LoadingModal /> })
-const WSIScorecard = dynamic(() => import("@/components/wsi").then(m => ({ default: m.WSIScorecard })), { ssr: false, loading: () => <LoadingModal /> })
-const WSITriagemInviteModal = dynamic(() => import("@/components/wsi/wsi-triagem-invite-modal").then(m => ({ default: m.WSITriagemInviteModal })), { ssr: false, loading: () => <LoadingModal /> })
-const SendEmailModal = dynamic(() => import("@/components/email-templates").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => <LoadingModal /> })
-import type { ParsedCVResponse } from "@/components/cv"
-const CVPreview = dynamic(() => import("@/components/cv").then(m => ({ default: m.CVPreview })), { ssr: false, loading: () => <LoadingModal /> })
-const RevealCreditsModal = dynamic(() => import("@/components/reveal-credits-modal").then(m => ({ default: m.RevealCreditsModal })), { ssr: false, loading: () => <LoadingModal /> })
-import { CreditConfirmationModal } from "@/components/pages/candidates/CreditConfirmationModal"
-import { SaveAsArchetypeModal } from "@/components/pages/candidates/SaveAsArchetypeModal"
-import { EditQueryModal } from "@/components/pages/candidates/EditQueryModal"
-import { PreviewSuggestionModal } from "@/components/pages/candidates/PreviewSuggestionModal"
-import { liaApi } from "@/services/lia-api"
-import dynamic from "next/dynamic"
-import type { Candidate } from "@/components/pages/candidates/types"
+import type { CandidatesPageModalsProps } from "./CandidatesPageModals.types"
+import { CandidatesContactModals } from "./CandidatesContactModals"
+import { CandidatesCoreModals } from "./CandidatesCoreModals"
+import { CandidatesSearchModals } from "./CandidatesSearchModals"
 
-const NewCandidateUnifiedModal = dynamic(() => import("@/components/modals/new-candidate-unified-modal").then(m => ({ default: m.NewCandidateUnifiedModal })), {
-  ssr: false,
-  loading: () => <LoadingModal />,
-})
-const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false, loading: () => <LoadingModal /> })
-const AdvancedFiltersModal = dynamic(() => import("@/components/search/advanced-filters-modal").then(m => ({ default: m.AdvancedFiltersModal })), { ssr: false, loading: () => <LoadingModal /> })
-
-import type { CandidatesPageModalsProps, ModalArchetype, ModalChatMessage } from "./CandidatesPageModals.types"
-import { toast } from "sonner"
-export function CandidatesPageModals({
-  selectedCandidateForAction,
-  contactModalCandidate,
-  showContactModal,
-  contactModalAction,
-  setShowContactModal,
-  setSelectedCandidateForAction,
-  setContactModalCandidate,
-  setContactModalAction,
-  handleSendMessage,
-  showScheduleModal,
-  setShowScheduleModal,
-  handleScheduleComplete,
-  unifiedModalOpen,
-  unifiedModalCandidate,
-  unifiedModalType,
-  lastSearchQuery,
-  handleUnifiedModalClose,
-  handleUnifiedModalSend,
-  showComparisonModal,
-  setShowComparisonModal,
-  selectedCandidatesForBatch,
-  sortedCandidates,
-  candidates,
-  handleNavigateToFullProfile,
-  handleScheduleInterview,
-  handleContactCandidate,
-  showCandidatePage,
-  selectedCandidate,
-  handleCloseCandidatePage,
-  showAddCandidateModal,
-  setShowAddCandidateModal,
-  preSelectedListForModal,
-  setPreSelectedListForModal,
-  handleAddCandidate,
-  setCandidateListsForModal,
-  bulkJobVacancies,
-  candidateListsForModal,
-  handleCandidatePageOpen,
-  showBatchApproval,
-  setShowBatchApproval,
-  convertCandidatesForBatch,
-  handleBatchApprovalComplete,
-  wsiCandidateForScreening,
-  setWsiCandidateForScreening,
-  showWSITextModal,
-  setShowWSITextModal,
-  showWSIVoiceModal,
-  setShowWSIVoiceModal,
-  handleWSIScreeningComplete,
-  showWSIInviteModal,
-  setShowWSIInviteModal,
-  wsiInviteCandidate,
-  setWsiInviteCandidate,
-  showRubricModal,
-  setShowRubricModal,
-  rubricCandidate,
-  setRubricCandidate,
-  rubricEvaluationData,
-  setRubricEvaluationData,
-  showSendEmailModal,
-  setShowSendEmailModal,
-  emailCandidateSelected,
-  setEmailCandidateSelected,
-  showRevealModal,
-  setShowRevealModal,
-  revealCandidate,
-  setRevealCandidate,
-  handleRevealContact,
-  revealType,
-  showCVPreviewModal,
-  setShowCVPreviewModal,
-  parsedCVData,
-  setParsedCVData,
-  handleCVConfirmed,
-  showCreditConfirmation,
-  setShowCreditConfirmation,
-  creditEstimate,
-  pearchSearchOptions,
-  setPearchSearchOptions,
-  setPendingSearchRequest,
-  handleConfirmPearchSearch,
-  showGlobalExpansionConfirm,
-  setShowGlobalExpansionConfirm,
-  lastSuccessfulQuery,
-  localResultsCount,
-  isExpandingToGlobal,
-  handleExpandToGlobal,
-  showSourceChangeModal,
-  setShowSourceChangeModal,
-  pendingSourceChange,
-  setPendingSourceChange,
-  confirmSourceChange,
-  showContactFilterModal,
-  setShowContactFilterModal,
-  pendingContactFilter,
-  setPendingContactFilter,
-  confirmContactFilterChange,
-  showSaveAsArchetypeModal,
-  setShowSaveAsArchetypeModal,
-  searchResults,
-  isCreatingArchetype,
-  setIsCreatingArchetype,
-  archetypeCreationStep,
-  setArchetypeCreationStep,
-  newArchetypeData,
-  setNewArchetypeData,
-  setUserArchetypes,
-  setChatMessages,
-  showAdvancedSearch,
-  setShowAdvancedSearch,
-  activeSearchFilters,
-  setActiveSearchFilters,
-  hideViewedCandidates,
-  showAddToListModal,
-  setShowAddToListModal,
-  addToListCandidateIds,
-  setAddToListCandidateIds,
-  addToListCandidateNames,
-  setAddToListCandidateNames,
-  showShareSearchModal,
-  setShowShareSearchModal,
-  shareSearchTitle,
-  setShareSearchTitle,
-  shareSearchCandidates,
-  setShareSearchCandidates,
-  showAddListToVacanciesModal,
-  setShowAddListToVacanciesModal,
-  selectedListForVacancies,
-  setSelectedListForVacancies,
-  showAddToVacancyModal,
-  setShowAddToVacancyModal,
-  setSelectedCandidatesForBatch,
-  user,
-  showUnsavedWarningModal,
-  setShowUnsavedWarningModal,
-  setPendingTabChange,
-  handleSaveAllAndExit,
-  handleExitWithoutSaving,
-  unsavedPearchCandidates,
-  isSavingToBase,
-  showEditQueryModal,
-  setShowEditQueryModal,
-  editQueryValue,
-  getActiveSearchFiltersCount,
-  searchSource,
-  setSearchSource,
-  setSearchTerm,
-  setLastSearchQuery,
-  setLastSearchMode,
-  setLastSearchEntities,
-  setLastSearchMetadata,
-  executeSearch,
-  previewSuggestion,
-  setPreviewSuggestion,
-  previewingUserArchetype,
-  setPreviewingUserArchetype,
-  buildFiltersFromTags,
-  setLiaPromptValue,
-  setActiveSearchTab,
-  archetypeToDelete,
-  setArchetypeToDelete,
-}: CandidatesPageModalsProps) {
+export function CandidatesPageModals(props: CandidatesPageModalsProps) {
   return (
     <>
-      {/* Contact Modal */}
-      {(selectedCandidateForAction || contactModalCandidate) && (
-        <ContactModal
-          isOpen={showContactModal}
-          onClose={() => {
-            setShowContactModal(false)
-            setSelectedCandidateForAction(null)
-            setContactModalCandidate(null)
-            setContactModalAction('general')
-          }}
-          candidate={(() => {
-            const c = contactModalCandidate || selectedCandidateForAction
-            if (!c) return null
-            return {
-              id: c.id,
-              name: c.name,
-              role: c.position || c.role || '',
-              email: c.email,
-              phone: c.phone,
-              location: c.location,
-              avatar: c.avatar,
-              score: c.score || 0,
-              status: c.status || 'Novo',
-              matchPercentage: c.liaAnalysis?.score ?? c.score ?? 0,
-              riskLevel: 'low' as const,
-              culturalFit: 85,
-              technicalMatch: 90,
-              experience: String(c.experience || ''),
-              seniority: c.seniority_level || 'Pleno',
-              availability: 'Imediata',
-              expectedSalary: c.salary?.expected ? String(c.salary.expected) : '',
-              preferredLocation: c.location,
-              linkedin: c.linkedin,
-              skills: c.skills || [],
-              lastActivity: new Date().toISOString(),
-              source: 'internal'
-            }
-          })()}
-          onSend={handleSendMessage}
-          initialAction={contactModalAction}
-        />
-      )}
-
-      {/* Schedule Modal */}
-      {selectedCandidateForAction && (
-        <ScheduleModal
-          isOpen={showScheduleModal}
-          onClose={() => {
-            setShowScheduleModal(false)
-            setSelectedCandidateForAction(null)
-          }}
-          candidate={(() => {
-            const sca = selectedCandidateForAction
-            return ({
-            id: sca.id,
-            name: sca.name,
-            role: sca.position,
-            email: sca.email,
-            phone: sca.phone,
-            location: sca.location,
-            avatar: sca.avatar || '',
-            score: sca.score,
-            status: sca.status || '',
-            matchPercentage: sca.liaAnalysis?.score ?? sca.score,
-            riskLevel: 'low' as const,
-            culturalFit: 85,
-            technicalMatch: 90,
-            experience: String(sca.experience),
-            seniority: sca.seniority_level || 'Pleno',
-            availability: 'Imediata',
-            expectedSalary: sca.salary?.expected ? String(sca.salary.expected) : '',
-            preferredLocation: sca.location,
-            linkedin: sca.linkedin,
-            skills: sca.skills,
-            lastActivity: new Date().toISOString(),
-            source: 'internal'
-          })
-          })()}
-          onSchedule={handleScheduleComplete}
-        />
-      )}
-
-      {/* Unified Communication Modal */}
-      <UnifiedCommunicationModal
-        isOpen={unifiedModalOpen}
-        onClose={handleUnifiedModalClose}
-        candidate={unifiedModalCandidate ? (() => {
-          const umc = unifiedModalCandidate
-          return {
-            id: umc.id,
-            name: umc.name,
-            role: umc.position || umc.current_title || '',
-            email: umc.email,
-            phone: umc.phone,
-            location: umc.location,
-            avatar: umc.avatar,
-            score: umc.score,
-            matchPercentage: umc.liaAnalysis?.score ?? umc.score,
-            skills: umc.skills
-          }
-        })() : null}
-        type={unifiedModalType}
-        jobTitle={lastSearchQuery || undefined}
-        onSend={handleUnifiedModalSend}
-        companyId="demo"
+      <CandidatesContactModals
+        selectedCandidateForAction={props.selectedCandidateForAction}
+        contactModalCandidate={props.contactModalCandidate}
+        showContactModal={props.showContactModal}
+        contactModalAction={props.contactModalAction}
+        setShowContactModal={props.setShowContactModal}
+        setSelectedCandidateForAction={props.setSelectedCandidateForAction}
+        setContactModalCandidate={props.setContactModalCandidate}
+        setContactModalAction={props.setContactModalAction}
+        handleSendMessage={props.handleSendMessage}
+        showScheduleModal={props.showScheduleModal}
+        setShowScheduleModal={props.setShowScheduleModal}
+        handleScheduleComplete={props.handleScheduleComplete}
+        unifiedModalOpen={props.unifiedModalOpen}
+        unifiedModalCandidate={props.unifiedModalCandidate}
+        unifiedModalType={props.unifiedModalType}
+        lastSearchQuery={props.lastSearchQuery}
+        handleUnifiedModalClose={props.handleUnifiedModalClose}
+        handleUnifiedModalSend={props.handleUnifiedModalSend}
+        showSendEmailModal={props.showSendEmailModal}
+        setShowSendEmailModal={props.setShowSendEmailModal}
+        emailCandidateSelected={props.emailCandidateSelected}
+        setEmailCandidateSelected={props.setEmailCandidateSelected}
       />
 
-      {/* Candidate Comparison Modal */}
-      {showComparisonModal && selectedCandidatesForBatch.size >= 2 && (
-        <CandidateComparison
-          isOpen={showComparisonModal}
-          onClose={() => setShowComparisonModal(false)}
-          candidates={sortedCandidates
-            .filter(c => selectedCandidatesForBatch.has(c.id))
-            .map(c => ({
-              id: c.id,
-              name: c.name,
-              role: c.position,
-              email: c.email,
-              phone: c.phone,
-              location: c.location,
-              avatar: c.avatar || '',
-              score: c.score,
-              status: c.status || '',
-              matchPercentage: c.liaAnalysis?.score ?? c.score,
-              riskLevel: 'low' as const,
-              culturalFit: 85,
-              technicalMatch: 90,
-              experience: String(c.experience),
-              seniority: c.seniority_level || 'Pleno',
-              availability: 'Imediata',
-              expectedSalary: c.salary?.expected ? String(c.salary.expected) : '',
-              skills: c.skills,
-              lastActivity: new Date().toISOString(),
-              source: 'internal'
-            }))}
-          onSelectCandidate={(candidateId) => {
-            const candidate = candidates.find(c => c.id === candidateId)
-            if (candidate) handleNavigateToFullProfile(candidate)
-          }}
-          onScheduleInterview={(candidateId) => {
-            const candidate = candidates.find(c => c.id === candidateId)
-            if (candidate) handleScheduleInterview(candidate)
-          }}
-          onContactCandidate={(candidateId) => {
-            const candidate = candidates.find(c => c.id === candidateId)
-            if (candidate) handleContactCandidate(candidate)
-          }}
-        />
-      )}
-
-      {/* Candidate Page Modal */}
-      {showCandidatePage && selectedCandidate && (
-        <CandidatePage
-          candidate={selectedCandidate as unknown as Record<string, unknown>}
-          isOpen={showCandidatePage}
-          onClose={handleCloseCandidatePage}
-          onBackToKanban={() => {}}
-        />
-      )}
-
-      {/* New Candidate Unified Modal */}
-      <NewCandidateUnifiedModal
-        key={`modal-${preSelectedListForModal?.id || 'default'}`}
-        isOpen={showAddCandidateModal}
-        onClose={() => {
-          setShowAddCandidateModal(false)
-          setPreSelectedListForModal(null)
-        }}
-        onCandidateAdded={(candidate) => {
-          handleAddCandidate(candidate)
-          if (preSelectedListForModal) {
-            liaApi.getCandidateLists({ limit: 50 }).then(response => {
-              if (response.items) {
-                setCandidateListsForModal(response.items.map(list => ({
-                  id: list.id,
-                  name: list.name,
-                  color: list.color
-                })))
-              }
-            }).catch(() => {})
-          }
-        }}
-        jobVacancies={bulkJobVacancies.map(j => ({ id: j.id, title: j.title, department: j.department, location: j.location }))}
-        candidateLists={candidateListsForModal}
-        preSelectedListId={preSelectedListForModal?.id}
-        preSelectedListName={preSelectedListForModal?.name}
-        onGoToSearch={() => {
-          setShowAddCandidateModal(false)
-          setPreSelectedListForModal(null)
-        }}
-        onOpenFullProfile={(candidateId) => {
-          const candidate = candidates.find(c => c.id === candidateId)
-          if (candidate) {
-            handleCandidatePageOpen(candidate)
-          }
-        }}
+      <CandidatesCoreModals
+        showComparisonModal={props.showComparisonModal}
+        setShowComparisonModal={props.setShowComparisonModal}
+        selectedCandidatesForBatch={props.selectedCandidatesForBatch}
+        sortedCandidates={props.sortedCandidates}
+        candidates={props.candidates}
+        handleNavigateToFullProfile={props.handleNavigateToFullProfile}
+        handleScheduleInterview={props.handleScheduleInterview}
+        handleContactCandidate={props.handleContactCandidate}
+        showCandidatePage={props.showCandidatePage}
+        selectedCandidate={props.selectedCandidate}
+        handleCloseCandidatePage={props.handleCloseCandidatePage}
+        showAddCandidateModal={props.showAddCandidateModal}
+        setShowAddCandidateModal={props.setShowAddCandidateModal}
+        preSelectedListForModal={props.preSelectedListForModal}
+        setPreSelectedListForModal={props.setPreSelectedListForModal}
+        handleAddCandidate={props.handleAddCandidate}
+        setCandidateListsForModal={props.setCandidateListsForModal}
+        bulkJobVacancies={props.bulkJobVacancies}
+        candidateListsForModal={props.candidateListsForModal}
+        handleCandidatePageOpen={props.handleCandidatePageOpen}
+        showBatchApproval={props.showBatchApproval}
+        setShowBatchApproval={props.setShowBatchApproval}
+        convertCandidatesForBatch={props.convertCandidatesForBatch}
+        handleBatchApprovalComplete={props.handleBatchApprovalComplete}
+        wsiCandidateForScreening={props.wsiCandidateForScreening}
+        setWsiCandidateForScreening={props.setWsiCandidateForScreening}
+        showWSITextModal={props.showWSITextModal}
+        setShowWSITextModal={props.setShowWSITextModal}
+        showWSIVoiceModal={props.showWSIVoiceModal}
+        setShowWSIVoiceModal={props.setShowWSIVoiceModal}
+        handleWSIScreeningComplete={props.handleWSIScreeningComplete}
+        showWSIInviteModal={props.showWSIInviteModal}
+        setShowWSIInviteModal={props.setShowWSIInviteModal}
+        wsiInviteCandidate={props.wsiInviteCandidate}
+        setWsiInviteCandidate={props.setWsiInviteCandidate}
+        showRubricModal={props.showRubricModal}
+        setShowRubricModal={props.setShowRubricModal}
+        rubricCandidate={props.rubricCandidate}
+        setRubricCandidate={props.setRubricCandidate}
+        rubricEvaluationData={props.rubricEvaluationData}
+        setRubricEvaluationData={props.setRubricEvaluationData}
+        showRevealModal={props.showRevealModal}
+        setShowRevealModal={props.setShowRevealModal}
+        revealCandidate={props.revealCandidate}
+        setRevealCandidate={props.setRevealCandidate}
+        handleRevealContact={props.handleRevealContact}
+        revealType={props.revealType}
+        showCVPreviewModal={props.showCVPreviewModal}
+        setShowCVPreviewModal={props.setShowCVPreviewModal}
+        parsedCVData={props.parsedCVData}
+        setParsedCVData={props.setParsedCVData}
+        handleCVConfirmed={props.handleCVConfirmed}
       />
 
-      {/* Batch Approval Modal */}
-      {showBatchApproval && (
-        <BatchApprovalModal
-          candidates={convertCandidatesForBatch(candidates.filter(c => selectedCandidatesForBatch.has(c.id))) as any}
-          isOpen={showBatchApproval}
-          onClose={() => setShowBatchApproval(false)}
-          onApprovalComplete={handleBatchApprovalComplete}
-        />
-      )}
-
-      {/* WSI Text Screening Modal */}
-      {wsiCandidateForScreening && (
-        <WSITextScreeningModal
-          isOpen={showWSITextModal}
-          onClose={() => {
-            setShowWSITextModal(false)
-            setWsiCandidateForScreening(null)
-          }}
-          candidate={{
-            id: wsiCandidateForScreening.id,
-            name: wsiCandidateForScreening.name,
-            avatar: wsiCandidateForScreening.avatar,
-            position: wsiCandidateForScreening.position
-          }}
-          jobVacancy={{
-            id: 'default-vacancy',
-            title: wsiCandidateForScreening.position || 'Vaga atual'
-          }}
-          onComplete={handleWSIScreeningComplete}
-        />
-      )}
-
-      {/* WSI Voice Screening Modal */}
-      {wsiCandidateForScreening && (
-        <WSIVoiceScreeningStatus
-          isOpen={showWSIVoiceModal}
-          onClose={() => {
-            setShowWSIVoiceModal(false)
-            setWsiCandidateForScreening(null)
-          }}
-          candidate={{
-            id: wsiCandidateForScreening.id,
-            name: wsiCandidateForScreening.name,
-            phone: wsiCandidateForScreening.phone
-          }}
-          jobVacancy={{
-            id: 'default-vacancy',
-            title: wsiCandidateForScreening.position || 'Vaga atual'
-          }}
-          onComplete={handleWSIScreeningComplete}
-          autoStart={true}
-        />
-      )}
-
-      {/* WSI Triagem Invite Modal */}
-      <WSITriagemInviteModal
-        isOpen={showWSIInviteModal}
-        onClose={() => {
-          setShowWSIInviteModal(false)
-          setWsiInviteCandidate(null)
-        }}
-        candidate={wsiInviteCandidate ? {
-          id: wsiInviteCandidate.id,
-          name: wsiInviteCandidate.name,
-          role: wsiInviteCandidate.position,
-          email: wsiInviteCandidate.email,
-          phone: wsiInviteCandidate.phone,
-          location: wsiInviteCandidate.location,
-          avatar: wsiInviteCandidate.avatar
-        } : null}
-        jobTitle={wsiInviteCandidate?.position || 'Vaga'}
-        onSend={async (data) => {
-          try {
-            if (data.channel === 'email' && wsiInviteCandidate?.email) {
-              const sendData = data as { subject?: string; message?: string; channel: string }
-              await liaApi.sendEmail('wsi-triagem-invite', {
-                recipient_email: wsiInviteCandidate.email,
-                recipient_name: wsiInviteCandidate.name,
-                candidate_id: wsiInviteCandidate.id,
-                subject_override: sendData.subject || `Convite para Triagem - ${wsiInviteCandidate.position || 'Vaga'}`,
-                body_override: sendData.message,
-                variables: {
-                  candidate_name: wsiInviteCandidate.name,
-                  job_title: wsiInviteCandidate.position || 'Vaga'
-                }
-              })
-            }
-            setShowWSIInviteModal(false)
-            setWsiInviteCandidate(null)
-          } catch (error) {
-            setShowWSIInviteModal(false)
-            setWsiInviteCandidate(null)
-          }
-        }}
-      />
-
-      {/* Rubric Evaluation Modal */}
-      <RubricEvaluationModal
-        isOpen={showRubricModal}
-        onClose={() => {
-          setShowRubricModal(false)
-          setRubricCandidate(null)
-          setRubricEvaluationData(null)
-        }}
-        evaluation={rubricEvaluationData}
-        candidateId={rubricCandidate?.id || ''}
-        candidateName={rubricCandidate?.name}
-        jobId=""
-        onApprove={async () => {
-          toast.success("Candidato aprovado", { description: `${rubricCandidate?.name} foi aprovado com sucesso` })
-          setShowRubricModal(false)
-          setRubricCandidate(null)
-          setRubricEvaluationData(null)
-        }}
-        onReject={async () => {
-          toast.success("Candidato reprovado", { description: `${rubricCandidate?.name} foi reprovado` })
-          setShowRubricModal(false)
-          setRubricCandidate(null)
-          setRubricEvaluationData(null)
-        }}
-      />
-
-      {/* Send Email Modal */}
-      <SendEmailModal
-        isOpen={showSendEmailModal}
-        onClose={() => {
-          setShowSendEmailModal(false)
-          setEmailCandidateSelected(null)
-        }}
-        candidate={emailCandidateSelected ? ({
-          id: emailCandidateSelected.id,
-          name: emailCandidateSelected.name,
-          email: emailCandidateSelected.email,
-          phone: emailCandidateSelected.phone,
-          current_title: emailCandidateSelected.position,
-          technical_skills: emailCandidateSelected.skills,
-          source: 'internal',
-          is_active: true,
-          is_remote: emailCandidateSelected.workModel === 'remoto',
-          willing_to_relocate: false,
-          tags: emailCandidateSelected.tags || [],
-          status: emailCandidateSelected.status || '',
-          lia_insights: {},
-          soft_skills: [],
-          languages: {},
-          certifications: []
-        }) : null}
-        onSuccess={() => {
-          setShowSendEmailModal(false)
-          setEmailCandidateSelected(null)
-        }}
-      />
-
-      {/* Reveal Contact Modal */}
-      {revealCandidate && (
-        <RevealCreditsModal
-          isOpen={showRevealModal}
-          onClose={() => {
-            setShowRevealModal(false)
-            setRevealCandidate(null)
-          }}
-          onConfirm={handleRevealContact as () => Promise<void>}
-          revealType={revealType}
-          candidateName={revealCandidate.name}
-          creditsRequired={revealType === 'email' ? 2 : 14}
-        />
-      )}
-
-      {/* CV Preview Modal */}
-      {parsedCVData && (
-        <CVPreview
-          isOpen={showCVPreviewModal}
-          onClose={() => {
-            setShowCVPreviewModal(false)
-            setParsedCVData(null)
-          }}
-          parsedData={parsedCVData}
-          onConfirm={handleCVConfirmed}
-          jobVacancies={bulkJobVacancies.map(j => ({ id: j.id, title: j.title }))}
-        />
-      )}
-
-      {/* Credit Confirmation Modal */}
-      <CreditConfirmationModal
-        open={showCreditConfirmation}
-        onOpenChange={setShowCreditConfirmation}
-        creditEstimate={creditEstimate as any}
-        pearchSearchOptions={pearchSearchOptions as any}
-        onSearchOptionsChange={setPearchSearchOptions as any}
-        onCancel={() => {
-          setShowCreditConfirmation(false)
-          setPendingSearchRequest(null)
-        }}
-        onConfirm={handleConfirmPearchSearch}
-      />
-
-      {/* Global Expansion Confirm Modal */}
-      <GlobalExpansionConfirmModal
-        open={showGlobalExpansionConfirm}
-        onOpenChange={setShowGlobalExpansionConfirm}
-        lastSuccessfulQuery={lastSuccessfulQuery}
-        lastSearchQuery={lastSearchQuery}
-        localResultsCount={localResultsCount}
-        isExpandingToGlobal={isExpandingToGlobal}
-        onConfirm={handleExpandToGlobal}
-      />
-
-      {/* Source Change Confirm Modal */}
-      <SourceChangeConfirmModal
-        open={showSourceChangeModal}
-        onOpenChange={setShowSourceChangeModal}
-        pendingSourceChange={pendingSourceChange}
-        onCancel={() => { setShowSourceChangeModal(false); setPendingSourceChange(null) }}
-        onConfirm={confirmSourceChange}
-      />
-
-      {/* Contact Filter Confirm Modal */}
-      <ContactFilterConfirmModal
-        open={showContactFilterModal}
-        onOpenChange={setShowContactFilterModal}
-        pendingContactFilter={pendingContactFilter}
-        onCancel={() => { setShowContactFilterModal(false); setPendingContactFilter(null) }}
-        onConfirm={confirmContactFilterChange}
-      />
-
-      {/* Save As Archetype Modal */}
-      <SaveAsArchetypeModal
-        open={showSaveAsArchetypeModal}
-        onOpenChange={setShowSaveAsArchetypeModal}
-        currentQuery={lastSuccessfulQuery || searchResults.query || ''}
-        isCreatingArchetype={isCreatingArchetype}
-        newArchetypeData={newArchetypeData}
-        onClose={() => {
-          if (isCreatingArchetype) {
-            setIsCreatingArchetype(false)
-            setArchetypeCreationStep('initial')
-            setNewArchetypeData({})
-          }
-        }}
-        onSave={(archetype, message) => {
-          setUserArchetypes(prev => [...prev, archetype as unknown as ModalArchetype])
-          setShowSaveAsArchetypeModal(false)
-          setChatMessages(prev => [...prev, message as unknown as ModalChatMessage])
-          if (isCreatingArchetype) {
-            setIsCreatingArchetype(false)
-            setArchetypeCreationStep('initial')
-            setNewArchetypeData({})
-          }
-        }}
-      />
-
-      {/* Advanced Filters Modal */}
-      <AdvancedFiltersModal
-        isOpen={showAdvancedSearch}
-        onClose={() => setShowAdvancedSearch(false)}
-        onApply={(filters) => {
-          setActiveSearchFilters(filters as Record<string, unknown>)
-          setShowAdvancedSearch(false)
-          const hideScope = (filters as Record<string, unknown>).general ? ((filters as Record<string, unknown>).general as Record<string, unknown>)?.hideViewedScope as string || "dont_hide" : "dont_hide"
-          const hidePeriod = (filters as Record<string, unknown>).general ? ((filters as Record<string, unknown>).general as Record<string, unknown>)?.hideViewedPeriod as string || "all_time" : "all_time"
-          hideViewedCandidates.setScope(hideScope)
-          hideViewedCandidates.setPeriod(hidePeriod)
-          if (hideScope !== "dont_hide") {
-            hideViewedCandidates.fetchViewedCandidates()
-          }
-        }}
-        initialFilters={activeSearchFilters}
-        estimatedMatches={1000000}
-      />
-
-      {/* Add to List Modal */}
-      <AddToListModal
-        isOpen={showAddToListModal}
-        onClose={() => {
-          setShowAddToListModal(false)
-          setAddToListCandidateIds([])
-          setAddToListCandidateNames([])
-        }}
-        candidateIds={addToListCandidateIds}
-        candidateNames={addToListCandidateNames}
-        onSuccess={() => {
-          toast.success("Sucesso", { description: "Candidatos adicionados à lista" })
-        }}
-      />
-
-      {/* Share Search Modal */}
-      <ShareSearchModal
-        open={showShareSearchModal}
-        onClose={() => {
-          setShowShareSearchModal(false)
-          setShareSearchCandidates([])
-          setShareSearchTitle('')
-        }}
-        shareType="search"
-        title={shareSearchTitle}
-        candidateIds={shareSearchCandidates.map(c => c.id)}
-        candidateCount={shareSearchCandidates.length}
-        sourceQuery={lastSearchQuery || undefined}
-      />
-
-      {/* Add List to Vacancies Modal */}
-      {selectedListForVacancies && (
-        <AddListToVacanciesModal
-          isOpen={showAddListToVacanciesModal}
-          onClose={() => {
-            setShowAddListToVacanciesModal(false)
-            setSelectedListForVacancies(null)
-          }}
-          listId={selectedListForVacancies.id}
-          listName={selectedListForVacancies.name}
-          candidateCount={selectedListForVacancies.candidateCount}
-          onSuccess={() => {
-            toast.success("Sucesso", { description: "Candidatos adicionados às vagas selecionadas" })
-          }}
-        />
-      )}
-
-      {/* Add Candidates to Vacancy Modal */}
-      <AddCandidatesToVacancyModal
-        isOpen={showAddToVacancyModal}
-        onClose={() => setShowAddToVacancyModal(false)}
-        candidateIds={Array.from(selectedCandidatesForBatch)}
-        candidateNames={candidates.filter(c => selectedCandidatesForBatch.has(c.id)).map(c => c.name)}
-        currentRecruiterEmail={user?.email}
-        onSuccess={() => {
-          setSelectedCandidatesForBatch(new Set())
-          toast.success("Sucesso", { description: "Candidatos adicionados à vaga" })
-        }}
-      />
-
-      {/* Unsaved Pearch Warning Modal */}
-      <UnsavedPearchWarningModal
-        isOpen={showUnsavedWarningModal}
-        onClose={() => {
-          setShowUnsavedWarningModal(false)
-          setPendingTabChange(null)
-        }}
-        onSaveAndExit={handleSaveAllAndExit}
-        onExitWithoutSaving={handleExitWithoutSaving}
-        unsavedCount={unsavedPearchCandidates.length}
-        unsavedCandidates={unsavedPearchCandidates}
-        isSaving={isSavingToBase}
-      />
-
-      {/* Edit Query Modal */}
-      <EditQueryModal
-        isOpen={showEditQueryModal}
-        onClose={() => setShowEditQueryModal(false)}
-        initialValue={editQueryValue}
-        activeFiltersCount={getActiveSearchFiltersCount()}
-        searchSource={searchSource}
-        onSearchSourceChange={setSearchSource}
-        pearchSearchOptions={pearchSearchOptions as any}
-        onPearchOptionsChange={setPearchSearchOptions as any}
-        onOpenFilters={() => setShowAdvancedSearch(true)}
-        onSubmitNatural={async (query, entities, mode, metadata) => {
-          setSearchTerm(query)
-          setLastSearchQuery(query)
-          setLastSearchMode(mode || 'natural')
-          setLastSearchEntities(entities as unknown as Record<string, unknown>)
-          setLastSearchMetadata(metadata as unknown as Record<string, unknown>)
-          await executeSearch(query, entities, mode || 'natural', metadata, false)
-        }}
-        onSubmitAI={async (query) => {
-          setSearchTerm(query)
-          setLastSearchQuery(query)
-          setLastSearchMode('ai-natural')
-          setLastSearchEntities(null)
-          await executeSearch(query, null, 'ai-natural', undefined, false)
-        }}
-      />
-
-      {/* Preview Suggestion Modal */}
-      <PreviewSuggestionModal
-        previewSuggestion={previewSuggestion as any}
-        previewingUserArchetype={previewingUserArchetype as any}
-        onClose={() => {
-          setPreviewSuggestion(null)
-          setPreviewingUserArchetype(null)
-        }}
-        buildFiltersFromTags={buildFiltersFromTags}
-        onUpdateArchetype={(id, updates) => {
-          setUserArchetypes(prev => prev.map((a) =>
-            a.id === id ? { ...a, ...updates } : a
-          ))
-        }}
-        onSaveArchetype={(newArchetype) => setUserArchetypes(prev => [...prev, newArchetype as unknown as ModalArchetype])}
-        onExecuteSearch={async (query, filters, mode, metadata, usePearch) => {
-          await executeSearch(query, filters as Record<string, unknown>, mode as string, metadata as Record<string, unknown>, usePearch)
-        }}
-        onSetLiaPromptValue={setLiaPromptValue}
-        onSetActiveSearchTab={setActiveSearchTab}
-      />
-
-      {/* Delete Archetype Modal */}
-      <DeleteArchetypeModal
-        archetypeToDelete={archetypeToDelete}
-        onClose={() => setArchetypeToDelete(null)}
-        onDeleted={(id) => setUserArchetypes(prev => prev.filter(a => a.id !== id))}
+      <CandidatesSearchModals
+        showCreditConfirmation={props.showCreditConfirmation}
+        setShowCreditConfirmation={props.setShowCreditConfirmation}
+        creditEstimate={props.creditEstimate}
+        pearchSearchOptions={props.pearchSearchOptions}
+        setPearchSearchOptions={props.setPearchSearchOptions}
+        setPendingSearchRequest={props.setPendingSearchRequest}
+        handleConfirmPearchSearch={props.handleConfirmPearchSearch}
+        showGlobalExpansionConfirm={props.showGlobalExpansionConfirm}
+        setShowGlobalExpansionConfirm={props.setShowGlobalExpansionConfirm}
+        lastSuccessfulQuery={props.lastSuccessfulQuery}
+        lastSearchQuery={props.lastSearchQuery}
+        localResultsCount={props.localResultsCount}
+        isExpandingToGlobal={props.isExpandingToGlobal}
+        handleExpandToGlobal={props.handleExpandToGlobal}
+        showSourceChangeModal={props.showSourceChangeModal}
+        setShowSourceChangeModal={props.setShowSourceChangeModal}
+        pendingSourceChange={props.pendingSourceChange}
+        setPendingSourceChange={props.setPendingSourceChange}
+        confirmSourceChange={props.confirmSourceChange}
+        showContactFilterModal={props.showContactFilterModal}
+        setShowContactFilterModal={props.setShowContactFilterModal}
+        pendingContactFilter={props.pendingContactFilter}
+        setPendingContactFilter={props.setPendingContactFilter}
+        confirmContactFilterChange={props.confirmContactFilterChange}
+        showSaveAsArchetypeModal={props.showSaveAsArchetypeModal}
+        setShowSaveAsArchetypeModal={props.setShowSaveAsArchetypeModal}
+        searchResults={props.searchResults}
+        isCreatingArchetype={props.isCreatingArchetype}
+        setIsCreatingArchetype={props.setIsCreatingArchetype}
+        archetypeCreationStep={props.archetypeCreationStep}
+        setArchetypeCreationStep={props.setArchetypeCreationStep}
+        newArchetypeData={props.newArchetypeData}
+        setNewArchetypeData={props.setNewArchetypeData}
+        setUserArchetypes={props.setUserArchetypes}
+        setChatMessages={props.setChatMessages}
+        showAdvancedSearch={props.showAdvancedSearch}
+        setShowAdvancedSearch={props.setShowAdvancedSearch}
+        activeSearchFilters={props.activeSearchFilters}
+        setActiveSearchFilters={props.setActiveSearchFilters}
+        hideViewedCandidates={props.hideViewedCandidates}
+        showAddToListModal={props.showAddToListModal}
+        setShowAddToListModal={props.setShowAddToListModal}
+        addToListCandidateIds={props.addToListCandidateIds}
+        setAddToListCandidateIds={props.setAddToListCandidateIds}
+        addToListCandidateNames={props.addToListCandidateNames}
+        setAddToListCandidateNames={props.setAddToListCandidateNames}
+        showShareSearchModal={props.showShareSearchModal}
+        setShowShareSearchModal={props.setShowShareSearchModal}
+        shareSearchTitle={props.shareSearchTitle}
+        setShareSearchTitle={props.setShareSearchTitle}
+        shareSearchCandidates={props.shareSearchCandidates}
+        setShareSearchCandidates={props.setShareSearchCandidates}
+        showAddListToVacanciesModal={props.showAddListToVacanciesModal}
+        setShowAddListToVacanciesModal={props.setShowAddListToVacanciesModal}
+        selectedListForVacancies={props.selectedListForVacancies}
+        setSelectedListForVacancies={props.setSelectedListForVacancies}
+        showAddToVacancyModal={props.showAddToVacancyModal}
+        setShowAddToVacancyModal={props.setShowAddToVacancyModal}
+        selectedCandidatesForBatch={props.selectedCandidatesForBatch}
+        setSelectedCandidatesForBatch={props.setSelectedCandidatesForBatch}
+        candidates={props.candidates}
+        user={props.user}
+        showUnsavedWarningModal={props.showUnsavedWarningModal}
+        setShowUnsavedWarningModal={props.setShowUnsavedWarningModal}
+        setPendingTabChange={props.setPendingTabChange}
+        handleSaveAllAndExit={props.handleSaveAllAndExit}
+        handleExitWithoutSaving={props.handleExitWithoutSaving}
+        unsavedPearchCandidates={props.unsavedPearchCandidates}
+        isSavingToBase={props.isSavingToBase}
+        showEditQueryModal={props.showEditQueryModal}
+        setShowEditQueryModal={props.setShowEditQueryModal}
+        editQueryValue={props.editQueryValue}
+        getActiveSearchFiltersCount={props.getActiveSearchFiltersCount}
+        searchSource={props.searchSource}
+        setSearchSource={props.setSearchSource}
+        setSearchTerm={props.setSearchTerm}
+        setLastSearchQuery={props.setLastSearchQuery}
+        setLastSearchMode={props.setLastSearchMode}
+        setLastSearchEntities={props.setLastSearchEntities}
+        setLastSearchMetadata={props.setLastSearchMetadata}
+        executeSearch={props.executeSearch}
+        previewSuggestion={props.previewSuggestion}
+        setPreviewSuggestion={props.setPreviewSuggestion}
+        previewingUserArchetype={props.previewingUserArchetype}
+        setPreviewingUserArchetype={props.setPreviewingUserArchetype}
+        buildFiltersFromTags={props.buildFiltersFromTags}
+        setLiaPromptValue={props.setLiaPromptValue}
+        setActiveSearchTab={props.setActiveSearchTab}
+        archetypeToDelete={props.archetypeToDelete}
+        setArchetypeToDelete={props.setArchetypeToDelete}
       />
     </>
   )

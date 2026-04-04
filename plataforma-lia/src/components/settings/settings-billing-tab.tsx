@@ -4,7 +4,7 @@
   import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
   import { Button } from "@/components/ui/button"
   import { Badge } from "@/components/ui/badge"
-  import { RealTimeDashboardPage } from "@/components/pages/real-time-dashboard-page"
+  // import { RealTimeDashboardPage } from "@/components/pages/real-time-dashboard-page" // ARCHIVED
   import {
     Building, Network, Rocket, CreditCard, Activity,
     Search, Filter, UserPlus, Mail, Eye, MoreVertical,
@@ -274,7 +274,7 @@ export function SettingsBillingTab({ onSettingsChange }: { onSettingsChange: (ch
 
   const renderPerformanceSection = () => (
     <div className="space-y-4">
-      <RealTimeDashboardPage />
+      {/* RealTimeDashboardPage — archived */}
     </div>
   )
 

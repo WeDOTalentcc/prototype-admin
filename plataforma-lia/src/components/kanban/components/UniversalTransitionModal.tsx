@@ -1,374 +1,84 @@
 "use client"
 import NextImage from "next/image"
 
-import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   ArrowRight,
   Brain,
-  Send,
   User,
-  Mail,
   MessageSquare,
   Loader2,
-  Calendar,
   CalendarClock,
-  ClipboardList,
-  FileText,
-  Gift,
   ChevronDown,
-  ChevronUp,
   AlertTriangle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { textStyles, cardStyles } from '@/lib/design-tokens'
-import { RECRUITMENT_STAGES } from '@/lib/recruitment-stages'
-import type { KanbanCandidate } from '../types'
-import { ACTION_BEHAVIOR_MODALS } from '../constants'
-import { useInterpretContext, type ChatMessage } from '@/hooks/use-interpret-context'
-import { useTransitionContext, type CandidateContext, type JobContext } from '@/hooks/use-transition-context'
-import { isLiaAutoAllowed } from '../utils/action-matrix'
-import { getSubStatusOptionsForBehavior } from '../hooks/use-universal-transition'
 import { TransitionChatPanel } from './TransitionChatPanel'
+import { BatchRejectionSection, ActionModeSection } from './TransitionActionSection'
+import {
+  useUniversalTransitionModal,
+  type UniversalTransitionModalProps,
+  type UniversalTransitionConfirmData,
+} from './useUniversalTransitionModal'
 
-export interface UniversalTransitionConfirmData {
-  candidateIds: string[]
-  toStage: string
-  subStatus: string
-  action: 'lia_auto' | 'manual' | 'just_move'
-  prompt?: string
-  channel?: 'email' | 'whatsapp'
-  perCandidateSubStatus?: Record<string, string>
-  extracted_preferences?: Record<string, string>
-  actionBehavior?: string
-}
+export type { UniversalTransitionConfirmData }
 
-interface AvailableStage {
-  id: string
-  displayName: string
-  actionBehavior?: string
-}
-
-interface UniversalTransitionModalProps {
-  isOpen: boolean
-  onClose: () => void
-  candidates: KanbanCandidate[]
-  fromStage: string
-  toStage: string
-  toStageDisplayName: string
-  actionBehavior: string
-  subStatusOptions: Array<{ code: string; display_name: string }>
-  onConfirm: (data: UniversalTransitionConfirmData) => Promise<void>
-  onOpenSpecializedModal?: (modalType: string, context: Record<string, unknown>) => void
-  companyId?: string
-  jobTitle?: string
-  initialPrompt?: string
-  availableStages?: AvailableStage[]
-  allowStageSelection?: boolean
-  interviewAlert?: { name: string; date: string }
-}
-
-const ACTION_BEHAVIOR_CONFIG: Record<string, { label: string; icon: React.ReactNode; description: string }> = {
-  intake: {
-    label: 'Orientação LIA',
-    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
-    description: 'LIA orienta o recrutador sobre o candidato recebido',
-  },
-  screening: {
-    label: 'Convidar para Triagem WSI',
-    icon: <ClipboardList className="w-3.5 h-3.5" />,
-    description: 'LIA conduz triagem automatizada com o candidato',
-  },
-  scheduling: {
-    label: 'Abrir Agendamento',
-    icon: <Calendar className="w-3.5 h-3.5" />,
-    description: 'LIA envia convite de agendamento ao candidato',
-  },
-  evaluation: {
-    label: 'Enviar Teste',
-    icon: <FileText className="w-3.5 h-3.5" />,
-    description: 'LIA envia teste técnico ou avaliação',
-  },
-  verification: {
-    label: 'Solicitar Documentos',
-    icon: <FileText className="w-3.5 h-3.5" />,
-    description: 'LIA solicita documentos necessários',
-  },
-  offer: {
-    label: 'Enviar Proposta',
-    icon: <Gift className="w-3.5 h-3.5" />,
-    description: 'LIA prepara e envia proposta formal',
-  },
-  passive: {
-    label: 'Orientação LIA',
-    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
-    description: 'LIA orienta sobre a movimentação do candidato',
-  },
-  standby: {
-    label: 'Banco de Talentos',
-    icon: <Brain className="w-3.5 h-3.5 text-wedo-cyan" />,
-    description: 'LIA registra candidato no banco de talentos',
-  },
-  conclusion_hired: {
-    label: 'Enviar Boas-vindas',
-    icon: <Mail className="w-3.5 h-3.5" />,
-    description: 'LIA envia mensagem de boas-vindas e próximos passos',
-  },
-  conclusion_rejected: {
-    label: 'Enviar Feedback',
-    icon: <MessageSquare className="w-3.5 h-3.5" />,
-    description: 'LIA envia feedback construtivo ao candidato',
-  },
-  conclusion_declined: {
-    label: 'Agradecimento',
-    icon: <Mail className="w-3.5 h-3.5" />,
-    description: 'LIA envia agradecimento e mantém porta aberta',
-  },
-}
-
-
-
-export function UniversalTransitionModal({
-  isOpen,
-  onClose,
-  candidates,
-  fromStage,
-  toStage,
-  toStageDisplayName,
-  actionBehavior,
-  subStatusOptions,
-  onConfirm,
-  onOpenSpecializedModal,
-  companyId,
-  jobTitle,
-  initialPrompt,
-  availableStages,
-  allowStageSelection,
-  interviewAlert,
-}: UniversalTransitionModalProps) {
-  const [subStatus, setSubStatus] = useState('')
-  const [action, setAction] = useState<'lia_auto' | 'manual' | 'just_move'>('lia_auto')
-  const [prompt, setPrompt] = useState('')
-  const [channel, setChannel] = useState<'email' | 'whatsapp'>('email')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [perCandidateSubStatus, setPerCandidateSubStatus] = useState<Record<string, string>>({})
-  const [manuallyEditedCandidates, setManuallyEditedCandidates] = useState<Set<string>>(new Set())
-  const [showAllPerCandidate, setShowAllPerCandidate] = useState(false)
-  const [policyWarnings, setPolicyWarnings] = useState<string[]>([])
-  const [policyMetadata, setPolicyMetadata] = useState<Record<string, unknown>>({})
-  const [selectedToStage, setSelectedToStage] = useState(toStage)
-  const [selectedToStageDisplayName, setSelectedToStageDisplayName] = useState(toStageDisplayName)
-  const [currentActionBehavior, setCurrentActionBehavior] = useState(actionBehavior)
-  const [currentSubStatusOptions, setCurrentSubStatusOptions] = useState(subStatusOptions)
-  const [showStageSelector, setShowStageSelector] = useState(false)
-
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedToStage(toStage)
-      setSelectedToStageDisplayName(toStageDisplayName)
-      setCurrentActionBehavior(actionBehavior)
-      setCurrentSubStatusOptions(subStatusOptions)
-      setShowStageSelector(false)
-    }
-  }, [isOpen, toStage, toStageDisplayName, actionBehavior, subStatusOptions])
-
-  const handleStageSelect = (stage: AvailableStage) => {
-    setSelectedToStage(stage.id)
-    setSelectedToStageDisplayName(stage.displayName)
-    const newBehavior = stage.actionBehavior || 'passive'
-    setCurrentActionBehavior(newBehavior)
-    setCurrentSubStatusOptions(getSubStatusOptionsForBehavior(newBehavior, stage.id))
-    setShowStageSelector(false)
-    setSubStatus('')
-  }
-
-  const isSingle = candidates.length === 1
-  const candidate = isSingle ? candidates[0] : null
-  const fromStageInfo = RECRUITMENT_STAGES.find(s => s.name === fromStage)
-  const fromStageDisplayName = fromStageInfo?.displayName || fromStage
-  const behaviorConfig = ACTION_BEHAVIOR_CONFIG[currentActionBehavior]
-  const isRejectedBatch = selectedToStage === 'rejected' && candidates.length > 1
-  const showChatPanel = isLiaAutoAllowed(currentActionBehavior) && action !== 'just_move'
-
-  const transitionCandidates: CandidateContext[] = isRejectedBatch
-    ? candidates.map(c => ({
-        id: c.id,
-        name: c.name,
-        email: c.email,
-        phone: c.phone,
-        avatar: c.avatar,
-        current_title: c.role,
-        current_company: c.currentCompany || c.company,
-      }))
-    : []
-
-  const transitionJobContext: JobContext = {
-    id: companyId || '',
-    title: jobTitle || '',
-  }
+export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
+  const {
+    isOpen,
+    onClose,
+    candidates,
+    onOpenSpecializedModal,
+    availableStages,
+    allowStageSelection,
+    interviewAlert,
+  } = props
 
   const {
+    subStatus,
+    action,
+    setAction,
+    isSubmitting,
+    perCandidateSubStatus,
+    manuallyEditedCandidates,
+    showAllPerCandidate,
+    setShowAllPerCandidate,
+    policyWarnings,
+    policyMetadata,
+    selectedToStage,
+    selectedToStageDisplayName,
+    currentActionBehavior,
+    currentSubStatusOptions,
+    showStageSelector,
+    setShowStageSelector,
+    handleStageSelect,
+    isSingle,
+    candidate,
+    fromStageDisplayName,
+    behaviorConfig,
+    isRejectedBatch,
+    showChatPanel,
+    isRejectedStage,
+    isBulkPredicting,
     predictedSubStatuses,
     predictionReasonings,
-    isPredicting: isBulkPredicting,
-  } = useTransitionContext({
-    candidates: transitionCandidates,
-    fromStage,
-    toStage: selectedToStage,
-    jobContext: transitionJobContext,
-    companyId,
-  })
+    messages,
+    isInterpreting,
+    interpretResult,
+    resetInterpret,
+    handleGlobalSubStatusChange,
+    handlePerCandidateSubStatusChange,
+    handleSendChatMessage,
+    handleConfirm,
+    handleOpenManualModal,
+    prompt,
+    setPrompt,
+  } = useUniversalTransitionModal(props)
 
-  const { sendMessage, messages, result: interpretResult, isLoading: isInterpreting, reset: resetInterpret } = useInterpretContext()
-
-  useEffect(() => {
-    if (!isOpen || !companyId) return
-    const isOfferStage = selectedToStage.toLowerCase().includes('proposta') || 
-                         selectedToStage.toLowerCase().includes('offer') ||
-                         selectedToStage.toLowerCase().includes('contrata')
-    if (!isOfferStage) {
-      setPolicyWarnings([])
-      setPolicyMetadata({})
-      return
-    }
-    const candidateId = candidates[0]?.id
-    if (!candidateId) return
-    
-    fetch(`/api/backend-proxy/pipeline-policy?action=validate-transition&candidate_id=${candidateId}&target_stage=${selectedToStage}&company_id=${companyId}`)
-      .then(res => res.json())
-      .then(data => {
-        setPolicyWarnings(data.warnings || [])
-        setPolicyMetadata(data.metadata || {})
-      })
-      .catch(() => {})
-  }, [isOpen, companyId, selectedToStage, candidates])
-
-  useEffect(() => {
-    if (isOpen) {
-      setSubStatus(currentSubStatusOptions.length > 0 ? currentSubStatusOptions[0].code : '')
-      setAction('lia_auto')
-      setPrompt(initialPrompt || '')
-      setChannel('email')
-      setPerCandidateSubStatus({})
-      setManuallyEditedCandidates(new Set())
-      setShowAllPerCandidate(false)
-      resetInterpret()
-      if (initialPrompt) {
-        setTimeout(() => {
-          sendMessage(initialPrompt, {
-            candidate_id: candidates[0]?.id || '',
-            candidate_name: candidates[0]?.name,
-            job_title: jobTitle,
-            from_stage: fromStage,
-            to_stage: selectedToStage,
-            action_behavior: currentActionBehavior,
-            company_id: companyId,
-          })
-        }, 300)
-      }
-    }
-  }, [isOpen, currentSubStatusOptions, resetInterpret, initialPrompt])
-
-  useEffect(() => {
-    if (isRejectedBatch && Object.keys(predictedSubStatuses).length > 0) {
-      setPerCandidateSubStatus(prev => {
-        const updated = { ...prev }
-        for (const [candidateId, predicted] of Object.entries(predictedSubStatuses)) {
-          if (!manuallyEditedCandidates.has(candidateId)) {
-            updated[candidateId] = predicted
-          }
-        }
-        return updated
-      })
-    }
-  }, [isRejectedBatch, predictedSubStatuses, manuallyEditedCandidates])
-
-  useEffect(() => {
-    if (!interpretResult) return
-    if (interpretResult.suggested_sub_status && currentSubStatusOptions.some(o => o.code === interpretResult.suggested_sub_status)) {
-      setSubStatus(interpretResult.suggested_sub_status)
-    }
-    if (interpretResult.suggested_action) {
-      setAction(interpretResult.suggested_action)
-    }
-  }, [interpretResult, currentSubStatusOptions])
-
-  const handleGlobalSubStatusChange = (value: string) => {
-    setSubStatus(value)
-    if (isRejectedBatch) {
-      setPerCandidateSubStatus(prev => {
-        const updated = { ...prev }
-        for (const c of candidates) {
-          if (!manuallyEditedCandidates.has(c.id)) {
-            updated[c.id] = value
-          }
-        }
-        return updated
-      })
-    }
-  }
-
-  const handlePerCandidateSubStatusChange = (candidateId: string, value: string) => {
-    setPerCandidateSubStatus(prev => ({ ...prev, [candidateId]: value }))
-    setManuallyEditedCandidates(prev => new Set(prev).add(candidateId))
-  }
-
-  const handleSendChatMessage = (userMessage: string) => {
-    setPrompt(prev => prev ? `${prev}\n${userMessage}` : userMessage)
-    sendMessage(userMessage, {
-      candidate_id: candidate?.id || candidates[0]?.id || '',
-      candidate_name: candidate?.name,
-      job_title: jobTitle,
-      from_stage: fromStage,
-      to_stage: selectedToStage,
-      action_behavior: currentActionBehavior,
-      company_id: companyId,
-    })
-  }
-
-  const handleConfirm = async () => {
-    setIsSubmitting(true)
-    try {
-      await onConfirm({
-        candidateIds: candidates.map(c => c.id),
-        toStage: selectedToStage,
-        subStatus,
-        action,
-        prompt: prompt.trim() || undefined,
-        channel: action !== 'just_move' ? channel : undefined,
-        perCandidateSubStatus: isRejectedBatch ? perCandidateSubStatus : undefined,
-        extracted_preferences: (action === 'lia_auto' && interpretResult?.extracted_preferences) ? interpretResult.extracted_preferences : undefined,
-        actionBehavior: currentActionBehavior,
-      })
-      onClose()
-    } catch (err) {
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleOpenManualModal = () => {
-    const modalType = ACTION_BEHAVIOR_MODALS[currentActionBehavior]
-    if (modalType && onOpenSpecializedModal) {
-      onOpenSpecializedModal(modalType, {
-        candidates,
-        fromStage,
-        toStage: selectedToStage,
-        subStatus,
-        prompt,
-        channel,
-        companyId,
-        jobTitle,
-      })
-    }
-  }
-
-  const isRejectedStage = selectedToStage === 'rejected'
-
+  const fromStage = props.fromStage
   const stageSelectable = allowStageSelection && availableStages && availableStages.length > 0
   const filteredAvailableStages = stageSelectable
     ? availableStages!.filter(s => s.id !== fromStage)
@@ -428,14 +138,12 @@ export function UniversalTransitionModal({
           "overflow-y-auto",
           showChatPanel ? "flex flex-col md:flex-row" : ""
         )}>
-          {/* LEFT PANEL: Transition details */}
           <div className={cn(
             "px-4 py-3 space-y-2.5 overflow-y-auto",
             showChatPanel
               ? "md:w-[36%] md:max-h-[calc(85vh-120px)]"
               : "w-full"
           )}>
-            {/* Candidate info + stage transition */}
             <div className={`p-2.5 ${cardStyles.flat} space-y-2`}>
               {isSingle && candidate ? (
                 <div className="flex items-center gap-2.5">
@@ -510,239 +218,33 @@ export function UniversalTransitionModal({
               </div>
             </div>
 
-            {/* Action mode + batch per-candidate */}
             <>
-              {/* Batch rejection: per-candidate sub-status */}
-                {isRejectedBatch && currentSubStatusOptions.length > 0 && (
-                  <div className="space-y-2">
-                    <button
-                      type="button"
-                      className="w-full flex items-center justify-between py-1.5 group"
-                      onClick={() => setShowAllPerCandidate(prev => !prev)}
-                    >
-                      <span className="font-sans text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
-                        Motivo por candidato
-                        {isBulkPredicting && (
-                          <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none text-wedo-cyan" />
-                        )}
-                        {!isBulkPredicting && Object.keys(predictedSubStatuses).length > 0 && (
-                          <span className="inline-flex items-center gap-0.5 text-micro font-normal text-wedo-cyan">
-                            <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
-                            IA
-                          </span>
-                        )}
-                      </span>
-                      <span className="flex items-center gap-1 text-micro text-lia-text-secondary group-hover:text-lia-text-primary dark:group-hover:text-lia-text-disabled transition-colors motion-reduce:transition-none">
-                        {candidates.length} candidatos
-                        {showAllPerCandidate ? (
-                          <ChevronUp className="w-3.5 h-3.5" />
-                        ) : (
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        )}
-                      </span>
-                    </button>
-                    {showAllPerCandidate && (
-                      <div className="max-h-[240px] overflow-y-auto space-y-1.5 pr-0.5">
-                        {candidates.map((c) => {
-                          const candidateSubStatus = perCandidateSubStatus[c.id] || subStatus
-                          const isAiPredicted = !manuallyEditedCandidates.has(c.id) && !!predictedSubStatuses[c.id]
-                          const reasoning = predictionReasonings[c.id]
-                          const initials = c.name
-                            ?.split(' ')
-                            .slice(0, 2)
-                            .map(n => n[0])
-                            .join('')
-                            .toUpperCase() || '?'
+              <BatchRejectionSection
+                candidates={candidates}
+                isRejectedBatch={isRejectedBatch}
+                currentSubStatusOptions={currentSubStatusOptions}
+                isBulkPredicting={isBulkPredicting}
+                predictedSubStatuses={predictedSubStatuses}
+                predictionReasonings={predictionReasonings}
+                perCandidateSubStatus={perCandidateSubStatus}
+                manuallyEditedCandidates={manuallyEditedCandidates}
+                subStatus={subStatus}
+                showAllPerCandidate={showAllPerCandidate}
+                setShowAllPerCandidate={setShowAllPerCandidate}
+                handlePerCandidateSubStatusChange={handlePerCandidateSubStatusChange}
+              />
 
-                          return (
-                            <div
-                              key={c.id}
-                              className="p-2.5 bg-lia-bg-secondary rounded-md border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-subtle"
-                            >
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-7 h-7 rounded-full bg-lia-interactive-active dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
-                                  {c.avatar ? (
-                                    <NextImage src={c.avatar} alt="" width={28} height={28} className="w-7 h-7 rounded-full object-cover" />
-                                  ) : (
-                                    <span className="text-micro font-semibold text-lia-text-secondary">{initials}</span>
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-sans text-xs font-medium text-lia-text-primary truncate">
-                                    {c.name}
-                                  </p>
-                                  {(c.role || c.currentCompany) && (
-                                    <p className="font-sans text-xs text-lia-text-secondary truncate">
-                                      {c.role}{c.role && c.currentCompany ? ' @ ' : ''}{c.currentCompany}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-1.5 flex-shrink-0">
-                                  {isAiPredicted && (
-                                    <Brain className="w-3 h-3 text-wedo-cyan" />
-                                  )}
-                                  <Select
-                                    value={candidateSubStatus}
-                                    onValueChange={(value) => handlePerCandidateSubStatusChange(c.id, value)}
-                                  >
-                                    <SelectTrigger className="w-[180px] h-7 rounded-md text-xs">
-                                      <SelectValue placeholder="Selecione..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {currentSubStatusOptions.map((opt) => (
-                                        <SelectItem key={opt.code} value={opt.code} className="text-xs">
-                                          {opt.display_name}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                              {reasoning && (
-                                <p className="font-sans text-xs text-lia-text-secondary mt-1.5 ml-[38px] flex items-center gap-1"> {/* [OPT-022] ml-[38px] px arbitrário — sem canônico Tailwind */}
-                                  <Brain className="w-2.5 h-2.5 text-wedo-cyan flex-shrink-0" />
-                                  {reasoning}
-                                </p>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Action mode */}
-                {behaviorConfig && (
-                  <div className="space-y-1">
-                    <Label className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider">
-                      Ação
-                    </Label>
-                    <RadioGroup
-                      value={action}
-                      onValueChange={(v) => setAction(v as 'lia_auto' | 'manual' | 'just_move')}
-                      className="space-y-1"
-                    >
-                      <div
-                        className={cn(
-                          "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
-                          action === 'lia_auto'
-                            ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
-                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
-                        )}
-                        onClick={() => setAction('lia_auto')}
-                      >
-                        <RadioGroupItem value="lia_auto" id="action-lia" className="mt-0.5" />
-                        <div className="flex-1 min-w-0">
-                          <label htmlFor="action-lia" className="flex items-center gap-1 cursor-pointer">
-                            <Brain className="w-3 h-3 text-wedo-cyan" />
-                            <span className="text-xs font-medium text-lia-text-primary">LIA automático</span>
-                            <span className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary px-1 py-px rounded-full ml-auto">
-                              Recomendado
-                            </span>
-                          </label>
-                          <p className="text-micro text-lia-text-secondary mt-0.5 leading-tight">
-                            {behaviorConfig.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div
-                        className={cn(
-                          "flex items-start gap-2 p-2 rounded-md border cursor-pointer transition-colors",
-                          action === 'manual'
-                            ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
-                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
-                        )}
-                        onClick={() => setAction('manual')}
-                      >
-                        <RadioGroupItem value="manual" id="action-manual" className="mt-0.5" />
-                        <div className="flex-1">
-                          <label htmlFor="action-manual" className="flex items-center gap-1 cursor-pointer">
-                            <span className="text-xs font-medium text-lia-text-primary">Manual</span>
-                          </label>
-                          {action === 'manual' && onOpenSpecializedModal && ACTION_BEHAVIOR_MODALS[currentActionBehavior] && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="mt-1.5 h-6 text-micro gap-1 rounded-md"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleOpenManualModal()
-                              }}
-                            >
-                              {behaviorConfig.icon}
-                              {behaviorConfig.label}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-
-                      <div
-                        className={cn(
-                          "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
-                          action === 'just_move'
-                            ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
-                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
-                        )}
-                        onClick={() => setAction('just_move')}
-                      >
-                        <RadioGroupItem value="just_move" id="action-move" />
-                        <label htmlFor="action-move" className="text-xs font-medium text-lia-text-primary cursor-pointer">
-                          Apenas mover
-                        </label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                )}
-
-                {/* Generic action mode (no behaviorConfig) */}
-                {!behaviorConfig && (
-                  <div className="space-y-1">
-                    <Label className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider">
-                      Ação
-                    </Label>
-                    <RadioGroup
-                      value={action}
-                      onValueChange={(v) => setAction(v as 'lia_auto' | 'manual' | 'just_move')}
-                      className="space-y-1"
-                    >
-                      <div
-                        className={cn(
-                          "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
-                          action === 'lia_auto'
-                            ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
-                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
-                        )}
-                        onClick={() => setAction('lia_auto')}
-                      >
-                        <RadioGroupItem value="lia_auto" id="action-lia-generic" />
-                        <label htmlFor="action-lia-generic" className="flex items-center gap-1 cursor-pointer">
-                          <Brain className="w-3 h-3 text-wedo-cyan" />
-                          <span className="text-xs font-medium text-lia-text-primary">LIA automático</span>
-                        </label>
-                      </div>
-                      <div
-                        className={cn(
-                          "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
-                          action === 'just_move'
-                            ? "border-lia-btn-primary-bg bg-lia-bg-primary dark:border-lia-border-medium dark:bg-lia-bg-secondary"
-                            : "border-lia-border-subtle hover:border-lia-border-default dark:border-lia-border-subtle dark:hover:border-lia-border-medium"
-                        )}
-                        onClick={() => setAction('just_move')}
-                      >
-                        <RadioGroupItem value="just_move" id="action-move-generic" />
-                        <label htmlFor="action-move-generic" className="text-xs font-medium text-lia-text-primary cursor-pointer">
-                          Apenas mover
-                        </label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                )}
+              <ActionModeSection
+                action={action}
+                setAction={setAction}
+                behaviorConfig={behaviorConfig}
+                currentActionBehavior={currentActionBehavior}
+                onOpenSpecializedModal={onOpenSpecializedModal}
+                handleOpenManualModal={handleOpenManualModal}
+              />
             </>
           </div>
 
-          {/* RIGHT PANEL: Chat with LIA (follows lia-expanded-panel pattern) */}
           {showChatPanel && (
             <div className="md:w-[64%] border-t md:border-t-0 md:border-l border-lia-border-subtle dark:border-lia-border-subtle flex flex-col md:max-h-[calc(85vh-120px)] bg-lia-bg-primary dark:bg-lia-bg-secondary">
               <TransitionChatPanel
@@ -757,7 +259,6 @@ export function UniversalTransitionModal({
           )}
         </div>
 
-        {/* SUB-STATUS ROW (separate band above footer buttons) */}
         {currentSubStatusOptions.length > 0 && (
           <div className="flex items-center justify-end gap-2 w-full px-5 py-2.5 bg-lia-bg-secondary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle">
             <span className="text-xs font-medium text-lia-text-secondary whitespace-nowrap">
@@ -783,7 +284,6 @@ export function UniversalTransitionModal({
           </div>
         )}
 
-        {/* FOOTER: Action buttons */}
         <DialogFooter className="px-5 py-0 bg-lia-bg-secondary dark:bg-lia-bg-primary border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <div className="flex items-center justify-between w-full py-2.5 gap-3">
             <div className="flex items-center gap-2">

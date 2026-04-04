@@ -67,6 +67,15 @@ export const getAlertStyle = (type: string) => {
   }
 }
 
+export const getAlertColor = (type: string) => {
+  switch (type) {
+    case 'urgent': return 'bg-lia-brand-primary-light'
+    case 'warning': return 'bg-wedo-amber-light'
+    case 'success': return 'bg-wedo-green-light'
+    default: return 'bg-wedo-amber-light'
+  }
+}
+
 export const getUrgencyBadge = (urgency: string, daysOpen: number) => {
   if (urgency === 'critical') return <Badge className="bg-lia-brand-primary-light text-lia-text-primary border-0 text-xs font-medium">🔴 Crítico</Badge>
   if (urgency === 'urgent') return <Badge className="bg-wedo-amber-light text-lia-text-primary border-0 text-xs font-semibold">⚠ Urgente</Badge>

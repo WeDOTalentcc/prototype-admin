@@ -12,6 +12,7 @@ interface Alert {
   title: string
   description: string
   severity: 'high' | 'medium' | 'low'
+  jobId: string
   jobTitle: string
   createdAt: Date
   action: string

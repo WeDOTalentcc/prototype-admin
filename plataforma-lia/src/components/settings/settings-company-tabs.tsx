@@ -1,692 +1,47 @@
 "use client"
 
-  import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState } from "react"
-  import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-  import { Button } from "@/components/ui/button"
-  import { Badge } from "@/components/ui/badge"
-  import {
-    Building, Globe, MessageSquare, Target, Network,
-    Upload, FileText, Heart, Edit, Trash2, Plus, ExternalLink
-  } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
+  Building, Globe, MessageSquare, Target, Network,
+  Upload, FileText, Heart, Edit, Trash2, Plus
+} from "lucide-react"
+import {
+  BasicDataSection,
+  AddressSection,
+  SocialMediaSection,
+  SegmentSection,
+  BranchesSection
+} from "./institutional-tab-sections"
 
-  export interface SettingsCompanyTabProps {
-    onSettingsChange: (changed: boolean) => void
-  }
+export interface SettingsCompanyTabProps {
+  onSettingsChange: (changed: boolean) => void
+}
 
-  // Componente de Dados Institucionais Completo
+type InstitutionalSubTab = 'basic' | 'address' | 'social' | 'segment' | 'branches'
+
+const subTabs = [
+  { id: 'basic' as const, name: 'Dados Básicos', icon: Building },
+  { id: 'address' as const, name: 'Endereço', icon: Globe },
+  { id: 'social' as const, name: 'Redes Sociais', icon: MessageSquare },
+  { id: 'segment' as const, name: 'Segmento', icon: Target },
+  { id: 'branches' as const, name: 'Filiais', icon: Network }
+]
+
 export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
-  const [activeSubTab, setActiveSubTab] = useState<'basic' | 'address' | 'social' | 'segment' | 'branches'>('basic')
-
-  const subTabs = [
-    { id: 'basic', name: 'Dados Básicos', icon: Building },
-    { id: 'address', name: 'Endereço', icon: Globe },
-    { id: 'social', name: 'Redes Sociais', icon: MessageSquare },
-    { id: 'segment', name: 'Segmento', icon: Target },
-    { id: 'branches', name: 'Filiais', icon: Network }
-  ]
-
-  const renderBasicData = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
-            <Building className="w-4 h-4" />
-            Informações Básicas
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Razão Social
-              </label>
-              <input
-                type="text"
-                defaultValue="Sodexo do Brasil Comercial S.A."
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Nome Fantasia
-              </label>
-              <input
-                type="text"
-                defaultValue="Sodexo Brasil"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                CNPJ
-              </label>
-              <input
-                type="text"
-                defaultValue="12.345.678/0001-90"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Inscrição Estadual
-              </label>
-              <input
-                type="text"
-                defaultValue="123.456.789.012"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Data de Fundação
-              </label>
-              <input
-                type="date"
-                defaultValue="1966-03-15"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Número de Funcionários
-              </label>
-              <select
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              >
-                <option>1-10 funcionários</option>
-                <option>11-50 funcionários</option>
-                <option>51-200 funcionários</option>
-                <option>201-1000 funcionários</option>
-                <option>1001-5000 funcionários</option>
-                <option>5000+ funcionários</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Site Institucional
-              </label>
-              <input
-                type="url"
-                defaultValue="https://sodexo.com.br"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Email Principal
-              </label>
-              <input
-                type="email"
-                defaultValue="contato@sodexo.com.br"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Telefone Principal
-              </label>
-              <input
-                type="tel"
-                defaultValue="(11) 3049-6300"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                WhatsApp Corporativo
-              </label>
-              <input
-                type="tel"
-                placeholder="(11) 99999-9999"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-              Descrição da Empresa
-            </label>
-            <textarea
-              rows={4}
-              defaultValue="A Sodexo é uma empresa francesa líder mundial em serviços de alimentação e facilities management, presente em 55 países. No Brasil desde 1997, oferece soluções integradas que melhoram a qualidade de vida diária."
-              onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Logotipo da Empresa</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md p-6 text-center bg-lia-bg-secondary dark:bg-lia-bg-secondary">
-            <Upload className="w-8 h-8 mx-auto mb-2 text-lia-text-primary" />
-            <p className="text-sm text-lia-text-primary mb-2">
-              Faça upload do logotipo da empresa
-            </p>
-            <p className="text-xs text-lia-text-primary">PNG, JPG ou SVG até 2MB • Tamanho recomendado: 400x400px</p>
-            <Button variant="outline" className="mt-3" size="sm">
-              Escolher Arquivo
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-
-  const renderAddress = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
-            <Globe className="w-4 h-4" />
-            Endereço da Matriz
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                CEP
-              </label>
-              <input
-                type="text"
-                defaultValue="04571-020"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-                placeholder="00000-000"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Logradouro
-              </label>
-              <input
-                type="text"
-                defaultValue="Rua Dr. Geraldo Campos Moreira"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Número
-              </label>
-              <input
-                type="text"
-                defaultValue="375"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Complemento
-              </label>
-              <input
-                type="text"
-                placeholder="Andar, sala, bloco..."
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Bairro
-              </label>
-              <input
-                type="text"
-                defaultValue="Cidade Monções"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Cidade
-              </label>
-              <input
-                type="text"
-                defaultValue="São Paulo"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Estado
-              </label>
-              <select
-                defaultValue="SP"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              >
-                <option value="">Selecione o estado</option>
-                <option value="AC">Acre</option>
-                <option value="AL">Alagoas</option>
-                <option value="AP">Amapá</option>
-                <option value="AM">Amazonas</option>
-                <option value="BA">Bahia</option>
-                <option value="CE">Ceará</option>
-                <option value="DF">Distrito Federal</option>
-                <option value="ES">Espírito Santo</option>
-                <option value="GO">Goiás</option>
-                <option value="MA">Maranhão</option>
-                <option value="MT">Mato Grosso</option>
-                <option value="MS">Mato Grosso do Sul</option>
-                <option value="MG">Minas Gerais</option>
-                <option value="PA">Pará</option>
-                <option value="PB">Paraíba</option>
-                <option value="PR">Paraná</option>
-                <option value="PE">Pernambuco</option>
-                <option value="PI">Piauí</option>
-                <option value="RJ">Rio de Janeiro</option>
-                <option value="RN">Rio Grande do Norte</option>
-                <option value="RS">Rio Grande do Sul</option>
-                <option value="RO">Rondônia</option>
-                <option value="RR">Roraima</option>
-                <option value="SC">Santa Catarina</option>
-                <option value="SP">São Paulo</option>
-                <option value="SE">Sergipe</option>
-                <option value="TO">Tocantins</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-              País
-            </label>
-            <select
-              defaultValue="BR"
-              onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-            >
-              <option value="BR">Brasil</option>
-              <option value="US">Estados Unidos</option>
-              <option value="FR">França</option>
-              <option value="DE">Alemanha</option>
-              <option value="GB">Reino Unido</option>
-            </select>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-
-  const renderSocialMedia = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
-            <MessageSquare className="w-4 h-4" />
-            Redes Sociais e Canais Digitais
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-wedo-magenta rounded-md"></div>
-                Instagram
-              </label>
-              <input
-                type="url"
-                placeholder="https://instagram.com/sodexobrasil"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-lia-bg-inverse rounded-md"></div>
-                Facebook
-              </label>
-              <input
-                type="url"
-                placeholder="https://facebook.com/sodexobrasil"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-wedo-cyan-dark rounded-md"></div>
-                LinkedIn
-              </label>
-              <input
-                type="url"
-                defaultValue="https://linkedin.com/company/sodexo"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-lia-btn-primary-bg rounded-md"></div>
-                Twitter/X
-              </label>
-              <input
-                type="url"
-                placeholder="https://twitter.com/sodexobrasil"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-status-error rounded-md"></div>
-                YouTube
-              </label>
-              <input
-                type="url"
-                placeholder="https://youtube.com/@sodexobrasil"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block flex items-center gap-2">
-                <div className="w-5 h-5 bg-black rounded-md"></div>
-                TikTok
-              </label>
-              <input
-                type="url"
-                placeholder="https://tiktok.com/@sodexobrasil"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              />
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-            <h4 className="text-sm font-medium text-lia-text-primary mb-3">Outros Canais</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                  Blog Corporativo
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://blog.sodexo.com.br"
-                  onChange={() => onSettingsChange(true)}
-                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                  Portal de Carreiras
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://carreiras.sodexo.com.br"
-                  onChange={() => onSettingsChange(true)}
-                  className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-                />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-
-  const renderSegment = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl font-medium font-inter">
-            <Target className="w-4 h-4" />
-            Segmento e Mercado
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Setor Principal
-              </label>
-              <select
-                defaultValue="servicos"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              >
-                <option value="">Selecione o setor</option>
-                <option value="servicos">Alimentação e Serviços</option>
-                <option value="tecnologia">Tecnologia</option>
-                <option value="saude">Saúde</option>
-                <option value="educacao">Educação</option>
-                <option value="financeiro">Financeiro</option>
-                <option value="industria">Indústria</option>
-                <option value="varejo">Varejo</option>
-                <option value="construcao">Construção</option>
-                <option value="energia">Energia</option>
-                <option value="agronegocio">Agronegócio</option>
-                <option value="telecomunicacoes">Telecomunicações</option>
-                <option value="consultoria">Consultoria</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Subsetor
-              </label>
-              <input
-                type="text"
-                defaultValue="Facilities Management e Food Services"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-                placeholder="Ex: SaaS, E-commerce, Consultoria..."
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Fase da Empresa
-              </label>
-              <select
-                defaultValue="grande"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              >
-                <option value="startup">Startup (até 50 funcionários)</option>
-                <option value="scaleup">Scaleup (51-500 funcionários)</option>
-                <option value="media">Empresa de médio porte (501-5000)</option>
-                <option value="grande">Grande empresa (5000+ funcionários)</option>
-                <option value="multinacional">Multinacional</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Modelo de Negócio
-              </label>
-              <select
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              >
-                <option value="">Selecione o modelo</option>
-                <option value="b2b">B2B (Business to Business)</option>
-                <option value="b2c">B2C (Business to Consumer)</option>
-                <option value="b2b2c">B2B2C (Business to Business to Consumer)</option>
-                <option value="marketplace">Marketplace</option>
-                <option value="saas">SaaS (Software as a Service)</option>
-                <option value="consultoria">Consultoria/Serviços</option>
-                <option value="produto">Produto Físico</option>
-                <option value="hibrido">Híbrido</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Faturamento Anual
-              </label>
-              <select
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              >
-                <option value="">Selecione a faixa</option>
-                <option value="ate100k">{`Até ${CURRENCY_SYMBOL} 100.000`}</option>
-                <option value="100k500k">{`${CURRENCY_SYMBOL} 100.001 a ${CURRENCY_SYMBOL} 500.000`}</option>
-                <option value="500k2m">{`${CURRENCY_SYMBOL} 500.001 a ${CURRENCY_SYMBOL} 2.000.000`}</option>
-                <option value="2m10m">{`${CURRENCY_SYMBOL} 2.000.001 a ${CURRENCY_SYMBOL} 10.000.000`}</option>
-                <option value="10m50m">{`${CURRENCY_SYMBOL} 10.000.001 a ${CURRENCY_SYMBOL} 50.000.000`}</option>
-                <option value="acima50m">{`Acima de ${CURRENCY_SYMBOL} 50.000.000`}</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Países de Operação
-              </label>
-              <input
-                type="text"
-                defaultValue="Brasil, França, Estados Unidos, Reino Unido, Alemanha, +50 países"
-                onChange={() => onSettingsChange(true)}
-                className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-                placeholder="Ex: Brasil, Argentina, Chile..."
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-              Principais Produtos/Serviços
-            </label>
-            <textarea
-              rows={3}
-              defaultValue="Serviços de alimentação corporativa, gestão de facilities, vouchers e cartões alimentação, benefícios para funcionários, gestão de espaços corporativos."
-              onChange={() => onSettingsChange(true)}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
-              placeholder="Descreva os principais produtos ou serviços oferecidos..."
-            />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-
-  const renderBranches = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Network className="w-4 h-4" />
-              Filiais e Unidades
-            </div>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Nova Filial
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[
-              {
-                id: 1,
-                name: "Sede São Paulo",
-                cnpj: "12.345.678/0001-90",
-                address: "Rua Dr. Geraldo Campos Moreira, 375 - Cidade Monções, São Paulo - SP",
-                type: "Matriz",
-                manager: "Ana Silva",
-                employees: 450,
-                status: "Ativa"
-              },
-              {
-                id: 2,
-                name: "Filial Rio de Janeiro",
-                cnpj: "12.345.678/0002-71",
-                address: "Av. Presidente Vargas, 1012 - Centro, Rio de Janeiro - RJ",
-                type: "Filial",
-                manager: "Carlos Santos",
-                employees: 280,
-                status: "Ativa"
-              },
-              {
-                id: 3,
-                name: "Unidade Belo Horizonte",
-                cnpj: "12.345.678/0003-52",
-                address: "Rua da Bahia, 1148 - Centro, Belo Horizonte - MG",
-                type: "Filial",
-                manager: "Maria Costa",
-                employees: 150,
-                status: "Ativa"
-              }
-            ].map((branch) => (
-              <div key={branch.id} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h4 className="font-medium text-lia-text-primary">{branch.name}</h4>
-                    <p className="text-sm text-lia-text-primary">CNPJ: {branch.cnpj}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={branch.type === 'Matriz' ? 'default' : 'secondary'}>
-                      {branch.type}
-                    </Badge>
-                    <Badge variant="outline" className="text-status-success border-status-success/30">
-                      {branch.status}
-                    </Badge>
-                    <Button variant="ghost" size="sm">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <span className="text-lia-text-primary">Endereço:</span>
-                    <p className="font-medium text-lia-text-primary">{branch.address}</p>
-                  </div>
-                  <div>
-                    <span className="text-lia-text-primary">Gestor:</span>
-                    <p className="font-medium text-lia-text-primary">{branch.manager}</p>
-                  </div>
-                  <div>
-                    <span className="text-lia-text-primary">Funcionários:</span>
-                    <p className="font-medium text-lia-text-primary">{branch.employees}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
+  const [activeSubTab, setActiveSubTab] = useState<InstitutionalSubTab>('basic')
 
   return (
     <div className="space-y-6">
-      {/* Sub Navigation */}
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-1 overflow-x-auto">
             {subTabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveSubTab(tab.id as Parameters<typeof setActiveSubTab>[0])}
+                onClick={() => setActiveSubTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap transition-colors motion-reduce:transition-none font-crimson ${
                   activeSubTab === tab.id
  ? 'bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary'
@@ -701,17 +56,15 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
         </CardContent>
       </Card>
 
-      {/* Sub Tab Content */}
-      {activeSubTab === 'basic' && renderBasicData()}
-      {activeSubTab === 'address' && renderAddress()}
-      {activeSubTab === 'social' && renderSocialMedia()}
-      {activeSubTab === 'segment' && renderSegment()}
-      {activeSubTab === 'branches' && renderBranches()}
+      {activeSubTab === 'basic' && <BasicDataSection onSettingsChange={onSettingsChange} />}
+      {activeSubTab === 'address' && <AddressSection onSettingsChange={onSettingsChange} />}
+      {activeSubTab === 'social' && <SocialMediaSection onSettingsChange={onSettingsChange} />}
+      {activeSubTab === 'segment' && <SegmentSection onSettingsChange={onSettingsChange} />}
+      {activeSubTab === 'branches' && <BranchesSection />}
     </div>
   )
 }
 
-  // Componente de Cultura (recuperado)
 export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
   return (
     <div className="space-y-6">
@@ -770,7 +123,7 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
               { value: 'Espírito de Equipe', description: 'Construímos relacionamentos duradouros baseados na confiança' },
               { value: 'Espírito de Progresso', description: 'Inovamos e nos adaptamos para um mundo em mudança' },
               { value: 'Sustentabilidade', description: 'Comprometidos com um planeta mais sustentável' }
-            ].map((item, index) => (
+            ].map((item) => (
               <div key={item.value} className="p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-medium text-lia-text-primary">
@@ -801,7 +154,6 @@ export function CultureTab({ onSettingsChange }: { onSettingsChange: (changed: b
   )
 }
 
-  // Componente de Estrutura (recuperado)
 export function StructureTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
   return (
     <div className="space-y-6">
@@ -848,4 +200,3 @@ export function StructureTab({ onSettingsChange }: { onSettingsChange: (changed:
     </div>
   )
 }
-  

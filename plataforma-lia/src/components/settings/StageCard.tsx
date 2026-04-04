@@ -10,582 +10,28 @@ import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import {
-  GripVertical, Trash2, Check, X, Lock, Clock, Shield, Settings,
-  ChevronDown, ChevronRight, Star, Loader2, Gauge,
+  GripVertical, Trash2, Check, X, Lock, Clock, Star,
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
-import { useSubStatusPanel } from "@/hooks/use-sub-status-panel"
-import type { RecruitmentStage, SubStatus, StageDataField } from "./recruitment-journey.types"
+import type { RecruitmentStage } from "./recruitment-journey.types"
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+export {
+  getTypeBadge,
+  getActionBehaviorLabel,
+  getActionBehaviorShort,
+  ActionBehaviorBadge,
+  getStageDisplayName,
+  isRealId,
+} from "./StageCardHelpers"
 
-export function getTypeBadge(type: RecruitmentStage['type']) {
-  switch (type) {
-    case 'system':
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-lia-interactive-active text-lia-text-secondary text-micro font-medium">
-          <Lock className="h-3 w-3" />
-          Sistema
-        </span>
-      )
-    case 'default':
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro font-medium">
-          <Shield className="h-3 w-3" />
-          Padrão
-        </span>
-      )
-    case 'custom':
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro font-medium">
-          <Settings className="h-3 w-3" />
-          Custom
-        </span>
-      )
-  }
-}
-
-const ACTION_BEHAVIOR_LABELS: Record<string, string> = {
-  intake: "Entrada", screening: "Triagem WSI", scheduling: "Agendamento",
-  evaluation: "Avaliação", verification: "Verificação", offer: "Proposta",
-  passive: "Passivo", conclusion_hired: "Contratação",
-  conclusion_rejected: "Reprovação", conclusion_declined: "Proposta Recusada",
-}
-
-const ACTION_BEHAVIOR_SHORT: Record<string, string> = {
-  intake: "Entrada", screening: "Triagem", scheduling: "Agend.",
-  evaluation: "Aval.", verification: "Verif.", offer: "Proposta",
-  passive: "Passivo", conclusion_hired: "Contrat.",
-  conclusion_rejected: "Reprov.", conclusion_declined: "Recusada",
-}
-
-export function getActionBehaviorLabel(behavior?: string): string | null {
-  return behavior ? (ACTION_BEHAVIOR_LABELS[behavior] || null) : null
-}
-
-export function getActionBehaviorShort(behavior?: string): string | null {
-  return behavior ? (ACTION_BEHAVIOR_SHORT[behavior] || null) : null
-}
-
-export function ActionBehaviorBadge({ behavior }: { behavior?: string }) {
-  const label = getActionBehaviorLabel(behavior)
-  if (!label) return null
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/15 text-wedo-cyan">
-      {label}
-    </span>
-  )
-}
-
-export function getStageDisplayName(stage: RecruitmentStage): string {
-  return stage.display_name || stage.name
-}
-
-export function isRealId(id: string): boolean {
-  return !id.startsWith('stage-') && !id.startsWith('catalog-')
-}
-
-// ---------------------------------------------------------------------------
-// Data fields catalog
-// ---------------------------------------------------------------------------
-
-const ALL_DATA_FIELDS: StageDataField[] = [
-  { id: 'full_name',         displayName: 'Nome Completo',            category: 'basic',       required: false, auto_collect: false },
-  { id: 'email',             displayName: 'Email',                    category: 'basic',       required: false, auto_collect: false },
-  { id: 'phone',             displayName: 'Telefone',                 category: 'basic',       required: false, auto_collect: false },
-  { id: 'cpf',               displayName: 'CPF',                      category: 'basic',       required: false, auto_collect: false },
-  { id: 'birth_date',        displayName: 'Data de Nascimento',       category: 'basic',       required: false, auto_collect: false },
-  { id: 'address',           displayName: 'Endereço Completo',        category: 'basic',       required: false, auto_collect: false },
-  { id: 'cv_document',       displayName: 'Currículo (Arquivo)',       category: 'document',    required: false, auto_collect: false },
-  { id: 'id_document',       displayName: 'Documento de Identidade',  category: 'document',    required: false, auto_collect: false },
-  { id: 'proof_of_address',  displayName: 'Comprovante de Residência',category: 'document',    required: false, auto_collect: false },
-  { id: 'rg',                displayName: 'RG',                       category: 'admissional', required: false, auto_collect: false },
-  { id: 'ctps',              displayName: 'CTPS',                     category: 'admissional', required: false, auto_collect: false },
-  { id: 'pis',               displayName: 'PIS/PASEP',                category: 'admissional', required: false, auto_collect: false },
-  { id: 'bank_info',         displayName: 'Dados Bancários',          category: 'financial',   required: false, auto_collect: false },
-  { id: 'emergency_contact', displayName: 'Contato de Emergência',    category: 'admissional', required: false, auto_collect: false },
-]
-
-const FIELD_CATEGORY_LABELS: Record<string, string> = {
-  basic: 'Dados Básicos',
-  document: 'Documentos',
-  financial: 'Financeiro',
-  admissional: 'Admissional',
-}
-
-// ---------------------------------------------------------------------------
-// Data fields panel
-// ---------------------------------------------------------------------------
-
-interface DataFieldsPanelProps {
-  stage: RecruitmentStage
-  isEditMode: boolean
-  onUpdate: (id: string, updates: Partial<RecruitmentStage>) => void
-}
-
-function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) {
-  const [expanded, setExpanded] = React.useState(false)
-
-  const dataFields = stage.data_fields || []
-  const enabledCount = dataFields.length
-
-  function isEnabled(fieldId: string) {
-    return dataFields.some(f => f.id === fieldId)
-  }
-
-  function getField(fieldId: string): StageDataField | undefined {
-    return dataFields.find(f => f.id === fieldId)
-  }
-
-  function toggleField(catalog: StageDataField) {
-    if (isEnabled(catalog.id)) {
-      onUpdate(stage.id, { data_fields: dataFields.filter(f => f.id !== catalog.id) })
-    } else {
-      onUpdate(stage.id, { data_fields: [...dataFields, { ...catalog }] })
-    }
-  }
-
-  function toggleRequired(fieldId: string) {
-    onUpdate(stage.id, {
-      data_fields: dataFields.map(f => f.id === fieldId ? { ...f, required: !f.required } : f),
-    })
-  }
-
-  function toggleAutoCollect(fieldId: string) {
-    onUpdate(stage.id, {
-      data_fields: dataFields.map(f => f.id === fieldId ? { ...f, auto_collect: !f.auto_collect } : f),
-    })
-  }
-
-  const byCategory = ALL_DATA_FIELDS.reduce<Record<string, StageDataField[]>>((acc, f) => {
-    acc[f.category] = acc[f.category] || []
-    acc[f.category].push(f)
-    return acc
-  }, {})
-
-  return (
-    <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
-      <button
-        onClick={() => setExpanded(v => !v)}
-        className="flex items-center gap-1.5 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none w-full"
-        aria-expanded={expanded}
-        type="button"
-      >
-        {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-        <span className="font-medium">Dados a coletar</span>
-        <span className="text-lia-text-tertiary">({enabledCount} campo{enabledCount !== 1 ? 's' : ''})</span>
-      </button>
-
-      {expanded && (
-        <div className="mt-2 space-y-3">
-          {Object.entries(byCategory).map(([category, fields]) => (
-            <div key={category}>
-              <p className="text-micro font-semibold text-lia-text-tertiary uppercase tracking-wide mb-1.5 px-1">
-                {FIELD_CATEGORY_LABELS[category] || category}
-              </p>
-              <div className="space-y-1">
-                {fields.map(catalog => {
-                  const active = isEnabled(catalog.id)
-                  const field = getField(catalog.id)
-                  return (
-                    <div
-                      key={catalog.id}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded-md border transition-colors motion-reduce:transition-none ${
-                        active
-                          ? 'bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default'
-                          : 'bg-lia-bg-secondary dark:bg-lia-bg-primary/50 border-lia-border-subtle dark:border-lia-border-subtle'
-                      }`}
-                    >
-                      {isEditMode ? (
-                        <input
-                          type="checkbox"
-                          checked={active}
-                          onChange={() => toggleField(catalog)}
-                          className="h-3.5 w-3.5 rounded-md border-lia-border-default text-lia-text-primary cursor-pointer"
-                          aria-label={`Ativar campo ${catalog.displayName}`}
-                        />
-                      ) : (
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? 'bg-lia-btn-primary-bg' : 'bg-lia-interactive-active'}`} />
-                      )}
-
-                      <span className={`flex-1 text-xs font-medium ${active ? 'text-lia-text-primary' : 'text-lia-text-tertiary'}`}>
-                        {catalog.displayName}
-                      </span>
-
-                      {active && isEditMode && (
-                        <div className="flex items-center gap-3">
-                          <label className="flex items-center gap-1 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={field?.required ?? false}
-                              onChange={() => toggleRequired(catalog.id)}
-                              className="h-3 w-3 rounded-md border-lia-border-default text-lia-text-primary cursor-pointer"
-                            />
-                            <span className="text-micro text-lia-text-secondary">Obrigatório</span>
-                          </label>
-                          <label className="flex items-center gap-1 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={field?.auto_collect ?? false}
-                              onChange={() => toggleAutoCollect(catalog.id)}
-                              className="h-3 w-3 rounded-md border-lia-border-default text-lia-text-primary cursor-pointer"
-                            />
-                            <span className="text-micro text-lia-text-secondary">LIA coleta</span>
-                          </label>
-                        </div>
-                      )}
-
-                      {active && !isEditMode && (
-                        <div className="flex items-center gap-1.5">
-                          {field?.required && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-status-error/10 text-status-error text-micro">
-                              Obrigatório
-                            </span>
-                          )}
-                          {field?.auto_collect && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan text-micro">
-                              LIA coleta
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-          <p className="text-micro text-lia-text-tertiary px-1 pt-1">
-            Marque "LIA coleta" para que a assistente solicite o dado durante a conversa nesta etapa.
-          </p>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Sub-status panel
-// ---------------------------------------------------------------------------
-
-interface SubStatusPanelProps {
-  stage: RecruitmentStage
-  isEditMode: boolean
-  onToggleSubStatus?: (subStatusId: string, updates: { is_active?: boolean; is_default?: boolean }) => Promise<void>
-}
-
-function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanelProps) {
-  const {
-    expanded, displayList, loading, togglingId, activeCount, canFetch,
-    handleExpand, handleToggleActive, handleToggleDefault,
-  } = useSubStatusPanel({
-    stageId: stage.id,
-    initialSubStatuses: stage.sub_statuses || [],
-    onToggleSubStatus,
-  })
-
-  const canManage = isEditMode && canFetch && !!onToggleSubStatus
-
-  return (
-    <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
-      <button
-        onClick={handleExpand}
-        className="flex items-center gap-1.5 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none w-full"
-        aria-expanded={expanded}
-        aria-label={`${expanded ? 'Recolher' : 'Expandir'} subetapas de ${stage.display_name || stage.name}`}
-        data-testid={`sub-status-panel-${stage.id}`}
-        type="button"
-      >
-        {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-        <span className="font-medium">Subetapas</span>
-        <span className="text-lia-text-tertiary">({activeCount} ativas)</span>
-        {!isRealId(stage.id) && isEditMode && (
-          <span className="ml-auto text-micro text-status-warning">Salve a etapa primeiro</span>
-        )}
-      </button>
-
-      {expanded && (
-        <div className="mt-2 space-y-1.5" role="status" aria-live="polite" aria-label="Carregando...">
-          {loading && (
-            <div className="flex items-center gap-2 px-1 py-2" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
-              <span className="text-xs text-lia-text-tertiary">Carregando subetapas...</span>
-            </div>
-          )}
-
-          {!loading && displayList.length === 0 && (
-            <p className="text-xs text-lia-text-tertiary px-1 py-1 italic">
-              Nenhuma subetapa disponível para esta etapa.
-            </p>
-          )}
-
-          {!loading && displayList.map(ss => (
-            <div
-              key={ss.id}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-md border transition-colors motion-reduce:transition-none ${
-                ss.is_active
-                  ? 'bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default'
-                  : 'bg-lia-bg-secondary dark:bg-lia-bg-primary/50 border-lia-border-subtle dark:border-lia-border-subtle opacity-60'
-              }`}
-            >
-              <span
-                className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{backgroundColor: ss.color || 'var(--lia-text-tertiary)'}}
-              />
-              <span className={`flex-1 text-xs font-medium ${ss.is_active ? 'text-lia-text-primary' : 'text-lia-text-tertiary'}`}>
-                {ss.display_name}
-              </span>
-
-              {ss.is_waiting && ss.is_active && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan-dark text-micro font-medium">
-                  Aguarda
-                </span>
-              )}
-
-              {canManage && ss.is_active && (
-                <button
-                  onClick={() => handleToggleDefault(ss)}
-                  disabled={togglingId === `default-${ss.id}`}
-                  aria-label={ss.is_default ? `Remover ${ss.display_name} como padrão` : `Definir ${ss.display_name} como padrão`}
-                  title={ss.is_default ? 'Remover como padrão' : 'Definir como padrão'}
-                  className="p-0.5 rounded-md hover:bg-lia-bg-tertiary dark:hover:bg-lia-border-medium transition-colors motion-reduce:transition-none"
-                  data-testid={`sub-status-default-toggle-${ss.id}`}
-                  type="button"
-                >
-                  {togglingId === `default-${ss.id}` ? (
-                    <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
-                  ) : ss.is_default ? (
-                    <Star className="h-3 w-3 text-status-warning fill-amber-400" />
-                  ) : (
-                    <Star className="h-3 w-3 text-lia-text-disabled hover:text-status-warning" />
-                  )}
-                </button>
-              )}
-
-              {canManage && (
-                <Switch
-                  checked={ss.is_active ?? true}
-                  onCheckedChange={() => handleToggleActive(ss)}
-                  disabled={togglingId === ss.id}
-                  aria-label={`${ss.is_active ? 'Desativar' : 'Ativar'} subetapa ${ss.display_name}`}
-                />
-              )}
-
-              {!canManage && ss.is_default && (
-                <Star className="h-3 w-3 text-status-warning fill-amber-400 flex-shrink-0" />
-              )}
-            </div>
-          ))}
-
-          {canManage && displayList.length > 0 && (
-            <p className="text-micro text-lia-text-tertiary px-1 pt-1">
-              Ative/desative subetapas do catálogo. Subetapas inativas não aparecem no processo seletivo.
-            </p>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Saturation control panel (screening stage only)
-// ---------------------------------------------------------------------------
-
-interface SaturationSettings {
-  threshold_web: number
-  threshold_sourcing: number
-  unlock_increment: number
-  unlock_hours: number
-}
-
-const DEFAULT_SATURATION: SaturationSettings = {
-  threshold_web: 20,
-  threshold_sourcing: 20,
-  unlock_increment: 10,
-  unlock_hours: 24,
-}
-
-function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage; isEditMode: boolean }) {
-  const [expanded, setExpanded] = React.useState(false)
-  const [settings, setSettings] = React.useState<SaturationSettings>(DEFAULT_SATURATION)
-  const [loading, setLoading] = React.useState(false)
-  const [saving, setSaving] = React.useState(false)
-  const [loaded, setLoaded] = React.useState(false)
-  const [dirty, setDirty] = React.useState(false)
-
-  const isScreening = stage.name === 'screening' || stage.action_behavior === 'screening'
-  if (!isScreening) return null
-
-  const handleExpand = () => {
-    if (!expanded && !loaded) {
-      setLoading(true)
-      fetch('/api/backend-proxy/settings/saturation')
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (data) {
-            setSettings({
-              threshold_web: data.threshold_web ?? DEFAULT_SATURATION.threshold_web,
-              threshold_sourcing: data.threshold_sourcing ?? DEFAULT_SATURATION.threshold_sourcing,
-              unlock_increment: data.unlock_increment ?? DEFAULT_SATURATION.unlock_increment,
-              unlock_hours: data.unlock_hours ?? DEFAULT_SATURATION.unlock_hours,
-            })
-          }
-          setLoaded(true)
-        })
-        .catch(() => { setLoaded(true) })
-        .finally(() => setLoading(false))
-    }
-    setExpanded(v => !v)
-  }
-
-  const handleChange = (field: keyof SaturationSettings, value: number) => {
-    setSettings(prev => ({ ...prev, [field]: value }))
-    setDirty(true)
-  }
-
-  const handleSave = () => {
-    setSaving(true)
-    fetch('/api/backend-proxy/settings/saturation', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings),
-    })
-      .then(r => {
-        if (r.ok) setDirty(false)
-      })
-      .catch(() => {})
-      .finally(() => setSaving(false))
-  }
-
-  return (
-    <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
-      <button
-        onClick={handleExpand}
-        className="flex items-center gap-1.5 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none w-full"
-        aria-expanded={expanded}
-        type="button"
-      >
-        {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-        <Gauge className="h-3.5 w-3.5" />
-        <span className="font-medium">Controle de Saturação</span>
-      </button>
-
-      {expanded && (
-        <div className="mt-2 space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
-          {loading && (
-            <div className="flex items-center gap-2 px-1 py-2" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
-              <span className="text-xs text-lia-text-tertiary">Carregando configurações...</span>
-            </div>
-          )}
-
-          {!loading && (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs text-lia-text-secondary">
-                    Limite inscrições orgânicas (web/whatsapp)
-                  </Label>
-                  <input
-                    type="number"
-                    value={settings.threshold_web}
-                    onChange={(e) => handleChange('threshold_web', parseInt(e.target.value) || 0)}
-                    disabled={!isEditMode}
-                    min={1}
-                    max={999}
-                    className="w-full px-2 py-1.5 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-opacity motion-reduce:transition-none disabled:opacity-50"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs text-lia-text-secondary">
-                    Limite busca ativa (sourcing)
-                  </Label>
-                  <input
-                    type="number"
-                    value={settings.threshold_sourcing}
-                    onChange={(e) => handleChange('threshold_sourcing', parseInt(e.target.value) || 0)}
-                    disabled={!isEditMode}
-                    min={1}
-                    max={999}
-                    className="w-full px-2 py-1.5 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-opacity motion-reduce:transition-none disabled:opacity-50"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs text-lia-text-secondary">
-                    Incremento de desbloqueio
-                  </Label>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-lia-text-tertiary">+</span>
-                    <input
-                      type="number"
-                      value={settings.unlock_increment}
-                      onChange={(e) => handleChange('unlock_increment', parseInt(e.target.value) || 0)}
-                      disabled={!isEditMode}
-                      min={1}
-                      max={100}
-                      className="w-full px-2 py-1.5 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-opacity motion-reduce:transition-none disabled:opacity-50"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs text-lia-text-secondary">
-                    Horas de desbloqueio temporário
-                  </Label>
-                  <div className="flex items-center gap-1.5">
-                    <input
-                      type="number"
-                      value={settings.unlock_hours}
-                      onChange={(e) => handleChange('unlock_hours', parseInt(e.target.value) || 0)}
-                      disabled={!isEditMode}
-                      min={1}
-                      max={168}
-                      className="w-full px-2 py-1.5 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-opacity motion-reduce:transition-none disabled:opacity-50"
-                    />
-                    <span className="text-xs text-lia-text-tertiary whitespace-nowrap">horas</span>
-                  </div>
-                </div>
-              </div>
-
-              {isEditMode && dirty && (
-                <div className="flex justify-end">
-                  <Button
-                    size="sm"
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active rounded-md px-3 py-1 text-xs font-medium"
-                  >
-                    {saving ? (
-                      <>
-                        <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none mr-1" />
-                        Salvando...
-                      </>
-                    ) : (
-                      'Salvar Saturação'
-                    )}
-                  </Button>
-                </div>
-              )}
-
-              <p className="text-micro text-lia-text-tertiary px-1" aria-live="polite" aria-atomic="true">
-                Define os limites de candidatos simultâneos em triagem por canal. Quando o limite é atingido, novos candidatos entram em fila de espera.
-              </p>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// ReadOnlyStageCard
-// ---------------------------------------------------------------------------
+import {
+  getTypeBadge,
+  ActionBehaviorBadge,
+  getStageDisplayName,
+} from "./StageCardHelpers"
+import { SubStatusPanel } from "./SubStatusPanel"
+import { DataFieldsPanel } from "./DataFieldsPanel"
+import { SaturationControlPanel } from "./SaturationControlPanel"
 
 export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
   const isSystemStage = stage.type === 'system'
@@ -653,10 +99,6 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// SortableStageCard props
-// ---------------------------------------------------------------------------
-
 export interface SortableStageCardProps {
   stage: RecruitmentStage
   onUpdate: (id: string, updates: Partial<RecruitmentStage>) => void
@@ -665,10 +107,6 @@ export interface SortableStageCardProps {
   isEditMode: boolean
   registerRef?: (id: string, element: HTMLDivElement | null) => void
 }
-
-// ---------------------------------------------------------------------------
-// SortableStageCard
-// ---------------------------------------------------------------------------
 
 export function SortableStageCard({
   stage, onUpdate, onRemove,
@@ -716,7 +154,6 @@ export function SortableStageCard({
           )}
 
           <div className="flex-1 space-y-3">
-            {/* Name row */}
             <div className="flex items-center gap-3 flex-wrap">
               {canEditName ? (
                 <input
@@ -747,7 +184,6 @@ export function SortableStageCard({
               </div>
             </div>
 
-            {/* Notes */}
             {canEditName && (
               <textarea
                 value={stage.notes}
@@ -758,10 +194,8 @@ export function SortableStageCard({
               />
             )}
 
-            {/* Config row: SLA / Ação / Canal */}
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-4 flex-wrap">
-                {/* SLA */}
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-lia-text-secondary" />
                   <Label htmlFor={`sla-${stage.id}`} className={textStyles.description}>SLA</Label>
@@ -778,7 +212,6 @@ export function SortableStageCard({
                   </div>
                 </div>
 
-                {/* Ação */}
                 <div className="flex items-center gap-2">
                   <Label className={textStyles.description}>Ação</Label>
                   <select
@@ -799,7 +232,6 @@ export function SortableStageCard({
                   </select>
                 </div>
 
-                {/* Canal */}
                 <div className="flex items-center gap-2">
                   <Label className={textStyles.description}>Canal</Label>
                   <select
@@ -827,21 +259,18 @@ export function SortableStageCard({
               )}
             </div>
 
-            {/* Sub-status panel */}
             <SubStatusPanel
               stage={stage}
               isEditMode={isEditMode}
               onToggleSubStatus={onToggleSubStatus}
             />
 
-            {/* Data fields panel */}
             <DataFieldsPanel
               stage={stage}
               isEditMode={isEditMode}
               onUpdate={onUpdate}
             />
 
-            {/* Saturation control panel (screening stage only) */}
             <SaturationControlPanel
               stage={stage}
               isEditMode={isEditMode}

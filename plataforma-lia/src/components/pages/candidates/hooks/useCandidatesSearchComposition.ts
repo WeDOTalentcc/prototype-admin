@@ -1,0 +1,246 @@
+"use client"
+
+import React, { useCallback } from "react"
+import type { Dispatch, SetStateAction } from "react"
+import type { ParsedEntities } from "@/components/search/smart-search-input"
+import type { SearchFilters } from "@/components/search/advanced-filters-modal"
+import type { Candidate } from "@/components/pages/candidates/types"
+import type { ChatMessage, PearchSearchOptions } from "./candidates-core"
+import type { SearchTab } from "./useCandidatesUIState"
+import { useCandidatesArchetypes } from "./useCandidatesArchetypes"
+import { useRevealContact } from "./useRevealContact"
+import { useCandidatesExecuteSearch } from "./useCandidatesExecuteSearch"
+import { useCandidatesCVHandlers } from "./useCandidatesCVHandlers"
+import { useCandidatesSearch } from "./useCandidatesSearch"
+import type { useTalentFunnel } from "@/hooks/use-talent-funnel"
+import type { useHideViewedCandidates } from "@/hooks/useHideViewedCandidates"
+
+export interface UseCandidatesSearchCompositionParams {
+  searchSource: string
+  pearchSearchOptions: PearchSearchOptions
+  setCandidates: (v: Candidate[] | ((prev: Candidate[]) => Candidate[])) => void
+  setHasSearchResults: (v: boolean) => void
+  setSearchResultsCount: (v: number) => void
+  setLocalResultsCount: (v: number) => void
+  setPearchResultsCount: (v: number) => void
+  setLastSearchQuery: (v: string) => void
+  setLastSearchMode: (v: string) => void
+  setActiveSearchTab: (v: SearchTab) => void
+  setLiaPromptValue: (v: string) => void
+  setChatMessages: Dispatch<SetStateAction<ChatMessage[]>>
+  creditsRemaining: number | null
+  setCreditsRemaining: (v: number | null) => void
+  searchThreadId: string | null
+  setSearchThreadId: (v: string | null) => void
+  hideViewedCandidatesFilter: ReturnType<typeof useHideViewedCandidates>['filterCandidates']
+  talentFunnel: ReturnType<typeof useTalentFunnel>
+  setSearchResults: Dispatch<SetStateAction<{ query: string; filters: SearchFilters }>>
+  setShowSearchResults: (v: boolean) => void
+  setDisplayedResultsCount: (v: number) => void
+  setCurrentSearchSource: (v: string) => void
+  setHasSearched: (v: boolean) => void
+  setLastSearchEntities: (v: ParsedEntities | null) => void
+  setLastSearchMetadata: (v: Record<string, unknown> | null) => void
+  setLastSearchUsedPearch: (v: boolean) => void
+  setSearchExecutionId: (v: string | null) => void
+  setShowExpandGlobalOption: (v: boolean) => void
+  setShowExpandedLIA: (v: boolean) => void
+  setUserCollapsedLIA: (v: boolean) => void
+  setIsLoading: (v: boolean) => void
+  setIsSearchActive: (v: boolean) => void
+  setIsDroppingCV: (v: boolean) => void
+  setCvUploadLoading: (v: boolean) => void
+  candidates: Candidate[]
+  searchResults: { query: string; filters: SearchFilters }
+  searchTerm: string
+  lastSearchQuery: string
+  lastSearchEntities: ParsedEntities | null
+  lastSearchMode: string
+  lastSearchMetadata: Record<string, unknown> | null
+  lastSearchUsedPearch: boolean
+  currentSearchSource: string
+  openCreditModals: Set<string>
+  setOpenCreditModals: Dispatch<SetStateAction<Set<string>>>
+  setPearchSearchOptions: Dispatch<SetStateAction<PearchSearchOptions>>
+  creditsUsedInSearch: number
+  setCreditsUsedInSearch: (v: number) => void
+  pearchResultsCount: number
+  localResultsCount: number
+  searchResultsCount: number
+  showSearchResults: boolean
+  hasSearchResults: boolean
+  showGlobalExpansionConfirm: boolean
+  setShowGlobalExpansionConfirm: (v: boolean) => void
+  isExpandingToGlobal: boolean
+  setIsExpandingToGlobal: (v: boolean) => void
+  displayedResultsCount: number
+  isLoadingMore: boolean
+  setIsLoadingMore: (v: boolean) => void
+  searchFeedbacks: Record<string, 'up' | 'down'>
+  setSearchFeedbacks: Dispatch<SetStateAction<Record<string, 'up' | 'down'>>>
+  hasSearched: boolean
+  showExpandGlobalOption: boolean
+  showSourceChangeModal: boolean
+  setShowSourceChangeModal: (v: boolean) => void
+  pendingSourceChange: string | null
+  setPendingSourceChange: (v: string | null) => void
+  showContactFilterModal: boolean
+  setShowContactFilterModal: (v: boolean) => void
+  pendingContactFilter: string | null
+  setPendingContactFilter: (v: string | null) => void
+  showCreditConfirmation: boolean
+  setShowCreditConfirmation: (v: boolean) => void
+  pendingSearchRequest: Record<string, unknown> | null
+  setPendingSearchRequest: Dispatch<SetStateAction<Record<string, unknown> | null>>
+  activeSearchFilters: SearchFilters
+  setActiveSearchFilters: Dispatch<SetStateAction<SearchFilters>>
+  setSelectedTemplate: (v: string) => void
+  setSearchSource: (v: string) => void
+  searchExecutionId: string | null
+  user: Record<string, unknown> | null
+}
+
+export function useCandidatesSearchComposition(params: UseCandidatesSearchCompositionParams) {
+  const archetypesHook = useCandidatesArchetypes({
+    searchSource: params.searchSource,
+    pearchSearchOptions: params.pearchSearchOptions,
+    setCandidates: params.setCandidates,
+    setHasSearchResults: params.setHasSearchResults,
+    setSearchResultsCount: params.setSearchResultsCount,
+    setLocalResultsCount: params.setLocalResultsCount,
+    setPearchResultsCount: params.setPearchResultsCount,
+    setLastSearchQuery: params.setLastSearchQuery,
+    setLastSearchMode: params.setLastSearchMode,
+    setActiveSearchTab: (_v: string) => params.setActiveSearchTab(_v as SearchTab),
+    setLiaPromptValue: params.setLiaPromptValue,
+    setChatMessages: params.setChatMessages,
+  })
+
+  const revealContactHook = useRevealContact({
+    setCreditsRemaining: (fn) =>
+      params.setCreditsRemaining(typeof fn === 'function' ? fn(params.creditsRemaining) : fn),
+  })
+
+  const { setLastSuccessfulQuery: archetypeSetLastSuccessfulQuery } = archetypesHook.actions
+
+  const { executeSearch } = useCandidatesExecuteSearch({
+    searchSource: params.searchSource,
+    pearchSearchOptions: params.pearchSearchOptions,
+    searchThreadId: params.searchThreadId,
+    setSearchThreadId: params.setSearchThreadId,
+    hideViewedCandidatesFilter: params.hideViewedCandidatesFilter,
+    talentFunnel: params.talentFunnel,
+    setCandidates: params.setCandidates,
+    setSearchResults: params.setSearchResults,
+    setHasSearchResults: params.setHasSearchResults,
+    setSearchResultsCount: params.setSearchResultsCount,
+    setLocalResultsCount: params.setLocalResultsCount,
+    setPearchResultsCount: params.setPearchResultsCount,
+    setCreditsUsedInSearch: params.setCreditsUsedInSearch,
+    setCreditsRemaining: (fn) =>
+      params.setCreditsRemaining(typeof fn === 'function' ? fn(params.creditsRemaining ?? 0) : fn),
+    setShowSearchResults: params.setShowSearchResults,
+    setDisplayedResultsCount: params.setDisplayedResultsCount,
+    setCurrentSearchSource: params.setCurrentSearchSource,
+    setHasSearched: params.setHasSearched,
+    setLastSearchEntities: params.setLastSearchEntities,
+    setLastSearchMetadata: params.setLastSearchMetadata,
+    setLastSearchUsedPearch: params.setLastSearchUsedPearch,
+    setSearchExecutionId: params.setSearchExecutionId,
+    setShowExpandGlobalOption: params.setShowExpandGlobalOption,
+    setShowExpandedLIA: params.setShowExpandedLIA,
+    setUserCollapsedLIA: params.setUserCollapsedLIA,
+    setLastSuccessfulQuery: archetypeSetLastSuccessfulQuery,
+    setChatMessages: params.setChatMessages,
+    setIsLoading: params.setIsLoading,
+    setIsSearchActive: params.setIsSearchActive,
+  })
+
+  const cvHandlers = useCandidatesCVHandlers({
+    setCandidates: params.setCandidates,
+    setIsDroppingCV: params.setIsDroppingCV,
+    setCvUploadLoading: params.setCvUploadLoading,
+    setHasSearchResults: params.setHasSearchResults,
+    setSearchResultsCount: params.setSearchResultsCount,
+    setShowSearchResults: params.setShowSearchResults,
+    setDisplayedResultsCount: params.setDisplayedResultsCount,
+    setChatMessages: params.setChatMessages,
+  })
+
+  const searchHandlers = useCandidatesSearch({
+    candidates: params.candidates,
+    setCandidates: params.setCandidates,
+    searchResults: params.searchResults,
+    setSearchResults: params.setSearchResults,
+    searchTerm: params.searchTerm,
+    lastSearchQuery: params.lastSearchQuery,
+    lastSearchEntities: params.lastSearchEntities,
+    lastSearchMode: params.lastSearchMode,
+    lastSearchMetadata: params.lastSearchMetadata,
+    lastSearchUsedPearch: params.lastSearchUsedPearch,
+    searchSource: params.searchSource,
+    setSearchSource: params.setSearchSource,
+    currentSearchSource: params.currentSearchSource,
+    setCurrentSearchSource: params.setCurrentSearchSource,
+    openCreditModals: params.openCreditModals,
+    setOpenCreditModals: params.setOpenCreditModals,
+    pearchSearchOptions: params.pearchSearchOptions,
+    setPearchSearchOptions: params.setPearchSearchOptions,
+    creditsRemaining: params.creditsRemaining,
+    setCreditsRemaining: params.setCreditsRemaining,
+    creditsUsedInSearch: params.creditsUsedInSearch,
+    setCreditsUsedInSearch: params.setCreditsUsedInSearch,
+    pearchResultsCount: params.pearchResultsCount,
+    setPearchResultsCount: params.setPearchResultsCount,
+    localResultsCount: params.localResultsCount,
+    setLocalResultsCount: params.setLocalResultsCount,
+    searchResultsCount: params.searchResultsCount,
+    setSearchResultsCount: params.setSearchResultsCount,
+    showSearchResults: params.showSearchResults,
+    setShowSearchResults: params.setShowSearchResults,
+    hasSearchResults: params.hasSearchResults,
+    setHasSearchResults: params.setHasSearchResults,
+    showGlobalExpansionConfirm: params.showGlobalExpansionConfirm,
+    setShowGlobalExpansionConfirm: params.setShowGlobalExpansionConfirm,
+    isExpandingToGlobal: params.isExpandingToGlobal,
+    setIsExpandingToGlobal: params.setIsExpandingToGlobal,
+    displayedResultsCount: params.displayedResultsCount,
+    setDisplayedResultsCount: params.setDisplayedResultsCount,
+    isLoadingMore: params.isLoadingMore,
+    setIsLoadingMore: params.setIsLoadingMore,
+    searchFeedbacks: params.searchFeedbacks,
+    setSearchFeedbacks: params.setSearchFeedbacks,
+    hasSearched: params.hasSearched,
+    lastSuccessfulQuery: archetypesHook.state.lastSuccessfulQuery,
+    setSearchThreadId: params.setSearchThreadId,
+    searchThreadId: params.searchThreadId,
+    showExpandGlobalOption: params.showExpandGlobalOption,
+    setShowExpandGlobalOption: params.setShowExpandGlobalOption,
+    setChatMessages: params.setChatMessages,
+    showSourceChangeModal: params.showSourceChangeModal,
+    setShowSourceChangeModal: params.setShowSourceChangeModal,
+    pendingSourceChange: params.pendingSourceChange,
+    setPendingSourceChange: params.setPendingSourceChange,
+    showContactFilterModal: params.showContactFilterModal,
+    setShowContactFilterModal: params.setShowContactFilterModal,
+    pendingContactFilter: params.pendingContactFilter,
+    setPendingContactFilter: params.setPendingContactFilter,
+    showCreditConfirmation: params.showCreditConfirmation,
+    setShowCreditConfirmation: params.setShowCreditConfirmation,
+    pendingSearchRequest: params.pendingSearchRequest,
+    setPendingSearchRequest: params.setPendingSearchRequest,
+    activeSearchFilters: params.activeSearchFilters,
+    setActiveSearchFilters: params.setActiveSearchFilters,
+    setSelectedTemplate: params.setSelectedTemplate,
+    executeSearch,
+    user: params.user,
+  })
+
+  return {
+    archetypesHook,
+    revealContactHook,
+    executeSearch,
+    cvHandlers,
+    searchHandlers,
+  }
+}

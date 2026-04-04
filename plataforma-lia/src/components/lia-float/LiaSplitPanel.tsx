@@ -193,7 +193,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-wedo-cyan" />
           <div>
-            <span className="text-base-ui font-semibold text-lia-text-primary block leading-tight">
+            <span className="text-sm-ui font-semibold text-lia-text-primary block leading-tight">
               LIA
             </span>
             {splitView.page && (
@@ -322,7 +322,7 @@ function SplitEmptyState({ page }: { page: string | null }) {
         <Brain className="w-5 h-5 text-wedo-cyan" />
       </div>
       <div>
-        <p className="text-base-ui font-medium text-lia-text-secondary">
+        <p className="text-sm-ui font-medium text-lia-text-secondary">
           {page ? `Explorando ${page}` : "Como posso ajudar?"}
         </p>
         <p className="text-sm-ui text-lia-text-disabled mt-1">
