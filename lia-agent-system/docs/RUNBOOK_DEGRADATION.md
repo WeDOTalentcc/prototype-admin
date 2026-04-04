@@ -56,7 +56,7 @@ curl -X POST -H "Authorization: Bearer $ADMIN_TOKEN" \
 | `GEMINI_CIRCUIT` | Google Gemini | 5 falhas/60s | 30s |
 | `GUPY_CIRCUIT` | Gupy ATS | 3 falhas/60s | 60s |
 | `PANDAPE_CIRCUIT` | Pandapé ATS | 3 falhas/60s | 60s |
-| `STACKONE_CIRCUIT` | StackOne/Merge | 3 falhas/60s | 60s |
+| `MERGE_CIRCUIT` | Merge.dev | 3 falhas/60s | 60s |
 | `SENDGRID_CIRCUIT` | SendGrid email | 5 falhas/60s | 60s |
 | `RESEND_CIRCUIT` | Resend email | 5 falhas/60s | 60s |
 | `WORKOS_CIRCUIT` | WorkOS SSO | 3 falhas/30s | 120s |

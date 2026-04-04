@@ -399,7 +399,7 @@ Especialista em integração com sistemas ATS. Garante sincronização, conformi
 **Integrações Suportadas**:
 - Gupy: ATS líder no Brasil
 - Pandapé: Solução integrada de RH
-- StackOne: API unificada (40+ sistemas)
+- Merge.dev: API unificada (40+ sistemas)
 
 **Mapeamento de Campos**:
 | LIA | Gupy | Pandapé |

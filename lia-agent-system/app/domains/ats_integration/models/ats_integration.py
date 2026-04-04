@@ -15,7 +15,7 @@ class ATSProvider(enum.Enum):
     """Supported ATS platforms"""
     GUPY = "gupy"
     PANDAPE = "pandape"
-    STACKONE = "stackone"  # Future: generic connector
+    MERGE = "merge"
     OTHER = "other"
 
 

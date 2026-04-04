@@ -2,7 +2,6 @@
 from .base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob
 from .gupy import GupyClient
 from .pandape import PandapeClient
-from .stackone import StackOneClient
 from .merge import MergeClient
 
 __all__ = [
@@ -12,6 +11,5 @@ __all__ = [
     "ATSJob",
     "GupyClient",
     "PandapeClient",
-    "StackOneClient",
     "MergeClient"
 ]

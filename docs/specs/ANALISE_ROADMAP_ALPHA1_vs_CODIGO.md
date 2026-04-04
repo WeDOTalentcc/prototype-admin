@@ -1080,6 +1080,6 @@ O backend (`lia-agent-system`) possui uma arquitetura robusta com 10+ domínios,
 | `app/domains/communication/services/email_service.py` | Email (Resend/SendGrid) |
 | `app/domains/communication/services/whatsapp_service.py` | WhatsApp (Twilio) |
 | `app/domains/cv_screening/services/wsi_service.py` | WSI (CBI/Bloom/Dreyfus/Big Five) |
-| `app/domains/ats_integration/` | ATS (Gupy/Pandapé/Merge/StackOne) |
+| `app/domains/ats_integration/` | ATS (Gupy/Pandapé/Merge.dev) |
 | `app/domains/interview_scheduling/services/scheduling_service.py` | Scheduling (ICS + Teams) |
 

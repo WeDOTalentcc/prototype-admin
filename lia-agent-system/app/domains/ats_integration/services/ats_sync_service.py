@@ -25,7 +25,6 @@ import os
 from .ats_clients.base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob, SyncResult
 from .ats_clients.gupy import GupyClient
 from .ats_clients.pandape import PandapeClient
-from .ats_clients.stackone import StackOneClient
 from .ats_clients.merge import MergeClient
 
 logger = logging.getLogger(__name__)
@@ -112,18 +111,6 @@ class ATSFieldMapping:
         "rejection_reason": {"ats_field": "motivo_rejeicao", "sync": True},
     }
     
-    STACKONE_MAPPINGS = {
-        "candidate_id": {"ats_field": "id", "sync": True},
-        "name": {"ats_field": "name", "sync": True},
-        "email": {"ats_field": "email", "sync": True},
-        "phone": {"ats_field": "phone_number", "sync": True},
-        "status": {"ats_field": "stage", "sync": True},
-        "cv_url": {"ats_field": "resume_url", "sync": True},
-        "linkedin_url": {"ats_field": "social_links.linkedin", "sync": True},
-        "wsi_score": {"ats_field": "custom_fields.wsi_score", "sync": True, "note": "Via custom field"},
-        "parecer": {"ats_field": "notes", "sync": True, "type": "text_append"},
-    }
-    
     MERGE_MAPPINGS = {
         "candidate_id": {"ats_field": "id", "sync": True},
         "name": {"ats_field": "first_name,last_name", "sync": True, "note": "Split into first/last name"},
@@ -149,7 +136,6 @@ class ATSFieldMapping:
         mappings = {
             "gupy": cls.GUPY_MAPPINGS,
             "pandape": cls.PANDAPE_MAPPINGS,
-            "stackone": cls.STACKONE_MAPPINGS,
             "merge": cls.MERGE_MAPPINGS,
         }
         return mappings.get(ats_type.lower(), {})
@@ -236,7 +222,7 @@ class ATSSyncService:
     
     def __init__(self):
         self.audit_log: List[ATSSyncAuditLog] = []
-        self.supported_ats = ["gupy", "pandape", "stackone", "merge"]
+        self.supported_ats = ["gupy", "pandape", "merge"]
         self._clients: Dict[str, ATSClient] = {}
         self._initialize_clients()
     
@@ -267,19 +253,6 @@ class ATSSyncService:
                 logger.info("✅ Pandapé client initialized")
             except Exception as e:
                 logger.warning(f"Failed to initialize Pandapé client: {e}")
-        
-        stackone_key = os.environ.get("STACKONE_API_KEY")
-        if stackone_key:
-            try:
-                config = ATSClientConfig(
-                    api_key=stackone_key,
-                    base_url=os.environ.get("STACKONE_BASE_URL"),
-                    company_id=os.environ.get("STACKONE_ACCOUNT_ID"),
-                )
-                self._clients["stackone"] = StackOneClient(config)
-                logger.info("✅ StackOne client initialized")
-            except Exception as e:
-                logger.warning(f"Failed to initialize StackOne client: {e}")
         
         merge_key = os.environ.get("MERGE_API_KEY")
         if merge_key:
@@ -332,7 +305,7 @@ class ATSSyncService:
         Args:
             trigger: Type of event triggering sync
             source_agent: Name of agent triggering sync
-            ats_type: Target ATS type (gupy, pandape, stackone)
+            ats_type: Target ATS type (gupy, pandape, merge)
             candidate_id: ID of candidate being synced
             job_id: ID of job vacancy
             data: Data to sync
@@ -466,7 +439,7 @@ class ATSSyncService:
         Pull a single candidate from ATS.
         
         Args:
-            ats_type: Type of ATS (gupy, pandape, stackone)
+            ats_type: Type of ATS (gupy, pandape, merge)
             ats_candidate_id: ATS candidate ID
             source_agent: Agent or system triggering pull
             

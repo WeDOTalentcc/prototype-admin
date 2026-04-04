@@ -70,6 +70,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **God Components Split (Quality Audit)**: Split 45+ largest components into hooks + sub-components. Zero files >800L (was ~55). Top results: LiaChatPanel (1075→112L), useKanbanPageCore (990→452L), useExpandedChatModalCore (1001→65L), RecruitersTab (925→254L), DepartmentsTab (859→290L), onboarding-page (830→106L), tasks-page (821→131L), etc.
 - **Performance: React.lazy + Error Boundaries**: Created ErrorBoundarySection and SuspenseFallback reusable components. Added lazy loading for 17+ modals. Wrapped 8 major pages with Error Boundaries. Settings tabs use next/dynamic.
 - **localStorage → Zustand Migration (93%)**: 16 Zustand stores total (auth, kanban, candidates, onboarding, ui-preferences, job-ui, navigation, job-filters, talent-funnel, wizard, template, triagem, recent-items, table-features, chat-state). Migrated 259 of 278 localStorage usages to centralized stores (19 remaining: session-cleanup, auth-service, SearchPresetsModal prop interface).
+- **StackOne Removal (Task #133)**: Removed all StackOne integration code, config, tests, and documentation. Merge.dev is now the sole universal ATS connector. ATS providers: Gupy (native), Pandapé (native), Merge.dev (universal). Webhook endpoint updated to support merge platform.
 
 # External Dependencies
 - Anthropic (Claude API)

@@ -11,8 +11,7 @@ entre a plataforma WeDOTalent e sistemas externos de rastreamento de candidatos 
 
 - **Gupy**: Plataforma BR líder; mapeamento de fase, observações, dados básicos do candidato
 - **Pandapé**: Plataforma BR; suporta score WSI, pretensão salarial, parecer de RH
-- **Merge**: Conector multi-ATS via API unificada; campos customizáveis
-- **StackOne**: Conector multi-ATS internacional; suporte a custom_fields
+- **Merge**: Conector multi-ATS universal via API unificada; campos customizáveis
 
 ## Responsabilidades
 

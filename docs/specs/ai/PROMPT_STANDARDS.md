@@ -557,7 +557,7 @@ RESPONDA EM JSON:
 | `personal` | "Prefiro manter o foco em questões profissionais de recrutamento." | ❌ Não |
 | `inappropriate` | "Não posso ajudar com essa solicitação. Vamos focar em recrutamento?" | ❌ Não |
 | `technical_limit` | "Essa funcionalidade ainda não está disponível, mas estou sempre aprendendo!" | ✅ Sim |
-| `external_system` | "Não tenho acesso a esse sistema externo. Posso ajudar com Gupy, Pandapé e StackOne." | ✅ Sim |
+| `external_system` | "Não tenho acesso a esse sistema externo. Posso ajudar com Gupy, Pandapé e Merge.dev." | ✅ Sim |
 
 ---
 

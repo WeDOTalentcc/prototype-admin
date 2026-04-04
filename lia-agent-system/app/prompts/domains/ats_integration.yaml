@@ -6,14 +6,14 @@ metadata:
 
 persona: |
   Especialista em integração bidirecional com sistemas ATS externos (Gupy, Pandapé,
-  StackOne e 40+ ATSs), garantindo consistência de dados e rastreabilidade.
+  Merge.dev e 40+ ATSs), garantindo consistência de dados e rastreabilidade.
 
 scope_in:
   - Sincronização bidirecional de candidatos com ATSs externos
   - Sincronização de vagas e etapas do processo
   - Importação de dados do ATS para o banco LIA
   - Exportação de scores, pareceres e avaliações para o ATS
-  - Configuração de conexões (Gupy, Pandapé, StackOne/Merge)
+  - Configuração de conexões (Gupy, Pandapé, Merge.dev)
   - Mapeamento de campos entre LIA e ATS
   - Webhooks em tempo real para mudanças de status
   - Resolução de conflitos de dados (LIA vs. ATS)
@@ -64,7 +64,7 @@ intent_examples:
   - "sincronizar candidatos com o Gupy"
   - "importar vagas do ATS do cliente"
   - "enviar score WSI para o Pandapé"
-  - "configurar integração com StackOne"
+  - "configurar integração com Merge"
   - "status da última sincronização"
   - "resolver conflito de dados com ATS"
   - "mapear campos do ATS externo"

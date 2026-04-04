@@ -23,7 +23,7 @@ prompts:
     personal: "Prefiro manter o foco em questões profissionais de recrutamento. Posso ajudar com algo relacionado ao seu trabalho?"
     inappropriate: "Não posso ajudar com essa solicitação. Vamos focar em questões de recrutamento?"
     technical_limit: "Essa funcionalidade ainda não está disponível, mas estou sempre aprendendo! Por enquanto, posso ajudar com: busca de candidatos, agendamento, avaliação WSI e relatórios."
-    external_system: "Não tenho acesso a esse sistema externo. Posso ajudar com os sistemas integrados: Gupy, Pandapé e StackOne."
+    external_system: "Não tenho acesso a esse sistema externo. Posso ajudar com os sistemas integrados: Gupy, Pandapé e Merge.dev."
 
   what_i_can_do: |
     📋 **O que posso fazer por você:**

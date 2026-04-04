@@ -9,7 +9,7 @@
 #   TriagemCurricularAgent → CVScreeningBatchService (app/domains/cv_screening/services/)
 #   CommunicationAgent → CommunicationService
 #   AnalyticsAgent, AnalistaFeedbackAgent → analytics services
-#   IntegradorATSAgent → REST endpoints + Merge/StackOne
+#   IntegradorATSAgent → REST endpoints + Merge
 from app.domains.sourcing.services.query_builders import BooleanQueryBuilder, CandidateMatcher
 from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph, interview_graph
 from app.domains.automation.agents.automation_react_agent import AutomationReActAgent

@@ -29,12 +29,6 @@ class TestDomainATSCircuitBreakers:
         assert "PANDAPE_CIRCUIT" in source
         assert "circuit_breaker_decorator" in source
 
-    def test_domain_stackone_imports_circuit_breaker(self):
-        import app.domains.ats_integration.services.ats_clients.stackone as mod
-        source = inspect.getsource(mod)
-        assert "STACKONE_CIRCUIT" in source
-        assert "circuit_breaker_decorator" in source
-
     def test_domain_merge_imports_circuit_breaker(self):
         import app.domains.ats_integration.services.ats_clients.merge as mod
         source = inspect.getsource(mod)

@@ -25,7 +25,6 @@ OUTBOUND_SENSITIVE_FIELDS: FrozenSet[str] = frozenset({
 INBOUND_TEXT_FIELDS: Dict[str, FrozenSet[str]] = {
     "gupy": frozenset({"observacoes", "notes", "descricao_curriculo"}),
     "pandape": frozenset({"parecer_rh", "observacoes", "notes", "descricao"}),
-    "stackone": frozenset({"notes", "feedback", "description"}),
     "merge": frozenset({"notes", "feedback", "description", "summary"}),
 }
 

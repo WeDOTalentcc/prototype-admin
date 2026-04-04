@@ -212,7 +212,7 @@ class AIRecommendationsResponse(BaseModel):
 
 
 SYSTEM_CATEGORY_MAP = {
-    'gupy': 'ats', 'pandape': 'ats', 'stackone': 'ats', 'greenhouse': 'ats',
+    'gupy': 'ats', 'pandape': 'ats', 'merge': 'ats', 'greenhouse': 'ats',
     'workday': 'workforce_planning', 'sap_sf': 'workforce_planning',
     'senior': 'hris', 'totvs': 'hris', 'adp': 'hris',
     'hackerrank': 'technical_assessment', 'codility': 'technical_assessment',

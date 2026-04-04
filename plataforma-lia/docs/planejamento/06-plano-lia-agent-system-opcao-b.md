@@ -52,7 +52,7 @@ A plataforma WedoTalent será transformada em um sistema **AI-centric** onde:
 - **Backend completo**: FastAPI + LangGraph + LangChain
 - **Chat conversacional**: WebSocket real-time com LIA
 - **State machines**: Workflows automatizados
-- **Integrações**: Pearch AI, StackOne, Synthflow, Microsoft Graph, Twilio
+- **Integrações**: Pearch AI, Merge.dev, Synthflow, Microsoft Graph, Twilio
 - **Database**: PostgreSQL + pgvector
 - **Queue system**: Celery + RabbitMQ
 - **Observability**: LangSmith, Maxim AI
@@ -73,7 +73,7 @@ A plataforma WedoTalent será transformada em um sistema **AI-centric** onde:
                         ↕ APIs Externas
 ┌─────────────────────────────────────────────────────────────┐
 │              INTEGRATIONS LAYER                             │
-│  • Pearch AI  • StackOne  • Synthflow                       │
+│  • Pearch AI  • Merge.dev  • Synthflow                      │
 │  • Microsoft Graph (Teams + Outlook)  • Twilio              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -156,7 +156,7 @@ Pearch AI:
 # ===================================
 # ATS INTEGRATION
 # ===================================
-StackOne:
+Merge.dev:
   platforms: 50+ ATS (Greenhouse, Lever, Workday, etc)
   features:
     - Bidirectional sync
@@ -392,7 +392,7 @@ STAGES = [
 - [ ] Confirmation requests ("Está correto assim?")
 - [ ] Iteration handling ("Pode refazer mais técnico?")
 
-#### Semana 7-8: Aprovações & StackOne Integration
+#### Semana 7-8: Aprovações & Merge.dev Integration
 
 **Sistema de Aprovações (Backend)**
 - [ ] Approval workflow state machine
@@ -415,8 +415,8 @@ STAGES = [
       await teams_client.send_card(stakeholder_email, card)
   ```
 
-**StackOne Integration**
-- [ ] StackOne API client setup
+**Merge.dev Integration**
+- [x] Merge.dev API client setup
 - [ ] OAuth 2.0 flow (Greenhouse, Lever)
 - [ ] Create job endpoint
 - [ ] Update job endpoint
@@ -1575,7 +1575,7 @@ async def confirm_before_execution(action: str, data: dict) -> str:
 | Mês | Entregas Principais | Tecnologias |
 |-----|---------------------|-------------|
 | **1** | Backend setup + Chat MVP | FastAPI, LangGraph, Gemini, PostgreSQL, WebSocket |
-| **2** | Job creation workflow + Teams bot | LangGraph (13 stages), StackOne, Microsoft Graph |
+| **2** | Job creation workflow + Teams bot | LangGraph (13 stages), Merge.dev, Microsoft Graph |
 | **3** | Candidate search + ranking | Pearch AI, pgvector, RAG, ML scoring |
 | **4** | WhatsApp + Voice screening | Twilio, Synthflow, Google STT, scoring automático |
 | **5** | Teams/Outlook completo + Polish | Microsoft Graph, LinkedIn API, LangSmith, monitoring |
@@ -1659,7 +1659,7 @@ lia-agent-system/
 │   │   └── candidate_analysis.py
 │   ├── integrations/
 │   │   ├── pearch_ai.py
-│   │   ├── stackone.py
+│   │   ├── merge.py
 │   │   ├── synthflow.py
 │   │   ├── microsoft_graph.py
 │   │   └── twilio.py
@@ -1686,7 +1686,7 @@ Antes de começar a implementação, preciso confirmar:
 2. **Credenciais**: Já têm contas nas seguintes plataformas?
    - Vertex AI (Gemini)
    - Pearch AI
-   - StackOne
+   - Merge.dev
    - Synthflow
    - Twilio
    - Microsoft Azure (para Teams/Graph)

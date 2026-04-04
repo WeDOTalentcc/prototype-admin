@@ -41,7 +41,7 @@ apis:
     purpose: "Importar candidatos e perfis do LinkedIn via Merge connector"
     base_url: "https://api.merge.dev/api/ats/v1"
     auth: "X-Account-Token (MERGE_ACCESS_TOKEN)"
-    circuit_breaker: "STACKONE_CIRCUIT"
+    circuit_breaker: "MERGE_CIRCUIT"
     used_by_agents: ["sourcing_search"]
     rate_limit: "200 req/min"
     endpoints:

@@ -24,7 +24,7 @@ Este relatório documenta o status dos 18 critérios do Production Readiness Gat
 
 **Evidência:**
 - 14 circuit breakers implementados em `app/shared/resilience/circuit_breaker.py`
-- Cobertura: anthropic, openai, gemini, pearch, workos, merge, google_calendar, gupy, pandape, stackone, sendgrid, resend, iugu, vindi
+- Cobertura: anthropic, openai, gemini, pearch, workos, merge, google_calendar, gupy, pandape, sendgrid, resend, iugu, vindi
 - SLOs documentados por serviço (`CIRCUIT_BREAKER_SLOS`)
 - Notificação Bell + Teams quando circuit abre (Redis dedup 1h/circuit)
 - Métricas Prometheus quando disponíveis

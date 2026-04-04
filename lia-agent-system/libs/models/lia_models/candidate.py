@@ -94,7 +94,7 @@ class CandidateEducation(Base):
 class Candidate(Base):
     """
     Represents a candidate in the recruitment system.
-    Candidates can come from: ATS (via StackOne), manual entry, or Pearch AI global search.
+    Candidates can come from: ATS (via Merge.dev), manual entry, or Pearch AI global search.
     """
     __tablename__ = "candidates"
     

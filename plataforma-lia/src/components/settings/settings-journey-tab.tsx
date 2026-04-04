@@ -99,7 +99,7 @@ export function SettingsJourneyTab({ onSettingsChange }: { onSettingsChange: (ch
   const sistemasDisponiveis = [
     { id: 'gupy', name: 'Gupy', category: 'ATS' },
     { id: 'pandape', name: 'Pandapé', category: 'ATS' },
-    { id: 'stackone', name: 'StackOne', category: 'ATS' },
+    { id: 'merge', name: 'Merge.dev', category: 'ATS' },
     { id: 'greenhouse', name: 'Greenhouse', category: 'ATS' },
     { id: 'workday', name: 'Workday', category: 'Workforce Planning' },
     { id: 'sap_sf', name: 'SAP SuccessFactors', category: 'Workforce Planning' },

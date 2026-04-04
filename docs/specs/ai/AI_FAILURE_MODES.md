@@ -103,7 +103,6 @@ Arquivo: app/shared/resilience/circuit_breaker.py
 | `google_calendar` | 5 | 60s | 2 | 30s | medium |
 | `gupy` | 5 | 45s | 2 | 30s | high |
 | `pandape` | 5 | 45s | 2 | 30s | high |
-| `stackone` | 5 | 45s | 2 | 30s | medium |
 | `sendgrid` | 5 | 30s | 2 | 30s | critical |
 | `resend` | 5 | 30s | 2 | 30s | high |
 | `iugu` | 3 | 60s | 2 | 30s | medium |
@@ -128,7 +127,6 @@ Arquivo: app/shared/resilience/circuit_breaker.py
 | Google Calendar | 99.5% | 3.000ms | 0.5% | medium |
 | Gupy (ATS) | 99.0% | 5.000ms | 1.0% | high |
 | Pandapé (ATS) | 99.0% | 5.000ms | 1.0% | high |
-| StackOne (ATS) | 99.0% | 5.000ms | 1.0% | medium |
 | SendGrid (email) | 99.9% | 2.000ms | 0.1% | critical |
 | Resend (email alt.) | 99.9% | 2.000ms | 0.1% | high |
 | Iugu (pagamentos) | 99.5% | 5.000ms | 0.5% | medium |
@@ -167,7 +165,6 @@ Quando o circuit está OPEN e nenhum fallback específico está disponível, o s
 | `google_calendar` | "O agendamento via Google Calendar está temporariamente indisponível. Agende manualmente e tente a sincronização mais tarde." |
 | `gupy` | "A integração com Gupy está temporariamente indisponível. Os dados locais continuam acessíveis." |
 | `pandape` | "A integração com Pandapé está temporariamente indisponível. Os dados locais continuam acessíveis." |
-| `stackone` | "A integração ATS via StackOne está temporariamente indisponível. Os dados locais continuam acessíveis." |
 | `sendgrid` | "O envio de emails está temporariamente indisponível. As mensagens serão reenviadas assim que o serviço for restaurado." |
 | `resend` | "O serviço de email alternativo está temporariamente indisponível. Tente novamente em instantes." |
 | `iugu` | "O serviço de pagamentos está temporariamente indisponível. Tente novamente em alguns minutos ou contate o suporte financeiro." |

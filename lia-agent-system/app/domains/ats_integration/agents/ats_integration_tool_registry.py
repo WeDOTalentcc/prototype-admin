@@ -3,7 +3,7 @@
 Wraps ATSSyncService operations into ToolDefinition format so the ReActLoop
 can autonomously decide which tools to call for bidirectional ATS synchronization.
 
-Supported providers: Gupy, Pandapé, Merge, StackOne.
+Supported providers: Gupy, Pandapé, Merge.
 """
 import logging
 from typing import Any, Dict, List, Optional
@@ -32,7 +32,7 @@ async def _wrap_sync_candidate_to_ats(**kwargs: Any) -> Dict[str, Any]:
     if candidate_id is None:
         return {"success": False, "message": "candidate_id é obrigatório"}
     if not ats_provider:
-        return {"success": False, "message": "ats_provider é obrigatório (gupy/pandape/merge/stackone)"}
+        return {"success": False, "message": "ats_provider é obrigatório (gupy/pandape/merge)"}
 
     # Map trigger string to enum value (case-insensitive)
     trigger_map = {t.value: t for t in ATSSyncTrigger}
@@ -70,7 +70,7 @@ async def _wrap_fetch_candidate_from_ats(**kwargs: Any) -> Dict[str, Any]:
     if not ats_candidate_id:
         return {"success": False, "message": "ats_candidate_id é obrigatório"}
     if not ats_provider:
-        return {"success": False, "message": "ats_provider é obrigatório (gupy/pandape/merge/stackone)"}
+        return {"success": False, "message": "ats_provider é obrigatório (gupy/pandape/merge)"}
 
     try:
         svc = ATSSyncService()
@@ -96,7 +96,7 @@ async def _wrap_validate_ats_fields(**kwargs: Any) -> Dict[str, Any]:
     if not candidate_data:
         return {"success": False, "message": "candidate_data é obrigatório"}
     if not ats_provider:
-        return {"success": False, "message": "ats_provider é obrigatório (gupy/pandape/merge/stackone)"}
+        return {"success": False, "message": "ats_provider é obrigatório (gupy/pandape/merge)"}
 
     try:
         provider = ats_provider.lower()
@@ -105,7 +105,7 @@ async def _wrap_validate_ats_fields(**kwargs: Any) -> Dict[str, Any]:
             return {
                 "success": False,
                 "message": f"ATS provider '{ats_provider}' não tem mapeamento configurado",
-                "supported_providers": ["gupy", "pandape", "stackone", "merge"],
+                "supported_providers": ["gupy", "pandape", "merge"],
             }
 
         syncable: List[Dict[str, Any]] = []
@@ -151,7 +151,7 @@ async def _wrap_bulk_sync_candidates(**kwargs: Any) -> Dict[str, Any]:
     if not candidate_ids:
         return {"success": False, "message": "candidate_ids é obrigatório (lista de inteiros)"}
     if not ats_provider:
-        return {"success": False, "message": "ats_provider é obrigatório (gupy/pandape/merge/stackone)"}
+        return {"success": False, "message": "ats_provider é obrigatório (gupy/pandape/merge)"}
 
     trigger_map = {t.value: t for t in ATSSyncTrigger}
     trigger = trigger_map.get(trigger_raw.lower(), ATSSyncTrigger.BULK_SYNC)
@@ -243,7 +243,7 @@ def get_ats_integration_tools() -> List[ToolDefinition]:
             description=(
                 "Enviar dados de um candidato para um ATS externo (push). "
                 "Parâmetros: candidate_id (int, obrigatório), company_id (str), "
-                "ats_provider (str: gupy/pandape/merge/stackone), "
+                "ats_provider (str: gupy/pandape/merge), "
                 "trigger (str: STATUS_CHANGE/CANDIDATE_CREATED/CANDIDATE_UPDATED/etc)."
             ),
             function=_wrap_sync_candidate_to_ats,
@@ -253,7 +253,7 @@ def get_ats_integration_tools() -> List[ToolDefinition]:
             description=(
                 "Buscar dados de um candidato a partir de um ATS externo (pull). "
                 "Parâmetros: ats_candidate_id (str, obrigatório), company_id (str), "
-                "ats_provider (str: gupy/pandape/merge/stackone)."
+                "ats_provider (str: gupy/pandape/merge)."
             ),
             function=_wrap_fetch_candidate_from_ats,
         ),
@@ -263,7 +263,7 @@ def get_ats_integration_tools() -> List[ToolDefinition]:
                 "Validar mapeamento de campos antes de uma sincronização com ATS. "
                 "Retorna quais campos serão sincronizados e quais serão ignorados. "
                 "Parâmetros: candidate_data (dict), company_id (str), "
-                "ats_provider (str: gupy/pandape/merge/stackone)."
+                "ats_provider (str: gupy/pandape/merge)."
             ),
             function=_wrap_validate_ats_fields,
         ),
@@ -272,7 +272,7 @@ def get_ats_integration_tools() -> List[ToolDefinition]:
             description=(
                 "Sincronizar múltiplos candidatos com um ATS externo em lote. "
                 "Parâmetros: candidate_ids (list[int], obrigatório), company_id (str), "
-                "ats_provider (str: gupy/pandape/merge/stackone), "
+                "ats_provider (str: gupy/pandape/merge), "
                 "trigger (str: BULK_SYNC/STATUS_CHANGE/etc)."
             ),
             function=_wrap_bulk_sync_candidates,

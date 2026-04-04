@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 class ATSIntegrationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     """ReAct agent for bidirectional ATS synchronization via LangGraph nativo.
 
-    Supports Gupy, Pandapé, Merge and StackOne providers.
+    Supports Gupy, Pandapé and Merge providers.
     """
 
     def __init__(self) -> None:

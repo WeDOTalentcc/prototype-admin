@@ -1355,12 +1355,11 @@ app/domains/ats_integration/
 │       ├── base.py                   ← Interface base de ATS
 │       ├── gupy.py                   ← Cliente Gupy
 │       ├── pandape.py                ← Cliente Pandape
-│       ├── merge.py                  ← Cliente Merge
-│       └── stackone.py              ← Cliente StackOne
+│       └── merge.py                  ← Cliente Merge.dev
 └── models/
 ```
 
-**Conexoes**: APIs externas (Gupy, Pandape, Merge, StackOne), cryptography (chaves de API criptografadas)
+**Conexoes**: APIs externas (Gupy, Pandape, Merge.dev), cryptography (chaves de API criptografadas)
 
 ### 5.10 automation — Automacoes e Tarefas Programadas
 
@@ -2160,8 +2159,7 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | ats_clients/base | Interface base de ATS |
 | ats_clients/gupy | Cliente Gupy |
 | ats_clients/pandape | Cliente Pandape |
-| ats_clients/merge | Cliente Merge |
-| ats_clients/stackone | Cliente StackOne |
+| ats_clients/merge | Cliente Merge.dev |
 
 ### automation (18 servicos)
 

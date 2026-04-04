@@ -946,7 +946,6 @@ Padrão de 3 Estados: CLOSED → OPEN → HALF_OPEN → CLOSED
 │  google_calendar │ 5        │ 60s      │ 2       │ 30s     │ medium    │
 │  gupy            │ 5        │ 45s      │ 2       │ 30s     │ high      │
 │  pandape         │ 5        │ 45s      │ 2       │ 30s     │ high      │
-│  stackone        │ 5        │ 45s      │ 2       │ 30s     │ medium    │
 │  sendgrid        │ 5        │ 30s      │ 2       │ 30s     │ critical  │
 │  resend          │ 5        │ 30s      │ 2       │ 30s     │ high      │
 │  iugu            │ 3        │ 60s      │ 2       │ 30s     │ medium    │

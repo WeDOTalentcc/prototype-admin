@@ -626,6 +626,15 @@ async def get_ai_recommendations(
             })
             setup_order.append("slack")
         
+        if "merge" not in [t.lower() for t in request.current_tools]:
+            recommendations.append({
+                "provider": "Merge.dev",
+                "category": "ats",
+                "priority": "high",
+                "reason": "Universal ATS connector supporting 40+ HR systems via single API"
+            })
+            setup_order.append("merge")
+
         if request.company_size in ["large", "enterprise"]:
             if "workday" not in [t.lower() for t in request.current_tools]:
                 recommendations.append({
@@ -636,14 +645,6 @@ async def get_ai_recommendations(
                 })
                 setup_order.append("workday")
             
-            recommendations.append({
-                "provider": "StackOne",
-                "category": "ats",
-                "priority": "medium",
-                "reason": "Universal connector for multiple ATS systems"
-            })
-            setup_order.append("stackone")
-        
         tips = [
             "Start with your ATS integration to sync existing candidates",
             "Connect job boards to expand your talent reach",
@@ -652,7 +653,7 @@ async def get_ai_recommendations(
         ]
         
         if request.company_size == "enterprise":
-            tips.append("Consider StackOne for unified API access across multiple systems")
+            tips.append("Consider Merge.dev for unified API access across multiple systems")
         
         time_per_integration = {"small": "15min", "medium": "30min", "large": "1hr", "enterprise": "2hr"}
         base_time = time_per_integration.get(request.company_size, "30min")

@@ -314,7 +314,7 @@ em termos de formação?"
 **Pendências:**
 - [ ] Integração com Gupy API
 - [ ] Integração com Pandapé API
-- [ ] Integração com StackOne (unified ATS)
+- [x] Integração com Merge.dev (unified ATS)
 - [ ] Schema `ATSHistoricalData`
 - [ ] Node `historical_analysis_node`
 - [ ] Fallback para análise manual (questionário)
@@ -2617,7 +2617,7 @@ Score LIA = (
 | F0-4 | Serviço de web scraping para cultura | Média | Alta |
 | F0-5 | Integração Gupy API | Alta | Alta |
 | F0-6 | Integração Pandapé API | Média | Alta |
-| F0-7 | Integração StackOne | Baixa | Alta |
+| F0-7 | Integração Merge.dev | Baixa | Alta |
 | F0-8 | Modelo de ML para pattern recognition | Média | Muito Alta |
 | F0-9 | Schema IdealProfileState | Alta | Média |
 | F0-10 | Node ideal_profile_builder_node | Alta | Alta |
@@ -2671,7 +2671,7 @@ Score LIA = (
 |----|-----------|------------|---------|
 | INT-1 | Gupy ATS | Alta | Alta |
 | INT-2 | Pandapé ATS | Média | Alta |
-| INT-3 | StackOne (unified ATS) | Baixa | Alta |
+| INT-3 | Merge.dev (unified ATS) | Baixa | Alta |
 | INT-4 | Microsoft Teams | Alta | Alta |
 | INT-5 | Microsoft Graph Calendar | Alta | Alta |
 | INT-6 | WhatsApp Business | Alta | Alta |

@@ -2,7 +2,7 @@
 External Webhook Endpoints - Inbound webhooks from external services.
 
 Receives events from:
-- ATS platforms (Gupy, Pandapé, StackOne)
+- ATS platforms (Gupy, Pandapé, Merge)
 - Deepgram (transcription completion)
 - Other external integrations
 
@@ -90,16 +90,16 @@ async def handle_ats_webhook(
     x_webhook_signature: Optional[str] = Header(None, alias="X-Webhook-Signature"),
     x_gupy_signature: Optional[str] = Header(None, alias="X-Gupy-Signature"),
     x_pandape_signature: Optional[str] = Header(None, alias="X-Pandape-Signature"),
-    x_stackone_signature: Optional[str] = Header(None, alias="X-StackOne-Signature")
+    x_merge_signature: Optional[str] = Header(None, alias="X-Merge-Signature"),
 ):
     """
-    Receive webhook from ATS platforms (Gupy, Pandapé, StackOne).
+    Receive webhook from ATS platforms (Gupy, Pandapé, Merge).
     Used for inbound sync when changes happen in external ATS.
     
     Supported platforms:
     - gupy: Gupy ATS
     - pandape: Pandapé ATS
-    - stackone: StackOne unified ATS API
+    - merge: Merge.dev unified ATS API
     
     Events:
     - candidate_created: New candidate in ATS
@@ -110,7 +110,7 @@ async def handle_ats_webhook(
     """
     platform_lower = platform.lower()
     
-    if platform_lower not in ["gupy", "pandape", "stackone"]:
+    if platform_lower not in ["gupy", "pandape", "merge"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unsupported ATS platform: {platform}"
@@ -121,7 +121,7 @@ async def handle_ats_webhook(
     signature = (
         x_gupy_signature if platform_lower == "gupy"
         else x_pandape_signature if platform_lower == "pandape"
-        else x_stackone_signature if platform_lower == "stackone"
+        else x_merge_signature if platform_lower == "merge"
         else x_webhook_signature
     )
     
@@ -473,11 +473,11 @@ async def external_webhooks_health():
             "document": "/external-webhooks/document/{provider}",
             "event_log": "/external-webhooks/event-log",
         },
-        "supported_ats_platforms": ["gupy", "pandape", "stackone"],
+        "supported_ats_platforms": ["gupy", "pandape", "merge"],
         "secrets_configured": {
             "gupy": bool(os.getenv("GUPY_WEBHOOK_SECRET")),
             "pandape": bool(os.getenv("PANDAPE_WEBHOOK_SECRET")),
-            "stackone": bool(os.getenv("STACKONE_WEBHOOK_SECRET")),
+            "merge": bool(os.getenv("MERGE_WEBHOOK_SECRET")),
             "deepgram": bool(os.getenv("DEEPGRAM_WEBHOOK_SECRET"))
         },
         "feature_flags": {

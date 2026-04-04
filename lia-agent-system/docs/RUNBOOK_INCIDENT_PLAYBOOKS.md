@@ -359,7 +359,7 @@ for name, info in open_circuits.items():
 # Comunicar internamente sobre impacto em notificações
 ```
 
-**Circuits de ATS (GUPY_CIRCUIT / PANDAPE_CIRCUIT / STACKONE_CIRCUIT)**
+**Circuits de ATS (GUPY_CIRCUIT / PANDAPE_CIRCUIT / MERGE_CIRCUIT)**
 
 ```bash
 # Verificar status dos sistemas ATS:

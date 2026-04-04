@@ -163,11 +163,11 @@ DEFAULT_INTEGRATION_PROVIDERS = [
         "is_premium": False
     },
     {
-        "name": "StackOne",
+        "name": "Merge.dev",
         "category": "ats",
-        "slug": "stackone",
-        "description": "Universal API connector for HR systems",
-        "logo_url": "/logos/stackone.png",
+        "slug": "merge",
+        "description": "Universal ATS API connector for 40+ HR systems",
+        "logo_url": "/logos/merge.png",
         "supports_oauth": True,
         "supports_api_key": True,
         "supports_webhook": True,

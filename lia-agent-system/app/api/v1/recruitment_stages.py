@@ -105,7 +105,7 @@ class SubStatusCreate(BaseModel):
 
 
 class ATSMappingCreate(BaseModel):
-    ats_type: str = Field(..., description="gupy, pandape, stackone")
+    ats_type: str = Field(..., description="gupy, pandape, merge")
     ats_stage_id: Optional[str] = None
     ats_stage_name: str = Field(..., min_length=1, max_length=255)
     ats_stage_order: Optional[int] = None

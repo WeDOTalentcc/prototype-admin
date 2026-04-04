@@ -4,7 +4,7 @@ Contract tests — ATS Integration ReAct Agent (Phase 5).
 Verifica contratos de interface do agente de integração ATS:
 - Padrão 4 arquivos (agent, tool_registry, system_prompt, stage_context)
 - Ferramentas: sync_candidate_to_ats, sync_job_to_ats, get_sync_status, etc.
-- Providers suportados: Gupy, Pandapé, Merge, StackOne
+- Providers suportados: Gupy, Pandapé, Merge
 - Isolamento multi-tenant (company_id obrigatório)
 - Integração com WS dispatcher
 

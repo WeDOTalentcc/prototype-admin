@@ -184,7 +184,6 @@ class AppSettings(BaseSettings):
 
     # Feature Flags
     ENABLE_PEARCH_AI: bool = False
-    ENABLE_STACKONE: bool = False
     ENABLE_SYNTHFLOW: bool = False
     ENABLE_TWILIO: bool = False
     ENABLE_MICROSOFT_GRAPH: bool = True
@@ -246,10 +245,6 @@ class IntegrationSettings(BaseSettings):
     # Pearch AI
     PEARCH_API_KEY: Optional[str] = None
     PEARCH_API_URL: str = "https://api.pearch.ai"
-
-    # StackOne / Merge (ATS connectors)
-    STACKONE_API_KEY: Optional[str] = None
-    STACKONE_API_URL: str = "https://api.stackone.com"
 
     # SynthFlow (voice AI)
     SYNTHFLOW_API_KEY: Optional[str] = None

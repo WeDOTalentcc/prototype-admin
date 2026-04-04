@@ -13,7 +13,7 @@ LIA (Learning Intelligence Assistant) is an autonomous conversational AI agent t
 - 💬 **WebSocket Support**: Real-time chat interface
 - 🗄️ **PostgreSQL + pgvector**: Persistent storage with vector search
 - 📊 **LangSmith Integration**: Complete observability and tracing
-- 🔌 **Multiple Integrations**: Pearch AI, StackOne, Synthflow, Microsoft Graph, Twilio
+- 🔌 **Multiple Integrations**: Pearch AI, Merge.dev, Synthflow, Microsoft Graph, Twilio
 
 ## 🏗️ Architecture
 
@@ -224,7 +224,7 @@ docker-compose logs -f
 | OpenAI | ⏳ Optional | Fallback LLM |
 | Google Gemini | ⏳ Optional | Alternative LLM |
 | Pearch AI | ⏳ Pending | Candidate search (190M+ profiles) |
-| StackOne | ⏳ Pending | ATS integration (Greenhouse, Lever, etc) |
+| Merge.dev | ✅ Active | Universal ATS connector (Greenhouse, Lever, etc) |
 | Synthflow | ⏳ Pending | Voice screening |
 | Twilio | ⏳ Pending | WhatsApp + SMS |
 | Microsoft Graph | ⏳ Pending | Teams + Outlook |
@@ -260,7 +260,7 @@ Interactive API docs available at:
 
 ### 🔄 Phase 2: Job Creation (Next)
 - [ ] Job creation workflow (13 stages)
-- [ ] StackOne integration
+- [x] Merge.dev ATS integration
 - [ ] Microsoft Teams notifications
 - [ ] Approval system
 

@@ -132,7 +132,7 @@ class ATSClient(ABC):
     @property
     @abstractmethod
     def name(self) -> str:
-        """Return ATS name (gupy, pandape, stackone)."""
+        """Return ATS name (gupy, pandape, merge)."""
         pass
     
     @abstractmethod

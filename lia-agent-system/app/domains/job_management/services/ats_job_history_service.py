@@ -4,7 +4,6 @@ ATS Job History Service - Fetches historical job descriptions from connected ATS
 Provides access to job descriptions and vacancy data from:
 - Gupy
 - Pandapé
-- StackOne (unified connector)
 - Merge (unified connector)
 
 This data enriches the Job Wizard with:
@@ -192,7 +191,7 @@ class ATSJobHistoryService:
         Fetch jobs from a specific ATS.
         
         Args:
-            ats_type: Type of ATS (gupy, pandape, stackone, merge)
+            ats_type: Type of ATS (gupy, pandape, merge)
             company_id: Company ID for scoping
             status: Filter by job status
             months_back: How many months of history to fetch
@@ -235,7 +234,7 @@ class ATSJobHistoryService:
             return self._normalize_gupy_job(raw_job)
         elif ats_type == "pandape":
             return self._normalize_pandape_job(raw_job)
-        elif ats_type in ["stackone", "merge"]:
+        elif ats_type in ["merge"]:
             return self._normalize_unified_job(raw_job, ats_type)
         else:
             return self._normalize_generic_job(raw_job, ats_type)
@@ -282,7 +281,7 @@ class ATSJobHistoryService:
         )
     
     def _normalize_unified_job(self, job: Dict[str, Any], ats_type: str) -> ATSJobDescription:
-        """Normalize StackOne/Merge unified format."""
+        """Normalize Merge unified format."""
         compensation = job.get("compensation", {}) or {}
         
         return ATSJobDescription(
@@ -390,7 +389,7 @@ class ATSJobHistoryService:
         all_salaries = []
         ats_sources = []
         
-        for ats_type in ["gupy", "pandape", "stackone", "merge"]:
+        for ats_type in ["gupy", "pandape", "merge"]:
             if not ats_service.has_client(ats_type):
                 continue
             
@@ -460,7 +459,7 @@ class ATSJobHistoryService:
         total_jobs = 0
         ats_sources = []
         
-        for ats_type in ["gupy", "pandape", "stackone", "merge"]:
+        for ats_type in ["gupy", "pandape", "merge"]:
             if not ats_service.has_client(ats_type):
                 continue
             
@@ -515,7 +514,7 @@ class ATSJobHistoryService:
         ats_service = self._get_ats_service()
         similar_jobs = []
         
-        for ats_type in ["gupy", "pandape", "stackone", "merge"]:
+        for ats_type in ["gupy", "pandape", "merge"]:
             if not ats_service.has_client(ats_type):
                 continue
             

@@ -33,7 +33,7 @@ A plataforma WedoTalent agora opera em **arquitetura dual**:
 ┌──────────────────────────────────────────────────────────┐
 │  INTEGRATIONS LAYER                                      │
 │  • Pearch AI (candidate search)                          │
-│  • StackOne (ATS sync)                                   │
+│  • Merge.dev (ATS sync)                                  │
 │  • Synthflow (voice screening)                           │
 │  • Microsoft Graph (Teams + Outlook)                     │
 │  • Twilio (WhatsApp + SMS)                               │
@@ -156,7 +156,7 @@ Veja documentação completa em:
 
 ### 🔄 Em Desenvolvimento
 - [ ] Job creation workflow (13 stages)
-- [ ] StackOne integration
+- [x] Merge.dev integration
 - [ ] Microsoft Teams bot
 - [ ] Pearch AI candidate search
 - [ ] WhatsApp screening
@@ -230,7 +230,7 @@ Veja repositório `lia-agent-system/`:
 
 ### Fase 2: Job Creation (Próxima)
 - Workflow de 13 stages
-- StackOne integration
+- Merge.dev integration
 - Microsoft Teams notifications
 - Approval system
 

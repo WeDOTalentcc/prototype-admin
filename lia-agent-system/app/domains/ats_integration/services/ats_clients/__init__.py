@@ -7,7 +7,6 @@ Este pacote re-exporta de lá para evitar duplicação de código.
 from app.services.ats_clients.base import ATSClient, ATSClientConfig, ATSCandidate, ATSJob
 from app.services.ats_clients.gupy import GupyClient
 from app.services.ats_clients.pandape import PandapeClient
-from app.services.ats_clients.stackone import StackOneClient
 from app.services.ats_clients.merge import MergeClient
 
 __all__ = [
@@ -17,6 +16,5 @@ __all__ = [
     "ATSJob",
     "GupyClient",
     "PandapeClient",
-    "StackOneClient",
     "MergeClient",
 ]

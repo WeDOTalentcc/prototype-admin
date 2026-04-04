@@ -12,7 +12,6 @@ from app.services.ats_clients.base import ATSClient, ATSClientConfig
 from app.services.ats_clients.gupy import GupyClient
 from app.services.ats_clients.pandape import PandapeClient
 from app.services.ats_clients.merge import MergeClient
-from app.services.ats_clients.stackone import StackOneClient
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +19,6 @@ PROVIDER_CLASSES: Dict[str, type] = {
     "gupy": GupyClient,
     "pandape": PandapeClient,
     "merge": MergeClient,
-    "stackone": StackOneClient,
 }
 
 

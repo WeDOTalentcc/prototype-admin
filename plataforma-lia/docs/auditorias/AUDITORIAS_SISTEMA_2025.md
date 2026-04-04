@@ -213,7 +213,7 @@
 ### Backend Pronto (apenas conectar frontend)
 - ✅ PUT `/job-vacancies/{id}` - Edição de vagas
 - ✅ Endpoints de candidatos completos
-- ✅ Integração ATS via StackOne
+- ✅ Integração ATS via Merge.dev
 
 ### Backend Necessário
 - ❌ Endpoints de métricas/analytics por vaga

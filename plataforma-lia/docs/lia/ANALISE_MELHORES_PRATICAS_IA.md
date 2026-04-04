@@ -182,11 +182,11 @@ Períodos definidos em `AuditService.RETENTION_PERIODS`:
 
 ### 1.4 Integração ATS (95% Alinhado)
 
-#### ✅ API Unificada via StackOne
+#### ✅ API Unificada via Merge.dev
 O guia recomenda usar API unificada. A LIA implementa:
 - **Gupy**: Cliente HTTP dedicado
 - **Pandapé**: Cliente HTTP dedicado
-- **StackOne**: Integração unificada para 40+ ATS
+- **Merge.dev**: Integração unificada para 40+ ATS
 
 #### ✅ Sincronização Bidirecional
 Todos os prompts de agentes incluem diretrizes de persistência:

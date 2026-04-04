@@ -79,7 +79,7 @@ Cada domínio possui um system prompt Python dedicado que define o comportamento
 | # | Arquivo | Domínio/Agente | Descrição | Momento no Fluxo | Tipo |
 |---|---------|----------------|-----------|-------------------|------|
 | 2.1 | `lia-agent-system/app/domains/analytics/agents/analytics_system_prompt.py` | Analytics Agent | Prompt para análise de KPIs, funil de conversão, relatórios de recrutamento | Quando recrutador pede relatórios/métricas | Estático |
-| 2.2 | `lia-agent-system/app/domains/ats_integration/agents/ats_integration_system_prompt.py` | ATS Integration Agent | Sincronização com ATS externos (Gupy, Pandapé, StackOne/Merge) | Sync de candidatos/vagas com ATS | Estático |
+| 2.2 | `lia-agent-system/app/domains/ats_integration/agents/ats_integration_system_prompt.py` | ATS Integration Agent | Sincronização com ATS externos (Gupy, Pandapé, Merge.dev) | Sync de candidatos/vagas com ATS | Estático |
 | 2.3 | `lia-agent-system/app/domains/automation/agents/automation_system_prompt.py` | Automation Agent | Automação de tarefas recorrentes, triggers, scheduled actions | Pipeline automation, proactive alerts | Estático |
 | 2.4 | `lia-agent-system/app/domains/communication/agents/communication_system_prompt.py` | Communication Agent | Envio de emails, WhatsApp, feedback, notificações | Outreach, feedback, comunicação com candidatos | Estático |
 | 2.5 | `lia-agent-system/app/domains/cv_screening/agents/pipeline_system_prompt.py` | CV Screening / Pipeline Agent | Triagem de currículos, scoring WSI, pareceres | Fluxo de triagem (11 steps) | Estático |
@@ -356,7 +356,7 @@ Documentos de serviços de comunicação e integrações externas.
 | 14.7 | `lia-agent-system/app/domains/interview_scheduling/services/scheduling_service.py` | Scheduling Service: geração de ICS, conflito de agenda, timezone handling | Interview Scheduling Agent | Agendamento de entrevistas | Dinâmico |
 | 14.8 | `lia-agent-system/app/domains/ats_integration/services/gupy_service.py` | Gupy ATS Client: sync de vagas e candidatos com Gupy | ATS Integration Agent | Sync bidirecional com Gupy | Dinâmico (API externa) |
 | 14.9 | `lia-agent-system/app/domains/ats_integration/services/pandape_service.py` | Pandapé ATS Client: sync com Pandapé | ATS Integration Agent | Sync bidirecional com Pandapé | Dinâmico (API externa) |
-| 14.10 | `lia-agent-system/app/domains/ats_integration/services/merge_ats_service.py` | Merge/StackOne ATS Client: sync com ATS via Merge API (universal connector) | ATS Integration Agent | Sync com qualquer ATS suportado pelo Merge | Dinâmico (API externa) |
+| 14.10 | `lia-agent-system/app/domains/ats_integration/services/merge_ats_service.py` | Merge.dev ATS Client: sync com ATS via Merge API (universal connector) | ATS Integration Agent | Sync com qualquer ATS suportado pelo Merge | Dinâmico (API externa) |
 | 14.11 | `lia-agent-system/app/domains/sourcing/services/pearch_service.py` | Pearch AI Client: busca externa de candidatos | Sourcing Search Agent | Busca externa (quando banco local insuficiente) | Dinâmico (API externa) |
 | 14.12 | `lia-agent-system/app/services/rag_pipeline_service.py` | RAG Pipeline: busca semântica + ElasticSearch + PgVector + WRF reranking | Sourcing Agent, Talent Funnel | Busca unificada de candidatos | Dinâmico |
 | 14.13 | `lia-agent-system/app/services/wrf_dynamic_k_service.py` | WRF Dynamic K: reranking dinâmico de resultados de busca (~100 linhas) | RAG Pipeline | Pós-busca (reranking) | Dinâmico |

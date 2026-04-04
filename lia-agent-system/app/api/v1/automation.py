@@ -143,21 +143,6 @@ ATS_STAGE_MAPPING = {
         "Desistente": "desistente",
         "Em Análise": "em_analise",
     },
-    "stackone": {
-        "Novo": "new",
-        "Triagem": "screening",
-        "Triagem CV": "cv_review",
-        "Triagem WSI": "assessment",
-        "Entrevista": "interview",
-        "Entrevista Técnica": "technical",
-        "Entrevista Comportamental": "behavioral",
-        "Entrevista Final": "final",
-        "Proposta": "offer",
-        "Contratado": "hired",
-        "Reprovado": "rejected",
-        "Desistente": "withdrawn",
-        "Em Análise": "review",
-    }
 }
 
 
@@ -167,7 +152,7 @@ def map_lia_stage_to_ats(lia_stage: str, ats_platform: str, company_id: Optional
     
     Args:
         lia_stage: LIA internal stage name (e.g., "Triagem", "Entrevista")
-        ats_platform: Target ATS platform (gupy, pandape, stackone)
+        ats_platform: Target ATS platform (gupy, pandape, merge)
         company_id: Optional company ID for audit logging
         
     Returns:
@@ -442,7 +427,7 @@ class ATSSyncRequest(BaseModel):
     company_id: str = Field(..., description="Company ID for multi-tenancy")
     new_stage: str = Field(..., description="New stage name in LIA (e.g., Triagem, Entrevista)")
     previous_stage: Optional[str] = Field(None, description="Previous stage name in LIA")
-    ats_platform: str = Field("gupy", description="Target ATS platform: gupy, pandape, stackone")
+    ats_platform: str = Field("gupy", description="Target ATS platform: gupy, pandape, merge")
     ats_candidate_id: Optional[str] = Field(None, description="External ATS candidate ID (if known)")
     ats_vacancy_id: Optional[str] = Field(None, description="External ATS vacancy/job ID (if known)")
     sync_direction: str = Field("outbound", description="Sync direction: outbound (LIA→ATS) or inbound (ATS→LIA)")
@@ -3217,7 +3202,7 @@ async def handle_ats_sync(
     """
     Handle stage change ATS synchronization trigger.
     
-    Syncs candidate stage changes with external ATS platforms (Gupy, Pandapé, StackOne).
+    Syncs candidate stage changes with external ATS platforms (Gupy, Pandapé, Merge).
     This trigger is called when a candidate's pipeline stage changes in LIA.
     
     Supports:

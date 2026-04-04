@@ -9,7 +9,7 @@
 ## 1. VISÃO GERAL
 
 Sistema multi-tenant de integração com ATS (Applicant Tracking Systems) que combina:
-- **StackOne**: Integrações internacionais (Greenhouse, Lever, Workable, BambooHR, etc.)
+- **Merge.dev**: Conector multi-ATS universal (Greenhouse, Lever, Workable, BambooHR, etc.)
 - **Custom Connectors**: ATS brasileiros (Gupy, Pandapé)
 - **Admin Module**: Interface para WedoTalent gerenciar integrações por cliente
 
@@ -17,7 +17,7 @@ Sistema multi-tenant de integração com ATS (Applicant Tracking Systems) que co
 
 ## 2. CAMPOS DE CANDIDATOS - MAPEAMENTO COMPLETO
 
-### 2.1 Campos Padrão (StackOne Unified Schema)
+### 2.1 Campos Padrão (Merge.dev Unified Schema)
 
 ```typescript
 // Campos já implementados na tabela `candidates`
@@ -93,18 +93,18 @@ Sistema multi-tenant de integração com ATS (Applicant Tracking Systems) que co
 ❌ address: jsonb  // {street, number, complement, neighborhood, city, state, zip, country}
 ```
 
-### 2.4 StackOne Standard Fields (Not Yet Implemented)
+### 2.4 Merge.dev Standard Fields (Not Yet Implemented)
 
 ```typescript
-// StackOne normalized fields
+// Merge.dev normalized fields
 ❌ first_name: string (separated from `name`)
 ❌ last_name: string (separated from `name`)
 ❌ phone_numbers: jsonb  // [{"type": "mobile", "phone": "+55..."}, {"type": "work", "phone": ...}]
 ❌ social_links: jsonb  // [{"type": "linkedin", "url": ...}, {"type": "github", "url": ...}]
 ❌ hired_at: timestamp
 ❌ avatar_url: string
-❌ custom_fields: jsonb  // StackOne passthrough fields
-❌ unified_custom_fields: jsonb  // StackOne normalized custom fields
+❌ custom_fields: jsonb  // Merge.dev passthrough fields
+❌ unified_custom_fields: jsonb  // Merge.dev normalized custom fields
 ```
 
 ---
@@ -125,7 +125,7 @@ CREATE TABLE ats_systems (
   supports_webhooks BOOLEAN DEFAULT false,
   api_base_url VARCHAR(255),
   documentation_url VARCHAR(255),
-  connector_type VARCHAR(50),  -- "stackone", "custom"
+  connector_type VARCHAR(50),  -- "merge", "custom"
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
@@ -335,7 +335,7 @@ lia-agent-system/
 │   ├── connectors/                    # NEW
 │   │   ├── __init__.py
 │   │   ├── base.py                    # BaseATSConnector interface
-│   │   ├── stackone_connector.py      # StackOne unified
+│   │   ├── merge_connector.py         # Merge.dev unified
 │   │   ├── gupy_connector.py          # Gupy custom
 │   │   └── pandape_connector.py       # Pandape custom
 │   │
@@ -429,7 +429,7 @@ recruiter: No access
 
 ### Fase 2: Base Connector (NEXT)
 - ⬜ Implementar `BaseATSConnector` interface
-- ⬜ StackOne connector básico (list candidates)
+- ⬜ Merge.dev connector básico (list candidates)
 - ⬜ `AtsIntegrationService` facade
 
 ### Fase 3: Admin Backend API
@@ -458,7 +458,7 @@ recruiter: No access
 ## 8. DECISÕES TÉCNICAS
 
 ✅ **Credentials**: Usar Replit Secrets (não armazenar plaintext)  
-✅ **StackOne**: Usar para ATS internacionais (Greenhouse, Lever, etc.)  
+✅ **Merge.dev**: Usar para ATS internacionais (Greenhouse, Lever, etc.)  
 ✅ **Custom Connectors**: Implementar para Gupy e Pandapé  
 ✅ **Webhooks**: Preferir webhooks, fallback para polling 15min  
 ✅ **Conflict Resolution**: Latest ATS timestamp wins  
@@ -476,7 +476,7 @@ es
 2. **Atualizar modelo `Candidate`** com campos faltantes
 3. **Implementar `BaseATSConnector`** interface
 4. **Criar admin routes** básicos (CRUD connections)
-5. **Testar StackOne** com credenciais de teste
+5. **Testar Merge.dev** com credenciais de teste
 
 ---
 

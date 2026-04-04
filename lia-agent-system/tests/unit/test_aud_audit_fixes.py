@@ -69,10 +69,6 @@ class TestCircuitBreakerRegistration:
         from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
         assert "pandape" in ALL_CIRCUITS
 
-    def test_stackone_circuit_in_all_circuits(self):
-        from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
-        assert "stackone" in ALL_CIRCUITS
-
     def test_sendgrid_circuit_in_all_circuits(self):
         from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
         assert "sendgrid" in ALL_CIRCUITS
@@ -88,12 +84,11 @@ class TestCircuitBreakerRegistration:
 
     def test_circuit_constants_exported(self):
         from app.shared.resilience.circuit_breaker import (
-            GUPY_CIRCUIT, PANDAPE_CIRCUIT, STACKONE_CIRCUIT,
+            GUPY_CIRCUIT, PANDAPE_CIRCUIT,
             SENDGRID_CIRCUIT, RESEND_CIRCUIT,
         )
         assert GUPY_CIRCUIT is not None
         assert PANDAPE_CIRCUIT is not None
-        assert STACKONE_CIRCUIT is not None
         assert SENDGRID_CIRCUIT is not None
         assert RESEND_CIRCUIT is not None
 
@@ -163,12 +158,6 @@ class TestATSCircuitBreakers:
         import inspect
         source = inspect.getsource(mod)
         assert "PANDAPE_CIRCUIT" in source
-
-    def test_stackone_client_imports_circuit_breaker(self):
-        import app.services.ats_clients.stackone as mod
-        import inspect
-        source = inspect.getsource(mod)
-        assert "STACKONE_CIRCUIT" in source
 
     def test_merge_client_imports_circuit_breaker(self):
         import app.services.ats_clients.merge as mod

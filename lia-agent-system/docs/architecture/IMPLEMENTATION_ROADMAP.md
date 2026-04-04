@@ -118,7 +118,7 @@ lia-agent-system/tests/test_tone_consistency.py (novo)
 | **Comunicação** | Microsoft Teams, WhatsApp Business, Email | 🔴 |
 | **Calendário** | Microsoft Graph Calendar | 🔴 |
 | **Sourcing** | Pearch AI | 🟡 |
-| **ATS** | Gupy, Pandapé, StackOne | 🔴 |
+| **ATS** | Gupy, Pandapé, Merge.dev | 🔴 |
 | **IAs** | Claude, ChatGPT, Gemini | 🟡 |
 | **Voice** | OpenMic.ai, Deepgram | 🟡 |
 | **Database** | PostgreSQL (Replit) | ✅ |
@@ -347,7 +347,7 @@ class TechnicalTestService:
 - Frequência de sync
 - Log de sincronização
 
-### Sprint 4.4: Integração StackOne (Unified ATS)
+### Sprint 4.4: Integração Merge.dev (Unified ATS)
 **Prioridade:** Média | **Esforço:** 2 dias | **Impacto:** Médio
 
 **Funcionalidades:**

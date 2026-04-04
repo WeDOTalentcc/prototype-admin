@@ -625,7 +625,7 @@ const candidate = await revealContact(pearchId, {
 - [ ] Filtros avançados (years_experience, education_level, companies)
 - [ ] Bulk search (múltiplas queries em paralelo)
 - [ ] Webhook para notificações de novos candidatos
-- [ ] Integration com ATS (Greenhouse, Lever via StackOne)
+- [ ] Integration com ATS (Greenhouse, Lever via Merge.dev)
 - [ ] Export de candidatos (CSV, PDF)
 
 #### Melhorias LIA Agent
