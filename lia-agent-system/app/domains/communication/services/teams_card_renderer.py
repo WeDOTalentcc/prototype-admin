@@ -727,7 +727,7 @@ class TeamsCardRenderer:
 
         return {
             "type": "AdaptiveCard",
-            "": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
             "version": "1.5",
             "body": body,
             "actions": actions,

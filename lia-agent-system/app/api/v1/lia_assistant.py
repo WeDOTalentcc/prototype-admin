@@ -3071,13 +3071,13 @@ async def get_context_suggestions(
     badge_config = _PAGE_BADGES.get(page_key, _PAGE_BADGES["home"])
     badge_label = badge_config["label"]
     if entity_name:
-        badge_label = f"{badge_config["label"]}: {entity_name}"
+        badge_label = f"{badge_config['label']}: {entity_name}"
 
     context_badge = ContextBadge(
         label=badge_label,
         icon=badge_config["icon"],
         color=badge_config["color"],
-        description=f"Contexto: {badge_config["label"].lower()}",
+        description=f"Contexto: {badge_config['label'].lower()}",
     )
 
     # Build suggestions — use page key or fall back to home

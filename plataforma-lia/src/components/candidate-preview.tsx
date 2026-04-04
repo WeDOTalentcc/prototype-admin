@@ -346,34 +346,34 @@ const {
             
             return (
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                {createdAt && (
+                {!!createdAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-micro text-lia-text-secondary flex items-center gap-0.5 cursor-help">
                         <Calendar className="w-2.5 h-2.5" />
-                        {formatDate(createdAt as string | Date | null | undefined)}
+                        {String(formatDate(createdAt as string | Date | null | undefined) || '')}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">Data de cadastro</TooltipContent>
                   </Tooltip>
                 )}
-                {updatedAt && (
+                {!!updatedAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-micro text-lia-text-secondary flex items-center gap-0.5 cursor-help">
                         <Clock className="w-2.5 h-2.5" />
-                        {formatDate(updatedAt as string | Date | null | undefined)}
+                        {String(formatDate(updatedAt as string | Date | null | undefined) || '')}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">Última atualização</TooltipContent>
                   </Tooltip>
                 )}
-                {lastContactedAt && (
+                {!!lastContactedAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-micro text-lia-text-tertiary flex items-center gap-0.5 cursor-help">
                         <MessageSquare className="w-2.5 h-2.5" />
-                        {formatDate(lastContactedAt as string | Date | null | undefined)}
+                        {String(formatDate(lastContactedAt as string | Date | null | undefined) || '')}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">Último contato</TooltipContent>
@@ -633,9 +633,8 @@ const {
       <TooltipProvider delayDuration={200}>
       <div className="flex-1 overflow-y-auto">
         {activeTab === 'profile' && (
-          // @ts-ignore TODO: fix type
           <CandidatePreviewProfileTab
-            candidate={c}
+            candidate={c as any}
             jobId={jobId}
             opinionsData={opinionsData}
             isLoadingOpinions={isLoadingOpinions}
@@ -679,26 +678,19 @@ const {
         {activeTab === 'opinions' && (
           <CandidateOpinionsTab
             opinionsSubTab={opinionsSubTab}
-            // @ts-ignore TODO: fix type
-            setOpinionsSubTab={setOpinionsSubTab}
+            setOpinionsSubTab={setOpinionsSubTab as any}
             opinionsHistory={opinionsHistory}
             isLoadingHistory={isLoadingHistory}
             savedAnalyses={savedAnalyses}
             isLoadingAnalyses={isLoadingAnalyses}
-            // @ts-ignore TODO: fix type
-            expandedOpinionId={expandedOpinionId}
-            // @ts-ignore TODO: fix type
-            setExpandedOpinionId={setExpandedOpinionId}
+            expandedOpinionId={expandedOpinionId as any}
+            setExpandedOpinionId={setExpandedOpinionId as any}
             expandedAnalysisId={expandedAnalysisId}
-            // @ts-ignore TODO: fix type
-            setExpandedAnalysisId={setExpandedAnalysisId}
-            // @ts-ignore TODO: fix type
-            analysisToDelete={analysisToDelete}
-            // @ts-ignore TODO: fix type
-            setAnalysisToDelete={setAnalysisToDelete}
+            setExpandedAnalysisId={setExpandedAnalysisId as any}
+            analysisToDelete={analysisToDelete as any}
+            setAnalysisToDelete={setAnalysisToDelete as any}
             copiedItemId={copiedItemId}
-            // @ts-ignore TODO: fix type
-            handleCopyOpinion={handleCopyOpinion}
+            handleCopyOpinion={handleCopyOpinion as any}
             handleCopyAnalysis={handleCopyAnalysis}
             cleanTextForCopy={cleanTextForCopy}
           />
@@ -813,14 +805,13 @@ const {
       
       {/* Modal DISC Assessment */}
       {discModalData && (
-        // @ts-ignore TODO: fix type
         <DISCAssessmentModal
           isOpen={discModalOpen}
           onClose={() => {
             setDiscModalOpen(false)
             setDiscModalData(null)
           }}
-          candidate={c}
+          candidate={c as any}
           assessmentData={{
             discScores: discModalData.discScores || {
               dominance: discModalData.dominance || 75,
@@ -831,7 +822,7 @@ const {
             profile: discModalData.profile || 'DI',
             profileDescription: discModalData.profileDescription || '',
             culturalFitScore: discModalData.culturalFitScore || discModalData.culturalFit || 82,
-          }}
+          } as any}
         />
       )}
       
