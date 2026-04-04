@@ -75,8 +75,16 @@ const MessageBubble = memo(function MessageBubble({
   const [ttsFailed, setTtsFailed] = useState(false)
   const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null)
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null)
+  const prevBlobUrlRef = useRef<string | null>(null)
 
   const effectiveAudioUrl = message.audioUrl || ttsAudioUrl
+
+  useEffect(() => {
+    if (prevBlobUrlRef.current && prevBlobUrlRef.current !== ttsAudioUrl) {
+      URL.revokeObjectURL(prevBlobUrlRef.current)
+    }
+    prevBlobUrlRef.current = ttsAudioUrl
+  }, [ttsAudioUrl])
 
   useEffect(() => {
     return () => {
@@ -85,8 +93,8 @@ const MessageBubble = memo(function MessageBubble({
         ttsAudioRef.current.src = ""
         ttsAudioRef.current = null
       }
-      if (ttsAudioUrl) {
-        URL.revokeObjectURL(ttsAudioUrl)
+      if (prevBlobUrlRef.current) {
+        URL.revokeObjectURL(prevBlobUrlRef.current)
       }
     }
   }, [])
