@@ -1,0 +1,1360 @@
+"""
+Archetype CRUD, generation (from-search, from-job, from-description), and search routes.
+"""
+from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel, Field
+
+from ._shared import (
+    logger, get_db, get_current_user_or_demo, get_user_company_id, assert_resource_ownership,
+    User, ImportUser, cv_parser_service, search_analytics_service,
+    extract_tags_from_search_spec, build_archetype_from_search,
+    ArchetypeFromSearchCreate, ArchetypeFromSearchResponse, ArchetypeResponse,
+    rubric_evaluation_service, JobRequirement, JobRequirementCreate, RequirementPriorityEnum,
+    pearch_service, HybridSearchRequest, PearchSearchRequest, SearchType,
+    _normalize_priority, _normalize_name, _generate_fingerprint,
+    _get_job_requirements, _get_match_label, _build_candidate_data_from_dto,
+    _evaluate_candidates_with_rubrics, _recruiter_agent,
+    ExperienceDTO, EducationDTO, LanguageDTO, CandidateSearchResultDTO, SearchResponseDTO,
+)
+
+router = APIRouter()
+
+@router.get("/archetypes", response_model=ArchetypeListResponse)
+async def list_archetypes(
+    include_inactive: bool = Query(False, description="Incluir arquétipos inativos"),
+    industry: Optional[str] = Query(None, description="Filtrar por indústria"),
+    seniority: Optional[str] = Query(None, description="Filtrar por senioridade"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Lista todos os arquétipos disponíveis.
+    
+    Arquétipos são templates de busca pré-configurados que facilitam
+    encontrar perfis específicos sem precisar construir queries complexas.
+    """
+    from sqlalchemy import select
+    from app.models.archetype import SearchArchetype, seed_default_archetypes
+    
+    try:
+        # Seed default archetypes if needed
+        created = await seed_default_archetypes(db)
+        if created > 0:
+            logger.info(f"Seeded {created} default archetypes")
+        
+        # Build query
+        query = select(SearchArchetype)
+        
+        if not include_inactive:
+            query = query.where(SearchArchetype.is_active == True)
+        
+        if industry:
+            query = query.where(SearchArchetype.industry == industry)
+        
+        if seniority:
+            query = query.where(SearchArchetype.seniority == seniority)
+        
+        query = query.order_by(SearchArchetype.is_default.desc(), SearchArchetype.usage_count.desc())
+        
+        result = await db.execute(query)
+        archetypes = result.scalars().all()
+        
+        archetype_dtos = []
+        default_count = 0
+        
+        for arch in archetypes:
+            if arch.is_default:
+                default_count += 1
+            
+            archetype_dtos.append(ArchetypeDTO(
+                id=arch.id,
+                name=arch.name,
+                description=arch.description,
+                emoji=arch.emoji or "🎯",
+                query=arch.query,
+                filters=arch.filters or {},
+                tags=arch.tags or [],
+                industry=arch.industry,
+                seniority=arch.seniority,
+                is_default=arch.is_default,
+                is_active=arch.is_active,
+                usage_count=arch.usage_count or 0,
+                created_at=arch.created_at.isoformat() if arch.created_at else None
+            ))
+        
+        return ArchetypeListResponse(
+            archetypes=archetype_dtos,
+            total=len(archetype_dtos),
+            default_count=default_count
+        )
+    
+    except Exception as e:
+        logger.error(f"Error listing archetypes: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to list archetypes: {str(e)}")
+
+
+@router.post("/archetypes", response_model=ArchetypeDTO)
+async def create_archetype(
+    request: ArchetypeCreateRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Cria um novo arquétipo personalizado.
+    
+    Arquétipos criados pelo usuário não são marcados como 'default'
+    e podem ser modificados ou excluídos posteriormente.
+    """
+    from sqlalchemy import select
+    from app.models.archetype import SearchArchetype
+    import uuid as uuid_lib
+    
+    try:
+        # Generate ID if not provided
+        archetype_id = request.id or f"custom-{uuid_lib.uuid4().hex[:8]}"
+        
+        # Check if ID already exists
+        existing = await db.execute(
+            select(SearchArchetype).where(SearchArchetype.id == archetype_id)
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=409, detail=f"Archetype with ID '{archetype_id}' already exists")
+        
+        # Create archetype
+        archetype = SearchArchetype(
+            id=archetype_id,
+            name=request.name,
+            description=request.description,
+            emoji=request.emoji,
+            query=request.query,
+            filters=request.filters,
+            tags=request.tags,
+            industry=request.industry,
+            seniority=request.seniority,
+            is_default=False,
+            is_active=True,
+            usage_count=0
+        )
+        
+        db.add(archetype)
+        await db.commit()
+        await db.refresh(archetype)
+        
+        return ArchetypeDTO(
+            id=archetype.id,
+            name=archetype.name,
+            description=archetype.description,
+            emoji=archetype.emoji or "🎯",
+            query=archetype.query,
+            filters=archetype.filters or {},
+            tags=archetype.tags or [],
+            industry=archetype.industry,
+            seniority=archetype.seniority,
+            is_default=archetype.is_default,
+            is_active=archetype.is_active,
+            usage_count=archetype.usage_count or 0,
+            created_at=archetype.created_at.isoformat() if archetype.created_at else None
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating archetype: {e}")
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create archetype: {str(e)}")
+
+
+@router.post("/archetypes/from-search", response_model=ArchetypeFromSearchResponse)
+async def create_archetype_from_search(
+    data: ArchetypeFromSearchCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Cria um novo arquétipo a partir de um SearchSpec.
+    
+    Extrai automaticamente tags, filtros e query do search_spec fornecido,
+    criando um template reutilizável de busca.
+    
+    Args:
+        data: SearchSpec + nome + descrição + emoji opcional
+        
+    Returns:
+        O arquétipo criado com as tags extraídas
+    """
+    from app.models.archetype import SearchArchetype
+    
+    try:
+        company_id = "demo_company"
+        user_id = "demo_user"
+        
+        extracted_tags = extract_tags_from_search_spec(data.search_spec)
+        
+        archetype = build_archetype_from_search(
+            search_spec=data.search_spec,
+            name=data.name,
+            description=data.description,
+            emoji=data.emoji,
+            company_id=company_id,
+            user_id=user_id
+        )
+        
+        db.add(archetype)
+        await db.commit()
+        await db.refresh(archetype)
+        
+        logger.info(f"Created archetype '{archetype.name}' (id={archetype.id}) from search spec")
+        
+        return ArchetypeFromSearchResponse(
+            archetype=ArchetypeResponse(
+                id=archetype.id,
+                name=archetype.name,
+                description=archetype.description,
+                emoji=archetype.emoji or "🎯",
+                query=archetype.query,
+                filters=archetype.filters or {},
+                tags=archetype.tags or [],
+                industry=archetype.industry,
+                seniority=archetype.seniority,
+                is_default=archetype.is_default,
+                is_active=archetype.is_active,
+                usage_count=archetype.usage_count or 0,
+                company_id=archetype.company_id,
+                created_by=archetype.created_by,
+                created_at=archetype.created_at,
+                updated_at=archetype.updated_at
+            ),
+            extracted_tags=extracted_tags,
+            message=f"Arquétipo '{archetype.name}' criado com sucesso com {len(extracted_tags)} tags extraídas"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error creating archetype from search: {e}")
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create archetype from search: {str(e)}")
+
+
+# ============================================================================
+# ARCHETYPE AUTO-GENERATION ENDPOINTS
+# ============================================================================
+
+class ClosedJobSuggestion(BaseModel):
+    """Sugestão de vaga fechada para criar arquétipo."""
+    job_id: str
+    title: str
+    department: Optional[str] = None
+    seniority: Optional[str] = None
+    closed_at: Optional[str] = None
+    hired_count: int = 0
+    suggested_archetype_name: str
+    suggested_emoji: str = "🎯"
+
+
+class ClosedJobSuggestionsResponse(BaseModel):
+    """Response com sugestões de vagas fechadas."""
+    suggestions: List[ClosedJobSuggestion] = Field(default_factory=list)
+    total: int = 0
+
+
+class ArchetypeFromDescriptionRequest(BaseModel):
+    """Request para criar arquétipo a partir de descrição."""
+    description: str = Field(..., min_length=20, description="Descrição do perfil ideal")
+    name: Optional[str] = Field(None, description="Nome do arquétipo (opcional, será gerado se não fornecido)")
+
+
+@router.get("/archetypes/suggestions/closed-jobs", response_model=ClosedJobSuggestionsResponse)
+async def get_closed_job_suggestions(
+    limit: int = Query(5, ge=1, le=10),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Lista sugestões de vagas fechadas para criar arquétipos.
+    
+    Retorna as últimas vagas concluídas com contratação bem-sucedida,
+    sugerindo nomes e emojis para os arquétipos.
+    """
+    from sqlalchemy import select, desc, or_
+    from app.models.job_vacancy import JobVacancy
+    
+    try:
+        result = await db.execute(
+            select(JobVacancy)
+            .where(
+                or_(
+                    JobVacancy.status == "Concluída",
+                    JobVacancy.status == "Fechada",
+                    JobVacancy.closed_at.isnot(None)
+                )
+            )
+            .order_by(desc(JobVacancy.closed_at), desc(JobVacancy.updated_at))
+            .limit(limit)
+        )
+        jobs = result.scalars().all()
+        
+        suggestions = []
+        emoji_map = {
+            "tecnologia": "💻", "ti": "💻", "tech": "💻", "desenvolvimento": "🚀",
+            "financeiro": "💰", "finanças": "📊", "contabilidade": "📑",
+            "rh": "👥", "recursos humanos": "🤝", "people": "👥",
+            "comercial": "🎯", "vendas": "💼", "sales": "📈",
+            "marketing": "📣", "comunicação": "📢",
+            "operações": "⚙️", "logística": "🚚", "supply": "📦",
+            "jurídico": "⚖️", "legal": "📜",
+            "produto": "🎨", "design": "✨", "ux": "🎨"
+        }
+        
+        for job in jobs:
+            dept_lower = (job.department or "").lower()
+            emoji = "🎯"
+            for key, value in emoji_map.items():
+                if key in dept_lower or key in (job.title or "").lower():
+                    emoji = value
+                    break
+            
+            seniority_prefix = ""
+            if job.seniority_level:
+                seniority_prefix = f"{job.seniority_level} "
+            
+            suggestions.append(ClosedJobSuggestion(
+                job_id=str(job.id),
+                title=job.title,
+                department=job.department,
+                seniority=job.seniority_level,
+                closed_at=job.closed_at.isoformat() if job.closed_at else None,
+                hired_count=1,
+                suggested_archetype_name=f"{seniority_prefix}{job.title}",
+                suggested_emoji=emoji
+            ))
+        
+        return ClosedJobSuggestionsResponse(
+            suggestions=suggestions,
+            total=len(suggestions)
+        )
+    
+    except Exception as e:
+        logger.error(f"Error getting closed job suggestions: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/archetypes/from-job/{job_id}", response_model=ArchetypeDTO)
+async def create_archetype_from_job(
+    job_id: str,
+    custom_name: Optional[str] = Query(None, description="Nome customizado para o arquétipo"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Cria um arquétipo automaticamente a partir de uma vaga fechada.
+    
+    Extrai título, senioridade, requisitos técnicos, competências
+    comportamentais e outras informações da vaga para criar um
+    arquétipo reutilizável.
+    """
+    from sqlalchemy import select
+    from app.models.job_vacancy import JobVacancy
+    from app.models.archetype import SearchArchetype
+    import uuid as uuid_lib
+    
+    try:
+        result = await db.execute(
+            select(JobVacancy).where(JobVacancy.id == job_id)
+        )
+        job = result.scalar_one_or_none()
+        
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Job vacancy '{job_id}' not found")
+        
+        skills = []
+        if job.technical_requirements:
+            for req in job.technical_requirements:
+                if isinstance(req, dict) and req.get("technology"):
+                    skills.append(req["technology"])
+        if job.requirements:
+            skills.extend(job.requirements[:5])
+        
+        behavioral = []
+        if job.behavioral_competencies:
+            for comp in job.behavioral_competencies:
+                if isinstance(comp, dict) and comp.get("competency"):
+                    behavioral.append(comp["competency"])
+        
+        query_parts = []
+        if job.seniority_level:
+            query_parts.append(job.seniority_level)
+        query_parts.append(job.title)
+        if skills[:3]:
+            query_parts.append(f"com experiência em {', '.join(skills[:3])}")
+        if job.location:
+            query_parts.append(f"em {job.location}")
+        
+        query = " ".join(query_parts)
+        
+        emoji_map = {
+            "tecnologia": "💻", "ti": "💻", "tech": "💻", "dev": "🚀",
+            "financeiro": "💰", "finanças": "📊", "fp&a": "📈",
+            "rh": "👥", "recursos humanos": "🤝", "recruiter": "🎯",
+            "comercial": "🎯", "vendas": "💼", "sales": "📈",
+            "marketing": "📣", "produto": "🎨", "design": "✨",
+            "operações": "⚙️", "logística": "🚚", "compras": "🛒"
+        }
+        
+        emoji = "🎯"
+        search_text = f"{job.department or ''} {job.title}".lower()
+        for key, value in emoji_map.items():
+            if key in search_text:
+                emoji = value
+                break
+        
+        seniority_map = {
+            "júnior": "junior", "junior": "junior", "jr": "junior",
+            "pleno": "pleno", "mid": "pleno",
+            "sênior": "senior", "senior": "senior", "sr": "senior",
+            "especialista": "senior", "lead": "senior", "líder": "senior"
+        }
+        seniority = None
+        if job.seniority_level:
+            seniority = seniority_map.get(job.seniority_level.lower(), "pleno")
+        
+        industry = None
+        dept_lower = (job.department or "").lower()
+        title_lower = (job.title or "").lower()
+        if any(k in dept_lower or k in title_lower for k in ["tech", "ti", "dev", "software", "dados"]):
+            industry = "tecnologia"
+        elif any(k in dept_lower or k in title_lower for k in ["financ", "contab", "fiscal", "tribut"]):
+            industry = "financas"
+        elif any(k in dept_lower or k in title_lower for k in ["rh", "recursos", "people", "gente"]):
+            industry = "rh"
+        elif any(k in dept_lower or k in title_lower for k in ["compras", "supply", "logist", "procurement"]):
+            industry = "compras"
+        elif any(k in dept_lower or k in title_lower for k in ["comercial", "vendas", "sales"]):
+            industry = "comercial"
+        
+        archetype_name = custom_name or f"{job.seniority_level or ''} {job.title}".strip()
+        archetype_id = f"job-{uuid_lib.uuid4().hex[:8]}"
+        
+        archetype = SearchArchetype(
+            id=archetype_id,
+            name=archetype_name,
+            description=f"Arquétipo baseado na vaga: {job.title}. {job.description[:200] if job.description else ''}",
+            emoji=emoji,
+            query=query,
+            filters={
+                "seniority": seniority,
+                "skills": skills[:10],
+                "behavioral_competencies": behavioral[:5],
+                "location": job.location,
+                "work_model": job.work_model
+            },
+            tags=skills[:5] + behavioral[:3],
+            industry=industry,
+            seniority=seniority,
+            is_default=False,
+            is_active=True,
+            usage_count=0
+        )
+        
+        db.add(archetype)
+        await db.commit()
+        await db.refresh(archetype)
+        
+        return ArchetypeDTO(
+            id=archetype.id,
+            name=archetype.name,
+            description=archetype.description,
+            emoji=archetype.emoji or "🎯",
+            query=archetype.query,
+            filters=archetype.filters or {},
+            tags=archetype.tags or [],
+            industry=archetype.industry,
+            seniority=archetype.seniority,
+            is_default=archetype.is_default,
+            is_active=archetype.is_active,
+            usage_count=archetype.usage_count or 0,
+            created_at=archetype.created_at.isoformat() if archetype.created_at else None
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating archetype from job: {e}")
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/archetypes/from-description", response_model=ArchetypeDTO)
+async def create_archetype_from_description(
+    request: ArchetypeFromDescriptionRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Cria um arquétipo a partir de uma descrição textual.
+    
+    A LIA analisa a descrição e extrai automaticamente:
+    - Título do cargo
+    - Senioridade
+    - Skills técnicas
+    - Competências comportamentais
+    - Indústria/área
+    """
+    from app.models.archetype import SearchArchetype
+    import uuid as uuid_lib
+    import re
+    
+    try:
+        description = request.description.lower()
+        
+        title = "Profissional"
+        title_patterns = [
+            (r'\b(desenvolvedor|developer|dev)\b', "Desenvolvedor"),
+            (r'\b(engenheiro|engineer)\b', "Engenheiro"),
+            (r'\b(analista|analyst)\b', "Analista"),
+            (r'\b(gerente|manager|gestor)\b', "Gerente"),
+            (r'\b(coordenador|coordinator)\b', "Coordenador"),
+            (r'\b(diretor|director)\b', "Diretor"),
+            (r'\b(especialista|specialist)\b', "Especialista"),
+            (r'\b(consultor|consultant)\b', "Consultor"),
+            (r'\b(designer)\b', "Designer"),
+            (r'\b(arquiteto|architect)\b', "Arquiteto"),
+            (r'\b(cientista|scientist)\b', "Cientista"),
+            (r'\b(recrutador|recruiter)\b', "Recrutador"),
+            (r'\b(comprador|buyer)\b', "Comprador"),
+            (r'\b(contador|accountant)\b', "Contador")
+        ]
+        for pattern, found_title in title_patterns:
+            if re.search(pattern, description):
+                title = found_title
+                break
+        
+        seniority = "pleno"
+        if re.search(r'\b(sênior|senior|sr|experiente|8\+|10\+)\b', description):
+            seniority = "senior"
+        elif re.search(r'\b(júnior|junior|jr|iniciante|1\s*ano)\b', description):
+            seniority = "junior"
+        elif re.search(r'\b(pleno|mid|intermediário|3\+|4\+|5\+)\b', description):
+            seniority = "pleno"
+        
+        skill_keywords = [
+            'python', 'java', 'javascript', 'typescript', 'react', 'node', 'angular', 'vue',
+            'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'sql', 'postgresql', 'mongodb',
+            'excel', 'power bi', 'tableau', 'sap', 'oracle', 'salesforce',
+            'scrum', 'agile', 'kanban', 'pmp', 'itil',
+            'machine learning', 'data science', 'inteligência artificial', 'nlp',
+            'liderança', 'gestão', 'negociação', 'comunicação', 'análise'
+        ]
+        skills = [s.title() for s in skill_keywords if s in description][:8]
+        
+        industry = None
+        if any(k in description for k in ['tech', 'ti', 'software', 'dados', 'dev', 'código']):
+            industry = "tecnologia"
+        elif any(k in description for k in ['financ', 'contab', 'fiscal', 'tribut', 'fp&a']):
+            industry = "financas"
+        elif any(k in description for k in ['rh', 'recursos humanos', 'people', 'gente', 'recrutamento']):
+            industry = "rh"
+        elif any(k in description for k in ['compras', 'supply', 'logíst', 'procurement']):
+            industry = "compras"
+        
+        emoji_map = {
+            "tecnologia": "💻", "financas": "💰", "rh": "👥", "compras": "📦"
+        }
+        emoji = emoji_map.get(industry, "🎯")
+        
+        seniority_pt = {"junior": "Júnior", "pleno": "Pleno", "senior": "Sênior"}.get(seniority, "")
+        archetype_name = request.name or f"{seniority_pt} {title}".strip()
+        
+        query = request.description[:200]
+        if skills:
+            query = f"{seniority_pt} {title} com experiência em {', '.join(skills[:3])}"
+        
+        archetype_id = f"desc-{uuid_lib.uuid4().hex[:8]}"
+        
+        archetype = SearchArchetype(
+            id=archetype_id,
+            name=archetype_name,
+            description=request.description[:500],
+            emoji=emoji,
+            query=query,
+            filters={
+                "seniority": seniority,
+                "skills": skills
+            },
+            tags=skills[:5],
+            industry=industry,
+            seniority=seniority,
+            is_default=False,
+            is_active=True,
+            usage_count=0
+        )
+        
+        db.add(archetype)
+        await db.commit()
+        await db.refresh(archetype)
+        
+        return ArchetypeDTO(
+            id=archetype.id,
+            name=archetype.name,
+            description=archetype.description,
+            emoji=archetype.emoji or "🎯",
+            query=archetype.query,
+            filters=archetype.filters or {},
+            tags=archetype.tags or [],
+            industry=archetype.industry,
+            seniority=archetype.seniority,
+            is_default=archetype.is_default,
+            is_active=archetype.is_active,
+            usage_count=archetype.usage_count or 0,
+            created_at=archetype.created_at.isoformat() if archetype.created_at else None
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating archetype from description: {e}")
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/archetypes/{archetype_id}", response_model=ArchetypeDTO)
+async def get_archetype(
+    archetype_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """Obtém detalhes de um arquétipo específico."""
+    from sqlalchemy import select
+    from app.models.archetype import SearchArchetype
+    
+    try:
+        result = await db.execute(
+            select(SearchArchetype).where(SearchArchetype.id == archetype_id)
+        )
+        archetype = result.scalar_one_or_none()
+        
+        if not archetype:
+            raise HTTPException(status_code=404, detail=f"Archetype '{archetype_id}' not found")
+        
+        return ArchetypeDTO(
+            id=archetype.id,
+            name=archetype.name,
+            description=archetype.description,
+            emoji=archetype.emoji or "🎯",
+            query=archetype.query,
+            filters=archetype.filters or {},
+            tags=archetype.tags or [],
+            industry=archetype.industry,
+            seniority=archetype.seniority,
+            is_default=archetype.is_default,
+            is_active=archetype.is_active,
+            usage_count=archetype.usage_count or 0,
+            created_at=archetype.created_at.isoformat() if archetype.created_at else None
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting archetype: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get archetype: {str(e)}")
+
+
+@router.delete("/archetypes/{archetype_id}")
+async def delete_archetype(
+    archetype_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Deleta um arquétipo personalizado.
+    
+    Arquétipos padrão do sistema não podem ser deletados.
+    """
+    from sqlalchemy import select, delete
+    from app.models.archetype import SearchArchetype
+    
+    try:
+        result = await db.execute(
+            select(SearchArchetype).where(SearchArchetype.id == archetype_id)
+        )
+        archetype = result.scalar_one_or_none()
+        
+        if not archetype:
+            raise HTTPException(status_code=404, detail=f"Archetype '{archetype_id}' not found")
+        
+        if archetype.is_default:
+            raise HTTPException(
+                status_code=403, 
+                detail="Cannot delete default system archetypes. You can deactivate them instead."
+            )
+        
+        await db.execute(
+            delete(SearchArchetype).where(SearchArchetype.id == archetype_id)
+        )
+        await db.commit()
+        
+        return {"message": f"Archetype '{archetype_id}' deleted successfully"}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting archetype: {e}")
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete archetype: {str(e)}")
+
+
+@router.put("/archetypes/{archetype_id}", response_model=ArchetypeDTO)
+async def update_archetype(
+    archetype_id: str,
+    request: ArchetypeUpdateRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Atualiza um arquétipo existente.
+    
+    Arquétipos padrão do sistema podem ter apenas alguns campos atualizados.
+    """
+    from sqlalchemy import select
+    from app.models.archetype import SearchArchetype
+    
+    try:
+        result = await db.execute(
+            select(SearchArchetype).where(SearchArchetype.id == archetype_id)
+        )
+        archetype = result.scalar_one_or_none()
+        
+        if not archetype:
+            raise HTTPException(status_code=404, detail=f"Archetype '{archetype_id}' not found")
+        
+        # Default archetypes can now be fully edited by users
+        
+        if request.name is not None:
+            archetype.name = request.name
+        if request.description is not None:
+            archetype.description = request.description
+        if request.emoji is not None:
+            archetype.emoji = request.emoji
+        if request.query is not None:
+            archetype.query = request.query
+        if request.filters is not None:
+            archetype.filters = request.filters
+        if request.tags is not None:
+            archetype.tags = request.tags
+        if request.industry is not None:
+            archetype.industry = request.industry
+        if request.seniority is not None:
+            archetype.seniority = request.seniority
+        if request.is_active is not None:
+            archetype.is_active = request.is_active
+        
+        await db.commit()
+        await db.refresh(archetype)
+        
+        return ArchetypeDTO(
+            id=archetype.id,
+            name=archetype.name,
+            description=archetype.description,
+            emoji=archetype.emoji or "🎯",
+            query=archetype.query,
+            filters=archetype.filters or {},
+            tags=archetype.tags or [],
+            industry=archetype.industry,
+            seniority=archetype.seniority,
+            is_default=archetype.is_default,
+            is_active=archetype.is_active,
+            usage_count=archetype.usage_count or 0,
+            created_at=archetype.created_at.isoformat() if archetype.created_at else None
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating archetype: {e}")
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update archetype: {str(e)}")
+
+
+@router.post("/archetypes/{archetype_id}/search", response_model=ArchetypeSearchResponse)
+async def search_by_archetype(
+    archetype_id: str,
+    request: ArchetypeSearchRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Executa busca de candidatos usando um arquétipo específico.
+    
+    O arquétipo define a query e filtros pré-configurados.
+    Opcionalmente calcula o score LIA para cada candidato encontrado.
+    """
+    from sqlalchemy import select, update
+    from app.models.archetype import SearchArchetype
+    from app.services.lia_score_service import lia_score_service
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Get archetype
+        result = await db.execute(
+            select(SearchArchetype).where(SearchArchetype.id == archetype_id)
+        )
+        archetype = result.scalar_one_or_none()
+        
+        if not archetype:
+            raise HTTPException(status_code=404, detail=f"Archetype '{archetype_id}' not found")
+        
+        if not archetype.is_active:
+            raise HTTPException(status_code=400, detail=f"Archetype '{archetype_id}' is inactive")
+        
+        # Increment usage count
+        await db.execute(
+            update(SearchArchetype)
+            .where(SearchArchetype.id == archetype_id)
+            .values(usage_count=(archetype.usage_count or 0) + 1)
+        )
+        await db.commit()
+        
+        # Build hybrid search request
+        hybrid_request = HybridSearchRequest(
+            query=archetype.query,
+            search_local_first=request.search_local,
+            include_pearch=request.search_pearch,
+            pearch_type=SearchType(request.pearch_type) if request.pearch_type in ["fast", "pro"] else SearchType.FAST,
+            local_limit=request.local_limit,
+            pearch_limit=request.pearch_limit,
+            show_emails=request.show_emails,
+            show_phone_numbers=request.show_phone_numbers
+        )
+        
+        # Execute search
+        search_result = await pearch_service.hybrid_search(db, hybrid_request)
+        
+        # Prepare criteria for LIA score calculation
+        criteria = {
+            "query": archetype.query,
+            "filters": archetype.filters or {}
+        }
+        
+        # Convert results and calculate LIA scores
+        candidates = []
+        
+        for profile in search_result.local_candidates:
+            candidate_dto = ArchetypeSearchResultDTO(
+                id=profile.docid or "",
+                name=profile.get_full_name(),
+                first_name=profile.first_name,
+                last_name=profile.last_name,
+                picture_url=profile.picture_url,
+                headline=profile.headline,
+                current_title=profile.current_title,
+                current_company=profile.current_company,
+                location=profile.location,
+                total_experience_years=profile.total_experience_years,
+                skills=profile.skills[:10] if profile.skills else [],
+                score=profile.get_score_percentage(),
+                match_summary=profile.insights.overall_summary if profile.insights else profile.match_reasoning,
+                linkedin_url=profile.get_linkedin_url(),
+                has_email=profile.has_emails or False,
+                has_phone=profile.has_phone_numbers or False,
+                source="local",
+                is_open_to_work=profile.is_opentowork
+            )
+            
+            # Calculate LIA score if requested
+            if request.calculate_lia_score:
+                try:
+                    candidate_data = {
+                        "skills": profile.skills,
+                        "total_experience_years": profile.total_experience_years,
+                        "seniority_level": getattr(profile, 'seniority', None),
+                        "location": profile.location,
+                        "current_title": profile.current_title,
+                        "is_opentowork": profile.is_opentowork,
+                    }
+                    lia_result = lia_score_service.calculate_score(candidate_data, criteria)
+                    candidate_dto.lia_score = lia_result.score
+                    candidate_dto.lia_reasoning = lia_result.reasoning
+                    candidate_dto.lia_breakdown = lia_result.breakdown.to_dict()
+                    candidate_dto.lia_strengths = lia_result.strengths
+                    candidate_dto.lia_concerns = lia_result.concerns
+                except Exception as e:
+                    logger.warning(f"Failed to calculate LIA score: {e}")
+            
+            candidates.append(candidate_dto)
+        
+        for profile in search_result.pearch_candidates:
+            candidate_dto = ArchetypeSearchResultDTO(
+                id=profile.docid or "",
+                name=profile.get_full_name(),
+                first_name=profile.first_name,
+                last_name=profile.last_name,
+                picture_url=profile.picture_url,
+                headline=profile.headline,
+                current_title=profile.current_title,
+                current_company=profile.current_company,
+                location=profile.location,
+                total_experience_years=profile.total_experience_years,
+                skills=profile.skills[:10] if profile.skills else [],
+                score=profile.get_score_percentage(),
+                match_summary=profile.insights.overall_summary if profile.insights else profile.match_reasoning,
+                linkedin_url=profile.get_linkedin_url(),
+                has_email=profile.has_emails or False,
+                has_phone=profile.has_phone_numbers or False,
+                source="pearch",
+                is_open_to_work=profile.is_opentowork
+            )
+            
+            # Calculate LIA score if requested
+            if request.calculate_lia_score:
+                try:
+                    candidate_data = {
+                        "skills": profile.skills,
+                        "total_experience_years": profile.total_experience_years,
+                        "seniority_level": getattr(profile, 'seniority', None),
+                        "location": profile.location,
+                        "current_title": profile.current_title,
+                        "is_opentowork": profile.is_opentowork,
+                    }
+                    lia_result = lia_score_service.calculate_score(candidate_data, criteria)
+                    candidate_dto.lia_score = lia_result.score
+                    candidate_dto.lia_reasoning = lia_result.reasoning
+                    candidate_dto.lia_breakdown = lia_result.breakdown.to_dict()
+                    candidate_dto.lia_strengths = lia_result.strengths
+                    candidate_dto.lia_concerns = lia_result.concerns
+                except Exception as e:
+                    logger.warning(f"Failed to calculate LIA score: {e}")
+            
+            candidates.append(candidate_dto)
+        
+        # Sort by LIA score if calculated
+        if request.calculate_lia_score:
+            candidates.sort(key=lambda x: x.lia_score or 0, reverse=True)
+        
+        archetype_dto = ArchetypeDTO(
+            id=archetype.id,
+            name=archetype.name,
+            description=archetype.description,
+            emoji=archetype.emoji or "🎯",
+            query=archetype.query,
+            filters=archetype.filters or {},
+            tags=archetype.tags or [],
+            industry=archetype.industry,
+            seniority=archetype.seniority,
+            is_default=archetype.is_default,
+            is_active=archetype.is_active,
+            usage_count=(archetype.usage_count or 0) + 1,
+            created_at=archetype.created_at.isoformat() if archetype.created_at else None
+        )
+        
+        return ArchetypeSearchResponse(
+            archetype=archetype_dto,
+            query=archetype.query,
+            thread_id=search_result.thread_id,
+            candidates=candidates,
+            local_count=search_result.local_count,
+            pearch_count=search_result.pearch_count,
+            total_count=search_result.total_count,
+            credits_remaining=search_result.pearch_credits_remaining,
+            search_time_seconds=(search_result.local_search_time or 0) + (search_result.pearch_search_time or 0),
+            warning_message=search_result.warning_message
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error searching by archetype: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Archetype search failed: {str(e)}")
+
+
+# ============================================================================
+# ARCHETYPE GENERATION FROM JOB VACANCY - Create archetype from closed job
+# ============================================================================
+
+class ArchetypeGenerationRequest(BaseModel):
+    """Request to generate an archetype from a closed job vacancy."""
+    job_id: int = Field(..., description="ID da vaga fechada")
+    name: Optional[str] = Field(None, description="Nome personalizado para o arquétipo (opcional, será gerado se não fornecido)")
+    emoji: str = Field("🎯", max_length=10, description="Emoji para o arquétipo")
+
+
+class ArchetypeGenerationResponse(BaseModel):
+    """Response with generated archetype."""
+    success: bool
+    archetype: Optional[ArchetypeDTO] = None
+    job_title: str
+    hired_candidate_name: Optional[str] = None
+    message: str
+
+
+@router.post("/archetypes/from-job", response_model=ArchetypeGenerationResponse)
+async def generate_archetype_from_job(
+    request: ArchetypeGenerationRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Gera um arquétipo de busca a partir de uma vaga fechada com candidato contratado.
+    
+    Usa IA (Claude) para analisar:
+    - Descrição da vaga (JD)
+    - Perfil do candidato contratado
+    - Requisitos técnicos e comportamentais
+    
+    E gerar:
+    - Query otimizada para buscar candidatos similares
+    - Filtros pré-configurados
+    - Tags relevantes
+    """
+    from sqlalchemy import select
+    from app.models.job_vacancy import JobVacancy
+    from app.models.archetype import SearchArchetype
+    import uuid as uuid_lib
+    import anthropic
+    import json
+    import os
+    
+    try:
+        result = await db.execute(
+            select(JobVacancy).where(JobVacancy.id == request.job_id)
+        )
+        job = result.scalar_one_or_none()
+        
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Vaga não encontrada: {request.job_id}")
+        
+        if job.status not in ["Concluída", "Fechada", "Preenchida"]:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"A vaga deve estar concluída para gerar arquétipo. Status atual: {job.status}"
+            )
+        
+        hired_data = job.additional_data.get("hired_candidate") if job.additional_data else None
+        hired_name = hired_data.get("name") if hired_data else None
+        
+        jd_info = {
+            "title": job.title,
+            "department": job.department,
+            "location": job.location,
+            "work_model": job.work_model,
+            "seniority_level": job.seniority_level,
+            "description": job.description,
+            "requirements": job.requirements or [],
+            "technical_requirements": job.technical_requirements or [],
+            "behavioral_competencies": job.behavioral_competencies or [],
+            "languages": job.languages or [],
+        }
+        
+        candidate_info = None
+        if hired_data:
+            candidate_info = {
+                "name": hired_data.get("name"),
+                "current_title": hired_data.get("current_title"),
+                "years_experience": hired_data.get("years_experience"),
+                "skills": hired_data.get("skills", []),
+                "location": hired_data.get("location"),
+                "seniority": hired_data.get("seniority"),
+            }
+        
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="Anthropic API key not configured")
+        
+        client = anthropic.Anthropic(api_key=api_key)
+        
+        prompt = f"""Você é um especialista em recrutamento. Analise a vaga e o perfil do candidato contratado para criar um arquétipo de busca.
+
+DADOS DA VAGA:
+{json.dumps(jd_info, ensure_ascii=False, indent=2)}
+
+{"PERFIL DO CANDIDATO CONTRATADO:" if candidate_info else ""}
+{json.dumps(candidate_info, ensure_ascii=False, indent=2) if candidate_info else "Não disponível"}
+
+Gere um arquétipo de busca no formato JSON com:
+1. name: Nome curto e descritivo do arquétipo (ex: "Product Manager B2B SaaS")
+2. description: Descrição de 1-2 linhas do perfil ideal
+3. query: Query em linguagem natural para buscar candidatos similares (incluir cargo, experiência, skills principais)
+4. filters: Objeto com filtros:
+   - seniority: "junior" | "pleno" | "senior" | "lead"
+   - experience_years_min: número
+   - skills: array de skills principais (máximo 5)
+5. tags: Array de tags relevantes (máximo 5)
+6. industry: Indústria/setor (ex: "tecnologia", "financas", "rh", "compras")
+7. seniority: Senioridade principal do perfil
+
+Responda APENAS com o JSON, sem explicações adicionais."""
+
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1024,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        
+        response_text = message.content[0].text.strip()
+        if response_text.startswith("```"):
+            response_text = response_text.split("```")[1]
+            if response_text.startswith("json"):
+                response_text = response_text[4:]
+        response_text = response_text.strip()
+        
+        archetype_data = json.loads(response_text)
+        
+        archetype_id = f"custom-{uuid_lib.uuid4().hex[:8]}"
+        name = request.name or archetype_data.get("name", f"Similar a {job.title}")
+        
+        new_archetype = SearchArchetype(
+            id=archetype_id,
+            name=name,
+            description=archetype_data.get("description"),
+            emoji=request.emoji,
+            query=archetype_data.get("query", ""),
+            filters=archetype_data.get("filters", {}),
+            tags=archetype_data.get("tags", []),
+            industry=archetype_data.get("industry"),
+            seniority=archetype_data.get("seniority"),
+            is_default=False,
+            is_active=True,
+            usage_count=0,
+            company_id=job.company_id,
+            created_by="lia-system"
+        )
+        
+        db.add(new_archetype)
+        await db.commit()
+        await db.refresh(new_archetype)
+        
+        logger.info(f"✅ Created archetype '{name}' from job '{job.title}'")
+        
+        return ArchetypeGenerationResponse(
+            success=True,
+            archetype=ArchetypeDTO(
+                id=new_archetype.id,
+                name=new_archetype.name,
+                description=new_archetype.description,
+                emoji=new_archetype.emoji or "🎯",
+                query=new_archetype.query,
+                filters=new_archetype.filters or {},
+                tags=new_archetype.tags or [],
+                industry=new_archetype.industry,
+                seniority=new_archetype.seniority,
+                is_default=False,
+                is_active=True,
+                usage_count=0,
+                created_at=new_archetype.created_at.isoformat() if new_archetype.created_at else None
+            ),
+            job_title=job.title,
+            hired_candidate_name=hired_name,
+            message=f"Arquétipo '{name}' criado com sucesso a partir da vaga '{job.title}'"
+        )
+    
+    except HTTPException:
+        raise
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse AI response: {e}")
+        raise HTTPException(status_code=500, detail="Falha ao processar resposta da IA")
+    except Exception as e:
+        logger.error(f"Error generating archetype from job: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Falha ao gerar arquétipo: {str(e)}")
+
+
+class ArchetypeFromDescriptionRequest(BaseModel):
+    """Request to generate an archetype from a text description."""
+    description: str = Field(..., min_length=20, description="Descrição textual do perfil ideal")
+    name: Optional[str] = Field(None, description="Nome personalizado para o arquétipo")
+    emoji: str = Field("🎯", max_length=10)
+
+
+@router.post("/archetypes/from-description", response_model=ArchetypeGenerationResponse)
+async def generate_archetype_from_description(
+    request: ArchetypeFromDescriptionRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Gera um arquétipo de busca a partir de uma descrição textual livre.
+    
+    Útil quando o usuário descreve o perfil ideal em linguagem natural.
+    """
+    from sqlalchemy import select
+    from app.models.archetype import SearchArchetype
+    import uuid as uuid_lib
+    import anthropic
+    import json
+    import os
+    
+    try:
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="Anthropic API key not configured")
+        
+        client = anthropic.Anthropic(api_key=api_key)
+        
+        prompt = f"""Você é um especialista em recrutamento. Analise a descrição do perfil ideal e crie um arquétipo de busca.
+
+DESCRIÇÃO DO PERFIL IDEAL:
+{request.description}
+
+Gere um arquétipo de busca no formato JSON com:
+1. name: Nome curto e descritivo do arquétipo (ex: "Product Manager B2B SaaS")
+2. description: Descrição de 1-2 linhas do perfil ideal
+3. query: Query em linguagem natural para buscar candidatos similares (incluir cargo, experiência, skills principais)
+4. filters: Objeto com filtros:
+   - seniority: "junior" | "pleno" | "senior" | "lead"
+   - experience_years_min: número
+   - skills: array de skills principais (máximo 5)
+5. tags: Array de tags relevantes (máximo 5)
+6. industry: Indústria/setor (ex: "tecnologia", "financas", "rh", "compras")
+7. seniority: Senioridade principal do perfil
+
+Responda APENAS com o JSON, sem explicações adicionais."""
+
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=1024,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        
+        response_text = message.content[0].text.strip()
+        if response_text.startswith("```"):
+            response_text = response_text.split("```")[1]
+            if response_text.startswith("json"):
+                response_text = response_text[4:]
+        response_text = response_text.strip()
+        
+        archetype_data = json.loads(response_text)
+        
+        archetype_id = f"custom-{uuid_lib.uuid4().hex[:8]}"
+        name = request.name or archetype_data.get("name", "Perfil Personalizado")
+        
+        new_archetype = SearchArchetype(
+            id=archetype_id,
+            name=name,
+            description=archetype_data.get("description"),
+            emoji=request.emoji,
+            query=archetype_data.get("query", ""),
+            filters=archetype_data.get("filters", {}),
+            tags=archetype_data.get("tags", []),
+            industry=archetype_data.get("industry"),
+            seniority=archetype_data.get("seniority"),
+            is_default=False,
+            is_active=True,
+            usage_count=0,
+            company_id=None,
+            created_by="lia-system"
+        )
+        
+        db.add(new_archetype)
+        await db.commit()
+        await db.refresh(new_archetype)
+        
+        logger.info(f"✅ Created archetype '{name}' from description")
+        
+        return ArchetypeGenerationResponse(
+            success=True,
+            archetype=ArchetypeDTO(
+                id=new_archetype.id,
+                name=new_archetype.name,
+                description=new_archetype.description,
+                emoji=new_archetype.emoji or "🎯",
+                query=new_archetype.query,
+                filters=new_archetype.filters or {},
+                tags=new_archetype.tags or [],
+                industry=new_archetype.industry,
+                seniority=new_archetype.seniority,
+                is_default=False,
+                is_active=True,
+                usage_count=0,
+                created_at=new_archetype.created_at.isoformat() if new_archetype.created_at else None
+            ),
+            job_title="Descrição Personalizada",
+            hired_candidate_name=None,
+            message=f"Arquétipo '{name}' criado com sucesso"
+        )
+    
+    except HTTPException:
+        raise
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse AI response: {e}")
+        raise HTTPException(status_code=500, detail="Falha ao processar resposta da IA")
+    except Exception as e:
+        logger.error(f"Error generating archetype from description: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Falha ao gerar arquétipo: {str(e)}")
+
+
+class ClosedJobSuggestionDTO(BaseModel):
+    """Suggestion for creating archetype from closed job."""
+    id: int
+    title: str
+    department: Optional[str] = None
+    closed_at: Optional[str] = None
+    hired_candidate_name: Optional[str] = None
+    has_hired_data: bool = False
+
+
+class ClosedJobSuggestionsResponse(BaseModel):
+    """Response with list of closed jobs that can be used to create archetypes."""
+    jobs: List[ClosedJobSuggestionDTO]
+    total: int
+
+
+@router.get("/archetypes/suggestions", response_model=ClosedJobSuggestionsResponse)
+async def get_archetype_suggestions(
+    db: AsyncSession = Depends(get_db),
+    limit: int = Query(10, ge=1, le=50)
+):
+    """
+    Lista vagas fechadas que podem ser usadas para criar arquétipos.
+    Prioriza vagas com dados do candidato contratado.
+    """
+    from sqlalchemy import select
+    from app.models.job_vacancy import JobVacancy
+    
+    try:
+        result = await db.execute(
+            select(JobVacancy)
+            .where(JobVacancy.status.in_(["Concluída", "Fechada", "Preenchida"]))
+            .order_by(JobVacancy.closed_at.desc().nulls_last())
+            .limit(limit)
+        )
+        jobs = result.scalars().all()
+        
+        suggestions = []
+        for job in jobs:
+            hired_data = job.additional_data.get("hired_candidate") if job.additional_data else None
+            suggestions.append(ClosedJobSuggestionDTO(
+                id=job.id,
+                title=job.title,
+                department=job.department,
+                closed_at=job.closed_at.isoformat() if job.closed_at else None,
+                hired_candidate_name=hired_data.get("name") if hired_data else None,
+                has_hired_data=bool(hired_data)
+            ))
+        
+        suggestions.sort(key=lambda x: (not x.has_hired_data, x.closed_at or ""))
+        
+        return ClosedJobSuggestionsResponse(
+            jobs=suggestions,
+            total=len(suggestions)
+        )
+    
+    except Exception as e:
+        logger.error(f"Error fetching archetype suggestions: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# CV-BASED SEARCH ENDPOINT - Search similar candidates from CV upload
+# ============================================================================
+
+class CVSearchResultDTO(BaseModel):
+    """Result from CV-based search."""
+    parsed_cv: dict
+    query_generated: str
+    candidates: List[CandidateSearchResultDTO] = Field(default_factory=list)
+    local_count: int = 0
+    pearch_count: int = 0
+    total_count: int = 0
+    credits_remaining: Optional[int] = None
+    search_time_seconds: Optional[float] = None
+    extracted_skills: List[str] = Field(default_factory=list)
+    extracted_title: Optional[str] = None
+

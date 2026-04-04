@@ -1724,12 +1724,11 @@ TEMPLATES DE REFERÊNCIA (exemplos do RAG):
 
 ---
 
-CRITÉRIOS OBJETIVOS PARA DECISÃO (OBRIGATÓRIO seguir):
-- WSI Geral >= 4.0 → decisao = "APROVADO"
-- WSI Geral >= 3.0 e < 4.0 → decisao = "AGUARDANDO" (requer avaliação adicional)
-- WSI Geral < 3.0 → decisao = "NÃO APROVADO"
-- EXCEÇÃO: Se WSI Geral >= 3.5 E todos os scores técnicos >= 3.0 → pode ser "APROVADO"
-- EXCEÇÃO: Se WSI Geral >= 4.0 MAS há red_flags graves → rebaixa para "AGUARDANDO"
+CRITÉRIOS OBJETIVOS PARA DECISÃO (OBRIGATÓRIO seguir — WSI_CUTOFFS canônicos):
+- WSI Geral >= 3.75 → decisao = "APROVADO" (= 7.5/10)
+- WSI Geral >= 3.0 e < 3.75 → decisao = "AGUARDANDO" / "EM_AVALIACAO" (= 6.0–7.4/10)
+- WSI Geral < 3.0 → decisao = "NÃO APROVADO" (= < 6.0/10)
+- EXCEÇÃO: Se WSI Geral >= 3.75 MAS há red_flags graves → rebaixa para "AGUARDANDO"
 
 REGRAS DE QUALIDADE DO PARECER:
 1. **Sumário Executivo** DEVE ter 2-3 frases completas (mínimo 100 caracteres), incluindo: perfil resumido, principal ponto forte e recomendação clara

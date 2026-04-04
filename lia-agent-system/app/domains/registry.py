@@ -116,3 +116,88 @@ class DomainRegistry:
         registered = list(_DOMAIN_REGISTRY.keys())
         instantiated = list(self._instances.keys())
         return f"<DomainRegistry registered={registered} instantiated={instantiated}>"
+
+
+# ─── Agent Studio: tenant-scoped domain resolution (Etapa 8) ──────────────────
+
+async def get_domain_for_company(
+    domain_id: str,
+    company_id: str,
+    db=None,
+):
+    """
+    Resolve a domain for a specific company, with tenant-scoped fallback.
+
+    Resolution order:
+    1. If db provided, look for a published AgentTemplate for this domain+company.
+       If found, build a DomainPrompt-like proxy from its system_prompt_yaml.
+    2. Fallback to the global WeDO domain (same as DomainRegistry().get_instance()).
+    """
+    if db is not None:
+        try:
+            from sqlalchemy import select
+            from libs.models.lia_models.agent_template import AgentTemplate, AgentTemplateStatus
+
+            stmt = (
+                select(AgentTemplate)
+                .where(
+                    AgentTemplate.domain == domain_id,
+                    AgentTemplate.company_id == company_id,
+                    AgentTemplate.status == AgentTemplateStatus.PUBLISHED,
+                )
+                .order_by(AgentTemplate.version.desc())
+                .limit(1)
+            )
+            result = await db.execute(stmt)
+            template = result.scalar_one_or_none()
+
+            if template:
+                logger.info(
+                    "Agent Studio: using custom template %r (v%s) for company %s / domain %s",
+                    template.name,
+                    template.version,
+                    company_id,
+                    domain_id,
+                )
+                return _YamlDomainProxy(template.system_prompt_yaml, domain_id)
+        except Exception as exc:
+            logger.warning("Agent Studio template lookup failed (non-blocking): %s", exc)
+
+    return DomainRegistry().get_instance(domain_id)
+
+
+class _YamlDomainProxy:
+    """
+    Minimal DomainPrompt-compatible proxy built from an AgentTemplate YAML.
+    Only implements what the orchestrator actually reads.
+    """
+
+    def __init__(self, system_prompt_yaml: str, domain_id: str) -> None:
+        self.domain_id = domain_id
+        self._system_prompt_yaml = system_prompt_yaml
+        self._system_prompt = None
+
+    def _parse_prompt(self) -> str:
+        if self._system_prompt is None:
+            try:
+                import yaml
+                data = yaml.safe_load(self._system_prompt_yaml) or {}
+                self._system_prompt = data.get("prompt", self._system_prompt_yaml)
+            except Exception:
+                self._system_prompt = self._system_prompt_yaml
+        return self._system_prompt
+
+    def get_system_prompt(self, **kwargs):
+        prompt = self._parse_prompt()
+        for key, value in kwargs.items():
+            prompt = prompt.replace("{{" + key + "}}", str(value))
+        return prompt
+
+    def get_allowed_actions(self):
+        return []
+
+    def get_action_by_id(self, action_id: str):
+        return None
+
+    def __repr__(self) -> str:
+        return f"<_YamlDomainProxy domain={self.domain_id}>"

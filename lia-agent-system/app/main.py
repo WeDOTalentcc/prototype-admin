@@ -23,7 +23,7 @@ from app.api.v1 import fairness_reports
 from app.api.v1 import search_feedback
 from app.api.v1 import job_qualification
 from app.api.v1 import talent_funnel
-from app.api.v1 import wsi as wsi_v1
+from app.api.v1.wsi import router as wsi_router
 from app.api.v1 import wsi_async as wsi_async_v1
 from app.api.v1 import stage_transition_automation
 from app.api.v1 import job_learning, wizard_analytics, job_embeddings, job_templates
@@ -470,7 +470,7 @@ app.include_router(dashboard_data.router, prefix="/api/v1", tags=["dashboard"])
 app.include_router(automations.router, prefix="/api/v1", tags=["automations"])
 app.include_router(orchestrator_routes.router)
 app.include_router(wsi_endpoints.router, tags=["wsi"])
-app.include_router(wsi_v1.router, tags=["wsi-v1"])
+app.include_router(wsi_router, tags=["wsi-v1"])
 app.include_router(wsi_async_v1.router, prefix="/api/v1", tags=["wsi-async"])
 app.include_router(webhooks.router, prefix="/api/v1", tags=["webhooks"])
 app.include_router(integrations.router, prefix="/api/v1", tags=["integrations"])

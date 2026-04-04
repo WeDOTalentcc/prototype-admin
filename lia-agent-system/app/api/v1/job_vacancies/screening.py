@@ -1,0 +1,287 @@
+"""
+Screening configuration routes.
+"""
+from fastapi import APIRouter
+from ._shared import *
+
+router = APIRouter()
+
+
+# ─── Schemas ──────────────────────────────────────────────────────────────────
+
+class ScreeningConfigStatus(BaseModel):
+    enabled: bool = True
+    paused_at: Optional[str] = None
+    paused_by: Optional[str] = None
+    pause_reason: Optional[str] = None
+    scheduled_end_date: Optional[str] = None
+    last_updated: Optional[str] = None
+    screening_status: Optional[str] = "not_configured"
+
+
+class ScreeningConfigChannel(BaseModel):
+    enabled: bool = True
+    label: Optional[str] = None
+
+
+class ScreeningConfigChannels(BaseModel):
+    whatsapp: Optional[ScreeningConfigChannel] = None
+    chat_web: Optional[ScreeningConfigChannel] = None
+    phone: Optional[ScreeningConfigChannel] = None
+
+
+class ScreeningConfigSettings(BaseModel):
+    min_score: Optional[int] = 70
+    response_timeout_hours: Optional[int] = 48
+    max_retries: Optional[int] = 2
+
+
+class ScreeningConfigMetrics(BaseModel):
+    screened_count: Optional[int] = 0
+    completion_rate: Optional[float] = 0
+    average_rating: Optional[float] = 4.2
+
+
+class ScreeningConfigScheduling(BaseModel):
+    auto_enabled: Optional[bool] = True
+    min_score_for_auto: Optional[int] = 75
+    calendar_provider: Optional[str] = "Microsoft"
+    available_hours: Optional[str] = "9h-18h"
+    interview_duration_min: Optional[int] = 45
+
+
+class ScreeningConfigFeedback(BaseModel):
+    approved: Optional[str] = "Parabéns! Você foi aprovado na triagem inicial."
+    rejected: Optional[str] = "Agradecemos sua participação. Infelizmente não seguiremos com sua candidatura neste momento."
+
+
+class ScreeningConfigRequest(BaseModel):
+    status: Optional[ScreeningConfigStatus] = None
+    channels: Optional[ScreeningConfigChannels] = None
+    settings: Optional[ScreeningConfigSettings] = None
+    metrics: Optional[ScreeningConfigMetrics] = None
+    scheduling: Optional[ScreeningConfigScheduling] = None
+    feedback_templates: Optional[ScreeningConfigFeedback] = None
+    wsi_skills: Optional[List[str]] = []
+
+
+class ScreeningConfigResponse(BaseModel):
+    job_id: str
+    is_default: bool = False
+    screening_status: Optional[str] = "not_configured"
+    status: Optional[Dict[str, Any]] = None
+    channels: Optional[Dict[str, Any]] = None
+    settings: Optional[Dict[str, Any]] = None
+    metrics: Optional[Dict[str, Any]] = None
+    scheduling: Optional[Dict[str, Any]] = None
+    feedback_templates: Optional[Dict[str, Any]] = None
+    wsi_skills: Optional[List[str]] = []
+    updated_at: Optional[str] = None
+
+
+class ScreeningStatusUpdateRequest(BaseModel):
+    screening_status: str
+    pause_reason: Optional[str] = None
+    scheduled_end_date: Optional[str] = None
+
+
+# ─── Routes ──────────────────────────────────────────────────────────────────
+
+@router.get("/vagas/{job_id}/screening-config", response_model=ScreeningConfigResponse)
+async def get_screening_config(
+    job_id: UUID,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get screening configuration for a job vacancy."""
+    try:
+        result = await db.execute(
+            select(JobVacancy).where(JobVacancy.id == job_id)
+        )
+        job = result.scalar_one_or_none()
+
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Vaga não encontrada: {job_id}")
+
+        config = job.screening_config or {}
+        screening_status = derive_screening_status(config)
+
+        return ScreeningConfigResponse(
+            job_id=str(job_id),
+            is_default=not bool(config),
+            screening_status=screening_status,
+            status=config.get("status", {"enabled": True, "last_updated": None}),
+            channels=config.get("channels", {
+                "whatsapp": {"enabled": True, "label": "WhatsApp"},
+                "chat_web": {"enabled": True, "label": "Chat Web"},
+                "phone": {"enabled": False, "label": "Ligação"}
+            }),
+            settings=config.get("settings", {"min_score": 70, "response_timeout_hours": 48, "max_retries": 2}),
+            metrics=config.get("metrics", {"screened_count": 0, "completion_rate": 0, "average_rating": 4.2}),
+            scheduling=config.get("scheduling", {
+                "auto_enabled": True,
+                "min_score_for_auto": 75,
+                "calendar_provider": "Microsoft",
+                "available_hours": "9h-18h",
+                "interview_duration_min": 45
+            }),
+            feedback_templates=config.get("feedback_templates", {
+                "approved": "Parabéns! Você foi aprovado na triagem inicial.",
+                "rejected": "Agradecemos sua participação. Infelizmente não seguiremos com sua candidatura neste momento."
+            }),
+            wsi_skills=config.get("wsi_skills", []),
+            updated_at=config.get("status", {}).get("last_updated")
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting screening config: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/vagas/{job_id}/screening-config", response_model=ScreeningConfigResponse)
+async def update_screening_config(
+    job_id: UUID,
+    config_data: ScreeningConfigRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo)
+):
+    """Update screening configuration for a job vacancy."""
+    try:
+        result = await db.execute(
+            select(JobVacancy).where(JobVacancy.id == job_id)
+        )
+        job = result.scalar_one_or_none()
+
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Vaga não encontrada: {job_id}")
+
+        new_config = {}
+
+        if config_data.status:
+            new_config["status"] = config_data.status.model_dump(exclude_none=True)
+            new_config["status"]["last_updated"] = datetime.utcnow().isoformat()
+
+        if config_data.channels:
+            new_config["channels"] = config_data.channels.model_dump(exclude_none=True)
+
+        if config_data.settings:
+            new_config["settings"] = config_data.settings.model_dump(exclude_none=True)
+
+        if config_data.metrics:
+            new_config["metrics"] = config_data.metrics.model_dump(exclude_none=True)
+
+        if config_data.scheduling:
+            new_config["scheduling"] = config_data.scheduling.model_dump(exclude_none=True)
+
+        if config_data.feedback_templates:
+            new_config["feedback_templates"] = config_data.feedback_templates.model_dump(exclude_none=True)
+
+        if config_data.wsi_skills:
+            new_config["wsi_skills"] = config_data.wsi_skills
+
+        existing_config = job.screening_config or {}
+        merged_config = {**existing_config, **new_config}
+
+        job.screening_config = merged_config
+        job.updated_at = datetime.utcnow()
+
+        await db.commit()
+        await db.refresh(job)
+
+        logger.info(f"Screening config updated for job {job_id}")
+
+        return ScreeningConfigResponse(
+            job_id=str(job_id),
+            is_default=False,
+            status=merged_config.get("status"),
+            channels=merged_config.get("channels"),
+            settings=merged_config.get("settings"),
+            metrics=merged_config.get("metrics"),
+            scheduling=merged_config.get("scheduling"),
+            feedback_templates=merged_config.get("feedback_templates"),
+            wsi_skills=merged_config.get("wsi_skills", []),
+            updated_at=merged_config.get("status", {}).get("last_updated")
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating screening config: {e}", exc_info=True)
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/vagas/{job_id}/screening-status")
+async def update_screening_status(
+    job_id: UUID,
+    request: ScreeningStatusUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo)
+):
+    """Update the screening status for a job vacancy."""
+    if request.screening_status not in VALID_SCREENING_STATUSES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid screening status: {request.screening_status}. Valid: {VALID_SCREENING_STATUSES}"
+        )
+
+    try:
+        result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+        job = result.scalar_one_or_none()
+        if not job:
+            raise HTTPException(status_code=404, detail=f"Vaga não encontrada: {job_id}")
+
+        existing_config = job.screening_config or {}
+        existing_status = existing_config.get("status", {})
+
+        now = datetime.utcnow().isoformat()
+
+        existing_status["screening_status"] = request.screening_status
+        existing_status["last_updated"] = now
+
+        if request.screening_status == "active":
+            existing_status["enabled"] = True
+            existing_status["paused_at"] = None
+            existing_status["paused_by"] = None
+            existing_status["pause_reason"] = None
+            if not existing_status.get("activated_at"):
+                existing_status["activated_at"] = now
+        elif request.screening_status == "paused":
+            existing_status["enabled"] = False
+            existing_status["paused_at"] = now
+            existing_status["paused_by"] = current_user.email if hasattr(current_user, 'email') else "system"
+            existing_status["pause_reason"] = request.pause_reason or "Pausado manualmente"
+        elif request.screening_status == "completed":
+            existing_status["enabled"] = False
+            existing_status["completed_at"] = now
+        elif request.screening_status == "not_started":
+            existing_status["enabled"] = False
+            existing_status["paused_at"] = None
+
+        if request.scheduled_end_date:
+            existing_status["scheduled_end_date"] = request.scheduled_end_date
+
+        existing_config["status"] = existing_status
+        job.screening_config = existing_config
+        job.updated_at = datetime.utcnow()
+
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(job, "screening_config")
+
+        await db.commit()
+        await db.refresh(job)
+
+        logger.info(f"Screening status updated to '{request.screening_status}' for job {job_id}")
+
+        return {
+            "job_id": str(job_id),
+            "screening_status": request.screening_status,
+            "status": existing_config.get("status"),
+            "updated_at": now
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating screening status: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

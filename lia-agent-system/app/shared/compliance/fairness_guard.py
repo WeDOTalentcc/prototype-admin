@@ -418,6 +418,19 @@ HIGH_IMPACT_ACTIONS = {
 }
 
 
+def _detect_language(text: str) -> str:
+    """
+    Heurística simples de detecção de idioma para FairnessGuard Layer 3.
+    Se >50% das palavras são ASCII puro → EN, caso contrário → pt-br.
+    Usado para selecionar o prompt correto no check_semantic().
+    """
+    words = text.split()
+    if not words:
+        return "pt-br"
+    ascii_count = sum(1 for w in words if all(ord(c) < 128 for c in w))
+    return "en" if (ascii_count / len(words)) > 0.5 else "pt-br"
+
+
 def _ensure_compiled() -> None:
     global _COMPILED_PATTERNS
     if not _COMPILED_PATTERNS:
@@ -542,15 +555,36 @@ class FairnessGuard:
             from app.services.llm_service import LLMService
             llm_service = LLMService()
 
-            semantic_prompt = (
-                "Analise o seguinte texto de política de contratação e identifique "
-                "possíveis vieses discriminatórios implícitos ou explícitos. "
-                "Responda APENAS com uma lista de alertas, um por linha. "
-                "Se não houver vieses, responda 'NENHUM_VIES_DETECTADO'.\n\n"
-                f"Texto: {text}\n"
-            )
-            if context:
-                semantic_prompt += f"Contexto: {context}\n"
+            # Layer 3: bilingual prompt (auto-detect PT-BR vs EN)
+            lang = _detect_language(text)
+            if lang == "en":
+                semantic_prompt = (
+                    "You are a compliance expert in employment discrimination law. "
+                    "Analyze the following hiring policy or job description and identify "
+                    "any discriminatory language, implicit biases, or criteria that may "
+                    "violate anti-discrimination laws (ADEA, Title VII, ADA, EU Directive 2000/78, "
+                    "Lei 9.029/95, CRFB/88 Art. 5). "
+                    "Reply ONLY with a bulleted list of warnings, one per line. "
+                    "If no bias is detected, reply exactly: NO_BIAS_DETECTED\n\n"
+                    f"Text: {text}\n"
+                )
+                if context:
+                    semantic_prompt += f"Context: {context}\n"
+                no_bias_marker = "NO_BIAS_DETECTED"
+            else:
+                semantic_prompt = (
+                    "Você é especialista em compliance de discriminação no trabalho. "
+                    "Analise o seguinte texto de política de contratação ou descrição de vaga "
+                    "e identifique possíveis vieses discriminatórios implícitos ou explícitos "
+                    "que violem legislação antidiscriminatória (Lei 9.029/95, CLT Art. 373-A, "
+                    "CRFB/88 Art. 5, Lei 10.741/03, Lei 13.146/15). "
+                    "Responda APENAS com uma lista de alertas, um por linha. "
+                    "Se não houver vieses, responda exatamente: NENHUM_VIES_DETECTADO\n\n"
+                    f"Texto: {text}\n"
+                )
+                if context:
+                    semantic_prompt += f"Contexto: {context}\n"
+                no_bias_marker = "NENHUM_VIES_DETECTADO"
 
             generate_kwargs: Dict[str, Any] = {}
             if model:
@@ -558,7 +592,7 @@ class FairnessGuard:
 
             response = await llm_service.generate(semantic_prompt, **generate_kwargs)
 
-            if response and "NENHUM_VIES_DETECTADO" not in response:
+            if response and no_bias_marker not in response:
                 semantic_warnings = [
                     line.strip() for line in response.strip().split("\n")
                     if line.strip() and not line.strip().startswith("#")
