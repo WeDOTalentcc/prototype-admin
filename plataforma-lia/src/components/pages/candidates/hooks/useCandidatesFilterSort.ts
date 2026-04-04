@@ -332,17 +332,16 @@ export function useCandidatesFilterSort(params: UseCandidatesFilterSortParams) {
     }
 
     if (typeof aValue === 'string') {
-      aValue = aValue.toLowerCase()      // @ts-ignore // TODO: fix type
-      bValue = bValue.toLowerCase()
+      aValue = aValue.toLowerCase()
+      bValue = (bValue as string).toLowerCase()
     }
 
-    // @ts-ignore // TODO: fix type
+    const aComp = aValue as string | number
+    const bComp = bValue as string | number
     if (sortOrder === 'asc') {
-      // @ts-ignore // TODO: fix type
-      return aValue > bValue ? 1 : -1
+      return aComp > bComp ? 1 : -1
     } else {
-      // @ts-ignore // TODO: fix type
-      return aValue < bValue ? 1 : -1
+      return aComp < bComp ? 1 : -1
     }
   })
 

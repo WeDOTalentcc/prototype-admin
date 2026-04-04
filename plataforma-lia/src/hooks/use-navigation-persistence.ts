@@ -1,96 +1,43 @@
 'use client'
 
 import { useCallback } from 'react'
-
-const STORAGE_KEY = 'lia-navigation-state'
-const TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 dias
-
-interface JobsNavState {
-  lastJobId?: string
-  lastView?: 'kanban' | 'table'
-  lastTab?: string
-  timestamp: number
-}
-
-interface TalentFunnelNavState {
-  lastTab?: 'search' | 'favorites' | 'lists'
-  lastSearchQuery?: string
-  timestamp: number
-}
-
-interface NavigationState {
-  jobs?: JobsNavState
-  talentFunnel?: TalentFunnelNavState
-}
+import { useNavigationStore } from '@/stores/navigation-store'
+import type { JobsNavState, TalentFunnelNavState } from '@/stores/navigation-store'
 
 export function useNavigationPersistence() {
-  const getState = useCallback((): NavigationState => {
-    if (typeof window === 'undefined') return {}
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (!stored) return {}
-      const state = JSON.parse(stored) as NavigationState
-      // Limpar estados expirados
-      const now = Date.now()
-      if (state.jobs && now - state.jobs.timestamp > TTL_MS) {
-        delete state.jobs
-      }
-      if (state.talentFunnel && now - state.talentFunnel.timestamp > TTL_MS) {
-        delete state.talentFunnel
-      }
-      return state
-    } catch {
-      return {}
-    }
-  }, [])
+  const storeSaveJobsState = useNavigationStore(s => s.saveJobsState)
+  const storeGetJobsNavState = useNavigationStore(s => s.getJobsNavState)
+  const storeSaveTalentFunnelState = useNavigationStore(s => s.saveTalentFunnelState)
+  const storeGetTalentFunnelNavState = useNavigationStore(s => s.getTalentFunnelNavState)
+  const storeSetJobsNavState = useNavigationStore(s => s.setJobsNavState)
+  const storeSetTalentFunnelNavState = useNavigationStore(s => s.setTalentFunnelNavState)
 
   const saveJobsState = useCallback((jobId: string, view?: 'kanban' | 'table', tab?: string) => {
-    if (typeof window === 'undefined') return
-    try {
-      const state = getState()
-      state.jobs = {
-        lastJobId: jobId,
-        lastView: view,
-        lastTab: tab,
-        timestamp: Date.now()
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-    } catch {}
-  }, [getState])
+    storeSaveJobsState(jobId, view, tab)
+  }, [storeSaveJobsState])
 
   const getJobsState = useCallback((): JobsNavState | undefined => {
-    return getState().jobs
-  }, [getState])
+    return storeGetJobsNavState() ?? undefined
+  }, [storeGetJobsNavState])
 
   const saveTalentFunnelState = useCallback((tab: 'search' | 'favorites' | 'lists', searchQuery?: string) => {
-    if (typeof window === 'undefined') return
-    try {
-      const state = getState()
-      state.talentFunnel = {
-        lastTab: tab,
-        lastSearchQuery: searchQuery,
-        timestamp: Date.now()
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-    } catch {}
-  }, [getState])
+    storeSaveTalentFunnelState(tab, searchQuery)
+  }, [storeSaveTalentFunnelState])
 
   const getTalentFunnelState = useCallback((): TalentFunnelNavState | undefined => {
-    return getState().talentFunnel
-  }, [getState])
+    return storeGetTalentFunnelNavState() ?? undefined
+  }, [storeGetTalentFunnelNavState])
 
   const clearState = useCallback((section?: 'jobs' | 'talentFunnel') => {
-    if (typeof window === 'undefined') return
-    try {
-      if (section) {
-        const state = getState()
-        delete state[section]
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-      } else {
-        localStorage.removeItem(STORAGE_KEY)
-      }
-    } catch {}
-  }, [getState])
+    if (section === 'jobs') {
+      storeSetJobsNavState(null)
+    } else if (section === 'talentFunnel') {
+      storeSetTalentFunnelNavState(null)
+    } else {
+      storeSetJobsNavState(null)
+      storeSetTalentFunnelNavState(null)
+    }
+  }, [storeSetJobsNavState, storeSetTalentFunnelNavState])
 
   return {
     saveJobsState,

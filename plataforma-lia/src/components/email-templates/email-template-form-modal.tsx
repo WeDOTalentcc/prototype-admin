@@ -183,8 +183,7 @@ export function EmailTemplateFormModal({
           subject: formData.subject,
           body_html: formData.body_html,
           body_text: formData.body_text || undefined,
-          // @ts-ignore TODO: fix type — Type 'string | undefined' is not assignable to type '"interview" | "rejection" |
-          category: formData.category || undefined,
+          category: (formData.category || undefined) as any,
           variables,
         }
         await liaApi.updateEmailTemplate(template.id, updateData)
@@ -194,8 +193,7 @@ export function EmailTemplateFormModal({
           subject: formData.subject,
           body_html: formData.body_html,
           body_text: formData.body_text || undefined,
-          // @ts-ignore TODO: fix type — Type 'string | undefined' is not assignable to type '"interview" | "rejection" |
-          category: formData.category || undefined,
+          category: (formData.category || undefined) as any,
           variables,
         }
         await liaApi.createEmailTemplate(createData)

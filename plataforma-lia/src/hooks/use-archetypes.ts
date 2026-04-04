@@ -155,10 +155,9 @@ export function useArchetypes({
     if (parsedEntities.industry) spec.industry = parsedEntities.industry
     if (parsedEntities.company) spec.company = parsedEntities.company
     if (parsedEntities.years_experience) spec.years_experience = parsedEntities.years_experience
-    if (parsedEntities.skills && parsedEntities.skills.length > 0) spec.skills = parsedEntities.skills    // @ts-ignore // TODO: fix type
-    if (advancedFilters.locations?.locations && advancedFilters.locations.locations.length > 0) {
-      // @ts-ignore // TODO: fix type
-      spec.locations = advancedFilters.locations.locations
+    if (parsedEntities.skills && parsedEntities.skills.length > 0) spec.skills = parsedEntities.skills
+    if ((advancedFilters.locations as any)?.locations && (advancedFilters.locations as any).locations.length > 0) {
+      spec.locations = (advancedFilters.locations as any).locations
     }
     if (advancedFilters.job?.titles && advancedFilters.job.titles.length > 0) {
       spec.job_titles = advancedFilters.job.titles

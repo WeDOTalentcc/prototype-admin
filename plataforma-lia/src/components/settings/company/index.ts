@@ -1,1 +1,8 @@
 export { GeneralInfoSection } from "./GeneralInfoSection"
+export { ContactPresenceSection } from "./ContactPresenceSection"
+export { CultureIdentitySection } from "./CultureIdentitySection"
+export { CorporateInfoSection } from "./CorporateInfoSection"
+export { WorkModelSection } from "./WorkModelSection"
+export { SocialResponsibilitySection } from "./SocialResponsibilitySection"
+export { BigFiveSection } from "./BigFiveSection"
+export { LiaAnalysisCard } from "./LiaAnalysisCard"

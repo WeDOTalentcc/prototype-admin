@@ -60,9 +60,7 @@ export function UnifiedCandidateTable({
   const rowVirtualizer = enableVirtualScroll && useVirtualizer
     // eslint-disable-next-line react-hooks/rules-of-hooks
     ? useVirtualizer({
-        // @ts-ignore TODO: fix type — Variable 'sortedCandidates' is used before being assigned.
-        // @ts-ignore TODO: fix type — Block-scoped variable 'sortedCandidates' used before its declaration.
-        count: sortedCandidates.length,
+        count: (sortedCandidates as { length: number }).length,
         getScrollElement: () => virtualScrollRef.current,
         estimateSize: () => 56,
         overscan: 20,
@@ -455,8 +453,7 @@ export function UnifiedCandidateTable({
                       renderLeftOverlayActions={renderLeftOverlayActions ? () => renderLeftOverlayActions(candidate) : undefined}
                       renderCustomCell={renderCustomCell ? (colId) => renderCustomCell(candidate, colId) : undefined}
                       stageBorderColor={getStageBorderColor?.(candidate)}
-                      // @ts-ignore TODO: fix type — Type '{ key: string; candidate: TableCandidate; columns: TableColumn[]; isSelect
-                      style={{position: "absolute",
+                      style={{position: "absolute" as const,
                         top: 0,
                         left: 0,
                         width: "100%",

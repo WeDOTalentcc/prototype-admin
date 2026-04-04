@@ -130,9 +130,7 @@ export function PeopleAnalyticsPlaceholder() {
         {/* Tabs de Navegação */}
         <div className="flex gap-2">
           <Button
-            // @ts-ignore // TODO: fix type
-            // @ts-ignore // TODO: fix type
-            variant={activeSubDashboard === 'bigfive' ? 'default' : 'outline'}
+            variant={activeSubDashboard === 'bigfive' ? 'primary' : 'outline'}
             size="sm"
             onClick={() => setActiveSubDashboard('bigfive')}
             className="text-xs h-7 px-3 font-open-sans"
@@ -141,8 +139,7 @@ export function PeopleAnalyticsPlaceholder() {
             Big Five
           </Button>
           <Button
-            // @ts-ignore // TODO: fix type
-            variant={activeSubDashboard === 'diversidade' ? 'default' : 'outline'}
+            variant={activeSubDashboard === 'diversidade' ? 'primary' : 'outline'}
             size="sm"
             onClick={() => setActiveSubDashboard('diversidade')}
             className="text-xs h-7 px-3 font-open-sans"
@@ -151,8 +148,7 @@ export function PeopleAnalyticsPlaceholder() {
             Diversidade
           </Button>
           <Button
-            // @ts-ignore // TODO: fix type
-            variant={activeSubDashboard === 'nps' ? 'default' : 'outline'}
+            variant={activeSubDashboard === 'nps' ? 'primary' : 'outline'}
             size="sm"
             onClick={() => setActiveSubDashboard('nps')}
             className="text-xs h-7 px-3 font-open-sans"

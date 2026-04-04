@@ -158,8 +158,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
       {/* Quick Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <Button
-          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-          variant={filters.favorites ? "default" : "outline"}
+          variant={filters.favorites ? "primary" : "outline"}
           size="sm"
           onClick={() => updateFilter('favorites', !filters.favorites)}
           className="h-8"
@@ -169,8 +168,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         </Button>
 
         <Button
-          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-          variant={filters.priority === 'high' ? "default" : "outline"}
+          variant={filters.priority === 'high' ? "primary" : "outline"}
           size="sm"
           onClick={() => updateFilter('priority', filters.priority === 'high' ? 'all' : 'high')}
           className="h-8"
@@ -179,8 +177,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         </Button>
 
         <Button
-          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-          variant={filters.dateRange === 'today' ? "default" : "outline"}
+          variant={filters.dateRange === 'today' ? "primary" : "outline"}
           size="sm"
           onClick={() => updateFilter('dateRange', filters.dateRange === 'today' ? 'all' : 'today')}
           className="h-8"

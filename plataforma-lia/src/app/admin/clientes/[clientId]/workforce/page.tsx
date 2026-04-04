@@ -158,23 +158,15 @@ export default function ClientWorkforcePage({
         if (headcounts && Array.isArray(headcounts)) {
           headcounts.forEach((hc: Record<string, unknown>) => {
             vacancies.push({
-              // @ts-ignore TODO: fix type
-              id: hc.id || `${planItem.id}-${vacancies.length}`,
-              // @ts-ignore TODO: fix type
-              title: hc.title || 'Posição Planejada',
-              // @ts-ignore TODO: fix type
-              department: hc.department_name || hc.department || 'Sem Departamento',
-              // @ts-ignore TODO: fix type
-              plannedMonth: hc.target_month || 1,
-              plannedYear: hc.target_year || planItem.fiscal_year || selectedYear,
-              // @ts-ignore TODO: fix type
-              status: hc.status || 'planned',
-              // @ts-ignore TODO: fix type
-              priority: hc.priority || 'medium',
-              // @ts-ignore TODO: fix type
-              budgetApproved: hc.budget_approved ?? true,
-              // @ts-ignore TODO: fix type
-              headcountType: hc.headcount_type || 'expansion'
+              id: String(hc.id || `${planItem.id}-${vacancies.length}`),
+              title: String(hc.title || 'Posição Planejada'),
+              department: String(hc.department_name || hc.department || 'Sem Departamento'),
+              plannedMonth: Number(hc.target_month || 1),
+              plannedYear: Number(hc.target_year || planItem.fiscal_year || selectedYear),
+              status: (hc.status as PlannedVacancy['status']) || 'planned',
+              priority: (hc.priority as PlannedVacancy['priority']) || 'medium',
+              budgetApproved: (hc.budget_approved as boolean) ?? true,
+              headcountType: (hc.headcount_type as PlannedVacancy['headcountType']) || 'expansion'
             })
             
             if (hc.status === 'open') totalOpen++

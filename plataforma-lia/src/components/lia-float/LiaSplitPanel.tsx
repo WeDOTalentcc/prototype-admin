@@ -279,7 +279,7 @@ export function LiaSplitPanel({ onNavigate }: LiaSplitPanelProps) {
             maxLength={MAX_INPUT_CHARS}
             aria-label="Mensagem para a LIA"
             className={cn(
- "flex-1 resize-none bg-transparent text-base-ui",
+ "flex-1 resize-none bg-transparent text-sm-ui",
               "text-lia-text-primary placeholder:text-lia-text-disabled dark:placeholder:text-lia-text-tertiary",
               "focus:outline-none py-1.5 px-1 max-h-[120px] leading-relaxed"
             )}
@@ -344,7 +344,7 @@ function SplitMessageBubble({ msg }: { msg: FloatMessage }) {
       )}
       <div
         className={cn(
- "max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed",
+ "max-w-[85%] px-3 py-2 rounded-md text-sm-ui leading-relaxed",
           isUser
             ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
             : "bg-lia-bg-secondary text-lia-text-primary"
@@ -363,7 +363,7 @@ function SplitStreamingBubble({ content }: { content: string }) {
       <div className="w-6 h-6 rounded-full bg-lia-bg-tertiary flex items-center justify-center flex-shrink-0 mt-0.5">
         <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
       </div>
-      <div className="max-w-[85%] px-3 py-2 rounded-md text-base-ui leading-relaxed bg-lia-bg-secondary text-lia-text-primary">
+      <div className="max-w-[85%] px-3 py-2 rounded-md text-sm-ui leading-relaxed bg-lia-bg-secondary text-lia-text-primary">
         {content === "..." ? (
           <span className="flex gap-1 items-center h-5">
             <ThinkingDots dotClassName="bg-lia-border-medium" size="md" />

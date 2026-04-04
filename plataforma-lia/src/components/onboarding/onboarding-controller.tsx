@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { FirstAccessManager } from "./first-access-manager"
 import { Button } from "@/components/ui/button"
+import { useOnboardingStore } from "@/stores/onboarding-store"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Brain, Clock, Lightbulb, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react"
 import './onboarding-styles.css'
@@ -38,10 +39,9 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [dontShowAgainFlag, setDontShowAgainFlag] = useState(false)
 
-  // Initialize userData synchronously using a function initializer
-  // This avoids the loading spinner by initializing userData on first render
+  const onboardingStore = useOnboardingStore()
+
   const [userData, setUserData] = useState<UserData | null>(() => {
-    // SSR: window is undefined, return demo user to avoid hydration mismatch
     if (typeof window === 'undefined') {
       const demoUser: UserData = {
         id: 'demo-user-1',
@@ -63,60 +63,35 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
       return demoUser
     }
 
-    let userToSet: UserData | null = null
+    const storeState = useOnboardingStore.getState()
+    const storedUserData = storeState.userData
 
-    try {
-      const storedUserData = localStorage.getItem('lia_user_data')
-      if (storedUserData) {
-        const user = JSON.parse(storedUserData)
-        userToSet = user
+    if (storedUserData) {
+      return storedUserData as unknown as UserData
+    }
 
-        const firstAccessFlag = localStorage.getItem('lia_first_access')
-        const canReplay = localStorage.getItem('lia_can_replay_onboarding')
-        const onboardingDismissed = localStorage.getItem('lia_onboarding_dismissed')
-
-        if (onboardingDismissed === 'true' && !forceOnboarding) {
-          // Don't show onboarding
-        } else if (firstAccessFlag === 'true' || forceOnboarding || canReplay === 'true') {
-          // Show onboarding (handled separately in rendering)
-        }
-      }
-    } catch (error) {
-      try {
-        localStorage.removeItem('lia_user_data')
-      } catch (e) {
-        // Ignore
+    const demoUser: UserData = {
+      id: 'demo-user-1',
+      name: 'Usuário Demo',
+      email: 'demo@wedotalent.com',
+      phone: '+55 11 99999-9999',
+      role: 'Recrutador',
+      companyId: 'demo-company',
+      companyName: 'WeDo Talent Demo',
+      isFirstAccess: false,
+      permissions: ['admin', 'recruitment', 'users', 'settings'],
+      createdAt: new Date().toISOString(),
+      companyData: {
+        razaoSocial: 'WeDo Talent Soluções Ltda',
+        endereco: 'São Paulo, SP',
+        telefone: '+55 11 3000-0000'
       }
     }
 
-    if (!userToSet) {
-      const demoUser: UserData = {
-        id: 'demo-user-1',
-        name: 'Usuário Demo',
-        email: 'demo@wedotalent.com',
-        phone: '+55 11 99999-9999',
-        role: 'Recrutador',
-        companyId: 'demo-company',
-        companyName: 'WeDo Talent Demo',
-        isFirstAccess: false,
-        permissions: ['admin', 'recruitment', 'users', 'settings'],
-        createdAt: new Date().toISOString(),
-        companyData: {
-          razaoSocial: 'WeDo Talent Soluções Ltda',
-          endereco: 'São Paulo, SP',
-          telefone: '+55 11 3000-0000'
-        }
-      }
-      userToSet = demoUser
+    storeState.setUserData(demoUser as unknown as Record<string, unknown>)
+    storeState.setCanReplayOnboarding(true)
 
-      try {
-        localStorage.setItem('lia_user_data', JSON.stringify(demoUser))
-        localStorage.setItem('lia_can_replay_onboarding', 'true')
-      } catch (e) {
-      }
-    }
-
-    return userToSet
+    return demoUser
   })
 
   useEffect(() => {
@@ -166,12 +141,10 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
     setShowSetupIntroModal(true)
     setDontShowAgainFlag(!!dontShowAgain)
     
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('lia_first_access')
-      localStorage.removeItem('lia_can_replay_onboarding')
-      if (dontShowAgain) {
-        localStorage.setItem('lia_onboarding_dismissed', 'true')
-      }
+    onboardingStore.setFirstAccess(false)
+    onboardingStore.setCanReplayOnboarding(false)
+    if (dontShowAgain) {
+      onboardingStore.setOnboardingDismissed(true)
     }
   }
 
@@ -179,13 +152,11 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
     setShowOnboarding(false)
     setShowSetupIntroModal(false)
     
-    if (typeof window !== 'undefined') {
-      if (dontShowAgain) {
-        localStorage.setItem('lia_onboarding_dismissed', 'true')
-        localStorage.removeItem('lia_can_replay_onboarding')
-      } else {
-        localStorage.setItem('lia_can_replay_onboarding', 'true')
-      }
+    if (dontShowAgain) {
+      onboardingStore.setOnboardingDismissed(true)
+      onboardingStore.setCanReplayOnboarding(false)
+    } else {
+      onboardingStore.setCanReplayOnboarding(true)
     }
   }
 
@@ -195,9 +166,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 
   const handleSkipSetup = () => {
     setShowSetupIntroModal(false)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('lia_can_replay_onboarding', 'true')
-    }
+    onboardingStore.setCanReplayOnboarding(true)
   }
 
   const handleThankYouClose = () => {
@@ -208,8 +177,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
     return (
       <FirstAccessManager
         token={accessToken}
-        // @ts-ignore TODO: fix type — Type '(newUserData: UserData) => void' is not assignable to type '(userData: Rec
-        onAccessGranted={handleAccessGranted}
+        onAccessGranted={handleAccessGranted as any}
         onAccessDenied={handleAccessDenied}
       />
     )
@@ -462,32 +430,31 @@ function ThankYouScreen({ onClose }: { onClose: () => void }) {
 }
 
 export function useUserData() {
-  const [userData, setUserData] = useState<UserData | null>(null)
+  const storeUserData = useOnboardingStore((s) => s.userData)
+  const setStoreUserData = useOnboardingStore((s) => s.setUserData)
+  const clearOnboarding = useOnboardingStore((s) => s.clearOnboarding)
+
+  const [userData, setUserData] = useState<UserData | null>(
+    storeUserData as unknown as UserData | null
+  )
 
   useEffect(() => {
-    const storedUserData = localStorage.getItem('lia_user_data')
-    if (storedUserData) {
-      try {
-        setUserData(JSON.parse(storedUserData))
-      } catch (error) {
-      }
+    if (storeUserData) {
+      setUserData(storeUserData as unknown as UserData)
     }
-  }, [])
+  }, [storeUserData])
 
   const updateUserData = (newData: Partial<UserData>) => {
     if (userData) {
       const updatedData = { ...userData, ...newData }
       setUserData(updatedData)
-      localStorage.setItem('lia_user_data', JSON.stringify(updatedData))
+      setStoreUserData(updatedData as unknown as Record<string, unknown>)
     }
   }
 
   const logout = () => {
     setUserData(null)
-    localStorage.removeItem('lia_user_data')
-    localStorage.removeItem('lia_first_access')
-    localStorage.removeItem('lia_can_replay_onboarding')
-    localStorage.removeItem('lia_onboarding_dismissed')
+    clearOnboarding()
     window.location.href = '/login'
   }
 
@@ -500,11 +467,11 @@ export function useUserData() {
 }
 
 export function canReplayOnboarding(): boolean {
-  return localStorage.getItem('lia_can_replay_onboarding') === 'true'
+  return useOnboardingStore.getState().canReplayOnboarding
 }
 
 export function triggerOnboarding() {
-  localStorage.setItem('lia_first_access', 'true')
+  useOnboardingStore.getState().setFirstAccess(true)
   window.location.reload()
 }
 

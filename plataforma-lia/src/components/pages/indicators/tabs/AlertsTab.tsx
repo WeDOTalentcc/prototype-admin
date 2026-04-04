@@ -10,9 +10,7 @@ export function AlertsTab({ recruiters, onAlertAction }: AlertsTabProps) {
   return (
     <div className="space-y-6">
       <KPIAlertSystem
-        // @ts-ignore // TODO: fix type
-        // @ts-ignore // TODO: fix type
-        recruiterData={recruiters}
+        recruiterData={recruiters as unknown as Record<string, unknown>[]}
         onAlertAction={onAlertAction}
       />
     </div>

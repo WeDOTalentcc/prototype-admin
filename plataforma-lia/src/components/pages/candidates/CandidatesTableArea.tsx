@@ -166,8 +166,7 @@ export function CandidatesTableArea({
                   setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }))
                 }}
                 onColumnReorder={(reorderedColumns) => {
-                  // @ts-ignore TODO: fix type
-                  setTableColumns(prev => prev.map(col => {
+                  setTableColumns((prev: any) => prev.map((col: any) => {
                     const reordered = reorderedColumns.find(r => r.id === col.id)
                     return reordered ? { ...col, order: reordered.order } : col
                   }))
@@ -219,8 +218,7 @@ export function CandidatesTableArea({
                               <span className="px-2 text-lia-text-primary">...</span>
                             )}
                             <Button
-                              // @ts-ignore TODO: fix type
-                              variant={currentPage === page ? 'default' : 'outline'}
+                              variant={currentPage === page ? 'default' as any : 'outline'}
                               size="sm"
                               onClick={() => setCurrentPage(page)}
                               className="h-8 w-8 p-0"

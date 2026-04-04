@@ -33,7 +33,7 @@ export function useJobEditTab({
   const { pipeline: companyPipelineFallback, loading: loadingCompanyPipeline } =
     useCompanyPipeline()
 
-  const { config: screeningConfig } = useScreeningConfig(    // @ts-ignore // TODO: fix type
+  const { config: screeningConfig } = useScreeningConfig(
     job?.backendId || job?.jobId || null
   )
 

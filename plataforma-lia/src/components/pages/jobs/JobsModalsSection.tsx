@@ -50,6 +50,7 @@ import { CreateJobModal } from "@/components/modals/create-job-modal"
 import { ScreeningChannelsModal, ScreeningSettingsModal, ScreeningSchedulingModal } from "@/components/screening-config"
 import { WSITutorialModal } from "@/components/pages/jobs/WSITutorialModal"
 import { toast } from "sonner"
+import { useJobUIStore } from "@/stores/job-ui-store"
 import type { Job } from "@/components/jobs"
 import type { ScreeningConfig } from "@/hooks/useScreeningConfig"
 
@@ -390,12 +391,12 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
             onSetSelectedJob(job)
             onCloseUnpublishModal()
             
-            localStorage.setItem('pendingCommunicationAction', JSON.stringify({
+            useJobUIStore.getState().setPendingCommunicationAction({
               template: params.template,
               candidateIds: params.candidateIds,
-              channel: params.channel,
+              channel: params.channel as 'email' | 'whatsapp',
               jobId: jobId
-            }))
+            })
           }
         }}
       />
@@ -643,13 +644,13 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
             onSetSelectedJob(job)
             onSetPreviewJob(job)
             
-            localStorage.setItem('pendingCommunicationAction', JSON.stringify({
+            useJobUIStore.getState().setPendingCommunicationAction({
               template: params.template,
               candidateIds: params.candidateIds,
-              channel: params.channel,
+              channel: params.channel as 'email' | 'whatsapp',
               jobId: jobId,
               action: 'pause_notification'
-            }))
+            })
             
             toast.success('Vaga pausada. O modal de comunicação será aberto para notificar candidatos.')
           }
@@ -745,7 +746,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         }}
         onJobCreated={(jobId) => {
           onCloseCreateJobModal()
-          localStorage.setItem("jobCreationMode", jobId)
+          useJobUIStore.getState().setJobCreationMode(jobId)
           onSetPendingNavigateJobId(jobId)
           onRefreshJobs()
         }}

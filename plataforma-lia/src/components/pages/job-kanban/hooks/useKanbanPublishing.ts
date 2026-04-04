@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { liaApi } from "@/services/lia-api"
 import { toast } from "sonner"
+import { useJobUIStore } from "@/stores/job-ui-store"
 
 interface UseKanbanPublishingProps {
   job?: Record<string, unknown>
@@ -22,15 +23,15 @@ export function useKanbanPublishing({
   const [publicLink, setPublicLink] = useState<string | null>(null)
   const [showPublishSuccess, setShowPublishSuccess] = useState(false)
 
+  const consumeJobCreationMode = useJobUIStore(s => s.consumeJobCreationMode)
+
   useEffect(() => {
     if (!job?.backendId) return
-    const creationJobId = localStorage.getItem("jobCreationMode")
-    if (creationJobId && creationJobId === job.backendId) {
+    if (consumeJobCreationMode(job.backendId as string)) {
       setIsCreationMode(true)
       setActiveTab("edit")
-      localStorage.removeItem("jobCreationMode")
     }
-  }, [job?.backendId, setActiveTab])
+  }, [job?.backendId, setActiveTab, consumeJobCreationMode])
 
   const handlePublishJob = useCallback(async () => {
     const vacancyId = job?.backendId as string | undefined

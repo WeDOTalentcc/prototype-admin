@@ -206,8 +206,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                 isTypingEffect={isTypingEffect}
                 displayedText={displayedText}
                 conversationId={conversationId}
-                // @ts-ignore TODO: fix type — Type 'RefObject<HTMLInputElement | null>' is not assignable to type 'RefObject<H
-                inputRef={inputRef}
+                inputRef={inputRef as any}
                 isSearchingVacancies={isSearchingVacancies}
                 onSetInputValue={setInputValue}
                 onSetMessages={setMessages}
@@ -441,15 +440,13 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
               onExpandEditSalary={() => setSalaryPanelExpanded(!salaryPanelExpanded)}
               onShowAddBenefitModal={() => setShowAddBenefitModal(true)}
               wsiCandidates={wsiCandidates}
-              // @ts-ignore TODO: fix type — Type 'Record<string, unknown>[]' is not assignable to type 'CompanyDefaultQuesti
-              companyDefaultQuestions={companyDefaultQuestions as Array<Record<string, unknown>>}
+              companyDefaultQuestions={companyDefaultQuestions as any}
               isGeneratingWSI={isGeneratingWSI}
               showCustomQuestionForm={showCustomQuestionForm}
               customQuestionText={customQuestionText}
               customQuestionType={customQuestionType}
               customQuestionRequired={customQuestionRequired}
-              // @ts-ignore TODO: fix type — Type '(questions: Record<string, unknown>[]) => void' is not assignable to type 
-              onSetCompanyDefaultQuestions={setCompanyDefaultQuestions as (questions: Array<Record<string, unknown>>) => void}
+              onSetCompanyDefaultQuestions={setCompanyDefaultQuestions as any}
               onToggleQuestionSelection={toggleWSIQuestionSelection}
               onDeleteQuestion={deleteWSIQuestion}
               onUpdateExpectedAnswer={updateWSIQuestionExpectedAnswer}

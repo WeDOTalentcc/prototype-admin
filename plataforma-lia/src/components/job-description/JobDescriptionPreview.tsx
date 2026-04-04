@@ -209,8 +209,7 @@ export function JobDescriptionPreview({
                   </p>
                   <ul className="space-y-1">
                     {requiredTech.map((comp) => (
-                      // @ts-ignore TODO: fix type — Property 'skill' does not exist on type 'Competency'.
-                      <li key={comp.name || comp.skill || String(comp)} className="flex items-center gap-2">
+                      <li key={comp.name || (comp as Record<string, unknown>).skill as string || String(comp)} className="flex items-center gap-2">
                         <span className="text-lia-text-secondary">•</span>
                         <span>
                           {comp.name}
@@ -230,8 +229,7 @@ export function JobDescriptionPreview({
                   </p>
                   <ul className="space-y-1">
                     {requiredBeh.map((comp) => (
-                      // @ts-ignore TODO: fix type — Property 'skill' does not exist on type 'Competency'.
-                      <li key={comp.name || comp.skill || String(comp)} className="flex items-center gap-2">
+                      <li key={comp.name || (comp as Record<string, unknown>).skill as string || String(comp)} className="flex items-center gap-2">
                         <span className="text-lia-text-secondary">•</span>
                         <span>
                           {comp.name}
@@ -252,8 +250,7 @@ export function JobDescriptionPreview({
               </h4>
               <ul className="space-y-1">
                 {niceTech.map((comp) => (
-                  // @ts-ignore TODO: fix type — Property 'skill' does not exist on type 'Competency'.
-                  <li key={comp.name || comp.skill || String(comp)} className="flex items-center gap-2">
+                  <li key={comp.name || (comp as Record<string, unknown>).skill as string || String(comp)} className="flex items-center gap-2">
                     <span className="text-lia-text-secondary">•</span>
                     <span>
                       {comp.name}

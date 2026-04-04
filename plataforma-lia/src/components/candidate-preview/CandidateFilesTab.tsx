@@ -369,8 +369,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       variant="ghost"
                       className="p-1 h-6 w-6"
                       onClick={() => {
-                        // @ts-ignore TODO: fix type
-                        setSelectedFile({ name: 'foto_perfil.jpg', type: 'image', url: candidate.avatar_url || candidate.avatar })
+                        setSelectedFile({ name: 'foto_perfil.jpg', type: 'image', url: (candidate.avatar_url || candidate.avatar) as string })
                         setPreviewType('image')
                         setShowPreview(true)
                       }}
@@ -387,13 +386,11 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                 {(candidate.avatar_url || candidate.avatar) && (
                   <div className="mt-2">
                     <img
-                      // @ts-ignore TODO: fix type
-                      src={candidate.avatar_url || candidate.avatar}
+                      src={(candidate.avatar_url || candidate.avatar) as string}
                       alt="Preview"
                       className="w-12 h-12 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none"
                       onClick={() => {
-                        // @ts-ignore TODO: fix type
-                        setSelectedFile({ name: 'foto_perfil.jpg', type: 'image', url: candidate.avatar_url || candidate.avatar })
+                        setSelectedFile({ name: 'foto_perfil.jpg', type: 'image', url: (candidate.avatar_url || candidate.avatar) as string })
                         setPreviewType('image')
                         setShowPreview(true)
                       }}

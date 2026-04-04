@@ -464,8 +464,7 @@ export function WizardRightPanel({
             onSetTechnicalSkills={onSetTechnicalSkills}
             onSetBehavioralCompetencies={onSetBehavioralCompetencies}
             basicInfoFields={basicInfoFields}
-            // @ts-ignore TODO: fix type — Type 'import("/home/runner/workspace/plataforma-lia/src/components/expanded-chat
-            detectedCriteria={detectedCriteria}
+            detectedCriteria={detectedCriteria as any}
             companyConfig={companyConfig}
             inferSkillWeight={inferSkillWeight}
             isCollapsed={!competenciesPanelExpanded}

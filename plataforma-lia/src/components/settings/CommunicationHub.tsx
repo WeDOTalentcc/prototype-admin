@@ -49,8 +49,7 @@ export function CommunicationHub({ activeSubsection }: CommunicationHubProps) {
             aiPrompt={hub.aiPrompt}
             setAiPrompt={hub.setAiPrompt}
             aiResultModal={hub.aiResultModal}
-            // @ts-ignore TODO: fix type — Type 'RefObject<HTMLTextAreaElement | null>' is not assignable to type 'RefObjec
-            bodyTextareaRef={hub.bodyTextareaRef}
+            bodyTextareaRef={hub.bodyTextareaRef as any}
             isGenerating={hub.isGenerating}
             handleChannelFilterChange={hub.handleChannelFilterChange}
             insertVariableAtCursor={hub.insertVariableAtCursor}

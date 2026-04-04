@@ -153,8 +153,7 @@ const CandidateCard = ({
             <Button
               key={action.id}
               size="sm"
-              // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-              variant={isDestructive ? "outline" : "default"}
+              variant={isDestructive ? "outline" : "default" as any}
               className={`h-8 text-xs ${
  isDestructive 
                   ? "border-status-error/30 text-status-error hover:bg-status-error/10 dark:border-status-error/30 dark:text-status-error dark:hover:bg-status-error/30" 

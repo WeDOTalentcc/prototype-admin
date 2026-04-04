@@ -40,8 +40,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
 
   useEffect(() => {
     if (isOpen && job?.jobId) {
-      // @ts-ignore TODO: fix type
-      fetchReport(job.jobId)
+      fetchReport(job.jobId as any)
     }
   }, [isOpen, job?.jobId, fetchReport])
 

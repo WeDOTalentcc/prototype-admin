@@ -50,10 +50,8 @@ export function TemplatesPage() {
       try {
         const parsed = JSON.parse(savedTemplates).map((template: Record<string, unknown>) => ({
           ...template,
-          // @ts-ignore TODO: fix type
-          createdAt: new Date(template.createdAt),
-          // @ts-ignore TODO: fix type
-          updatedAt: new Date(template.updatedAt)
+          createdAt: new Date(template.createdAt as string),
+          updatedAt: new Date(template.updatedAt as string)
         }))
         setTemplates(parsed)
       } catch (error) {

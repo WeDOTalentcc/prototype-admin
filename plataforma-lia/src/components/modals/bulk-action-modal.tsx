@@ -69,7 +69,6 @@ interface ProgressState {
   results: BulkActionResult[]
 }
 
-// @ts-ignore TODO: fix type — Type '{ move_stage: { title: string; description: string; icon: Element; }; reje
 const ACTION_CONFIG: Record<BulkActionType, { title: string; description: string; icon: React.ReactNode }> = {
   move_stage: {
     title: 'Mover Candidatos de Etapa',

@@ -396,8 +396,6 @@ export const tailwindToVuetify = {
     'bg-lia-bg-secondary': 'class="bg-grey-lighten-5"',
     'border-lia-border-subtle': 'class="border-grey-lighten-3"',
     'border-lia-border-default': 'class="border-grey-lighten-2"',
-    'text-lia-text-primary': 'class="text-grey-darken-4"',
-    // @ts-ignore TODO: fix type — An object literal cannot have multiple properties with the same name.
     'text-lia-text-primary': 'class="text-grey-darken-3"',
     'text-lia-text-secondary': 'class="text-grey-darken-1"',
     'text-lia-text-tertiary': 'class="text-grey"',

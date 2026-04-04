@@ -136,10 +136,8 @@ export function RecruitmentHub({ activeSubsection }: RecruitmentHubProps) {
             is_eliminatory: q.is_eliminatory ?? false,
             expected_answer: q.expected_answer || undefined,
           }))
-          // @ts-ignore TODO: fix type — Argument of type '{ id: string; question: string | undefined; type: string; requ
-          setQuestions(mapped)
-          // @ts-ignore TODO: fix type — Argument of type '{ id: string; question: string | undefined; type: string; requ
-          setOriginalQuestions(mapped)
+          setQuestions(mapped as ScreeningQuestion[])
+          setOriginalQuestions(mapped as ScreeningQuestion[])
         }
         
         if (pipelineRes.ok) {

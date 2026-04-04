@@ -209,8 +209,7 @@ export function AdminTemplateHub() {
             name: t.name,
             category: t.category || 'system',
             subject: t.subject || '',
-            // @ts-ignore TODO: fix type — Argument of type '{}' is not assignable to parameter of type 'string'.
-            body: t.body || t.body_text || (t.body_html ? stripHtmlTags(t.body_html) : ''),
+            body: t.body || t.body_text || (t.body_html ? stripHtmlTags(t.body_html as string) : ''),
             variables: t.variables || [],
             isActive: t.is_active ?? true,
             lastUpdated: t.updated_at || t.last_updated || new Date().toISOString().split('T')[0],

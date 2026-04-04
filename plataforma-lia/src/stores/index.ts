@@ -1,3 +1,7 @@
 export { useAuthStore, type AuthStore, registerStoreReset } from './auth-store'
 export { useKanbanStore, type KanbanStore } from './kanban-store'
 export { useCandidatesStore, type CandidatesStore } from './candidates-store'
+export { useNavigationStore, type NavigationStore } from './navigation-store'
+export { useOnboardingStore, type OnboardingStore } from './onboarding-store'
+export { useJobUIStore, type JobUIStore } from './job-ui-store'
+export { useUIPreferencesStore, type UIPreferencesStore } from './ui-preferences-store'

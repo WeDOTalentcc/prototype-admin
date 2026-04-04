@@ -31,7 +31,6 @@ const CATEGORY_COLORS: Record<string, {
   textColor: string
   badgeVariant: 'default' | 'secondary' | 'outline'
 }> = {
-  // @ts-ignore TODO: fix type — Property 'borderColor' is missing in type '{ backgroundColor: string; iconBg: st
   vagas: {
     backgroundColor: 'var(--lia-bg-secondary)',
     iconBg: 'var(--lia-bg-tertiary)',

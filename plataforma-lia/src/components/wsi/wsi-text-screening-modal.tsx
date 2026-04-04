@@ -114,10 +114,8 @@ const DREYFUS_NAMES: Record<number, string> = {
   5: 'Expert'
 }
 
-const BIG_FIVE_LABELS: Record<string, { label: string; color: string }> = {
-  // @ts-ignore TODO: fix type — Property 'color' is missing in type '{ label: string; }' but required in type '{
+const BIG_FIVE_LABELS: Record<string, { label: string; color?: string }> = {
   openness: { label: 'Abertura' },
-  // @ts-ignore TODO: fix type — Property 'color' is missing in type '{ label: string; }' but required in type '{
   conscientiousness: { label: 'Conscienciosidade' },
   extraversion: { label: 'Extroversão', color: 'var(--status-success)' },
   agreeableness: { label: 'Amabilidade', color: 'var(--wedo-orange)' },

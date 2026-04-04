@@ -110,6 +110,8 @@ interface RawHealthCheckItemFromAPI {
   evidence_details?: string | null
   checklist_items?: ChecklistItem[]
   last_verification?: string | null
+  last_checked_at?: string | null
+  check_comments?: string | null
   comment?: string | null
   next_review_date?: string | null
   verified?: boolean
@@ -262,12 +264,9 @@ export default function HealthCheckPage() {
             evidence: item.evidence || '',
             evidenceDetails: item.evidence_details || null,
             checklistItems: item.checklist_items || [],
-            // @ts-ignore TODO: fix type
-            lastVerification: item.last_checked_at,
-            // @ts-ignore TODO: fix type
-            comment: item.check_comments || item.comment,
+            lastVerification: item.last_checked_at ?? null,
+            comment: item.check_comments || item.comment || null,
             nextReviewDate: item.next_review_date,
-            // @ts-ignore TODO: fix type
             verified: item.last_checked_at ? true : false,
             referenceUrl: item.reference_url,
             referenceLabel: item.reference_label
@@ -334,12 +333,9 @@ export default function HealthCheckPage() {
           evidence: item.evidence || '',
           evidenceDetails: item.evidence_details || null,
           checklistItems: item.checklist_items || [],
-          // @ts-ignore TODO: fix type
-          lastVerification: item.last_checked_at,
-          // @ts-ignore TODO: fix type
-          comment: item.check_comments || item.comment,
+          lastVerification: item.last_checked_at ?? null,
+          comment: item.check_comments || item.comment || null,
           nextReviewDate: item.next_review_date,
-          // @ts-ignore TODO: fix type
           verified: item.last_checked_at ? true : false,
           referenceUrl: item.reference_url,
           referenceLabel: item.reference_label

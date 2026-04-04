@@ -228,7 +228,6 @@ export function PauseOptionsStep({
                   <Label className="text-micro text-lia-text-secondary">Canal:</Label>
                   <div className="flex gap-1">
                     {(['email', 'teams', 'bell'] as RecruiterChannel[]).map((channel) => (
-                      // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
                       <Button key={channel} type="button" variant={recruiterChannel === channel ? 'default' : 'outline'} size="sm"
                         onClick={() => onRecruiterChannelChange(channel)}
                         className={cn("h-6 px-2 text-micro gap-1", recruiterChannel === channel ? "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" : "border border-lia-border-default text-lia-text-secondary")}>

@@ -596,8 +596,7 @@ export function useSmartSearchCore(props: SmartSearchInputProps) {
 
   useEffect(() => {
     if (selectedArchetype) {
-      // @ts-ignore TODO: fix type
-      const prompt = buildArchetypePrompt(selectedArchetype)
+      const prompt = buildArchetypePrompt(selectedArchetype as any)
       setArchetypeSearchPrompt(prompt)
     } else {
       setArchetypeSearchPrompt("")

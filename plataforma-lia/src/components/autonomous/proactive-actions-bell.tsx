@@ -164,7 +164,6 @@ export function ProactiveActionsBell({
       >
         <div className="flex items-start gap-2">
           {candidate ? (
-            // @ts-ignore TODO: fix type
             <Avatar className="h-8 w-8 flex-shrink-0">
               <AvatarImage src={(candidate as any).avatar_url} alt={(candidate as any).name} />
               <AvatarFallback className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary">
@@ -174,8 +173,7 @@ export function ProactiveActionsBell({
           ) : (
             <div className={cn(
  "w-2 h-2 rounded-full mt-1.5 shrink-0",
-              // @ts-ignore TODO: fix type
-              action.priority === 'urgent' && "bg-status-error",
+              (action as Record<string, unknown>).priority === 'urgent' && "bg-status-error",
               action.priority === 'high' && "bg-wedo-orange",
               action.priority === 'normal' && "bg-wedo-cyan",
               action.priority === 'low' && "bg-lia-border-medium"
@@ -190,8 +188,7 @@ export function ProactiveActionsBell({
                 {(candidate as any)?.score && (
                   <span className={cn(
  "text-micro font-bold px-1.5 py-0.5 rounded-full flex-shrink-0",
-                    // @ts-ignore TODO: fix type
-                    getScoreColor((candidate as any).score)
+                    getScoreColor((candidate as Record<string, unknown>).score as number)
                   )}>
                     {(Math.round((candidate as any).score) as React.ReactNode)}
                   </span>
@@ -241,8 +238,7 @@ export function ProactiveActionsBell({
                 Depois
               </Button>
               <Button
-                // @ts-ignore TODO: fix type
-                variant="default"
+                variant="primary"
                 size="sm"
                 className="h-6 px-2 text-micro bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
                 onClick={() => handleAccept(action.id)}

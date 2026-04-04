@@ -13,13 +13,11 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
   const getTriageStatus = () => {
     if (candidate.triageComplete && candidate.triageData) {
       // Verificar se foi aprovado na triagem
+      const triageData = candidate.triageData as Record<string, unknown>
       const isApproved =
-        // @ts-ignore TODO: fix type
-        candidate.triageData.mobility === 'OK' &&
-        // @ts-ignore TODO: fix type
-        candidate.triageData.salary !== 'Acima do budget' &&
-        // @ts-ignore TODO: fix type
-        candidate.triageData.interest !== 'Baixo'
+        triageData.mobility === 'OK' &&
+        triageData.salary !== 'Acima do budget' &&
+        triageData.interest !== 'Baixo'
 
       return {
         status: isApproved ? 'approved' : 'completed-issues',
@@ -100,7 +98,6 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
       <div className="flex items-center gap-1">
         {/* Contato Realizado */}
         {candidate.contactStatus !== 'não contatado' && (
-          // @ts-ignore TODO: fix type
           <div
  className="w-6 h-6 rounded-md bg-lia-bg-tertiary flex items-center justify-center"
             title="Contato realizado pela LIA"
@@ -150,7 +147,6 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
 
       {/* Métricas Adicionais */}
       {candidate.triageData && (
-        // @ts-ignore TODO: fix type
         <div className="flex gap-1 flex-wrap">
           {(candidate.triageData as any).mobility === 'OK' && (
             <div

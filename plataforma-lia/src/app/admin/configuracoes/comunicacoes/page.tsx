@@ -358,14 +358,11 @@ export default function AdminComunicacoesPage() {
       if (data.success && data.data?.modules) {
         const modules: MatrixModule[] = data.data.modules.map((mod: Record<string, unknown>) => ({
           module: mod.module,
-          // @ts-ignore TODO: fix type
-          label: mod.label || moduleLabels[mod.module]?.label || mod.module,
+          label: mod.label || (moduleLabels as Record<string, Record<string, string>>)[mod.module as string]?.label || mod.module,
           description: mod.description || '',
           icon: mod.icon || 'folder',
-          // @ts-ignore TODO: fix type
-          entries: (mod.entries || []).map(mapApiMatrixEntryToLocal),
-          // @ts-ignore TODO: fix type
-          totalEntries: mod.total_entries || mod.entries?.length || 0,
+          entries: ((mod.entries || []) as Record<string, unknown>[]).map(mapApiMatrixEntryToLocal),
+          totalEntries: (mod.total_entries || (mod.entries as unknown[] | undefined)?.length || 0) as number,
           activeEntries: mod.active_entries || 0
         }))
         setMatrixModules(modules)

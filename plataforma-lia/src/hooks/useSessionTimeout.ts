@@ -16,11 +16,8 @@ export function useSessionTimeout({
   timeoutMs = SESSION_TIMEOUT_MS,
 }: UseSessionTimeoutOptions = {}) {
   const router = useRouter()
-  // @ts-ignore // TODO: fix type
-  // @ts-ignore // TODO: fix type
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
-  // @ts-ignore // TODO: fix type
-  const warningRef = useRef<ReturnType<typeof setTimeout>>()
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const warningRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const resetTimer = useCallback(() => {
     clearTimeout(timeoutRef.current)

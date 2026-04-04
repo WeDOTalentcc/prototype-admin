@@ -23,7 +23,6 @@ export function TestStatusIndicators({ candidate }: TestStatusIndicatorsProps) {
           <FileText className="w-4 h-4" />
         </div>
         {(candidate.technicalTestScore as any) && (
-          // @ts-ignore TODO: fix type
           <div className="absolute -top-1 -right-1">
             <div className="w-4 h-4 bg-status-success rounded-full flex items-center justify-center">
               <CheckCircle className="w-3 h-3 text-white" fill="currentColor" />

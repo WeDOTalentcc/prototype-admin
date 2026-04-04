@@ -142,8 +142,7 @@ export function useWSIQuestionHandlers(ctx: WSIQuestionHandlersContext) {
       
       // Sync selected questions to wsiQuestions
       const selected = updated.filter(q => q.selected)
-        // @ts-ignore
-      ctx.setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
+      ctx.setWsiQuestions(selected.map(({ selected: _s, batch: _b, ...rest }) => rest) as unknown as WSIQuestionCandidate[])
       
       // If reached 5 questions, add confirmation message
       const newCount = question.selected ? currentlySelected - 1 : currentlySelected + 1
@@ -168,8 +167,7 @@ export function useWSIQuestionHandlers(ctx: WSIQuestionHandlersContext) {
       )
       // Sync to wsiQuestions
       const selected = updated.filter(q => q.selected)
-        // @ts-ignore
-      ctx.setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
+      ctx.setWsiQuestions(selected.map(({ selected: _s, batch: _b, ...rest }) => rest) as unknown as WSIQuestionCandidate[])
       return updated
     })
   }
@@ -179,10 +177,8 @@ export function useWSIQuestionHandlers(ctx: WSIQuestionHandlersContext) {
       const updated = prev.map(q => 
         q.id === questionId ? { ...q, correctOptionIndex: optionIndex } : q
       )
-      // Sync to wsiQuestions
       const selected = updated.filter(q => q.selected)
-        // @ts-ignore
-      ctx.setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
+      ctx.setWsiQuestions(selected.map(({ selected: _s, batch: _b, ...rest }) => rest) as unknown as WSIQuestionCandidate[])
       return updated
     })
   }
@@ -191,8 +187,7 @@ export function useWSIQuestionHandlers(ctx: WSIQuestionHandlersContext) {
     ctx.setWsiCandidates(prev => {
       const updated = prev.filter(q => q.id !== questionId)
       const selected = updated.filter(q => q.selected)
-        // @ts-ignore
-      ctx.setWsiQuestions(selected.map(({ selected, batch, ...rest }) => rest))
+      ctx.setWsiQuestions(selected.map(({ selected: _s, batch: _b, ...rest }) => rest) as unknown as WSIQuestionCandidate[])
       return updated
     })
   }

@@ -10,7 +10,7 @@ import type { Job, JobFilters } from "@/components/jobs"
 // ---------------------------------------------------------------------------
 // useJobsFilters
 // Responsável por: filtros de status/dias, filtros avançados (multi-campo),
-// busca textual com boolean, persistência no localStorage, saved searches,
+// busca textual com boolean, persistência via Zustand store, saved searches,
 // filtros inline da tabela (jobFilters), filtros de navegação (tabs).
 // ---------------------------------------------------------------------------
 
@@ -227,17 +227,14 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
         job.requirements.some(req => req.toLowerCase().includes(searchLower)) ||
         job.benefits.some(benefit => benefit.toLowerCase().includes(searchLower)) ||
         (job.tags || []).some(tag => tag.toLowerCase().includes(searchLower)) ||
-        // @ts-ignore TODO: fix type
-        (job.technicalRequirements || []).some((tr: Record<string, unknown>) =>
+        ((job.technicalRequirements || []) as Record<string, unknown>[]).some((tr) =>
           (tr.technology as string)?.toLowerCase().includes(searchLower) ||
           (tr.category as string)?.toLowerCase().includes(searchLower)
         ) ||
-        // @ts-ignore TODO: fix type
-        (job.languages || []).some((lang: Record<string, unknown>) =>
+        ((job.languages || []) as Record<string, unknown>[]).some((lang) =>
           (lang.language as string)?.toLowerCase().includes(searchLower)
         ) ||
-        // @ts-ignore TODO: fix type
-        (job.behavioralCompetencies || []).some((bc: Record<string, unknown>) =>
+        ((job.behavioralCompetencies || []) as Record<string, unknown>[]).some((bc) =>
           (bc.competency as string)?.toLowerCase().includes(searchLower)
         ) ||
         (job.targetSector || '').toLowerCase().includes(searchLower) ||
@@ -331,12 +328,10 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
         const publishedChannels: string[] = []
         if (job.publishedLinkedIn) publishedChannels.push('linkedin')
         if (job.publishedWebsite) publishedChannels.push('website')
-        // @ts-ignore TODO: fix type
         if ((job as Record<string, unknown>).publishedIndeed) publishedChannels.push('indeed')
         matchesInlineFilters = matchesInlineFilters && jobFilters.publishing.channels.some(c => publishedChannels.includes(c))
       }
       if (jobFilters.publishing?.unpublished)
-        // @ts-ignore TODO: fix type
         matchesInlineFilters = matchesInlineFilters && !job.publishedLinkedIn && !job.publishedWebsite && !(job as Record<string, unknown>).publishedIndeed
       if (jobFilters.funnel?.emptyPipeline)
         matchesInlineFilters = matchesInlineFilters && job.funnel.total === 0

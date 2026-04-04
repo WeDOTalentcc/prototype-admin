@@ -11,6 +11,7 @@ import {
   LayoutDashboard
 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useNavigationStore } from "@/stores/navigation-store"
 
 interface BackendInterview {
   id: string
@@ -353,55 +354,52 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
   }
 
   const handleReschedule = (interview: ScheduledInterview) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('navigateToCandidate', JSON.stringify({
-        candidateId: interview.candidateId,
-        candidateName: interview.candidateName,
-        jobId: interview.jobId,
-        jobTitle: interview.jobTitle,
-        currentStage: interview.currentStage,
-        interviewType: interview.interviewType,
-        action: 'reschedule',
-        openTransitionModal: true,
-      }))
-      localStorage.setItem('liaPrompt', `Reagendar entrevista "${interview.type}" com ${interview.candidateName} para a vaga ${interview.jobTitle}, originalmente às ${interview.time}. Por favor, pergunte ao recrutador qual o dia e horário de preferência para o novo agendamento.`)
-    }
+    const { setNavigateToCandidate, setLiaPrompt } = useNavigationStore.getState()
+    setNavigateToCandidate({
+      candidateId: interview.candidateId,
+      candidateName: interview.candidateName,
+      jobId: interview.jobId,
+      jobTitle: interview.jobTitle,
+      currentStage: interview.currentStage,
+      interviewType: interview.interviewType,
+      action: 'reschedule',
+      openTransitionModal: true,
+    })
+    setLiaPrompt(`Reagendar entrevista "${interview.type}" com ${interview.candidateName} para a vaga ${interview.jobTitle}, originalmente às ${interview.time}. Por favor, pergunte ao recrutador qual o dia e horário de preferência para o novo agendamento.`)
     if (onNavigate) {
       onNavigate('Vagas')
     }
   }
 
   const handleReject = (interview: ScheduledInterview) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('navigateToCandidate', JSON.stringify({
-        candidateId: interview.candidateId,
-        candidateName: interview.candidateName,
-        jobId: interview.jobId,
-        jobTitle: interview.jobTitle,
-        currentStage: interview.currentStage,
-        interviewType: interview.interviewType,
-        action: 'cancel',
-        openTransitionModal: true,
-      }))
-      localStorage.setItem('liaPrompt', `Cancelar entrevista "${interview.type}" com ${interview.candidateName} para a vaga ${interview.jobTitle} às ${interview.time}.`)
-    }
+    const { setNavigateToCandidate, setLiaPrompt } = useNavigationStore.getState()
+    setNavigateToCandidate({
+      candidateId: interview.candidateId,
+      candidateName: interview.candidateName,
+      jobId: interview.jobId,
+      jobTitle: interview.jobTitle,
+      currentStage: interview.currentStage,
+      interviewType: interview.interviewType,
+      action: 'cancel',
+      openTransitionModal: true,
+    })
+    setLiaPrompt(`Cancelar entrevista "${interview.type}" com ${interview.candidateName} para a vaga ${interview.jobTitle} às ${interview.time}.`)
     if (onNavigate) {
       onNavigate('Vagas')
     }
   }
 
   const handleOpenJob = (interview: ScheduledInterview) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('navigateToCandidate', JSON.stringify({
-        candidateId: interview.candidateId,
-        candidateName: interview.candidateName,
-        jobId: interview.jobId,
-        jobTitle: interview.jobTitle,
-        currentStage: interview.currentStage,
-        action: 'view',
-        openTransitionModal: false,
-      }))
-    }
+    const { setNavigateToCandidate } = useNavigationStore.getState()
+    setNavigateToCandidate({
+      candidateId: interview.candidateId,
+      candidateName: interview.candidateName,
+      jobId: interview.jobId,
+      jobTitle: interview.jobTitle,
+      currentStage: interview.currentStage,
+      action: 'view',
+      openTransitionModal: false,
+    })
     if (onNavigate) {
       onNavigate('Vagas')
     }

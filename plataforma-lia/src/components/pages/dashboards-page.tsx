@@ -19,6 +19,7 @@ import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { DailyBriefingCard } from "@/components/daily-briefing-card"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 // Tipos de dashboards disponíveis
 type DashboardType = "estrategicos" | "previsoes-ia" | "people-analytics" | "modelos-trabalho" | "funil-performance" | "war-room" | "competencias" | "voice-screening" | "agent-activity"
@@ -208,6 +209,7 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
   }
 
   return (
+    <ErrorBoundarySection>
     <div className="flex gap-3 h-full px-3 pt-3 pb-6 bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       {/* Menu Lateral de Dashboards - Retrátil com Auto-Expand */}
       <div 
@@ -327,8 +329,11 @@ export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
               }}
             />
           )}
+          <ErrorBoundarySection>
           {renderDashboardContent()}
+          </ErrorBoundarySection>
         </div>
       </div>
+    </ErrorBoundarySection>
     )
   }

@@ -171,8 +171,8 @@ export function useChatPageState({
         .reverse()
         .find((msg) => msg.contextData)
 
-      if (messageWithContext?.contextData) {        // @ts-ignore // TODO: fix type
-        setContextData(messageWithContext.contextData)
+      if (messageWithContext?.contextData) {
+        setContextData(messageWithContext.contextData as any)
         setIsPanelOpen(true)
       }
     }

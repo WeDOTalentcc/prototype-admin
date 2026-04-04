@@ -451,10 +451,8 @@ export function useCriteriaDetection(): UseCriteriaDetectionReturn {
         } else if (fullMatch.includes('básico') || fullMatch.includes('basico')) {
           level = 'Básico'
         }
-        // @ts-ignore TODO: fix type - idiomas runtime shape differs
-        if (!newCriteria.idiomas.some((i: any) => i.name === name)) {
-          // @ts-ignore TODO: fix type
-          newCriteria.idiomas = [...newCriteria.idiomas, { name, level }]
+        if (!(newCriteria.idiomas as any[]).some((i: any) => i.name === name)) {
+          (newCriteria as any).idiomas = [...(newCriteria.idiomas as any[]), { name, level }]
         }
       }
     }

@@ -1,205 +1,68 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useCallback } from 'react'
+import { useJobFiltersStore } from '@/stores/job-filters-store'
+import type { JobFiltersState, SavedSearch } from '@/stores/job-filters-store'
 
-const STORAGE_KEY = 'wedotalent_job_filters'
-const SAVED_SEARCHES_KEY = 'wedotalent_job_saved_searches'
-const MAX_SAVED_SEARCHES = 10
-
-export interface JobFiltersState {
-  selectedStatusFilter: string
-  selectedDaysFilter: string
-  advancedFilters: { [key: string]: string[] }
-  booleanSearch: string
-  searchTerm: string
-}
-
-export interface SavedSearch {
-  id: string
-  name: string
-  query: string
-  filters: JobFiltersState
-  createdAt: string
-  isShared?: boolean
-}
-
-function createDefaultAdvancedFilters(): { [key: string]: string[] } {
-  return {
-    job_titles: [],
-    departments: [],
-    locations: [],
-    work_models: [],
-    job_types: [],
-    seniority_levels: [],
-    salary_ranges: [],
-    status: [],
-    stages: [],
-    priorities: [],
-    managers: [],
-    benefits: [],
-    requirements: [],
-    industries: [],
-    budget_ranges: [],
-    urgency_levels: [],
-    contract_duration: [],
-    team_size: []
-  }
-}
-
-function createDefaultFiltersState(): JobFiltersState {
-  return {
-    selectedStatusFilter: 'todas',
-    selectedDaysFilter: 'todas',
-    advancedFilters: createDefaultAdvancedFilters(),
-    booleanSearch: '',
-    searchTerm: ''
-  }
-}
+export type { JobFiltersState, SavedSearch }
 
 export function useJobFiltersPersistence() {
-  const [filtersState, setFiltersState] = useState<JobFiltersState>(createDefaultFiltersState)
-  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
-  const [isLoaded, setIsLoaded] = useState(false)
-  const isInitialized = useRef(false)
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || isInitialized.current) return
-    isInitialized.current = true
-
-    try {
-      const storedFilters = localStorage.getItem(STORAGE_KEY)
-      if (storedFilters) {
-        const parsed = JSON.parse(storedFilters)
-        setFiltersState({
-          ...createDefaultFiltersState(),
-          ...parsed,
-          advancedFilters: {
-            ...createDefaultAdvancedFilters(),
-            ...(parsed.advancedFilters || {})
-          }
-        })
-      }
-
-      const storedSearches = localStorage.getItem(SAVED_SEARCHES_KEY)
-      if (storedSearches) {
-        const parsed = JSON.parse(storedSearches)
-        setSavedSearches(Array.isArray(parsed) ? parsed.slice(0, MAX_SAVED_SEARCHES) : [])
-      }
-    } catch (error) {
-    }
-
-    setIsLoaded(true)
-  }, [])
-
-  useEffect(() => {
-    if (!isLoaded || typeof window === 'undefined') return
-
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtersState))
-    } catch (error) {
-    }
-  }, [filtersState, isLoaded])
-
-  useEffect(() => {
-    if (!isLoaded || typeof window === 'undefined') return
-
-    try {
-      localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(savedSearches.slice(0, MAX_SAVED_SEARCHES)))
-    } catch (error) {
-    }
-  }, [savedSearches, isLoaded])
+  const filtersState = useJobFiltersStore(s => s.filtersState)
+  const setFiltersState = useJobFiltersStore(s => s.setFiltersState)
+  const storeUpdateFilter = useJobFiltersStore(s => s.updateFilter)
+  const storeUpdateAdvancedFilter = useJobFiltersStore(s => s.updateAdvancedFilter)
+  const storeClearAllFilters = useJobFiltersStore(s => s.clearAllFilters)
+  const savedSearches = useJobFiltersStore(s => s.savedSearches)
+  const storeSaveCurrentSearch = useJobFiltersStore(s => s.saveCurrentSearch)
+  const storeApplySavedSearch = useJobFiltersStore(s => s.applySavedSearch)
+  const storeDeleteSavedSearch = useJobFiltersStore(s => s.deleteSavedSearch)
+  const storeRenameSavedSearch = useJobFiltersStore(s => s.renameSavedSearch)
+  const storeToggleSearchSharing = useJobFiltersStore(s => s.toggleSearchSharing)
+  const storeGetActiveFiltersCount = useJobFiltersStore(s => s.getActiveFiltersCount)
+  const storeHasActiveFilters = useJobFiltersStore(s => s.hasActiveFilters)
 
   const updateFilter = useCallback(<K extends keyof JobFiltersState>(
     key: K,
     value: JobFiltersState[K]
   ) => {
-    setFiltersState(prev => ({
-      ...prev,
-      [key]: value
-    }))
-  }, [])
+    storeUpdateFilter(key, value)
+  }, [storeUpdateFilter])
 
   const updateAdvancedFilter = useCallback((key: string, value: string[]) => {
-    setFiltersState(prev => ({
-      ...prev,
-      advancedFilters: {
-        ...prev.advancedFilters,
-        [key]: [...value]
-      }
-    }))
-  }, [])
+    storeUpdateAdvancedFilter(key, value)
+  }, [storeUpdateAdvancedFilter])
 
   const clearAllFilters = useCallback(() => {
-    setFiltersState(createDefaultFiltersState())
-  }, [])
+    storeClearAllFilters()
+  }, [storeClearAllFilters])
 
   const saveCurrentSearch = useCallback((name: string) => {
-    const newSearch: SavedSearch = {
-      id: `search_${Date.now()}`,
-      name,
-      query: filtersState.searchTerm,
-      filters: {
-        ...filtersState,
-        advancedFilters: { ...filtersState.advancedFilters }
-      },
-      createdAt: new Date().toISOString(),
-      isShared: false
-    }
-    setSavedSearches(prev => [newSearch, ...prev].slice(0, MAX_SAVED_SEARCHES))
-    return newSearch
-  }, [filtersState])
+    return storeSaveCurrentSearch(name)
+  }, [storeSaveCurrentSearch])
 
   const applySavedSearch = useCallback((searchId: string) => {
-    const search = savedSearches.find(s => s.id === searchId)
-    if (search) {
-      setFiltersState({
-        selectedStatusFilter: search.filters.selectedStatusFilter || 'todas',
-        selectedDaysFilter: search.filters.selectedDaysFilter || 'todas',
-        booleanSearch: search.filters.booleanSearch || '',
-        searchTerm: search.filters.searchTerm || search.query || '',
-        advancedFilters: {
-          ...createDefaultAdvancedFilters(),
-          ...(search.filters.advancedFilters || {})
-        }
-      })
-      return true
-    }
-    return false
-  }, [savedSearches])
+    return storeApplySavedSearch(searchId)
+  }, [storeApplySavedSearch])
 
   const deleteSavedSearch = useCallback((searchId: string) => {
-    setSavedSearches(prev => prev.filter(s => s.id !== searchId))
-  }, [])
+    storeDeleteSavedSearch(searchId)
+  }, [storeDeleteSavedSearch])
 
   const renameSavedSearch = useCallback((searchId: string, newName: string) => {
-    setSavedSearches(prev => prev.map(s => 
-      s.id === searchId ? { ...s, name: newName } : s
-    ))
-  }, [])
+    storeRenameSavedSearch(searchId, newName)
+  }, [storeRenameSavedSearch])
 
   const toggleSearchSharing = useCallback((searchId: string) => {
-    setSavedSearches(prev => prev.map(s =>
-      s.id === searchId ? { ...s, isShared: !s.isShared } : s
-    ))
-  }, [])
+    storeToggleSearchSharing(searchId)
+  }, [storeToggleSearchSharing])
 
   const getActiveFiltersCount = useCallback(() => {
-    let count = 0
-    if (filtersState.selectedStatusFilter !== 'todas') count++
-    if (filtersState.selectedDaysFilter !== 'todas') count++
-    if (filtersState.booleanSearch.trim()) count++
-    if (filtersState.searchTerm.trim()) count++
-    
-    Object.values(filtersState.advancedFilters).forEach(arr => {
-      if (arr.length > 0) count++
-    })
-    
-    return count
-  }, [filtersState])
+    return storeGetActiveFiltersCount()
+  }, [storeGetActiveFiltersCount])
 
   const hasActiveFilters = useCallback(() => {
-    return getActiveFiltersCount() > 0
-  }, [getActiveFiltersCount])
+    return storeHasActiveFilters()
+  }, [storeHasActiveFilters])
 
   return {
     filtersState,
@@ -208,7 +71,7 @@ export function useJobFiltersPersistence() {
     updateAdvancedFilter,
     clearAllFilters,
     savedSearches,
-    setSavedSearches,
+    setSavedSearches: useJobFiltersStore(s => s.setSavedSearches),
     saveCurrentSearch,
     applySavedSearch,
     deleteSavedSearch,
@@ -216,6 +79,6 @@ export function useJobFiltersPersistence() {
     toggleSearchSharing,
     getActiveFiltersCount,
     hasActiveFilters,
-    isLoaded
+    isLoaded: true
   }
 }

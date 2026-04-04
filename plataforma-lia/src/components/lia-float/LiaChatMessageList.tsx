@@ -1,0 +1,302 @@
+"use client"
+
+import React, { useMemo } from "react"
+import { Brain, Clock, Loader2, User } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
+import { MessageFeedback } from "@/components/chat/message-feedback"
+import { type FloatMessage } from "@/hooks/use-float-conversation"
+import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
+import { sanitizeHtml } from "@/lib/sanitize"
+import { ThinkingDots } from "@/components/ui/thinking-dots"
+
+export interface LiaChatMessageListProps {
+  showHistory: boolean
+  recentChats: Array<{ id: string; title: string; timestamp: number }>
+  handleLoadConversation: (id: string) => void
+  isFetchingHistory: boolean
+  isEmpty: boolean
+  messages: FloatMessage[]
+  currentScope: string
+  handleChipSend: (text: string) => void
+  hitlPending: { action: string; description: string } | null
+  sendApproval: (approved: boolean) => void
+  isStreaming: boolean
+  streamingContent: string
+  conversationId: string | null
+  messagesEndRef: React.RefObject<HTMLDivElement>
+}
+
+export function LiaChatMessageList({
+  showHistory, recentChats, handleLoadConversation,
+  isFetchingHistory, isEmpty, messages, currentScope, handleChipSend,
+  hitlPending, sendApproval, isStreaming, streamingContent,
+  conversationId, messagesEndRef,
+}: LiaChatMessageListProps) {
+  if (showHistory) {
+    return (
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1">
+        <p className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wide mb-2" >
+          Conversas recentes
+        </p>
+        {recentChats.length === 0 ? (
+          <p className="text-sm-ui text-lia-text-disabled text-center mt-6">
+            Nenhuma conversa anterior encontrada.
+          </p>
+        ) : (
+          recentChats.map(chat => (
+            <button
+              key={chat.id}
+              onClick={() => handleLoadConversation(chat.id)}
+              className="w-full flex items-start gap-2.5 px-3 py-2.5 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none text-left group"
+            >
+              <Clock className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm-ui text-lia-text-secondary truncate group-hover:text-lia-text-primary dark:group-hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none">
+                  {chat.title}
+                </p>
+                <p className="text-xs text-lia-text-disabled mt-0.5">
+                  {new Date(chat.timestamp).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                </p>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" role="status" aria-live="polite" aria-label="Carregando...">
+      {isFetchingHistory ? (
+        <div className="flex justify-center items-center h-full" role="status" aria-live="polite" aria-label="Carregando...">
+          <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
+        </div>
+      ) : isEmpty ? (
+        <EmptyState scope={currentScope} onChipClick={handleChipSend} />
+      ) : (
+        <>
+          {messages.map(msg => (
+            <MessageBubble key={msg.id} msg={msg} conversationId={conversationId} />
+          ))}
+          {hitlPending && (
+            <div className="flex gap-2">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
+                </div>
+                <HITLConfirmCard
+                  action={hitlPending.action}
+                  description={hitlPending.description}
+                  onConfirm={() => sendApproval(true)}
+                  onCancel={() => sendApproval(false)}
+                />
+              </div>
+            </div>
+          )}
+          {isStreaming && !hitlPending && (
+            streamingContent
+              ? <StreamingBubble content={streamingContent} />
+              : <ThinkingIndicator />
+          )}
+        </>
+      )}
+      <div ref={messagesEndRef} />
+    </div>
+  )
+}
+
+export function pageToUrl(page: string | null): string | null {
+  if (!page) return null
+  const map: Record<string, string> = {
+    "Vagas": "/jobs",
+    "Funil de Talentos": "/funil",
+    "Painel de Controle": "/",
+    "Configurações": "/configuracoes",
+    "Indicadores": "/indicadores",
+  }
+  return map[page] ?? null
+}
+
+function scopeToContextPage(scope: string): string {
+  switch (scope) {
+    case "talent_funnel": return "candidato"
+    case "in_job":        return "vaga"
+    case "job_table":     return "vaga"
+    default:              return "home"
+  }
+}
+
+function EmptyState({ scope, onChipClick }: { scope: string; onChipClick: (prompt: string) => void }) {
+  const [suggestions, setSuggestions] = React.useState<Array<{ id: string; icon: string; label: string; prompt: string }>>([])
+  const [badge, setBadge] = React.useState<{ label: string; icon: string; color: string } | null>(null)
+
+  React.useEffect(() => {
+    const page = scopeToContextPage(scope)
+    fetch(`/api/backend-proxy/lia/context-suggestions?page=${page}&limit=4`)
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then((data: { suggestions?: typeof suggestions; context_badge?: typeof badge }) => {
+        setSuggestions(data.suggestions ?? [])
+        setBadge(data.context_badge ?? null)
+      })
+      .catch(() => {})
+  }, [scope])
+
+  return (
+    <div className="flex flex-col items-start h-full gap-3 pt-5 px-1">
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+        </div>
+        <div>
+          <p className="text-base-ui font-medium text-lia-text-primary">Como posso ajudar?</p>
+          {badge && (
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium mt-0.5"
+              style={{ backgroundColor: badge.color + "18", color: badge.color, border: `1px solid ${badge.color}35` }}
+            >
+              <span>{badge.icon}</span>
+              <span>{badge.label}</span>
+            </span>
+          )}
+        </div>
+      </div>
+      {suggestions.length > 0 && (
+        <div className="w-full flex flex-col gap-1.5">
+          {suggestions.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => onChipClick(s.prompt)}
+              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-left
+                bg-lia-bg-secondary border border-lia-border-subtle
+                hover:border-lia-border-medium hover:bg-lia-interactive-hover
+                text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
+            >
+              <span className="text-base flex-shrink-0">{s.icon}</span>
+              <span className="flex-1 text-sm-ui truncate">{s.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {suggestions.length === 0 && (
+        <p className="text-sm-ui text-lia-text-disabled px-1">
+          Pergunte sobre vagas, candidatos, relatórios e muito mais.
+        </p>
+      )}
+    </div>
+  )
+}
+
+function ThinkingIndicator() {
+  return (
+    <div className="flex gap-2.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
+        </div>
+        <span className="flex gap-1 items-center h-5">
+          <ThinkingDots dotClassName="bg-chat-cyan" size="md" />
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function RichContent({ html, className }: { html: string; className?: string }) {
+  return (
+    <div
+      className={className}
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
+    />
+  )
+}
+
+function StreamingBubble({ content }: { content: string }) {
+  const cleaned = useMemo(() => cleanAgentResponse(content), [content])
+  const html = useMemo(() => parseChatMarkdown(cleaned), [cleaned])
+
+  return (
+    <div className="flex gap-2.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
+        </div>
+        <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
+          <RichContent
+            html={html}
+            className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"
+          />
+          <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversationId: string | null }) {
+  const isUser = msg.sender === "user"
+
+  const renderedHtml = useMemo(() => {
+    if (isUser) return escapeHtml(msg.content).replace(/\n/g, "<br/>")
+    const cleaned = cleanAgentResponse(msg.content)
+    return parseChatMarkdown(cleaned)
+  }, [msg.content, isUser])
+
+  if (isUser) {
+    return (
+      <div className="flex gap-2.5 justify-end">
+        <div className="flex flex-col items-end gap-1 max-w-[340px]">
+          <div className="bg-lia-bg-tertiary rounded-[14px] rounded-br-[4px] px-3.5 py-2.5">
+            <RichContent
+              html={renderedHtml}
+              className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"
+            />
+          </div>
+          <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums px-1">
+            {msg.timestamp}
+          </span>
+        </div>
+        <div className="w-7 h-7 rounded-full bg-lia-interactive-active flex items-center justify-center flex-shrink-0 mt-0.5">
+          <User className="w-3.5 h-3.5 text-lia-text-tertiary" />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex gap-2.5">
+      <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-1.5 mb-1">
+          <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
+          <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums">{msg.timestamp}</span>
+        </div>
+        <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
+          <RichContent
+            html={renderedHtml}
+            className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"
+          />
+        </div>
+        {conversationId && (
+          <MessageFeedback
+            sessionId={conversationId}
+            messageId={msg.id}
+            originalResponse={msg.content}
+            className="mt-1 px-1"
+          />
+        )}
+      </div>
+    </div>
+  )
+}

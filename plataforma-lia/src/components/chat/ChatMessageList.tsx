@@ -554,8 +554,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                           {IconComponent && (
                             <IconComponent
                               className="w-3 h-3 mr-1"
-                              // @ts-ignore TODO: fix type
-                              style={{color: iconColor}}
+                              style={{color: iconColor} as React.CSSProperties}
                             />
                           )}
                           {action.label}

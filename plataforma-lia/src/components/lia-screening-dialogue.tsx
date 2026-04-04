@@ -271,10 +271,8 @@ Esta estrutura funciona para você?`,
           addMessage(
             `Ótimo! Agora vamos criar as **perguntas de triagem**.
 
-// @ts-ignore TODO: fix type
-Baseado nos requisitos da vaga (${(jobData?.requirements as any[])?.slice(0, 3).join(', ') || 'requisitos técnicos'}), sugiro organizar em 4 categorias:
+Baseado nos requisitos da vaga (${((jobData as Record<string, unknown>)?.requirements as string[])?.slice(0, 3).join(', ') || 'requisitos técnicos'}), sugiro organizar em 4 categorias:
 
-// @ts-ignore TODO: fix type
 **1. Apresentação Pessoal**
 • Conte-me sobre sua trajetória profissional
 • O que te motivou a se candidatar?
@@ -315,14 +313,12 @@ Para a posição de ${jobData?.title}, buscamos um profissional que se junte ao 
 Você fará parte de uma equipe multidisciplinar, colaborativa e sempre em busca da excelência.
 
 **Benefícios:**
-// @ts-ignore TODO: fix type
-${(jobData?.benefits as any[])?.join(', ') || 'Benefícios competitivos'}
+${((jobData as Record<string, unknown>)?.benefits as string[])?.join(', ') || 'Benefícios competitivos'}
 
 Quer personalizar alguma dessas seções?`,
             'lia',
             'options',
-            // @ts-ignore TODO: fix type
-            ['Editar empresa', 'Editar vaga', 'Editar benefícios', 'Prosseguir']
+            ['Editar empresa', 'Editar vaga', 'Editar benefícios', 'Prosseguir'] as string[]
           )
         }
         break

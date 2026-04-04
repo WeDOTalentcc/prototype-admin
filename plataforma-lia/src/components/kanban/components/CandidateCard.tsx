@@ -312,8 +312,7 @@ const CandidateCard = memo(function CandidateCard({
               formattedValue={value ? formatScorePercent(value, 0) : undefined}
               label={label}
               alwaysClickable={alwaysClickable}
-              // @ts-ignore TODO: fix type — Argument of type 'string' is not assignable to parameter of type 'Record<string,
-              onClick={() => onQuickAction?.('open_score_modal', candidate, id)}
+              onClick={() => onQuickAction?.('open_score_modal', candidate, id as any)}
             />
           ))}
         </div>

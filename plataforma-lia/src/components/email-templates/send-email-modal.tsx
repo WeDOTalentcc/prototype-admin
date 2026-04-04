@@ -95,8 +95,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
   }, [])
 
   const handleTemplateSelect = useCallback((template: Record<string, unknown>) => {
-    // @ts-ignore TODO: fix type — Argument of type 'unknown' is not assignable to parameter of type 'SetStateActio
-    setSelectedTemplateId(template.id)
+    setSelectedTemplateId(template.id as string)
   }, [])
 
   const handleSend = async () => {
@@ -219,8 +218,7 @@ export function SendEmailModal({ isOpen, onClose, candidate, onSuccess }: SendEm
                     initialMessage={editedBody}
                     onSubjectChange={handleSubjectChange}
                     onMessageChange={handleMessageChange}
-                    // @ts-ignore TODO: fix type — Type '(template: Record<string, unknown>) => void' is not assignable to type '(t
-                    onTemplateSelect={handleTemplateSelect}
+                    onTemplateSelect={handleTemplateSelect as any}
                     showTemplateSelector={true}
                     showLiaAdjust={true}
                     showVariableSelector={true}

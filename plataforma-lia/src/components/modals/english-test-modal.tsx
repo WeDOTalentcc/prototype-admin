@@ -69,12 +69,10 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
     }
   }
 
-  // @ts-ignore TODO: fix type
-  const status: TestStatus = testData.status ?? 'pending'
+  const status: TestStatus = (testData as any).status ?? 'pending'
   const statusConfig = STATUS_CONFIG[status]
   const StatusIcon = statusConfig.icon
-  // @ts-ignore TODO: fix type
-  const levelInfo = LEVEL_CONFIG[testData.level] ?? LEVEL_CONFIG['B1']
+  const levelInfo = LEVEL_CONFIG[(testData as any).level as string] ?? LEVEL_CONFIG['B1']
 
   const getScoreColor = getPercentageScoreVar
 
@@ -108,7 +106,6 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
               <p 
                 className="text-xs text-lia-text-tertiary"
                
-               // @ts-ignore TODO: fix type
                aria-live="polite" aria-atomic="true">
                 {((candidate?.name ?? 'Candidato') as React.ReactNode)}
               </p>
@@ -142,8 +139,6 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
             {(testData as any).completedAt && status === 'completed' && (
               <span 
                 className="text-micro text-lia-text-tertiary"
-               
-              // @ts-ignore TODO: fix type
               >
                 Concluído em {new Date((testData as any).completedAt).toLocaleDateString('pt-BR')}
               </span>
@@ -167,8 +162,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                   </div>
                   <span 
                     className="text-2xl font-bold"
-                    // @ts-ignore TODO: fix type
-                    style={{color: getScoreColor(testData.score)}}
+                    style={{color: getScoreColor((testData as any).score)}}
                   >
                     {((testData as any).score as React.ReactNode)}
                   </span>
@@ -218,8 +212,7 @@ export function EnglishTestModal({ isOpen, onClose, candidate }: EnglishTestModa
                 <div className="space-y-2.5">
                   {SKILL_CONFIG.map((skill) => {
                     const Icon = skill.icon
-                    // @ts-ignore TODO: fix type
-                    const score = testData.skills?.[skill.id] ?? 0
+                    const score = (testData as any).skills?.[skill.id] ?? 0
                     const skillLevel = getSkillLevel(score)
 
                     return (

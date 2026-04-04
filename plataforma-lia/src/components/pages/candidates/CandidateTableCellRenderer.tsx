@@ -122,12 +122,10 @@ export function createCellRenderer(deps: CellRendererDeps) {
               candidateId={candidate.id}
               candidateName={candidate.name}
               candidateScore={
-                // @ts-ignore TODO: fix type
-                candidate.match_score || candidate.lia_score || candidate.score
+                (candidate as Record<string, unknown>).match_score as number || candidate.lia_score || candidate.score
               }
               initialFeedback={searchFeedbacks[candidate.id] || null}
-              // @ts-ignore TODO: fix type
-              onFeedbackChange={onSearchFeedbackChange}
+              onFeedbackChange={onSearchFeedbackChange as any}
               size="sm"
               alwaysVisible={hasFeedback}
             />
@@ -154,14 +152,10 @@ export function createCellRenderer(deps: CellRendererDeps) {
                   src={
                     candidate.avatar_url ||
                     candidate.avatar ||
-                    // @ts-ignore TODO: fix type
-                    candidate.photo_url ||
-                    // @ts-ignore TODO: fix type
-                    candidate.picture_url ||
-                    // @ts-ignore TODO: fix type
-                    candidate.photoUrl ||
-                    // @ts-ignore TODO: fix type
-                    candidate.profile_picture
+                    (candidate as Record<string, unknown>).photo_url as string ||
+                    (candidate as Record<string, unknown>).picture_url as string ||
+                    (candidate as Record<string, unknown>).photoUrl as string ||
+                    (candidate as Record<string, unknown>).profile_picture as string
                   }
                   alt={candidate.name}
                 />
@@ -355,8 +349,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
           </span>
         )
       case "education": {
-        // @ts-ignore TODO: fix type
-        const educationData = candidate.education || candidate.educations
+        const educationData = candidate.education || (candidate as Record<string, unknown>).educations as any[]
         if (Array.isArray(educationData) && educationData.length > 0) {
           const firstEdu = educationData[0]
           return (

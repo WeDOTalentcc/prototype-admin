@@ -49,6 +49,7 @@ import {
 import { toast } from "sonner"
 import { useCommunicationTemplates, type TemplateSituation } from "@/hooks/use-communication-templates"
 import { formatPausedDuration, replaceTemplateVariables } from "./job-status/job-status-utils"
+import { useJobUIStore } from "@/stores/job-ui-store"
 import { PauseOptionsStep } from "./job-status/PauseOptionsStep"
 import { ActivateOptionsStep } from "./job-status/ActivateOptionsStep"
 
@@ -270,7 +271,6 @@ export function JobStatusModal({
               const candidatesData = data.candidates || data.items || data || []
               
               if (Array.isArray(candidatesData)) {
-                // @ts-ignore TODO: fix type — Argument of type '{ id: unknown; name: {}; email: unknown; phone: unknown; stage
                 allFetched.push(...candidatesData.map((c: Record<string, unknown>) => ({
                   id: c.id || c.candidate_id,
                   name: c.name || c.full_name || 'Candidato',
@@ -369,7 +369,7 @@ export function JobStatusModal({
           candidateIds: eligibleCandidates.map(c => c.id),
           channel: 'email' as const
         }
-        localStorage.setItem('pendingCommunicationAction', JSON.stringify(pendingAction))
+        useJobUIStore.getState().setPendingCommunicationAction(pendingAction)
         
         onClose()
         onNavigateToJobWithCommunication(jobs[0].id, pendingAction)
@@ -522,8 +522,7 @@ export function JobStatusModal({
             <Button
               key={channel}
               type="button"
-              // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-              variant={notificationChannel === channel ? 'default' : 'outline'}
+              variant={notificationChannel === channel ? 'default' as any : 'outline'}
               size="sm"
               onClick={() => setNotificationChannel(channel)}
               className={cn(

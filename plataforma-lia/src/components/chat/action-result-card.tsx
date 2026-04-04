@@ -125,13 +125,11 @@ export function ActionResultCard({ actionType, result, className = "" }: ActionR
         )}
 
         {(actionType === "pause_job" || actionType === "close_job" || actionType === "reopen_job") && (
-          // @ts-ignore TODO: fix type
           <div className="flex items-center gap-2">
-            {(result.job_title as any) && (
-              // @ts-ignore TODO: fix type
+            {(result as any).job_title && (
               <>
                 <span className="text-lia-text-secondary">Vaga:</span>
-                <span className="text-lia-text-disabled font-medium">{String(result.job_title)}</span>
+                <span className="text-lia-text-disabled font-medium">{String((result as any).job_title)}</span>
               </>
             )}
           </div>

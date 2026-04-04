@@ -80,9 +80,7 @@ export function MatrixSection({
 
       <div className="flex flex-wrap gap-2 mb-4">
         <Button
-          // @ts-ignore // TODO: fix type
-          // @ts-ignore TODO: fix type
-          variant={selectedMatrixModule === null ? 'default' : 'outline'}
+          variant={(selectedMatrixModule === null ? 'default' : 'outline') as any}
           size="sm"
           onClick={() => setSelectedMatrixModule(null)}
           className={selectedMatrixModule === null ? 'bg-lia-btn-primary-bg dark:bg-lia-bg-secondary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active text-white dark:text-lia-text-primary' : ''}
@@ -92,13 +90,10 @@ export function MatrixSection({
         </Button>
         {Object.entries(moduleLabels).map(([key, { label, emoji }]) => {
           const ModIcon = moduleIcons[key]
- // @ts-ignore // TODO: fix type;82i\ // @ts-ignore // TODO: fix type
           return (
             <Button
-              // @ts-ignore // TODO: fix type
               key={key}
-              // @ts-ignore TODO: fix type
-              variant={selectedMatrixModule === key ? 'default' : 'outline'}
+              variant={(selectedMatrixModule === key ? 'default' : 'outline') as any}
               size="sm"
               onClick={() => setSelectedMatrixModule(key)}
               className={selectedMatrixModule === key ? 'bg-lia-btn-primary-bg dark:bg-lia-bg-secondary hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active text-white dark:text-lia-text-primary' : ''}

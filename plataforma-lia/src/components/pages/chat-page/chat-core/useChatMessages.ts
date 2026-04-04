@@ -112,10 +112,9 @@ export function useChatMessages({
           content: message,
           timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
           type: "text",
-          actions: [            // @ts-ignore // TODO: fix type
-            { label: "Analisar CV", icon: FileText as unknown as React.ReactNode, variant: "default" },            // @ts-ignore // TODO: fix type
+          actions: [
+            { label: "Analisar CV", icon: FileText as unknown as React.ReactNode, variant: "default" },
             { label: "Extrair dados", icon: Database as unknown as React.ReactNode, variant: "outline" },
-            // @ts-ignore TODO: fix type — Type 'ReactNode' is not assignable to type 'ElementType<any, keyof IntrinsicElem
             { label: "Comparar perfis", icon: Users as unknown as React.ReactNode, variant: "outline" },
           ],
         }

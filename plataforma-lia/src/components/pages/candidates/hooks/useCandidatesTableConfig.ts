@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 export interface TableColumnConfig {
   id: string
@@ -192,8 +193,12 @@ export function useCandidatesTableConfig() {
     setShowColumnConfig(!showColumnConfig)
   }
 
+  const setCandidateTableColumns = useUIPreferencesStore(s => s.setCandidateTableColumns)
+  const setCandidateColumnViews = useUIPreferencesStore(s => s.setCandidateColumnViews)
+  const setCandidateTableColumnOrder = useUIPreferencesStore(s => s.setCandidateTableColumnOrder)
+
   const handleSaveColumns = () => {
-    localStorage.setItem('candidate-table-columns', JSON.stringify(tableColumns))
+    setCandidateTableColumns(tableColumns as Parameters<typeof setCandidateTableColumns>[0])
     setShowColumnConfig(false)
   }
 
@@ -203,21 +208,19 @@ export function useCandidatesTableConfig() {
       id: Date.now().toString(),
       createdAt: new Date().toISOString()
     }
-    const updatedViews = [...savedColumnViews, newView]    // @ts-ignore // TODO: fix type
+    const updatedViews = [...savedColumnViews, newView] as typeof savedColumnViews
     setSavedColumnViews(updatedViews)
-    localStorage.setItem('candidate-column-views', JSON.stringify(updatedViews))
+    setCandidateColumnViews(updatedViews as Parameters<typeof setCandidateColumnViews>[0])
   }
 
-  // @ts-ignore // TODO: fix type
   const handleLoadColumnView = (view: Record<string, unknown>) => {
-    // @ts-ignore // TODO: fix type
-    setTableColumns(view.columns)
+    setTableColumns(view.columns as typeof tableColumns)
   }
 
   const handleDeleteColumnView = (viewId: string) => {
     const updatedViews = savedColumnViews.filter(view => view.id !== viewId)
     setSavedColumnViews(updatedViews)
-    localStorage.setItem('candidate-column-views', JSON.stringify(updatedViews))
+    setCandidateColumnViews(updatedViews as Parameters<typeof setCandidateColumnViews>[0])
   }
 
   const startResize = (column: string, event: React.MouseEvent) => {
@@ -279,7 +282,7 @@ export function useCandidatesTableConfig() {
       if (draggedIndex === -1 || targetIndex === -1) return prev
       newOrder.splice(draggedIndex, 1)
       newOrder.splice(targetIndex, 0, draggedColumnId)
-      localStorage.setItem('candidate-table-column-order', JSON.stringify(newOrder))
+      setCandidateTableColumnOrder(newOrder)
       return newOrder
     })
     setDraggedColumnId(null)
@@ -291,14 +294,15 @@ export function useCandidatesTableConfig() {
     setDragOverColumnId(null)
   }
 
+  const storedColumnOrder = useUIPreferencesStore(s => s.candidateTableColumnOrder)
+
   useEffect(() => {
     const defaultOrder = ['checkbox', 'id', 'candidato', 'cargo', 'empresa', 'salario_mensal', 'localizacao', 'modelo_trabalho', 'acoes']
-    const savedOrder = localStorage.getItem('candidate-table-column-order')
+    const savedOrder = storedColumnOrder
     if (savedOrder) {
       try {
-        const parsed = JSON.parse(savedOrder) as string[]
+        const parsed = savedOrder
         const validOrder = defaultOrder.filter(id => parsed.includes(id))
-        const newIds = defaultOrder.filter(id => !parsed.includes(id))
         if (validOrder.length === defaultOrder.length) {
           const orderedCols = parsed.filter((id: string) => defaultOrder.includes(id))
           const finalOrder = ['checkbox', ...orderedCols.filter((id: string) => id !== 'checkbox' && id !== 'acoes'), 'acoes']

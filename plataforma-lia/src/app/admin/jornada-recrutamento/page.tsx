@@ -83,8 +83,7 @@ export default function JornadaRecrutamentoPage() {
         }
       }
     } catch (error: unknown) {
-      // @ts-ignore TODO: fix type
-      if (error.name === 'AbortError') return
+      if ((error as Error).name === 'AbortError') return
     } finally {
       if (isMountedRef.current) {
         setIsLoading(false)

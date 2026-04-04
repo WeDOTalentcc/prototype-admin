@@ -279,7 +279,7 @@ export function useArchetypeHandlers(params: UseArchetypeHandlersParams) {
   const openEditArchetype = useCallback((arch: ArchetypeData, e: React.MouseEvent) => {
     e.stopPropagation()
     setEditingArchetype(arch)
-    setEditArchetypeName(arch.name || "")    // @ts-ignore // TODO: fix type
+    setEditArchetypeName(arch.name || "")
     const archRecord = arch as Record<string, unknown>
     const query = (archRecord.query as string) || (arch.criteria?.query as string) || ""
     setEditArchetypeQuery(query)

@@ -30,7 +30,6 @@ interface InterviewStageRecord {
 }
 
 export function convertBackendJobToFrontend(jv: JobVacancy, index: number): Job {
-  // @ts-ignore TODO: fix type
   const funnelData = (jv as Record<string, unknown>).funnel_data as Record<string, number> | undefined || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
 
   const stageMapping: Record<string, Job['stage']> = {
@@ -43,7 +42,6 @@ export function convertBackendJobToFrontend(jv: JobVacancy, index: number): Job 
     'Encerrada': 'Encerrada'
   }
 
-  // @ts-ignore TODO: fix type
   const raw = jv as Record<string, unknown>
   const liaMetricsRaw = raw.lia_metrics as Record<string, number> | undefined
   const salaryRange = raw.salary_range as Record<string, number> | undefined
@@ -185,8 +183,7 @@ export function computeFallbackStats(jobs: Job[]): DashboardStats {
     canceladas: jobs.filter(job => job.status === 'Cancelada').length,
     noFunil: jobs.reduce((sum, job) => sum + (job.funnel?.total || 0), 0),
     entrevistasRecentes: 0,
-    // @ts-ignore TODO: fix type
-    ofertas: jobs.filter(job => job.stage === 'Oferta').length,
+    ofertas: jobs.filter(job => (job.stage as string) === 'Oferta').length,
     ttfMedio: 0,
     taxaConversao: 0,
     atRisco: 0,

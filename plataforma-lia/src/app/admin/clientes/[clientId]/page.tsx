@@ -275,7 +275,6 @@ export default function ClientOverviewPage({
             Editar
           </Button>
           <Button
-            // @ts-ignore TODO: fix type
             variant={client?.status === 'suspended' ? 'default' : 'outline'}
             onClick={handleToggleStatus}
             disabled={togglingStatus}

@@ -399,8 +399,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
           subject: (channel === 'email' || channel === 'both') ? subject : undefined,
           message_content: message,
           sent_by: 'recruiter',
-          // @ts-ignore TODO: fix type — Type 'InterviewSettings | undefined' is not assignable to type 'Record<string, u
-          metadata: type === 'agendamento' ? interviewSettings : undefined
+          metadata: type === 'agendamento' ? interviewSettings as unknown as Record<string, unknown> : undefined
         })
 
         const activityDescriptions: Record<CommunicationType, string> = {

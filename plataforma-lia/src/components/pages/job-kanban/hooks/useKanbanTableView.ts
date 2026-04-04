@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { type TableColumn, getDefaultTableColumns } from "@/components/tables"
 import { type DynamicStage } from "@/components/pages/job-kanban/utils/kanbanStageUtils"
 import { calculateNotaLiaGeral } from "@/components/pages/job-kanban/utils/kanbanHelpers"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 export function useKanbanTableView({
   dynamicStages,
@@ -53,12 +54,13 @@ export function useKanbanTableView({
   ]
   const [tableColumnOrder, setTableColumnOrder] = useState<string[]>(defaultColumnOrder)
 
-  // Load saved column order from localStorage on mount
+  const storedKanbanColumnOrder = useUIPreferencesStore(s => s.jobKanbanTableColumnOrder)
+  const setStoredKanbanColumnOrder = useUIPreferencesStore(s => s.setJobKanbanTableColumnOrder)
+
   useEffect(() => {
-    const savedOrder = localStorage.getItem('job-kanban-table-column-order')
-    if (savedOrder) {
+    if (storedKanbanColumnOrder) {
       try {
-        const parsed = JSON.parse(savedOrder) as string[]
+        const parsed = storedKanbanColumnOrder
         const validOrder = defaultColumnOrder.filter(id => parsed.includes(id))
         if (validOrder.length === defaultColumnOrder.length) {
           const orderedCols = parsed.filter((id: string) => defaultColumnOrder.includes(id))
@@ -155,7 +157,7 @@ export function useKanbanTableView({
       if (draggedIndex === -1 || targetIndex === -1) return prev
       newOrder.splice(draggedIndex, 1)
       newOrder.splice(targetIndex, 0, draggedTableColumnId)
-      localStorage.setItem('job-kanban-table-column-order', JSON.stringify(newOrder))
+      setStoredKanbanColumnOrder(newOrder)
       return newOrder
     })
     setDraggedTableColumnId(null); setDragOverTableColumnId(null)

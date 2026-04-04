@@ -25,11 +25,8 @@ export type ScreeningQuestion = {
 export interface JobPreviewPanelProps {
   showJobPreview: boolean
   previewJob: Job | null
-  // @ts-ignore // TODO: fix type
-  // @ts-ignore // TODO: fix type
-  activePreviewTab: screening | pipeline
-  // @ts-ignore // TODO: fix type
-  onTabChange: (tab: screening | pipeline) => void
+  activePreviewTab: 'screening' | 'pipeline'
+  onTabChange: (tab: 'screening' | 'pipeline') => void
   previewWidth: number
   onResize: (width: number) => void
   onResizeStart: () => void

@@ -757,9 +757,8 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                           {job.technical_requirements && job.technical_requirements.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.technical_requirements.slice(0, 4).map((req, idx) => (
-                                // @ts-ignore TODO: fix type
                                 <span key={`req-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
-                                  {(typeof req === "string" ? req : (req as any).name || (req as any).skill || "-")}
+                                  {(typeof req === "string" ? req : (req as Record<string, unknown>).name as string || (req as Record<string, unknown>).skill as string || "-")}
                                 </span>
                               ))}
                               {job.technical_requirements.length > 4 && (
@@ -789,9 +788,8 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
                           {job.behavioral_competencies && job.behavioral_competencies.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
                               {job.behavioral_competencies.slice(0, 4).map((comp, idx) => (
-                                // @ts-ignore TODO: fix type
                                 <span key={`comp-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
-                                  {(typeof comp === "string" ? comp : (comp as any).name || (comp as any).competency || "-")}
+                                  {(typeof comp === "string" ? comp : (comp as Record<string, unknown>).name as string || (comp as Record<string, unknown>).competency as string || "-")}
                                 </span>
                               ))}
                               {job.behavioral_competencies.length > 4 && (

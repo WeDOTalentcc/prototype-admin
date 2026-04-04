@@ -229,8 +229,7 @@ export function CandidateComparison({
       winner,
       confidence,
       summary: `Baseado na análise de ${candidates.length} candidatos, ${topCandidate.name} apresenta o melhor fit geral com ${confidence}% de confiança. Score técnico de ${topCandidate.matchPercentage}% e experiência em ${topCandidate.skills.slice(0, 2).join(', ')}.`,
-      // @ts-ignore TODO: fix type — Type 'Record<string, Record<string, { verdict: string; score: number; insights: 
-      comparison,
+      comparison: comparison as any,
       scenarios,
       recommendations: {
         primary: winner,

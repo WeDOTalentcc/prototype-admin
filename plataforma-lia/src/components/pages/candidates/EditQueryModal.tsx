@@ -100,9 +100,7 @@ export function EditQueryModal({
             }}
             placeholder="Ex: desenvolvedor python com 5 anos de experiência em machine learning"
             activeFiltersCount={activeFiltersCount}
-            // @ts-ignore // TODO: fix type
-            // @ts-ignore // TODO: fix type
-            searchSource={searchSource}
+            searchSource={searchSource as any}
             onSearchSourceChange={onSearchSourceChange}
             requireEmails={pearchSearchOptions.requireEmails}
             onRequireEmailsChange={(v) => onPearchOptionsChange({ ...pearchSearchOptions, requireEmails: v })}

@@ -68,17 +68,13 @@ export function useProactiveAlerts({
           category: alert.category || 'system',
           title: alert.title,
           message: alert.message || '',
-          // @ts-ignore // TODO: fix type
-          // @ts-ignore // TODO: fix type
-          severity: mapSeverity(alert.severity),
+          severity: mapSeverity(String(alert.severity || '')),
           suggestedAction: alert.suggested_action,
           actionLabel: alert.action_label,
           data: alert.data,
           timestamp: new Date(),
-          // @ts-ignore // TODO: fix type
-          autoDismiss: alert.severity !== 'urgent',
-          // @ts-ignore // TODO: fix type
-          duration: getSeverityDuration(alert.severity)
+          autoDismiss: String(alert.severity || '') !== 'urgent',
+          duration: getSeverityDuration(String(alert.severity || ''))
         }))
         
         if (newAlerts.length > 0) {

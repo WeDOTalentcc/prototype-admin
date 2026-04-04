@@ -3,6 +3,7 @@
 import './onboarding-styles.css'
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { useOnboardingStore } from "@/stores/onboarding-store"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -139,8 +140,8 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
         throw new Error('Erro ao criar conta')
       }
 
-      localStorage.setItem('lia_first_access', 'true')
-      localStorage.setItem('lia_user_data', JSON.stringify(newUser))
+      useOnboardingStore.getState().setFirstAccess(true)
+      useOnboardingStore.getState().setUserData(newUser as Record<string, unknown>)
 
       setStep('onboarding')
 
@@ -182,10 +183,8 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
   }
 
   const handleOnboardingComplete = () => {
-    // Limpar flag de primeiro acesso
-    localStorage.removeItem('lia_first_access')
+    useOnboardingStore.getState().setFirstAccess(false)
 
-    // Notificar componente pai que o acesso foi concedido
     onAccessGranted({
       ...userData,
       companyData: accessData?.companyData,
@@ -195,8 +194,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
   }
 
   const handleOnboardingSkip = () => {
-    // Mesmo fluxo do complete, mas mantém flag de "pode ver onboarding novamente"
-    localStorage.setItem('lia_can_replay_onboarding', 'true')
+    useOnboardingStore.getState().setCanReplayOnboarding(true)
     handleOnboardingComplete()
   }
 

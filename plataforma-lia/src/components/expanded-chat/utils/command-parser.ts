@@ -267,8 +267,7 @@ export function isLocalCommand(message: string): boolean {
  * Get stage label in Portuguese for display
  */
 export function getStageLabel(stage: WizardStage): string {
-  // @ts-ignore TODO: fix type — Property '"jd-enrichment"' is missing in type '{ 'input-evaluation': string; sal
-  const labels: Record<WizardStage, string> = {
+  const labels: Partial<Record<WizardStage, string>> = {
     'input-evaluation': 'Avaliação',
     'salary': 'Remuneração',
     'competencies': 'Competências',
@@ -282,9 +281,8 @@ export function getStageLabel(stage: WizardStage): string {
 /**
  * Get all valid stage aliases for documentation/help
  */
-export function getStageAliases(): Record<WizardStage, string[]> {
-  // @ts-ignore TODO: fix type — Property '"jd-enrichment"' is missing in type '{ 'input-evaluation': never[]; sa
-  const aliasesByStage: Record<WizardStage, string[]> = {
+export function getStageAliases(): Partial<Record<WizardStage, string[]>> {
+  const aliasesByStage: Partial<Record<WizardStage, string[]>> = {
     'input-evaluation': [],
     'salary': [],
     'competencies': [],
@@ -294,8 +292,11 @@ export function getStageAliases(): Record<WizardStage, string[]> {
   }
 
   for (const [alias, stage] of Object.entries(STAGE_ALIASES)) {
-    if (!aliasesByStage[stage].includes(alias)) {
-      aliasesByStage[stage].push(alias)
+    if (!aliasesByStage[stage]) {
+      aliasesByStage[stage] = []
+    }
+    if (!aliasesByStage[stage]!.includes(alias)) {
+      aliasesByStage[stage]!.push(alias)
     }
   }
 

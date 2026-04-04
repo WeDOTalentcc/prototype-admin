@@ -14,6 +14,7 @@ import { useCandidatesPageCore } from "./candidates/hooks/useCandidatesPageCore"
 import { CandidatesPageHeader } from "@/components/pages/candidates/CandidatesPageHeader"
 const CandidatesPageModals = dynamic(() => import("@/components/pages/candidates/CandidatesPageModals").then(m => ({ default: m.CandidatesPageModals })), { ssr: false, loading: () => null })
 import { toast } from "sonner"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 import { LoadingModal as CandidatesLoadingModal } from "@/components/ui/loading"
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => <CandidatesLoadingModal /> })
@@ -73,6 +74,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
   } = useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened })
 
   return (
+    <ErrorBoundarySection>
     <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       {/* Header Fixo - Título e Tabs */}
       <CandidatesPageHeader
@@ -374,8 +376,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
                 setIsLoading(true)
                 const listDetails = await liaApi.getCandidateList(listId, { limit: 100 })
                 
-                // @ts-ignore TODO: fix type
-                const mappedCandidates: Candidate[] = listDetails.candidates.items.map((member) => {
+                const mappedCandidates: Candidate[] = ((listDetails as any).candidates?.items || []).map((member: any) => {
                   const c = member.candidate
                   const location = [c.location_city, c.location_state, c.location_country].filter(Boolean).join(', ') || 'Não informado'
                   const workModel = c.work_model_preference === 'remote' ? 'remoto' : 
@@ -698,5 +699,6 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setArchetypeToDelete={setArchetypeToDelete as unknown as CandidatesPageModalsProps["setArchetypeToDelete"]}
       />
     </div>
+    </ErrorBoundarySection>
   )
 }

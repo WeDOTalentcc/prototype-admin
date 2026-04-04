@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useJobColumnConfig } from "@/hooks/useJobColumnConfig"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 // ---------------------------------------------------------------------------
 // useJobsTableConfig
@@ -83,31 +84,30 @@ export function useJobsTableConfig(): UseJobsTableConfigReturn {
   const [dragOverJobColumnId, setDragOverJobColumnId] = useState<string | null>(null)
   const [resizingJobColumn, setResizingJobColumn] = useState<string | null>(null)
 
-  // Restore persisted column order & widths from localStorage
+  const storedJobsColumnOrder = useUIPreferencesStore(s => s.jobsTableColumnOrder)
+  const storedJobsColumnWidths = useUIPreferencesStore(s => s.jobsTableColumnWidths)
+  const setStoredJobsColumnOrder = useUIPreferencesStore(s => s.setJobsTableColumnOrder)
+  const setStoredJobsColumnWidths = useUIPreferencesStore(s => s.setJobsTableColumnWidths)
+
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const savedOrder = localStorage.getItem('jobs-table-column-order')
-    if (savedOrder) {
+    if (storedJobsColumnOrder) {
       try {
-        const parsed = JSON.parse(savedOrder) as string[]
+        const parsed = storedJobsColumnOrder
         const savedCols = parsed.filter((id: string) => DEFAULT_COLUMN_ORDER.includes(id))
         const missingCols = DEFAULT_COLUMN_ORDER.filter(id => !parsed.includes(id) && id !== 'checkbox' && id !== 'acoes')
         const innerCols = savedCols.filter((id: string) => id !== 'checkbox' && id !== 'acoes')
         innerCols.splice(innerCols.length, 0, ...missingCols)
         setJobsColumnOrder(['checkbox', ...innerCols, 'acoes'])
       } catch {
-        // ignore parse errors
       }
     }
 
-    const savedWidths = localStorage.getItem('jobs-table-column-widths')
-    if (savedWidths) {
+    if (storedJobsColumnWidths) {
       try {
-        const parsed = JSON.parse(savedWidths)
-        setJobsColumnWidths(prev => ({ ...prev, ...parsed }))
+        setJobsColumnWidths(prev => ({ ...prev, ...storedJobsColumnWidths }))
       } catch {
-        // ignore parse errors
       }
     }
   }, [])
@@ -141,9 +141,7 @@ export function useJobsTableConfig(): UseJobsTableConfigReturn {
       setResizingJobColumn(null)
       setJobsColumnWidths(prev => {
         const updated = { ...prev, [columnKey]: currentWidth }
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('jobs-table-column-widths', JSON.stringify(updated))
-        }
+        setStoredJobsColumnWidths(updated)
         return updated
       })
       document.removeEventListener('mousemove', handleMouseMove)
@@ -185,9 +183,7 @@ export function useJobsTableConfig(): UseJobsTableConfigReturn {
       if (draggedIndex === -1 || targetIndex === -1) return prev
       newOrder.splice(draggedIndex, 1)
       newOrder.splice(targetIndex, 0, draggedJobColumnId)
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('jobs-table-column-order', JSON.stringify(newOrder))
-      }
+      setStoredJobsColumnOrder(newOrder)
       return newOrder
     })
 

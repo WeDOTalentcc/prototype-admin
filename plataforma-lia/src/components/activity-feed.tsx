@@ -345,7 +345,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
                   {/* Summary */}
                   {activity.summary && (
-                    // @ts-ignore TODO: fix type
                     <p className={`${textStyles.bodySmall} line-clamp-2`}>
                       {activity.summary}
                     </p>
@@ -353,7 +352,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
 
                   {/* Key strengths */}
                   {activity.extra_data.key_strengths && activity.extra_data.key_strengths.length > 0 && (
-                    // @ts-ignore TODO: fix type
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={textStyles.label}>Pontos fortes:</span>
                       {activity.extra_data.key_strengths.slice(0, 3).map((strength: string, idx: number) => (
@@ -372,7 +370,6 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
                   data={activity.extra_data}
                   summary={activity.summary}
                   onViewAnalysis={() => {
-                  // @ts-ignore TODO: fix type
                   }}
                   onScheduleInterview={() => {
                   }}

@@ -51,8 +51,8 @@ export const useTemplateSuggestions = () => {
     if (savedHistory) {
       try {
         const parsed = JSON.parse(savedHistory).map((item: Record<string, unknown>) => ({
-          ...item,          // @ts-ignore // TODO: fix type
-          timestamp: new Date(item.timestamp)
+          ...item,
+          timestamp: new Date(item.timestamp as string)
         }))
         setCommandHistory(parsed)
       } catch (error) {

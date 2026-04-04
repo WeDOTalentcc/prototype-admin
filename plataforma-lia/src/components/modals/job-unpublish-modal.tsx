@@ -45,6 +45,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { useCommunicationTemplates, type TemplateSituation } from "@/hooks/use-communication-templates"
+import { useJobUIStore } from "@/stores/job-ui-store"
 
 export interface JobUnpublishModalProps {
   isOpen: boolean
@@ -209,7 +210,6 @@ export function JobUnpublishModal({
               const candidatesData = data.candidates || data.items || data || []
               
               if (Array.isArray(candidatesData)) {
-                // @ts-ignore TODO: fix type — Argument of type '{ id: unknown; name: {}; email: unknown; phone: unknown; stage
                 allFetched.push(...candidatesData.map((c: Record<string, unknown>) => ({
                   id: c.id || c.candidate_id,
                   name: c.name || c.full_name || 'Candidato',
@@ -332,7 +332,7 @@ export function JobUnpublishModal({
           candidateIds: eligibleCandidates.map(c => c.id),
           channel: 'email' as const
         }
-        localStorage.setItem('pendingCommunicationAction', JSON.stringify(pendingAction))
+        useJobUIStore.getState().setPendingCommunicationAction(pendingAction)
         
         onClose()
         
@@ -599,7 +599,6 @@ export function JobUnpublishModal({
           <Button
             type="button"
             size="sm"
-            // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
             variant={notificationChannel === 'email' || notificationChannel === 'both' ? 'default' : 'outline'}
             onClick={() => setNotificationChannel(notificationChannel === 'whatsapp' ? 'email' : notificationChannel === 'email' ? 'both' : 'email')}
             className={cn(
@@ -615,7 +614,6 @@ export function JobUnpublishModal({
           <Button
             type="button"
             size="sm"
-            // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
             variant={notificationChannel === 'whatsapp' || notificationChannel === 'both' ? 'default' : 'outline'}
             onClick={() => setNotificationChannel(notificationChannel === 'email' ? 'whatsapp' : notificationChannel === 'whatsapp' ? 'both' : 'whatsapp')}
             className={cn(

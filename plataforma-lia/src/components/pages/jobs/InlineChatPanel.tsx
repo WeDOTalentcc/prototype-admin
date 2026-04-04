@@ -322,7 +322,6 @@ export function InlineChatPanel({
                           {(message as any).action_executed && (message as any).action_result && (
                             <ActionResultCard
                               actionType={(message as { action_executed?: boolean; action_result?: unknown; action_type?: string }).action_type || "pause_job"}
-                              // @ts-ignore TODO: fix type
                               result={(message as { action_executed?: boolean; action_result?: unknown; action_type?: string }).action_result as any}
                             />
                           )}

@@ -153,8 +153,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
       type: noteType
     }
 
-    // @ts-ignore TODO: fix type
-    onAddNote?.(candidate.id, newNote)
+    onAddNote?.(candidate.id, newNote as any)
     candidateData.notes.unshift(note)
     setNewNote("")
   }

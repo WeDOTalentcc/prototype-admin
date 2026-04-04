@@ -205,11 +205,9 @@ export function KanbanLIASidebar({
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            // @ts-ignore TODO: fix type
                             const candidate = Object.values(candidatesData).flat().find((c: { id?: string }) => c.id === suggestion.candidate_id)
                             if (candidate) {
-                              // @ts-ignore TODO: fix type
-                              setSelectedCandidate(candidate)
+                              setSelectedCandidate(candidate as any)
                               setShowCandidatePage(true)
                             }
                           }}
@@ -277,19 +275,15 @@ export function KanbanLIASidebar({
                         </div>
                         {(msg as any).metadata?.action_executed && (msg as any).metadata?.action_result && (
                           <ActionResultCard
-                            // @ts-ignore TODO: fix type
-                            actionType={(msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.action_type || 'move_candidate'}
-                            // @ts-ignore TODO: fix type
-                            result={(msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.action_result}
+                            actionType={((msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.action_type || 'move_candidate') as any}
+                            result={((msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.action_result) as any}
                           />
                         )}
                         {(msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.is_fallback && (
                           <button
                             onClick={() => handleLiaUiAction(
-                              // @ts-ignore TODO: fix type
-                              (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.ui_action,
-                              // @ts-ignore TODO: fix type
-                              (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata.ui_action_params || {}
+                              (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.ui_action as string,
+                              (msg as { metadata?: { action_executed?: boolean; action_result?: unknown; action_type?: string; is_fallback?: boolean; ui_action?: string; ui_action_params?: Record<string, unknown> } }).metadata?.ui_action_params || {}
                             )}
                             className="mt-2 px-3 py-1.5 text-xs font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover rounded-md transition-colors motion-reduce:transition-none"
                             

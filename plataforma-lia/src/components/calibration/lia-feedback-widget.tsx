@@ -122,8 +122,7 @@ export function LIAFeedbackWidget({
               <div className="flex gap-2">
                 <Button
                   size="sm"
-                  // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-                  variant={feedbackState === "agree" ? "default" : "outline"}
+                  variant={feedbackState === "agree" ? "default" as any : "outline"}
                   className={cn(
  "flex-1 gap-1",
                     feedbackState === "agree" && "bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
@@ -136,8 +135,7 @@ export function LIAFeedbackWidget({
                 </Button>
                 <Button
                   size="sm"
-                  // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-                  variant={feedbackState === "disagree" ? "default" : "outline"}
+                  variant={feedbackState === "disagree" ? "default" as any : "outline"}
                   className={cn(
  "flex-1 gap-1",
                     feedbackState === "disagree" && "bg-lia-border-medium hover:bg-lia-bg-inverse"

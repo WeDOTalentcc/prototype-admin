@@ -127,7 +127,6 @@ const DepartmentCard = React.memo(({ dept, index }: { dept: { name: string; effi
           </div>
         </div>
         <div>
-          {/* @ts-ignore TODO: fix type */}
           <div className="text-2xl font-bold text-lia-text-primary">
             {((dept as any).hires as React.ReactNode)}
           </div>
@@ -407,8 +406,7 @@ export function PresentationMode({ isActive, onToggle, currentPage, data }: Pres
           {slides.map((slide, index) => (
             <Button
               key={slide.id}
-              // @ts-ignore TODO: fix type
-              variant={currentSlide === index ? "default" : "ghost"}
+              variant={currentSlide === index ? "default" as any : "ghost"}
               size="sm"
               onClick={() => goToSlide(index)}
               className="gap-2"

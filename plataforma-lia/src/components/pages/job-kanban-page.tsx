@@ -140,6 +140,7 @@ const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m
 const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false, loading: () => <LoadingModal /> })
 import { useKanbanPageCore } from "@/components/pages/job-kanban/hooks/useKanbanPageCore"
 import { KanbanPageModals } from "@/components/pages/job-kanban/KanbanPageModals"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, onBack?: () => void }) {
   const state = useKanbanPageCore({ job, onBack })
@@ -197,7 +198,6 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
     handleTableTransitionRequest, handleTransitionRequired,
     setSelectedCandidateForModal, setActiveModal,
     setShowBigFiveModal, scoreModalCandidate,
-    // @ts-ignore TODO: fix type
     getDataRequestForCandidate, handleDataRequestResend, handleDataRequestViewDetails,
     setTransitionInitialPrompt, setTransitionAllowStageSelection, setTransitionInterviewAlert,
     openTransition, router, user, toast,
@@ -404,6 +404,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         }
       `}</style>
 
+    <ErrorBoundarySection>
     <div className="h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex flex-col overflow-hidden">
       {/* Header Principal */}
       <KanbanJobHeader
@@ -412,12 +413,10 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
         currentJob={currentJob}
         jobEditForm={jobEditForm}
         setJobEditForm={setJobEditForm}
-        // @ts-ignore TODO: fix type
-        setJobStatusModalMode={setJobStatusModalMode}
+        setJobStatusModalMode={setJobStatusModalMode as any}
         setShowJobStatusModal={setShowJobStatusModal}
         setShowCloseVacancyModal={setShowCloseVacancyModal}
-        // @ts-ignore TODO: fix type
-        setActiveTab={setActiveTab}
+        setActiveTab={setActiveTab as any}
         computedSuggestions={computedSuggestions}
         setShowExpandedLIA={setShowExpandedLIA}
         setShowLiaSuggestionsPanel={setShowLiaSuggestionsPanel}
@@ -600,16 +599,14 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             viewMode={viewMode}
-            // @ts-ignore TODO: fix type
-            setViewMode={setViewMode}
+            setViewMode={setViewMode as any}
             showKanbanFiltersPanel={showKanbanFiltersPanel}
             setShowKanbanFiltersPanel={setShowKanbanFiltersPanel}
             showTableFiltersPanel={showTableFiltersPanel}
             setShowTableFiltersPanel={setShowTableFiltersPanel}
             showColumnConfig={showColumnConfig}
             setShowColumnConfig={setShowColumnConfig}
-            // @ts-ignore TODO: fix type
-            tableColumns={tableColumns}
+            tableColumns={tableColumns as any}
             selectedCandidates={selectedCandidates}
             setSelectedCandidates={setSelectedCandidates}
             allTableCandidates={allTableCandidates}
@@ -958,6 +955,7 @@ export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, 
       <KanbanPageModals {...state} />
 
     </div>
+    </ErrorBoundarySection>
     </>
   )
 }

@@ -156,7 +156,6 @@ export function ClientTable({
               return (
                 <Button
                   key={pageNum}
-                  // @ts-ignore TODO: fix type — Type '"default" | "ghost"' is not assignable to type '"link" | "primary" | "dest
                   variant={page === pageNum ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => onPageChange(pageNum)}

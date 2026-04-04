@@ -74,7 +74,6 @@ opinionsSubTab === 'analises'
         >
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Análises
-          {/* @ts-ignore TODO: fix type */}
           {(savedAnalyses as any) && (savedAnalyses as any).total_analyses > 0 && (
             <Badge className="text-micro px-1.5 py-0 h-4 ml-1" style={{backgroundColor: 'var(--lia-bg-tertiary)', color: 'var(--wedo-purple)'}}>
               {(savedAnalyses as unknown as {total_analyses: number}).total_analyses}
@@ -126,17 +125,15 @@ opinionsSubTab === 'analises'
               {opinionsHistory.map((opinion: Record<string, any>) => (
                 <div key={opinion.id as string} className="relative">
                   {!opinion.is_current && (
-                    // @ts-ignore TODO: fix type
                     <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-tertiary z-10">
                       v{(opinion.version as React.ReactNode)} - Histórico
                     </Badge>
                   )}
                   <OpinionCard
                     opinion={opinion}
-                    // @ts-ignore TODO: fix type
-                    isExpanded={expandedOpinionId === opinion.id}
+                    isExpanded={expandedOpinionId === (opinion.id as string)}
                     onToggle={() => setExpandedOpinionId(
-                      expandedOpinionId === opinion.id ? null : opinion.id
+                      expandedOpinionId === opinion.id ? null : opinion.id as string
                     )}
                     type={opinion.opinion_type === 'wsi' ? 'wsi' : 'general'}
                     copiedItemId={copiedItemId}

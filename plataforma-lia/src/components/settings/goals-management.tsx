@@ -285,7 +285,6 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                               {MONTHS.map((month) => (
                                 <td 
                                   key={month.num} 
-                                  // @ts-ignore TODO: fix type
                                   className="p-2 text-center font-semibold text-lia-text-primary"
                                 >
                                   {calculateColumnTotal(template.id, month.num, selectedYear, template.assignedUsers)}

@@ -49,9 +49,7 @@ export function useRecruitmentStages(): UseRecruitmentStagesResult {
           order: s.stage_order || idx + 1,
           isActive: s.is_active ?? true,
           notes: s.description || "",
-          // @ts-ignore // TODO: fix type
-          // @ts-ignore // TODO: fix type
-          sla: s.sla_hours ? Math.round(s.sla_hours / 24) : 0,
+          sla: s.sla_hours ? Math.round(Number(s.sla_hours) / 24) : 0,
           type: s.stage_category === 'system' ? 'system' : (s.stage_category === 'catalog' ? 'default' : 'custom'),
           color: s.color,
           icon: s.icon,

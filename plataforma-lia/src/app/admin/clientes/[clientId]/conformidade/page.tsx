@@ -73,23 +73,17 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
     return pathname === fullPath
   }
 
-  // @ts-ignore TODO: fix type
-  const overallCompliance = dashboard?.overallCompliance ?? 0
+  const overallCompliance = (dashboard as any)?.overallCompliance ?? 0
   const totalControls = dashboard?.totalControls ?? 0
   const implementedControls = dashboard?.totalImplemented ?? 0
-  // @ts-ignore TODO: fix type
-  const pendingControls = dashboard?.totalNotStarted ?? 0
-  // @ts-ignore TODO: fix type
-  const _inProgressControls = dashboard?.totalInProgress ?? 0
+  const pendingControls = (dashboard as any)?.totalNotStarted ?? 0
+  const _inProgressControls = (dashboard as any)?.totalInProgress ?? 0
   const upcomingReviews = dashboard?.upcomingReviews ?? 0
   const overdueReviews = dashboard?.overdueReviews ?? 0
   
-  // @ts-ignore TODO: fix type
-  const openIncidents = breaches.filter(b => b.status !== 'closed').length
-  // @ts-ignore TODO: fix type
-  const dsrPending = lgpdStats?.pendingDSRs ?? 0
-  // @ts-ignore TODO: fix type
-  const consentRate = lgpdStats?.consentComplianceRate ?? 0
+  const openIncidents = breaches.filter((b: any) => b.status !== 'closed').length
+  const dsrPending = (lgpdStats as any)?.pendingDSRs ?? 0
+  const consentRate = (lgpdStats as any)?.consentComplianceRate ?? 0
 
   if (isLoading) {
     return (
@@ -351,11 +345,9 @@ export default function ConformidadePage({ params }: { params: Promise<{ clientI
                   <Progress value={(lgpdStats as any).dataRetentionCompliance || 0} className="h-2" />
                 </div>
 
-                {/* @ts-ignore TODO: fix type */}
                 {(lgpdStats as any).lastAuditDate && (
                   <div className="flex items-center gap-2 text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                     <Calendar className="w-3 h-3" />
-                    {/* @ts-ignore TODO: fix type */}
                     Última auditoria: {formatDate((lgpdStats as any).lastAuditDate)}
                   </div>
                 )}

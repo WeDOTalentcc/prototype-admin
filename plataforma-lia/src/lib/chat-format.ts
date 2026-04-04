@@ -18,8 +18,7 @@ export function cleanAgentResponse(raw: string): string {
   const rawJsonRe = /\{\s*"thought"\s*:[\s\S]*?"response"\s*:\s*(?:null|"[^"]*")\s*\}/g
   text = text.replace(rawJsonRe, '')
 
-  // @ts-ignore TODO: fix type — This regular expression flag is only available when targeting 'es2018' or later.
-  const responseMatch = text.match(/"response"\s*:\s*"((?:[^"\\]|\\.)*)"/s)
+  const responseMatch = text.match(new RegExp('"response"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"', 's'))
   if (responseMatch && text.trim().startsWith('{')) {
     try {
       text = JSON.parse(`"${responseMatch[1]}"`)

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 export interface JobsColumnWidths {
   [key: string]: number
@@ -109,9 +110,7 @@ export function useJobsTableColumns(): UseJobsTableColumnsReturn {
       setResizingJobColumn(null)
       setJobsColumnWidths(prev => {
         const updatedWidths = { ...prev, [columnKey]: currentWidth }
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('jobs-table-column-widths', JSON.stringify(updatedWidths))
-        }
+        setStoredJobsColumnWidths(updatedWidths)
         return updatedWidths
       })
       document.removeEventListener('mousemove', handleMouseMove)
@@ -158,9 +157,7 @@ export function useJobsTableColumns(): UseJobsTableColumnsReturn {
       newOrder.splice(draggedIndex, 1)
       newOrder.splice(targetIndex, 0, draggedJobColumnId)
 
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('jobs-table-column-order', JSON.stringify(newOrder))
-      }
+      setStoredJobsColumnOrder(newOrder)
 
       return newOrder
     })
@@ -178,13 +175,17 @@ export function useJobsTableColumns(): UseJobsTableColumnsReturn {
     setShowColumnConfig(!showColumnConfig)
   }
 
+  const storedJobsColumnOrder = useUIPreferencesStore(s => s.jobsTableColumnOrder)
+  const storedJobsColumnWidths = useUIPreferencesStore(s => s.jobsTableColumnWidths)
+  const setStoredJobsColumnOrder = useUIPreferencesStore(s => s.setJobsTableColumnOrder)
+  const setStoredJobsColumnWidths = useUIPreferencesStore(s => s.setJobsTableColumnWidths)
+
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const savedOrder = localStorage.getItem('jobs-table-column-order')
-    if (savedOrder) {
+    if (storedJobsColumnOrder) {
       try {
-        const parsed = JSON.parse(savedOrder) as string[]
+        const parsed = storedJobsColumnOrder
         const savedCols = parsed.filter((id: string) => DEFAULT_COLUMN_ORDER.includes(id))
         const missingCols = DEFAULT_COLUMN_ORDER.filter(id => !parsed.includes(id) && id !== 'checkbox' && id !== 'acoes')
         const innerCols = savedCols.filter((id: string) => id !== 'checkbox' && id !== 'acoes')
@@ -196,11 +197,9 @@ export function useJobsTableColumns(): UseJobsTableColumnsReturn {
       }
     }
 
-    const savedWidths = localStorage.getItem('jobs-table-column-widths')
-    if (savedWidths) {
+    if (storedJobsColumnWidths) {
       try {
-        const parsed = JSON.parse(savedWidths)
-        setJobsColumnWidths(prev => ({ ...prev, ...parsed }))
+        setJobsColumnWidths(prev => ({ ...prev, ...storedJobsColumnWidths }))
       } catch (e) {
       }
     }

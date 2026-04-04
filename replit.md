@@ -66,6 +66,10 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Admin Audit & Streamlining (Task #100)**: Reduced accessible admin pages from 61 to 30 (51% reduction) by removing redundant or premature features and consolidating sections.
 - **Security Audit Tasks #105-107**: Removed hardcoded credentials, migrated authentication to httpOnly cookies with JWT and WorkOS SSO, and added API security measures including Zod validation, file/body size limits, HSTS, and X-XSS-Protection headers.
 - **Zustand State Management (Task #116)**: Introduced zustand for centralized state management. Created `src/stores/auth-store.ts` (auth state), `src/stores/kanban-store.ts` (kanban view/candidates), `src/stores/candidates-store.ts` (search/candidates). Auth context now delegates to zustand store. Kanban and candidates hooks consume from stores for shared state (viewMode, selectedCandidates, candidatesData, etc.).
+- **@ts-ignore Elimination (Quality Audit)**: Removed ALL 665 @ts-ignore comments from the entire frontend codebase (0 remaining). Fix patterns: String(value) for unknown→string, as Type assertions, optional chaining, proper callback typing, missing .map() index params, and variant prop casts.
+- **God Components Split (Quality Audit)**: Split top 5 largest components: LiaChatPanel (1075→112L), useExpandedChatModalCore (1001→65L), triagem-details-modal (994→156L), JDEvaluationPanel (993→304L), CompanyDataSection (990→228L). Each decomposed into hooks + sub-components.
+- **Performance: React.lazy + Error Boundaries**: Created ErrorBoundarySection and SuspenseFallback reusable components. Added lazy loading for 17+ modals. Wrapped 8 major pages with Error Boundaries. Settings tabs use next/dynamic.
+- **localStorage → Zustand Migration (Partial)**: Created 5 new Zustand stores (onboarding, ui-preferences, job-ui, navigation, job-filters) with persist middleware. Migrated 102 of 278 localStorage usages to centralized stores.
 
 # External Dependencies
 - Anthropic (Claude API)

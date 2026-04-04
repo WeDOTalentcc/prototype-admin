@@ -246,7 +246,6 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                       <span className="text-xs text-status-error">{breaches.filter(b => (b as any).status !== 'closed').length} abertos</span>
                     </>
                   ) : (
-                    // @ts-ignore TODO: fix type
                     <>
                       <CheckCircle2 className="w-3 h-3 text-status-success" />
                       <span className="text-xs text-status-success">Nenhum aberto</span>
@@ -282,13 +281,11 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                     <span className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">{(dpo as any).email}</span>
                   </div>
                   {(dpo as any).phone && (
-                    // @ts-ignore TODO: fix type — Property 'phone' does not exist on type 'DPORegistry'.
-                    <span className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">{dpo.phone}</span>
+                    <span className="text-sm text-lia-text-tertiary dark:text-lia-text-secondary">{(dpo as any).phone}</span>
                   )}
                 </div>
                 {(dpo as any).registrationDate && (
                   <p className="text-xs mt-2 text-lia-text-tertiary dark:text-lia-text-secondary">
-                    {/* @ts-ignore TODO: fix type */}
                     Registrado em {formatDate((dpo as any).registrationDate)}
                   </p>
                 )}
@@ -300,8 +297,6 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           </CardContent>
         </Card>
       )}
-
-{/* @ts-ignore TODO: fix type */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -329,7 +324,6 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
                         </div>
                       </div>
                       <Badge className={dsrStatusColors[(decision as any).status] || dsrStatusColors.pending}>
-                        {/* @ts-ignore TODO: fix type */}
                         {dsrStatusLabels[(decision as any).status] || (decision as any).status}
                       </Badge>
                     </div>
@@ -345,7 +339,6 @@ export default function LGPDPage({ params }: { params: Promise<{ clientId: strin
           </CardContent>
         </Card>
 
-        {/* @ts-ignore TODO: fix type */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium text-lia-text-primary dark:text-lia-text-primary">

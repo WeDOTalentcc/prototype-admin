@@ -356,8 +356,7 @@ export function InteractiveChart({
                 {(['monthly', 'quarterly', 'yearly'] as const).map((p) => (
                   <Button
                     key={p}
-                    // @ts-ignore TODO: fix type — Type '"default" | "ghost"' is not assignable to type '"link" | "primary" | "dest
-                    variant={period === p ? "default" : "ghost"}
+                    variant={(period === p ? "default" : "ghost") as any}
                     size="sm"
                     onClick={() => onPeriodChange?.(p)}
                     className="text-xs"
@@ -479,8 +478,7 @@ export function RecruiterPerformanceChart() {
         {metrics.map(metric => (
           <Button
             key={metric.key}
-            // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-            variant={selectedMetric === metric.key ? "default" : "outline"}
+            variant={(selectedMetric === metric.key ? "default" : "outline") as any}
             size="sm"
             onClick={() => setSelectedMetric(metric.key)}
             className="gap-2"
@@ -530,8 +528,7 @@ export function WorkModelDistributionChart() {
       {/* View Toggle */}
       <div className="flex gap-2">
         <Button
-          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-          variant={viewType === 'distribution' ? "default" : "outline"}
+          variant={(viewType === 'distribution' ? "default" : "outline") as any}
           size="sm"
           onClick={() => setViewType('distribution')}
           className="gap-2"
@@ -540,8 +537,7 @@ export function WorkModelDistributionChart() {
           Distribuição
         </Button>
         <Button
-          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-          variant={viewType === 'trends' ? "default" : "outline"}
+          variant={(viewType === 'trends' ? "default" : "outline") as any}
           size="sm"
           onClick={() => setViewType('trends')}
           className="gap-2"
@@ -602,8 +598,7 @@ export function PredictiveAnalyticsChart() {
           {[80, 85, 90, 95].map(level => (
             <Button
               key={level}
-              // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-              variant={confidenceLevel === level ? "default" : "outline"}
+              variant={(confidenceLevel === level ? "default" : "outline") as any}
               size="sm"
               onClick={() => setConfidenceLevel(level)}
             >

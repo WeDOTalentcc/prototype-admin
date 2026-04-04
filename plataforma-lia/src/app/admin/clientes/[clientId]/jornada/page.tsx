@@ -32,9 +32,7 @@ interface RecruitmentStage {
 
 const DEFAULT_STAGES: RecruitmentStage[] = [
   { id: 'applied', name: 'Candidatura', color: 'var(--lia-text-tertiary)', isActive: true, order: 1 },
-  // @ts-ignore // TODO: fix type
-  // @ts-ignore // TODO: fix type
-  { id: 'screening', name: 'Triagem', isActive: true, order: 2 },
+  { id: 'screening', name: 'Triagem', color: 'var(--lia-text-secondary)', isActive: true, order: 2 },
   { id: 'interview', name: 'Entrevista', color: 'var(--status-warning)', isActive: true, order: 3 },
   { id: 'technical', name: 'Avaliação Técnica', color: 'var(--wedo-purple)', isActive: true, order: 4 },
   { id: 'offer', name: 'Proposta', color: 'var(--status-success)', isActive: true, order: 5 },

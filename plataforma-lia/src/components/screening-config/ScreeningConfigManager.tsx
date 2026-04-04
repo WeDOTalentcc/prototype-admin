@@ -227,9 +227,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
               )}
               {activeSection === 'perguntas' && (
                 <>
-                  {/* @ts-ignore TODO: fix type */}
                   <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-lia-bg-tertiary text-lia-text-secondary font-['Open_Sans',sans-serif]">
-                    {(job.screeningQuestions as any[])?.length || 0} WSI
+                    {(job.screeningQuestions as unknown[] | undefined)?.length || 0} WSI
                     {((companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length) > 0 && (
                       <> · {(companyQuestions.length - disabledCompanyQIds.size) + selectedBankQuestions.length + customQuestions.length} extras</>
                     )}
@@ -241,8 +240,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                     {(job.screeningStatus === 'not_configured' || !job.screeningStatus) ? (
                       <button
                         onClick={() => {
-                          // @ts-ignore TODO: fix type
-                          const hasQuestions = ((job.screeningQuestions as any[])?.length || 0) > 0
+                          const hasQuestions = ((job.screeningQuestions as unknown[] | undefined)?.length || 0) > 0
                           if (!hasQuestions) {
                             toast.error('Configure pelo menos 3 perguntas antes de ativar a triagem.')
                             return
@@ -266,8 +264,7 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                           if (job.screeningStatus === 'active') {
                             setShowScreeningToggleConfirm('pause')
                           } else {
-                            // @ts-ignore TODO: fix type
-                            const hasQuestions = ((job.screeningQuestions as any[])?.length || 0) > 0
+                            const hasQuestions = ((job.screeningQuestions as unknown[] | undefined)?.length || 0) > 0
                             if (!hasQuestions) {
                               toast.error('Configure pelo menos 3 perguntas antes de ativar a triagem.')
                               return

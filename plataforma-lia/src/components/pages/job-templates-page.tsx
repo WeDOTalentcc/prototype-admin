@@ -329,7 +329,6 @@ export function JobTemplatesPage() {
           {categories.map((category) => (
             <Button
               key={category.id}
-              // @ts-ignore TODO: fix type
               variant={selectedCategory === category.id ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedCategory(category.id)}

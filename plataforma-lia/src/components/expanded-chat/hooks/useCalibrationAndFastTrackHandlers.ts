@@ -396,8 +396,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
       const vacancyDetails = await liaApi.getVacancyFullDetails(vacancyId)
       
       if (vacancyDetails) {
-        // @ts-ignore
-        ctx.setFastTrackSelectedVacancy(vacancyDetails)
+        ctx.setFastTrackSelectedVacancy(vacancyDetails as any)
         
         // Add LIA message with full summary
         const summaryMessage: Message = {

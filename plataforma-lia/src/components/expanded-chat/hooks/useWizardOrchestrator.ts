@@ -220,10 +220,9 @@ export function useWizardOrchestrator(
 
         const response: WizardOrchestratorResponse = await orchestrateWizardMessage(request)
 
-        const result: OrchestratorResult = {          // @ts-ignore // TODO: fix type
-          action: response.action,
-          // @ts-ignore // TODO: fix type
-          response: response.response,
+        const result: OrchestratorResult = {
+          action: response.action as OrchestratorResult['action'],
+          response: response.response as OrchestratorResult['response'],
           confidence: response.confidence,
           reasoning: response.reasoning,
           suggestions: response.suggestions,

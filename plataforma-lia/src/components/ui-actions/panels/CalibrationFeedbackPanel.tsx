@@ -335,8 +335,7 @@ function CandidateCard({
 
             <div className="flex gap-2 mt-4">
               <Button
-                // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-                variant={status === "approved" ? "default" : "outline"}
+                variant={status === "approved" ? "primary" : "outline"}
                 size="sm"
                 className={status === "approved"
  ? "flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
@@ -352,8 +351,7 @@ function CandidateCard({
                 Aprovar
               </Button>
               <Button
-                // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-                variant={status === "maybe" ? "default" : "outline"}
+                variant={status === "maybe" ? "primary" : "outline"}
                 size="sm"
                 className={status === "maybe"
  ? "flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
@@ -369,8 +367,7 @@ function CandidateCard({
                 Talvez
               </Button>
               <Button
-                // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-                variant={status === "rejected" ? "default" : "outline"}
+                variant={status === "rejected" ? "primary" : "outline"}
                 size="sm"
                 className={status === "rejected"
  ? "flex-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"

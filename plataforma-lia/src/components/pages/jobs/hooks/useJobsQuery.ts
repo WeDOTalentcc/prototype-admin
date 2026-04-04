@@ -84,14 +84,14 @@ export function useJobsQuery(options: UseJobsQueryOptions = {}): UseJobsQueryRes
     setError(null)
     setCurrentPage(1)
 
-    try {      // @ts-ignore // TODO: fix type
+    try {
       const response = await liaApi.getJobVacancies({
         limit: initialPageSize,
         offset: 0,
         ...filters,
         sort_by: sortConfig.column,
         sort_order: sortConfig.direction,
-      })
+      } as any)
 
       const transformedJobs = response.items.map(transformJob)
       setJobs(transformedJobs)
@@ -124,14 +124,13 @@ export function useJobsQuery(options: UseJobsQueryOptions = {}): UseJobsQueryRes
     try {
       const nextPage = currentPage + 1
       const offset = (nextPage - 1) * initialPageSize
-      // @ts-ignore // TODO: fix type
       const response = await liaApi.getJobVacancies({
         limit: initialPageSize,
         offset,
         ...filters,
         sort_by: sortConfig.column,
         sort_order: sortConfig.direction,
-      })
+      } as any)
 
       const transformedJobs = response.items.map(transformJob)
       setJobs((prev) => [...prev, ...transformedJobs])
@@ -142,22 +141,17 @@ export function useJobsQuery(options: UseJobsQueryOptions = {}): UseJobsQueryRes
       setIsLoading(false)
     }
   }, [isLoading, currentPage, initialPageSize, filters, sortConfig, transformJob])
-  // @ts-ignore // TODO: fix type
   const createJob = useCallback(async (data: Partial<JobVacancy>): Promise<JobVacancy> => {
-    // @ts-ignore // TODO: fix type
-    const response = await liaApi.createJobVacancy(data)
-    // @ts-ignore // TODO: fix type
-    const newJob = transformJob(response)
+    const response = await liaApi.createJobVacancy(data as any)
+    const newJob = transformJob(response as Record<string, unknown>)
     setJobs((prev) => [newJob, ...prev])
     setTotalCount((prev) => prev + 1)
     return newJob
-  // @ts-ignore // TODO: fix type
   }, [transformJob])
 
   const updateJob = useCallback(async (id: string, data: Partial<JobVacancy>): Promise<JobVacancy> => {
     const response = await liaApi.updateJobVacancy(id, data)
-    // @ts-ignore // TODO: fix type
-    const updatedJob = transformJob(response)
+    const updatedJob = transformJob(response as Record<string, unknown>)
     setJobs((prev) => prev.map((j) => (j.id === id ? updatedJob : j)))
     return updatedJob
   }, [transformJob])

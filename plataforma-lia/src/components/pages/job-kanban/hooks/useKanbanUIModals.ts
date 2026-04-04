@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { type BulkActionType } from "@/components/ui/bulk-actions-bar"
 import { toast } from "sonner"
+import { useJobUIStore } from "@/stores/job-ui-store"
 
 export function useKanbanUIModals({ job }: {
   job?: Record<string, unknown>
@@ -223,31 +224,23 @@ export function useKanbanUIModals({ job }: {
     load()
   }, [])
 
-  // Pending communication action from localStorage (after un-publish)
+  const consumePendingCommunicationAction = useJobUIStore(s => s.consumePendingCommunicationAction)
+
   useEffect(() => {
-    const pendingAction = localStorage.getItem('pendingCommunicationAction')
-    if (!pendingAction) return
-    try {
-      const action = JSON.parse(pendingAction) as {
-        jobId: string; template?: string; candidateIds?: string[]; channel?: 'email' | 'whatsapp'
+    if (!job?.id) return
+    const action = consumePendingCommunicationAction(String(job.id))
+    if (!action) return
+    setTimeout(() => {
+      const candidateCount = action.candidateIds?.length || 0
+      const channelType = action.channel === 'whatsapp' ? 'whatsapp' : 'email'
+      setUnifiedModalCandidate(null)
+      setUnifiedModalType(channelType as CommunicationType)
+      setUnifiedModalOpen(true)
+      if (candidateCount > 0) {
+        toast.success('Modal de comunicação aberto', { description: `${candidateCount} candidato(s) prontos para notificação via ${channelType === 'whatsapp' ? 'WhatsApp' : 'E-mail'}.` })
       }
-      if (action.jobId && String(action.jobId) === String(job?.id)) {
-        localStorage.removeItem('pendingCommunicationAction')
-        setTimeout(() => {
-          const candidateCount = action.candidateIds?.length || 0
-          const channelType = action.channel === 'whatsapp' ? 'whatsapp' : 'email'
-          setUnifiedModalCandidate(null)
-          setUnifiedModalType(channelType as CommunicationType)
-          setUnifiedModalOpen(true)
-          if (candidateCount > 0) {
-            toast.success('Modal de comunicação aberto', { description: `${candidateCount} candidato(s) prontos para notificação via ${channelType === 'whatsapp' ? 'WhatsApp' : 'E-mail'}.` })
-          }
-        }, 500)
-      }
-    } catch {
-      localStorage.removeItem('pendingCommunicationAction')
-    }
-  }, [job?.id])
+    }, 500)
+  }, [job?.id, consumePendingCommunicationAction])
 
   return {
     state: {

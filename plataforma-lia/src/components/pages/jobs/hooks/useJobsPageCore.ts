@@ -87,8 +87,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     setBackendJobs,
     setShowExpandedLIA: (v) => chatActions.setShowExpandedLIA(v),
     setLiaPromptValue: (v) => chatActions.setLiaPromptValue(v),
-    // @ts-ignore TODO: fix type
-    setLiaHighlight: (v) => chatActions.setLiaHighlight?.(v),
+    setLiaHighlight: (v: unknown) => (chatActions as any).setLiaHighlight?.(v),
     liaInputRef: undefined, // will be supplied after chat state is created
   })
 
@@ -110,25 +109,23 @@ export function useJobsPageCore(props: JobsPageProps) {
   })
 
   // -----------------------------------------------------------------------
-  // Navigation: navigate to candidate (localStorage) + pendingJobOpen
+  // Navigation: navigate to candidate (store) + pendingJobOpen
   // -----------------------------------------------------------------------
   const hasProcessedNavigateToCandidate = useRef(false)
+  const navigationStoreNavigateToCandidate = useNavigationStore(s => s.navigateToCandidate)
+  const consumeNavigateToCandidate = useNavigationStore(s => s.consumeNavigateToCandidate)
 
   useEffect(() => {
     if (hasProcessedNavigateToCandidate.current) return
     if (!allJobs.length) return
-
-    const raw = localStorage.getItem('navigateToCandidate')
-    if (!raw) return
+    if (!navigationStoreNavigateToCandidate) return
 
     hasProcessedNavigateToCandidate.current = true
+    const result = consumeNavigateToCandidate()
+    if (!result) return
+    const nav = result.nav
 
     try {
-      const nav = JSON.parse(raw) as {
-        candidateId?: string; candidateName?: string; jobId?: string; jobTitle?: string
-        currentStage?: string; action?: string; openTransitionModal?: boolean
-      }
-
       let matchedJob = allJobs.find(j => j.jobId === nav.jobId || j.title === nav.jobTitle)
       if (!matchedJob && nav.jobTitle) {
         const norm = nav.jobTitle.toLowerCase()
@@ -148,19 +145,13 @@ export function useJobsPageCore(props: JobsPageProps) {
           id: matchedJob.backendId || matchedJob.jobId || String(matchedJob.id),
           type: 'vaga',
           title: matchedJob.title,
-          // @ts-ignore TODO: fix type
           subtitle: (matchedJob as Record<string, unknown>).company as string | undefined,
           meta: { jobId: matchedJob.backendId || matchedJob.jobId || String(matchedJob.id) },
         })
-      } else {
-        localStorage.removeItem('navigateToCandidate')
-        localStorage.removeItem('liaPrompt')
       }
     } catch {
-      localStorage.removeItem('navigateToCandidate')
-      localStorage.removeItem('liaPrompt')
     }
-  }, [allJobs, onAddRecentItem])
+  }, [allJobs, onAddRecentItem, navigationStoreNavigateToCandidate, consumeNavigateToCandidate])
 
   // Navigate to newly created job when it appears in allJobs
   useEffect(() => {
@@ -189,10 +180,8 @@ export function useJobsPageCore(props: JobsPageProps) {
                 'Planejamento': 'Planejamento', 'Aprovação': 'Aprovação', 'Publicada': 'Publicada',
                 'Triagem': 'Triagem', 'Entrevistas': 'Entrevistas', 'Finalização': 'Finalização', 'Encerrada': 'Encerrada',
               }
-              // @ts-ignore TODO: fix type
               const convertedJobs: Job[] = response.items.map((jv: Record<string, unknown>, index: number) => {
                 const funnelData = (jv.funnel_data as Record<string, number>) || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
-                // @ts-ignore TODO: fix type
                 return {
                   id: index + 1,
                   backendId: jv.id as string,
@@ -246,11 +235,7 @@ export function useJobsPageCore(props: JobsPageProps) {
   // Kanban navigation state
   // -----------------------------------------------------------------------
   const [showKanban, setShowKanban] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      const raw = localStorage.getItem('navigateToCandidate')
-      if (raw) return true
-    }
-    return false
+    return !!navigationStoreNavigateToCandidate
   })
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null)
 
@@ -267,7 +252,6 @@ export function useJobsPageCore(props: JobsPageProps) {
       id: job.backendId || job.jobId || String(job.id),
       type: 'vaga',
       title: job.title,
-      // @ts-ignore TODO: fix type
       subtitle: (job as Record<string, unknown>).company as string | undefined,
       meta: { jobId: job.backendId || job.jobId || String(job.id) },
     })

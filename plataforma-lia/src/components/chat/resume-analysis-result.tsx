@@ -185,8 +185,7 @@ export function ResumeAnalysisResult({
         {(result.contact_info?.linkedin as any) && (
           <div className="pt-4 border-t">
             <a 
-              // @ts-ignore TODO: fix type
-              href={result.contact_info.linkedin}
+              href={(result.contact_info as Record<string, unknown>).linkedin as string}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm text-lia-text-secondary hover:text-lia-text-primary"

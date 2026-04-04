@@ -474,8 +474,7 @@ export function useCommunicationTemplates(options: UseCommunicationTemplatesOpti
           name: t.name,
           category: t.category || 'followup',
           subject: t.subject || '',
-          // @ts-ignore TODO: fix type
-          body: t.body || t.body_text || (t.body_html ? stripHtmlTags(t.body_html) : ''),
+          body: t.body || t.body_text || (t.body_html ? stripHtmlTags(t.body_html as string) : ''),
           variables: t.variables || [],
           isActive: t.is_active ?? true,
           lastUpdated: t.updated_at || t.last_updated || new Date().toISOString().split('T')[0],

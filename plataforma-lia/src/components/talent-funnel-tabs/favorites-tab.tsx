@@ -320,8 +320,7 @@ export function FavoritesTab({
 
           <div className="flex items-center gap-1 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md p-1">
             <Button
-              // @ts-ignore TODO: fix type — Type '"default" | "ghost"' is not assignable to type '"link" | "primary" | "dest
-              variant={filterType === 'all' ? 'default' : 'ghost'}
+              variant={filterType === 'all' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setFilterType('all')}
               className="h-6 px-2.5 text-xs"
@@ -329,8 +328,7 @@ export function FavoritesTab({
               Todos ({candidates.length})
             </Button>
             <Button
-              // @ts-ignore TODO: fix type — Type '"default" | "ghost"' is not assignable to type '"link" | "primary" | "dest
-              variant={filterType === 'pinned' ? 'default' : 'ghost'}
+              variant={filterType === 'pinned' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setFilterType('pinned')}
               className="h-6 px-2.5 text-xs"
@@ -339,8 +337,7 @@ export function FavoritesTab({
               Fixados
             </Button>
             <Button
-              // @ts-ignore TODO: fix type — Type '"default" | "ghost"' is not assignable to type '"link" | "primary" | "dest
-              variant={filterType === 'starred' ? 'default' : 'ghost'}
+              variant={filterType === 'starred' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setFilterType('starred')}
               className="h-6 px-2.5 text-xs"

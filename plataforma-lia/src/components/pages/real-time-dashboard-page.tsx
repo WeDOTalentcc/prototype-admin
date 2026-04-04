@@ -272,8 +272,7 @@ export function RealTimeDashboardPage() {
             </div>
             <div className="flex items-center gap-3">
               <Button
-                // @ts-ignore TODO: fix type
-                variant={isLive ? "default" : "outline"}
+                variant={isLive ? "default" as any : "outline"}
                 size="sm"
                 onClick={() => setIsLive(!isLive)}
                 className="gap-2"

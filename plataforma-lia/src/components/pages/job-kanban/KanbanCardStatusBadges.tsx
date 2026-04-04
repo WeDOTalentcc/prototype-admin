@@ -95,8 +95,7 @@ export function KanbanCardStatusBadges({
 <div className="mt-2 flex flex-wrap gap-1">
   {/* AI Suggestion Badge */}
   {(() => {
-    // @ts-ignore TODO: fix type
-    const suggestion = getSuggestionForCandidate(aiSuggestions, candidate.id)
+    const suggestion = getSuggestionForCandidate(aiSuggestions, String(candidate.id))
     if (suggestion) {
       return (
         <div onClick={(e) => e.stopPropagation()}>
@@ -360,17 +359,14 @@ export function KanbanCardStatusBadges({
         <OverrideApproveButton
           candidateId={candidate.id}
           candidateName={candidate.name}
-          // @ts-ignore TODO: fix type
-          vacancyId={(currentJob.backendId || currentJob.id).toString()}
+          vacancyId={String(currentJob.backendId || currentJob.id)}
           onApproved={(cId: string) => {
             setCandidatesData((prev) => {
               const updated = { ...prev }
               Object.keys(updated).forEach((key) => {
                 updated[key] = updated[key].map((c) =>
-                  // @ts-ignore TODO: fix type
-                  c.id === cId
-                    // @ts-ignore TODO: fix type
-                    ? { ...c, status: "triado_aprovado", sub_status: undefined, subStatus: undefined }
+                  String(c.id) === cId
+                    ? { ...c, status: "triado_aprovado" as const, sub_status: undefined, subStatus: undefined }
                     : c
                 )
               })

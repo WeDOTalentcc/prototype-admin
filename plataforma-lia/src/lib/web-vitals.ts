@@ -11,8 +11,7 @@ export function reportWebVitals(metric: {
   // Enviar para Sentry como medida de performance
   if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
     import('@sentry/nextjs').then(Sentry => {
-      // @ts-ignore TODO: fix type — Property 'set' does not exist on type 'typeof import("/home/runner/workspace/pla
-      Sentry.metrics?.set(metric.name, metric.value, {
+      (Sentry as any).metrics?.set(metric.name, metric.value, {
         tags: { rating: metric.rating },
       })
     }).catch(() => {})

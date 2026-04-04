@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
+import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -66,8 +67,6 @@ interface PublicSharedSearchResponse {
 
 type FilterType = 'all' | 'approved' | 'maybe' | 'rejected' | 'pending'
 
-const STORAGE_KEY_PREFIX = 'wedo_shared_session_'
-
 export default function SharedSearchPage() {
   const params = useParams()
   const token = params?.token as string
@@ -110,7 +109,7 @@ export default function SharedSearchPage() {
         if (response.status === 404) {
           setError('Link de compartilhamento não encontrado ou expirado.')
         } else if (response.status === 401) {
-          localStorage.removeItem(`${STORAGE_KEY_PREFIX}${token}`)
+          useUIPreferencesStore.getState().removeSharedSessionToken(token)
           setSessionToken(null)
           setError('Sessão expirada. Por favor, faça login novamente.')
         } else {
@@ -136,7 +135,7 @@ export default function SharedSearchPage() {
 
   useEffect(() => {
     if (token) {
-      const storedToken = localStorage.getItem(`${STORAGE_KEY_PREFIX}${token}`)
+      const storedToken = useUIPreferencesStore.getState().getSharedSessionToken(token)
       if (storedToken) {
         setSessionToken(storedToken)
       }
@@ -203,7 +202,7 @@ export default function SharedSearchPage() {
       const newSessionToken = data.session_token || data.token
 
       if (newSessionToken) {
-        localStorage.setItem(`${STORAGE_KEY_PREFIX}${token}`, newSessionToken)
+        useUIPreferencesStore.getState().setSharedSessionToken(token, newSessionToken)
         setSessionToken(newSessionToken)
         setOtpSent(false)
         setOtp('')
@@ -797,8 +796,7 @@ export default function SharedSearchPage() {
                             <div className="flex flex-wrap gap-2">
                               <Button
                                 onClick={() => updatePendingFeedback(candidate.id, 'approved')}
-                                // @ts-ignore TODO: fix type
-                                variant={pending?.rating === 'approved' ? 'default' : 'outline'}
+                                variant={pending?.rating === 'approved' ? 'default' as any : 'outline'}
                                 size="sm"
                                 className={
                                   pending?.rating === 'approved'
@@ -811,8 +809,7 @@ export default function SharedSearchPage() {
                               </Button>
                               <Button
                                 onClick={() => updatePendingFeedback(candidate.id, 'maybe')}
-                                // @ts-ignore TODO: fix type
-                                variant={pending?.rating === 'maybe' ? 'default' : 'outline'}
+                                variant={pending?.rating === 'maybe' ? 'default' as any : 'outline'}
                                 size="sm"
                                 className={
                                   pending?.rating === 'maybe'
@@ -825,8 +822,7 @@ export default function SharedSearchPage() {
                               </Button>
                               <Button
                                 onClick={() => updatePendingFeedback(candidate.id, 'rejected')}
-                                // @ts-ignore TODO: fix type
-                                variant={pending?.rating === 'rejected' ? 'default' : 'outline'}
+                                variant={pending?.rating === 'rejected' ? 'default' as any : 'outline'}
                                 size="sm"
                                 className={
                                   pending?.rating === 'rejected'

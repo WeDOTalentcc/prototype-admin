@@ -170,31 +170,25 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
   }
 
   const generatePersonalityInsight = () => {
-    const insights = []
+    const insights: string[] = []
 
-    // Análise combinada de dimensões
     if (scores.conscientiousness > 70 && scores.openness > 70) {
-      // @ts-ignore TODO: fix type — Argument of type '"Combina organização com criatividade - ideal para liderar pro
       insights.push('Combina organização com criatividade - ideal para liderar projetos inovadores')
     }
 
     if (scores.extraversion > 70 && scores.agreeableness > 70) {
-      // @ts-ignore TODO: fix type — Argument of type '"Liderança natural com foco em pessoas - excelente para gestão
       insights.push('Liderança natural com foco em pessoas - excelente para gestão de equipes')
     }
 
     if (scores.conscientiousness > 70 && scores.neuroticism < 30) {
-      // @ts-ignore TODO: fix type — Argument of type '"Alta confiabilidade e estabilidade - perfeito para posições d
       insights.push('Alta confiabilidade e estabilidade - perfeito para posições de responsabilidade')
     }
 
     if (scores.openness > 70 && scores.extraversion < 40) {
-      // @ts-ignore TODO: fix type — Argument of type '"Pensador criativo e independente - ideal para trabalho concei
       insights.push('Pensador criativo e independente - ideal para trabalho conceitual e pesquisa')
     }
 
     if (insights.length === 0) {
-      // @ts-ignore TODO: fix type — Argument of type '"Perfil equilibrado com potencial para diversas funções"' is n
       insights.push('Perfil equilibrado com potencial para diversas funções')
     }
 

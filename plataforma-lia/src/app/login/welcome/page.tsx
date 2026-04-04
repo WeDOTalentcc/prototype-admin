@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useJWTAuth } from "@/contexts/auth-context"
+import { useOnboardingStore } from "@/stores/onboarding-store"
 import { Brain, Loader2, Briefcase, FileText, Globe, MessageSquare, CalendarCheck } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -80,8 +81,8 @@ export default function WelcomePage() {
 
     if (isLoading) return
 
-    const welcomeDismissed = localStorage.getItem('lia_welcome_dismissed')
-    if (welcomeDismissed === 'true') {
+    const welcomeDismissed = useOnboardingStore.getState().welcomeDismissed
+    if (welcomeDismissed) {
       router.push("/funil")
       return
     }
@@ -213,7 +214,7 @@ export default function WelcomePage() {
 
   const handleStart = () => {
     if (dontShowAgain) {
-      localStorage.setItem('lia_welcome_dismissed', 'true')
+      useOnboardingStore.getState().setWelcomeDismissed(true)
     }
     router.push("/funil")
   }

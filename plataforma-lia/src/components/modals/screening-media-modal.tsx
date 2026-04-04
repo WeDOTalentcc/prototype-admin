@@ -208,7 +208,6 @@ export function ScreeningMediaModal({
                 <div className="flex items-center gap-3">
                   <Button
                     size="sm"
-                    // @ts-ignore TODO: fix type — Type '"default"' is not assignable to type '"link" | "primary" | "destructive" |
                     variant="default"
                     onClick={togglePlay}
                     className="w-10 h-10 rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover p-0"

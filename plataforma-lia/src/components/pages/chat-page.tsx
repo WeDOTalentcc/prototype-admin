@@ -28,6 +28,7 @@ import { ChatContextPanel } from "@/components/chat/ChatContextPanel"
 import { ChatMessageList } from "@/components/chat/ChatMessageList"
 import type { Message } from "./chat-page/types"
 import { useChatPageCore } from "./chat-page/useChatPageCore"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export function ChatPage() {
   const {
@@ -109,6 +110,7 @@ export function ChatPage() {
   } = useChatPageCore()
 
   return (
+    <ErrorBoundarySection>
     <div className="flex overflow-hidden flex-1 bg-lia-bg-secondary">
       {/* Main Chat Area */}
       <div className={`flex flex-col transition-colors motion-reduce:transition-none duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
@@ -260,8 +262,7 @@ export function ChatPage() {
               )}
 
               <ChatMessageList
-                // @ts-ignore TODO: fix type
-                messages={messages}
+                messages={messages as any}
                 isLoading={isLoading}
                 searchTerm={searchTerm}
                 currentMessageIndex={currentMessageIndex}
@@ -639,8 +640,7 @@ export function ChatPage() {
           setSelectedCandidateForDetail(null)
         }}
         onAddToJob={handleAddCandidateToJob}
-        // @ts-ignore TODO: fix type
-        onScheduleInterview={(candidateId) => {
+        onScheduleInterview={(candidateId: string) => {
           if (selectedCandidateForDetail) {
             handleSendMessage(`Agendar entrevista com ${selectedCandidateForDetail.name}`)
             setIsCandidateDetailOpen(false)
@@ -655,7 +655,6 @@ export function ChatPage() {
       {/* Credit Confirmation Dialog */}
       <CreditConfirmationDialog
         open={isCreditDialogOpen}
-        // @ts-ignore TODO: fix type
         onClose={() => {
           setIsCreditDialogOpen(false)
         }}
@@ -724,5 +723,6 @@ export function ChatPage() {
         </div>
       )}
     </div>
+    </ErrorBoundarySection>
   )
 }

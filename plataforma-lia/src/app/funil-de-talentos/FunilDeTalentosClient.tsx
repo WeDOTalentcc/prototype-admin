@@ -43,16 +43,11 @@ function toCandidateTableRow(c: CandidateLocal): Candidate {
     created_at: c.created_at,
     updated_at: c.updated_at,
     linkedin_url: c.linkedin_url,
-    // Required table display fields with defaults
     position: c.current_title ?? "—",
     monthlySalary: c.current_salary ?? 0,
     location: locationStr,
-    // @ts-ignore // TODO: fix type
-    // @ts-ignore TODO: fix type
     workModel: (c.work_model_preference as string) ?? "",
-    // @ts-ignore // TODO: fix type
     score: c.lia_score ?? 0,
-    // @ts-ignore TODO: fix type
     contractType: (c.contract_type_preference as string) ?? "",
     linkedin: c.linkedin_url ?? "",
   }
@@ -302,11 +297,9 @@ export default function FunilDeTalentosPage() {
                     const start = Math.max(1, currentPage - 2)
                     const page = start + i
                     if (page > totalPages) return null
-                    // @ts-ignore // TODO: fix type
                     return (
                       <Button
                         key={page}
-                        // @ts-ignore TODO: fix type
                         variant={page === currentPage ? "default" : "outline"}
                         size="sm"
                         onClick={() => goToPage(page)}
@@ -349,10 +342,8 @@ export default function FunilDeTalentosPage() {
               favoriteNotes={favoriteNotes}
               onTogglePin={togglePinnedCandidate}
               onToggleFavorite={toggleFavoriteCandidate}
-              // @ts-ignore TODO: fix type
-              onCandidateClick={handleCandidateClick}
-              // @ts-ignore TODO: fix type
-              onLIAClick={handleCandidateClick}
+              onCandidateClick={handleCandidateClick as any}
+              onLIAClick={handleCandidateClick as any}
             />
           </TabsContent>
 

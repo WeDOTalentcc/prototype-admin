@@ -140,10 +140,8 @@ export function WSIVoiceScreeningStatus({
         case 'completed':
           setStatus('completed')
           if (statusResponse.result) {
-            // @ts-ignore TODO: fix type — Argument of type 'CalculateWSIResponse' is not assignable to parameter of type '
-            setResult(statusResponse.result)
-            // @ts-ignore TODO: fix type — Argument of type 'CalculateWSIResponse' is not assignable to parameter of type '
-            onComplete?.(statusResponse.result)
+            setResult(statusResponse.result as unknown as WSIScreeningResult)
+            onComplete?.(statusResponse.result as unknown as Record<string, unknown>)
           }
           break
         case 'failed':

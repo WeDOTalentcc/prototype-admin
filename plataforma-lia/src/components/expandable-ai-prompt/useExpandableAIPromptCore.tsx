@@ -173,7 +173,6 @@ const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalS
   const [filterWorkModel, setFilterWorkModel] = useState("any")
   
   const [showAdvancedFiltersModal, setShowAdvancedFiltersModal] = useState(false)
-  // @ts-ignore - locations is needed by EAP but not in base SearchFilters type
   const [advancedFilters, setAdvancedFilters] = useState<SearchFilters>({
     ppiOptions: {}, general: {}, locations: {}, job: {}, company: {}, skills: {}, education: {}, languages: {}
   } as SearchFilters)
@@ -229,8 +228,7 @@ const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalS
     toast,
     parseEntitiesFromQuery: async () => {},
     parsedEntities,
-    // @ts-ignore - SearchFilters type mismatch between modules
-    advancedFilters,
+    advancedFilters: advancedFilters as any,
     naturalSearchValue,
     promptEnhancement,
     promptEnhancementDismissed,

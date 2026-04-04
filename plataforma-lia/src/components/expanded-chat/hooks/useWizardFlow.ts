@@ -160,8 +160,8 @@ export function useWizardFlow(options: UseWizardFlowOptions): UseWizardFlowRetur
             transitionContent += `• ${tip}\n`
           })
         }
-      }      // @ts-ignore // TODO: fix type
-      const missingFields = getMissingCriticalFields(currentStageConfig.id, detectedCriteria)
+      }
+      const missingFields = getMissingCriticalFields(currentStageConfig.id, detectedCriteria as any)
       if (missingFields.recommended.length > 0) {
         transitionContent += `\n\n📝 *Campos opcionais não preenchidos: ${missingFields.recommended.join(', ')}*`
       }

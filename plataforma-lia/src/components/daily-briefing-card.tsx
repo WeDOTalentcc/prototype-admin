@@ -425,8 +425,7 @@ export function DailyBriefingCard({
                       size="sm"
                       variant="outline"
                       className="ml-3 h-7 text-xs shrink-0 font-semibold border-lia-border-default"
-                      // @ts-ignore TODO: fix type — Argument of type 'UrgentAction' is not assignable to parameter of type 'Record<s
-                      onClick={() => handleActionClick(action.action_type, action)}
+                      onClick={() => handleActionClick(action.action_type, action as unknown as Record<string, unknown>)}
                     >
                       {action.action_label}
                       <ArrowRight className="w-3 h-3 ml-1" />
@@ -449,8 +448,7 @@ export function DailyBriefingCard({
                     key={item.id}
                     className="flex items-center gap-2 p-2 rounded-md border shrink-0 cursor-pointer transition-colors motion-reduce:transition-none"
                     style={{backgroundColor: 'var(--lia-bg-secondary)', borderColor: 'var(--lia-border-subtle)'}}
-                    // @ts-ignore TODO: fix type — Argument of type 'ScheduleItem' is not assignable to parameter of type 'Record<s
-                    onClick={() => handleActionClick('view_interview', item)}
+                    onClick={() => handleActionClick('view_interview', item as unknown as Record<string, unknown>)}
                   >
                     <div 
                       className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
@@ -501,8 +499,7 @@ export function DailyBriefingCard({
                             size="sm"
                             variant="link"
                             className="h-auto p-0 mt-1 text-xs"
-                            // @ts-ignore TODO: fix type — Argument of type 'Insight' is not assignable to parameter of type 'Record<string
-                            onClick={() => handleActionClick(insight.action_type || 'view', insight)}
+                            onClick={() => handleActionClick(insight.action_type || 'view', insight as unknown as Record<string, unknown>)}
                           >
                             {insight.action} <ArrowRight className="w-3 h-3 ml-1" />
                           </Button>

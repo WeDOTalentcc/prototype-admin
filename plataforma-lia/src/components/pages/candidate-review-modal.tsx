@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
 
 export interface Criterion {
   id: string
@@ -137,19 +138,17 @@ const EditCriteriaPopup: React.FC<{
     setLocalCriteria(criteria)
   }, [criteria])
 
+  const storedPresets = useUIPreferencesStore((s) => s.criteriaPresets)
+
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('lia_criteria_presets')
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        if (Array.isArray(parsed)) {
-          setSavedPresets(parsed)
-        }
-      }
-    } catch (error) {
-      setSavedPresets([])
+    if (storedPresets.length > 0) {
+      setSavedPresets(storedPresets.map(p => ({
+        id: p.id,
+        name: p.name,
+        criteria: p.criteria.map(c => ({ id: c.id, text: c.text, isPinned: c.isPinned }))
+      })))
     }
-  }, [])
+  }, [storedPresets])
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index)
@@ -209,7 +208,11 @@ const EditCriteriaPopup: React.FC<{
     
     const updatedPresets = [...savedPresets, newPreset]
     setSavedPresets(updatedPresets)
-    localStorage.setItem('lia_criteria_presets', JSON.stringify(updatedPresets))
+    useUIPreferencesStore.getState().setCriteriaPresets(updatedPresets.map(p => ({
+      id: p.id,
+      name: p.name,
+      criteria: p.criteria.map(c => ({ id: c.id, text: c.text, isPinned: !!c.isPinned }))
+    })))
     setPresetName('')
     setShowSavePreset(false)
   }

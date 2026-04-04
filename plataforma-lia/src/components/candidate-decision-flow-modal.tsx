@@ -302,10 +302,8 @@ Equipe de Recrutamento`
     }, 800)
   }
 
-  const contactChannels = []
-  // @ts-ignore TODO: fix type — Argument of type '"WhatsApp"' is not assignable to parameter of type 'never'.
+  const contactChannels: string[] = []
   if (candidate.hasWhatsApp || candidate.phone) contactChannels.push('WhatsApp')
-  // @ts-ignore TODO: fix type — Argument of type '"Email"' is not assignable to parameter of type 'never'.
   if (candidate.email) contactChannels.push('Email')
 
   return (

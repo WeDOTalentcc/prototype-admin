@@ -127,8 +127,7 @@ export function EAPModals({
     <>
       {/* Toast de Sugestão de Template */}
       <TemplateSuggestionToast
-        // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'TemplateSuggestion | null'.
-        suggestion={suggestionQueue.currentSuggestion}
+        suggestion={suggestionQueue.currentSuggestion as any}
         onCreateTemplate={(suggestion) => {
           const templateData = {
             name: `Template: ${suggestion.command.substring(0, 30)}...`,

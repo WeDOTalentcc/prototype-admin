@@ -75,6 +75,7 @@ import { LoadingModal as JobsLoadingModal } from "@/components/ui/loading"
 const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false, loading: () => <JobsLoadingModal /> })
 import { liaApi } from"@/services/lia-api"
 import { useJobsPageCore } from"./jobs/hooks/useJobsPageCore"
+import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 
 interface JobsPageProps {
   onNavigate?: (page: string) => void
@@ -87,8 +88,7 @@ interface JobsPageProps {
 
 export function JobsPage(props: JobsPageProps) {
   const { onAddRecentItem } = props
-  // @ts-ignore TODO: fix type
-  const state = useJobsPageCore(props)
+  const state = useJobsPageCore(props as any)
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { statusOrder, groupedJobs } = useMemo(() => {
@@ -104,8 +104,7 @@ export function JobsPage(props: JobsPageProps) {
 
   // Kanban navigation (moved from hook — hooks must not return JSX)
   if (state.showKanban && state.selectedJob) {
-    // @ts-ignore TODO: fix type
-    return <JobKanbanPage key={`kanban-${state.selectedJob.id}`} job={state.selectedJob} onBack={state.handleBackToJobs} />
+    return <JobKanbanPage key={`kanban-${state.selectedJob.id}`} job={state.selectedJob as any} onBack={state.handleBackToJobs} />
   }
   if (state.showKanban && !state.selectedJob) {
     return (
@@ -180,6 +179,7 @@ export function JobsPage(props: JobsPageProps) {
   }
 
   return (
+    <ErrorBoundarySection>
     <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden relative">
       {/* Super Chat Fullscreen Mode - Cobre toda a área de conteúdo */}
       {chatMode ==='job-creation' && isChatFullscreen && showInlineChat && (
@@ -350,8 +350,7 @@ export function JobsPage(props: JobsPageProps) {
                     <div className="flex items-center gap-1">
                       {/* Botão Microfone */}
                       <AudioRecordButton
-                        // @ts-ignore TODO: fix type
-                        onTranscription={(text) => setLiaPromptValue(prev => prev ? `${prev} ${text}` : text)}
+                        onTranscription={(text: string) => setLiaPromptValue((prev: string) => prev ? `${prev} ${text}` : text) as any}
                         className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
                       />
                     </div>
@@ -438,7 +437,6 @@ export function JobsPage(props: JobsPageProps) {
 
               {/* Botões de controle */}
               <Button
-                // @ts-ignore TODO: fix type
                 variant={showTableFiltersPanel ?"default" :"outline"}
                 size="sm"
                 className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ?'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' :''}`}
@@ -455,7 +453,6 @@ export function JobsPage(props: JobsPageProps) {
               </Button>
 
               <Button
-                // @ts-ignore TODO: fix type
                 variant={showColumnConfig ?"default" :"outline"}
                 size="sm"
                 className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ?'bg-lia-btn-primary-bg hover:bg-black dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' :''}`}
@@ -555,8 +552,7 @@ export function JobsPage(props: JobsPageProps) {
               userCollapsedLIA={userCollapsedLIA}
               selectedJobsForBatch={selectedJobsForBatch}
               liaPromptValue={liaPromptValue}
-              // @ts-ignore TODO: fix type
-              onSetLiaPromptValue={setLiaPromptValue}
+              onSetLiaPromptValue={setLiaPromptValue as any}
               onCloseChat={closeChat}
               onOpenGeneralChat={openGeneralChat}
               onOpenJobCreationChat={openJobCreationChat}
@@ -580,8 +576,7 @@ export function JobsPage(props: JobsPageProps) {
               searchTerm={searchTerm}
               onSearchTermChange={setSearchTerm}
               jobFilters={jobFilters}
-              // @ts-ignore TODO: fix type
-              onToggleFilter={toggleJobFilter}
+              onToggleFilter={toggleJobFilter as any}
               onClearAllFilters={clearAllJobFilters}
               getActiveFiltersCount={getActiveJobFiltersCount}
               hasActiveFilters={hasActiveFilters}
@@ -850,5 +845,6 @@ export function JobsPage(props: JobsPageProps) {
 
       </div>
     </div>
+    </ErrorBoundarySection>
   )
 }

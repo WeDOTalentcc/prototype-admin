@@ -324,24 +324,21 @@ export function PredictiveAnalyticsTab() {
 
       <div className="flex gap-2 mb-4">
         <Button
-          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-          variant={selectedView === "overview" ? "default" : "outline"}
+          variant={selectedView === "overview" ? "default" as any : "outline"}
           size="sm"
           onClick={() => setSelectedView("overview")}
         >
           Visão Geral
         </Button>
         <Button
-          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-          variant={selectedView === "risks" ? "default" : "outline"}
+          variant={selectedView === "risks" ? "default" as any : "outline"}
           size="sm"
           onClick={() => setSelectedView("risks")}
         >
           Riscos
         </Button>
         <Button
-          // @ts-ignore TODO: fix type — Type '"default" | "outline"' is not assignable to type '"link" | "primary" | "de
-          variant={selectedView === "opportunities" ? "default" : "outline"}
+          variant={selectedView === "opportunities" ? "default" as any : "outline"}
           size="sm"
           onClick={() => setSelectedView("opportunities")}
         >

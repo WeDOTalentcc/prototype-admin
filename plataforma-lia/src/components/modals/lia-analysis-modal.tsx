@@ -198,7 +198,6 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
     }
 
     return (
-      // @ts-ignore TODO: fix type
       <div className="text-xs text-lia-text-primary leading-relaxed">
         <p className="font-semibold text-lia-text-primary mb-2 text-xs">{String(candidate?.name || candidate?.nome || "")}</p>
         <div className="space-y-0">

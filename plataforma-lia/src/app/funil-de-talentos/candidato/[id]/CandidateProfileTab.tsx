@@ -257,8 +257,7 @@ export function CandidateProfileTab({
             languagesData.map((lang, index) => {
               const levelInfo = getLanguageLevel(lang.level)
               return (
-                // @ts-ignore TODO: fix type
-                <div key={`lang-${lang.language || lang.name || index}`} className="space-y-1">
+                <div key={`lang-${lang.language || (lang as Record<string, unknown>).name || index}`} className="space-y-1">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">{lang.language}</span>
                     <span className="text-xs text-lia-text-secondary">{levelInfo.label}</span>

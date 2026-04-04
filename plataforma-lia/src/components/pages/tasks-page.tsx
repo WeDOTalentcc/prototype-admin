@@ -30,6 +30,7 @@ import {
 } from "./task-helpers"
 import { TaskCard } from "./tasks/TaskCard"
 import { ActiveAlertsCard } from "./tasks/ActiveAlertsCard"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 interface TasksPageProps {
   onNavigate?: (page: string) => void
@@ -58,6 +59,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
   return (
     <>
+    <ErrorBoundarySection>
     <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
       <div className="p-2 max-w-full overflow-x-auto">
 
@@ -813,6 +815,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
         </div>
       </div>
     </div>
+    </ErrorBoundarySection>
     </>
   )
 }

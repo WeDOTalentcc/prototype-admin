@@ -113,8 +113,7 @@ export function useCandidatesInteractions({
     markCandidateAsViewed(candidate.id, 'profile')
     onAddRecentItem?.({
       id: candidate.id, type: 'candidato', title: candidate.name,
-      // @ts-ignore TODO: fix type
-      subtitle: candidate.currentRole || candidate.location,
+      subtitle: (candidate as Record<string, unknown>).currentRole as string || candidate.location,
       meta: { candidateId: candidate.id },
     })
   }

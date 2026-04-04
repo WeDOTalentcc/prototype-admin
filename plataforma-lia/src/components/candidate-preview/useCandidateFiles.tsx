@@ -92,8 +92,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:800
 
       const formData = new FormData()
       formData.append('file', file)
-      // @ts-ignore TODO: fix type
-      formData.append('candidate_name', candidate.name || 'Candidato')
+      formData.append('candidate_name', String(candidate.name || 'Candidato'))
       formData.append('company_id', 'demo_company')
       formData.append('uploaded_by', 'user')
       formData.append('uploaded_by_name', 'Recrutador')

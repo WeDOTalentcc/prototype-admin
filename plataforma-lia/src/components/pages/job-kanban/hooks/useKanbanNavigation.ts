@@ -3,6 +3,8 @@
 import { useRef, useEffect, useCallback } from "react"
 import { type KanbanCandidate, type DynamicStage } from "@/components/kanban"
 import { toast } from "sonner"
+import { useNavigationStore } from "@/stores/navigation-store"
+import { useJobUIStore } from "@/stores/job-ui-store"
 
 interface UseKanbanNavigationProps {
   jobId: string | undefined
@@ -124,69 +126,37 @@ export function useKanbanNavigation({
     return true
   }, [candidatesData, dynamicStages, openTransition, setTransitionInitialPrompt, setLiaPromptValue, setShowExpandedLIA, setPreviewCandidate, setIsPreviewOpen, setTransitionAllowStageSelection])
 
+  const consumeNavigateToCandidate = useNavigationStore(s => s.consumeNavigateToCandidate)
+  const consumePendingCommunicationAction = useJobUIStore(s => s.consumePendingCommunicationAction)
+
   useEffect(() => {
-    const raw = localStorage.getItem("navigateToCandidate")
-    if (!raw) return
+    const result = consumeNavigateToCandidate()
+    if (!result) return
 
-    try {
-      const nav = JSON.parse(raw) as {
-        candidateId?: string
-        candidateName?: string
-        jobId?: string
-        jobTitle?: string
-        currentStage?: string
-        interviewType?: string
-        action?: string
-        openTransitionModal?: boolean
-      }
-      localStorage.removeItem("navigateToCandidate")
-
-      const prompt = localStorage.getItem("liaPrompt")
-      if (prompt) {
-        localStorage.removeItem("liaPrompt")
-      }
-
-      pendingNavigationRef.current = { nav, prompt }
-      processPendingNavigation()
-    } catch (e) {
-      localStorage.removeItem("navigateToCandidate")
-      localStorage.removeItem("liaPrompt")
-    }
-  }, [jobId, processPendingNavigation])
+    pendingNavigationRef.current = { nav: result.nav, prompt: result.prompt }
+    processPendingNavigation()
+  }, [jobId, processPendingNavigation, consumeNavigateToCandidate])
 
   useEffect(() => {
     processPendingNavigation()
   }, [candidatesData, processPendingNavigation])
 
-  // Detect pending communication action (from job unpublish with notification)
   useEffect(() => {
-    const pendingAction = localStorage.getItem("pendingCommunicationAction")
-    if (pendingAction) {
-      try {
-        const action = JSON.parse(pendingAction) as {
-          jobId: string
-          template?: string
-          candidateIds?: string[]
-          channel?: "email" | "whatsapp"
+    if (!jobId) return
+    const action = consumePendingCommunicationAction(String(jobId))
+    if (action) {
+      setTimeout(() => {
+        const candidateCount = action.candidateIds?.length || 0
+        const channelType = action.channel === "whatsapp" ? "whatsapp" : "email"
+        setUnifiedModalCandidate(null)
+        setUnifiedModalType(channelType)
+        setUnifiedModalOpen(true)
+        if (candidateCount > 0) {
+          toast.success("Modal de comunicação aberto", { description: `${candidateCount} candidato(s) prontos para notificação via ${channelType === "whatsapp" ? "WhatsApp" : "E-mail"}.` })
         }
-        if (action.jobId && String(action.jobId) === String(jobId)) {
-          localStorage.removeItem("pendingCommunicationAction")
-          setTimeout(() => {
-            const candidateCount = action.candidateIds?.length || 0
-            const channelType = action.channel === "whatsapp" ? "whatsapp" : "email"
-            setUnifiedModalCandidate(null)
-            setUnifiedModalType(channelType)
-            setUnifiedModalOpen(true)
-            if (candidateCount > 0) {
-              toast.success("Modal de comunicação aberto", { description: `${candidateCount} candidato(s) prontos para notificação via ${channelType === "whatsapp" ? "WhatsApp" : "E-mail"}.` })
-            }
-          }, 500)
-        }
-      } catch (e) {
-        localStorage.removeItem("pendingCommunicationAction")
-      }
+      }, 500)
     }
-  }, [jobId, setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalOpen])
+  }, [jobId, setUnifiedModalCandidate, setUnifiedModalType, setUnifiedModalOpen, consumePendingCommunicationAction])
 
   return {
     pendingNavigationRef,

@@ -51,8 +51,7 @@ interface UseSmartSearchCallbacksParams {
   setIsParsingEntities: React.Dispatch<React.SetStateAction<boolean>>
   setSearchAnalysis: React.Dispatch<React.SetStateAction<SearchAnalysis | null>>
   setIsAnalyzing: React.Dispatch<React.SetStateAction<boolean>>
-  // @ts-ignore TODO: fix type
-  setPromptEnhancement: React.Dispatch<React.SetStateAction<typeof promptEnhancement>>
+  setPromptEnhancement: React.Dispatch<React.SetStateAction<any>>
   setIsEnhancingPrompt: React.Dispatch<React.SetStateAction<boolean>>
   setPromptEnhancementDismissed: React.Dispatch<React.SetStateAction<boolean>>
   setBooleanError: React.Dispatch<React.SetStateAction<string | null>>

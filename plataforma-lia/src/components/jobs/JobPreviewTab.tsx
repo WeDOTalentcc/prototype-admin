@@ -97,8 +97,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
     return benefits.map((b: string | { name?: string; category?: string; value_type?: string }) => {
       if (typeof b === 'string') return toCompanyBenefit(b)
       if (b.category && b.value_type) return b as CompanyBenefit
-      // @ts-ignore TODO: fix type — Argument of type '{ name?: string | undefined; category?: string | undefined; va
-      return toCompanyBenefit(b)
+      return toCompanyBenefit(b as any)
     })
   }, [benefits])
 

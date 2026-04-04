@@ -1,12 +1,12 @@
 "use client"
 
 // useCandidatesNavigation.ts
-// Owns all side-effects that react to URL params, sessionStorage and
-// localStorage navigation tokens. No business logic — pure effect wiring.
+// Owns all side-effects that react to URL params and
+// navigation store tokens. No business logic — pure effect wiring.
 
 import { useEffect } from "react"
 import { useSearchParams } from "next/navigation"
-import { useNavigationPersistence } from "@/hooks/use-navigation-persistence"
+import { useNavigationStore } from "@/stores/navigation-store"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { ParsedEntities } from "@/components/search/smart-search-input"
 import type { TableFilters } from "@/hooks/use-candidate-filters"
@@ -65,7 +65,7 @@ export function useCandidatesNavigation({
 }: UseCandidatesNavigationParams) {
   const searchParams = useSearchParams()
   const expandedSearchParam = searchParams.get('expandedSearch')
-  const { saveTalentFunnelState } = useNavigationPersistence()
+  const saveTalentFunnelState = useNavigationStore(s => s.saveTalentFunnelState)
 
   // Persist tab + search query to funnel state
   useEffect(() => {
@@ -90,18 +90,15 @@ export function useCandidatesNavigation({
     }
   }, [expandedSearchParam, setShowSearchResults, setDisplayedResultsCount, setActiveTab])
 
-  // Navigate to a recent candidate stored in localStorage
+  const consumeNavigateToRecentCandidate = useNavigationStore(s => s.consumeNavigateToRecentCandidate)
+
   useEffect(() => {
     if (!candidates.length) return
-    const raw = localStorage.getItem('navigateToRecentCandidate')
-    if (!raw) return
-    localStorage.removeItem('navigateToRecentCandidate')
-    try {
-      const nav = JSON.parse(raw) as { candidateId?: string }
-      const found = nav.candidateId && candidates.find(c => c.id === nav.candidateId)
-      if (found) { setPreviewCandidate(found); setShowCandidatePreview(true) }
-    } catch {}
-  }, [candidates, setPreviewCandidate, setShowCandidatePreview])
+    const nav = consumeNavigateToRecentCandidate()
+    if (!nav) return
+    const found = nav.candidateId && candidates.find(c => c.id === nav.candidateId)
+    if (found) { setPreviewCandidate(found); setShowCandidatePreview(true) }
+  }, [candidates, setPreviewCandidate, setShowCandidatePreview, consumeNavigateToRecentCandidate])
 
   // Open a pending candidate passed via prop
   useEffect(() => {
@@ -131,30 +128,27 @@ export function useCandidatesNavigation({
     }
   }, [searchExecutionId, lastSearchEntities, setTableFilters])
 
-  // Cross-tab filter from sessionStorage / URL
+  const consumeCandidatesFilterData = useNavigationStore(s => s.consumeCandidatesFilterData)
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const tabParam = urlParams.get('tab')
     const filterParam = urlParams.get('filter')
     const companyParam = urlParams.get('name') || urlParams.get('companies')
-    const filterData = sessionStorage.getItem('candidates-filter-data')
+    const filterData = consumeCandidatesFilterData()
 
     if (filterData) {
-      try {
-        const data = JSON.parse(filterData)
-        setCrossTabFilter(data)
-        setShowCrossTabBanner(true)
-        if (data.type === 'company' && data.company) {
-          setSearchTerm(`empresa:"${data.company}"`)
-          setQuickFilters(new Set(['company_filter']))
-        }
-        sessionStorage.removeItem('candidates-filter-data')
-      } catch {}
+      setCrossTabFilter(filterData as Record<string, unknown>)
+      setShowCrossTabBanner(true)
+      if (filterData.type === 'company' && filterData.company) {
+        setSearchTerm(`empresa:"${filterData.company}"`)
+        setQuickFilters(new Set(['company_filter']))
+      }
     } else if (tabParam === 'candidates' && filterParam === 'company' && companyParam) {
       const companies = companyParam.split(',')
       setCrossTabFilter({ type: 'company', companies, source: 'url' })
       setShowCrossTabBanner(true)
       setSearchTerm(`empresas:${companies.join(',')}`)
     }
-  }, [setCrossTabFilter, setShowCrossTabBanner, setSearchTerm, setQuickFilters])
+  }, [setCrossTabFilter, setShowCrossTabBanner, setSearchTerm, setQuickFilters, consumeCandidatesFilterData])
 }

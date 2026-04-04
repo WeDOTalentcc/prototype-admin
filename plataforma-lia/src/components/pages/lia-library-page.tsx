@@ -225,8 +225,7 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
             </p>
           </div>
           <Button
-            // @ts-ignore TODO: fix type
-            variant={showFavoritesOnly ? "default" : "outline"}
+            variant={showFavoritesOnly ? "default" as any : "outline"}
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             className="gap-2 h-8 px-3"
           >

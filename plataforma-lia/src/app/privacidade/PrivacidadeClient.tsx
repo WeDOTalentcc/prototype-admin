@@ -455,8 +455,7 @@ export default function PrivacidadePage() {
                       <CardDescription>Código: {trackingResult.id}</CardDescription>
                     </div>
                     {(() => {
-                      // @ts-ignore TODO: fix type
-                      const status = getStatusDisplay(trackingResult.status)
+                      const status = getStatusDisplay(trackingResult.status as any)
                       const Icon = status.icon
                       const colorClasses: Record<string, string> = {
                         'amber': 'bg-status-warning/15 text-status-warning',

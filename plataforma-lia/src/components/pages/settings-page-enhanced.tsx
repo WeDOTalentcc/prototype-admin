@@ -29,6 +29,7 @@ const GlobalSearchHub = dynamic(() => import("@/components/settings/GlobalSearch
 const TasksPage = dynamic(() => import("@/components/pages/tasks-page").then(m => ({ default: m.TasksPage })), { ssr: false, loading: () => <LoadingFallback text="Carregando tarefas..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 interface SettingsSubsection {
   id: string
@@ -371,41 +372,50 @@ export default function SettingsPageEnhanced() {
     switch (activeSection) {
       case 'company-team':
         return (
+          <ErrorBoundarySection>
           <CompanyTeamHub
             activeSubsection={activeSubsection}
             onUserUpdate={handleUserUpdate as any}
             onGoalUpdate={handleGoalUpdate as any}
           />
+          </ErrorBoundarySection>
         )
       case 'recruitment':
         return (
+          <ErrorBoundarySection>
           <RecruitmentHub
             activeSubsection={activeSubsection}
           />
+          </ErrorBoundarySection>
         )
       case 'communication':
         return (
+          <ErrorBoundarySection>
           <CommunicationHub
             activeSubsection={activeSubsection}
           />
+          </ErrorBoundarySection>
         )
       case 'goals-planning':
         return (
+          <ErrorBoundarySection>
           <GoalsPlanningHub
             users={users}
-            // @ts-ignore TODO: fix type
-            onGoalUpdate={handleGoalUpdate}
+            onGoalUpdate={handleGoalUpdate as any}
             activeSubsection={activeSubsection}
           />
+          </ErrorBoundarySection>
         )
       case 'global-search':
         return (
+          <ErrorBoundarySection>
           <GlobalSearchHub
             activeSubsection={activeSubsection}
           />
+          </ErrorBoundarySection>
         )
       case 'control-panel':
-        return <TasksPage />
+        return <ErrorBoundarySection><TasksPage /></ErrorBoundarySection>
       default:
         return (
           <div className="text-center py-12">

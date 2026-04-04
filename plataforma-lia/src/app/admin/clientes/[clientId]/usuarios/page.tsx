@@ -793,7 +793,6 @@ export default function ClientUsuariosPage({
               Cancelar
             </Button>
             <Button 
-              // @ts-ignore TODO: fix type
               variant="default"
               className="bg-status-warning hover:bg-status-warning text-white"
               onClick={handleDeactivateUser} 

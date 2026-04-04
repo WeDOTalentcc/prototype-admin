@@ -289,12 +289,9 @@ export function KPIAlertSystem({ recruiterData, onAlertAction }: KPIAlertSystemP
             category: getCategoryFromMetric(rule.metric),
             title: `${rule.name} - ${recruiter.name}`,
             description: `${getMetricDisplayName(rule.metric)} está ${rule.operator === '<' ? 'abaixo' : 'acima'} do limite (${metricValue} vs ${rule.threshold})`,
-            // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'string'.
-            recruiterName: recruiter.name,
-            // @ts-ignore TODO: fix type — 'recruiter.name' is of type 'unknown'.
-            recruiterId: recruiter.name.toLowerCase().replace(' ', '_'),
-            // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'string'.
-            department: recruiter.department,
+            recruiterName: String(recruiter.name),
+            recruiterId: String(recruiter.name).toLowerCase().replace(' ', '_'),
+            department: String(recruiter.department),
             metric: rule.metric,
             currentValue: metricValue,
             targetValue: rule.threshold,

@@ -244,8 +244,7 @@ export function CandidatePage({
               isDragging={isDragging}
               setIsDragging={setIsDragging}
               setSelectedFile={setSelectedFile}
-              // @ts-ignore TODO: fix type — Type 'Dispatch<SetStateAction<"audio" | "video" | "image" | "pdf" | null>>' is n
-              setPreviewType={setPreviewType}
+              setPreviewType={setPreviewType as any}
               setShowPreview={setShowPreview}
               setShowVideoModal={setShowVideoModal}
             />

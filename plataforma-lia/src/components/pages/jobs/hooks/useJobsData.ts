@@ -63,10 +63,9 @@ export function useJobsData(): UseJobsDataReturn {
         'Entrevistas': 'Entrevistas',
         'Finalização': 'Finalização',
         'Encerrada': 'Encerrada'
-      }      // @ts-ignore // TODO: fix type
+      }
       const convertedJobs: Job[] = response.items.map((jv: Record<string, unknown>, index: number) => {
         const funnelData = (jv.funnel_data as Record<string, number>) || { total: 0, screening: 0, interview: 0, final: 0, hired: 0 }
-        // @ts-ignore // TODO: fix type
         return {
           id: index + 1,
           jobId: `WDT-${(jv.id as string).slice(0, 8).toUpperCase()}`,
@@ -189,11 +188,9 @@ export function useJobsData(): UseJobsDataReturn {
           paralisadas: convertedJobs.filter(job => job.status === 'Paralisada').length,
           concluidas: convertedJobs.filter(job => job.status === 'Concluída').length,
           canceladas: convertedJobs.filter(job => job.status === 'Cancelada').length,
-          // @ts-ignore // TODO: fix type
-          noFunil: convertedJobs.reduce((sum, job) => sum + (job.funnel?.total || 0), 0),
+          noFunil: convertedJobs.reduce((sum, job) => sum + ((job as Record<string, unknown> as { funnel?: { total?: number } }).funnel?.total || 0), 0),
           entrevistasRecentes: 0,
-          // @ts-ignore // TODO: fix type
-          ofertas: convertedJobs.filter(job => job.stage === 'Oferta').length,
+          ofertas: convertedJobs.filter(job => (job as Record<string, unknown> as { stage?: string }).stage === 'Oferta').length,
           ttfMedio: 0,
           taxaConversao: 0,
           atRisco: 0,
