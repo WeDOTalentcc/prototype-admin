@@ -1,13 +1,14 @@
 """
-Tests for WSIInterviewGraph — LangGraph dual-path (Phase 3.2).
+Tests for WSIInterviewGraph — LangGraph nativo.
 
 Covers:
 - _build_langgraph() compila sem erro
 - route_dispatcher: "start" → lg_load_context, "submit" → lg_validate_response
-- start() dual-path: USE_LANGGRAPH_NATIVE=False → _start_legacy, True → _start_langgraph
-- submit_response() dual-path
+- start() delega para _start_langgraph
+- submit_response() delega para _submit_response_langgraph
 - _start_langgraph() com grafo mockado
 - _submit_response_langgraph() com grafo mockado
+- Erro de build propaga (sem fallback legacy)
 """
 import pytest
 import sys
@@ -173,30 +174,27 @@ class TestWSIStartLangGraph:
         assert input_state["pending_response"] == ""
 
     @pytest.mark.asyncio
-    async def test_start_langgraph_falls_back_on_build_error(self):
+    async def test_start_langgraph_raises_on_build_error(self):
         from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
         g = WSIInterviewGraph()
         g._compiled_lg = None
 
         with patch.object(g, "_build_langgraph", side_effect=RuntimeError("no langgraph")):
-            with patch.object(g, "_start_legacy", new_callable=AsyncMock) as mock_legacy:
-                mock_legacy.return_value = _make_wsi_state()
+            with pytest.raises(RuntimeError, match="no langgraph"):
                 await g._start_langgraph(_make_wsi_state())
-                mock_legacy.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_start_langgraph_falls_back_on_ainvoke_error(self):
-        from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
+    async def test_start_langgraph_returns_error_state_on_ainvoke_error(self):
+        from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph, WSIInterviewStage
         g = WSIInterviewGraph()
 
         mock_compiled = MagicMock()
         mock_compiled.ainvoke = AsyncMock(side_effect=Exception("graph fail"))
         g._compiled_lg = mock_compiled
 
-        with patch.object(g, "_start_legacy", new_callable=AsyncMock) as mock_legacy:
-            mock_legacy.return_value = _make_wsi_state()
-            await g._start_langgraph(_make_wsi_state())
-            mock_legacy.assert_called_once()
+        result = await g._start_langgraph(_make_wsi_state())
+        assert result.error is not None
+        assert result.stage == WSIInterviewStage.ERROR
 
 
 # ---------------------------------------------------------------------------
@@ -229,72 +227,42 @@ class TestWSISubmitResponseLangGraph:
         assert input_state["pending_response"] == "Minha resposta"
 
     @pytest.mark.asyncio
-    async def test_submit_falls_back_on_error(self):
+    async def test_submit_raises_on_build_error(self):
         from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
         g = WSIInterviewGraph()
         g._compiled_lg = None
 
         with patch.object(g, "_build_langgraph", side_effect=RuntimeError("build fail")):
-            with patch.object(g, "_submit_response_legacy", new_callable=AsyncMock) as mock_legacy:
-                mock_legacy.return_value = _make_wsi_state()
+            with pytest.raises(RuntimeError, match="build fail"):
                 await g._submit_response_langgraph(_make_wsi_state(), "resp")
-                mock_legacy.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
 # Section 5: dual-path public API
 # ---------------------------------------------------------------------------
 
-class TestWSIDualPath:
+class TestWSIPublicAPI:
 
     @pytest.mark.asyncio
-    async def test_start_flag_false_calls_legacy(self):
+    async def test_start_calls_langgraph(self):
+        """start() sempre delega para _start_langgraph (LangGraph nativo)."""
         from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
         g = WSIInterviewGraph()
         state = _make_wsi_state()
 
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = False
-            with patch.object(g, "_start_legacy", new_callable=AsyncMock) as mock_legacy:
-                mock_legacy.return_value = state
-                await g.start(state)
-                mock_legacy.assert_called_once()
+        with patch.object(g, "_start_langgraph", new_callable=AsyncMock) as mock_lg:
+            mock_lg.return_value = state
+            await g.start(state)
+            mock_lg.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_start_flag_true_calls_langgraph(self):
+    async def test_submit_calls_langgraph(self):
+        """submit_response() sempre delega para _submit_response_langgraph (LangGraph nativo)."""
         from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
         g = WSIInterviewGraph()
         state = _make_wsi_state()
 
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
-            with patch.object(g, "_start_langgraph", new_callable=AsyncMock) as mock_lg:
-                mock_lg.return_value = state
-                await g.start(state)
-                mock_lg.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_submit_flag_false_calls_legacy(self):
-        from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
-        g = WSIInterviewGraph()
-        state = _make_wsi_state()
-
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = False
-            with patch.object(g, "_submit_response_legacy", new_callable=AsyncMock) as mock_legacy:
-                mock_legacy.return_value = state
-                await g.submit_response(state, "resposta")
-                mock_legacy.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_submit_flag_true_calls_langgraph(self):
-        from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
-        g = WSIInterviewGraph()
-        state = _make_wsi_state()
-
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
-            with patch.object(g, "_submit_response_langgraph", new_callable=AsyncMock) as mock_lg:
-                mock_lg.return_value = state
-                await g.submit_response(state, "resposta")
-                mock_lg.assert_called_once_with(state, "resposta", None)
+        with patch.object(g, "_submit_response_langgraph", new_callable=AsyncMock) as mock_lg:
+            mock_lg.return_value = state
+            await g.submit_response(state, "resposta")
+            mock_lg.assert_called_once_with(state, "resposta", None)

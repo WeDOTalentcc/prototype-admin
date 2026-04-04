@@ -1,5 +1,5 @@
 """
-Testes E2E para agentes LangGraph com USE_LANGGRAPH_NATIVE=True.
+Testes E2E para agentes LangGraph.
 
 Valida o ciclo completo de cada agente (ReAct e Graph) com LLM mockado,
 checkpointer em modo dev (MemorySaver) e interface AgentInput → AgentOutput.
@@ -7,10 +7,9 @@ checkpointer em modo dev (MemorySaver) e interface AgentInput → AgentOutput.
 Camada 3 (Integração) da pirâmide de testes — mocks de LLM/DB, sem chamadas reais.
 
 Cobertura:
-  - 9 agentes ReAct: process() retorna AgentOutput válido com flag=True
+  - 9 agentes ReAct: process() retorna AgentOutput válido
   - 3 agentes Graph: invoke()/start() não lançam exceção com compiled mockado
-  - Checkpointer dev: MemorySaver ativo quando USE_LANGGRAPH_NATIVE=True
-  - Dual-path: flag=True → _process_langgraph; flag=False → _process_react_loop
+  - Checkpointer dev: MemorySaver ativo em desenvolvimento
   - Session ID preservado na entrada (AgentInput)
   - Company ID preservado na entrada (AgentInput)
 """
@@ -73,7 +72,7 @@ def _make_output(session_id: str = "sess-e2e-001", company_id: str = "company-e2
 
 
 # ---------------------------------------------------------------------------
-# Seção 1: ReAct Agents — process() com USE_LANGGRAPH_NATIVE=True
+# Seção 1: ReAct Agents — process() via LangGraph nativo
 # ---------------------------------------------------------------------------
 
 class TestReActAgentsLangGraphNativeE2E:
@@ -85,7 +84,7 @@ class TestReActAgentsLangGraphNativeE2E:
     @pytest.mark.asyncio
     @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
     async def test_process_returns_agent_output(self, module_path, class_name):
-        """process() com USE_LANGGRAPH_NATIVE=True retorna AgentOutput válido."""
+        """process() via LangGraph nativo retorna AgentOutput válido."""
         from app.shared.agents.agent_interface import AgentOutput
         import importlib
         mod = importlib.import_module(module_path)
@@ -102,8 +101,8 @@ class TestReActAgentsLangGraphNativeE2E:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
-    async def test_process_calls_langgraph_when_flag_true(self, module_path, class_name):
-        """Com USE_LANGGRAPH_NATIVE=True, process() delega para _process_langgraph."""
+    async def test_process_always_calls_langgraph(self, module_path, class_name):
+        """process() sempre delega para _process_langgraph."""
         import importlib
         mod = importlib.import_module(module_path)
         AgentClass = getattr(mod, class_name)
@@ -111,32 +110,9 @@ class TestReActAgentsLangGraphNativeE2E:
         inp = _make_input()
         expected = _make_output()
 
-        with patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=expected)) as mock_lg, \
-             patch.object(agent, "_process_react_loop", new=AsyncMock()) as mock_legacy:
+        with patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=expected)) as mock_lg:
             await agent.process(inp)
             mock_lg.assert_called_once()
-            mock_legacy.assert_not_called()
-
-    @pytest.mark.asyncio
-    @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
-    async def test_process_uses_react_loop_when_flag_false(self, module_path, class_name):
-        """Com USE_LANGGRAPH_NATIVE=False, process() delega para _process_react_loop."""
-        import importlib
-        mod = importlib.import_module(module_path)
-        AgentClass = getattr(mod, class_name)
-        agent = AgentClass()
-        inp = _make_input()
-        expected = _make_output()
-
-        with patch("app.core.config.settings") as mock_settings, \
-             patch("lia_config.config.settings") as mock_lia:
-            mock_settings.USE_LANGGRAPH_NATIVE = False
-            mock_lia.USE_LANGGRAPH_NATIVE = False
-            with patch.object(agent, "_process_react_loop", new=AsyncMock(return_value=expected)) as mock_loop, \
-                 patch.object(agent, "_process_langgraph", new=AsyncMock()) as mock_lg:
-                await agent.process(inp)
-                mock_loop.assert_called_once()
-                mock_lg.assert_not_called()
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
@@ -293,7 +269,6 @@ class TestCheckpointerDevMode:
         """Em dev, quando PostgresSaver não está disponível, retorna MemorySaver."""
         from lia_agents_core.checkpointer import get_checkpointer
         with patch("lia_agents_core.checkpointer.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
             mock_settings.APP_ENV = "development"
             mock_settings.DATABASE_URL = "postgresql+asyncpg://localhost:5432/test"
             with patch("lia_agents_core.checkpointer._postgres_saver",
@@ -302,20 +277,17 @@ class TestCheckpointerDevMode:
         # Dev com postgres indisponível → MemorySaver
         assert result is None or type(result).__name__ in ("MemorySaver", "InMemorySaver")  # não deve lançar exceção
 
-    def test_get_checkpointer_returns_none_when_langgraph_not_installed(self):
-        """Quando LangGraph não está instalado e flag=False, retorna None ou MemorySaver."""
+    def test_get_checkpointer_returns_checkpointer_by_default(self):
+        """Por padrão, get_checkpointer() retorna um checkpointer válido ou None."""
         from lia_agents_core.checkpointer import get_checkpointer
-        with patch("lia_agents_core.checkpointer.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = False
-            result = get_checkpointer()
-        # Com flag=False, usa MemorySaver (pode ser None se LG não instalado)
-        assert result is None or hasattr(result, "put") or type(result).__name__ == "MemorySaver"
+        result = get_checkpointer()
+        # Deve retornar None ou um objeto com interface de checkpointer
+        assert result is None or hasattr(result, "put") or type(result).__name__ in ("MemorySaver", "InMemorySaver", "PostgresSaver")
 
     def test_checkpointer_production_requires_postgres(self):
         """Em produção com PostgresSaver falhando, deve lançar RuntimeError."""
         from lia_agents_core.checkpointer import get_checkpointer
         with patch("lia_agents_core.checkpointer.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
             mock_settings.APP_ENV = "production"
             mock_settings.DATABASE_URL = "postgresql+asyncpg://invalid:5432/db"
             with patch("lia_agents_core.checkpointer._postgres_saver",

@@ -137,12 +137,10 @@ class TestFairnessPreCheckAgentIntegration:
             agent, "_fairness_pre_check",
             new=AsyncMock(return_value="Mensagem educacional talent"),
         ):
-            with patch.object(agent, "_process_react_loop", new=AsyncMock()) as mock_loop:
-                with patch.object(agent, "_process_langgraph", new=AsyncMock()) as mock_lg:
-                    result = await agent.process(_make_agent_input())
-                    assert result.message == "Mensagem educacional talent"
-                    mock_loop.assert_not_called()
-                    mock_lg.assert_not_called()
+            with patch.object(agent, "_process_langgraph", new=AsyncMock()) as mock_lg:
+                result = await agent.process(_make_agent_input())
+                assert result.message == "Mensagem educacional talent"
+                mock_lg.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_kanban_agent_bloqueado_nao_processa(self):
@@ -154,12 +152,10 @@ class TestFairnessPreCheckAgentIntegration:
             agent, "_fairness_pre_check",
             new=AsyncMock(return_value="Mensagem educacional kanban"),
         ):
-            with patch.object(agent, "_process_react_loop", new=AsyncMock()) as mock_loop:
-                with patch.object(agent, "_process_langgraph", new=AsyncMock()) as mock_lg:
-                    result = await agent.process(_make_agent_input())
-                    assert result.message == "Mensagem educacional kanban"
-                    mock_loop.assert_not_called()
-                    mock_lg.assert_not_called()
+            with patch.object(agent, "_process_langgraph", new=AsyncMock()) as mock_lg:
+                result = await agent.process(_make_agent_input())
+                assert result.message == "Mensagem educacional kanban"
+                mock_lg.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_jobs_mgmt_agent_bloqueado_nao_processa(self):
@@ -171,12 +167,10 @@ class TestFairnessPreCheckAgentIntegration:
             agent, "_fairness_pre_check",
             new=AsyncMock(return_value="Mensagem educacional jobs"),
         ):
-            with patch.object(agent, "_process_react_loop", new=AsyncMock()) as mock_loop:
-                with patch.object(agent, "_process_langgraph", new=AsyncMock()) as mock_lg:
-                    result = await agent.process(_make_agent_input())
-                    assert result.message == "Mensagem educacional jobs"
-                    mock_loop.assert_not_called()
-                    mock_lg.assert_not_called()
+            with patch.object(agent, "_process_langgraph", new=AsyncMock()) as mock_lg:
+                result = await agent.process(_make_agent_input())
+                assert result.message == "Mensagem educacional jobs"
+                mock_lg.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_wizard_agent_bloqueado_nao_processa(self):
@@ -188,12 +182,10 @@ class TestFairnessPreCheckAgentIntegration:
             agent, "_fairness_pre_check",
             new=AsyncMock(return_value="Mensagem educacional wizard"),
         ):
-            with patch.object(agent, "_process_react_loop", new=AsyncMock()) as mock_loop:
-                with patch.object(agent, "_process_langgraph", new=AsyncMock()) as mock_lg:
-                    result = await agent.process(_make_agent_input())
-                    assert result.message == "Mensagem educacional wizard"
-                    mock_loop.assert_not_called()
-                    mock_lg.assert_not_called()
+            with patch.object(agent, "_process_langgraph", new=AsyncMock()) as mock_lg:
+                result = await agent.process(_make_agent_input())
+                assert result.message == "Mensagem educacional wizard"
+                mock_lg.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_input_limpo_prossegue_para_loop(self):
@@ -207,12 +199,10 @@ class TestFairnessPreCheckAgentIntegration:
             agent, "_fairness_pre_check",
             new=AsyncMock(return_value=None),  # limpo
         ):
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                with patch.object(agent, "_process_react_loop", new=AsyncMock(return_value=mock_output)) as mock_loop:
-                    result = await agent.process(_make_agent_input("dev Python senior"))
-                    mock_loop.assert_called_once()
-                    assert result is mock_output
+            with patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=mock_output)) as mock_loop:
+                result = await agent.process(_make_agent_input("dev Python senior"))
+                mock_loop.assert_called_once()
+                assert result is mock_output
 
 
 # ── Cobertura de cobertura: método existe no mixin ───────────────────────────

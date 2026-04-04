@@ -554,32 +554,9 @@ class TestPolicyHITL:
         mock_hitl_service = AsyncMock()
         mock_hitl_service.request_approval = AsyncMock(return_value=None)
 
-        mock_react_state = MagicMock()
-        mock_react_state.iteration = 1
-        mock_react_state.tool_calls_made = []
-        mock_react_state.final_response = "Sem alterações."
-        mock_react_state.actions_taken = []
-        mock_react_state.observations = []
-        mock_react_state.current_reasoning = ""
-        mock_react_state.error = None
-
-        with patch.object(agent, "_load_memory", new=AsyncMock(return_value=MagicMock())):
-            with patch.object(agent, "_memory_service") as mock_mem:
-                mock_mem.get_context_summary = AsyncMock(return_value="")
-                mock_mem.update_memory = AsyncMock()
-                with patch.object(agent, "_get_memory_context", new=AsyncMock(return_value={})):
-                    with patch.object(agent, "_resolve_guardrails", new=AsyncMock(return_value=[])):
-                        with patch(
-                            "app.domains.hiring_policy.agents.policy_react_agent.ReActLoop"
-                        ) as MockLoop:
-                            mock_loop_instance = MagicMock()
-                            mock_loop_instance.run = AsyncMock(return_value=mock_react_state)
-                            MockLoop.return_value = mock_loop_instance
-                            with patch.object(agent, "_build_output", new=AsyncMock(return_value=mock_output)):
-                                with patch.object(agent, "_post_loop_learning", new=AsyncMock()):
-                                    with patch.object(agent, "_save_memory", new=AsyncMock()):
-                                        with patch("app.services.hitl_service.hitl_service", mock_hitl_service, create=True):
-                                            result = await agent._process_react_loop(input_data)
+        with patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=mock_output)):
+            with patch("app.services.hitl_service.hitl_service", mock_hitl_service, create=True):
+                result = await agent.process(input_data)
 
         # HITL NÃO deve ter sido solicitado
         mock_hitl_service.request_approval.assert_not_called()

@@ -194,7 +194,6 @@ class AppSettings(BaseSettings):
     FAIRNESS_TOOL_CHECK_ENABLED: bool = True
     # LGPD consent enforcement: False=soft (aviso+continua), True=hard (bloqueia ausência como revogado)
     LGPD_CONSENT_ABSENT_HARD_BLOCK: bool = False
-    USE_LANGGRAPH_NATIVE: bool = True        # Fase 1 (Gaps) 08/03/2026: ativado em produção
 
     # Pipeline AI flags
     ENABLE_LLM_INTERPRET_CONTEXT: bool = True

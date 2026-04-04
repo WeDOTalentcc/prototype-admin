@@ -1,12 +1,13 @@
 """
-Tests for InterviewGraph — LangGraph dual-path (Phase 3.2).
+Tests for InterviewGraph — LangGraph nativo.
 
 Covers:
 - _build_langgraph() compila sem erro
 - _lg_route_collector: completo → validator, incompleto → router
 - _lg_route_router: campo pendente → RESPONSE (sem loop), validado → VALIDATOR
 - _invoke_langgraph() com grafo mockado
-- dual-path: USE_LANGGRAPH_NATIVE=False → _invoke_legacy, True → _invoke_langgraph
+- invoke() delega para _invoke_langgraph
+- Erro de build propaga (sem fallback legacy)
 """
 import pytest
 import sys
@@ -224,17 +225,15 @@ class TestInterviewGraphInvokeLangGraph:
         assert config["configurable"]["thread_id"] == "sess-test-001"
 
     @pytest.mark.asyncio
-    async def test_invoke_langgraph_falls_back_on_build_error(self):
-        """Se _build_langgraph lança, cai para _invoke_legacy."""
+    async def test_invoke_langgraph_raises_on_build_error(self):
+        """Se _build_langgraph lança, a exceção propaga (sem fallback legacy)."""
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
         g = InterviewGraph()
         g._compiled = None
 
         with patch.object(g, "_build_langgraph", side_effect=RuntimeError("no langgraph")):
-            with patch.object(g, "_invoke_legacy", new_callable=AsyncMock) as mock_legacy:
-                mock_legacy.return_value = self._make_state()
-                result = await g._invoke_langgraph(self._make_state())
-                mock_legacy.assert_called_once()
+            with pytest.raises(RuntimeError, match="no langgraph"):
+                await g._invoke_langgraph(self._make_state())
 
     @pytest.mark.asyncio
     async def test_invoke_langgraph_falls_back_on_ainvoke_error(self):
@@ -253,40 +252,21 @@ class TestInterviewGraphInvokeLangGraph:
 
 
 # ---------------------------------------------------------------------------
-# Section 5: dual-path invoke()
+# Section 5: invoke() always calls LangGraph
 # ---------------------------------------------------------------------------
 
-class TestInterviewGraphDualPath:
+class TestInterviewGraphInvoke:
 
     def _make_state(self) -> Dict[str, Any]:
         return {"session_id": "sess-dual-001", "workflow_data": {}}
 
     @pytest.mark.asyncio
-    async def test_flag_false_calls_legacy(self):
+    async def test_invoke_calls_langgraph(self):
+        """invoke() sempre delega para _invoke_langgraph (LangGraph nativo)."""
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
         g = InterviewGraph()
 
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = False
-            with patch.object(g, "_invoke_legacy", new_callable=AsyncMock) as mock_legacy:
-                mock_legacy.return_value = self._make_state()
-                await g.invoke(self._make_state())
-                mock_legacy.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_flag_true_calls_langgraph(self):
-        from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
-        g = InterviewGraph()
-
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
-            with patch.object(g, "_invoke_langgraph", new_callable=AsyncMock) as mock_lg:
-                mock_lg.return_value = self._make_state()
-                await g.invoke(self._make_state())
-                mock_lg.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_flag_default_is_true(self):
-        """Após Fase 1 (Gaps) 08/03/2026, USE_LANGGRAPH_NATIVE=True por padrão."""
-        from app.core.config import settings
-        assert settings.USE_LANGGRAPH_NATIVE is True
+        with patch.object(g, "_invoke_langgraph", new_callable=AsyncMock) as mock_lg:
+            mock_lg.return_value = self._make_state()
+            await g.invoke(self._make_state())
+            mock_lg.assert_called_once()

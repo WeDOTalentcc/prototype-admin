@@ -1,16 +1,13 @@
 """
-LangGraph Base — classe base para agentes migrados para LangGraph nativo.
+LangGraph Base — classe base para agentes LangGraph nativos.
 
 Fornece:
 - StateGraph com AuditCallback injetado via config["callbacks"]
-- Checkpointer (MemorySaver ou PostgresSaver) via get_checkpointer()
+- Checkpointer (PostgresSaver em produção, MemorySaver em dev) via get_checkpointer()
 - Compilação lazy do grafo (singleton por classe)
 - Interface compatível com AgentInput/AgentOutput
 
-Feature flag USE_LANGGRAPH_NATIVE controla se este base é usado
-ou se o agente cai para o ReActLoop customizado.
-
-Uso (num agente migrado):
+Uso:
     class MyAgent(LangGraphBase):
         def _build_graph(self) -> StateGraph:
             graph = StateGraph(MyState)

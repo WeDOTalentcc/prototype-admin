@@ -56,11 +56,8 @@ class TestAnalyticsAgentContract:
         agent = AnalyticsReActAgent()
         inp = _make_agent_input(message="trigger error")
 
-        with patch.object(agent, "_process_react_loop", side_effect=RuntimeError("boom")):
-            with patch.object(agent, "_process_langgraph", side_effect=RuntimeError("boom")):
-                with patch("app.core.config.settings") as mock_cfg:
-                    mock_cfg.USE_LANGGRAPH_NATIVE = False
-                    result = await agent.process(inp)
+        with patch.object(agent, "_process_langgraph", side_effect=RuntimeError("boom")):
+            result = await agent.process(inp)
 
         assert isinstance(result, AgentOutput)
         assert result.error is not None
@@ -114,11 +111,8 @@ class TestCommunicationAgentContract:
         agent = CommunicationReActAgent()
         inp = _make_agent_input(message="enviar email")
 
-        with patch.object(agent, "_process_react_loop", side_effect=RuntimeError("comm error")):
-            with patch.object(agent, "_process_langgraph", side_effect=RuntimeError("comm error")):
-                with patch("app.core.config.settings") as mock_cfg:
-                    mock_cfg.USE_LANGGRAPH_NATIVE = False
-                    result = await agent.process(inp)
+        with patch.object(agent, "_process_langgraph", side_effect=RuntimeError("comm error")):
+            result = await agent.process(inp)
 
         assert isinstance(result, AgentOutput)
         assert result.confidence == 0.0
@@ -187,11 +181,8 @@ class TestATSIntegrationAgentContract:
         agent = ATSIntegrationReActAgent()
         inp = _make_agent_input(message="sync candidate")
 
-        with patch.object(agent, "_process_react_loop", side_effect=RuntimeError("ats error")):
-            with patch.object(agent, "_process_langgraph", side_effect=RuntimeError("ats error")):
-                with patch("app.core.config.settings") as mock_cfg:
-                    mock_cfg.USE_LANGGRAPH_NATIVE = False
-                    result = await agent.process(inp)
+        with patch.object(agent, "_process_langgraph", side_effect=RuntimeError("ats error")):
+            result = await agent.process(inp)
 
         assert isinstance(result, AgentOutput)
         assert result.confidence == 0.0
@@ -254,8 +245,8 @@ class TestCrossAgentContracts:
             assert hasattr(agent, "domain_name")
             assert hasattr(agent, "available_tools")
 
-    def test_all_phase5_agents_support_both_process_paths(self):
-        """Todos os novos agentes têm _process_langgraph e _process_react_loop."""
+    def test_all_phase5_agents_have_langgraph_process(self):
+        """Todos os novos agentes têm _process_langgraph."""
         from app.domains.analytics.agents.analytics_react_agent import AnalyticsReActAgent
         from app.domains.communication.agents.communication_react_agent import CommunicationReActAgent
         from app.domains.ats_integration.agents.ats_integration_react_agent import ATSIntegrationReActAgent
@@ -263,7 +254,6 @@ class TestCrossAgentContracts:
         for cls in [AnalyticsReActAgent, CommunicationReActAgent, ATSIntegrationReActAgent]:
             agent = cls()
             assert hasattr(agent, "_process_langgraph"), f"{cls.__name__} missing _process_langgraph"
-            assert hasattr(agent, "_process_react_loop"), f"{cls.__name__} missing _process_react_loop"
 
     def test_all_phase5_agents_registered_in_registry(self):
         from lia_agents_core.react_agent_registry import register_react_agents

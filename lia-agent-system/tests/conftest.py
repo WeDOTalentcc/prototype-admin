@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from app.shared.agents.react_loop import ReActConfig, ReActLoop, ToolDefinition
+from app.shared.agents.react_loop import ReActConfig, ToolDefinition
 from app.shared.agents.observability import ReActObserver
 
 
@@ -35,11 +35,6 @@ def base_react_config(mock_tool):
         domain="test",
         model_provider="claude",
     )
-
-
-@pytest.fixture
-def base_react_loop(base_react_config, mock_memory_service):
-    return ReActLoop(config=base_react_config, working_memory_service=mock_memory_service)
 
 
 @pytest.fixture

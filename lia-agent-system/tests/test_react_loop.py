@@ -44,6 +44,7 @@ class TestReActState:
         assert state.last_tool_call_key is None
 
 
+@pytest.mark.skip(reason="ReActLoop removido — agentes usam LangGraph nativo (create_react_agent)")
 class TestReActLoop:
     @pytest.fixture
     def mock_tool_fn(self):

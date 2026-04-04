@@ -126,14 +126,12 @@ class TestAnalyticsSystemPrompt:
 
 class TestAnalyticsAgentProcess:
     @pytest.mark.asyncio
-    async def test_process_react_loop_error_returns_graceful(self):
+    async def test_process_langgraph_error_returns_graceful(self):
         from app.domains.analytics.agents.analytics_react_agent import AnalyticsReActAgent
         agent = AnalyticsReActAgent()
 
-        with patch.object(agent, "_process_react_loop", AsyncMock(side_effect=Exception("LLM fail"))):
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                result = await agent.process(make_input(message="gerar relatório"))
+        with patch.object(agent, "_process_langgraph", AsyncMock(side_effect=Exception("LLM fail"))):
+            result = await agent.process(make_input(message="gerar relatório"))
 
         assert isinstance(result, AgentOutput)
         assert result.confidence == 0.0
@@ -145,9 +143,7 @@ class TestAnalyticsAgentProcess:
 
         mock_output = AgentOutput(message="Relatório gerado.", confidence=0.88)
         with patch.object(agent, "_process_langgraph", AsyncMock(return_value=mock_output)):
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = True
-                result = await agent.process(make_input(message="top KPIs"))
+            result = await agent.process(make_input(message="top KPIs"))
 
         assert result.message == "Relatório gerado."
         assert result.confidence == 0.88
@@ -253,10 +249,8 @@ class TestCommunicationAgentProcess:
         from app.domains.communication.agents.communication_react_agent import CommunicationReActAgent
         agent = CommunicationReActAgent()
 
-        with patch.object(agent, "_process_react_loop", AsyncMock(side_effect=Exception("timeout"))):
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                result = await agent.process(make_input(message="enviar email"))
+        with patch.object(agent, "_process_langgraph", AsyncMock(side_effect=Exception("timeout"))):
+            result = await agent.process(make_input(message="enviar email"))
 
         assert isinstance(result, AgentOutput)
         assert result.confidence == 0.0
@@ -268,9 +262,7 @@ class TestCommunicationAgentProcess:
 
         mock_output = AgentOutput(message="Email enviado.", confidence=0.90)
         with patch.object(agent, "_process_langgraph", AsyncMock(return_value=mock_output)):
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = True
-                result = await agent.process(make_input(message="enviar email para candidato"))
+            result = await agent.process(make_input(message="enviar email para candidato"))
 
         assert result.message == "Email enviado."
 
@@ -375,10 +367,8 @@ class TestATSIntegrationAgentProcess:
         from app.domains.ats_integration.agents.ats_integration_react_agent import ATSIntegrationReActAgent
         agent = ATSIntegrationReActAgent()
 
-        with patch.object(agent, "_process_react_loop", AsyncMock(side_effect=Exception("ATS down"))):
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                result = await agent.process(make_input(message="sincronizar com Gupy"))
+        with patch.object(agent, "_process_langgraph", AsyncMock(side_effect=Exception("ATS down"))):
+            result = await agent.process(make_input(message="sincronizar com Gupy"))
 
         assert isinstance(result, AgentOutput)
         assert result.confidence == 0.0
@@ -390,9 +380,7 @@ class TestATSIntegrationAgentProcess:
 
         mock_output = AgentOutput(message="Candidato sincronizado.", confidence=0.85)
         with patch.object(agent, "_process_langgraph", AsyncMock(return_value=mock_output)):
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = True
-                result = await agent.process(make_input(message="sync candidato 42 para Gupy"))
+            result = await agent.process(make_input(message="sync candidato 42 para Gupy"))
 
         assert result.message == "Candidato sincronizado."
 

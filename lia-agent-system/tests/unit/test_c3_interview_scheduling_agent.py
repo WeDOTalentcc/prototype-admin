@@ -11,7 +11,7 @@ Verifica:
 7. _compute_confidence_score: 0.1 quando fairness_blocked
 8. interview_details_collector: retorno precoce com response_data quando fairness blocked
 9. interview_scheduler_executor: confidence_score=1.0 após agendamento bem-sucedido
-10. interview_graph._invoke_legacy usa confidence_score do estado (não hardcoded)
+10. interview_graph._invoke_langgraph usa confidence_score do estado (não hardcoded)
 """
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -243,14 +243,14 @@ class TestSchedulerExecutorConfidence:
 
 
 # ---------------------------------------------------------------------------
-# 10 — interview_graph._invoke_legacy usa confidence do estado
+# 10 — interview_graph._invoke_langgraph usa confidence do estado
 # ---------------------------------------------------------------------------
 
 class TestInterviewGraphConfidenceWiring:
 
     @pytest.mark.asyncio
-    async def test_invoke_legacy_uses_confidence_from_state(self):
-        """_invoke_legacy lê confidence_score do workflow_data, não hardcoded."""
+    async def test_invoke_langgraph_uses_confidence_from_state(self):
+        """_invoke_langgraph lê confidence_score do workflow_data, não hardcoded."""
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
 
         ig = InterviewGraph()
@@ -266,19 +266,17 @@ class TestInterviewGraphConfidenceWiring:
         mock_callback.on_chain_start_manual = MagicMock()
         mock_callback.on_chain_end_manual = AsyncMock()
 
-        async def _fake_run_node(node_name, s, cb=None):
-            return s
+        mock_compiled = MagicMock()
+        mock_compiled.ainvoke = AsyncMock(return_value=state)
 
-        with patch.object(ig, "_run_node", side_effect=_fake_run_node):
-            with patch.object(ig, "_route_after_collector", return_value="interview_validator"):
-                with patch.object(ig, "_route_after_validator", return_value="interview_response_planner"):
-                    with patch(
-                        "app.shared.observability.agent_metrics.record_confidence",
-                        MagicMock(),
-                    ):
-                        result = await ig._invoke_legacy(state, mock_callback)
+        with patch.object(ig, "_build_langgraph", return_value=mock_compiled):
+            with patch(
+                "app.shared.observability.agent_metrics.record_confidence",
+                MagicMock(),
+            ):
+                ig._compiled = mock_compiled
+                result = await ig._invoke_langgraph(state, mock_callback)
 
-        # on_chain_end_manual foi chamado — confidence vem do estado (0.75), não hardcoded
         mock_callback.on_chain_end_manual.assert_called_once()
         call_kwargs = mock_callback.on_chain_end_manual.call_args
         called_confidence = call_kwargs[1].get("confidence") if call_kwargs[1] else call_kwargs[0][0]

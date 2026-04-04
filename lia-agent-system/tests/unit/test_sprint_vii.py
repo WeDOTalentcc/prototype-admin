@@ -214,10 +214,10 @@ class TestSendFeedbackFairnessLayer3:
 
 class TestSourcingAgentFairnessLayer3Output:
     def test_sourcing_agent_has_layer3_output_check(self):
-        """sourcing_react_agent._process_react_loop deve ter check_with_layer3 no output."""
+        """sourcing_react_agent._process_langgraph deve ter check_with_layer3 no output."""
         import inspect
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        src = inspect.getsource(SourcingReActAgent._process_react_loop)
+        src = inspect.getsource(SourcingReActAgent._process_langgraph)
         assert "check_with_layer3" in src
         assert "shortlist" in src
 
@@ -225,7 +225,7 @@ class TestSourcingAgentFairnessLayer3Output:
         """Layer 3 deve ser ativada para stages: shortlist, evaluation, ranking."""
         import inspect
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        src = inspect.getsource(SourcingReActAgent._process_react_loop)
+        src = inspect.getsource(SourcingReActAgent._process_langgraph)
         # Verifica que a condição inclui os stages corretos
         assert '"shortlist"' in src or "'shortlist'" in src
         assert '"ranking"' in src or "'ranking'" in src
@@ -234,6 +234,6 @@ class TestSourcingAgentFairnessLayer3Output:
         """Output bloqueado pelo Layer 3 deve retornar mensagem segura."""
         import inspect
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        src = inspect.getsource(SourcingReActAgent._process_react_loop)
+        src = inspect.getsource(SourcingReActAgent._process_langgraph)
         assert "fairness_l3_blocked" in src
         assert "FairnessGuard" in src

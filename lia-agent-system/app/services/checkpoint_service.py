@@ -5,15 +5,10 @@ Provides fault tolerance for LangGraph-style agents: if the process
 restarts between user turns, the agent can restore its accumulated
 state from the database instead of starting from scratch.
 
-Usage in an agent graph:
-
-    # Restore at the start of invoke()
-    prior = await restore_checkpoint(db, session_id, "job_wizard")
-    if prior:
-        state = {**prior, **incoming_message_fields}
-
-    # Save at the end of invoke()
-    await save_checkpoint(db, session_id, "job_wizard", state)
+Note: LangGraph agents use PostgresSaver natively for checkpointing.
+The functions in this module are retained for legacy graph invocations
+(e.g., custom start_node paths in JobWizardGraph). For the standard
+LangGraph path, PostgresSaver manages checkpoints automatically.
 """
 from __future__ import annotations
 
@@ -29,20 +24,7 @@ from app.models.agent_checkpoint import AgentCheckpoint
 
 logger = logging.getLogger(__name__)
 
-# Quando USE_LANGGRAPH_NATIVE=True, o PostgresSaver do LangGraph gerencia
-# os checkpoints nativamente. As funções abaixo tornam-se no-ops para evitar
-# duplicidade de persistência — o dual-path de invoke() já garante que
-# _invoke_legacy() não é chamado quando o flag está ativo.
-def _langgraph_native_active() -> bool:
-    try:
-        from app.core.config import settings
-        return bool(settings.USE_LANGGRAPH_NATIVE)
-    except Exception:
-        return False
-
-
 _FIELDS_NOT_TO_PERSIST = {
-    # Ephemeral fields that should not survive across turns
     "user_message",
     "error",
     "tool_calls",
@@ -73,15 +55,9 @@ async def save_checkpoint(
 ) -> None:
     """Upsert the agent state for the given session.
 
-    No-op quando USE_LANGGRAPH_NATIVE=True — PostgresSaver gerencia checkpoints.
+    Used only by legacy graph paths (e.g., custom start_node in JobWizardGraph).
+    LangGraph's PostgresSaver handles checkpoints for the standard path.
     """
-    if _langgraph_native_active():
-        logger.debug(
-            "save_checkpoint skipped (USE_LANGGRAPH_NATIVE=True)",
-            extra={"session_id": session_id, "agent_type": agent_type},
-        )
-        return
-
     sanitized = _sanitize_state(state)
 
     stmt = (
@@ -116,16 +92,9 @@ async def restore_checkpoint(
 ) -> Optional[dict]:
     """Return the persisted state dict, or None if no checkpoint exists.
 
-    Retorna None quando USE_LANGGRAPH_NATIVE=True — PostgresSaver restaura
-    automaticamente via thread_id no momento do ainvoke().
+    Used only by legacy graph paths. For the standard LangGraph path,
+    PostgresSaver restores state automatically via thread_id at ainvoke() time.
     """
-    if _langgraph_native_active():
-        logger.debug(
-            "restore_checkpoint skipped (USE_LANGGRAPH_NATIVE=True)",
-            extra={"session_id": session_id, "agent_type": agent_type},
-        )
-        return None
-
     result = await db.execute(
         select(AgentCheckpoint).where(
             AgentCheckpoint.session_id == session_id,
@@ -146,15 +115,9 @@ async def delete_checkpoint(
 ) -> None:
     """Remove checkpoint after the wizard session is completed or abandoned.
 
-    No-op quando USE_LANGGRAPH_NATIVE=True — PostgresSaver limpa via thread_id.
+    Used only by legacy graph paths. For the standard LangGraph path,
+    PostgresSaver manages cleanup via thread_id.
     """
-    if _langgraph_native_active():
-        logger.debug(
-            "delete_checkpoint skipped (USE_LANGGRAPH_NATIVE=True)",
-            extra={"session_id": session_id, "agent_type": agent_type},
-        )
-        return
-
     result = await db.execute(
         select(AgentCheckpoint).where(
             AgentCheckpoint.session_id == session_id,

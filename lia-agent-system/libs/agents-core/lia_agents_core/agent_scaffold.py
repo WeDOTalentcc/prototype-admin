@@ -2,7 +2,7 @@
 Agent Scaffold - Gerador de boilerplate para novos agentes ReAct.
 
 Ferramenta de desenvolvimento que gera os 4 arquivos padrão necessários
-para criar um novo agente de domínio seguindo o padrão ReAct da plataforma.
+para criar um novo agente de domínio seguindo o padrão LangGraph nativo.
 """
 import logging
 from typing import Dict
@@ -17,7 +17,7 @@ class AgentScaffold:
     def generate(domain_name: str, domain_path: str, description: str) -> Dict[str, str]:
         """Gera os 4 arquivos template para um novo agente ReAct.
 
-        Segue o padrão de referência do WizardReActAgent com as 4 camadas:
+        Segue o padrão LangGraphReActBase com as 4 camadas:
         agent.py, tool_registry.py, system_prompt.py, stage_context.py.
 
         Args:
@@ -82,8 +82,8 @@ class AgentScaffold:
         return f'''"""
 {agent_class} - Agente autônomo para {description}.
 
-Implementa a interface BaseAgent usando o loop ReAct com ferramentas,
-prompts e contexto de estágio específicos do domínio {domain_name}.
+Implementa a interface BaseAgent usando LangGraph nativo (create_react_agent)
+com ferramentas, prompts e contexto de estágio específicos do domínio {domain_name}.
 """
 import logging
 import time
@@ -96,9 +96,9 @@ from lia_agents_core.agent_interface import (
     BaseAgent,
     NavigationCommand,
 )
-from lia_agents_core.react_loop import ReActConfig, ReActLoop, ReActState
+from lia_agents_core.langgraph_react_base import LangGraphReActBase
+from lia_agents_core.tool_adapter import ToolDefinition, tool_definition_to_langchain_tool
 from lia_agents_core.working_memory import WorkingMemoryService
-from lia_agents_core.observability import ReActObserver
 
 from {domain_path}.agents.{snake_name}_stage_context import (
     STAGE_DEFINITIONS,
@@ -114,17 +114,16 @@ from {domain_path}.agents.{snake_name}_tool_registry import (
 logger = logging.getLogger(__name__)
 
 
-class {agent_class}(BaseAgent):
+class {agent_class}(LangGraphReActBase, BaseAgent):
     """{description}.
 
-    Implementa a interface BaseAgent usando um loop ReAct com
-    ferramentas específicas do domínio {domain_name}. Cada chamada a
-    ``process`` executa um ciclo completo Reason-Act-Observe e retorna
-    um AgentOutput estruturado.
+    Implementa a interface BaseAgent usando LangGraph nativo
+    (create_react_agent) com ferramentas específicas do domínio {domain_name}.
     """
 
     def __init__(self) -> None:
         """Inicializa o agente com o serviço de memória de trabalho."""
+        super().__init__()
         self._memory_service = WorkingMemoryService()
         self._all_tool_names = [t.name for t in get_{snake_name}_tools()]
         logger.info("[{agent_class}] Inicializado")
@@ -139,159 +138,19 @@ class {agent_class}(BaseAgent):
         """Retorna a lista de ferramentas disponíveis para este agente."""
         return list(self._all_tool_names)
 
-    async def process(self, input: AgentInput) -> AgentOutput:
-        """Processa uma mensagem do usuário pelo loop ReAct.
+    def _get_tools(self):
+        """Retorna as ferramentas no formato LangChain para create_react_agent."""
+        return [tool_definition_to_langchain_tool(t) for t in get_{snake_name}_tools()]
 
-        Args:
-            input: Entrada padronizada com mensagem, contexto e metadados.
-
-        Returns:
-            Saída padronizada com resposta, ações e atualizações de estado.
-        """
-        start_time = time.time()
+    def _get_system_prompt(self, input: AgentInput) -> str:
+        """Constrói o system prompt com contexto de estágio e memória."""
         current_stage = input.context.get("current_stage", "initial")
+        stage_ctx = get_stage_context(current_stage, input.context.get("collected_data", {{}}))
+        return build_system_prompt(stage_context=stage_ctx, memory_summary="")
 
-        logger.info(
-            f"[{agent_class}] Processando mensagem session={{input.session_id}} "
-            f"stage={{current_stage}}"
-        )
-
-        try:
-            memory = await self._memory_service.get_or_create(
-                session_id=input.session_id,
-                domain=self.domain_name,
-                company_id=input.company_id,
-                user_id=input.user_id,
-            )
-
-            if memory.current_stage != current_stage:
-                await self._memory_service.update_memory(
-                    session_id=input.session_id,
-                    domain=self.domain_name,
-                    updates={{"current_stage": current_stage}},
-                )
-
-            memory_summary = await self._memory_service.get_context_summary(
-                session_id=input.session_id,
-                domain=self.domain_name,
-            )
-
-            stage_ctx = get_stage_context(current_stage, input.context.get("collected_data", {{}}))
-            tools = get_stage_tools(current_stage)
-            system_prompt = build_system_prompt(
-                stage_context=stage_ctx,
-                memory_summary=memory_summary,
-            )
-
-            config = ReActConfig(
-                max_iterations=5,
-                system_prompt=system_prompt,
-                available_tools=tools,
-                domain=self.domain_name,
-                model_provider="claude",
-                temperature=0.3,
-                guardrails=[],
-            )
-
-            loop = ReActLoop(config=config, working_memory_service=self._memory_service)
-
-            observer = None
-            try:
-                observer = ReActObserver(
-                    session_id=input.session_id,
-                    domain=self.domain_name,
-                    agent_class="{agent_class}",
-                )
-                observer.log.stage_before = current_stage
-                observer.log.user_message_length = len(input.message)
-                observer.log.model_provider = config.model_provider
-            except Exception as obs_err:
-                logger.warning(f"[{agent_class}] Falha ao criar observer: {{obs_err}}")
-                observer = None
-
-            state = await loop.run(
-                message=input.message,
-                context={{
-                    "current_stage": current_stage,
-                    "collected_data": input.context.get("collected_data", {{}}),
-                    "company_id": input.company_id,
-                    "user_id": input.user_id,
-                    "conversation_history": [
-                        {{"role": m.get("role", "user"), "content": m.get("content", "")}}
-                        for m in input.conversation_history[-5:]
-                    ],
-                }},
-                session_id=input.session_id,
-                observer=observer,
-            )
-
-            message = state.final_response or "Desculpe, nao consegui gerar uma resposta."
-
-            actions = []
-            for action_record in state.actions_taken:
-                actions.append(
-                    AgentAction(
-                        action_type=action_record.get("type", "unknown"),
-                        params=action_record,
-                    )
-                )
-
-            confidence = 0.7
-            if state.error:
-                confidence = 0.3
-
-            duration_ms = (time.time() - start_time) * 1000
-            logger.info(
-                f"[{agent_class}] Completo em {{duration_ms:.0f}}ms "
-                f"iterations={{state.iteration}} tools={{len(state.tool_calls_made)}}"
-            )
-
-            if observer:
-                try:
-                    observer.finalize(
-                        confidence=confidence,
-                        response_length=len(message),
-                    )
-                except Exception:
-                    pass
-
-            return AgentOutput(
-                message=message,
-                actions=actions,
-                confidence=confidence,
-                reasoning_steps=[state.current_reasoning[:500]] if state.current_reasoning else [],
-                tool_results=[
-                    {{
-                        "tool_name": tc.get("tool_name", ""),
-                        "result": tc.get("result", {{}}),
-                        "duration_ms": tc.get("duration_ms", 0),
-                    }}
-                    for tc in state.tool_calls_made
-                ],
-                error=state.error,
-                metadata={{
-                    "iterations": state.iteration,
-                    "tools_called": len(state.tool_calls_made),
-                    "stage": current_stage,
-                    "duration_ms": round(duration_ms, 1),
-                }},
-            )
-
-        except Exception as exc:
-            duration_ms = (time.time() - start_time) * 1000
-            logger.error(
-                f"[{agent_class}] Erro ao processar mensagem: {{exc}}",
-                exc_info=True,
-            )
-            return AgentOutput(
-                message=(
-                    "Desculpe, encontrei um problema ao processar sua mensagem. "
-                    "Pode tentar novamente?"
-                ),
-                error=str(exc),
-                confidence=0.0,
-                metadata={{"duration_ms": round(duration_ms, 1)}},
-            )
+    async def process(self, input: AgentInput) -> AgentOutput:
+        """Processa uma mensagem do usuário via LangGraph nativo."""
+        return await self._process_langgraph(input)
 
     async def get_status(self) -> dict:
         """Retorna informações de status e saúde do agente."""
@@ -300,8 +159,7 @@ class {agent_class}(BaseAgent):
             "available_tools": self.available_tools,
             "status": "ready",
             "stages": list(STAGE_DEFINITIONS.keys()),
-            "max_iterations": 5,
-            "model_provider": "claude",
+            "engine": "langgraph_native",
         }}
 '''
 
@@ -314,15 +172,15 @@ class {agent_class}(BaseAgent):
     ) -> str:
         """Gera o arquivo de registro de ferramentas."""
         return f'''"""
-{snake_name.replace("_", " ").title()} Tool Registry - Ferramentas do agente para o loop ReAct.
+{snake_name.replace("_", " ").title()} Tool Registry - Ferramentas do agente {domain_name}.
 
 Expõe as ferramentas do domínio {domain_name} no formato ToolDefinition
-para que o ReActLoop possa decidir autonomamente quais ferramentas chamar.
+para uso com LangGraph create_react_agent.
 """
 import logging
 from typing import Any, Dict, List
 
-from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -391,20 +249,10 @@ Voce esta atuando no domínio de {description}.
 - Idioma: Portugues Brasileiro (PT-BR)
 - Tom: Conversacional mas competente, como uma colega de trabalho experiente
 
-=== INSTRUCOES REACT ===
-Voce opera em um ciclo de Raciocinio-Acao-Observacao:
-
-1. RACIOCINE sobre a situacao atual:
-   - Que estagio estamos? Que informacoes tenho?
-   - O que o usuario disse? Que dados posso extrair?
-   - Preciso usar alguma ferramenta?
-
-2. AJA de uma das formas:
-   - action="call_tool": Chamar uma ferramenta para buscar dados ou validar
-   - action="respond": Responder ao usuario com informacoes ou perguntas
-   - action="ask_clarification": Pedir esclarecimento quando informacoes sao ambiguas
-
-3. OBSERVE o resultado e decida se precisa agir novamente ou responder
+=== INSTRUCOES ===
+Voce opera com ferramentas disponíveis para executar ações no sistema.
+Use as ferramentas quando necessário para buscar dados, validar informações
+ou executar ações no domínio.
 """
 
 

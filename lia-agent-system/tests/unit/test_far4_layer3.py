@@ -52,21 +52,17 @@ class TestLayer3Integration:
         with patch('app.shared.compliance.fairness_guard.FairnessGuard.check_with_layer3',
                    new_callable=AsyncMock, return_value=clean_result) as mock_l3:
             with patch('app.shared.compliance.fairness_guard.FairnessGuard.check') as mock_check:
-                with patch.object(agent, '_process_react_loop',
+                with patch.object(agent, '_process_langgraph',
                                   new_callable=AsyncMock, return_value=mock_output):
-                    with patch('app.core.config.settings') as mock_settings:
-                        mock_settings.USE_LANGGRAPH_NATIVE = False
-
-                        agent_input = AgentInput(
-                            message="buscar analista Python",
-                            context={},
-                            session_id="test",
-                            company_id="test-company",
-                            user_id="test-user",
-                            conversation_history=[],
-                        )
-
-                        await agent.process(agent_input)
+                    agent_input = AgentInput(
+                        message="buscar analista Python",
+                        context={},
+                        session_id="test",
+                        company_id="test-company",
+                        user_id="test-user",
+                        conversation_history=[],
+                    )
+                    await agent.process(agent_input)
 
         # check_with_layer3 foi chamado
         mock_l3.assert_called_once()

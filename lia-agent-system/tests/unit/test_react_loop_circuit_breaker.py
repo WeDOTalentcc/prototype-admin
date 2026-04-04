@@ -1,17 +1,11 @@
 """
 P2-A — Testes do circuit breaker no ReActLoop._reason().
 
-Cobre:
-1. _get_llm_circuit_breaker() retorna uma instância de CircuitBreaker
-2. Instância é singleton (mesma referência em chamadas repetidas)
-3. Circuit breaker CLOSED: _reason() chama LLM normalmente
-4. Circuit breaker OPEN: _reason() lança CircuitBreakerError
-5. run() captura CircuitBreakerError e retorna mensagem amigável em PT-BR
-6. run() com circuit OPEN: state.error = "circuit_breaker_open"
-7. run() com circuit OPEN: state.should_respond = True
-8. Circuit breaker fail-open: se indisponível, LLM chamado diretamente
+SKIPPED: ReActLoop foi removido — agentes usam LangGraph nativo (create_react_agent).
+Circuit breaker agora é responsabilidade da camada LLM/checkpointer.
 """
 import pytest
+pytestmark = pytest.mark.skip(reason="ReActLoop removido — agentes usam LangGraph nativo")
 from unittest.mock import AsyncMock, MagicMock, patch
 
 

@@ -45,21 +45,19 @@ class TestPipelineMoveHighImpact:
             return_value=clean_result,
         ) as mock_l3:
             with patch.object(
-                agent, '_process_react_loop',
+                agent, '_process_langgraph',
                 new_callable=AsyncMock,
                 return_value=mock_output,
             ):
-                with patch('app.core.config.settings') as mock_settings:
-                    mock_settings.USE_LANGGRAPH_NATIVE = False
-                    agent_input = AgentInput(
-                        message="mover candidato para entrevista",
-                        context={"action_behavior": "passive"},
-                        session_id="test-session",
-                        company_id="test-company",
-                        user_id="test-user",
-                        conversation_history=[],
-                    )
-                    await agent.process(agent_input)
+                agent_input = AgentInput(
+                    message="mover candidato para entrevista",
+                    context={"action_behavior": "passive"},
+                    session_id="test-session",
+                    company_id="test-company",
+                    user_id="test-user",
+                    conversation_history=[],
+                )
+                await agent.process(agent_input)
 
         mock_l3.assert_called_once()
         call_args = mock_l3.call_args
@@ -209,18 +207,16 @@ class TestFairnessWarningsBEIntegration:
         agent = SourcingReActAgent()
         mock_output = AgentOutput(message="OK", confidence=0.9, metadata={})
 
-        with patch.object(agent, '_process_react_loop', new_callable=AsyncMock, return_value=mock_output):
-            with patch('app.core.config.settings') as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                agent_input = AgentInput(
-                    message="buscar candidatos de bairros nobres",
-                    context={},
-                    session_id="test",
-                    company_id="test-company",
-                    user_id="test-user",
-                    conversation_history=[],
-                )
-                result = await agent.process(agent_input)
+        with patch.object(agent, '_process_langgraph', new_callable=AsyncMock, return_value=mock_output):
+            agent_input = AgentInput(
+                message="buscar candidatos de bairros nobres",
+                context={},
+                session_id="test",
+                company_id="test-company",
+                user_id="test-user",
+                conversation_history=[],
+            )
+            result = await agent.process(agent_input)
 
         # soft_warnings devem estar no metadata
         assert "fairness_warnings" in result.metadata

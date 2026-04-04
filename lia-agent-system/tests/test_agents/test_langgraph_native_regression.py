@@ -1,7 +1,7 @@
 """
 Suite de regressão LangGraph — Fase 1 (Gaps).
 
-Valida que TODOS os 12 agentes funcionam corretamente com USE_LANGGRAPH_NATIVE=True.
+Valida que TODOS os 12 agentes funcionam corretamente via LangGraph nativo.
 LLM mockado via ChatAnthropic para evitar chamadas reais.
 
 Agentes testados:
@@ -48,9 +48,9 @@ def _make_agent_output(session_id: str = "sess-regression-001", company_id: str 
 
 
 # ---------------------------------------------------------------------------
-# Seção 1: Agentes ReAct — process() com USE_LANGGRAPH_NATIVE=True
+# Seção 1: Agentes ReAct — process() via LangGraph nativo
 #
-# Estratégia: após Item 1.5 a flag é True por padrão.
+# Estratégia: LangGraph é o único path (legacy removido).
 # Mockamos _process_langgraph diretamente para evitar chamadas LLM/DB.
 # ---------------------------------------------------------------------------
 
@@ -70,7 +70,7 @@ REACT_AGENTS = [
 class TestReActAgentsLangGraphNative:
     """
     Para cada agente ReAct, valida:
-    1. process() com USE_LANGGRAPH_NATIVE=True não lança exceção
+    1. process() via LangGraph nativo não lança exceção
     2. Retorna AgentOutput válido (tem campos message, confidence, metadata)
     3. session_id e company_id são preservados nos metadados
     """
@@ -138,20 +138,16 @@ class TestReActAgentsLangGraphNative:
 
 
 # ---------------------------------------------------------------------------
-# Seção 2: Agentes ReAct — _process_langgraph é chamado quando flag=True
+# Seção 2: Agentes ReAct — process() sempre chama _process_langgraph
 # ---------------------------------------------------------------------------
 
-class TestReActDualPathDispatch:
-    """
-    Verifica que flag=True dispara _process_langgraph (não _process_react_loop).
-    Como USE_LANGGRAPH_NATIVE=True por padrão (Item 1.5), testa o comportamento
-    atual e o fallback quando a flag é False.
-    """
+class TestReActDispatch:
+    """Verifica que process() sempre dispara _process_langgraph (LangGraph nativo)."""
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
-    async def test_flag_true_dispatches_to_langgraph(self, module_path, class_name):
-        """Com USE_LANGGRAPH_NATIVE=True (padrão), process() chama _process_langgraph."""
+    async def test_process_dispatches_to_langgraph(self, module_path, class_name):
+        """process() chama _process_langgraph (sem fallback legado)."""
         import importlib
         mod = importlib.import_module(module_path)
         AgentClass = getattr(mod, class_name)
@@ -160,38 +156,8 @@ class TestReActDualPathDispatch:
 
         with patch.object(agent, "_process_langgraph", new_callable=AsyncMock) as mock_lg:
             mock_lg.return_value = _make_agent_output()
-            with patch.object(agent, "_process_react_loop", new_callable=AsyncMock) as mock_legacy:
-                await agent.process(input_obj)
-                mock_lg.assert_called_once()
-                mock_legacy.assert_not_called()
-
-    @pytest.mark.asyncio
-    @pytest.mark.parametrize("module_path,class_name", REACT_AGENTS)
-    async def test_flag_false_dispatches_to_react_loop(self, module_path, class_name):
-        """Com USE_LANGGRAPH_NATIVE=False, process() chama _process_react_loop.
-
-        Os agentes usam `from app.core.config import settings` localmente em process(),
-        então patchamos app.core.config.settings (e lia_config.config.settings como fallback).
-        """
-        import importlib
-        mod = importlib.import_module(module_path)
-        AgentClass = getattr(mod, class_name)
-        agent = AgentClass()
-        input_obj = _make_agent_input()
-
-        legacy_output = _make_agent_output()
-
-        # Patch nos dois locais onde settings pode ser importado dentro de process()
-        with patch("app.core.config.settings") as mock_app_settings, \
-             patch("lia_config.config.settings") as mock_lia_settings:
-            mock_app_settings.USE_LANGGRAPH_NATIVE = False
-            mock_lia_settings.USE_LANGGRAPH_NATIVE = False
-            with patch.object(agent, "_process_react_loop", new_callable=AsyncMock) as mock_legacy:
-                mock_legacy.return_value = legacy_output
-                with patch.object(agent, "_process_langgraph", new_callable=AsyncMock) as mock_lg:
-                    await agent.process(input_obj)
-                    mock_legacy.assert_called_once()
-                    mock_lg.assert_not_called()
+            await agent.process(input_obj)
+            mock_lg.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
@@ -212,7 +178,7 @@ class TestJobWizardGraphLangGraphNative:
         assert callable(g._invoke_langgraph)
 
     @pytest.mark.asyncio
-    async def test_flag_true_calls_invoke_langgraph(self):
+    async def test_invoke_calls_invoke_langgraph(self):
         from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
         g = JobWizardGraph()
         state = {
@@ -225,12 +191,10 @@ class TestJobWizardGraphLangGraphNative:
             "should_continue": True,
             "error": None,
         }
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
-            with patch.object(g, "_invoke_langgraph", new_callable=AsyncMock) as mock_lg:
-                mock_lg.return_value = {**state, "response": "Vaga criada"}
-                await g.invoke(state)
-                mock_lg.assert_called_once()
+        with patch.object(g, "_invoke_langgraph", new_callable=AsyncMock) as mock_lg:
+            mock_lg.return_value = {**state, "response": "Vaga criada"}
+            await g.invoke(state)
+            mock_lg.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_invoke_langgraph_does_not_raise_with_minimal_input(self):
@@ -333,17 +297,15 @@ class TestInterviewGraphLangGraphNative:
         assert callable(getattr(g, "_build_langgraph", None))
 
     @pytest.mark.asyncio
-    async def test_flag_true_calls_invoke_langgraph(self):
+    async def test_invoke_calls_invoke_langgraph(self):
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
         g = InterviewGraph()
         state = {"session_id": "sess-interview-001", "workflow_data": {}}
 
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
-            with patch.object(g, "_invoke_langgraph", new_callable=AsyncMock) as mock_lg:
-                mock_lg.return_value = state
-                await g.invoke(state)
-                mock_lg.assert_called_once()
+        with patch.object(g, "_invoke_langgraph", new_callable=AsyncMock) as mock_lg:
+            mock_lg.return_value = state
+            await g.invoke(state)
+            mock_lg.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_invoke_langgraph_does_not_raise_with_minimal_input(self):
@@ -365,22 +327,10 @@ class TestInterviewGraphLangGraphNative:
 
 class TestCheckpointerBehavior:
 
-    def test_checkpointer_returns_something_when_flag_false(self):
-        """USE_LANGGRAPH_NATIVE=False → MemorySaver ou None (sem PostgresSaver)."""
-        from lia_agents_core.checkpointer import get_checkpointer, _memory_saver
-        with patch("lia_agents_core.checkpointer.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = False
-            result = get_checkpointer()
-            # Pode ser MemorySaver ou None (se LangGraph não instalado)
-            # O importante é não tentar PostgresSaver
-            assert result is None or hasattr(result, "put") or hasattr(result, "aget") or \
-                   type(result).__name__ == "MemorySaver"
-
     def test_checkpointer_raises_runtime_error_in_production_on_pg_fail(self):
         """APP_ENV=production + PostgresSaver falha → RuntimeError."""
         from lia_agents_core.checkpointer import get_checkpointer
         with patch("lia_agents_core.checkpointer.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
             mock_settings.APP_ENV = "production"
             mock_settings.DATABASE_URL = "postgresql+asyncpg://invalid:5432/db"
 
@@ -394,7 +344,6 @@ class TestCheckpointerBehavior:
         import logging
         from lia_agents_core.checkpointer import get_checkpointer
         with patch("lia_agents_core.checkpointer.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
             mock_settings.APP_ENV = "development"
             mock_settings.DATABASE_URL = "postgresql+asyncpg://localhost:5432/db"
 
@@ -402,20 +351,14 @@ class TestCheckpointerBehavior:
                        side_effect=RuntimeError("Connection refused")):
                 with caplog.at_level(logging.WARNING, logger="lia_agents_core.checkpointer"):
                     result = get_checkpointer()
-                    # WARNING deve conter menção ao MemorySaver
                     assert "MemorySaver" in caplog.text or "indisponível" in caplog.text
 
 
 # ---------------------------------------------------------------------------
-# Seção 5: Flag USE_LANGGRAPH_NATIVE=True (Item 1.5)
+# Seção 5: Todos os agentes importáveis e LangGraph disponível
 # ---------------------------------------------------------------------------
 
-class TestLangGraphNativeFlagEnabled:
-
-    def test_use_langgraph_native_is_true_after_activation(self):
-        """Após Item 1.5, USE_LANGGRAPH_NATIVE deve ser True por padrão."""
-        from app.core.config import settings
-        assert settings.USE_LANGGRAPH_NATIVE is True
+class TestLangGraphNativeEnvironment:
 
     def test_all_react_agents_importable(self):
         """Todos os 9 agentes ReAct são importáveis sem erro."""

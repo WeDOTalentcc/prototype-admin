@@ -50,10 +50,7 @@ class TestSourcingFairnessGuard:
             state_updates={}, error=None, reasoning_steps=[], tool_results=[])
 
         with patch("app.shared.compliance.fairness_guard.FairnessGuard") as MockFG, \
-             patch("app.core.config.settings") as MockSettings, \
-             patch.object(agent, "_process_react_loop", new=AsyncMock(return_value=expected_output)), \
              patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=expected_output)):
-            MockSettings.USE_LANGGRAPH_NATIVE = False
             MockFG.return_value.check.return_value = clean_result
             MockFG.return_value.check_implicit_bias.return_value = []
             MockFG.return_value.log_check = AsyncMock()
@@ -98,10 +95,7 @@ class TestSourcingFairnessGuard:
             navigation=None, state_updates={}, error=None, reasoning_steps=[], tool_results=[])
 
         with patch("app.shared.compliance.fairness_guard.FairnessGuard") as MockFG, \
-             patch("app.core.config.settings") as MockSettings, \
-             patch.object(agent, "_process_react_loop", new=AsyncMock(return_value=expected_output)), \
              patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=expected_output)):
-            MockSettings.USE_LANGGRAPH_NATIVE = False
             MockFG.side_effect = Exception("FairnessGuard unavailable")
 
             result = await agent.process(inp)
@@ -136,7 +130,6 @@ class TestPipelineFairnessGuard:
             navigation=None, state_updates={}, error=None, reasoning_steps=[], tool_results=[])
 
         with patch("app.shared.compliance.fairness_guard.FairnessGuard") as MockFG, \
-             patch.object(agent, "_process_react_loop", new=AsyncMock(return_value=expected)), \
              patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=expected)):
             MockFG.return_value.check.return_value = clean_result
             MockFG.return_value.check_implicit_bias.return_value = []

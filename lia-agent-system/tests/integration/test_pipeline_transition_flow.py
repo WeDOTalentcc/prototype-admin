@@ -69,8 +69,7 @@ class TestPipelineTransitionAgent:
             session_id=SESSION_ID,
         )
 
-        with patch.object(agent, "_process_langgraph", new_callable=AsyncMock, return_value=mock_output), \
-             patch.object(agent, "_process_react_loop", new_callable=AsyncMock, return_value=mock_output):
+        with patch.object(agent, "_process_langgraph", new_callable=AsyncMock, return_value=mock_output):
             result = await agent.process(agent_input)
 
         assert result is not None

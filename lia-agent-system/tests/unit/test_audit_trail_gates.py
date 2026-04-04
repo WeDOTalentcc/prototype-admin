@@ -88,7 +88,6 @@ class TestAuditTrailPipelineHITL:
 
         with patch("app.shared.compliance.fairness_guard.FairnessGuard") as MockFG, \
              patch("app.shared.compliance.audit_service.audit_service") as MockAudit, \
-             patch.object(agent, "_process_react_loop", new=AsyncMock(return_value=expected)), \
              patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=expected)):
 
             clean = MagicMock(is_blocked=False, soft_warnings=[])
@@ -113,20 +112,10 @@ class TestAuditTrailSourcing:
 
     @pytest.mark.asyncio
     async def test_audit_called_after_sourcing_completes(self):
-        """log_decision deve ser chamado ao final do loop do sourcing."""
+        """log_decision deve ser chamado ao final da execução do sourcing via LangGraph."""
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        from app.shared.agents.react_loop import ReActState
         agent = SourcingReActAgent()
         inp = _make_sourcing_input()
-
-        mock_state = MagicMock(spec=ReActState)
-        mock_state.final_response = "Candidatos encontrados"
-        mock_state.iteration = 2
-        mock_state.tool_calls_made = [{"tool_name": "search_candidates", "result": {}}]
-        mock_state.actions_taken = []
-        mock_state.observations = []
-        mock_state.current_reasoning = ""
-        mock_state.error = None
 
         mock_output = MagicMock(
             message="Candidatos encontrados",
@@ -141,23 +130,12 @@ class TestAuditTrailSourcing:
         )
 
         with patch("app.shared.compliance.audit_service.audit_service") as MockAudit, \
-             patch.object(agent, "_load_memory", new=AsyncMock(return_value=MagicMock(current_stage="search-criteria"))), \
-             patch.object(agent, "_memory_service") as MockMem, \
-             patch.object(agent, "_get_memory_context", new=AsyncMock(return_value="")), \
-             patch.object(agent, "_resolve_guardrails", new=AsyncMock(return_value=[])), \
-             patch.object(agent, "_build_output", new=AsyncMock(return_value=mock_output)), \
-             patch.object(agent, "_post_loop_learning", new=AsyncMock()), \
-             patch.object(agent, "_save_memory", new=AsyncMock()), \
-             patch("app.domains.sourcing.agents.sourcing_react_agent.ReActLoop") as MockLoop, \
-             patch("app.domains.sourcing.agents.sourcing_react_agent.ReActObserver",
-                   side_effect=Exception("skip")):
+             patch.object(agent, "_invoke_langgraph", new=AsyncMock(return_value={"messages": []})), \
+             patch.object(agent, "_build_output_from_langgraph", new=AsyncMock(return_value=mock_output)):
 
-            MockMem.get_context_summary = AsyncMock(return_value="")
-            MockMem.update_memory = AsyncMock()
-            MockLoop.return_value.run = AsyncMock(return_value=mock_state)
             MockAudit.log_decision = AsyncMock(return_value=MagicMock())
 
-            result = await agent._process_react_loop(inp)
+            result = await agent._process_langgraph(inp)
 
         MockAudit.log_decision.assert_called()
 

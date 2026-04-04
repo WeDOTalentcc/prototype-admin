@@ -52,7 +52,7 @@ class TestMultiTenantIsolation:
         """AuditService.log_decision em sourcing deve incluir company_id."""
         import inspect
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        src = inspect.getsource(SourcingReActAgent._process_react_loop)
+        src = inspect.getsource(SourcingReActAgent._process_langgraph)
         assert "company_id" in src
 
     def test_rag_search_requires_company_id(self):

@@ -104,7 +104,7 @@ class TestAuditTrailIntegrity:
         """sourcing_react_agent deve gerar audit ao score candidatos."""
         import inspect
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        src = inspect.getsource(SourcingReActAgent._process_react_loop)
+        src = inspect.getsource(SourcingReActAgent._process_langgraph)
         assert "audit_service" in src
 
     def test_pipeline_generates_audit_on_transition(self):

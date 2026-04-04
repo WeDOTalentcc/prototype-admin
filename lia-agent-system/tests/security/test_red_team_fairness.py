@@ -179,5 +179,5 @@ class TestFairnessLayer3Integration:
         """sourcing_react_agent deve usar check_with_layer3 no output."""
         import inspect
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
-        src = inspect.getsource(SourcingReActAgent._process_react_loop)
+        src = inspect.getsource(SourcingReActAgent._process_langgraph)
         assert "check_with_layer3" in src

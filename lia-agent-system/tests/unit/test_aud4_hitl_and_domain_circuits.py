@@ -119,14 +119,11 @@ class TestSourcingHITL:
         mock_output = MagicMock()
 
         with (
-            patch.object(agent, "_process_react_loop", return_value=mock_output) as mock_loop,
+            patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=mock_output)) as mock_loop,
             patch("app.services.hitl_service.hitl_service") as mock_hitl,
         ):
             mock_hitl.request_approval = AsyncMock()
-            # settings.USE_LANGGRAPH_NATIVE = False so it uses _process_react_loop
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                result = await agent.process(inp)
+            result = await agent.process(inp)
 
         mock_hitl.request_approval.assert_not_called()
         mock_loop.assert_called_once()
@@ -140,13 +137,11 @@ class TestSourcingHITL:
         inp = self._make_input("sim", stage="talent-search")
 
         with (
-            patch.object(agent, "_process_react_loop", return_value=MagicMock()) as mock_loop,
+            patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=MagicMock())) as mock_loop,
             patch("app.services.hitl_service.hitl_service") as mock_hitl,
         ):
             mock_hitl.request_approval = AsyncMock()
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                await agent.process(inp)
+            await agent.process(inp)
 
         mock_hitl.request_approval.assert_not_called()
 
@@ -160,12 +155,10 @@ class TestSourcingHITL:
 
         with (
             patch("app.services.hitl_service.hitl_service") as mock_hitl,
-            patch.object(agent, "_process_react_loop", return_value=MagicMock()) as mock_loop,
+            patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=MagicMock())) as mock_loop,
         ):
             mock_hitl.request_approval = AsyncMock(side_effect=Exception("Redis unavailable"))
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                result = await agent.process(inp)
+            result = await agent.process(inp)
 
         # fail-open: loop is still called
         mock_loop.assert_called_once()
@@ -179,13 +172,11 @@ class TestSourcingHITL:
         inp = self._make_input("quais candidatos estão disponíveis?", stage="outreach")
 
         with (
-            patch.object(agent, "_process_react_loop", return_value=MagicMock()) as mock_loop,
+            patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=MagicMock())) as mock_loop,
             patch("app.services.hitl_service.hitl_service") as mock_hitl,
         ):
             mock_hitl.request_approval = AsyncMock()
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                await agent.process(inp)
+            await agent.process(inp)
 
         mock_hitl.request_approval.assert_not_called()
         mock_loop.assert_called_once()
@@ -268,13 +259,11 @@ class TestCommunicationHITL:
         inp = self._make_input("initial_contact", hitl_approved=True)
 
         with (
-            patch.object(agent, "_process_react_loop", return_value=MagicMock()) as mock_loop,
+            patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=MagicMock())) as mock_loop,
             patch("app.services.hitl_service.hitl_service") as mock_hitl,
         ):
             mock_hitl.request_approval = AsyncMock()
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                await agent.process(inp)
+            await agent.process(inp)
 
         mock_hitl.request_approval.assert_not_called()
         mock_loop.assert_called_once()
@@ -288,13 +277,11 @@ class TestCommunicationHITL:
         inp = self._make_input("general")
 
         with (
-            patch.object(agent, "_process_react_loop", return_value=MagicMock()) as mock_loop,
+            patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=MagicMock())) as mock_loop,
             patch("app.services.hitl_service.hitl_service") as mock_hitl,
         ):
             mock_hitl.request_approval = AsyncMock()
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                await agent.process(inp)
+            await agent.process(inp)
 
         mock_hitl.request_approval.assert_not_called()
 
@@ -318,12 +305,10 @@ class TestCommunicationHITL:
 
         with (
             patch("app.services.hitl_service.hitl_service") as mock_hitl,
-            patch.object(agent, "_process_react_loop", return_value=MagicMock()) as mock_loop,
+            patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=MagicMock())) as mock_loop,
         ):
             mock_hitl.request_approval = AsyncMock(side_effect=Exception("HITL service down"))
-            with patch("app.core.config.settings") as mock_settings:
-                mock_settings.USE_LANGGRAPH_NATIVE = False
-                await agent.process(inp)
+            await agent.process(inp)
 
         mock_loop.assert_called_once()
 

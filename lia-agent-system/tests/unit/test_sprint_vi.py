@@ -123,11 +123,11 @@ class TestInterviewGraphAuditLangGraph:
 
         assert result is not None
 
-    def test_legacy_path_already_has_audit(self):
-        """Legacy path (_invoke_legacy) já tem audit_service (regressão)."""
+    def test_langgraph_path_has_audit(self):
+        """LangGraph path (_invoke_langgraph) tem audit_service."""
         import inspect
         from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
-        source = inspect.getsource(InterviewGraph._invoke_legacy)
+        source = inspect.getsource(InterviewGraph._invoke_langgraph)
         assert "audit_service" in source
         assert "log_decision" in source
         assert "schedule_interview" in source

@@ -2,14 +2,12 @@
 LangGraph Checkpointer — persistência de estado entre turnos.
 
 Suporta dois modos:
-1. MemorySaver (padrão dev) — in-process, perdido ao reiniciar
+1. MemorySaver (dev) — in-process, perdido ao reiniciar
 2. PostgresSaver (produção) — persiste no PostgreSQL via tabelas nativas LangGraph
 
-Selecionado pela flag USE_LANGGRAPH_NATIVE:
-  False → MemorySaver (sem deps extras)
-  True  → tenta PostgresSaver; comportamento em falha depende de APP_ENV:
-           - dev: WARNING + fallback para MemorySaver
-           - production: RuntimeError (checkpoints não podem se perder silenciosamente)
+Selecionado pelo ambiente (APP_ENV):
+  production → PostgresSaver obrigatório; RuntimeError se indisponível
+  outros     → PostgresSaver preferido; fallback para MemorySaver com WARNING
 
 Uso:
     saver = get_checkpointer()
@@ -27,18 +25,12 @@ def get_checkpointer() -> Any:
     """
     Retorna o checkpointer adequado ao ambiente.
 
-    Em produção (APP_ENV=production + USE_LANGGRAPH_NATIVE=True):
+    Em produção (APP_ENV=production):
       - PostgresSaver obrigatório; RuntimeError se indisponível.
 
-    Em desenvolvimento (USE_LANGGRAPH_NATIVE=True, APP_ENV!=production):
+    Em desenvolvimento (APP_ENV!=production):
       - PostgresSaver preferido; fallback para MemorySaver com WARNING explícito.
-
-    Com USE_LANGGRAPH_NATIVE=False:
-      - Sempre MemorySaver (checkpointer da Fase 2 legado).
     """
-    if not settings.USE_LANGGRAPH_NATIVE:
-        return _memory_saver()
-
     try:
         return _postgres_saver()
     except Exception as exc:
@@ -49,7 +41,6 @@ def get_checkpointer() -> Any:
                 f"em restarts. Corrija a configuração DATABASE_URL ou verifique "
                 f"langgraph-checkpoint-postgres. Causa: {exc}"
             ) from exc
-        # Dev/staging: WARNING explícito + fallback
         logger.warning(
             "[Checkpointer] PostgresSaver indisponível em ambiente '%s' (razão: %s). "
             "Usando MemorySaver — checkpoints NÃO persistem entre restarts. "
@@ -88,7 +79,6 @@ def _postgres_saver() -> Any:
             "Execute: pip install langgraph-checkpoint-postgres>=2.0.0"
         ) from exc
 
-    # Converte URL asyncpg → psycopg2 sync (PostgresSaver usa psycopg2)
     db_url = settings.DATABASE_URL
     sync_url = (
         db_url
@@ -98,7 +88,7 @@ def _postgres_saver() -> Any:
 
     try:
         saver = PostgresSaver.from_conn_string(sync_url)
-        saver.setup()  # cria tabelas se não existirem (idempotente)
+        saver.setup()
         logger.info(
             "[Checkpointer] PostgresSaver (langgraph-checkpoint-postgres) ativo — "
             "checkpoints persistem entre restarts"

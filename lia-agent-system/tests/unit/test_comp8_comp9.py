@@ -39,7 +39,6 @@ class TestBypassGate1:
         )
 
         with patch("app.shared.compliance.fairness_guard.FairnessGuard") as MockFG, \
-             patch.object(agent, "_process_react_loop", new=AsyncMock(return_value=expected)), \
              patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=expected)), \
              patch("app.services.hitl_service.hitl_service") as MockHITL:
 
@@ -82,7 +81,6 @@ class TestBypassGate1:
         )
 
         with patch("app.shared.compliance.fairness_guard.FairnessGuard") as MockFG, \
-             patch.object(agent, "_process_react_loop", new=AsyncMock(return_value=expected)), \
              patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=expected)), \
              patch("app.services.hitl_service.hitl_service") as MockHITL:
 

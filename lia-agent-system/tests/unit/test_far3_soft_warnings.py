@@ -28,21 +28,16 @@ class TestSoftWarningsPropagation:
             metadata={"duration_ms": 100.0},
         )
 
-        with patch.object(agent, '_process_react_loop', new_callable=AsyncMock, return_value=mock_output):
-            with patch.object(agent, '_process_langgraph', new_callable=AsyncMock, return_value=mock_output):
-                with patch('app.core.config.settings') as mock_settings:
-                    mock_settings.USE_LANGGRAPH_NATIVE = False
-
-                    agent_input = AgentInput(
-                        message="buscar candidatos de bairros nobres para a vaga",
-                        context={},
-                        session_id="test-session",
-                        company_id="test-company",
-                        user_id="test-user",
-                        conversation_history=[],
-                    )
-
-                    result = await agent.process(agent_input)
+        with patch.object(agent, '_process_langgraph', new_callable=AsyncMock, return_value=mock_output):
+            agent_input = AgentInput(
+                message="buscar candidatos de bairros nobres para a vaga",
+                context={},
+                session_id="test-session",
+                company_id="test-company",
+                user_id="test-user",
+                conversation_history=[],
+            )
+            result = await agent.process(agent_input)
 
         # O output deve ter fairness_warnings no metadata
         assert "fairness_warnings" in result.metadata
@@ -64,21 +59,16 @@ class TestSoftWarningsPropagation:
             metadata={},
         )
 
-        with patch.object(agent, '_process_react_loop', new_callable=AsyncMock, return_value=mock_output):
-            with patch.object(agent, '_process_langgraph', new_callable=AsyncMock, return_value=mock_output):
-                with patch('app.core.config.settings') as mock_settings:
-                    mock_settings.USE_LANGGRAPH_NATIVE = False
-
-                    agent_input = AgentInput(
-                        message="mover candidatos de bairros nobres para próxima fase",
-                        context={"action_behavior": "passive"},
-                        session_id="test-session",
-                        company_id="test-company",
-                        user_id="test-user",
-                        conversation_history=[],
-                    )
-
-                    result = await agent.process(agent_input)
+        with patch.object(agent, '_process_langgraph', new_callable=AsyncMock, return_value=mock_output):
+            agent_input = AgentInput(
+                message="mover candidatos de bairros nobres para próxima fase",
+                context={"action_behavior": "passive"},
+                session_id="test-session",
+                company_id="test-company",
+                user_id="test-user",
+                conversation_history=[],
+            )
+            result = await agent.process(agent_input)
 
         assert "fairness_warnings" in result.metadata
         assert len(result.metadata["fairness_warnings"]) > 0
@@ -97,21 +87,16 @@ class TestSoftWarningsPropagation:
             metadata={},
         )
 
-        with patch.object(agent, '_process_react_loop', new_callable=AsyncMock, return_value=mock_output):
-            with patch.object(agent, '_process_langgraph', new_callable=AsyncMock, return_value=mock_output):
-                with patch('app.core.config.settings') as mock_settings:
-                    mock_settings.USE_LANGGRAPH_NATIVE = False
-
-                    agent_input = AgentInput(
-                        message="buscar desenvolvedor Python sênior com 5 anos de experiência",
-                        context={},
-                        session_id="test-session",
-                        company_id="test-company",
-                        user_id="test-user",
-                        conversation_history=[],
-                    )
-
-                    result = await agent.process(agent_input)
+        with patch.object(agent, '_process_langgraph', new_callable=AsyncMock, return_value=mock_output):
+            agent_input = AgentInput(
+                message="buscar desenvolvedor Python sênior com 5 anos de experiência",
+                context={},
+                session_id="test-session",
+                company_id="test-company",
+                user_id="test-user",
+                conversation_history=[],
+            )
+            result = await agent.process(agent_input)
 
         # Sem warnings, o campo pode estar ausente ou vazio
         warnings = result.metadata.get("fairness_warnings", []) if result.metadata else []

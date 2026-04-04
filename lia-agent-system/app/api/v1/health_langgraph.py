@@ -1,10 +1,10 @@
 """
-Health endpoint — status da migração LangGraph nativa.
+Health endpoint — status da camada LangGraph nativa.
 
 GET /api/v1/health/langgraph
 
 Retorna:
-- flag USE_LANGGRAPH_NATIVE e tipo de checkpointer ativo
+- tipo de checkpointer ativo
 - status de compilação dos 3 graph agents migrados
 - latência de cada compilação (lazy — compilado no primeiro request)
 
@@ -27,14 +27,13 @@ router = APIRouter(tags=["health"])
 
 class GraphHealthItem(BaseModel):
     name: str
-    status: str          # "ok" | "error" | "skipped"
+    status: str          # "ok" | "error"
     checkpointer: str
     compile_ms: Optional[float] = None
     error: Optional[str] = None
 
 
 class LangGraphHealthResponse(BaseModel):
-    use_langgraph_native: bool
     checkpointer_type: str
     graphs: List[GraphHealthItem]
     overall: str         # "ok" | "degraded" | "error"
@@ -71,9 +70,9 @@ def _probe_graph(name: str, factory) -> GraphHealthItem:
 @router.get(
     "/health/langgraph",
     response_model=LangGraphHealthResponse,
-    summary="Status da migração LangGraph nativa",
+    summary="Status da camada LangGraph nativa",
     description=(
-        "Verifica o estado do feature flag USE_LANGGRAPH_NATIVE e tenta compilar "
+        "Verifica o tipo de checkpointer ativo e tenta compilar "
         "os 3 graph agents migrados. Acesso restrito a administradores."
     ),
 )
@@ -86,7 +85,6 @@ async def langgraph_health(
     Segurança: requer header X-Admin-Key configurado em settings.ADMIN_API_KEY,
     ou o endpoint estará desabilitado em produção (settings.DEBUG=False).
     """
-    # --- Auth guard ---
     admin_key = getattr(settings, "ADMIN_API_KEY", None)
     debug_mode = getattr(settings, "DEBUG", False)
 
@@ -97,7 +95,6 @@ async def langgraph_health(
                 detail="Admin key required for this endpoint.",
             )
 
-    # --- Checkpointer type ---
     try:
         from app.shared.agents.checkpointer import get_checkpointer
         cp = get_checkpointer()
@@ -105,44 +102,29 @@ async def langgraph_health(
     except Exception as exc:
         cp_type = f"error:{exc}"
 
-    # --- Probe each graph ---
     graphs: List[GraphHealthItem] = []
 
-    if settings.USE_LANGGRAPH_NATIVE:
-        # InterviewGraph
-        def _interview_factory():
-            from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
-            g = InterviewGraph()
-            return g._build_langgraph()
+    def _interview_factory():
+        from app.domains.interview_scheduling.agents.interview_graph import InterviewGraph
+        g = InterviewGraph()
+        return g._build_langgraph()
 
-        graphs.append(_probe_graph("InterviewGraph", _interview_factory))
+    graphs.append(_probe_graph("InterviewGraph", _interview_factory))
 
-        # WSIInterviewGraph
-        def _wsi_factory():
-            from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
-            g = WSIInterviewGraph()
-            return g._build_langgraph()
+    def _wsi_factory():
+        from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewGraph
+        g = WSIInterviewGraph()
+        return g._build_langgraph()
 
-        graphs.append(_probe_graph("WSIInterviewGraph", _wsi_factory))
+    graphs.append(_probe_graph("WSIInterviewGraph", _wsi_factory))
 
-        # JobWizardGraph
-        def _wizard_factory():
-            from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-            g = JobWizardGraph()
-            return g._build_langgraph()
+    def _wizard_factory():
+        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
+        g = JobWizardGraph()
+        return g._build_langgraph()
 
-        graphs.append(_probe_graph("JobWizardGraph", _wizard_factory))
-    else:
-        # Flag desativado — graphs não são compilados, retornar como skipped
-        for name in ("InterviewGraph", "WSIInterviewGraph", "JobWizardGraph"):
-            graphs.append(GraphHealthItem(
-                name=name,
-                status="skipped",
-                checkpointer=cp_type,
-                error="USE_LANGGRAPH_NATIVE=False — LangGraph path not active",
-            ))
+    graphs.append(_probe_graph("JobWizardGraph", _wizard_factory))
 
-    # --- Overall status ---
     error_count = sum(1 for g in graphs if g.status == "error")
     if error_count == 0:
         overall = "ok"
@@ -152,7 +134,6 @@ async def langgraph_health(
         overall = "error"
 
     return LangGraphHealthResponse(
-        use_langgraph_native=settings.USE_LANGGRAPH_NATIVE,
         checkpointer_type=cp_type,
         graphs=graphs,
         overall=overall,

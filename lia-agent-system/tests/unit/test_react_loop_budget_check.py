@@ -1,14 +1,11 @@
 """
 P0-D — Testes do pre-call budget check em ReActLoop.run().
 
-Cobre:
-1. Limite excedido → retorna resposta imediata sem chamar LLM
-2. Dentro do limite → prossegue normalmente para o loop
-3. Serviço indisponível (exception) → fail-safe, prossegue
-4. company_id ausente no context → skip do check (sem error)
-5. REACT_TOKEN_BUDGET_ENABLED=False → check não é executado
+SKIPPED: ReActLoop foi removido — agentes usam LangGraph nativo (create_react_agent).
+Budget check agora é responsabilidade da camada LangGraphReActBase.
 """
 import pytest
+pytestmark = pytest.mark.skip(reason="ReActLoop removido — agentes usam LangGraph nativo")
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from lia_agents_core.react_loop import ReActConfig, ReActLoop, ToolDefinition

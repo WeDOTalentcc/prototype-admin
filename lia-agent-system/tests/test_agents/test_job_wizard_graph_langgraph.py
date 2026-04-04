@@ -251,16 +251,14 @@ class TestJobWizardInvokeLangGraph:
         assert config["configurable"]["thread_id"] == "sess-wizard-lg-001"
 
     @pytest.mark.asyncio
-    async def test_invoke_langgraph_falls_back_on_build_error(self):
+    async def test_invoke_langgraph_raises_on_build_error(self):
         from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
         g = JobWizardGraph()
         g._compiled_lg = None
 
         with patch.object(g, "_build_langgraph", side_effect=RuntimeError("no lg")):
-            with patch.object(g, "_invoke_legacy", new_callable=AsyncMock) as mock_legacy:
-                mock_legacy.return_value = _make_state()
+            with pytest.raises(RuntimeError, match="no lg"):
                 await g._invoke_langgraph(_make_state())
-                mock_legacy.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_invoke_langgraph_sets_error_on_ainvoke_failure(self):
@@ -280,45 +278,28 @@ class TestJobWizardInvokeLangGraph:
 # Section 4: dual-path invoke()
 # ---------------------------------------------------------------------------
 
-class TestJobWizardDualPath:
+class TestJobWizardInvoke:
 
     @pytest.mark.asyncio
-    async def test_flag_false_calls_legacy(self):
+    async def test_invoke_calls_langgraph_by_default(self):
+        """invoke() sem start_node customizado delega para _invoke_langgraph."""
         from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
         g = JobWizardGraph()
         state = _make_state()
 
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = False
-            with patch.object(g, "_invoke_legacy", new_callable=AsyncMock) as mock_legacy:
-                mock_legacy.return_value = state
-                await g.invoke(state)
-                mock_legacy.assert_called_once()
+        with patch.object(g, "_invoke_langgraph", new_callable=AsyncMock) as mock_lg:
+            mock_lg.return_value = state
+            await g.invoke(state)
+            mock_lg.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_flag_true_calls_langgraph(self):
+    async def test_custom_start_node_still_uses_langgraph(self):
+        """invoke() com start_node customizado também delega para _invoke_langgraph."""
         from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
         g = JobWizardGraph()
         state = _make_state()
 
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
-            with patch.object(g, "_invoke_langgraph", new_callable=AsyncMock) as mock_lg:
-                mock_lg.return_value = state
-                await g.invoke(state)
-                mock_lg.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_custom_start_node_falls_back_to_legacy(self):
-        """Quando start_node != START_NODE, força legado mesmo com flag=True."""
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        g = JobWizardGraph()
-        state = _make_state()
-
-        with patch("app.core.config.settings") as mock_settings:
-            mock_settings.USE_LANGGRAPH_NATIVE = True
-            with patch.object(g, "_invoke_legacy", new_callable=AsyncMock) as mock_legacy:
-                mock_legacy.return_value = state
-                # Passar start_node diferente de g.START_NODE ("intent_classifier")
-                await g.invoke(state, start_node="field_extractor")
-                mock_legacy.assert_called_once()
+        with patch.object(g, "_invoke_langgraph", new_callable=AsyncMock) as mock_lg:
+            mock_lg.return_value = state
+            await g.invoke(state, start_node="field_extractor")
+            mock_lg.assert_called_once()

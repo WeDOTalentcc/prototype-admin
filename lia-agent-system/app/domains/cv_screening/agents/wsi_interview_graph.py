@@ -851,66 +851,6 @@ class WSIInterviewGraph:
         self._compiled_lg: Optional[Any] = None  # LangGraph compiled graph (lazy init)
         logger.info("[WSIInterviewGraph] Initialized")
 
-    async def _run_node(
-        self,
-        node_name: str,
-        node_fn,
-        state: WSIInterviewState,
-        *args,
-        audit_callback=None,
-    ) -> WSIInterviewState:
-        """Executa um nó com logging auditável (BCB 498 / SOX)."""
-        t0 = time.perf_counter()
-        try:
-            logger.info(
-                f"[WSIInterviewGraph] node_start node={node_name}",
-                extra={"session_id": state.session_id, "node": node_name, "graph": "WSIInterviewGraph"},
-            )
-            result = await node_fn(state, *args)
-            elapsed_ms = int((time.perf_counter() - t0) * 1000)
-            logger.info(
-                f"[WSIInterviewGraph] node_end node={node_name} elapsed_ms={elapsed_ms}",
-                extra={
-                    "session_id": state.session_id,
-                    "node": node_name,
-                    "elapsed_ms": elapsed_ms,
-                    "graph": "WSIInterviewGraph",
-                },
-            )
-            if audit_callback:
-                audit_callback.on_tool_call(
-                    tool_name=node_name,
-                    input_preview=f"stage={state.stage.value}",
-                    output_preview=f"result_stage={result.stage.value}",
-                    latency_ms=float(elapsed_ms),
-                    success=True,
-                )
-            return result
-        except Exception as exc:
-            elapsed_ms = int((time.perf_counter() - t0) * 1000)
-            logger.error(
-                f"[WSIInterviewGraph] node_error node={node_name} elapsed_ms={elapsed_ms}: {exc}",
-                extra={
-                    "session_id": state.session_id,
-                    "node": node_name,
-                    "elapsed_ms": elapsed_ms,
-                    "error": str(exc),
-                    "graph": "WSIInterviewGraph",
-                },
-                exc_info=True,
-            )
-            if audit_callback:
-                audit_callback.on_tool_call(
-                    tool_name=node_name,
-                    input_preview=f"stage={state.stage.value}",
-                    output_preview="error",
-                    latency_ms=float(elapsed_ms),
-                    success=False,
-                    error=str(exc),
-                )
-            state.error = str(exc)
-            state.stage = WSIInterviewStage.ERROR
-            return state
 
     def create_session(
         self,
@@ -1045,11 +985,7 @@ class WSIInterviewGraph:
     ) -> WSIInterviewState:
         """Inicia sessão via StateGraph nativo (operation='start')."""
         if self._compiled_lg is None:
-            try:
-                self._compiled_lg = self._build_langgraph()
-            except Exception as exc:
-                logger.warning(f"[WSIInterviewGraph] LangGraph build failed: {exc}")
-                return await self._start_legacy(state, audit_callback)
+            self._compiled_lg = self._build_langgraph()
 
         lg_input = {
             "wsi_data": _wsi_state_to_dict(state),
@@ -1065,7 +1001,9 @@ class WSIInterviewGraph:
             return _wsi_state_from_dict(wsi_data) if wsi_data else state
         except Exception as exc:
             logger.error(f"[WSIInterviewGraph] LangGraph start failed: {exc}", exc_info=True)
-            return await self._start_legacy(state, audit_callback)
+            state.error = str(exc)
+            state.stage = WSIInterviewStage.ERROR
+            return state
 
     async def _submit_response_langgraph(
         self,
@@ -1075,11 +1013,7 @@ class WSIInterviewGraph:
     ) -> WSIInterviewState:
         """Processa resposta via StateGraph nativo (operation='submit')."""
         if self._compiled_lg is None:
-            try:
-                self._compiled_lg = self._build_langgraph()
-            except Exception as exc:
-                logger.warning(f"[WSIInterviewGraph] LangGraph build failed: {exc}")
-                return await self._submit_response_legacy(state, candidate_response, audit_callback)
+            self._compiled_lg = self._build_langgraph()
 
         lg_input = {
             "wsi_data": _wsi_state_to_dict(state),
@@ -1144,89 +1078,25 @@ class WSIInterviewGraph:
             return _wsi_state_from_dict(wsi_data) if wsi_data else state
         except Exception as exc:
             logger.error(f"[WSIInterviewGraph] LangGraph submit failed: {exc}", exc_info=True)
-            return await self._submit_response_legacy(state, candidate_response, audit_callback)
+            state.error = str(exc)
+            state.stage = WSIInterviewStage.ERROR
+            return state
 
     # ------------------------------------------------------------------
-    # Dual-path public API
+    # Public API
     # ------------------------------------------------------------------
 
     async def start(
         self, state: WSIInterviewState, audit_callback=None
     ) -> WSIInterviewState:
-        """Dual-path: LangGraph nativo (USE_LANGGRAPH_NATIVE=True) ou legado."""
-        from app.core.config import settings
-        if settings.USE_LANGGRAPH_NATIVE:
-            return await self._start_langgraph(state, audit_callback)
-        return await self._start_legacy(state, audit_callback)
+        """Inicia sessão via LangGraph nativo."""
+        return await self._start_langgraph(state, audit_callback)
 
     async def submit_response(
         self, state: WSIInterviewState, candidate_response: str, audit_callback=None
     ) -> WSIInterviewState:
-        """Dual-path: LangGraph nativo (USE_LANGGRAPH_NATIVE=True) ou legado."""
-        from app.core.config import settings
-        if settings.USE_LANGGRAPH_NATIVE:
-            return await self._submit_response_langgraph(state, candidate_response, audit_callback)
-        return await self._submit_response_legacy(state, candidate_response, audit_callback)
-
-    @_traceable(name="WSIInterviewGraph._start_legacy", run_type="chain")
-    async def _start_legacy(
-        self, state: WSIInterviewState, audit_callback=None
-    ) -> WSIInterviewState:
-        """Inicia a sessão: carrega contexto e apresenta a primeira pergunta."""
-        if audit_callback:
-            audit_callback.on_chain_start_manual()
-        state = await self._run_node("load_context", self.nodes.load_context, state, audit_callback=audit_callback)
-        if not state.is_complete:
-            state = await self._run_node("generate_question", self.nodes.generate_question, state, audit_callback=audit_callback)
-        if audit_callback and state.is_complete:
-            await audit_callback.on_chain_end_manual(
-                confidence=0.9, success=not bool(state.error), error=state.error
-            )
-        return state
-
-    @_traceable(name="WSIInterviewGraph._submit_response_legacy", run_type="chain")
-    async def _submit_response_legacy(
-        self, state: WSIInterviewState, candidate_response: str, audit_callback=None
-    ) -> WSIInterviewState:
-        """Processa a resposta do candidato e avança para o próximo estado (legado).
-
-        Retorna o estado atualizado. Se `state.awaiting_response` for True após
-        o retorno, apresenta `state.current_question.question` para o candidato.
-        Se `state.is_complete`, a entrevista foi encerrada.
-        """
-        if state.is_complete:
-            return state
-
-        if not state.awaiting_response:
-            logger.warning(
-                f"[WSIInterviewGraph] submit_response called but not awaiting_response "
-                f"(session={state.session_id})"
-            )
-            return state
-
-        # validate → score (ou skip) → advance → generate_question (ou feedback)
-        state = await self._run_node(
-            "validate_response", self.nodes.validate_response, state, candidate_response, audit_callback=audit_callback
-        )
-
-        if state.stage == WSIInterviewStage.SCORE_RESPONSE:
-            state = await self._run_node("score_response", self.nodes.score_response, state, audit_callback=audit_callback)
-
-        if state.stage == WSIInterviewStage.ADVANCE:
-            state = await self._run_node("advance", self.nodes.advance, state, audit_callback=audit_callback)
-
-        if state.stage == WSIInterviewStage.GENERATE_QUESTION:
-            state = await self._run_node("generate_question", self.nodes.generate_question, state, audit_callback=audit_callback)
-        elif state.stage == WSIInterviewStage.GENERATE_FEEDBACK:
-            state = await self._run_node("generate_feedback", self.nodes.generate_feedback, state, audit_callback=audit_callback)
-
-        if audit_callback and state.is_complete:
-            await audit_callback.on_chain_end_manual(
-                confidence=0.9 if not state.error else 0.3,
-                success=not bool(state.error),
-                error=state.error,
-            )
-        return state
+        """Submete resposta do candidato via LangGraph nativo."""
+        return await self._submit_response_langgraph(state, candidate_response, audit_callback)
 
     def get_session_summary(self, state: WSIInterviewState) -> Dict[str, Any]:
         """Retorna resumo auditável da sessão (para compliance e relatórios)."""

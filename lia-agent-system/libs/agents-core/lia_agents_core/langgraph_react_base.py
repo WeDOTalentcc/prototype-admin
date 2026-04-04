@@ -1,18 +1,14 @@
 """
-LangGraph ReAct Base — base para agentes ReAct migrados para LangGraph nativo.
+LangGraph ReAct Base — base para agentes ReAct nativos LangGraph.
 
 Usa create_react_agent() do LangGraph prebuilt com:
 - AuditCallback injetado via config["callbacks"] (automático)
 - TimedToolNode para métricas de tool calls
-- MemorySaver/PostgresSaver para persistência entre turnos
+- PostgresSaver/MemorySaver para persistência entre turnos
 - Interface compatível com AgentInput/AgentOutput
 
-Feature flag USE_LANGGRAPH_NATIVE:
-  False → subclasse delega para ReActLoop customizado (react_loop.py)
-  True  → usa create_react_agent nativo (este base)
-
-Migração gradual: cada agente verifica a flag em process() e decide
-qual implementação usar.
+Migração concluída: react_loop.py legado removido.
+Todos os agentes ReAct herdam desta classe sem path alternativo.
 """
 import logging
 from typing import Any, Dict, List, Optional
@@ -45,12 +41,7 @@ class LangGraphReActBase(LangGraphBase):
     - _get_model() → Any (LangChain LLM)
     - _get_system_prompt(input) → str
     - _state_to_output(state, input) → AgentOutput
-    - process() — decide entre LangGraph nativo ou ReActLoop legado
-
-    Uso padrão em process():
-        if settings.USE_LANGGRAPH_NATIVE:
-            return await self._process_langgraph(input)
-        return await self._process_react_loop(input)  # legado
+    - process() → AgentOutput (chama _process_langgraph)
 
     LIA-C04: PII auto-sanitization em mensagens antes do LLM.
     Subclasses podem setar `_enable_pii_strip = False` apenas em casos excepcionais
@@ -298,7 +289,6 @@ class LangGraphReActBase(LangGraphBase):
         # --- Post-loop learning (EnhancedAgentMixin) ---
         if hasattr(self, "_post_loop_learning"):
             try:
-                # Cria ReActState sintético para compatibilidade com learning extractor
                 from lia_agents_core.react_loop import ReActState
                 synth_state = ReActState(
                     final_response=output.message,
