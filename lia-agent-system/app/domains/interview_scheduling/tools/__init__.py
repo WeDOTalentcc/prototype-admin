@@ -72,7 +72,7 @@ INTERVIEW_SCHEDULING_TOOLS = [
     {
         "tool_id": "scheduling_transcribe_audio",
         "name": "Transcrever Áudio",
-        "description": "Transcreve áudio de entrevista usando Gemini STT",
+        "description": "Transcreve áudio de entrevista usando OpenAI Whisper STT",
         "handler": "app.services.voice_service.voice_service.transcribe_audio",
     },
     {
