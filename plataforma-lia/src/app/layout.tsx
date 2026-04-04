@@ -10,7 +10,6 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { Toaster as SonnerToaster } from "sonner"
 import { LiaFloatProvider } from "@/contexts/lia-float-context"
 import { LiaFloatConditional } from "@/components/lia-float/LiaFloatConditional"
-import { CookieConsent } from "@/components/ui/cookie-consent"
 
 
 const inter = Inter({
@@ -119,7 +118,6 @@ export default function RootLayout({
             </LiaFloatProvider>
           </JWTAuthProvider>
         </ThemeProvider>
-        <CookieConsent />
       </body>
     </html>
   );

@@ -5,7 +5,6 @@
 
 // Chaves que devem ser preservadas após logout (ex: preferências de UI)
 const PRESERVED_KEYS = [
-  'lia-cookie-consent',    // consentimento de cookies (permanente)
   'theme',                  // preferência de tema
 ]
 
