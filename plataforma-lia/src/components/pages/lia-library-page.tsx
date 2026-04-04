@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
+import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -135,30 +136,13 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
-  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const liaFavoritesArray = useUIPreferencesStore((s) => s.liaFavorites)
+  const toggleLiaFavorite = useUIPreferencesStore((s) => s.toggleLiaFavorite)
+  const favorites = useMemo(() => new Set(liaFavoritesArray), [liaFavoritesArray])
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem('liaFavorites')
-    if (savedFavorites) {
-      setFavorites(new Set(JSON.parse(savedFavorites)))
-    }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('liaFavorites', JSON.stringify(Array.from(favorites)))
-  }, [favorites])
-
   const toggleFavorite = (id: string) => {
-    setFavorites(prev => {
-      const newFavorites = new Set(prev)
-      if (newFavorites.has(id)) {
-        newFavorites.delete(id)
-      } else {
-        newFavorites.add(id)
-      }
-      return newFavorites
-    })
+    toggleLiaFavorite(id)
   }
 
   const copyCommand = (id: string, command: string) => {

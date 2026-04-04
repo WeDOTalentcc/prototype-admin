@@ -1,3 +1,6 @@
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+import type { StoredGlobalSearchSettings } from "@/stores/ui-preferences-store"
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
 
 // TODO: For production multi-tenancy, pass company_id from user session/auth context
@@ -29,11 +32,9 @@ export interface GlobalSearchSettingsUpdate {
   global_search_enabled?: boolean
 }
 
-const STORAGE_KEY = 'globalSearchSettings'
-
-function saveToLocalStorage(settings: GlobalSearchSettings): void {
+function saveToStore(settings: GlobalSearchSettings): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    useUIPreferencesStore.getState().setGlobalSearchSettingsCache({
       defaultLimit: settings.default_limit,
       searchType: settings.search_type,
       showEmails: settings.show_emails,
@@ -42,25 +43,24 @@ function saveToLocalStorage(settings: GlobalSearchSettings): void {
       autoExpandGlobal: settings.auto_expand_global,
       confirmBeforeSearch: settings.confirm_before_search,
       globalSearchEnabled: settings.global_search_enabled
-    }))
+    })
   } catch (e) {
   }
 }
 
-function loadFromLocalStorage(): GlobalSearchSettings | null {
+function loadFromStore(): GlobalSearchSettings | null {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      const parsed = JSON.parse(stored)
+    const cached: StoredGlobalSearchSettings | null = useUIPreferencesStore.getState().globalSearchSettingsCache
+    if (cached) {
       return {
-        default_limit: parsed.defaultLimit ?? 50,
-        search_type: parsed.searchType ?? 'fast',
-        show_emails: parsed.showEmails ?? false,
-        show_phone_numbers: parsed.showPhoneNumbers ?? false,
-        high_freshness: parsed.highFreshness ?? false,
-        auto_expand_global: parsed.autoExpandGlobal ?? false,
-        confirm_before_search: parsed.confirmBeforeSearch ?? true,
-        global_search_enabled: parsed.globalSearchEnabled ?? true
+        default_limit: cached.defaultLimit ?? 50,
+        search_type: cached.searchType ?? 'fast',
+        show_emails: cached.showEmails ?? false,
+        show_phone_numbers: cached.showPhoneNumbers ?? false,
+        high_freshness: cached.highFreshness ?? false,
+        auto_expand_global: cached.autoExpandGlobal ?? false,
+        confirm_before_search: cached.confirmBeforeSearch ?? true,
+        global_search_enabled: cached.globalSearchEnabled ?? true
       }
     }
   } catch (e) {
@@ -73,7 +73,7 @@ export async function getGlobalSearchSettings(): Promise<GlobalSearchSettings> {
     const response = await fetch(`${API_BASE}/api/backend-proxy/company/global-search-settings`)
     
     if (!response.ok) {
-      const cachedSettings = loadFromLocalStorage()
+      const cachedSettings = loadFromStore()
       if (cachedSettings) {
         return cachedSettings
       }
@@ -81,10 +81,10 @@ export async function getGlobalSearchSettings(): Promise<GlobalSearchSettings> {
     }
     
     const settings = await response.json()
-    saveToLocalStorage(settings)
+    saveToStore(settings)
     return settings
   } catch (error) {
-    const cachedSettings = loadFromLocalStorage()
+    const cachedSettings = loadFromStore()
     if (cachedSettings) {
       return cachedSettings
     }
@@ -127,7 +127,7 @@ export async function updateGlobalSearchSettings(
     }
 
     const settings = await response.json()
-    saveToLocalStorage(settings)
+    saveToStore(settings)
     
     window.dispatchEvent(new CustomEvent('globalSearchSettingsUpdate', { 
       detail: {

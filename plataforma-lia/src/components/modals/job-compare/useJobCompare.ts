@@ -434,35 +434,6 @@ export function useJobCompare(jobs: JobCompareItem[]) {
     }
   }
 
-      const shareData = {
-        title: "Comparativo de Vagas - WedoTalent",
-        text: `Comparativo de ${jobs.length} vagas`,
-        files: [file],
-      }
-
-      if (navigator.share && navigator.canShare(shareData)) {
-        await navigator.share(shareData)
-        toast.success("PDF compartilhado", { description: "Relatório enviado com sucesso." })
-      } else {
-        const url = URL.createObjectURL(pdfBlob)
-        const a = document.createElement("a")
-        a.href = url
-        a.download = fileName
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-        toast.success("PDF baixado", { description: "Compartilhamento não suportado. Arquivo baixado." })
-      }
-    } catch (error) {
-      if ((error as Error).name !== "AbortError") {
-        toast.error("Erro", { description: "Não foi possível compartilhar o PDF." })
-      }
-    } finally {
-      setIsExporting(false)
-    }
-  }
-
   return {
     selectedDimensions,
     toggleDimension,

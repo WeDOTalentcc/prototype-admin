@@ -5,6 +5,7 @@ import {
   MOCK_PENDING_TASKS, MOCK_ACTIVE_ALERTS, MOCK_TASKS,
   MOCK_JOBS_WITH_ALERTS, MOCK_JOB_REQUESTS
 } from "./tasks-mock-data"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 export interface Task {
   id: string
@@ -201,9 +202,7 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
   // Actions — navegação LIA
   const navigateToLIA = useCallback((prompt: string) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('liaPrompt', prompt)
-    }
+    useUIPreferencesStore.getState().setLiaPrompt(prompt)
     if (onNavigate) onNavigate('Chat com LIA')
   }, [onNavigate])
 

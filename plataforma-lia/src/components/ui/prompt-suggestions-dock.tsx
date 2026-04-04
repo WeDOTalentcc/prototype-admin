@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react"
 import { Plus, Search, UserCheck, FileText, Calendar, MessageSquare, Bell, RefreshCcw, Brain, X, Move } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 interface PromptSuggestion {
   id: string
@@ -117,27 +118,22 @@ const DASHBOARD_SUGGESTIONS: PromptSuggestion[] = [
 export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSuggestionsDockProps) {
   const [isExpanded, setIsExpanded] = useState(isEmpty)
   
-  const [position, setPosition] = useState({ top: 80, right: 24 })
+  const storePosition = useUIPreferencesStore((s) => s.promptSuggestionsPosition)
+  const setStorePosition = useUIPreferencesStore((s) => s.setPromptSuggestionsPosition)
+  const [position, setPositionLocal] = useState(storePosition)
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const buttonRef = useRef<HTMLButtonElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const savedPosition = localStorage.getItem('lia-suggestions-position')
-    if (savedPosition) {
-      try {
-        const parsed = JSON.parse(savedPosition)
-        setPosition(parsed)
-      } catch (e) {
-        // Use default position
-      }
-    }
-  }, [])
+    setPositionLocal(storePosition)
+  }, [storePosition])
 
-  useEffect(() => {
-    localStorage.setItem('lia-suggestions-position', JSON.stringify(position))
-  }, [position])
+  const setPosition = (pos: { top: number; right: number }) => {
+    setPositionLocal(pos)
+    setStorePosition(pos)
+  }
 
   React.useEffect(() => {
     if (!isEmpty) {

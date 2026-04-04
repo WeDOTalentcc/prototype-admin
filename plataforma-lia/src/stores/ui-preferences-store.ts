@@ -62,6 +62,13 @@ export interface StoredGlobalSearchSettings {
   globalSearchEnabled: boolean
 }
 
+export interface LiaRecentItem {
+  id: string
+  type: string
+  title: string
+  timestamp: number
+}
+
 interface UIPreferencesState {
   candidateTableColumns: CandidateTableColumn[] | null
   candidateColumnViews: CandidateColumnView[]
@@ -84,6 +91,9 @@ interface UIPreferencesState {
   customPresetsMap: Record<string, unknown[]>
   globalSearchSettingsCache: StoredGlobalSearchSettings | null
   adminSelectedClient: StoredAdminClient | null
+  liaRecentItems: LiaRecentItem[]
+  liaFavorites: string[]
+  liaPrompt: string | null
 }
 
 interface UIPreferencesActions {
@@ -117,6 +127,10 @@ interface UIPreferencesActions {
   getCustomPresets: (key: string) => unknown[]
   setGlobalSearchSettingsCache: (settings: StoredGlobalSearchSettings | null) => void
   setAdminSelectedClient: (client: StoredAdminClient | null) => void
+  setLiaRecentItems: (items: LiaRecentItem[]) => void
+  setLiaFavorites: (favorites: string[]) => void
+  toggleLiaFavorite: (id: string) => void
+  setLiaPrompt: (prompt: string | null) => void
   resetSessionData: () => void
 }
 
@@ -147,6 +161,9 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
         customPresetsMap: {},
         globalSearchSettingsCache: null,
         adminSelectedClient: null,
+        liaRecentItems: [],
+        liaFavorites: [],
+        liaPrompt: null,
 
         setCandidateTableColumns: (columns) =>
           set({ candidateTableColumns: columns }, false, 'uiPrefs/setCandidateTableColumns'),
@@ -298,6 +315,30 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
         setAdminSelectedClient: (client) =>
           set({ adminSelectedClient: client }, false, 'uiPrefs/setAdminSelectedClient'),
 
+        setLiaRecentItems: (items) =>
+          set({ liaRecentItems: items }, false, 'uiPrefs/setLiaRecentItems'),
+
+        setLiaFavorites: (favorites) =>
+          set({ liaFavorites: favorites }, false, 'uiPrefs/setLiaFavorites'),
+
+        toggleLiaFavorite: (id) =>
+          set(
+            (state) => {
+              const current = new Set(state.liaFavorites)
+              if (current.has(id)) {
+                current.delete(id)
+              } else {
+                current.add(id)
+              }
+              return { liaFavorites: Array.from(current) }
+            },
+            false,
+            'uiPrefs/toggleLiaFavorite'
+          ),
+
+        setLiaPrompt: (prompt) =>
+          set({ liaPrompt: prompt }, false, 'uiPrefs/setLiaPrompt'),
+
         resetSessionData: () =>
           set(
             (state) => ({
@@ -309,6 +350,7 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
               sharedSessionTokens: {},
               kanbanColumnOrders: {},
               tableColumnConfigs: {},
+              liaPrompt: null,
             }),
             false,
             'uiPrefs/resetSessionData'

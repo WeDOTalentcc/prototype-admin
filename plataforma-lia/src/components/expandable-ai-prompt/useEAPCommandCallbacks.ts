@@ -3,6 +3,7 @@
 import React, { useCallback } from "react"
 import type { FileAnalysisResult } from "@/components/ui/file-upload-button"
 import { toast } from "sonner"
+import { useChatStateStore } from "@/stores/chat-state-store"
 import type {
   ArchetypeData,
   UseEAPCallbacksParams,
@@ -94,14 +95,15 @@ export function useEAPCommandCallbacks(params: UseEAPCallbacksParams) {
     })
   }
 
+  const { liaTemplates, setLiaTemplates } = useChatStateStore()
+
   const executeTemplate = (template: Record<string, unknown>) => {
-    const templates = JSON.parse(localStorage.getItem('lia-templates') || '[]')
-    const updatedTemplates = templates.map((t: Record<string, unknown>) =>
+    const updatedTemplates = liaTemplates.map((t: Record<string, unknown>) =>
       t.id === template.id
         ? { ...t, usageCount: (t.usageCount as number) + 1, updatedAt: new Date() }
         : t
     )
-    localStorage.setItem('lia-templates', JSON.stringify(updatedTemplates))
+    setLiaTemplates(updatedTemplates)
 
     setTimeout(() => {
       onCommand(template.command as string, (template.actions as string[])[0] || 'execute_template')

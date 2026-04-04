@@ -4,6 +4,7 @@ import React, { useEffect, useCallback } from "react"
 import { useTemplateSuggestions } from "@/hooks/use-template-suggestions"
 import { useTemplateSuggestionQueue } from "@/components/template-suggestion-toast"
 import { useCreditEstimator } from "@/hooks/useCreditEstimator"
+import { useChatStateStore } from "@/stores/chat-state-store"
 
 interface UseEAPEffectsParams {
   showGlobalSearchOptions: boolean
@@ -161,19 +162,16 @@ export function useEAPEffects(params: UseEAPEffectsParams) {
     }
   }, [])
 
+  const liaTemplates = useChatStateStore((s) => s.liaTemplates)
+
   useEffect(() => {
-    const templates = localStorage.getItem('lia-templates')
-    if (templates) {
-      try {
-        const parsed = JSON.parse(templates)
-        const topTemplates = parsed
-          .sort((a: Record<string, unknown>, b: Record<string, unknown>) => (b.usageCount as number) - (a.usageCount as number))
-          .slice(0, 3)
-        setSavedTemplates(topTemplates)
-      } catch (error) {
-      }
+    if (liaTemplates.length > 0) {
+      const topTemplates = [...liaTemplates]
+        .sort((a: Record<string, unknown>, b: Record<string, unknown>) => (b.usageCount as number) - (a.usageCount as number))
+        .slice(0, 3)
+      setSavedTemplates(topTemplates)
     }
-  }, [])
+  }, [liaTemplates, setSavedTemplates])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

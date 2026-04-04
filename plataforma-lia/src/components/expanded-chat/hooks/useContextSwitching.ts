@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useChatStateStore } from '@/stores/chat-state-store'
 
 export type ChatContext = 'general' | 'wizard' | 'fast_track'
 
@@ -90,23 +91,15 @@ const FAST_TRACK_INTENT_PATTERNS = [
   /duplicar\s+vaga/i,
 ]
 
-const STORAGE_KEY = 'lia-context-snapshots'
-
 function loadStoredSnapshots(): { wizard: WizardSnapshot | null; general: GeneralChatSnapshot | null } {
-  if (typeof window === 'undefined') {
-    return { wizard: null, general: null }
-  }
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      const now = Date.now()
-      const maxAge = 24 * 60 * 60 * 1000
-      
-      return {
-        wizard: parsed.wizard && (now - parsed.wizard.timestamp) < maxAge ? parsed.wizard : null,
-        general: parsed.general && (now - parsed.general.timestamp) < maxAge ? parsed.general : null,
-      }
+    const stored = useChatStateStore.getState().contextSnapshots
+    const now = Date.now()
+    const maxAge = 24 * 60 * 60 * 1000
+
+    return {
+      wizard: stored.wizard && (now - stored.wizard.timestamp) < maxAge ? stored.wizard as unknown as WizardSnapshot : null,
+      general: stored.general && (now - stored.general.timestamp) < maxAge ? stored.general as unknown as GeneralChatSnapshot : null,
     }
   } catch {
   }
@@ -114,9 +107,11 @@ function loadStoredSnapshots(): { wizard: WizardSnapshot | null; general: Genera
 }
 
 function saveStoredSnapshots(wizard: WizardSnapshot | null, general: GeneralChatSnapshot | null): void {
-  if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ wizard, general }))
+    useChatStateStore.getState().setContextSnapshots({
+      wizard: wizard as unknown as import('@/stores/chat-state-store').StoredWizardSnapshot | null,
+      general: general as unknown as import('@/stores/chat-state-store').StoredGeneralChatSnapshot | null,
+    })
   } catch {
   }
 }
@@ -258,9 +253,7 @@ export function useContextSwitching(options: UseContextSwitchingOptions = {}): U
   const clearSnapshots = useCallback(() => {
     wizardSnapshotRef.current = null
     generalSnapshotRef.current = null
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY)
-    }
+    useChatStateStore.getState().clearContextSnapshots()
   }, [])
 
   // Use ref for currentContext to keep syncContext callback stable

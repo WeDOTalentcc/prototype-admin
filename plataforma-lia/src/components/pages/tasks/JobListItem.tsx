@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 import { getUrgencyBadge, getConversionRate, getAlertIcon, getAlertStyle, getAlertColor } from "../task-helpers"
 import type { JobWithAlert } from "../use-tasks-core"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 interface JobListItemProps {
   job: JobWithAlert
@@ -124,9 +125,7 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
             className="gap-0.5 h-4 text-xs px-1 hover:scale-105 transition-transform motion-reduce:transition-none flex-shrink-0"
             onClick={() => {
               const actionPrompt = `${job.alert.action} para a vaga ${job.title} (${job.jobId})`
-              if (typeof window !== 'undefined') {
-                localStorage.setItem('liaPrompt', actionPrompt)
-              }
+              useUIPreferencesStore.getState().setLiaPrompt(actionPrompt)
               if (onNavigate) {
                 onNavigate('Chat com LIA')
               }

@@ -20,6 +20,7 @@ import {
   useCompetenciesState, usePublishingState, useFastTrackState,
 } from '.'
 import { useCheckForExistingDraftSync } from "./useExpandedChatCallbacks"
+import { useChatStateStore } from '@/stores/chat-state-store'
 import { useWizardStageConstants } from './useWizardStageConstants'
 import { useExpandedChatPanelState } from "./useExpandedChatPanelState"
 import { type EnrichedJDData } from '../stages'
@@ -98,15 +99,12 @@ export function useExpandedChatCoreState(mode: string = 'general') {
   const currentStageIndex = WIZARD_STAGES.findIndex(s => s.id === currentStage)
 
   const [wizardDraftId] = useState(() => {
-    const DRAFT_ID_KEY = 'wizard_draft_id'
-    if (typeof window !== 'undefined') {
-      const existingId = localStorage.getItem(DRAFT_ID_KEY)
-      if (existingId) return existingId
-      const newId = `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      localStorage.setItem(DRAFT_ID_KEY, newId)
-      return newId
-    }
-    return `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const store = useChatStateStore.getState()
+    const existingId = store.wizardDraftId
+    if (existingId) return existingId
+    const newId = `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    useChatStateStore.getState().setWizardDraftId(newId)
+    return newId
   })
 
   const { STAGE_DISPLAY_NAMES, INITIAL_STAGES } = useWizardStageConstants()

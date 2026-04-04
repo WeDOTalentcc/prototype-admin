@@ -22,6 +22,7 @@ import { MessageFeedback } from "@/components/chat/message-feedback"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { useRouter } from "next/navigation"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 // [OPT-043] TODO: revisar inline styles dinâmicos (23 ocorrências)
 const CATEGORY_COLORS: Record<string, { icon: string; bg: string; border: string; hoverBg: string }> = {
@@ -182,15 +183,8 @@ export function LiaSuperPrompt() {
 
   const handleToggleHistory = useCallback(() => {
     if (!showHistory) {
-      try {
-        const raw = localStorage.getItem("lia-recent-items")
-        const items = raw
-          ? (JSON.parse(raw) as Array<{ id: string; type: string; title: string; timestamp: number }>)
-          : []
-        setRecentChats(items.filter(i => i.type === "chat").slice(0, 10))
-      } catch {
-        setRecentChats([])
-      }
+      const items = useUIPreferencesStore.getState().liaRecentItems
+      setRecentChats(items.filter(i => i.type === "chat").slice(0, 10))
     }
     setShowHistory(prev => !prev)
   }, [showHistory])

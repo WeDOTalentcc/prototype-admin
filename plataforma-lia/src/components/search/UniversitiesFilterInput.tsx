@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UniversityPresetsModal } from "./UniversityPresetsModal"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 interface UniversitiesFilterInputProps {
   value: string[]
@@ -74,6 +75,7 @@ export function UniversitiesFilterInput({
   placeholder = "Type university name and press Enter",
   showPresets = true
 }: UniversitiesFilterInputProps) {
+  const { getCustomPresets, setCustomPresets: setCustomPresetsInStore } = useUIPreferencesStore()
   const [inputValue, setInputValue] = useState("")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoadingAI, setIsLoadingAI] = useState(false)
@@ -151,14 +153,14 @@ export function UniversitiesFilterInput({
   const handleSaveCustomPreset = useCallback(() => {
     if (!savePresetName.trim() || value.length === 0) return
     
-    const existingPresets = JSON.parse(localStorage.getItem('university_custom_presets') || '[]')
+    const existingPresets = getCustomPresets('university_custom_presets')
     const newPreset = {
       id: `custom_${Date.now()}`,
       name: savePresetName.trim(),
       universities: value,
       createdAt: new Date().toISOString()
     }
-    localStorage.setItem('university_custom_presets', JSON.stringify([...existingPresets, newPreset]))
+    setCustomPresetsInStore('university_custom_presets', [...existingPresets, newPreset])
     setSavePresetName("")
     setShowSavePresetModal(false)
   }, [savePresetName, value])

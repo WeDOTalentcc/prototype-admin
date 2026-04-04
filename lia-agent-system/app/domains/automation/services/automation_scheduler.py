@@ -233,6 +233,14 @@ class AutomationScheduler:
             )
 
             self.scheduler.start()
+            # Daily digest — 08:00 BRT, Mon–Fri
+            self.scheduler.add_job(
+                self._run_daily_digest,
+                CronTrigger(day_of_week="mon-fri", hour=8, minute=0),
+                id="daily_platform_digest",
+                replace_existing=True,
+            )
+
             self._is_running = True
             logger.info("✅ Automation Scheduler started with 10 periodic jobs")
             
@@ -240,6 +248,18 @@ class AutomationScheduler:
             logger.error(f"❌ Failed to start Automation Scheduler: {e}")
             raise
     
+    async def _run_daily_digest(self):
+        """Cron job: send daily morning digest to all recruiters (08:00 BRT Mon-Fri)."""
+        logger.info("[AutomationScheduler] Running daily platform digest...")
+        try:
+            from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
+            async with async_session_factory() as db:
+                svc = WeeklyDigestService()
+                result = await svc.send_to_all_recruiters(db)
+                logger.info("[AutomationScheduler] Daily digest complete: %s", result)
+        except Exception as exc:
+            logger.error("[AutomationScheduler] Daily digest failed: %s", exc, exc_info=True)
+
     def stop(self):
         """Stop the scheduler gracefully."""
         if self._is_running:

@@ -158,3 +158,51 @@ async def update_weekly_digest_preference(
         "weekly_report_enabled": body.enabled,
         "message": "Preferência atualizada com sucesso.",
     }
+
+
+# ─────────────────────────────────────────────────────────────
+# Daily digest endpoints (platform-native, runs at 08:00 BRT)
+# ─────────────────────────────────────────────────────────────
+
+@router.post("/daily/send-all")
+async def send_daily_digest_to_all(
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Trigger the daily morning digest for all active recruiters.
+    Delivers via bell notification + LIA chat proactive message.
+    Normally called by the cron job at 08:00 BRT (Mon–Fri).
+    Admins can also call manually to test.
+    """
+    if current_user.role != UserRole.admin:
+        raise HTTPException(status_code=403, detail="Apenas administradores podem disparar o digest diário para todos")
+
+    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
+
+    svc = WeeklyDigestService()
+    result = await svc.send_to_all_recruiters(db)
+    return result
+
+
+@router.post("/daily/send")
+async def send_daily_digest_to_user(
+    recruiter_id: str,
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+):
+    """Send daily digest to a specific recruiter (admin or self)."""
+    if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
+        raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
+
+    from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService
+    from sqlalchemy import select
+
+    svc = WeeklyDigestService()
+    result = await db.execute(select(User).where(User.id == recruiter_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Recrutador não encontrado")
+
+    name = getattr(user, "name", getattr(user, "email", "Recrutador"))
+    return await svc.generate_and_deliver(recruiter_id, name, db)

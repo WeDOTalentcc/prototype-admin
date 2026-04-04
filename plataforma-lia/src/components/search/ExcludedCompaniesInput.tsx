@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/tooltip"
 import { CompanyPresetsModal } from "./CompanyPresetsModal"
 import { useTagInputState } from "@/hooks/useTagInputState"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 export interface ExcludedCompanyItem {
   name: string
@@ -81,6 +82,7 @@ export function ExcludedCompaniesInput({
     inputRef, dropdownRef,
     handleKeyNavigation, closeDropdown
   } = useTagInputState()
+  const { getCustomPresets, setCustomPresets } = useUIPreferencesStore()
   const [isPresetsModalOpen, setIsPresetsModalOpen] = useState(false)
   const [isTimeFilterOpen, setIsTimeFilterOpen] = useState(false)
   const [showSavePresetModal, setShowSavePresetModal] = useState(false)
@@ -116,14 +118,14 @@ export function ExcludedCompaniesInput({
   const handleSaveCustomPreset = useCallback(() => {
     if (!savePresetName.trim() || value.length === 0) return
     
-    const existingPresets = JSON.parse(localStorage.getItem('excluded_company_custom_presets') || '[]')
+    const existingPresets = getCustomPresets('excluded_company_custom_presets')
     const newPreset = {
       id: `custom_${Date.now()}`,
       name: savePresetName.trim(),
       companies: value,
       createdAt: new Date().toISOString()
     }
-    localStorage.setItem('excluded_company_custom_presets', JSON.stringify([...existingPresets, newPreset]))
+    setCustomPresets('excluded_company_custom_presets', [...existingPresets, newPreset])
     setSavePresetName("")
     setShowSavePresetModal(false)
   }, [savePresetName, value])

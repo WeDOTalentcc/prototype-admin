@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
+import { useChatStateStore } from "@/stores/chat-state-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -32,10 +33,16 @@ interface CommandTemplate {
   estimatedTime: number // segundos economizados
 }
 
-const EMPTY_TEMPLATES: CommandTemplate[] = []
-
 export function TemplatesPage() {
-  const [templates, setTemplates] = useState<CommandTemplate[]>(EMPTY_TEMPLATES)
+  const { liaTemplates, setLiaTemplates } = useChatStateStore()
+  const templates: CommandTemplate[] = useMemo(() =>
+    liaTemplates.map((t) => ({
+      ...(t as unknown as CommandTemplate),
+      createdAt: new Date(t.createdAt as string),
+      updatedAt: new Date(t.updatedAt as string),
+    })),
+    [liaTemplates]
+  )
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [sortBy, setSortBy] = useState<'usage' | 'recent' | 'success'>('usage')
@@ -43,26 +50,8 @@ export function TemplatesPage() {
   const [editingTemplate, setEditingTemplate] = useState<CommandTemplate | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  // Carregar templates do localStorage
-  useEffect(() => {
-    const savedTemplates = localStorage.getItem('lia-templates')
-    if (savedTemplates) {
-      try {
-        const parsed = JSON.parse(savedTemplates).map((template: Record<string, unknown>) => ({
-          ...template,
-          createdAt: new Date(template.createdAt as string),
-          updatedAt: new Date(template.updatedAt as string)
-        }))
-        setTemplates(parsed)
-      } catch (error) {
-      }
-    }
-  }, [])
-
-  // Salvar templates no localStorage
   const saveTemplates = (updatedTemplates: CommandTemplate[]) => {
-    localStorage.setItem('lia-templates', JSON.stringify(updatedTemplates))
-    setTemplates(updatedTemplates)
+    setLiaTemplates(updatedTemplates as unknown as Record<string, unknown>[])
   }
 
   // Filtrar e ordenar templates

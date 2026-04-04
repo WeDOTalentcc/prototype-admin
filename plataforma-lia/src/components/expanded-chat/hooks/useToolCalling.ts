@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
+import { useAuthStore } from '@/stores/auth-store'
 
 const BACKEND_URL = '/api/backend-proxy'
 
@@ -49,18 +50,8 @@ function getAuthHeaders(): HeadersInit {
 }
 
 function getUserId(): string {
-  if (typeof window === 'undefined') return 'anonymous'
-  const userId = localStorage.getItem('user_id')
-  if (userId) return userId
-  const userDataStr = localStorage.getItem('user_data')
-  if (userDataStr) {
-    try {
-      const userData = JSON.parse(userDataStr)
-      return userData.id || userData.user_id || 'authenticated-user'
-    } catch {
-      return 'authenticated-user'
-    }
-  }
+  const user = useAuthStore.getState().user
+  if (user?.id) return user.id
   return 'authenticated-user'
 }
 

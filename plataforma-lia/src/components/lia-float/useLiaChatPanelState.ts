@@ -12,6 +12,7 @@ import {
 } from "@/hooks/use-float-conversation"
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
 import { useCvScreening } from "@/hooks/use-cv-screening"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 const MAX_INPUT_CHARS = 2000
 
@@ -157,15 +158,8 @@ export function useLiaChatPanelState() {
 
   const handleToggleHistory = useCallback(() => {
     if (!showHistory) {
-      try {
-        const raw = localStorage.getItem("lia-recent-items")
-        const items = raw
-          ? (JSON.parse(raw) as Array<{ id: string; type: string; title: string; timestamp: number }>)
-          : []
-        setRecentChats(items.filter(i => i.type === "chat").slice(0, 10))
-      } catch {
-        setRecentChats([])
-      }
+      const items = useUIPreferencesStore.getState().liaRecentItems
+      setRecentChats(items.filter(i => i.type === "chat").slice(0, 10))
     }
     setShowHistory(prev => !prev)
   }, [showHistory])

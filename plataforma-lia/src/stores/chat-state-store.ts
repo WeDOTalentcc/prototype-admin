@@ -41,7 +41,9 @@ interface ChatStateState {
   conversationIds: Record<string, string>
   contextSnapshots: { wizard: StoredWizardSnapshot | null; general: StoredGeneralChatSnapshot | null }
   wizardDraftId: string | null
+  wizardDraft: Record<string, unknown> | null
   userCommands: StoredUserCommand[]
+  liaTemplates: Record<string, unknown>[]
 }
 
 interface ChatStateActions {
@@ -51,7 +53,9 @@ interface ChatStateActions {
   setContextSnapshots: (snapshots: { wizard: StoredWizardSnapshot | null; general: StoredGeneralChatSnapshot | null }) => void
   clearContextSnapshots: () => void
   setWizardDraftId: (id: string | null) => void
+  setWizardDraft: (draft: Record<string, unknown> | null) => void
   setUserCommands: (commands: StoredUserCommand[]) => void
+  setLiaTemplates: (templates: Record<string, unknown>[]) => void
   resetStore: () => void
 }
 
@@ -61,7 +65,9 @@ const initialState: ChatStateState = {
   conversationIds: {},
   contextSnapshots: { wizard: null, general: null },
   wizardDraftId: null,
+  wizardDraft: null,
   userCommands: [],
+  liaTemplates: [],
 }
 
 export const useChatStateStore = create<ChatStateStore>()(
@@ -105,8 +111,14 @@ export const useChatStateStore = create<ChatStateStore>()(
         setWizardDraftId: (id) =>
           set({ wizardDraftId: id }, false, 'chatState/setWizardDraftId'),
 
+        setWizardDraft: (draft) =>
+          set({ wizardDraft: draft }, false, 'chatState/setWizardDraft'),
+
         setUserCommands: (commands) =>
           set({ userCommands: commands }, false, 'chatState/setUserCommands'),
+
+        setLiaTemplates: (templates) =>
+          set({ liaTemplates: templates }, false, 'chatState/setLiaTemplates'),
 
         resetStore: () => set(initialState, false, 'chatState/reset'),
       }),

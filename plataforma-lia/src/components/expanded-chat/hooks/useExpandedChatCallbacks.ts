@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useMemo } from "react"
+import { useChatStateStore } from '@/stores/chat-state-store'
 import { type GroupedChange } from '.'
 import type { Message } from '../types'
 import {
@@ -213,10 +214,9 @@ export function useCheckForExistingDraftSync({
   } => {
     if (typeof window === 'undefined') return { hasDraft: false, stageName: null, draftData: null }
     try {
-      const storedDraft = localStorage.getItem('wizard_draft')
-      if (!storedDraft) return { hasDraft: false, stageName: null, draftData: null }
+      const parsedDraft = useChatStateStore.getState().wizardDraft
+      if (!parsedDraft) return { hasDraft: false, stageName: null, draftData: null }
 
-      const parsedDraft = JSON.parse(storedDraft) as Record<string, unknown>
       const currentStage = parsedDraft?.currentStage as string | undefined
 
       const hasMeaningfulDraft = currentStage && !INITIAL_STAGES.includes(currentStage)

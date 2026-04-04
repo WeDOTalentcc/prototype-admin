@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useChatStateStore } from '@/stores/chat-state-store'
 
 const BACKEND_URL = '/api/backend-proxy'
 
@@ -67,26 +68,23 @@ function getStorageKey(contextType: string, contextId?: string): string {
 }
 
 function loadConversationId(contextType: string, contextId?: string): string | null {
-  if (typeof window === 'undefined') return null
   try {
-    return localStorage.getItem(getStorageKey(contextType, contextId))
+    return useChatStateStore.getState().getConversationId(getStorageKey(contextType, contextId))
   } catch {
     return null
   }
 }
 
 function saveConversationId(contextType: string, contextId: string | undefined, conversationId: string): void {
-  if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(getStorageKey(contextType, contextId), conversationId)
+    useChatStateStore.getState().setConversationId(getStorageKey(contextType, contextId), conversationId)
   } catch {
   }
 }
 
 function clearStoredConversationId(contextType: string, contextId?: string): void {
-  if (typeof window === 'undefined') return
   try {
-    localStorage.removeItem(getStorageKey(contextType, contextId))
+    useChatStateStore.getState().removeConversationId(getStorageKey(contextType, contextId))
   } catch {
   }
 }
