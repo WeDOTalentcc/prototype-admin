@@ -835,6 +835,8 @@ class TriagemSessionService:
                     block.get("block_type", "behavioral"),
                     block.get("competency", "general"),
                 )
+                score_result["competency"] = block.get("competency", "general")
+                score_result["block_index"] = block_idx
                 response_scores.append(score_result)
 
         final_score, recommendation = _calculate_final_score(response_scores)
@@ -855,7 +857,7 @@ class TriagemSessionService:
         db.add(completion_msg)
         await db.flush()
 
-        post_actions = await self._trigger_post_completion(db, session)
+        post_actions = await self._trigger_post_completion(db, session, response_scores)
 
         duration = 0
         if session.started_at and session.completed_at:
@@ -877,7 +879,7 @@ class TriagemSessionService:
             "post_actions": post_actions,
         }
 
-    async def _trigger_post_completion(self, db: AsyncSession, session: TriagemSession) -> Dict[str, Any]:
+    async def _trigger_post_completion(self, db: AsyncSession, session: TriagemSession, response_scores: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         actions = {
             "email_confirmation": "queued",
             "recruiter_notification": "queued",
@@ -893,30 +895,213 @@ class TriagemSessionService:
 
         try:
             from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
-            comm_dispatcher = CommunicationDispatcher()
+            from app.domains.cv_screening.services.wsi_feedback_generator import get_feedback_generator
+            from app.models.job_vacancy import JobVacancy
+            from app.models.candidate import Candidate
+            import json as _json
+            import os as _os
 
-            confirmation_msg = (
-                f"Sua triagem para a vaga de {session.job_title or 'a posição'} foi concluída com sucesso! "
-                f"Nossa equipe avaliará seu perfil e você receberá uma resposta em até 5 dias úteis. "
-                f"Agradecemos sua participação!"
+            comm_dispatcher = CommunicationDispatcher()
+            response_scores = response_scores or []
+
+            # 1 — Resolve seniority from JobVacancy
+            seniority_level = "junior"
+            candidate_phone = None
+            try:
+                job_result = await db.execute(
+                    select(JobVacancy).where(JobVacancy.id == session.job_id)
+                )
+                job = job_result.scalar_one_or_none()
+                if job and getattr(job, "seniority_level", None):
+                    seniority_level = job.seniority_level
+            except Exception as _e:
+                logger.warning(f"[Triagem] Could not resolve seniority: {_e}")
+
+            # 2 — Resolve candidate phone for WhatsApp
+            try:
+                cand_result = await db.execute(
+                    select(Candidate).where(Candidate.id == session.candidate_id)
+                )
+                cand = cand_result.scalar_one_or_none()
+                if cand:
+                    candidate_phone = getattr(cand, "mobile_phone", None) or getattr(cand, "phone", None)
+            except Exception as _e:
+                logger.warning(f"[Triagem] Could not resolve candidate phone: {_e}")
+
+            # 3 — Generate structured feedback
+            feedback_gen = get_feedback_generator()
+            feedback_report = feedback_gen.generate(
+                response_scores=response_scores,
+                job_title=session.job_title or "a vaga",
+                seniority_level=seniority_level,
+                candidate_name=session.candidate_name or "Candidato(a)",
             )
-            dispatch_result = await comm_dispatcher.dispatch_message(
-                company_id=session.company_id or "",
-                recipient_email=session.candidate_email,
-                recipient_phone=None,
-                subject=f"Triagem Concluída - {session.job_title or 'Processo Seletivo'}",
-                message=confirmation_msg,
-                candidate_name=session.candidate_name,
-                db=db,
+
+            # 4 — Persist feedback_draft
+            session.feedback_draft = _json.dumps(feedback_report, ensure_ascii=False)
+
+            # 5 — Chat web: inject as final LIA message in the session
+            try:
+                feedback_chat_msg = TriagemMessage(
+                    session_id=session.id,
+                    sender="lia",
+                    content=feedback_report["chat_text"],
+                    message_type="feedback",
+                    wsi_block=session.current_block,
+                )
+                db.add(feedback_chat_msg)
+                await db.flush()
+                actions["chat_feedback"] = "sent"
+                logger.info(f"[Triagem] Chat feedback message added for session {session.token}")
+            except Exception as _e:
+                logger.warning(f"[Triagem] Could not add chat feedback message: {_e}")
+                actions["chat_feedback"] = "failed"
+
+            # 6 — Email: rich HTML feedback
+            email_result = {"success": False}
+            if session.candidate_email:
+                try:
+                    template_path = _os.path.join(
+                        _os.path.dirname(__file__),
+                        "..", "templates", "triagem_feedback_email.html"
+                    )
+                    with open(template_path) as _f:
+                        html_template = _f.read()
+
+                    # Simple template rendering (no Jinja2 dependency)
+                    dim_html = ""
+                    for d in feedback_report["dimensions"]:
+                        dim_html += f"""
+                        <div class="dimension-card">
+                          <div class="dimension-header">
+                            <span class="dim-icon">{d['icon']}</span>
+                            <span class="dim-title">{d['title']}</span>
+                          </div>
+                          <div class="dimension-body">
+                            <div class="feedback-row">
+                              <span class="feedback-label label-strength">✅</span>
+                              <div class="feedback-text">
+                                <strong>Ponto Forte</strong>{d['strength']}
+                              </div>
+                            </div>
+                            <div class="feedback-row">
+                              <span class="feedback-label label-development">🌱</span>
+                              <div class="feedback-text">
+                                <strong>Área de Desenvolvimento</strong>{d['development']}
+                              </div>
+                            </div>
+                            <div class="feedback-row">
+                              <span class="feedback-label label-suggestion">💡</span>
+                              <div class="feedback-text">
+                                <strong>Sugestão Prática</strong>{d['suggestion']}
+                              </div>
+                            </div>
+                          </div>
+                        </div>"""
+
+                    platform_email = _os.getenv("SENDGRID_FROM_EMAIL", "noreply@wedotalent.com")
+                    html_body = (html_template
+                        .replace("{{ candidate_name }}", feedback_report["first_name"])
+                        .replace("{{ job_title }}", feedback_report["job_title"])
+                        .replace("{{ intro_body }}", feedback_report["intro"].replace("\n", "<br>"))
+                        .replace("{{ closing }}", feedback_report["closing"].replace("\n", "<br>"))
+                        .replace("{{ company_name }}", session.company_name or "WeDOTalent")
+                        .replace("{{ reply_email }}", platform_email)
+                        .replace("{{ privacy_url }}", "https://wedotalent.com/privacidade")
+                        .replace("{{ lgpd_url }}", "https://wedotalent.com/lgpd")
+                        .replace("{% for dim in dimensions %}", "")
+                        .replace("{% endfor %}", "")
+                        .replace("""        <div class="dimension-card">
+                          <div class="dimension-header">
+                            <span class="dim-icon">{{ dim.icon }}</span>
+                            <span class="dim-title">{{ dim.title }}</span>
+                          </div>
+                          <div class="dimension-body">
+                            <div class="feedback-row">
+                              <span class="feedback-label label-strength">✅</span>
+                              <div class="feedback-text">
+                                <strong>Ponto Forte</strong>
+                                {{ dim.strength }}
+                              </div>
+                            </div>
+                            <div class="feedback-row">
+                              <span class="feedback-label label-development">🌱</span>
+                              <div class="feedback-text">
+                                <strong>Área de Desenvolvimento</strong>
+                                {{ dim.development }}
+                              </div>
+                            </div>
+                            <div class="feedback-row">
+                              <span class="feedback-label label-suggestion">💡</span>
+                              <div class="feedback-text">
+                                <strong>Sugestão Prática</strong>
+                                {{ dim.suggestion }}
+                              </div>
+                            </div>
+                          </div>
+                        </div>""", dim_html)
+                    )
+
+                    email_result = comm_dispatcher.send_email(
+                        to_email=session.candidate_email,
+                        subject=f"Feedback da sua triagem — {session.job_title or 'Processo Seletivo'}",
+                        body_html=html_body,
+                        body_text=feedback_report["plain_text"],
+                    )
+                    actions["email_confirmation"] = "sent" if email_result.get("success") else "failed"
+                    logger.info(
+                        f"[Triagem] Feedback email sent to {session.candidate_email} "
+                        f"(mock={email_result.get('mock', False)})"
+                    )
+                except Exception as _e:
+                    logger.warning(f"[Triagem] Could not send HTML feedback email: {_e}")
+                    # Fallback: plain text email
+                    email_result = comm_dispatcher.send_email(
+                        to_email=session.candidate_email,
+                        subject=f"Feedback da sua triagem — {session.job_title or 'Processo Seletivo'}",
+                        body_html=f"<pre>{feedback_report['plain_text']}</pre>",
+                        body_text=feedback_report["plain_text"],
+                    )
+                    actions["email_confirmation"] = "sent" if email_result.get("success") else "failed"
+
+            # 7 — WhatsApp: condensed feedback
+            whatsapp_result = {"success": False}
+            should_send_whatsapp = (
+                candidate_phone and (
+                    session.invite_channel == "whatsapp"
+                    or session.invite_channel is None  # default: try
+                )
             )
-            actions["email_confirmation"] = "sent" if dispatch_result.get("success") else "failed"
-            actions["confirmation_channels"] = dispatch_result.get("channels_sent", [])
+            if should_send_whatsapp:
+                try:
+                    whatsapp_result = comm_dispatcher.send_whatsapp(
+                        to_phone=candidate_phone,
+                        message=feedback_report["whatsapp_text"],
+                    )
+                    logger.info(
+                        f"[Triagem] WhatsApp feedback sent to {candidate_phone} "
+                        f"(success={whatsapp_result.get('success')})"
+                    )
+                except Exception as _e:
+                    logger.warning(f"[Triagem] Could not send WhatsApp feedback: {_e}")
+
+            # 8 — Compile channel results
+            channels_sent = []
+            if actions.get("chat_feedback") == "sent":
+                channels_sent.append("chat_web")
+            if email_result.get("success"):
+                channels_sent.append("email")
+            if whatsapp_result.get("success"):
+                channels_sent.append("whatsapp")
+
+            actions["confirmation_channels"] = channels_sent
             logger.info(
-                f"[Triagem] Confirmation dispatched to {session.candidate_email} "
-                f"(channels={dispatch_result.get('channels_sent', [])})"
+                f"[Triagem] Feedback delivered via channels: {channels_sent} "
+                f"for session {session.token}"
             )
+
         except Exception as e:
-            logger.warning(f"[Triagem] Failed to send confirmation: {e}")
+            logger.warning(f"[Triagem] Failed to generate/send feedback: {e}")
             actions["email_confirmation"] = "failed"
 
         try:

@@ -484,6 +484,10 @@ IMPORTANTE:
             phone_call["completed_at"] = datetime.utcnow().isoformat()
             phone_call["duration_seconds"] = call_result.get("duration_seconds")
 
+            # Score mapping precedence:
+            # 1. WSI analysis (0-5 scale) → scaled to 0-10 via *2.0 for triagem pipeline parity
+            # 2. AI analysis fallback (0-100 scale) → scaled to 0-10 via /10.0
+            # Thresholds match chat triagem: >=7.5 aprovado, >=5.5 aguardando, else reprovado
             wsi_analysis = call_result.get("wsi_analysis")
             if wsi_analysis:
                 wsi_raw = wsi_analysis.get("overall_wsi", 0)

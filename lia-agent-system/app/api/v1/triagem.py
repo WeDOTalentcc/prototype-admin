@@ -186,10 +186,6 @@ _E164_BR_PATTERN = re.compile(r"^\+55\d{10,11}$")
 class RequestCallRequest(BaseModel):
     candidate_phone: str
 
-    @classmethod
-    def __get_validators__(cls):
-        yield from super().__get_validators__()
-
     def model_post_init(self, __context: Any = None) -> None:
         phone = self.candidate_phone.strip()
         digits = re.sub(r"\D", "", phone)

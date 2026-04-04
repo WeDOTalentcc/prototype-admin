@@ -149,7 +149,7 @@ export default function TriagemPage() {
   const [phoneModalOpen, setPhoneModalOpen] = useState(false)
   const [phoneCallLoading, setPhoneCallLoading] = useState(false)
   const [phoneCallError, setPhoneCallError] = useState<string | null>(null)
-  const [phoneCallStatus, setPhoneCallStatus] = useState<"idle" | "calling" | "done">("idle")
+  const [phoneCallStatus, setPhoneCallStatus] = useState<"idle" | "done">("idle")
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
