@@ -572,7 +572,8 @@ export function extractCriteriaFromText(text: string, currentCriteria: DetectedC
     /entre\s+([\d.,]+)\s*(?:mil)?\s*(?:reais?)?\s*(?:e|a|até|-)\s*([\d.,]+)\s*(?:mil|k)\s*(?:reais?)?/i,
     // "de 20 a 25 mil reais`
     /(?:de\s+)?([\d.,]+)\s*(?:a|até|-)\s*([\d.,]+)\s*(?:mil|k)\s*(?:reais?)?/i,
-    // Standard patterns with ${CURRENCY_SYMBOL} /sal[áa]rio\s*(?:de)?\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)\s*(?:a|até|-)\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)/i,
+    // Standard patterns with currency prefix
+    /sal[áa]rio\s*(?:de)?\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)\s*(?:a|até|-)\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)/i,
     /(?:r\$)\s*([\d.,]+\s*(?:k|mil)?)\s*(?:a|até|-)\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)/i,
     /faixa\s*(?:salarial)?\s*(?:de)?\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)\s*(?:a|até|-)\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)/i,
     /remunera[çc][ãa]o\s*(?:de)?\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)\s*(?:a|até|-)\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)/i,

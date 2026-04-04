@@ -184,8 +184,8 @@ const modernConversationPart2: Message[] = [
           meal_voucher: `${CURRENCY_SYMBOL} 1.200/mês (Flash)`,
           transport: "Vale-transporte ou estacionamento",
           gym: "Gympass premium",
-          home_office: "Auxílio home office ${CURRENCY_SYMBOL} 500/mês",
-          education: "Budget anual de ${CURRENCY_SYMBOL} 15.000 para cursos e certificações",
+          home_office: `Auxílio home office ${CURRENCY_SYMBOL} 500/mês`,
+          education: `Budget anual de ${CURRENCY_SYMBOL} 15.000 para cursos e certificações`,
           vacation: "30 dias de férias anuais",
           pto: "15 dias de PTO (Paid Time Off) adicionais"
         },
