@@ -15,11 +15,13 @@ import {
   FileText, Activity, List, Brain, Shield, Loader2, ClipboardCheck
 } from "lucide-react"
 import { badgeStyles } from "@/lib/design-tokens"
-import { UnifiedCommunicationModal } from "@/components/modals/unified-communication-modal"
 import { AddToListModal } from "@/components/modals/add-to-list-modal"
 import { AddCandidatesToVacancyModal } from "@/components/modals/add-candidates-to-vacancy-modal"
 import { ExperienceHighlightCard } from "@/components/experience-highlight-card"
 import dynamic from "next/dynamic"
+
+import { LoadingModal } from "@/components/ui/loading"
+const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => <LoadingModal /> })
 
 import { useCandidatePageCore } from "./useCandidatePageCore"
 import { CandidateProfileTab } from "./CandidateProfileTab"

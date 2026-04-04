@@ -137,3 +137,60 @@ export const LoadingList = React.memo(function LoadingList({ items = 3, classNam
 }
 )
 LoadingList.displayName = 'LoadingList'
+
+export const LoadingFallback = React.memo(function LoadingFallback({
+  className,
+  height = 'h-64',
+  text = 'Carregando...'
+}: {
+  className?: string
+  height?: string
+  text?: string
+}) {
+  return (
+    <div className={cn('flex flex-col items-center justify-center gap-3', height, className)}>
+      <div className="w-8 h-8 rounded-full border-2 border-lia-border-subtle border-t-wedo-cyan animate-spin motion-reduce:animate-none" />
+      <span className="text-sm text-lia-text-secondary">{text}</span>
+    </div>
+  );
+})
+LoadingFallback.displayName = 'LoadingFallback'
+
+export const LoadingModal = React.memo(function LoadingModal() {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-lia-overlay">
+      <div className="w-full max-w-md p-8 flex flex-col items-center gap-3 rounded-md bg-lia-bg-primary border border-lia-border-subtle">
+        <div className="w-8 h-8 rounded-full border-2 border-lia-border-subtle border-t-wedo-cyan animate-spin motion-reduce:animate-none" />
+        <span className="text-sm text-lia-text-secondary">Carregando...</span>
+      </div>
+    </div>
+  );
+})
+LoadingModal.displayName = 'LoadingModal'
+
+export const LoadingDashboard = React.memo(function LoadingDashboard({ className }: { className?: string }) {
+  return (
+    <div className={cn('space-y-4 p-6', className)}>
+      <div className="loading-skeleton h-8 rounded-md w-1/3"></div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="wedo-card p-4 space-y-2">
+            <div className="loading-skeleton h-3 rounded-md w-1/2"></div>
+            <div className="loading-skeleton h-6 rounded-md w-3/4"></div>
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="wedo-card p-4 space-y-3">
+          <div className="loading-skeleton h-4 rounded-md w-1/3"></div>
+          <div className="loading-skeleton h-40 rounded-md"></div>
+        </div>
+        <div className="wedo-card p-4 space-y-3">
+          <div className="loading-skeleton h-4 rounded-md w-1/3"></div>
+          <div className="loading-skeleton h-40 rounded-md"></div>
+        </div>
+      </div>
+    </div>
+  );
+})
+LoadingDashboard.displayName = 'LoadingDashboard'

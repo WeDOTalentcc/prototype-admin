@@ -107,18 +107,19 @@ interface DashboardsPageProps {
   onNavigate?: (page: string) => void
 }
 
-import { IndicadoresEstrategicosPlaceholder } from "./dashboards-page/IndicadoresEstrategicosPlaceholder"
-import { PrevisoesIAPlaceholder } from "./dashboards-page/PrevisoesIAPlaceholder"
-import { PeopleAnalyticsPlaceholder } from "./dashboards-page/PeopleAnalyticsPlaceholder"
-import { ModelosTrabalhoPlaceholder } from "./dashboards-page/ModelosTrabalhoPlaceholder"
-import { FunilPerformancePlaceholder } from "./dashboards-page/FunilPerformancePlaceholder"
-import { WarRoomOperacionalPlaceholder } from "./dashboards-page/WarRoomOperacionalPlaceholder"
-import { VoiceScreeningDashboard } from "./dashboards-page/VoiceScreeningDashboard"
-import { AnaliseCompetenciasPlaceholder } from "./dashboards-page/AnaliseCompetenciasPlaceholder"
-import { BigFiveAnalyticsDashboard } from "./dashboards-page/BigFiveAnalyticsDashboard"
-import { DiversidadeInclusaoDashboard } from "./dashboards-page/DiversidadeInclusaoDashboard"
-import { NPSDashboard } from "./dashboards-page/NPSDashboard"
-import { AgentActivityDashboard } from "./dashboards-page/AgentActivityDashboard"
+import { LoadingDashboard } from "@/components/ui/loading"
+const IndicadoresEstrategicosPlaceholder = dynamic(() => import("./dashboards-page/IndicadoresEstrategicosPlaceholder").then(m => ({ default: m.IndicadoresEstrategicosPlaceholder })), { ssr: false, loading: () => <LoadingDashboard /> })
+const PrevisoesIAPlaceholder = dynamic(() => import("./dashboards-page/PrevisoesIAPlaceholder").then(m => ({ default: m.PrevisoesIAPlaceholder })), { ssr: false, loading: () => <LoadingDashboard /> })
+const PeopleAnalyticsPlaceholder = dynamic(() => import("./dashboards-page/PeopleAnalyticsPlaceholder").then(m => ({ default: m.PeopleAnalyticsPlaceholder })), { ssr: false, loading: () => <LoadingDashboard /> })
+const ModelosTrabalhoPlaceholder = dynamic(() => import("./dashboards-page/ModelosTrabalhoPlaceholder").then(m => ({ default: m.ModelosTrabalhoPlaceholder })), { ssr: false, loading: () => <LoadingDashboard /> })
+const FunilPerformancePlaceholder = dynamic(() => import("./dashboards-page/FunilPerformancePlaceholder").then(m => ({ default: m.FunilPerformancePlaceholder })), { ssr: false, loading: () => <LoadingDashboard /> })
+const WarRoomOperacionalPlaceholder = dynamic(() => import("./dashboards-page/WarRoomOperacionalPlaceholder").then(m => ({ default: m.WarRoomOperacionalPlaceholder })), { ssr: false, loading: () => <LoadingDashboard /> })
+const VoiceScreeningDashboard = dynamic(() => import("./dashboards-page/VoiceScreeningDashboard").then(m => ({ default: m.VoiceScreeningDashboard })), { ssr: false, loading: () => <LoadingDashboard /> })
+const AnaliseCompetenciasPlaceholder = dynamic(() => import("./dashboards-page/AnaliseCompetenciasPlaceholder").then(m => ({ default: m.AnaliseCompetenciasPlaceholder })), { ssr: false, loading: () => <LoadingDashboard /> })
+const BigFiveAnalyticsDashboard = dynamic(() => import("./dashboards-page/BigFiveAnalyticsDashboard").then(m => ({ default: m.BigFiveAnalyticsDashboard })), { ssr: false, loading: () => <LoadingDashboard /> })
+const DiversidadeInclusaoDashboard = dynamic(() => import("./dashboards-page/DiversidadeInclusaoDashboard").then(m => ({ default: m.DiversidadeInclusaoDashboard })), { ssr: false, loading: () => <LoadingDashboard /> })
+const NPSDashboard = dynamic(() => import("./dashboards-page/NPSDashboard").then(m => ({ default: m.NPSDashboard })), { ssr: false, loading: () => <LoadingDashboard /> })
+const AgentActivityDashboard = dynamic(() => import("./dashboards-page/AgentActivityDashboard").then(m => ({ default: m.AgentActivityDashboard })), { ssr: false, loading: () => <LoadingDashboard /> })
 
 export function DashboardsPage({ onNavigate }: DashboardsPageProps = {}) {
   const [activeDashboard, setActiveDashboard] = useState<DashboardType>("people-analytics")

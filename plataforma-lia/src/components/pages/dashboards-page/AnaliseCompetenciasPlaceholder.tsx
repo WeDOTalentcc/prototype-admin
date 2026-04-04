@@ -12,7 +12,9 @@ import {
   Heart, Award, CheckCircle, Activity, MapPin, Building,
   Lightbulb, AlertTriangle, ChevronLeft, ChevronRight, Lock, Unlock, Phone
 } from "lucide-react"
-import { BigFiveDashboardPage } from "../big-five-dashboard-page"
+import dynamic from "next/dynamic"
+import { LoadingDashboard } from "@/components/ui/loading"
+const BigFiveDashboardPage = dynamic(() => import("../big-five-dashboard-page").then(m => ({ default: m.BigFiveDashboardPage })), { ssr: false, loading: () => <LoadingDashboard /> })
 import { ModuleUpsell } from "@/components/module-access/module-upsell"
 import { hasModuleAccess } from "@/utils/license-manager"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
