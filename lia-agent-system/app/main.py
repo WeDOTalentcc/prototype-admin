@@ -7,25 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 import os
 
-# Sentry — inicializar antes de tudo para capturar erros de startup
-# Mantém import direto para o exception_handler (sentry_sdk.capture_exception)
 import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.starlette import StarletteIntegration
-
 from app.core.sentry import init_sentry
 
-if _sentry_dsn := os.getenv("SENTRY_DSN"):
-    sentry_sdk.init(
-        dsn=_sentry_dsn,
-        integrations=[FastApiIntegration(), StarletteIntegration()],
-        traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
-        environment=os.getenv("APP_ENV", "development"),
-        release=os.getenv("APP_VERSION", "0.1.0"),
-    )
-else:
-    # Tenta via init_sentry (suporta settings.SENTRY_DSN após carregamento)
-    init_sentry()
+init_sentry()
 
 from app.core.config import settings
 from app.core.database import init_db

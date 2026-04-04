@@ -71,6 +71,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Performance: React.lazy + Error Boundaries**: Created ErrorBoundarySection and SuspenseFallback reusable components. Added lazy loading for 17+ modals. Wrapped 8 major pages with Error Boundaries. Settings tabs use next/dynamic.
 - **localStorage → Zustand Migration (93%)**: 16 Zustand stores total (auth, kanban, candidates, onboarding, ui-preferences, job-ui, navigation, job-filters, talent-funnel, wizard, template, triagem, recent-items, table-features, chat-state). Migrated 259 of 278 localStorage usages to centralized stores (19 remaining: session-cleanup, auth-service, SearchPresetsModal prop interface).
 - **StackOne Removal (Task #133)**: Removed all StackOne integration code, config, tests, and documentation. Merge.dev is now the sole universal ATS connector. ATS providers: Gupy (native), Pandapé (native), Merge.dev (universal). Webhook endpoint updated to support merge platform.
+- **Sentry Error Monitoring (Task #136)**: Activated Sentry integration for both backend (FastAPI) and frontend (Next.js). Backend uses `SENTRY_DSN` env var with PII scrubbing (email, CPF, phone) via `before_send` hook. Frontend uses `NEXT_PUBLIC_SENTRY_DSN` with client/server/edge configs. Both use `SENTRY_TRACES_SAMPLE_RATE=0.1` (10%). Config: `app/core/sentry.py`, `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`.
 
 # External Dependencies
 - Anthropic (Claude API)
@@ -91,3 +92,4 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - PostgreSQL
 - Redis
 - Elasticsearch
+- Sentry (error monitoring)

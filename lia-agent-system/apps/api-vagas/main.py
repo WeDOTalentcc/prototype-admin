@@ -9,21 +9,13 @@ import logging
 import os
 
 import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.starlette import StarletteIntegration
 from fastapi import FastAPI, Request as FastAPIRequest
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-if _sentry_dsn := os.getenv("SENTRY_DSN"):
-    sentry_sdk.init(
-        dsn=_sentry_dsn,
-        integrations=[FastApiIntegration(), StarletteIntegration()],
-        traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
-        environment=os.getenv("APP_ENV", "development"),
-        release=os.getenv("APP_VERSION", "0.1.0"),
-    )
+from app.core.sentry import init_sentry
+init_sentry()
 
 from app.core.config import settings
 from app.core.database import init_db

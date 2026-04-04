@@ -94,17 +94,27 @@ def init_sentry(dsn: Optional[str] = None) -> bool:
             logger.info("[Sentry] DSN não configurado — Sentry desativado")
             return False
 
+        import os
+        _traces_rate = float(os.getenv('SENTRY_TRACES_SAMPLE_RATE', '0.1'))
+        try:
+            from lia_config.config import settings as _settings
+            _traces_rate = getattr(_settings, 'SENTRY_TRACES_SAMPLE_RATE', _traces_rate)
+        except Exception:
+            pass
+
         sentry_sdk.init(
             dsn=_dsn,
             integrations=[
                 StarletteIntegration(transaction_style="endpoint"),
                 FastApiIntegration(transaction_style="endpoint"),
             ],
-            traces_sample_rate=0.1,
+            traces_sample_rate=_traces_rate,
             before_send=_before_send,
-            send_default_pii=False,  # LGPD: nunca enviar PII automaticamente
+            send_default_pii=False,
+            environment=os.getenv('APP_ENV', 'development'),
+            release=os.getenv('APP_VERSION', '0.1.0'),
         )
-        logger.info("[Sentry] Inicializado (traces_sample_rate=0.1)")
+        logger.info("[Sentry] Inicializado (traces_sample_rate=%s)", _traces_rate)
         return True
 
     except ImportError:

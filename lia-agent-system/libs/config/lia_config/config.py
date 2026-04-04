@@ -186,6 +186,10 @@ class AppSettings(BaseSettings):
     # Default Company (dev/demo)
     DEFAULT_COMPANY_UUID: str = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 
+    # StackOne
+    STACKONE_API_URL: str = "https://api.stackone.com"
+    ENABLE_STACKONE: bool = False
+
     # Feature Flags
     ENABLE_PEARCH_AI: bool = False
     ENABLE_SYNTHFLOW: bool = False
