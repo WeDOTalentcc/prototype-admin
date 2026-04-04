@@ -600,6 +600,58 @@ export function AwaitingBadge({ className }: AwaitingBadgeProps) {
   )
 }
 
+export interface HiredBadgeProps {
+  jobTitle?: string
+  className?: string
+}
+
+export function HiredBadge({ jobTitle, className }: HiredBadgeProps) {
+  const titleText = jobTitle ? `Contratado: ${jobTitle}` : 'Contratado'
+  return (
+    <div
+      className={cn(
+        'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
+        'bg-status-success/15 dark:bg-status-success/20',
+        'border border-status-success/30',
+        className
+      )}
+      title={titleText}
+    >
+      <Trophy className="w-2 h-2 flex-shrink-0 text-status-success" />
+      <span className="text-micro font-semibold text-status-success">
+        Contratado
+      </span>
+    </div>
+  )
+}
+
+export interface OffLimitsBadgeProps {
+  reason?: string
+  className?: string
+}
+
+export function OffLimitsBadge({ reason, className }: OffLimitsBadgeProps) {
+  const titleText = reason ? `OFF LIMITS: ${reason}` : 'OFF LIMITS'
+  return (
+    <div
+      className={cn(
+        'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full',
+        'bg-status-error/15 dark:bg-status-error/20',
+        'border border-status-error/30',
+        className
+      )}
+      title={titleText}
+    >
+      <XCircle className="w-2 h-2 flex-shrink-0 text-status-error" />
+      <span className="text-micro font-bold text-status-error uppercase tracking-wide">
+        Off Limits
+      </span>
+    </div>
+  )
+}
+
+HiredBadge.displayName = 'HiredBadge'
+OffLimitsBadge.displayName = 'OffLimitsBadge'
 StatusBadge.displayName = 'StatusBadge'
 ChannelBadge.displayName = 'ChannelBadge'
 SourceBadge.displayName = 'SourceBadge'

@@ -89,6 +89,10 @@ export interface KanbanCandidate {
     startYear: number
     endYear: number | null
   }>
+  is_hired?: boolean
+  hired_job_title?: string
+  is_blacklisted?: boolean
+  blacklist_reason?: string
 }
 
 export interface CandidatesDataMap {

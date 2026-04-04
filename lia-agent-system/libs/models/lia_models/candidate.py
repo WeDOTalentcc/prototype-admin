@@ -5,7 +5,7 @@ from datetime import datetime, date
 from typing import Optional
 from sqlalchemy import Column, String, Integer, DateTime, Date, Text, JSON, Boolean, Float, UniqueConstraint, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 import uuid
 
 from lia_config.database import Base
@@ -225,6 +225,16 @@ class Candidate(Base):
     is_active = Column(Boolean, default=True, index=True)
     is_blacklisted = Column(Boolean, default=False)
     blacklist_reason = Column(Text, nullable=True)
+
+    # Hired tracking
+    is_hired = Column(Boolean, default=False)
+    hired_at = Column(DateTime, nullable=True)
+    hired_job_id = Column(String(255), nullable=True)
+    hired_job_title = Column(String(500), nullable=True)
+
+    # OFF LIMITS audit trail
+    blacklisted_by = Column(String(255), nullable=True)
+    blacklisted_at = Column(DateTime, nullable=True)
     
     # Communication preferences
     preferred_contact_method = Column(String(50), default="email")
@@ -372,6 +382,7 @@ class VacancyCandidate(Base):
     
     status = Column(String(50), default="sourced", index=True)
     stage = Column(String(50), default="initial", index=True)
+    previous_status = Column(String(50), nullable=True)
     
     added_by = Column(String(255), nullable=True)
     notes = Column(Text, nullable=True)
@@ -387,9 +398,21 @@ class VacancyCandidate(Base):
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    VALID_STATUSES = [
+        "sourced", "approved", "rejected", "pending",
+        "hired", "not_selected", "on_hold", "cancelled",
+        "shortlisted", "screening", "interview", "offer",
+    ]
+
     __table_args__ = (
         UniqueConstraint('vacancy_id', 'candidate_id', name='uq_vacancy_candidate'),
     )
+
+    @validates('status')
+    def validate_status(self, key, value):
+        if value and value not in self.VALID_STATUSES:
+            raise ValueError(f"Invalid VacancyCandidate status: '{value}'. Valid: {self.VALID_STATUSES}")
+        return value
     
     def __repr__(self):
         return f"<VacancyCandidate vacancy:{self.vacancy_id} candidate:{self.candidate_id}>"

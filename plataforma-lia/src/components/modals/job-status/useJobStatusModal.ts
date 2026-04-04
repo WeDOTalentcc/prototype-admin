@@ -8,22 +8,24 @@ import { useJobUIStore } from "@/stores/job-ui-store"
 import type {
   PauseData,
   ActivateData,
+  CancelData,
   JobItem,
   CandidateItem,
   FlowStep,
   NotificationChannel,
   RecruiterChannel,
 } from "./types"
-import { PAUSE_TEMPLATE_SITUATIONS } from "./types"
+import { PAUSE_TEMPLATE_SITUATIONS, CANCEL_TEMPLATE_SITUATIONS } from "./types"
 
 interface UseJobStatusModalParams {
   isOpen: boolean
   onClose: () => void
   jobs: JobItem[]
   candidates: CandidateItem[]
-  mode: 'pause' | 'activate'
-  onPause?: (data: PauseData) => Promise<void>
-  onActivate?: (data: ActivateData) => Promise<void>
+  mode: 'pause' | 'activate' | 'cancel'
+  onPause?: (data: PauseData) => Promise<void | unknown>
+  onActivate?: (data: ActivateData) => Promise<void | unknown>
+  onCancel?: (data: CancelData) => Promise<void | unknown>
   onStatusChange?: (jobIds: string[], newStatus: string, options: {
     reason?: string
     notifyRecruiters?: boolean
@@ -47,6 +49,7 @@ export function useJobStatusModal({
   mode,
   onPause,
   onActivate,
+  onCancel,
   onStatusChange,
   onNavigateToJobWithCommunication,
 }: UseJobStatusModalParams) {
@@ -73,7 +76,15 @@ export function useJobStatusModal({
 
   const { templates, loading: templatesLoading } = useCommunicationTemplates()
 
+  const [cancelReason, setCancelReason] = useState("")
+  const [notificationReport, setNotificationReport] = useState<{
+    success_count?: number
+    failure_count?: number
+    details?: Array<{ candidate_id: string; success?: boolean; error?: string }>
+  } | undefined>(undefined)
+
   const isPauseMode = mode === 'pause'
+  const isCancelMode = mode === 'cancel'
   const jobIds = useMemo(() => jobs.map(j => j.id), [jobs])
 
   const allCandidates = useMemo(() => {
@@ -108,13 +119,15 @@ export function useJobStatusModal({
     return jobs.reduce((sum, job) => sum + (job.tests_scheduled || 0), 0)
   }, [jobs])
 
+  const templateSituations = isCancelMode ? CANCEL_TEMPLATE_SITUATIONS : PAUSE_TEMPLATE_SITUATIONS
+
   const availableTemplates = useMemo(() => {
     return templates.filter(t =>
-      PAUSE_TEMPLATE_SITUATIONS.includes(t.situation as typeof PAUSE_TEMPLATE_SITUATIONS[number]) &&
+      templateSituations.includes(t.situation as typeof templateSituations[number]) &&
       (notificationChannel === 'both' || t.channel === notificationChannel) &&
       t.isActive
     )
-  }, [templates, notificationChannel])
+  }, [templates, notificationChannel, templateSituations])
 
   useEffect(() => {
     if (isOpen) {
@@ -208,7 +221,12 @@ export function useJobStatusModal({
   }, [templates, jobs])
 
   const getSuccessMessage = useCallback(() => {
-    if (isPauseMode) {
+    if (isCancelMode) {
+      const parts = ['Vaga(s) cancelada(s) com sucesso']
+      if (notifyApplicants) parts.push(`${selectedCandidateIds.size} candidato(s) notificado(s)`)
+      if (notifyRecruiters) parts.push('recrutadores notificados')
+      return parts.join('. ') + '.'
+    } else if (isPauseMode) {
       const parts = ['Vaga(s) pausada(s) com sucesso']
       if (cancelInterviews && totalInterviews > 0) parts.push(`${totalInterviews} entrevistas desmarcadas`)
       if (cancelScreenings && totalScreenings > 0) parts.push(`${totalScreenings} triagens canceladas`)
@@ -218,7 +236,7 @@ export function useJobStatusModal({
     } else {
       return `${jobs.length} vaga(s) ativada(s) com sucesso.`
     }
-  }, [isPauseMode, cancelInterviews, totalInterviews, cancelScreenings, totalScreenings, notifyApplicants, selectedCandidateIds.size, notifyRecruiters, jobs.length])
+  }, [isCancelMode, isPauseMode, cancelInterviews, totalInterviews, cancelScreenings, totalScreenings, notifyApplicants, selectedCandidateIds.size, notifyRecruiters, jobs.length])
 
   const handleProceed = useCallback(() => {
     if (hasProposalBlock && isPauseMode) {
@@ -226,14 +244,14 @@ export function useJobStatusModal({
       return
     }
 
-    if (isPauseMode && notifyApplicants && onNavigateToJobWithCommunication) {
+    if ((isPauseMode || isCancelMode) && notifyApplicants && onNavigateToJobWithCommunication) {
       handleSubmitAndNavigate()
-    } else if (isPauseMode && notifyApplicants) {
+    } else if ((isPauseMode || isCancelMode) && notifyApplicants) {
       setCurrentStep('communication')
     } else {
       setCurrentStep('confirmation')
     }
-  }, [hasProposalBlock, isPauseMode, candidatesInProposal.length, notifyApplicants, onNavigateToJobWithCommunication])
+  }, [hasProposalBlock, isPauseMode, isCancelMode, candidatesInProposal.length, notifyApplicants, onNavigateToJobWithCommunication])
 
   const handleCommunicationProceed = useCallback(() => {
     setCurrentStep('confirmation')
@@ -288,7 +306,34 @@ export function useJobStatusModal({
     setIsSubmitting(true)
 
     try {
-      if (isPauseMode) {
+      if (isCancelMode) {
+        if (onCancel) {
+          const data: CancelData = {
+            jobIds,
+            cancelReason: cancelReason === 'other' ? customReason : cancelReason,
+            closeReason: cancelReason === 'other' ? customReason : cancelReason,
+            notifyApplicants,
+            notificationChannel: notifyApplicants ? notificationChannel : undefined,
+            notificationMessage: notifyApplicants ? notificationMessage : undefined,
+            notificationSubject: notifyApplicants && notificationChannel !== 'whatsapp' ? notificationSubject : undefined,
+            candidateIds: notifyApplicants ? Array.from(selectedCandidateIds) : undefined,
+            notifyStages: notifyApplicants ? ['*'] : undefined,
+            sendRecruiterSummary: notifyRecruiters,
+            recruiterNotificationChannel: recruiterChannel,
+          }
+          const result = await onCancel(data)
+          if (result && typeof result === 'object' && 'notifications_sent' in (result as Record<string, unknown>)) {
+            setNotificationReport((result as Record<string, unknown>).notifications_sent as typeof notificationReport)
+          }
+        } else if (onStatusChange) {
+          onStatusChange(jobIds, 'Cancelada', {
+            reason: cancelReason === 'other' ? customReason : cancelReason,
+            notifyRecruiters,
+            notifyCandidates: notifyApplicants,
+          })
+        }
+        setCurrentStep('complete')
+      } else if (isPauseMode) {
         if (onPause) {
           const data: PauseData = {
             jobIds,
@@ -304,7 +349,10 @@ export function useJobStatusModal({
             sendRecruiterSummary: notifyRecruiters,
             recruiterNotificationChannel: recruiterChannel,
           }
-          await onPause(data)
+          const result = await onPause(data)
+          if (result && typeof result === 'object' && 'notifications_sent' in (result as Record<string, unknown>)) {
+            setNotificationReport((result as Record<string, unknown>).notifications_sent as typeof notificationReport)
+          }
         } else if (onStatusChange) {
           onStatusChange(jobIds, 'Paralisada', {
             reason: pauseReason === 'other' ? customReason : pauseReason,
@@ -348,8 +396,10 @@ export function useJobStatusModal({
   }, [onClose])
 
   return {
-    currentStep, setCurrentStep, isSubmitting, isPauseMode, jobIds,
+    currentStep, setCurrentStep, isSubmitting, isPauseMode, isCancelMode, jobIds,
+    notificationReport, setNotificationReport,
     pauseReason, setPauseReason, customReason, setCustomReason,
+    cancelReason, setCancelReason,
     cancelScreenings, setCancelScreenings, cancelInterviews, setCancelInterviews,
     cancelTests, setCancelTests,
     notifyApplicants, setNotifyApplicants, notificationChannel, setNotificationChannel,

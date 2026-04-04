@@ -32,7 +32,7 @@ import {
   Fingerprint
 } from 'lucide-react'
 import { ScoreIconButton } from '@/components/ui/score-icon-button'
-import { WarningBadge, SourceBadge, StatusBadge, ChannelBadge, DateTimeBadge, OriginBadge, AwaitingBadge } from '@/components/ui/status-badge'
+import { WarningBadge, SourceBadge, StatusBadge, ChannelBadge, DateTimeBadge, OriginBadge, AwaitingBadge, HiredBadge, OffLimitsBadge } from '@/components/ui/status-badge'
 import { textStyles, buttonStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
 import { isApplicationSource } from '@/lib/recruitment-stages'
 import type { KanbanCandidate } from '../types'
@@ -335,6 +335,14 @@ const CandidateCard = memo(function CandidateCard({
         </div>
 
         <div className="mt-2 flex flex-wrap gap-1">
+          {candidate.is_hired && (
+            <HiredBadge jobTitle={candidate.hired_job_title} />
+          )}
+
+          {candidate.is_blacklisted && (
+            <OffLimitsBadge reason={candidate.blacklist_reason} />
+          )}
+
           {candidate.warnings && candidate.warnings > 0 && (
             <WarningBadge days={candidate.warnings} />
           )}

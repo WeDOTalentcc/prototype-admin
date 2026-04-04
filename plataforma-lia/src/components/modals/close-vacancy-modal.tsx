@@ -42,7 +42,9 @@ import { liaApi } from "@/services/lia-api"
 import { useAuth } from "@/contexts/auth-context"
 
 export interface CloseVacancyPayload {
-  hired_candidate_id: string
+  hired_candidate_ids: string[]
+  hired_candidate_id?: string
+  close_reason?: string
   hired_notification: {
     channel: 'email' | 'whatsapp' | 'both'
     message: string
@@ -64,9 +66,11 @@ export interface CloseVacancyModalProps {
   isOpen: boolean
   onClose: () => void
   vacancy: { id: string; title: string; department?: string }
-  hiredCandidate: { id: string; name: string; email?: string; phone?: string }
+  hiredCandidates?: Array<{ id: string; name: string; email?: string; phone?: string }>
+  hiredCandidate?: { id: string; name: string; email?: string; phone?: string }
   otherCandidates: Array<{ id: string; name: string; email?: string; phone?: string; stage: string }>
   onConfirm: (data: CloseVacancyPayload) => Promise<void>
+  closeWithoutHire?: boolean
 }
 
 type Channel = 'email' | 'whatsapp' | 'both'
@@ -102,13 +106,20 @@ export function CloseVacancyModal({
   isOpen,
   onClose,
   vacancy,
-  hiredCandidate,
+  hiredCandidates: hiredCandidatesProp,
+  hiredCandidate: hiredCandidateProp,
   otherCandidates,
   onConfirm,
+  closeWithoutHire = false,
 }: CloseVacancyModalProps) {
   const { user } = useAuth()
-  const [currentStep, setCurrentStep] = useState(1)
+
+  const hiredCandidates = hiredCandidatesProp || (hiredCandidateProp ? [hiredCandidateProp] : [])
+  const skipStep1 = closeWithoutHire || hiredCandidates.length === 0
+
+  const [currentStep, setCurrentStep] = useState(skipStep1 ? 2 : 1)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [closingWithoutHire, setClosingWithoutHire] = useState(skipStep1)
   
   const [hiredChannel, setHiredChannel] = useState<Channel>('email')
   const [hiredTemplateId, setHiredTemplateId] = useState<string>('')
@@ -140,16 +151,16 @@ export function CloseVacancyModal({
   }, [templates, othersChannel])
   
   useEffect(() => {
-    if (step1Templates.length > 0 && !hiredTemplateId) {
+    if (step1Templates.length > 0 && !hiredTemplateId && hiredCandidates.length > 0) {
       const defaultTemplate = step1Templates[0]
       setHiredTemplateId(defaultTemplate.id)
       setHiredMessage(replaceTemplateVariables(
         defaultTemplate.body,
-        hiredCandidate.name,
+        hiredCandidates[0].name,
         vacancy.title
       ))
     }
-  }, [step1Templates, hiredTemplateId, hiredCandidate.name, vacancy.title])
+  }, [step1Templates, hiredTemplateId, hiredCandidates, vacancy.title])
   
   useEffect(() => {
     if (step2Templates.length > 0 && !othersTemplateId) {
@@ -167,7 +178,7 @@ export function CloseVacancyModal({
   
   useEffect(() => {
     if (!isOpen) {
-      setCurrentStep(1)
+      setCurrentStep(skipStep1 ? 2 : 1)
       setHiredChannel('email')
       setHiredTemplateId('')
       setHiredMessage('')
@@ -176,7 +187,7 @@ export function CloseVacancyModal({
       setOthersMessage('')
       setSelectedCandidateIds([])
     }
-  }, [isOpen])
+  }, [isOpen, skipStep1])
   
   const handleHiredTemplateChange = useCallback((templateId: string) => {
     setHiredTemplateId(templateId)
@@ -184,11 +195,11 @@ export function CloseVacancyModal({
     if (template) {
       setHiredMessage(replaceTemplateVariables(
         template.body,
-        hiredCandidate.name,
+        hiredCandidates[0]?.name || '',
         vacancy.title
       ))
     }
-  }, [step1Templates, hiredCandidate.name, vacancy.title])
+  }, [step1Templates, hiredCandidates, vacancy.title])
   
   const handleOthersTemplateChange = useCallback((templateId: string) => {
     setOthersTemplateId(templateId)
@@ -227,16 +238,17 @@ export function CloseVacancyModal({
   }, [selectedCandidateIds.length, otherCandidates])
   
   const handleNextStep = useCallback(() => {
-    if (!hiredTemplateId) {
+    if (!skipStep1 && !hiredTemplateId) {
       toast.error('Selecione um template para o candidato contratado')
       return
     }
     setCurrentStep(2)
-  }, [hiredTemplateId])
+  }, [hiredTemplateId, skipStep1])
   
   const handlePreviousStep = useCallback(() => {
+    if (skipStep1) return
     setCurrentStep(1)
-  }, [])
+  }, [skipStep1])
   
   const handleConfirm = useCallback(async () => {
     if (!othersTemplateId && selectedCandidateIds.length > 0) {
@@ -256,14 +268,17 @@ export function CloseVacancyModal({
     
     setIsSubmitting(true)
     try {
+      const effectiveHires = closingWithoutHire ? [] : hiredCandidates
       const payload: CloseVacancyPayload = {
-        hired_candidate_id: hiredCandidate.id,
+        hired_candidate_ids: effectiveHires.map(c => c.id),
+        hired_candidate_id: effectiveHires[0]?.id,
+        close_reason: effectiveHires.length > 0 ? 'filled' : 'not_filled',
         hired_notification: {
           channel: hiredChannel,
           message: hiredMessage,
           subject: (hiredChannel === 'email' || hiredChannel === 'both') ? `Parabéns! Você foi contratado - ${vacancy.title}` : undefined,
-          candidate_email: hiredCandidate.email,
-          candidate_phone: hiredCandidate.phone,
+          candidate_email: hiredCandidates[0]?.email,
+          candidate_phone: hiredCandidates[0]?.phone,
         },
         other_notifications: {
           candidate_ids: selectedCandidateIds,
@@ -281,8 +296,8 @@ export function CloseVacancyModal({
       liaApi.updateJobOutcome({
         company_id: tenantId,
         job_id: vacancy.id,
-        outcome_status: 'hired',
-        hire_quality_score: 1.0
+        outcome_status: effectiveHires.length > 0 ? 'hired' : 'closed_no_hire',
+        hire_quality_score: effectiveHires.length > 0 ? 1.0 : undefined
       }).catch(() => {})
       
       toast.success('Vaga fechada com sucesso!')
@@ -295,7 +310,7 @@ export function CloseVacancyModal({
   }, [
     hiredChannel,
     hiredMessage,
-    hiredCandidate,
+    hiredCandidates,
     vacancy,
     othersChannel,
     othersMessage,
@@ -313,7 +328,7 @@ export function CloseVacancyModal({
     <div className="grid grid-cols-3 gap-2">
       <Button
         type="button"
-        variant={channel === 'email' ? 'default' : 'outline'}
+        variant={channel === 'email' ? 'primary' : 'outline'}
         size="sm"
         onClick={() => onChange('email')}
         disabled={disabled}
@@ -329,7 +344,7 @@ export function CloseVacancyModal({
       </Button>
       <Button
         type="button"
-        variant={channel === 'whatsapp' ? 'default' : 'outline'}
+        variant={channel === 'whatsapp' ? 'primary' : 'outline'}
         size="sm"
         onClick={() => onChange('whatsapp')}
         disabled={disabled}
@@ -345,7 +360,7 @@ export function CloseVacancyModal({
       </Button>
       <Button
         type="button"
-        variant={channel === 'both' ? 'default' : 'outline'}
+        variant={channel === 'both' ? 'primary' : 'outline'}
         size="sm"
         onClick={() => onChange('both')}
         disabled={disabled}
@@ -365,34 +380,36 @@ export function CloseVacancyModal({
   
   const renderStep1 = () => (
     <div className="space-y-6">
-      <div className={cn(cardStyles.default, 'p-4 border-status-success/30 bg-status-success/10')}>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <Avatar className="h-14 w-14 border-2 border-status-success/30">
-              <AvatarFallback className="bg-status-success/15 text-status-success text-lg font-medium">
-                {getInitials(hiredCandidate.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="absolute -bottom-1 -right-1 bg-status-success rounded-full p-1">
-              <Check className="h-3 w-3 text-white" />
+      {hiredCandidates.map((hc) => (
+        <div key={hc.id} className={cn(cardStyles.default, 'p-4 border-status-success/30 bg-status-success/10')}>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Avatar className="h-14 w-14 border-2 border-status-success/30">
+                <AvatarFallback className="bg-status-success/15 text-status-success text-lg font-medium">
+                  {getInitials(hc.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-1 -right-1 bg-status-success rounded-full p-1">
+                <Check className="h-3 w-3 text-white" />
+              </div>
             </div>
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className={cn(textStyles.titleLarge, 'text-status-success')}>
-                {hiredCandidate.name}
-              </span>
-              <Badge className={cn(badgeStyles.success, 'gap-1')}>
-                <PartyPopper className="h-3 w-3" />
-                Contratado
-              </Badge>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className={cn(textStyles.titleLarge, 'text-status-success')}>
+                  {hc.name}
+                </span>
+                <Badge className={cn(badgeStyles.success, 'gap-1')}>
+                  <PartyPopper className="h-3 w-3" />
+                  Contratado
+                </Badge>
+              </div>
+              <p className={cn(textStyles.description, 'text-status-success')}>
+                {hc.email || hc.phone || 'Contato não informado'}
+              </p>
             </div>
-            <p className={cn(textStyles.description, 'text-status-success')}>
-              {hiredCandidate.email || hiredCandidate.phone || 'Contato não informado'}
-            </p>
           </div>
         </div>
-      </div>
+      ))}
       
       <div className="space-y-4">
         <div className="space-y-2">
@@ -585,31 +602,33 @@ export function CloseVacancyModal({
             </div>
           </div>
           
-          <div className="flex items-center gap-2 pt-4">
-            <div
-              className={cn(
-                'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
-                currentStep === 1
-                  ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text'
-                  : 'bg-lia-bg-tertiary text-lia-text-secondary'
-              )}
-            >
-              <span className="font-medium">1</span>
-              <span className="hidden sm:inline">Parabéns</span>
+          {!skipStep1 && (
+            <div className="flex items-center gap-2 pt-4">
+              <div
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
+                  currentStep === 1
+                    ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text'
+                    : 'bg-lia-bg-tertiary text-lia-text-secondary'
+                )}
+              >
+                <span className="font-medium">1</span>
+                <span className="hidden sm:inline">Parabéns</span>
+              </div>
+              <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
+              <div
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
+                  currentStep === 2
+                    ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text'
+                    : 'bg-lia-bg-tertiary text-lia-text-secondary'
+                )}
+              >
+                <span className="font-medium">2</span>
+                <span className="hidden sm:inline">Feedback</span>
+              </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
-            <div
-              className={cn(
-                'flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors',
-                currentStep === 2
-                  ? 'bg-lia-btn-primary-bg dark:bg-lia-btn-primary-bg text-lia-btn-primary-text'
-                  : 'bg-lia-bg-tertiary text-lia-text-secondary'
-              )}
-            >
-              <span className="font-medium">2</span>
-              <span className="hidden sm:inline">Feedback</span>
-            </div>
-          </div>
+          )}
         </DialogHeader>
         
         <div className="py-4">
@@ -617,7 +636,7 @@ export function CloseVacancyModal({
         </div>
         
         <DialogFooter className="flex gap-2 sm:gap-2 border-t border-lia-border-subtle bg-lia-bg-secondary pt-4">
-          {currentStep === 2 && (
+          {currentStep === 2 && !skipStep1 && (
             <Button
               type="button"
               variant="outline"
@@ -643,15 +662,25 @@ export function CloseVacancyModal({
           </Button>
           
           {currentStep === 1 ? (
-            <Button
-              type="button"
-              onClick={handleNextStep}
-              disabled={!hiredTemplateId || templatesLoading}
-              className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
-            >
-              Próximo
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Button>
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => { setClosingWithoutHire(true); setCurrentStep(2) }}
+                className="h-9 px-4 text-xs font-medium border border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover"
+              >
+                Fechar sem contratar
+              </Button>
+              <Button
+                type="button"
+                onClick={() => { setClosingWithoutHire(false); handleNextStep() }}
+                disabled={!hiredTemplateId || templatesLoading}
+                className="flex items-center gap-2 h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover"
+              >
+                Próximo
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </>
           ) : (
             <Button
               type="button"

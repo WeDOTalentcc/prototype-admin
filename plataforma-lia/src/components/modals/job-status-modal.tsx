@@ -9,16 +9,17 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Pause, Play, ChevronRight, Loader2 } from "lucide-react"
+import { Pause, Play, XCircle, ChevronRight, Loader2 } from "lucide-react"
 import { useJobStatusModal } from "./job-status/useJobStatusModal"
 import { PauseOptionsStep } from "./job-status/PauseOptionsStep"
 import { ActivateOptionsStep } from "./job-status/ActivateOptionsStep"
+import { CancelOptionsStep } from "./job-status/CancelOptionsStep"
 import { CommunicationStep } from "./job-status/CommunicationStep"
 import { ConfirmationStep } from "./job-status/ConfirmationStep"
 import { CompleteStep } from "./job-status/CompleteStep"
 import { StepIndicator } from "./job-status/StepIndicator"
 
-export type { PauseData, ActivateData } from "./job-status/types"
+export type { PauseData, ActivateData, CancelData } from "./job-status/types"
 
 interface JobStatusModalProps {
   isOpen: boolean
@@ -43,9 +44,10 @@ interface JobStatusModalProps {
     stage: string
     jobId: string
   }>
-  mode: 'pause' | 'activate'
-  onPause?: (data: import("./job-status/types").PauseData) => Promise<void>
-  onActivate?: (data: import("./job-status/types").ActivateData) => Promise<void>
+  mode: 'pause' | 'activate' | 'cancel'
+  onPause?: (data: import("./job-status/types").PauseData) => Promise<void | unknown>
+  onActivate?: (data: import("./job-status/types").ActivateData) => Promise<void | unknown>
+  onCancel?: (data: import("./job-status/types").CancelData) => Promise<void | unknown>
   onStatusChange?: (jobIds: string[], newStatus: string, options: {
     reason?: string
     notifyRecruiters?: boolean
@@ -69,6 +71,7 @@ export function JobStatusModal({
   mode,
   onPause,
   onActivate,
+  onCancel,
   onStatusChange,
   onNavigateToJobWithCommunication
 }: JobStatusModalProps) {
@@ -80,6 +83,7 @@ export function JobStatusModal({
     mode,
     onPause,
     onActivate,
+    onCancel,
     onStatusChange,
     onNavigateToJobWithCommunication,
   })
@@ -92,7 +96,9 @@ export function JobStatusModal({
         <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-md flex items-center justify-center bg-lia-bg-tertiary">
-              {state.isPauseMode ? (
+              {state.isCancelMode ? (
+                <XCircle className="w-4 h-4 text-status-error" />
+              ) : state.isPauseMode ? (
                 <Pause className="w-4 h-4 text-lia-text-secondary" />
               ) : (
                 <Play className="w-4 h-4 text-lia-text-secondary" />
@@ -100,7 +106,7 @@ export function JobStatusModal({
             </div>
             <div>
               <DialogTitle className="text-sm font-semibold text-lia-text-primary">
-                {state.isPauseMode ? 'Pausar Vagas' : 'Ativar Vagas'}
+                {state.isCancelMode ? 'Cancelar Vagas' : state.isPauseMode ? 'Pausar Vagas' : 'Ativar Vagas'}
               </DialogTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5" aria-live="polite" aria-atomic="true">
                 {jobs.length} vaga{jobs.length > 1 ? 's' : ''} selecionada{jobs.length > 1 ? 's' : ''}
@@ -116,7 +122,21 @@ export function JobStatusModal({
             notifyApplicants={state.notifyApplicants}
           />
 
-          {state.currentStep === 'options' && (state.isPauseMode ? (
+          {state.currentStep === 'options' && (state.isCancelMode ? (
+            <CancelOptionsStep
+              jobs={jobs}
+              cancelReason={state.cancelReason}
+              customReason={state.customReason}
+              notifyRecruiters={state.notifyRecruiters}
+              recruiterChannel={state.recruiterChannel}
+              notifyApplicants={state.notifyApplicants}
+              onCancelReasonChange={state.setCancelReason}
+              onCustomReasonChange={state.setCustomReason}
+              onNotifyRecruitersChange={state.setNotifyRecruiters}
+              onRecruiterChannelChange={state.setRecruiterChannel}
+              onNotifyApplicantsChange={state.setNotifyApplicants}
+            />
+          ) : state.isPauseMode ? (
             <PauseOptionsStep
               jobs={jobs}
               candidatesInProposal={state.candidatesInProposal}
@@ -194,7 +214,7 @@ export function JobStatusModal({
           )}
 
           {state.currentStep === 'complete' && (
-            <CompleteStep successMessage={state.getSuccessMessage()} />
+            <CompleteStep successMessage={state.getSuccessMessage()} notificationReport={state.notificationReport} />
           )}
         </div>
 
@@ -226,7 +246,7 @@ export function JobStatusModal({
               </Button>
               <Button
                 onClick={state.currentStep === 'options' ? state.handleProceed : state.currentStep === 'communication' ? state.handleCommunicationProceed : state.handleSubmit}
-                disabled={state.isSubmitting || (state.isPauseMode && state.hasProposalBlock)}
+                disabled={state.isSubmitting || (state.isPauseMode && state.hasProposalBlock) || (state.isCancelMode && !state.cancelReason)}
                 className="h-9 px-4 text-xs font-medium text-white bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover disabled:opacity-50"
               >
                 {state.isSubmitting ? (
@@ -240,6 +260,11 @@ export function JobStatusModal({
                   <>
                     Revisar
                     <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                  </>
+                ) : state.isCancelMode ? (
+                  <>
+                    <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                    Cancelar {jobs.length} Vaga{jobs.length > 1 ? 's' : ''}
                   </>
                 ) : state.isPauseMode ? (
                   <>

@@ -1149,6 +1149,32 @@ LIA - Assistente de Recrutamento"""
         return {"subject": subject, "body": body}
 
 
+    @staticmethod
+    def job_cancelled(
+        candidate_name: str,
+        job_title: str,
+        company_name: Optional[str] = None
+    ) -> Dict[str, str]:
+        """Notify candidates that job was cancelled."""
+
+        subject = f"Atualização do processo - {job_title}"
+
+        body = f"""Olá {candidate_name},
+
+Gostaríamos de informar que o processo seletivo para a posição de {job_title} foi encerrado.
+
+Esta decisão não está relacionada ao seu desempenho ou participação no processo. Agradecemos sinceramente seu tempo e dedicação.
+
+Seu perfil permanece em nosso banco de talentos e entraremos em contato caso surjam novas oportunidades alinhadas ao seu perfil.
+
+Desejamos sucesso em sua carreira!
+
+Atenciosamente,
+{company_name or 'Equipe de Recrutamento'}"""
+
+        return {"subject": subject, "body": body}
+
+
 class WhatsAppTemplates:
     """WhatsApp templates for candidate communication."""
     
@@ -1443,6 +1469,43 @@ Infelizmente você não compareceu às entrevistas agendadas para *{job_title}* 
 Caso ainda tenha interesse, por favor entre em contato conosco nas próximas *48 horas*.
 
 Se não conseguir, seu processo será encerrado. Desejamos sucesso na sua jornada! 🍀"""
+
+
+    @staticmethod
+    def job_paused(candidate_name: str, job_title: str) -> str:
+        """Generate job paused WhatsApp message."""
+
+        return f"""Olá {candidate_name}! 👋
+
+Informamos que o processo para *{job_title}* está temporariamente pausado. Não se preocupe, isso não tem relação com seu desempenho.
+
+Assim que tivermos novidades, entraremos em contato. Seu perfil continua sendo considerado.
+
+Agradecemos sua paciência! 🙏"""
+
+    @staticmethod
+    def job_reactivated(candidate_name: str, job_title: str) -> str:
+        """Generate job reactivated WhatsApp message."""
+
+        return f"""Oi {candidate_name}! 🎉
+
+Boas notícias! O processo para *{job_title}* foi reativado e você continua sendo considerado(a)!
+
+Caso tenha mudanças na sua disponibilidade, é só me avisar.
+
+Obrigado pela paciência! 😊"""
+
+    @staticmethod
+    def job_cancelled(candidate_name: str, job_title: str) -> str:
+        """Generate job cancelled WhatsApp message."""
+
+        return f"""Olá {candidate_name}! 👋
+
+Informamos que o processo para *{job_title}* foi encerrado. Essa decisão não tem relação com seu desempenho.
+
+Seu perfil permanece em nosso banco de talentos e entraremos em contato sobre novas oportunidades.
+
+Desejamos sucesso! 🍀"""
 
 
 class RecruiterNotificationTemplates:

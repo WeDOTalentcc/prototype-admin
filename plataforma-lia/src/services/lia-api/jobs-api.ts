@@ -101,10 +101,23 @@ export async function deleteJobVacancy(id: string): Promise<{ success: boolean; 
   return response.json()
 }
 
-export async function updateJobVacancyStatus(id: string, status: string): Promise<{ success: boolean; old_status: string; new_status: string }> {
-  const response = await fetch(`${BACKEND_URL}/job-vacancies/${id}/status?status=${encodeURIComponent(status)}`, {
+export async function updateJobVacancyStatus(
+  id: string,
+  status: string,
+  options?: {
+    close_reason?: string
+    notify_stages?: string[]
+    notification_channel?: string
+    notification_message?: string
+    notification_subject?: string
+    pause_reason?: string
+  }
+): Promise<{ success: boolean; old_status: string; new_status: string; notifications_sent?: { success_count: number; failure_count: number; details?: Array<{ candidate_id: string; success?: boolean; error?: string }> } }> {
+  const body: Record<string, unknown> = { status, ...options }
+  const response = await fetch(`${BACKEND_URL}/job-vacancies/${id}/status`, {
     method: 'PATCH',
-    headers: getAuthHeaders(),
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
   })
 
   if (!response.ok) {
@@ -608,7 +621,7 @@ export async function recordFastTrackUsage(params: {
 export async function updateJobOutcome(params: {
   company_id: string
   job_id: string
-  outcome_status: 'filled' | 'hired' | 'cancelled' | 'expired' | 'closed'
+  outcome_status: 'filled' | 'hired' | 'cancelled' | 'expired' | 'closed' | 'closed_no_hire'
   time_to_fill_days?: number
   hire_quality_score?: number
 }): Promise<{ success: boolean; error?: string }> {

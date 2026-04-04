@@ -81,7 +81,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
   } = useJobsModalHandlers(props)
 
   const {
-    handlePause, handleActivate, handleStatusNavigate,
+    handlePause, handleCancel, handleActivate, handleStatusNavigate,
     handleAssign, handleCreateWithWizard, handleJobCreated,
     handleEditSave, handleReactivateScreening,
   } = useJobsStatusHandlers(props)
@@ -211,6 +211,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         }))}
         mode={statusModalMode}
         onPause={handlePause}
+        onCancel={handleCancel}
         onActivate={handleActivate}
         onNavigateToJobWithCommunication={handleStatusNavigate}
       />

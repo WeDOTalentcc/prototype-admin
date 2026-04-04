@@ -295,16 +295,42 @@ class BulkChangeStatusRequest(BaseModel):
     new_status: str = Field(..., min_length=1, description="New status to set")
 
 
-VALID_JOB_STATUSES = ["Rascunho", "Ativa", "Pausada", "Concluída", "Cancelada", "Arquivada"]
+VALID_JOB_STATUSES = ["Rascunho", "Ativa", "Pausada", "Paralisada", "Concluída", "Cancelada", "Arquivada"]
+
+STATUS_ALIASES = {
+    "Paralisada": "Pausada",
+}
 
 ALLOWED_STATUS_TRANSITIONS = {
     "Rascunho": ["Ativa", "Cancelada", "Arquivada"],
-    "Ativa": ["Pausada", "Concluída", "Cancelada", "Arquivada"],
+    "Ativa": ["Pausada", "Paralisada", "Concluída", "Cancelada", "Arquivada"],
     "Pausada": ["Ativa", "Cancelada", "Arquivada"],
+    "Paralisada": ["Ativa", "Cancelada", "Arquivada"],
     "Concluída": ["Arquivada"],
-    "Cancelada": ["Arquivada"],
+    "Cancelada": ["Ativa", "Arquivada"],
     "Arquivada": [],
 }
+
+VACANCY_CANDIDATE_VALID_STATUSES = [
+    "sourced", "approved", "rejected", "pending",
+    "hired", "not_selected", "on_hold", "cancelled",
+]
+
+STAGE_PRIORITY = {
+    "Contratado": 10, "Proposta": 9, "Offer": 9,
+    "Entrevista Final": 8, "Final Interview": 8,
+    "Entrevista": 7, "Interview": 7,
+    "Avaliação Técnica": 6, "Technical Assessment": 6,
+    "Triagem": 5, "Screening": 5,
+    "Aprovado": 4, "Approved": 4,
+    "Novo": 3, "New": 3, "Sourced": 2,
+    "initial": 1,
+}
+
+CLOSE_REASONS = [
+    "filled", "not_filled", "cancelled_by_client",
+    "budget", "duplicate", "other",
+]
 
 
 @router.post("/job-vacancies/finalize", response_model=FinalizeJobVacancyResponse)
@@ -2281,42 +2307,191 @@ async def delete_job_vacancy(
 @router.patch("/job-vacancies/{job_vacancy_id}/status")
 async def update_job_vacancy_status(
     job_vacancy_id: UUID,
-    status: str,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Update job vacancy status.
-    Valid statuses: Rascunho, Ativa, Pausada, Concluída, Arquivada
-    Multi-tenant: Only allows update if user has access to vacancy's company.
+    Update job vacancy status with lifecycle management.
+
+    Accepts JSON body with:
+      - status (required): new status
+      - close_reason: reason for closing/cancelling
+      - notify_stages: list of stages to notify candidates
+      - notification_channel: email | whatsapp | both
+      - notification_message: message body
+      - notification_subject: email subject
+      - pause_reason: reason for pausing
+
+    Lifecycle behaviors:
+      - Cancelada: sets VacancyCandidate.status='cancelled'
+      - Pausada: sets VacancyCandidate.status='on_hold', saves previous_status
+      - Ativa (from Pausada/Cancelada): restores previous_status for on_hold candidates
     """
     try:
-        valid_statuses = ["Rascunho", "Ativa", "Pausada", "Concluída", "Arquivada"]
-        if status not in valid_statuses:
+        data = {}
+        try:
+            data = await request.json()
+        except Exception:
+            pass
+
+        status = data.get("status", "")
+        if not status:
+            status = request.query_params.get("status", "")
+        if not status:
+            raise HTTPException(status_code=400, detail="status is required (in request body or query param)")
+
+        canonical_status = STATUS_ALIASES.get(status, status)
+
+        if canonical_status not in VALID_JOB_STATUSES and status not in VALID_JOB_STATUSES:
             raise HTTPException(
-                status_code=400, 
-                detail=f"Invalid status. Valid options: {', '.join(valid_statuses)}"
+                status_code=400,
+                detail=f"Invalid status. Valid options: {', '.join(VALID_JOB_STATUSES)}"
             )
-        
+
         user_company = get_user_company_id(current_user)
-        
+
         query = select(JobVacancy).where(
             JobVacancy.id == job_vacancy_id,
             JobVacancy.company_id == user_company
         )
-        
         result = await db.execute(query)
         job_vacancy = result.scalar_one_or_none()
-        
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
-        
+
         old_status = job_vacancy.status
+        old_canonical = STATUS_ALIASES.get(old_status, old_status)
+
+        allowed = ALLOWED_STATUS_TRANSITIONS.get(old_status, ALLOWED_STATUS_TRANSITIONS.get(old_canonical, []))
+        if status not in allowed and canonical_status not in allowed:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Transition from '{old_status}' to '{status}' is not allowed. Allowed: {allowed}"
+            )
+
         job_vacancy.status = status
         job_vacancy.updated_at = datetime.utcnow()
-        
+
+        notifications_sent = {"success_count": 0, "failure_count": 0, "details": []}
+
+        if canonical_status == "Cancelada":
+            vc_result = await db.execute(
+                select(VacancyCandidate).where(
+                    VacancyCandidate.vacancy_id == job_vacancy_id,
+                    VacancyCandidate.status.notin_(["rejected", "hired"]),
+                )
+            )
+            for vc in vc_result.scalars().all():
+                if not vc.previous_status:
+                    vc.previous_status = vc.status
+                vc.status = "cancelled"
+
+        elif canonical_status in ("Pausada", "Paralisada"):
+            vc_result = await db.execute(
+                select(VacancyCandidate).where(
+                    VacancyCandidate.vacancy_id == job_vacancy_id,
+                    VacancyCandidate.status.notin_(["rejected", "hired", "cancelled"]),
+                )
+            )
+            for vc in vc_result.scalars().all():
+                if not vc.previous_status:
+                    vc.previous_status = vc.status
+                vc.status = "on_hold"
+
+        elif canonical_status == "Ativa" and old_canonical in ("Pausada", "Paralisada", "Cancelada"):
+            vc_result = await db.execute(
+                select(VacancyCandidate).where(
+                    VacancyCandidate.vacancy_id == job_vacancy_id,
+                    VacancyCandidate.status.in_(["on_hold", "cancelled"]),
+                )
+            )
+            for vc in vc_result.scalars().all():
+                vc.status = vc.previous_status or "sourced"
+                vc.previous_status = None
+
+        notify_stages = data.get("notify_stages", [])
+        notification_message = data.get("notification_message", "")
+        notification_channel = data.get("notification_channel", "email")
+        notification_subject = data.get("notification_subject", "")
+
+        if notify_stages and notification_message:
+            from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
+            dispatcher = CommunicationDispatcher()
+
+            vc_to_notify = await db.execute(
+                select(VacancyCandidate).where(
+                    VacancyCandidate.vacancy_id == job_vacancy_id,
+                )
+            )
+            candidates_to_notify = {}
+            for vc in vc_to_notify.scalars().all():
+                if vc.stage in notify_stages or "*" in notify_stages:
+                    candidates_to_notify[str(vc.candidate_id)] = vc.stage or "initial"
+
+            for cand_id, cand_stage in candidates_to_notify.items():
+                try:
+                    cand_r = await db.execute(
+                        select(Candidate).where(
+                            Candidate.id == uuid_lib.UUID(cand_id),
+                            Candidate.company_id == user_company,
+                        )
+                    )
+                    cand = cand_r.scalar_one_or_none()
+                    if not cand:
+                        continue
+
+                    cand_success = False
+                    priority = STAGE_PRIORITY.get(cand_stage, 1)
+                    if priority >= 7:
+                        estagio_text = "Agradecemos especialmente sua dedicação nas etapas avançadas do processo"
+                    elif priority >= 5:
+                        estagio_text = "Agradecemos seu empenho durante o processo seletivo"
+                    else:
+                        estagio_text = "Agradecemos sua participação no processo"
+                    personalized_msg = notification_message.replace("{{candidato_nome}}", cand.name or "").replace("{{estagio_avancado}}", estagio_text)
+
+                    if notification_channel in ("email", "both") and cand.email:
+                        result = dispatcher.send_email(
+                            to_email=cand.email,
+                            subject=notification_subject,
+                            body_html=personalized_msg,
+                        )
+                        if result.get("success"):
+                            cand_success = True
+                    if notification_channel in ("whatsapp", "both") and (cand.phone or cand.mobile_phone):
+                        result = dispatcher.send_whatsapp(
+                            to_phone=cand.phone or cand.mobile_phone or "",
+                            message=personalized_msg,
+                        )
+                        if result.get("success"):
+                            cand_success = True
+
+                    if cand_success:
+                        notifications_sent["details"].append({"candidate_id": cand_id, "success": True})
+                        notifications_sent["success_count"] += 1
+                    else:
+                        notifications_sent["details"].append({"candidate_id": cand_id, "success": False, "error": "Delivery failed"})
+                        notifications_sent["failure_count"] += 1
+                except Exception as e:
+                    logger.error(f"Failed to notify candidate {cand_id}: {e}")
+                    notifications_sent["details"].append({"candidate_id": cand_id, "error": str(e)})
+                    notifications_sent["failure_count"] += 1
+
         from app.services.job_audit_service import job_audit_service
         changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+        close_reason = data.get("close_reason", "")
+        pause_reason = data.get("pause_reason", "")
+        extra_data = {}
+        if close_reason:
+            extra_data["close_reason"] = close_reason
+        if pause_reason:
+            extra_data["pause_reason"] = pause_reason
+        if notifications_sent["success_count"] > 0 or notifications_sent["failure_count"] > 0:
+            extra_data["notifications_sent"] = {
+                "success_count": notifications_sent["success_count"],
+                "failure_count": notifications_sent["failure_count"],
+            }
         await job_audit_service.log_status_change(
             job_id=str(job_vacancy_id),
             old_status=old_status,
@@ -2324,12 +2499,13 @@ async def update_job_vacancy_status(
             changed_by=changed_by,
             company_id=user_company,
             db=db,
+            extra_data=extra_data if extra_data else None,
         )
-        
+
         await db.commit()
-        
-        logger.info(f"✅ Job vacancy status updated: {job_vacancy_id} ({old_status} → {status})")
-        
+
+        logger.info(f"Job vacancy status updated: {job_vacancy_id} ({old_status} -> {status})")
+
         try:
             await job_status_webhook_service.dispatch_status_change(
                 job_id=str(job_vacancy_id),
@@ -2337,23 +2513,24 @@ async def update_job_vacancy_status(
                 new_status=status,
                 company_id=user_company,
                 db=db,
-                changed_by=str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id),
+                changed_by=changed_by,
                 job_title=job_vacancy.title
             )
         except Exception as webhook_error:
             logger.warning(f"Webhook dispatch failed (non-blocking): {webhook_error}")
-        
+
         return {
             "success": True,
             "id": str(job_vacancy_id),
             "old_status": old_status,
-            "new_status": status
+            "new_status": status,
+            "notifications_sent": notifications_sent
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error updating job vacancy status: {e}", exc_info=True)
+        logger.error(f"Error updating job vacancy status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -4371,131 +4548,227 @@ async def close_vacancy(
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Dict[str, Any]:
     """
-    Close a vacancy after hiring a candidate.
-    
-    Sends congratulation notification to hired candidate and
-    vacancy closed notification to other candidates.
+    Close a vacancy with optional hired candidate(s).
+
+    Supports multi-hire (hired_candidate_ids) and close without hire.
+    Uses CommunicationDispatcher for consistent messaging.
+    Replaces {{estagio_avancado}} per candidate for differentiated tone.
     """
     try:
         company_id = get_user_company_id(current_user)
         data = await request.json()
-        
-        hired_candidate_id = data.get("hired_candidate_id")
+
+        hired_candidate_ids = data.get("hired_candidate_ids", [])
+        if not hired_candidate_ids and data.get("hired_candidate_id"):
+            hired_candidate_ids = [data["hired_candidate_id"]]
+
         hired_notification = data.get("hired_notification", {})
         other_notifications = data.get("other_notifications", {})
-        
-        if not hired_candidate_id:
-            raise HTTPException(status_code=400, detail="hired_candidate_id is required")
-        
+        close_reason = data.get("close_reason", "filled" if hired_candidate_ids else "not_filled")
+        if close_reason and close_reason not in CLOSE_REASONS:
+            close_reason = "other"
+
         vacancy_result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == uuid_lib.UUID(vacancy_id))
+            select(JobVacancy).where(
+                JobVacancy.id == uuid_lib.UUID(vacancy_id),
+                JobVacancy.company_id == company_id,
+            )
         )
         vacancy = vacancy_result.scalar_one_or_none()
-        
         if not vacancy:
             raise HTTPException(status_code=404, detail="Vacancy not found")
-        
-        from app.services.communication_service import CommunicationService, MessageType, MessageChannel
-        communication_service = CommunicationService()
-        
-        notifications_sent = {
-            "hired": None,
-            "others": []
-        }
-        
-        if hired_notification.get("channel") and hired_notification.get("message"):
-            try:
-                channel_str = hired_notification["channel"]
-                channel = MessageChannel.EMAIL if channel_str == "email" else MessageChannel.WHATSAPP
-                
-                result = await communication_service.send_message(
-                    company_id=company_id,
-                    candidate_id=hired_candidate_id,
-                    candidate_email=hired_notification.get("candidate_email"),
-                    candidate_phone=hired_notification.get("candidate_phone"),
-                    message_type=MessageType.GENERAL,
-                    channel=channel,
-                    subject=hired_notification.get("subject", ""),
-                    body=hired_notification["message"],
-                    job_id=vacancy_id,
-                    skip_policy_checks=True,
-                    db=db
-                )
-                notifications_sent["hired"] = {
-                    "candidate_id": hired_candidate_id,
-                    "channel": channel_str,
-                    "success": result.get("success", True)
-                }
-            except Exception as e:
-                logger.error(f"Failed to send hired notification: {e}")
-                notifications_sent["hired"] = {"error": str(e)}
-        
+
+        from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
+        dispatcher = CommunicationDispatcher()
+
+        notifications_sent = {"hired": [], "others": [], "success_count": 0, "failure_count": 0}
+
+        if hired_candidate_ids:
+            for hc_id in hired_candidate_ids:
+                try:
+                    vc_result = await db.execute(
+                        select(VacancyCandidate).where(
+                            VacancyCandidate.vacancy_id == uuid_lib.UUID(vacancy_id),
+                            VacancyCandidate.candidate_id == uuid_lib.UUID(hc_id),
+                        )
+                    )
+                    vc = vc_result.scalar_one_or_none()
+                    if not vc:
+                        logger.warning(f"Candidate {hc_id} not linked to vacancy {vacancy_id}, skipping hire")
+                        continue
+                    vc.previous_status = vc.status
+                    vc.status = "hired"
+
+                    cand_result = await db.execute(
+                        select(Candidate).where(
+                            Candidate.id == uuid_lib.UUID(hc_id),
+                            Candidate.company_id == company_id,
+                        )
+                    )
+                    cand = cand_result.scalar_one_or_none()
+                    if cand:
+                        cand.is_hired = True
+                        cand.hired_at = datetime.utcnow()
+                        cand.hired_job_id = vacancy_id
+                        cand.hired_job_title = vacancy.title
+                except Exception as e:
+                    logger.warning(f"Failed to update hired candidate {hc_id}: {e}")
+
+            if hired_notification.get("channel") and hired_notification.get("message"):
+                for hc_id in hired_candidate_ids:
+                    try:
+                        hc_result = await db.execute(
+                            select(Candidate).where(
+                                Candidate.id == uuid_lib.UUID(hc_id),
+                                Candidate.company_id == company_id,
+                            )
+                        )
+                        hc_cand = hc_result.scalar_one_or_none()
+                        hc_email = (hc_cand.email if hc_cand else None) or hired_notification.get("candidate_email", "")
+                        hc_phone = (hc_cand.phone or (hc_cand.mobile_phone if hc_cand else None)) or hired_notification.get("candidate_phone", "")
+                        hc_name = hc_cand.name if hc_cand else ""
+
+                        personalized_msg = hired_notification["message"]
+                        if hc_name:
+                            personalized_msg = personalized_msg.replace("{{candidato_nome}}", hc_name)
+
+                        channel_str = hired_notification["channel"]
+                        hc_success = False
+                        if channel_str in ("email", "both") and hc_email:
+                            r = dispatcher.send_email(
+                                to_email=hc_email,
+                                subject=hired_notification.get("subject", ""),
+                                body_html=personalized_msg,
+                            )
+                            if r.get("success"):
+                                hc_success = True
+                        if channel_str in ("whatsapp", "both") and hc_phone:
+                            r = dispatcher.send_whatsapp(to_phone=hc_phone, message=personalized_msg)
+                            if r.get("success"):
+                                hc_success = True
+
+                        if hc_success:
+                            notifications_sent["hired"].append({"candidate_id": hc_id, "success": True})
+                            notifications_sent["success_count"] += 1
+                        else:
+                            notifications_sent["hired"].append({"candidate_id": hc_id, "success": False, "error": "Delivery failed"})
+                            notifications_sent["failure_count"] += 1
+                    except Exception as e:
+                        logger.error(f"Failed to send hired notification to {hc_id}: {e}")
+                        notifications_sent["hired"].append({"candidate_id": hc_id, "error": str(e)})
+                        notifications_sent["failure_count"] += 1
+
+        active_vc_result = await db.execute(
+            select(VacancyCandidate).where(
+                VacancyCandidate.vacancy_id == uuid_lib.UUID(vacancy_id),
+                VacancyCandidate.status.notin_(["hired", "rejected", "cancelled"]),
+            )
+        )
+        active_vcs = active_vc_result.scalars().all()
+        for vc in active_vcs:
+            if str(vc.candidate_id) not in hired_candidate_ids:
+                vc.previous_status = vc.status
+                vc.status = "not_selected"
+
         other_candidate_ids = other_notifications.get("candidate_ids", [])
         if other_candidate_ids and other_notifications.get("message"):
             channel_str = other_notifications.get("channel", "email")
-            channel = MessageChannel.EMAIL if channel_str == "email" else MessageChannel.WHATSAPP
-            
+            message_template = other_notifications["message"]
+
             for cand_id in other_candidate_ids:
                 try:
-                    result = await communication_service.send_message(
-                        company_id=company_id,
-                        candidate_id=cand_id,
-                        candidate_email=other_notifications.get("candidate_emails", {}).get(cand_id),
-                        candidate_phone=other_notifications.get("candidate_phones", {}).get(cand_id),
-                        message_type=MessageType.PROCESS_CLOSED,
-                        channel=channel,
-                        subject=other_notifications.get("subject", ""),
-                        body=other_notifications["message"],
-                        job_id=vacancy_id,
-                        skip_policy_checks=True,
-                        db=db
+                    vc_r = await db.execute(
+                        select(VacancyCandidate).where(
+                            VacancyCandidate.vacancy_id == uuid_lib.UUID(vacancy_id),
+                            VacancyCandidate.candidate_id == uuid_lib.UUID(cand_id),
+                        )
                     )
-                    notifications_sent["others"].append({
-                        "candidate_id": cand_id,
-                        "channel": channel_str,
-                        "success": result.get("success", True)
-                    })
+                    vc_row = vc_r.scalar_one_or_none()
+                    stage_label = vc_row.stage if vc_row else "initial"
+                    priority = STAGE_PRIORITY.get(stage_label, 1)
+                    if priority >= 7:
+                        estagio_text = "Agradecemos especialmente sua dedicação nas etapas avançadas do processo"
+                    elif priority >= 5:
+                        estagio_text = "Agradecemos sua participação ativa no processo"
+                    else:
+                        estagio_text = "Agradecemos sua participação no processo"
+
+                    personalized = message_template.replace("{{estagio_avancado}}", estagio_text)
+                    cand_email = other_notifications.get("candidate_emails", {}).get(cand_id, "")
+                    cand_phone = other_notifications.get("candidate_phones", {}).get(cand_id, "")
+
+                    other_success = False
+                    if channel_str in ("email", "both") and cand_email:
+                        r = dispatcher.send_email(
+                            to_email=cand_email,
+                            subject=other_notifications.get("subject", ""),
+                            body_html=personalized,
+                        )
+                        if r.get("success"):
+                            other_success = True
+                    if channel_str in ("whatsapp", "both") and cand_phone:
+                        r = dispatcher.send_whatsapp(to_phone=cand_phone, message=personalized)
+                        if r.get("success"):
+                            other_success = True
+
+                    if other_success:
+                        notifications_sent["others"].append({"candidate_id": cand_id, "success": True})
+                        notifications_sent["success_count"] += 1
+                    else:
+                        notifications_sent["others"].append({"candidate_id": cand_id, "success": False, "error": "Delivery failed"})
+                        notifications_sent["failure_count"] += 1
                 except Exception as e:
                     logger.error(f"Failed to send vacancy closed notification to {cand_id}: {e}")
-                    notifications_sent["others"].append({
-                        "candidate_id": cand_id,
-                        "error": str(e)
-                    })
-        
+                    notifications_sent["others"].append({"candidate_id": cand_id, "error": str(e)})
+                    notifications_sent["failure_count"] += 1
+
+        old_status = vacancy.status
         vacancy.status = "Concluída"
         vacancy.closed_at = datetime.utcnow()
-        
+
+        from app.services.job_audit_service import job_audit_service
+        changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
+        await job_audit_service.log_status_change(
+            job_id=vacancy_id,
+            old_status=old_status,
+            new_status="Concluída",
+            changed_by=changed_by,
+            company_id=company_id,
+            db=db,
+        )
+
         await db.commit()
-        
+
         try:
             from app.services.event_dispatcher import event_dispatcher
             await event_dispatcher.on_job_status_changed(
                 job_id=vacancy_id,
                 company_id=company_id,
                 new_status="Concluída",
-                previous_status="Ativa",
+                previous_status=old_status,
                 changed_by=str(current_user.id),
                 job_title=vacancy.title,
-                hired_candidate_id=hired_candidate_id
+                hired_candidate_id=hired_candidate_ids[0] if hired_candidate_ids else None
             )
         except Exception as e:
             logger.warning(f"Event dispatch failed for job close: {e}")
-        
+
         try:
             from app.services.activity_service import ActivityService
             activity_service = ActivityService()
-            
+            hire_desc = f"{len(hired_candidate_ids)} contratado(s)" if hired_candidate_ids else "Fechada sem contratação"
             await activity_service.create_activity(
                 activity_type="vacancy_closed",
                 title=f"Vaga Fechada: {vacancy.title}",
-                description=f"Candidato contratado. {len(other_candidate_ids)} candidatos notificados.",
+                description=f"{hire_desc}. {len(other_candidate_ids)} candidatos notificados.",
                 actor_id="system",
                 actor_name="LIA",
                 actor_type="system",
                 target_id=vacancy_id,
                 target_type="vacancy",
                 extra_data={
-                    "hired_candidate_id": hired_candidate_id,
+                    "hired_candidate_ids": hired_candidate_ids,
+                    "close_reason": close_reason,
                     "notified_count": len(other_candidate_ids),
                     "company_id": company_id
                 },
@@ -4503,15 +4776,17 @@ async def close_vacancy(
             )
         except Exception as e:
             logger.warning(f"Failed to log vacancy closed activity: {e}")
-        
+
         return {
             "success": True,
             "vacancy_id": vacancy_id,
             "status": "Concluída",
-            "hired_candidate_id": hired_candidate_id,
+            "close_reason": close_reason,
+            "hired_candidate_ids": hired_candidate_ids,
+            "hired_candidate_id": hired_candidate_ids[0] if hired_candidate_ids else None,
             "notifications_sent": notifications_sent
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:

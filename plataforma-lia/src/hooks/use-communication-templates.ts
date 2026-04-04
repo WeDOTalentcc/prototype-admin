@@ -16,6 +16,9 @@ export type TemplateSituation =
   | 'proposta_aceita'
   | 'vaga_fechada'
   | 'avaliacao_tecnica'
+  | 'vaga_cancelada'
+  | 'vaga_pausada'
+  | 'vaga_retomada'
   | string
 
 export interface CommunicationTemplate {
@@ -442,6 +445,132 @@ Desejamos sucesso em sua carreira! 🍀
     lastUpdated: new Date().toISOString().split('T')[0],
     channel: 'whatsapp',
     situation: 'vaga_fechada'
+  },
+  {
+    id: 'default-vaga-cancelada-email',
+    name: 'Vaga Cancelada (Email)',
+    category: 'rejection',
+    subject: 'Atualização do Processo Seletivo - {{vaga}}',
+    body: `Olá {{candidato_nome}},
+
+Gostaríamos de informar que o processo seletivo para a posição de {{vaga}} foi encerrado.
+
+Esta decisão não está relacionada ao seu desempenho ou participação no processo. Agradecemos sinceramente seu tempo e dedicação.
+
+Seu perfil permanece em nosso banco de talentos e entraremos em contato caso surjam novas oportunidades alinhadas ao seu perfil.
+
+Desejamos sucesso em sua carreira!
+
+Atenciosamente,
+{{recrutador_nome}}
+{{empresa_nome}}`,
+    variables: ['candidato_nome', 'vaga', 'empresa_nome', 'recrutador_nome'],
+    isActive: true,
+    lastUpdated: new Date().toISOString().split('T')[0],
+    channel: 'email',
+    situation: 'vaga_cancelada'
+  },
+  {
+    id: 'default-vaga-cancelada-whatsapp',
+    name: 'Vaga Cancelada (WhatsApp)',
+    category: 'rejection',
+    subject: '',
+    body: `Olá {{candidato_nome}}! 👋
+
+Informamos que o processo para {{vaga}} foi encerrado. Essa decisão não tem relação com seu desempenho.
+
+Seu perfil permanece em nosso banco de talentos e entraremos em contato sobre novas oportunidades.
+
+Desejamos sucesso! 🍀`,
+    variables: ['candidato_nome', 'vaga', 'empresa_nome'],
+    isActive: true,
+    lastUpdated: new Date().toISOString().split('T')[0],
+    channel: 'whatsapp',
+    situation: 'vaga_cancelada'
+  },
+  {
+    id: 'default-vaga-pausada-email',
+    name: 'Vaga Pausada (Email)',
+    category: 'feedback',
+    subject: 'Atualização do Processo - {{vaga}}',
+    body: `Olá {{candidato_nome}},
+
+Gostaríamos de informar que o processo seletivo para a posição de {{vaga}} está temporariamente pausado.
+
+Esta pausa não está relacionada ao seu desempenho no processo. Assim que tivermos atualizações, entraremos em contato.
+
+Seu perfil permanece em nossa base e você continua sendo considerado(a) para esta oportunidade.
+
+Agradecemos sua compreensão e paciência.
+
+Atenciosamente,
+{{recrutador_nome}}
+{{empresa_nome}}`,
+    variables: ['candidato_nome', 'vaga', 'empresa_nome', 'recrutador_nome'],
+    isActive: true,
+    lastUpdated: new Date().toISOString().split('T')[0],
+    channel: 'email',
+    situation: 'vaga_pausada'
+  },
+  {
+    id: 'default-vaga-pausada-whatsapp',
+    name: 'Vaga Pausada (WhatsApp)',
+    category: 'feedback',
+    subject: '',
+    body: `Olá {{candidato_nome}}! 👋
+
+Informamos que o processo para {{vaga}} está temporariamente pausado. Não se preocupe, isso não tem relação com seu desempenho.
+
+Assim que tivermos novidades, entraremos em contato. Seu perfil continua sendo considerado.
+
+Agradecemos sua paciência! 🙏`,
+    variables: ['candidato_nome', 'vaga', 'empresa_nome'],
+    isActive: true,
+    lastUpdated: new Date().toISOString().split('T')[0],
+    channel: 'whatsapp',
+    situation: 'vaga_pausada'
+  },
+  {
+    id: 'default-vaga-retomada-email',
+    name: 'Vaga Retomada (Email)',
+    category: 'feedback',
+    subject: 'Boas notícias! Processo reativado - {{vaga}}',
+    body: `Olá {{candidato_nome}},
+
+Temos boas notícias!
+
+O processo seletivo para a posição de {{vaga}} foi reativado e você continua sendo considerado(a).
+
+Caso tenha alguma alteração em sua disponibilidade ou interesse, por favor nos avise respondendo este email.
+
+Agradecemos sua paciência durante o período de pausa.
+
+Atenciosamente,
+{{recrutador_nome}}
+{{empresa_nome}}`,
+    variables: ['candidato_nome', 'vaga', 'empresa_nome', 'recrutador_nome'],
+    isActive: true,
+    lastUpdated: new Date().toISOString().split('T')[0],
+    channel: 'email',
+    situation: 'vaga_retomada'
+  },
+  {
+    id: 'default-vaga-retomada-whatsapp',
+    name: 'Vaga Retomada (WhatsApp)',
+    category: 'feedback',
+    subject: '',
+    body: `Oi {{candidato_nome}}! 🎉
+
+Boas notícias! O processo para {{vaga}} foi reativado e você continua sendo considerado(a)!
+
+Caso tenha mudanças na sua disponibilidade, é só me avisar.
+
+Obrigado pela paciência! 😊`,
+    variables: ['candidato_nome', 'vaga', 'empresa_nome'],
+    isActive: true,
+    lastUpdated: new Date().toISOString().split('T')[0],
+    channel: 'whatsapp',
+    situation: 'vaga_retomada'
   }
 ]
 

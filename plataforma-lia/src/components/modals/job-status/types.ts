@@ -46,6 +46,20 @@ export interface CandidateItem {
   jobId: string
 }
 
+export interface CancelData {
+  jobIds: string[]
+  cancelReason?: string
+  closeReason?: string
+  notifyApplicants: boolean
+  notificationChannel?: 'email' | 'whatsapp' | 'both'
+  notificationMessage?: string
+  notificationSubject?: string
+  candidateIds?: string[]
+  notifyStages?: string[]
+  sendRecruiterSummary: boolean
+  recruiterNotificationChannel?: 'email' | 'teams' | 'bell'
+}
+
 export type FlowStep = 'options' | 'communication' | 'confirmation' | 'complete'
 export type NotificationChannel = 'email' | 'whatsapp' | 'both'
 export type RecruiterChannel = 'email' | 'teams' | 'bell'
@@ -62,4 +76,24 @@ export const PAUSE_REASONS = [
   { value: 'other', label: 'Outro motivo' },
 ]
 
-export const PAUSE_TEMPLATE_SITUATIONS: TemplateSituation[] = ['vaga_fechada', 'feedback_construtivo']
+export const CANCEL_REASONS = [
+  { value: 'cancelled_by_client', label: 'Cancelada pelo cliente' },
+  { value: 'budget', label: 'Corte de orçamento' },
+  { value: 'duplicate', label: 'Vaga duplicada' },
+  { value: 'internal_hire', label: 'Contratação interna' },
+  { value: 'position_eliminated', label: 'Posição eliminada' },
+  { value: 'restructuring', label: 'Reestruturação da área' },
+  { value: 'other', label: 'Outro motivo' },
+]
+
+export const CLOSE_REASONS = [
+  { value: 'filled', label: 'Vaga preenchida' },
+  { value: 'not_filled', label: 'Fechada sem contratação' },
+  { value: 'cancelled_by_client', label: 'Cancelada pelo cliente' },
+  { value: 'budget', label: 'Corte de orçamento' },
+  { value: 'duplicate', label: 'Vaga duplicada' },
+  { value: 'other', label: 'Outro motivo' },
+]
+
+export const PAUSE_TEMPLATE_SITUATIONS: TemplateSituation[] = ['vaga_pausada', 'feedback_construtivo']
+export const CANCEL_TEMPLATE_SITUATIONS: TemplateSituation[] = ['vaga_cancelada', 'feedback_construtivo']

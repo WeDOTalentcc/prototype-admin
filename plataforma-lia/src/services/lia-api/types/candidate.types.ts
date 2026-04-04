@@ -197,7 +197,13 @@ export interface CandidateLocal {
   
   status: string
   is_active: boolean
+  is_hired?: boolean
+  hired_at?: string | null
+  hired_job_id?: string | null
+  hired_job_title?: string | null
   is_blacklisted?: boolean
+  blacklisted_by?: string | null
+  blacklisted_at?: string | null
   blacklist_reason?: string | null
   
   preferred_contact_method?: string | null

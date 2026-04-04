@@ -5,7 +5,7 @@ import { liaApi } from "@/services/lia-api"
 import { toast } from "sonner"
 import { useJobUIStore } from "@/stores/job-ui-store"
 import type { JobsModalsSectionProps } from "./JobsModalsSectionTypes"
-import type { PauseData, ActivateData } from "@/components/modals/job-status/types"
+import type { PauseData, ActivateData, CancelData } from "@/components/modals/job-status/types"
 
 export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
   const {
@@ -38,11 +38,17 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
       const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
       const updatePromises = selectedJobs.map(job => {
         if (job.backendId) {
-          return liaApi.updateJobVacancyStatus(job.backendId, 'Paralisada')
+          return liaApi.updateJobVacancyStatus(job.backendId, 'Paralisada', {
+            pause_reason: data.pauseReason,
+            notify_stages: data.notifyApplicants && data.candidateIds ? ['*'] : undefined,
+            notification_channel: data.notificationChannel,
+            notification_message: data.notificationMessage,
+            notification_subject: data.notificationSubject,
+          })
         }
         return Promise.resolve(null)
       })
-      await Promise.all(updatePromises)
+      const results = await Promise.all(updatePromises)
 
       if (data.sendRecruiterSummary && data.recruiterNotificationChannel) {
         const channelMap: Record<string, string[]> = {
@@ -94,6 +100,91 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
         }
       }
       onDeselectAll()
+
+      const aggregated = { notifications_sent: { success_count: 0, failure_count: 0, details: [] as Array<{ candidate_id: string; success?: boolean; error?: string }> } }
+      for (const r of results) {
+        if (r?.notifications_sent) {
+          aggregated.notifications_sent.success_count += r.notifications_sent.success_count || 0
+          aggregated.notifications_sent.failure_count += r.notifications_sent.failure_count || 0
+          if (r.notifications_sent.details) {
+            aggregated.notifications_sent.details.push(...r.notifications_sent.details)
+          }
+        }
+      }
+      return aggregated
+    } catch (error) {
+      throw error
+    }
+  }, [allJobs, selectedJobsForBatch, onSetBackendJobs, onDeselectAll])
+
+  const handleCancel = useCallback(async (data: CancelData) => {
+    try {
+      const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))
+      const updatePromises = selectedJobs.map(job => {
+        if (job.backendId) {
+          return liaApi.updateJobVacancyStatus(job.backendId, 'Cancelada', {
+            close_reason: data.closeReason || data.cancelReason,
+            notify_stages: data.notifyStages,
+            notification_channel: data.notificationChannel,
+            notification_message: data.notificationMessage,
+            notification_subject: data.notificationSubject,
+          })
+        }
+        return Promise.resolve(null)
+      })
+      const results = await Promise.all(updatePromises)
+
+      if (data.sendRecruiterSummary && data.recruiterNotificationChannel) {
+        const channelMap: Record<string, string[]> = {
+          'email': ['email'],
+          'teams': ['teams'],
+          'bell': ['bell'],
+          'email_teams': ['email', 'teams'],
+          'all': ['email', 'teams', 'bell']
+        }
+        const channels = channelMap[data.recruiterNotificationChannel] || ['bell']
+
+        const recruiterIds = [...new Set(selectedJobs
+          .map(j => j.recruiter)
+          .filter(Boolean))]
+
+        if (recruiterIds.length === 0) {
+          recruiterIds.push('default_user')
+        }
+
+        try {
+          await liaApi.sendRecruiterActionNotification({
+            recruiter_ids: recruiterIds,
+            action: 'cancel',
+            job_titles: selectedJobs.map(j => j.title),
+            job_ids: selectedJobs.map(j => j.backendId || String(j.id)),
+            channels,
+            reason: data.cancelReason,
+            notified_candidates_count: data.notifyApplicants ? data.candidateIds?.length || 0 : 0,
+          })
+        } catch (notifError) {
+        }
+      }
+
+      onSetBackendJobs(prev => prev.map(job =>
+        selectedJobsForBatch.has(job.id)
+          ? { ...job, status: 'Cancelada' as const }
+          : job
+      ))
+
+      onDeselectAll()
+
+      const aggregated = { notifications_sent: { success_count: 0, failure_count: 0, details: [] as Array<{ candidate_id: string; success?: boolean; error?: string }> } }
+      for (const r of results) {
+        if (r?.notifications_sent) {
+          aggregated.notifications_sent.success_count += r.notifications_sent.success_count || 0
+          aggregated.notifications_sent.failure_count += r.notifications_sent.failure_count || 0
+          if (r.notifications_sent.details) {
+            aggregated.notifications_sent.details.push(...r.notifications_sent.details)
+          }
+        }
+      }
+      return aggregated
     } catch (error) {
       throw error
     }
@@ -295,6 +386,7 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
 
   return {
     handlePause,
+    handleCancel,
     handleActivate,
     handleStatusNavigate,
     handleAssign,
