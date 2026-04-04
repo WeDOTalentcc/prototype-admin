@@ -75,3 +75,4 @@ plataforma-lia/src/stories/assets/*.png
 /tmp/
 *.tmp
 .coverage
+.coverage
