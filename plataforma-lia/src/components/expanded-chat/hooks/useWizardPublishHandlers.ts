@@ -260,7 +260,7 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
         marketComparisons.push({
           field: "Faixa Salarial",
           yourValue: `${formatBRL(Number(salaryInfo.minSalary))} - ${formatBRL(Number(salaryInfo.maxSalary))}`,
-          marketValue: `${formatBRL(marketMin)} - ${marketMax.toLocaleString('pt-BR')}`,
+          marketValue: `${formatBRL(marketMin)} - ${formatBRL(marketMax)}`,
           status: yourMin > marketMax ? "above" : yourMin < marketMin * 0.8 ? "below" : "aligned"
         })
       }
