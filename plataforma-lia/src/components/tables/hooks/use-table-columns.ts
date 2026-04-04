@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react"
 import type { TableColumn } from "../types"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 export interface UseTableColumnsOptions {
   storageKey?: string
@@ -9,20 +10,20 @@ export interface UseTableColumnsOptions {
 }
 
 export function useTableColumns({ storageKey, defaultColumns }: UseTableColumnsOptions) {
+  const { getTableColumnConfig, setTableColumnConfig, removeTableColumnConfig } = useUIPreferencesStore()
+
   const [columns, setColumns] = useState<TableColumn[]>(() => {
-    if (storageKey && typeof window !== 'undefined') {
+    if (storageKey) {
       try {
-        const saved = localStorage.getItem(storageKey)
-        if (saved) {
-          const parsed = JSON.parse(saved)
+        const saved = getTableColumnConfig(storageKey)
+        if (saved && saved.length > 0) {
           return defaultColumns.map(col => ({
             ...col,
-            visible: parsed.find((p: { id: string; visible: boolean }) => p.id === col.id)?.visible ?? col.visible,
-            order: parsed.find((p: { id: string; order: number }) => p.id === col.id)?.order ?? col.order
+            visible: saved.find((p) => p.id === col.id)?.visible ?? col.visible,
+            order: saved.find((p) => p.id === col.id)?.order ?? col.order
           }))
         }
       } catch {
-        // Ignore parse errors
       }
     }
     return defaultColumns
@@ -41,13 +42,11 @@ export function useTableColumns({ storageKey, defaultColumns }: UseTableColumnsO
         col.id === columnId ? { ...col, visible: !col.visible } : col
       )
       if (storageKey) {
-        localStorage.setItem(storageKey, JSON.stringify(
-          updated.map(({ id, visible, order }) => ({ id, visible, order }))
-        ))
+        setTableColumnConfig(storageKey, updated.map(({ id, visible, order }) => ({ id, visible: visible !== false, order: order ?? 0 })))
       }
       return updated
     })
-  }, [storageKey])
+  }, [storageKey, setTableColumnConfig])
 
   const showColumn = useCallback((columnId: string) => {
     setColumns(prev => {
@@ -55,13 +54,11 @@ export function useTableColumns({ storageKey, defaultColumns }: UseTableColumnsO
         col.id === columnId ? { ...col, visible: true } : col
       )
       if (storageKey) {
-        localStorage.setItem(storageKey, JSON.stringify(
-          updated.map(({ id, visible, order }) => ({ id, visible, order }))
-        ))
+        setTableColumnConfig(storageKey, updated.map(({ id, visible, order }) => ({ id, visible: visible !== false, order: order ?? 0 })))
       }
       return updated
     })
-  }, [storageKey])
+  }, [storageKey, setTableColumnConfig])
 
   const hideColumn = useCallback((columnId: string) => {
     setColumns(prev => {
@@ -69,13 +66,11 @@ export function useTableColumns({ storageKey, defaultColumns }: UseTableColumnsO
         col.id === columnId ? { ...col, visible: false } : col
       )
       if (storageKey) {
-        localStorage.setItem(storageKey, JSON.stringify(
-          updated.map(({ id, visible, order }) => ({ id, visible, order }))
-        ))
+        setTableColumnConfig(storageKey, updated.map(({ id, visible, order }) => ({ id, visible: visible !== false, order: order ?? 0 })))
       }
       return updated
     })
-  }, [storageKey])
+  }, [storageKey, setTableColumnConfig])
 
   const reorderColumns = useCallback((fromIndex: number, toIndex: number) => {
     setColumns(prev => {
@@ -89,20 +84,18 @@ export function useTableColumns({ storageKey, defaultColumns }: UseTableColumnsO
       })
 
       if (storageKey) {
-        localStorage.setItem(storageKey, JSON.stringify(
-          updated.map(({ id, visible, order }) => ({ id, visible, order }))
-        ))
+        setTableColumnConfig(storageKey, updated.map(({ id, visible, order }) => ({ id, visible: visible !== false, order: order ?? 0 })))
       }
       return updated
     })
-  }, [storageKey])
+  }, [storageKey, setTableColumnConfig])
 
   const resetColumns = useCallback(() => {
     setColumns(defaultColumns)
     if (storageKey) {
-      localStorage.removeItem(storageKey)
+      removeTableColumnConfig(storageKey)
     }
-  }, [defaultColumns, storageKey])
+  }, [defaultColumns, storageKey, removeTableColumnConfig])
 
   const getColumnById = useCallback((columnId: string) => 
     columns.find(col => col.id === columnId),

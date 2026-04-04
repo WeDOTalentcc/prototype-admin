@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
+import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
 
 export interface ColumnConfig {
   id: string
@@ -23,7 +24,6 @@ export interface SavedView {
 }
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
-  // Principais (visíveis por padrão)
   { id: 'id', label: 'ID da Vaga', category: 'principais', visible: true, order: 0 },
   { id: 'status', label: 'Status', category: 'principais', visible: true, order: 1 },
   { id: 'screeningStatus', label: 'Triagem', category: 'principais', visible: true, order: 2 },
@@ -33,8 +33,6 @@ const DEFAULT_COLUMNS: ColumnConfig[] = [
   { id: 'recruiter', label: 'Recrutador(a)', category: 'responsaveis', visible: true, order: 6 },
   { id: 'manager', label: 'Gestor(a)', category: 'responsaveis', visible: true, order: 7 },
   { id: 'location', label: 'Localização', category: 'localizacao', visible: true, order: 8 },
-  
-  // Informações Gerais
   { id: 'stage', label: 'Estágio', category: 'informacoes', visible: false, order: 9 },
   { id: 'priority', label: 'Prioridade', category: 'informacoes', visible: false, order: 10 },
   { id: 'urgencyLevel', label: 'Nível de Urgência', category: 'informacoes', visible: false, order: 11 },
@@ -45,22 +43,14 @@ const DEFAULT_COLUMNS: ColumnConfig[] = [
   { id: 'approvalStatus', label: 'Status de Aprovação', category: 'informacoes', visible: false, order: 16 },
   { id: 'description', label: 'Descrição', category: 'informacoes', visible: false, order: 17 },
   { id: 'requirements', label: 'Requisitos', category: 'informacoes', visible: false, order: 18 },
-  
-  // Prazos
   { id: 'deadlineScreening', label: 'Prazo de Triagem', category: 'prazos', visible: false, order: 19 },
   { id: 'deadlineShortlist', label: 'Data da Shortlist', category: 'prazos', visible: false, order: 20 },
   { id: 'deadlineClosing', label: 'Prazo de Fechamento', category: 'prazos', visible: false, order: 21 },
-  
-  // Responsáveis
   { id: 'department', label: 'Departamento', category: 'responsaveis', visible: false, order: 22 },
   { id: 'recruiterEmail', label: 'Email Recrutador', category: 'responsaveis', visible: false, order: 23 },
   { id: 'managerEmail', label: 'Email Gestor', category: 'responsaveis', visible: false, order: 24 },
   { id: 'createdBy', label: 'Criado por', category: 'responsaveis', visible: false, order: 25 },
-  
-  // Localização
   { id: 'workModel', label: 'Modelo de Trabalho', category: 'localizacao', visible: false, order: 26 },
-  
-  // Remuneração
   { id: 'salary', label: 'Faixa Salarial', category: 'remuneracao', visible: false, order: 27 },
   { id: 'salaryRangeMin', label: 'Salário Mínimo', category: 'remuneracao', visible: false, order: 28 },
   { id: 'salaryRangeMax', label: 'Salário Máximo', category: 'remuneracao', visible: false, order: 29 },
@@ -68,57 +58,40 @@ const DEFAULT_COLUMNS: ColumnConfig[] = [
   { id: 'budget', label: 'Budget', category: 'remuneracao', visible: false, order: 31 },
   { id: 'budgetUsed', label: 'Budget Usado', category: 'remuneracao', visible: false, order: 32 },
   { id: 'type', label: 'Tipo de Contrato', category: 'remuneracao', visible: false, order: 33 },
-  
-  // Divulgação
   { id: 'publishedLinkedIn', label: 'LinkedIn', category: 'divulgacao', visible: false, order: 34 },
   { id: 'publishedWebsite', label: 'Website', category: 'divulgacao', visible: false, order: 35 },
   { id: 'publishedIndeed', label: 'Indeed', category: 'divulgacao', visible: false, order: 36 },
   { id: 'publishedAt', label: 'Data de Publicação', category: 'divulgacao', visible: false, order: 37 },
-  
-  // Requisitos
   { id: 'technicalRequirements', label: 'Skills Técnicas', category: 'requisitos', visible: false, order: 38 },
   { id: 'languages', label: 'Idiomas', category: 'requisitos', visible: false, order: 39 },
   { id: 'behavioralCompetencies', label: 'Competências', category: 'requisitos', visible: false, order: 40 },
   { id: 'screeningQuestions', label: 'Perguntas de Triagem', category: 'requisitos', visible: false, order: 41 },
-  
-  // Targeting
   { id: 'targetSector', label: 'Setor Alvo', category: 'targeting', visible: false, order: 42 },
   { id: 'targetSegment', label: 'Segmento Alvo', category: 'targeting', visible: false, order: 43 },
   { id: 'targetAudience', label: 'Público-Alvo', category: 'targeting', visible: false, order: 44 },
-  
-  // Confidencialidade
   { id: 'isConfidential', label: 'Confidencial', category: 'confidencialidade', visible: false, order: 45 },
   { id: 'visibility', label: 'Visibilidade', category: 'confidencialidade', visible: false, order: 46 },
   { id: 'accessList', label: 'Lista de Acesso', category: 'confidencialidade', visible: false, order: 47 },
   { id: 'maskedCompanyName', label: 'Nome Mascarado', category: 'confidencialidade', visible: false, order: 48 },
-  
-  // Processo Seletivo
   { id: 'hiringProcess', label: 'Etapas do Processo', category: 'processo', visible: false, order: 49 },
   { id: 'interviewStages', label: 'Estágios de Entrevista', category: 'processo', visible: false, order: 50 },
   { id: 'timeline', label: 'Timeline', category: 'processo', visible: false, order: 51 },
   { id: 'governanceRules', label: 'Regras de Governança', category: 'processo', visible: false, order: 52 },
   { id: 'screeningConfig', label: 'Config de Triagem', category: 'processo', visible: false, order: 53 },
   { id: 'organizationalStructure', label: 'Estrutura Organizacional', category: 'processo', visible: false, order: 54 },
-  
-  // Métricas
   { id: 'nps', label: 'NPS', category: 'metricas', visible: false, order: 55 },
   { id: 'viewCount', label: 'Visualizações', category: 'metricas', visible: false, order: 56 },
   { id: 'funnelData', label: 'Dados do Funil', category: 'metricas', visible: false, order: 57 },
   { id: 'liaMetrics', label: 'Métricas LIA', category: 'metricas', visible: false, order: 58 },
   { id: 'nextActions', label: 'Próximas Ações', category: 'metricas', visible: false, order: 59 },
-  
-  // Tags
   { id: 'tags', label: 'Tags', category: 'tags', visible: false, order: 60 },
-  
-  // Timestamps
   { id: 'createdAt', label: 'Data de Criação', category: 'timestamps', visible: false, order: 61 },
   { id: 'updatedAt', label: 'Última Atualização', category: 'timestamps', visible: false, order: 62 },
   { id: 'closedAt', label: 'Data de Fechamento', category: 'timestamps', visible: false, order: 63 },
 ]
 
-const STORAGE_KEY = 'lia-job-column-config'
-
 export function useJobColumnConfig() {
+  const uiPrefs = useUIPreferencesStore()
   const [columns, setColumns] = useState<ColumnConfig[]>(DEFAULT_COLUMNS)
   const [savedViews, setSavedViews] = useState<SavedView[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
@@ -127,52 +100,48 @@ export function useJobColumnConfig() {
     if (typeof window === 'undefined') return
     
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
+      const stored = uiPrefs.jobColumnConfig
       if (stored) {
-        const parsed = JSON.parse(stored) as ColumnConfigState
-        if (parsed.columns && Array.isArray(parsed.columns)) {
+        if (stored.columns && Array.isArray(stored.columns)) {
           const mergedColumns = DEFAULT_COLUMNS.map(defaultCol => {
-            const savedCol = parsed.columns.find(c => c.id === defaultCol.id)
+            const savedCol = stored.columns.find(c => c.id === defaultCol.id)
             return savedCol ? { ...defaultCol, visible: savedCol.visible, order: savedCol.order } : defaultCol
           })
           setColumns(mergedColumns.sort((a, b) => a.order - b.order))
         }
-        if (parsed.savedViews) {
-          setSavedViews(parsed.savedViews)
+        if (stored.savedViews) {
+          setSavedViews(stored.savedViews)
         }
       }
-    } catch (e) {
+    } catch {
     }
     setIsLoaded(true)
   }, [])
 
-  const saveToStorage = useCallback((cols: ColumnConfig[], views: SavedView[]) => {
+  const saveToStore = useCallback((cols: ColumnConfig[], views: SavedView[]) => {
     if (typeof window === 'undefined') return
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ columns: cols, savedViews: views }))
-    } catch (e) {
-    }
-  }, [])
+    uiPrefs.setJobColumnConfig({ columns: cols, savedViews: views })
+  }, [uiPrefs])
 
   const toggleColumn = useCallback((columnId: string) => {
     setColumns(prev => {
       const updated = prev.map(col => 
         col.id === columnId ? { ...col, visible: !col.visible } : col
       )
-      saveToStorage(updated, savedViews)
+      saveToStore(updated, savedViews)
       return updated
     })
-  }, [savedViews, saveToStorage])
+  }, [savedViews, saveToStore])
 
   const setColumnVisibility = useCallback((columnId: string, visible: boolean) => {
     setColumns(prev => {
       const updated = prev.map(col => 
         col.id === columnId ? { ...col, visible } : col
       )
-      saveToStorage(updated, savedViews)
+      saveToStore(updated, savedViews)
       return updated
     })
-  }, [savedViews, saveToStorage])
+  }, [savedViews, saveToStore])
 
   const reorderColumns = useCallback((fromIndex: number, toIndex: number) => {
     setColumns(prev => {
@@ -180,15 +149,15 @@ export function useJobColumnConfig() {
       const [moved] = updated.splice(fromIndex, 1)
       updated.splice(toIndex, 0, moved)
       const reordered = updated.map((col, idx) => ({ ...col, order: idx }))
-      saveToStorage(reordered, savedViews)
+      saveToStore(reordered, savedViews)
       return reordered
     })
-  }, [savedViews, saveToStorage])
+  }, [savedViews, saveToStore])
 
   const resetToDefault = useCallback(() => {
     setColumns(DEFAULT_COLUMNS)
-    saveToStorage(DEFAULT_COLUMNS, savedViews)
-  }, [savedViews, saveToStorage])
+    saveToStore(DEFAULT_COLUMNS, savedViews)
+  }, [savedViews, saveToStore])
 
   const saveView = useCallback((name: string) => {
     const visibleColumnIds = columns.filter(c => c.visible).map(c => c.id)
@@ -200,10 +169,10 @@ export function useJobColumnConfig() {
     }
     setSavedViews(prev => {
       const updated = [...prev, newView]
-      saveToStorage(columns, updated)
+      saveToStore(columns, updated)
       return updated
     })
-  }, [columns, saveToStorage])
+  }, [columns, saveToStore])
 
   const applyView = useCallback((viewId: string) => {
     const view = savedViews.find(v => v.id === viewId)
@@ -214,18 +183,18 @@ export function useJobColumnConfig() {
         ...col,
         visible: view.columns.includes(col.id)
       }))
-      saveToStorage(updated, savedViews)
+      saveToStore(updated, savedViews)
       return updated
     })
-  }, [savedViews, saveToStorage])
+  }, [savedViews, saveToStore])
 
   const deleteView = useCallback((viewId: string) => {
     setSavedViews(prev => {
       const updated = prev.filter(v => v.id !== viewId)
-      saveToStorage(columns, updated)
+      saveToStore(columns, updated)
       return updated
     })
-  }, [columns, saveToStorage])
+  }, [columns, saveToStore])
 
   const visibleColumns = columns.filter(c => c.visible)
   const visibleColumnIds = visibleColumns.map(c => c.id)

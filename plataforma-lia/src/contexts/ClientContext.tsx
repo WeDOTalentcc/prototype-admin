@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 export interface Client {
   id: string
@@ -21,8 +22,6 @@ interface ClientContextType {
   refreshClients: () => Promise<void>
 }
 
-const STORAGE_KEY = "wedo_admin_selected_client"
-
 const ClientContext = createContext<ClientContextType | undefined>(undefined)
 
 export function ClientProvider({ children }: { children: ReactNode }) {
@@ -30,6 +29,7 @@ export function ClientProvider({ children }: { children: ReactNode }) {
   const [selectedClient, setSelectedClientState] = useState<Client | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
+  const { adminSelectedClient, setAdminSelectedClient } = useUIPreferencesStore()
 
   const fetchClients = useCallback(async () => {
     try {
@@ -54,21 +54,13 @@ export function ClientProvider({ children }: { children: ReactNode }) {
 
   const setSelectedClient = useCallback((client: Client | null) => {
     setSelectedClientState(client)
-    if (typeof window !== "undefined") {
-      if (client) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(client))
-      } else {
-        localStorage.removeItem(STORAGE_KEY)
-      }
-    }
-  }, [])
+    setAdminSelectedClient(client as (Client & { id: string; name: string; status: string }) | null)
+  }, [setAdminSelectedClient])
 
   const clearSelectedClient = useCallback(() => {
     setSelectedClientState(null)
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(STORAGE_KEY)
-    }
-  }, [])
+    setAdminSelectedClient(null)
+  }, [setAdminSelectedClient])
 
   useEffect(() => {
     setMounted(true)
@@ -76,26 +68,18 @@ export function ClientProvider({ children }: { children: ReactNode }) {
     const initContext = async () => {
       const clientsList = await fetchClients()
       
-      if (typeof window !== "undefined") {
-        const stored = localStorage.getItem(STORAGE_KEY)
-        if (stored) {
-          try {
-            const storedClient = JSON.parse(stored) as Client
-            const stillExists = clientsList.find((c: Client) => c.id === storedClient.id)
-            if (stillExists) {
-              setSelectedClientState(stillExists)
-            } else {
-              localStorage.removeItem(STORAGE_KEY)
-            }
-          } catch (e) {
-            localStorage.removeItem(STORAGE_KEY)
-          }
+      if (adminSelectedClient) {
+        const stillExists = clientsList.find((c: Client) => c.id === adminSelectedClient.id)
+        if (stillExists) {
+          setSelectedClientState(stillExists)
+        } else {
+          setAdminSelectedClient(null)
         }
       }
     }
 
     initContext()
-  }, [fetchClients])
+  }, [fetchClients, adminSelectedClient, setAdminSelectedClient])
 
   const value: ClientContextType = {
     selectedClient,

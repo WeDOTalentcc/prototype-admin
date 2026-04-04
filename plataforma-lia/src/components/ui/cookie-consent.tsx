@@ -3,33 +3,31 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Cookie, X, Check } from 'lucide-react'
-
-const CONSENT_KEY = 'lia-cookie-consent'
+import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
 
 type ConsentState = 'accepted' | 'declined' | null
 
 export function CookieConsent() {
+  const { cookieConsent, setCookieConsent } = useUIPreferencesStore()
   const [consent, setConsent] = useState<ConsentState>(null)
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem(CONSENT_KEY) as ConsentState
-    if (!stored) {
-      // Mostrar banner após 500ms (não bloquear renderização inicial)
+    if (!cookieConsent) {
       const timer = setTimeout(() => setVisible(true), 500)
       return () => clearTimeout(timer)
     }
-    setConsent(stored)
-  }, [])
+    setConsent(cookieConsent)
+  }, [cookieConsent])
 
   const handleAccept = () => {
-    localStorage.setItem(CONSENT_KEY, 'accepted')
+    setCookieConsent('accepted')
     setConsent('accepted')
     setVisible(false)
   }
 
   const handleDecline = () => {
-    localStorage.setItem(CONSENT_KEY, 'declined')
+    setCookieConsent('declined')
     setConsent('declined')
     setVisible(false)
   }

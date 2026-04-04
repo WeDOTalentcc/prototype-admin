@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect, useMemo } from "react"
+import { useTableFeaturesStore } from "@/stores/table-features-store"
 
 export interface ColumnConfig {
   id: string
@@ -48,35 +49,6 @@ export interface UseTableFeaturesReturn {
   fixedColumnIds: string[]
 }
 
-function isClient(): boolean {
-  return typeof window !== 'undefined'
-}
-
-function safeLocalStorageGet(key: string): string | null {
-  if (!isClient()) return null
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function safeLocalStorageSet(key: string, value: string): void {
-  if (!isClient()) return
-  try {
-    localStorage.setItem(key, value)
-  } catch {
-  }
-}
-
-function safeLocalStorageRemove(key: string): void {
-  if (!isClient()) return
-  try {
-    localStorage.removeItem(key)
-  } catch {
-  }
-}
-
 export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeaturesReturn {
   const { 
     tableId, 
@@ -84,6 +56,8 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
     defaultSortField = null, 
     defaultSortOrder = 'desc'
   } = options
+
+  const tableStore = useTableFeaturesStore()
 
   const fixedColumnIds = useMemo(() => 
     columns.filter(col => col.fixed).map(col => col.id),
@@ -125,14 +99,13 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
   useEffect(() => {
     if (!isHydrated) return
 
-    const savedWidths = safeLocalStorageGet(`${tableId}-column-widths`)
+    const savedWidths = tableStore.getTableWidths(tableId)
     if (savedWidths) {
       try {
-        const parsed = JSON.parse(savedWidths)
         const validWidths: Record<string, number> = {}
         columns.forEach(col => {
-          if (typeof parsed[col.id] === 'number' && parsed[col.id] >= (col.minWidth || 60)) {
-            validWidths[col.id] = parsed[col.id]
+          if (typeof savedWidths[col.id] === 'number' && savedWidths[col.id] >= (col.minWidth || 60)) {
+            validWidths[col.id] = savedWidths[col.id]
           } else {
             validWidths[col.id] = col.defaultWidth
           }
@@ -143,16 +116,14 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
       }
     }
 
-    const savedOrder = safeLocalStorageGet(`${tableId}-column-order`)
+    const savedOrder = tableStore.getTableOrder(tableId)
     if (savedOrder) {
       try {
-        const parsed = JSON.parse(savedOrder) as string[]
-        
-        const existingMovableFromSaved = parsed.filter(id => 
+        const existingMovableFromSaved = savedOrder.filter(id => 
           movableColumnIds.includes(id)
         )
         const missingMovable = movableColumnIds.filter(id => 
-          !parsed.includes(id)
+          !savedOrder.includes(id)
         )
         const reconciledMovableOrder = [...existingMovableFromSaved, ...missingMovable]
         
@@ -170,18 +141,16 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
       }
     }
 
-    const savedSort = safeLocalStorageGet(`${tableId}-sort-state`)
+    const savedSort = tableStore.getTableSort(tableId)
     if (savedSort) {
       try {
-        const parsed = JSON.parse(savedSort)
-        if (parsed.field && columns.some(c => c.sortKey === parsed.field)) {
-          setSortState(parsed)
+        if (savedSort.field && columns.some(c => c.sortKey === savedSort.field)) {
+          setSortState(savedSort)
         }
       } catch {
-        // Keep default sort state
       }
     }
-  }, [isHydrated, tableId, columns, defaultWidths, defaultOrder, movableColumnIds, fixedColumnIds])
+  }, [isHydrated, tableId, columns, defaultWidths, defaultOrder, movableColumnIds, fixedColumnIds, tableStore])
 
   const isColumnFixed = useCallback((columnId: string): boolean => {
     return fixedColumnIds.includes(columnId)
@@ -193,10 +162,10 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
         field,
         order: prev.field === field ? (prev.order === 'asc' ? 'desc' : 'asc') : 'desc'
       }
-      safeLocalStorageSet(`${tableId}-sort-state`, JSON.stringify(newState))
+      tableStore.setTableSort(tableId, newState)
       return newState
     })
-  }, [tableId])
+  }, [tableId, tableStore])
 
   const getSortIcon = useCallback((field: string): 'asc' | 'desc' | null => {
     if (sortState.field !== field) return null
@@ -218,7 +187,7 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
       const newWidth = Math.max(minWidth, startWidth + (e.clientX - startX))
       setColumnWidths(prev => {
         const updated = { ...prev, [columnId]: newWidth }
-        safeLocalStorageSet(`${tableId}-column-widths`, JSON.stringify(updated))
+        tableStore.setTableWidths(tableId, updated)
         return updated
       })
     }
@@ -234,7 +203,7 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
     document.body.style.userSelect = 'none'
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
-  }, [columnWidths, columns, tableId, defaultWidths, isColumnFixed])
+  }, [columnWidths, columns, tableId, defaultWidths, isColumnFixed, tableStore])
 
   const handleColumnDragStart = useCallback((columnId: string, event: React.DragEvent) => {
     if (isColumnFixed(columnId)) {
@@ -301,14 +270,14 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
       newOrder.splice(targetIndex, 0, draggedColumnId)
       
       const movableOrderOnly = newOrder.filter(id => !fixedColumnIds.includes(id))
-      safeLocalStorageSet(`${tableId}-column-order`, JSON.stringify(movableOrderOnly))
+      tableStore.setTableOrder(tableId, movableOrderOnly)
       
       return newOrder
     })
 
     setDraggedColumnId(null)
     setDragOverColumnId(null)
-  }, [draggedColumnId, tableId, fixedColumnIds, isColumnFixed])
+  }, [draggedColumnId, tableId, fixedColumnIds, isColumnFixed, tableStore])
 
   const handleColumnDragEnd = useCallback(() => {
     setDraggedColumnId(null)
@@ -317,13 +286,13 @@ export function useTableFeatures(options: UseTableFeaturesOptions): UseTableFeat
 
   const resetColumnOrder = useCallback(() => {
     setColumnOrder(defaultOrder)
-    safeLocalStorageRemove(`${tableId}-column-order`)
-  }, [tableId, defaultOrder])
+    tableStore.removeTableOrder(tableId)
+  }, [tableId, defaultOrder, tableStore])
 
   const resetColumnWidths = useCallback(() => {
     setColumnWidths(defaultWidths)
-    safeLocalStorageRemove(`${tableId}-column-widths`)
-  }, [tableId, defaultWidths])
+    tableStore.removeTableWidths(tableId)
+  }, [tableId, defaultWidths, tableStore])
 
   const getColumnWidth = useCallback((columnId: string): number => {
     const width = columnWidths[columnId] ?? defaultWidths[columnId]

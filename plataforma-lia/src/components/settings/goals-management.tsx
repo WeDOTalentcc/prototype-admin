@@ -1,33 +1,28 @@
 "use client"
 
-import { useState, useMemo, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Plus, Edit, Trash2, Save, X, Target, Users, BarChart3, Calendar,
-  TrendingUp, Award, CheckCircle, AlertCircle, Clock, Percent,
-  Timer, DollarSign, Star, Heart, Zap, UserCheck, Settings,
-  Copy, Download, Upload, FileText, Search, Filter, Loader2,
-  ChevronDown, ChevronRight, ChevronUp, User
+  Plus, Target, Users, Settings,
+  CheckCircle, AlertCircle, Loader2,
+  ChevronDown, ChevronUp
 } from "lucide-react"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { typography, textStyles } from "@/lib/design-tokens"
-import { EditableCell, GoalsStatsCards, getCategoryIcon, getCategoryColor, getStatusColor } from "./goals"
+import { textStyles } from "@/lib/design-tokens"
+import { EditableCell, GoalsStatsCards, getCategoryIcon, getCategoryColor } from "./goals"
 import { ApplyAllModal, DeleteConfirmModal } from "./goals"
+import { GoalsTemplatesModal } from "./goals-templates-modal"
+import { GoalsCustomGoalModal } from "./goals-custom-goal-modal"
+import { GoalsEditGoalModal, GoalsEditTemplateModal } from "./goals-edit-modals"
 
-// Camada 1 (hook): Todo o estado e ações extraídas
 import {
   useGoalsManagement,
-  goalTemplates,
   MONTHS,
-  type GoalTemplate,
   type UserGoal,
-  type MonthlyGoalValue,
-  type CustomGoalForm
 } from "./use-goals-management"
 
 interface GoalsMgmtUser {
@@ -49,7 +44,7 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
   const { state, actions } = useGoalsManagement(users, onGoalUpdate)
   const {
     selectedUser, showTemplates, showCustomGoal, editingGoal, searchTerm,
-    filterCategory, filterPeriod, isLoading, isSaving, savingTemplateId, error,
+    filterCategory, filterPeriod, isLoading, isSaving, error,
     successMessage, userGoalsMap, selectedTemplateIds, templateApplyMode,
     deleteConfirmGoal, isDeleting, editingTemplate, templateOverrides, hiddenTemplates,
     selectedYear, collapsedGoals, monthlyGoals, showApplyAllModal, applyAllValue,
@@ -63,11 +58,10 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
     setHiddenTemplates, setSelectedYear, setCollapsedGoals, setShowApplyAllModal,
     setApplyAllValue, setApplyAllMonths, setApplyAllUsers, setCustomGoalForm,
     getMonthlyValue, calculateRowTotal, calculateColumnTotal, calculateGrandTotal,
-    getEffectiveTemplate, isTemplateAppliedToUser, getAppliedTemplatesForUser, getUserById,
-    findUserGoal, fetchUserGoals,
+    getEffectiveTemplate, isTemplateAppliedToUser, getUserById,
     setMonthlyValue, applyValueToAll, toggleGoalCollapse, toggleTemplateSelection,
-    handleApplyTemplate, handleApplySelectedTemplates, handleCreateCustomGoal,
-    handleUpdateGoal, handleDeleteGoal, confirmDeleteGoal, handleAddUserToTemplate
+    handleApplySelectedTemplates, handleCreateCustomGoal,
+    handleUpdateGoal, confirmDeleteGoal, handleAddUserToTemplate
   } = actions
 
   return (
@@ -335,513 +329,52 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       )}
 
       {showTemplates && (
-        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
-          <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className={textStyles.h4}>Templates de Metas</h3>
-                <p className={textStyles.caption}>Selecione uma ou mais metas para aplicar</p>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => {
-                setShowTemplates(false)
-                setSelectedTemplateIds(new Set())
-              }} className="h-6 w-6 p-0">
-                <X className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-
-            {selectedTemplateIds.size > 0 && (
-              <div className="border rounded-md px-2.5 py-1.5 mb-3 flex items-center justify-between bg-lia-bg-secondary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle className="w-3 h-3 text-lia-text-primary" />
-                  <span className={textStyles.caption}>
-                    <strong>{selectedTemplateIds.size}</strong> template(s) selecionado(s)
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <select
-                    value={templateApplyMode}
-                    onChange={(e) => setTemplateApplyMode(e.target.value as 'all' | 'selected')}
-                    className="border rounded-full px-1.5 py-0.5 text-micro bg-lia-bg-primary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-primary font-['Open_Sans',sans-serif]"
-                  >
-                    <option value="all">Aplicar a todos usuários</option>
-                    {selectedUser && <option value="selected">Aplicar a {selectedUser.name}</option>}
-                  </select>
-                  <Button
-                    size="sm"
-                    onClick={handleApplySelectedTemplates}
-                    disabled={isSaving}
-                    className="text-micro h-6 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active font-['Open_Sans',sans-serif]"
-                  >
-                    {isSaving ? <Loader2 className="w-2.5 h-2.5 animate-spin motion-reduce:animate-none mr-1" /> : <Plus className="w-2.5 h-2.5 mr-1" />}
-                    Aplicar Selecionados
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setSelectedTemplateIds(new Set())}
-                    className="text-micro h-6 font-['Open_Sans',sans-serif]"
-                  >
-                    Limpar
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-2 mb-3">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-lia-text-tertiary" />
-                  <input
-                    type="text"
-                    placeholder="Buscar templates..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-7 pr-2.5 py-1 border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-micro font-['Open_Sans',sans-serif]"
-                  />
-                </div>
-              </div>
-              <select
-                value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value)}
-                className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
-              >
-                <option value="all">Todas Categorias</option>
-                <option value="recruitment">Recrutamento</option>
-                <option value="quality">Qualidade</option>
-                <option value="efficiency">Eficiência</option>
-                <option value="satisfaction">Satisfação</option>
-              </select>
-              <select
-                value={filterPeriod}
-                onChange={(e) => setFilterPeriod(e.target.value)}
-                className="border border-lia-border-subtle dark:border-lia-border-subtle rounded-full bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary px-2 py-1 text-micro font-['Open_Sans',sans-serif]"
-              >
-                <option value="all">Todos Períodos</option>
-                <option value="monthly">Mensal</option>
-                <option value="quarterly">Trimestral</option>
-                <option value="yearly">Anual</option>
-              </select>
-            </div>
-
-            {hiddenTemplates.size > 0 && (
-              <div className="bg-status-warning/10 border border-status-warning/30 rounded-md px-3 py-1.5 mb-4 flex items-center justify-between">
-                <span className={`${textStyles.bodySmall} !text-status-warning`}>
-                  {hiddenTemplates.size} template(s) oculto(s)
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setHiddenTemplates(new Set())}
-                  className="text-xs text-status-warning hover:text-status-warning hover:bg-status-warning/15 h-7 font-['Open_Sans',sans-serif]"
-                >
-                  Restaurar Todos
-                </Button>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredTemplates.map((template) => {
-                const appliedCount = Object.values(userGoalsMap).reduce((count, periodGoals) => {
-                  const allGoals = [...(periodGoals.monthly || []), ...(periodGoals.quarterly || []), ...(periodGoals.yearly || [])]
-                  return count + (allGoals.some(g => g.templateId === template.id) ? 1 : 0)
-                }, 0)
-                const isAppliedToAll = appliedCount === users.length && users.length > 0
-                const isPartiallyApplied = appliedCount > 0 && appliedCount < users.length
-                const isSelected = selectedTemplateIds.has(template.id)
-                const isAppliedToSelectedUser = selectedUser ? isTemplateAppliedToUser(template.id, selectedUser.id) : false
-                
-                return (
-                <div 
-                  key={template.id} 
-                  onClick={() => !isAppliedToAll && toggleTemplateSelection(template.id)}
-                  className={`border rounded-md p-3 transition-colors motion-reduce:transition-none cursor-pointer ${
-                    isAppliedToAll 
-                      ? 'border-status-success/30 bg-status-success/10 opacity-60 cursor-not-allowed' 
-                      : isSelected
-                        ? 'border-lia-btn-primary-bg bg-lia-bg-secondary ring-2 ring-lia-border-medium'
-                        : isPartiallyApplied 
-                          ? 'border-status-warning/30 bg-status-warning/10 hover:border-lia-border-medium' 
-                          : 'border-lia-border-subtle hover:border-lia-border-medium hover:bg-lia-bg-secondary'
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded-md border-2 flex items-center justify-center transition-colors motion-reduce:transition-none ${
-                        isAppliedToAll 
-                          ? 'bg-status-success border-status-success/30'
-                          : isSelected 
-                            ? 'bg-lia-btn-primary-bg border-lia-btn-primary-bg dark:border-lia-border-subtle' 
-                            : 'border-lia-border-default bg-lia-bg-primary'
-                      }`}>
-                        {(isSelected || isAppliedToAll) && <CheckCircle className="w-2.5 h-2.5 text-white" />}
-                      </div>
-                      {getCategoryIcon(template.category)}
-                      <div>
-                        <h4 className={textStyles.label}>{template.name}</h4>
-                        <p className={textStyles.caption}>{template.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-0.5">
-                      <Badge className={`text-micro px-1.5 py-0.5 font-['Open_Sans',sans-serif] ${getCategoryColor(template.category)}`}>
-                        {template.category}
-                      </Badge>
-                      {isAppliedToAll && (
-                        <Badge className="text-micro px-1.5 py-0.5 bg-status-success/15 text-status-success border-status-success/30 font-['Open_Sans',sans-serif]">
-                          <CheckCircle className="w-2.5 h-2.5 mr-0.5" />
-                          Aplicado a Todos
-                        </Badge>
-                      )}
-                      {isPartiallyApplied && (
-                        <Badge className="text-micro px-1.5 py-0.5 bg-status-warning/15 text-status-warning border-status-warning/30 font-['Open_Sans',sans-serif]">
-                          {appliedCount}/{users.length} usuários
-                        </Badge>
-                      )}
-                      {selectedUser && isAppliedToSelectedUser && !isAppliedToAll && (
-                        <Badge className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle font-['Open_Sans',sans-serif]">
-                          Já aplicado a {selectedUser.name.split(' ')[0]}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="bg-lia-bg-secondary rounded-md px-1.5 py-1 mb-2 border-l-2 border-lia-border-medium ml-6">
-                    <div className="flex items-start gap-1">
-                      <BarChart3 className="w-2.5 h-2.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
-                      <p className={textStyles.caption}>
-                        <span className="font-medium text-lia-text-secondary">Como é calculado:</span>{' '}
-                        {template.formula}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-micro ml-6">
-                    <span className={textStyles.caption}>
-                      Meta: {template.defaultTarget} {template.unit}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <Badge variant="outline" className="text-micro px-1.5 py-0.5 font-['Open_Sans',sans-serif]">
-                        {template.period === 'monthly' ? 'Mensal' :
-                         template.period === 'quarterly' ? 'Trimestral' : 'Anual'}
-                      </Badge>
-                      <div className="flex items-center gap-0.5">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setEditingTemplate(template)
-                          }}
-                          className="h-5 w-5 p-0 hover:bg-lia-bg-tertiary hover:text-lia-text-primary"
-                          title="Editar template"
-                        >
-                          <Edit className="w-2.5 h-2.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setHiddenTemplates(prev => new Set([...prev, template.id]))
-                          }}
-                          className="h-5 w-5 p-0 hover:bg-status-error/10 hover:text-status-error"
-                          title="Ocultar template"
-                        >
-                          <X className="w-2.5 h-2.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )})}
-            </div>
-          </div>
-        </div>
+        <GoalsTemplatesModal
+          users={users}
+          selectedUser={selectedUser}
+          searchTerm={searchTerm}
+          filterCategory={filterCategory}
+          filterPeriod={filterPeriod}
+          isSaving={isSaving}
+          selectedTemplateIds={selectedTemplateIds}
+          templateApplyMode={templateApplyMode}
+          hiddenTemplates={hiddenTemplates}
+          filteredTemplates={filteredTemplates}
+          userGoalsMap={userGoalsMap}
+          setSearchTerm={setSearchTerm}
+          setFilterCategory={setFilterCategory}
+          setFilterPeriod={setFilterPeriod}
+          setSelectedTemplateIds={setSelectedTemplateIds}
+          setTemplateApplyMode={setTemplateApplyMode}
+          setHiddenTemplates={setHiddenTemplates}
+          setShowTemplates={setShowTemplates}
+          setEditingTemplate={setEditingTemplate}
+          isTemplateAppliedToUser={isTemplateAppliedToUser}
+          toggleTemplateSelection={toggleTemplateSelection}
+          handleApplySelectedTemplates={handleApplySelectedTemplates}
+        />
       )}
 
       {showCustomGoal && (
-        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
-          <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-lg">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Nova Meta Customizada</h3>
-              <Button variant="ghost" onClick={() => {
-                setShowCustomGoal(false)
-                setSelectedUser(null)
-              }}>
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                  Aplicar para *
-                </label>
-                <Select
-                  value={customGoalForm.userId || selectedUser?.id || ''}
-                  onValueChange={(value) => {
-                    setCustomGoalForm(prev => ({ ...prev, userId: value }))
-                    if (value === '__all__') {
-                      setSelectedUser(null)
-                    } else {
-                      setSelectedUser(users.find(u => u.id === value) || null)
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione usuário ou todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__all__">
-                      <span className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-lia-text-primary" />
-                        <span className="font-medium">Todos os Usuários</span>
-                      </span>
-                    </SelectItem>
-                    <div className="border-t border-lia-border-subtle my-1" />
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name} - {user.role}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {customGoalForm.userId === '__all__' && (
-                  <p className={`${textStyles.caption} mt-1`}>
-                    A meta será criada para todos os {users.length} usuários
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                  Nome da Meta *
-                </label>
-                <input
-                  type="text"
-                  value={customGoalForm.name}
-                  onChange={(e) => setCustomGoalForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                  placeholder="Ex: Aumentar taxa de conversão"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                  Descrição
-                </label>
-                <textarea
-                  value={customGoalForm.description}
-                  onChange={(e) => setCustomGoalForm(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                  rows={2}
-                  placeholder="Descreva a meta..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                    Meta *
-                  </label>
-                  <input
-                    type="number"
-                    value={customGoalForm.target}
-                    onChange={(e) => setCustomGoalForm(prev => ({ ...prev, target: parseFloat(e.target.value) || 0 }))}
-                    className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                    min="0"
-                    step="0.1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                    Unidade
-                  </label>
-                  <input
-                    type="text"
-                    value={customGoalForm.unit}
-                    onChange={(e) => setCustomGoalForm(prev => ({ ...prev, unit: e.target.value }))}
-                    className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                    placeholder="Ex: %, dias, contratações"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                    Período
-                  </label>
-                  <select
-                    value={customGoalForm.period}
-                    onChange={(e) => setCustomGoalForm(prev => ({ ...prev, period: e.target.value as CustomGoalForm['period'] }))}
-                    className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                  >
-                    <option value="monthly">Mensal</option>
-                    <option value="quarterly">Trimestral</option>
-                    <option value="yearly">Anual</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                    Categoria
-                  </label>
-                  <select
-                    value={customGoalForm.category}
-                    onChange={(e) => setCustomGoalForm(prev => ({ ...prev, category: e.target.value as CustomGoalForm['category'] }))}
-                    className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                  >
-                    <option value="recruitment">Recrutamento</option>
-                    <option value="quality">Qualidade</option>
-                    <option value="efficiency">Eficiência</option>
-                    <option value="satisfaction">Satisfação</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    value={customGoalForm.startDate}
-                    onChange={(e) => setCustomGoalForm(prev => ({ ...prev, startDate: e.target.value }))}
-                    className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    value={customGoalForm.endDate}
-                    onChange={(e) => setCustomGoalForm(prev => ({ ...prev, endDate: e.target.value }))}
-                    className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <Button variant="outline" onClick={() => {
-                  setShowCustomGoal(false)
-                  setSelectedUser(null)
-                }}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleCreateCustomGoal} disabled={isSaving}>
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Criar Meta
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <GoalsCustomGoalModal
+          users={users}
+          selectedUser={selectedUser}
+          customGoalForm={customGoalForm}
+          isSaving={isSaving}
+          setSelectedUser={setSelectedUser}
+          setShowCustomGoal={setShowCustomGoal}
+          setCustomGoalForm={setCustomGoalForm}
+          handleCreateCustomGoal={handleCreateCustomGoal}
+        />
       )}
 
       {editingGoal && (
-        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
-          <div className="bg-lia-bg-primary rounded-md p-6 w-full max-w-lg">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Editar Meta</h3>
-              <Button variant="ghost" onClick={() => setEditingGoal(null)}>
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                  Nome da Meta
-                </label>
-                <input
-                  type="text"
-                  value={editingGoal.name}
-                  onChange={(e) => setEditingGoal(prev => prev ? { ...prev, name: e.target.value } : null)}
-                  className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                    Meta
-                  </label>
-                  <input
-                    type="number"
-                    value={editingGoal.target}
-                    onChange={(e) => setEditingGoal(prev => prev ? { ...prev, target: parseFloat(e.target.value) || 0 } : null)}
-                    className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                    min="0"
-                    step="0.1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                    Atual
-                  </label>
-                  <input
-                    type="number"
-                    value={editingGoal.current}
-                    onChange={(e) => setEditingGoal(prev => prev ? { ...prev, current: parseFloat(e.target.value) || 0 } : null)}
-                    className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                    min="0"
-                    step="0.1"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-lia-text-primary mb-1">
-                  Status
-                </label>
-                <select
-                  value={editingGoal.status}
-                  onChange={(e) => setEditingGoal(prev => prev ? { ...prev, status: e.target.value as UserGoal['status'] } : null)}
-                  className="w-full px-3 py-2 border border-lia-border-default rounded-md text-sm"
-                >
-                  <option value="pending">Pendente</option>
-                  <option value="in_progress">Em Progresso</option>
-                  <option value="achieved">Atingida</option>
-                  <option value="overdue">Atrasada</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <Button variant="outline" onClick={() => setEditingGoal(null)}>
-                  Cancelar
-                </Button>
-                <Button 
-                  onClick={() => handleUpdateGoal(editingGoal, editingGoal)}
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mr-2" />
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Salvar Alterações
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <GoalsEditGoalModal
+          editingGoal={editingGoal}
+          isSaving={isSaving}
+          setEditingGoal={setEditingGoal}
+          handleUpdateGoal={handleUpdateGoal}
+        />
       )}
 
       {deleteConfirmGoal && (
@@ -854,126 +387,11 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
       )}
 
       {editingTemplate && (
-        <div className="fixed inset-0 bg-lia-overlay flex items-center justify-center z-50">
-          <div className="bg-lia-bg-primary rounded-md w-full max-w-md mx-4 overflow-hidden">
-            <div className="bg-lia-bg-secondary px-5 py-3 border-b border-lia-border-subtle">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-lia-interactive-active">
-                  <Settings className="w-4 h-4 text-lia-text-primary" />
-                </div>
-                <div>
-                  <h3 className={textStyles.h4}>Editar Template</h3>
-                  <p className={textStyles.caption}>Personalize os valores padrão</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-3">
-              <div>
-                <label className={`${textStyles.label} block mb-1`}>Nome da Meta</label>
-                <input
-                  type="text"
-                  value={editingTemplate.name}
-                  onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, name: e.target.value } : null)}
-                  className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
-                />
-              </div>
-
-              <div>
-                <label className={`${textStyles.label} block mb-1`}>Descrição</label>
-                <input
-                  type="text"
-                  value={editingTemplate.description}
-                  onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, description: e.target.value } : null)}
-                  className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={`${textStyles.label} block mb-1`}>Meta Padrão</label>
-                  <input
-                    type="number"
-                    value={editingTemplate.defaultTarget}
-                    onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, defaultTarget: parseFloat(e.target.value) || 0 } : null)}
-                    className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
-                  />
-                </div>
-                <div>
-                  <label className={`${textStyles.label} block mb-1`}>Unidade</label>
-                  <input
-                    type="text"
-                    value={editingTemplate.unit}
-                    onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, unit: e.target.value } : null)}
-                    className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className={`${textStyles.label} block mb-1`}>Período</label>
-                  <select
-                    value={editingTemplate.period}
-                    onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, period: e.target.value as GoalTemplate['period'] } : null)}
-                    className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
-                  >
-                    <option value="monthly">Mensal</option>
-                    <option value="quarterly">Trimestral</option>
-                    <option value="yearly">Anual</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={`${textStyles.label} block mb-1`}>Categoria</label>
-                  <select
-                    value={editingTemplate.category}
-                    onChange={(e) => setEditingTemplate(prev => prev ? { ...prev, category: e.target.value as GoalTemplate['category'] } : null)}
-                    className="w-full px-2.5 py-1.5 border border-lia-border-subtle rounded-md text-xs font-['Open_Sans',sans-serif]"
-                  >
-                    <option value="recruitment">Recrutamento</option>
-                    <option value="quality">Qualidade</option>
-                    <option value="efficiency">Eficiência</option>
-                    <option value="satisfaction">Satisfação</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setEditingTemplate(null)}
-                  className="text-xs h-8 font-['Open_Sans',sans-serif]"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  size="sm"
-                  onClick={() => {
-                    if (editingTemplate) {
-                      setTemplateOverrides(prev => ({
-                        ...prev,
-                        [editingTemplate.id]: {
-                          name: editingTemplate.name,
-                          description: editingTemplate.description,
-                          defaultTarget: editingTemplate.defaultTarget,
-                          unit: editingTemplate.unit,
-                          period: editingTemplate.period,
-                          category: editingTemplate.category
-                        }
-                      }))
-                      setEditingTemplate(null)
-                    }
-                  }}
-                  className="text-xs h-8 font-['Open_Sans',sans-serif] bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
-                >
-                  <Save className="w-3 h-3 mr-1.5" />
-                  Salvar Alterações
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <GoalsEditTemplateModal
+          editingTemplate={editingTemplate}
+          setEditingTemplate={setEditingTemplate}
+          setTemplateOverrides={setTemplateOverrides}
+        />
       )}
     </div>
   )

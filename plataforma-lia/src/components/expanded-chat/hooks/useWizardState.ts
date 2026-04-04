@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useMemo } from 'react'
+import { useWizardStore } from '@/stores/wizard-store'
 import {
   type WizardContextState,
   type WizardContextActions,
@@ -22,22 +23,14 @@ import type { FastTrackJobData } from '@/hooks/useFastTrack'
 import { type WizardStage, WIZARD_STAGES } from '../config'
 import { useWSIQualityGates } from './useWSIQualityGates'
 
-const DRAFT_ID_KEY = 'wizard_draft_id'
-
 function generateDraftId(): string {
   return `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-function getOrCreateDraftId(): string {
-  if (typeof window === 'undefined') {
-    return generateDraftId()
-  }
-  const existingId = localStorage.getItem(DRAFT_ID_KEY)
-  if (existingId) {
-    return existingId
-  }
+function getOrCreateDraftId(existingId: string | null, setDraftId: (id: string | null) => void): string {
+  if (existingId) return existingId
   const newId = generateDraftId()
-  localStorage.setItem(DRAFT_ID_KEY, newId)
+  setDraftId(newId)
   return newId
 }
 
@@ -54,7 +47,8 @@ export function useWizardState(options: UseWizardStateOptions = {}): UseWizardSt
   const { initialStage = 'input-evaluation', onStageChange, onPendingChanges, onFieldChange } = options
 
   const [currentStage, setCurrentStageInternal] = useState<WizardStage>(initialStage)
-  const [wizardDraftId] = useState(() => getOrCreateDraftId())
+  const { draftId: storedDraftId, setDraftId } = useWizardStore()
+  const [wizardDraftId] = useState(() => getOrCreateDraftId(storedDraftId, setDraftId))
   const [basicInfoFields, setBasicInfoFieldsState] = useState<BasicInfoFields>(INITIAL_BASIC_INFO_FIELDS)
   const [technicalSkills, setTechnicalSkillsState] = useState<TechnicalSkill[]>([])
   const [behavioralCompetencies, setBehavioralCompetenciesState] = useState<BehavioralCompetency[]>(DEFAULT_BEHAVIORAL_COMPETENCIES)
@@ -263,9 +257,7 @@ export function useWizardState(options: UseWizardStateOptions = {}): UseWizardSt
     setHasPendingChangesState(false)
     setCatalogMaturityState('minimal')
     setFastTrackSourceJobId(null)
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(DRAFT_ID_KEY)
-    }
+    setDraftId(null)
   }, [])
 
   const setHasPendingChanges = useCallback((value: boolean) => {

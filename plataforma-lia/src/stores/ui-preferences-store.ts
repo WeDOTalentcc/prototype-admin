@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
+import { registerStoreReset } from './auth-store'
 
 export interface CandidateTableColumn {
   key: string
@@ -22,6 +23,45 @@ export interface CriteriaPreset {
   criteria: Array<{ id: string; text: string; isPinned: boolean }>
 }
 
+interface JobColumnConfigData {
+  columns: Array<{ id: string; label: string; category: string; visible: boolean; order: number }>
+  savedViews: Array<{ id: string; name: string; columns: string[]; createdAt: string }>
+}
+
+interface RecruiterContextData {
+  openJobsWithoutCandidates?: number
+  stalledCandidates?: number
+  upcomingInterviews?: number
+  pendingApprovals?: number
+}
+
+export interface TableColumnConfigEntry {
+  id: string
+  visible: boolean
+  order: number
+}
+
+export interface StoredAdminClient {
+  id: string
+  name: string
+  tradeName?: string
+  cnpj?: string
+  status: string
+  planId?: string
+  logoUrl?: string
+}
+
+export interface StoredGlobalSearchSettings {
+  defaultLimit: number
+  searchType: 'fast' | 'pro'
+  showEmails: boolean
+  showPhoneNumbers: boolean
+  highFreshness: boolean
+  autoExpandGlobal: boolean
+  confirmBeforeSearch: boolean
+  globalSearchEnabled: boolean
+}
+
 interface UIPreferencesState {
   candidateTableColumns: CandidateTableColumn[] | null
   candidateColumnViews: CandidateColumnView[]
@@ -31,6 +71,19 @@ interface UIPreferencesState {
   jobsTableColumnWidths: Record<string, number> | null
   criteriaPresets: CriteriaPreset[]
   sharedSessionTokens: Record<string, string>
+  settingsSidebarWidth: number
+  jobColumnConfig: JobColumnConfigData | null
+  recruiterContext: RecruiterContextData | null
+  cookieConsent: 'accepted' | 'declined' | null
+  sidebarCollapsed: boolean
+  sidebarWidth: number
+  promptSuggestionsPosition: { top: number; right: number }
+  tableColumnConfigs: Record<string, TableColumnConfigEntry[]>
+  kanbanFiltersMap: Record<string, Record<string, unknown>>
+  kanbanColumnOrders: Record<string, string[]>
+  customPresetsMap: Record<string, unknown[]>
+  globalSearchSettingsCache: StoredGlobalSearchSettings | null
+  adminSelectedClient: StoredAdminClient | null
 }
 
 interface UIPreferencesActions {
@@ -44,6 +97,27 @@ interface UIPreferencesActions {
   setSharedSessionToken: (token: string, sessionToken: string) => void
   getSharedSessionToken: (token: string) => string | null
   removeSharedSessionToken: (token: string) => void
+  setSettingsSidebarWidth: (width: number) => void
+  setJobColumnConfig: (config: JobColumnConfigData | null) => void
+  setRecruiterContext: (context: RecruiterContextData | null) => void
+  setCookieConsent: (consent: 'accepted' | 'declined') => void
+  setSidebarCollapsed: (collapsed: boolean) => void
+  setSidebarWidth: (width: number) => void
+  setPromptSuggestionsPosition: (position: { top: number; right: number }) => void
+  setTableColumnConfig: (key: string, config: TableColumnConfigEntry[]) => void
+  getTableColumnConfig: (key: string) => TableColumnConfigEntry[] | null
+  removeTableColumnConfig: (key: string) => void
+  setKanbanFilters: (key: string, filters: Record<string, unknown>) => void
+  getKanbanFilters: (key: string) => Record<string, unknown> | null
+  removeKanbanFilters: (key: string) => void
+  setKanbanColumnOrder: (key: string, order: string[]) => void
+  getKanbanColumnOrder: (key: string) => string[] | null
+  removeKanbanColumnOrder: (key: string) => void
+  setCustomPresets: (key: string, presets: unknown[]) => void
+  getCustomPresets: (key: string) => unknown[]
+  setGlobalSearchSettingsCache: (settings: StoredGlobalSearchSettings | null) => void
+  setAdminSelectedClient: (client: StoredAdminClient | null) => void
+  resetSessionData: () => void
 }
 
 export type UIPreferencesStore = UIPreferencesState & UIPreferencesActions
@@ -60,6 +134,19 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
         jobsTableColumnWidths: null,
         criteriaPresets: [],
         sharedSessionTokens: {},
+        settingsSidebarWidth: 256,
+        jobColumnConfig: null,
+        recruiterContext: null,
+        cookieConsent: null,
+        sidebarCollapsed: false,
+        sidebarWidth: 256,
+        promptSuggestionsPosition: { top: 80, right: 24 },
+        tableColumnConfigs: {},
+        kanbanFiltersMap: {},
+        kanbanColumnOrders: {},
+        customPresetsMap: {},
+        globalSearchSettingsCache: null,
+        adminSelectedClient: null,
 
         setCandidateTableColumns: (columns) =>
           set({ candidateTableColumns: columns }, false, 'uiPrefs/setCandidateTableColumns'),
@@ -105,6 +192,127 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
             false,
             'uiPrefs/removeSharedSessionToken'
           ),
+
+        setSettingsSidebarWidth: (width) =>
+          set({ settingsSidebarWidth: width }, false, 'uiPrefs/setSettingsSidebarWidth'),
+
+        setJobColumnConfig: (config) =>
+          set({ jobColumnConfig: config }, false, 'uiPrefs/setJobColumnConfig'),
+
+        setRecruiterContext: (context) =>
+          set({ recruiterContext: context }, false, 'uiPrefs/setRecruiterContext'),
+
+        setCookieConsent: (consent) =>
+          set({ cookieConsent: consent }, false, 'uiPrefs/setCookieConsent'),
+
+        setSidebarCollapsed: (collapsed) =>
+          set({ sidebarCollapsed: collapsed }, false, 'uiPrefs/setSidebarCollapsed'),
+
+        setSidebarWidth: (width) =>
+          set({ sidebarWidth: width }, false, 'uiPrefs/setSidebarWidth'),
+
+        setPromptSuggestionsPosition: (position) =>
+          set({ promptSuggestionsPosition: position }, false, 'uiPrefs/setPromptSuggestionsPosition'),
+
+        setTableColumnConfig: (key, config) =>
+          set(
+            (state) => ({
+              tableColumnConfigs: { ...state.tableColumnConfigs, [key]: config },
+            }),
+            false,
+            'uiPrefs/setTableColumnConfig'
+          ),
+
+        getTableColumnConfig: (key) => get().tableColumnConfigs[key] || null,
+
+        removeTableColumnConfig: (key) =>
+          set(
+            (state) => {
+              const updated = { ...state.tableColumnConfigs }
+              delete updated[key]
+              return { tableColumnConfigs: updated }
+            },
+            false,
+            'uiPrefs/removeTableColumnConfig'
+          ),
+
+        setKanbanFilters: (key, filters) =>
+          set(
+            (state) => ({
+              kanbanFiltersMap: { ...state.kanbanFiltersMap, [key]: filters },
+            }),
+            false,
+            'uiPrefs/setKanbanFilters'
+          ),
+
+        getKanbanFilters: (key) =>
+          (get().kanbanFiltersMap[key] as Record<string, unknown>) || null,
+
+        removeKanbanFilters: (key) =>
+          set(
+            (state) => {
+              const updated = { ...state.kanbanFiltersMap }
+              delete updated[key]
+              return { kanbanFiltersMap: updated }
+            },
+            false,
+            'uiPrefs/removeKanbanFilters'
+          ),
+
+        setKanbanColumnOrder: (key, order) =>
+          set(
+            (state) => ({
+              kanbanColumnOrders: { ...state.kanbanColumnOrders, [key]: order },
+            }),
+            false,
+            'uiPrefs/setKanbanColumnOrder'
+          ),
+
+        getKanbanColumnOrder: (key) => get().kanbanColumnOrders[key] || null,
+
+        removeKanbanColumnOrder: (key) =>
+          set(
+            (state) => {
+              const updated = { ...state.kanbanColumnOrders }
+              delete updated[key]
+              return { kanbanColumnOrders: updated }
+            },
+            false,
+            'uiPrefs/removeKanbanColumnOrder'
+          ),
+
+        setCustomPresets: (key, presets) =>
+          set(
+            (state) => ({
+              customPresetsMap: { ...state.customPresetsMap, [key]: presets },
+            }),
+            false,
+            'uiPrefs/setCustomPresets'
+          ),
+
+        getCustomPresets: (key) => get().customPresetsMap[key] || [],
+
+        setGlobalSearchSettingsCache: (settings) =>
+          set({ globalSearchSettingsCache: settings }, false, 'uiPrefs/setGlobalSearchSettingsCache'),
+
+        setAdminSelectedClient: (client) =>
+          set({ adminSelectedClient: client }, false, 'uiPrefs/setAdminSelectedClient'),
+
+        resetSessionData: () =>
+          set(
+            (state) => ({
+              ...state,
+              kanbanFiltersMap: {},
+              customPresetsMap: {},
+              globalSearchSettingsCache: null,
+              adminSelectedClient: null,
+              sharedSessionTokens: {},
+              kanbanColumnOrders: {},
+              tableColumnConfigs: {},
+            }),
+            false,
+            'uiPrefs/resetSessionData'
+          ),
       }),
       {
         name: 'lia-ui-preferences-store',
@@ -113,3 +321,5 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
     { name: 'UIPreferencesStore' }
   )
 )
+
+registerStoreReset(() => useUIPreferencesStore.getState().resetSessionData())

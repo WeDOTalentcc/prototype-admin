@@ -176,8 +176,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
   }
 
   const handleUseInLibrary = (tip: string) => {
-    // Salva a dica no localStorage para ser usada na biblioteca
-    localStorage.setItem('lia-selected-command', tip)
+    sessionStorage.setItem('lia-selected-command', tip)
     if (onNavigateToLibrary) {
       onNavigateToLibrary()
       onClose()
@@ -185,8 +184,7 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
   }
 
   const handleTestInChat = (tip: string) => {
-    // Salva a dica no localStorage para ser usada no chat
-    localStorage.setItem('lia-chat-prefill', tip)
+    sessionStorage.setItem('lia-chat-prefill', tip)
     if (onNavigateToChat) {
       onNavigateToChat()
       onClose()
@@ -194,11 +192,9 @@ export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavig
   }
 
   const handleApplyFilter = (tip: string) => {
-    // Salva a dica para ser usada nos filtros da página atual
-    localStorage.setItem('lia-filter-suggestion', tip)
-    localStorage.setItem('lia-filter-page', currentPage)
+    sessionStorage.setItem('lia-filter-suggestion', tip)
+    sessionStorage.setItem('lia-filter-page', currentPage)
     onClose()
-    // A página atual pode detectar isso e aplicar o filtro
   }
 
   // Componente para botões de ação de cada dica

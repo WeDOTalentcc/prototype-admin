@@ -1,13 +1,7 @@
 "use client"
 
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import React from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Dialog,
   DialogContent,
@@ -15,37 +9,19 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import {
-  AlertTriangle,
   Loader2,
   Check,
   X,
-  Calendar,
-  Snowflake,
-  Bell,
-  Mail,
-  MessageSquare,
-  Send,
-  Briefcase,
   ArrowRight,
-  Users,
-  CalendarOff,
-  AlertCircle,
+  Send,
   CheckCircle2,
   ChevronRight,
-  Archive,
 } from "lucide-react"
-import { toast } from "sonner"
-import { useCommunicationTemplates, type TemplateSituation } from "@/hooks/use-communication-templates"
-import { useJobUIStore } from "@/stores/job-ui-store"
+import { useJobUnpublish } from "./useJobUnpublish"
+import { OptionsStep, CommunicationStep } from "./UnpublishSteps"
+import { ConfirmationStep, CompleteStep } from "./UnpublishFinalSteps"
 
 export interface JobUnpublishModalProps {
   isOpen: boolean
@@ -91,314 +67,22 @@ export interface UnpublishData {
   sendRecruiterSummary: boolean
 }
 
-type FlowStep = 'options' | 'communication' | 'confirmation' | 'complete'
-type NotificationChannel = 'email' | 'whatsapp' | 'both'
+export function JobUnpublishModal(props: JobUnpublishModalProps) {
+  const hook = useJobUnpublish(props)
 
-const FREEZE_REASONS = [
-  { value: 'budget_review', label: 'Revisão orçamentária' },
-  { value: 'headcount_freeze', label: 'Congelamento de headcount' },
-  { value: 'restructuring', label: 'Reestruturação da área' },
-  { value: 'position_redefinition', label: 'Redefinição do perfil' },
-  { value: 'internal_transfer', label: 'Possível transferência interna' },
-  { value: 'vacation_period', label: 'Período de férias do gestor' },
-  { value: 'market_conditions', label: 'Condições de mercado' },
-  { value: 'priority_change', label: 'Mudança de prioridade' },
-  { value: 'other', label: 'Outro motivo' },
-]
-
-const UNPUBLISH_TEMPLATE_SITUATIONS: TemplateSituation[] = ['vaga_fechada', 'feedback_construtivo']
-
-export function JobUnpublishModal({
-  isOpen,
-  onClose,
-  jobs,
-  candidates = [],
-  onUnpublish,
-  onComplete,
-  onNavigateToJobWithCommunication
-}: JobUnpublishModalProps) {
-  const [currentStep, setCurrentStep] = useState<FlowStep>('options')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  
-  const [freezeJob, setFreezeJob] = useState(false)
-  const [freezeReason, setFreezeReason] = useState('')
-  const [freezeStartDate, setFreezeStartDate] = useState('')
-  const [unfreezeDate, setUnfreezeDate] = useState('')
-  const [notifyApplicants, setNotifyApplicants] = useState(false)
-  
-  const [notificationChannel, setNotificationChannel] = useState<NotificationChannel>('email')
-  const [selectedTemplateId, setSelectedTemplateId] = useState('')
-  const [notificationSubject, setNotificationSubject] = useState('')
-  const [notificationMessage, setNotificationMessage] = useState('')
-  const [selectedCandidateIds, setSelectedCandidateIds] = useState<Set<string>>(new Set())
-  
-  const [acknowledgedWarning, setAcknowledgedWarning] = useState(false)
-  const [loadingCandidates, setLoadingCandidates] = useState(false)
-  const [fetchedCandidates, setFetchedCandidates] = useState<Array<{
-    id: string
-    name: string
-    email?: string
-    phone?: string
-    stage: string
-    jobId: string
-  }>>([])
-  
-  const { templates, loading: templatesLoading } = useCommunicationTemplates()
-
-  const jobIds = useMemo(() => jobs.map(j => j.id), [jobs])
-  
-  const allCandidates = useMemo(() => {
-    return candidates.length > 0 ? candidates : fetchedCandidates
-  }, [candidates, fetchedCandidates])
-  
-  const jobCandidates = useMemo(() => {
-    return allCandidates.filter(c => jobIds.includes(c.jobId))
-  }, [allCandidates, jobIds])
-  
-  const candidatesInProposal = useMemo(() => {
-    return jobCandidates.filter(c => 
-      c.stage.toLowerCase() === 'proposta' || 
-      c.stage.toLowerCase() === 'offer' ||
-      c.stage.toLowerCase() === 'proposal'
-    )
-  }, [jobCandidates])
-  
-  const hasProposalBlock = candidatesInProposal.length > 0
-
-  const availableTemplates = useMemo(() => {
-    return templates.filter(t => 
-      UNPUBLISH_TEMPLATE_SITUATIONS.includes(t.situation as TemplateSituation) &&
-      (notificationChannel === 'both' || t.channel === notificationChannel) &&
-      t.isActive
-    )
-  }, [templates, notificationChannel])
-
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentStep('options')
-      setFreezeJob(false)
-      setFreezeReason('')
-      setFreezeStartDate(new Date().toISOString().split('T')[0])
-      setUnfreezeDate('')
-      setNotifyApplicants(false)
-      setNotificationChannel('email')
-      setSelectedTemplateId('')
-      setNotificationSubject('')
-      setNotificationMessage('')
-      setSelectedCandidateIds(new Set(jobCandidates.map(c => c.id)))
-      setAcknowledgedWarning(false)
-    }
-  }, [isOpen, jobCandidates])
-
-  const hasFetchedRef = useRef(false)
-  
-  useEffect(() => {
-    const fetchCandidatesForJobs = async () => {
-      const shouldSkip = !isOpen || jobs.length === 0 || candidates.length > 0 || hasFetchedRef.current
-      if (shouldSkip) return
-      
-      hasFetchedRef.current = true
-      setLoadingCandidates(true)
-      try {
-        const allFetched: typeof fetchedCandidates = []
-        
-        for (const job of jobs) {
-          try {
-            const response = await fetch(`/api/backend-proxy/candidates?job_id=${job.id}&limit=200`)
-            if (response.ok) {
-              const data = await response.json()
-              const candidatesData = data.candidates || data.items || data || []
-              
-              if (Array.isArray(candidatesData)) {
-                allFetched.push(...candidatesData.map((c: Record<string, unknown>) => ({
-                  id: c.id || c.candidate_id,
-                  name: c.name || c.full_name || 'Candidato',
-                  email: c.email,
-                  phone: c.phone || c.whatsapp,
-                  stage: c.stage || c.pipeline_stage || c.current_stage || 'Triagem',
-                  jobId: job.id
-                })))
-              }
-            }
-          } catch (err) {
-          }
-        }
-        
-        setFetchedCandidates(allFetched)
-        setSelectedCandidateIds(new Set(allFetched.map(c => c.id)))
-      } catch (error) {
-      } finally {
-        setLoadingCandidates(false)
-      }
-    }
-    
-    fetchCandidatesForJobs()
-  }, [isOpen, jobs.length, candidates.length])
-  
-  useEffect(() => {
-    if (!isOpen) {
-      hasFetchedRef.current = false
-    }
-  }, [isOpen])
-
-  useEffect(() => {
-    if (availableTemplates.length > 0 && !selectedTemplateId) {
-      const defaultTemplate = availableTemplates.find(t => t.situation === 'vaga_fechada') || availableTemplates[0]
-      setSelectedTemplateId(defaultTemplate.id)
-      setNotificationSubject(defaultTemplate.subject || '')
-      setNotificationMessage(replaceTemplateVariables(defaultTemplate.body, jobs[0]?.title || ''))
-    }
-  }, [availableTemplates, selectedTemplateId, jobs])
-
-  const handleTemplateChange = useCallback((templateId: string) => {
-    setSelectedTemplateId(templateId)
-    const template = templates.find(t => t.id === templateId)
-    if (template) {
-      setNotificationSubject(template.subject || '')
-      setNotificationMessage(replaceTemplateVariables(template.body, jobs[0]?.title || ''))
-    }
-  }, [templates, jobs])
-
-  const toggleCandidateSelection = (candidateId: string) => {
-    const newSelection = new Set(selectedCandidateIds)
-    if (newSelection.has(candidateId)) {
-      newSelection.delete(candidateId)
-    } else {
-      newSelection.add(candidateId)
-    }
-    setSelectedCandidateIds(newSelection)
-  }
-
-  const selectAllCandidates = () => {
-    setSelectedCandidateIds(new Set(jobCandidates.filter(c => !candidatesInProposal.find(p => p.id === c.id)).map(c => c.id)))
-  }
-
-  const deselectAllCandidates = () => {
-    setSelectedCandidateIds(new Set())
-  }
-
-  const handleProceed = () => {
-    if (hasProposalBlock) {
-      toast.error(`${candidatesInProposal.length} candidato(s) em etapa de Proposta devem ser finalizados antes de continuar.`)
-      return
-    }
-
-    if (notifyApplicants && onNavigateToJobWithCommunication) {
-      handleSubmitAndNavigate()
-    } else if (notifyApplicants) {
-      setCurrentStep('communication')
-    } else if (freezeJob) {
-      handleSubmit()
-    } else {
-      handleSubmit()
-    }
-  }
-
-  const handleCommunicationProceed = () => {
-    if (freezeJob) {
-      setCurrentStep('confirmation')
-    } else {
-      handleSubmit()
-    }
-  }
-
-  const handleSubmitAndNavigate = async () => {
-    if (isSubmitting) return
-    setIsSubmitting(true)
-
-    try {
-      const data: UnpublishData = {
-        jobIds,
-        freezeJob,
-        freezeReason: freezeJob ? freezeReason : undefined,
-        freezeStartDate: freezeJob ? freezeStartDate : undefined,
-        unfreezeDate: freezeJob && unfreezeDate ? unfreezeDate : undefined,
-        notifyApplicants: false,
-        cancelScheduledInterviews: freezeJob,
-        cancelScheduledScreenings: freezeJob,
-        sendRecruiterSummary: freezeJob,
-      }
-
-      await onUnpublish(data)
-      
-      toast.success('Vaga despublicada. Abrindo modal de comunicação...')
-      
-      const eligibleCandidates = jobCandidates.filter(c => !candidatesInProposal.find(p => p.id === c.id))
-      
-      if (jobs.length > 0) {
-        const pendingAction = {
-          jobId: jobs[0].id,
-          template: 'vaga_fechada',
-          candidateIds: eligibleCandidates.map(c => c.id),
-          channel: 'email' as const
-        }
-        useJobUIStore.getState().setPendingCommunicationAction(pendingAction)
-        
-        onClose()
-        
-        if (onNavigateToJobWithCommunication) {
-          onNavigateToJobWithCommunication(jobs[0].id, pendingAction)
-        }
-      } else {
-        onClose()
-      }
-    } catch (error) {
-      toast.error('Erro ao processar. Tente novamente.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleSubmit = async () => {
-    if (isSubmitting) return
-    setIsSubmitting(true)
-
-    try {
-      const data: UnpublishData = {
-        jobIds,
-        freezeJob,
-        freezeReason: freezeJob ? freezeReason : undefined,
-        freezeStartDate: freezeJob ? freezeStartDate : undefined,
-        unfreezeDate: freezeJob && unfreezeDate ? unfreezeDate : undefined,
-        notifyApplicants,
-        notificationChannel: notifyApplicants ? notificationChannel : undefined,
-        notificationMessage: notifyApplicants ? notificationMessage : undefined,
-        notificationSubject: notifyApplicants && notificationChannel !== 'whatsapp' ? notificationSubject : undefined,
-        candidateIds: notifyApplicants ? Array.from(selectedCandidateIds) : undefined,
-        cancelScheduledInterviews: freezeJob && notifyApplicants,
-        cancelScheduledScreenings: freezeJob && notifyApplicants,
-        sendRecruiterSummary: freezeJob && notifyApplicants,
-      }
-
-      await onUnpublish(data)
-      
-      if (freezeJob && notifyApplicants) {
-        setCurrentStep('complete')
-      } else {
-        toast.success(getSuccessMessage())
-        onClose()
-        onComplete?.()
-      }
-    } catch (error) {
-      toast.error('Erro ao processar. Tente novamente.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const getSuccessMessage = () => {
-    const parts = ['Vaga(s) despublicada(s) com sucesso']
-    if (freezeJob) parts.push('e status alterado para Paralisada')
-    if (notifyApplicants) parts.push(`${selectedCandidateIds.size} candidato(s) notificado(s)`)
-    return parts.join('. ') + '.'
-  }
-
-  const handleClose = () => {
-    if (currentStep === 'complete') {
-      onComplete?.()
-    }
-    onClose()
-  }
+  const {
+    currentStep, setCurrentStep,
+    isSubmitting,
+    freezeJob, freezeReason,
+    notifyApplicants, notificationChannel,
+    notificationMessage,
+    selectedCandidateIds,
+    acknowledgedWarning,
+    hasProposalBlock,
+    handleProceed, handleCommunicationProceed,
+    handleSubmit, handleClose,
+    jobs,
+  } = hook
 
   const getStepIndicator = () => {
     if (!notifyApplicants) return null
@@ -416,9 +100,9 @@ export function JobUnpublishModal({
             <div className="flex items-center gap-1.5">
               <div className={cn(
                 "w-5 h-5 rounded-full flex items-center justify-center text-micro font-medium",
-                step.done 
-                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
-                  : currentStep === 'options' && index === 0 
+                step.done
+                  ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                  : currentStep === 'options' && index === 0
                     ? "bg-lia-bg-tertiary text-lia-text-primary border border-lia-btn-primary-bg"
                     : currentStep === 'communication' && index === 1
                       ? "bg-lia-bg-tertiary text-lia-text-primary border border-lia-btn-primary-bg"
@@ -444,400 +128,18 @@ export function JobUnpublishModal({
     )
   }
 
-  const renderOptionsStep = () => (
-    <div className="space-y-4">
-      <div>
-        <h4 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-2">
-          Vagas Selecionadas
-        </h4>
-        <div className="max-h-[100px] overflow-y-auto space-y-1 bg-lia-bg-secondary rounded-md p-2 border border-lia-border-subtle">
-          {jobs.map((job) => (
-            <div key={job.id} className="flex items-center justify-between py-1.5 px-2 bg-lia-bg-primary rounded-md border border-lia-border-subtle">
-              <div className="flex items-center gap-2 min-w-0 flex-1">
-                <Briefcase className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
-                <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                  {job.code && <span className="text-micro font-medium text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full flex-shrink-0">{job.code}</span>}
-                  <span className="text-xs font-medium text-lia-text-primary truncate">{job.title}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-3 bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle">
-        <div className="flex items-center gap-2 text-lia-text-primary mb-2">
-          <AlertTriangle className="w-3.5 h-3.5 text-lia-text-secondary" />
-          <span className="text-xs font-semibold text-lia-text-primary">Opções ao despublicar</span>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-start gap-2">
-            <Checkbox
-              id="freezeJob"
-              checked={freezeJob}
-              onCheckedChange={(checked) => setFreezeJob(!!checked)}
-              className="mt-0.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
-            />
-            <div className="flex-1">
-              <Label htmlFor="freezeJob" className="text-xs font-medium text-lia-text-primary cursor-pointer flex items-center gap-1">
-                <Snowflake className="w-3 h-3 text-lia-text-secondary" />
-                Congelar vaga
-              </Label>
-              <p className="text-micro text-lia-text-secondary">Pausar temporariamente o processo seletivo (status → Paralisada)</p>
-            </div>
-          </div>
-
-          {freezeJob && (
-            <div className="ml-6 space-y-3 pt-2 pl-3 border-l-2 border-lia-border-default">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-micro text-lia-text-secondary mb-1 block">Data início congelamento</Label>
-                  <Input
-                    type="date"
-                    value={freezeStartDate}
-                    onChange={(e) => setFreezeStartDate(e.target.value)}
-                    className="h-8 text-xs border-lia-border-subtle"
-                  />
-                </div>
-                <div>
-                  <Label className="text-micro text-lia-text-secondary mb-1 block">
-                    Previsão descongelamento
-                    <span className="text-lia-text-disabled ml-1">(opcional)</span>
-                  </Label>
-                  <Input
-                    type="date"
-                    value={unfreezeDate}
-                    onChange={(e) => setUnfreezeDate(e.target.value)}
-                    min={freezeStartDate || new Date().toISOString().split('T')[0]}
-                    className="h-8 text-xs border-lia-border-subtle"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-micro text-lia-text-secondary mb-1 block">Motivo do congelamento</Label>
-                <Select value={freezeReason} onValueChange={setFreezeReason}>
-                  <SelectTrigger className="h-8 text-xs border-lia-border-subtle">
-                    <SelectValue placeholder="Selecione um motivo..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FREEZE_REASONS.map((reason) => (
-                      <SelectItem key={reason.value} value={reason.value} className="text-xs">
-                        {reason.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="border-t border-lia-border-subtle pt-3">
-          <div className="flex items-start gap-2">
-            <Checkbox
-              id="notifyApplicants"
-              checked={notifyApplicants}
-              onCheckedChange={(checked) => setNotifyApplicants(!!checked)}
-              className="mt-0.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
-            />
-            <div className="flex-1">
-              <Label htmlFor="notifyApplicants" className="text-xs font-medium text-lia-text-primary cursor-pointer flex items-center gap-1">
-                <Bell className="w-3 h-3 text-lia-text-secondary" />
-                Notificar candidatos
-              </Label>
-              <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
-                Todos os candidatos do processo receberão uma mensagem
-              </p>
-              {notifyApplicants && (
-                <p className="text-micro text-lia-text-tertiary mt-1 flex items-center gap-1">
-                  <Archive className="w-3 h-3" />
-                  LIA abrirá o modal de envio por email/WhatsApp com template sugerido
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {hasProposalBlock && (
-          <div className="mt-3 p-2.5 bg-status-warning/10 border border-status-warning/30 rounded-md">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-medium text-status-warning" aria-live="polite" aria-atomic="true">
-                  {candidatesInProposal.length} candidato(s) em etapa de Proposta
-                </p>
-                <p className="text-micro text-status-warning mt-0.5" aria-live="polite" aria-atomic="true">
-                  Finalize o status destes candidatos antes de despublicar a vaga:
-                </p>
-                <ul className="mt-1 space-y-0.5">
-                  {candidatesInProposal.slice(0, 3).map(c => (
-                    <li key={c.id} className="text-micro text-status-warning flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-status-warning" />
-                      {c.name}
-                    </li>
-                  ))}
-                  {candidatesInProposal.length > 3 && (
-                    <li className="text-micro text-status-warning italic">
-                      e mais {candidatesInProposal.length - 3}...
-                    </li>
-                  )}
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
-  const renderCommunicationStep = () => (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant={notificationChannel === 'email' || notificationChannel === 'both' ? 'default' : 'outline'}
-            onClick={() => setNotificationChannel(notificationChannel === 'whatsapp' ? 'email' : notificationChannel === 'email' ? 'both' : 'email')}
-            className={cn(
-              "h-7 px-2.5 text-micro",
-              (notificationChannel === 'email' || notificationChannel === 'both') 
-                ? "bg-lia-btn-primary-bg text-lia-btn-primary-text" 
-                : "border-lia-border-subtle text-lia-text-secondary"
-            )}
-          >
-            <Mail className="w-3 h-3 mr-1" />
-            Email
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={notificationChannel === 'whatsapp' || notificationChannel === 'both' ? 'default' : 'outline'}
-            onClick={() => setNotificationChannel(notificationChannel === 'email' ? 'whatsapp' : notificationChannel === 'whatsapp' ? 'both' : 'whatsapp')}
-            className={cn(
-              "h-7 px-2.5 text-micro",
-              (notificationChannel === 'whatsapp' || notificationChannel === 'both') 
-                ? "bg-status-success text-white hover:bg-status-success" 
-                : "border-lia-border-subtle text-lia-text-secondary"
-            )}
-          >
-            <MessageSquare className="w-3 h-3 mr-1" />
-            WhatsApp
-          </Button>
-        </div>
-      </div>
-
-      <div>
-        <Label className="text-micro text-lia-text-secondary mb-1 block">Template de mensagem</Label>
-        <Select value={selectedTemplateId} onValueChange={handleTemplateChange}>
-          <SelectTrigger className="h-8 text-xs border-lia-border-subtle">
-            <SelectValue placeholder="Selecione um template..." />
-          </SelectTrigger>
-          <SelectContent>
-            {availableTemplates.map((template) => (
-              <SelectItem key={template.id} value={template.id} className="text-xs">
-                {template.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {notificationChannel !== 'whatsapp' && (
-        <div>
-          <Label className="text-micro text-lia-text-secondary mb-1 block">Assunto</Label>
-          <Input
-            value={notificationSubject}
-            onChange={(e) => setNotificationSubject(e.target.value)}
-            placeholder="Assunto do email..."
-            className="h-8 text-xs border-lia-border-subtle"
-          />
-        </div>
-      )}
-
-      <div>
-        <Label className="text-micro text-lia-text-secondary mb-1 block">Mensagem</Label>
-        <Textarea
-          value={notificationMessage}
-          onChange={(e) => setNotificationMessage(e.target.value)}
-          placeholder="Conteúdo da mensagem..."
-          className="min-h-[100px] text-xs border-lia-border-subtle resize-none"
-        />
-        <p className="text-micro text-lia-text-tertiary mt-1" aria-live="polite" aria-atomic="true">
-          Variáveis disponíveis: {'{{candidato_nome}}'}, {'{{vaga}}'}, {'{{empresa_nome}}'}
-        </p>
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <Label className="text-micro text-lia-text-secondary">
-            Candidatos selecionados ({selectedCandidateIds.size}/{jobCandidates.length - candidatesInProposal.length})
-          </Label>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={selectAllCandidates}
-              className="text-micro text-lia-text-secondary hover:underline"
-            >
-              Selecionar todos
-            </button>
-            <button
-              type="button"
-              onClick={deselectAllCandidates}
-              className="text-micro text-lia-text-tertiary hover:underline"
-            >
-              Limpar
-            </button>
-          </div>
-        </div>
-        <ScrollArea className="h-[120px] border border-lia-border-subtle rounded-md p-2">
-          {loadingCandidates ? (
-            <div className="flex items-center justify-center h-full py-8" role="status" aria-live="polite" aria-label="Carregando...">
-              <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
-              <span className="ml-2 text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Carregando candidatos...</span>
-            </div>
-          ) : jobCandidates.length === 0 ? (
-            <div className="flex items-center justify-center h-full py-8">
-              <Users className="w-4 h-4 text-lia-text-disabled mr-2" />
-              <span className="text-xs text-lia-text-tertiary" aria-live="polite" aria-atomic="true">Nenhum candidato encontrado</span>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {jobCandidates.filter(c => !candidatesInProposal.find(p => p.id === c.id)).map((candidate) => (
-                <div
-                  key={candidate.id}
-                  className={cn(
-                    "flex items-center gap-2 p-1.5 rounded-md cursor-pointer transition-colors",
-                    selectedCandidateIds.has(candidate.id)
-                      ? "bg-lia-bg-tertiary border border-lia-btn-primary-bg"
-                      : "bg-lia-bg-primary border border-lia-border-subtle hover:border-lia-border-default"
-                  )}
-                  onClick={() => toggleCandidateSelection(candidate.id)}
-                >
-                  <Checkbox
-                    checked={selectedCandidateIds.has(candidate.id)}
-                    className="data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-lia-text-primary truncate">{candidate.name}</p>
-                    <p className="text-micro text-lia-text-tertiary">{candidate.email || candidate.phone || 'Sem contato'}</p>
-                  </div>
-                  <Badge className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary font-normal">
-                    {candidate.stage}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-      </div>
-    </div>
-  )
-
-  const renderConfirmationStep = () => (
-    <div className="space-y-4">
-      <div className="p-4 bg-status-warning/10 border border-status-warning/30 rounded-md">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-status-warning flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <h4 className="text-xs font-semibold text-status-warning">Confirmação de ações</h4>
-            <p className="text-xs text-status-warning mt-1">
-              Ao confirmar, as seguintes ações serão executadas:
-            </p>
-            <ul className="mt-2 space-y-1.5">
-              <li className="text-xs text-status-warning flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-status-warning" />
-                A vaga será despublicada dos job boards
-              </li>
-              <li className="text-xs text-status-warning flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-status-warning" />
-                Status alterado para "Paralisada"
-              </li>
-              <li className="text-xs text-status-warning flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-status-warning" />
-                {selectedCandidateIds.size} candidato(s) serão notificados via {notificationChannel === 'both' ? 'email e WhatsApp' : notificationChannel}
-              </li>
-              <li className="text-xs text-status-warning flex items-center gap-2">
-                <CalendarOff className="w-3.5 h-3.5 text-status-warning" />
-                Entrevistas e triagens agendadas serão canceladas
-              </li>
-              <li className="text-xs text-status-warning flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-status-warning" />
-                Você receberá um email com o resumo de todas as ações
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-start gap-2 p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
-        <Checkbox
-          id="acknowledgeWarning"
-          checked={acknowledgedWarning}
-          onCheckedChange={(checked) => setAcknowledgedWarning(!!checked)}
-          className="mt-0.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
-        />
-        <Label htmlFor="acknowledgeWarning" className="text-xs text-lia-text-secondary cursor-pointer">
-          Li e estou ciente de que todas as ações acima serão executadas e não podem ser desfeitas.
-        </Label>
-      </div>
-    </div>
-  )
-
-  const renderCompleteStep = () => (
-    <div className="py-6 text-center">
-      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-status-success/15 flex items-center justify-center">
-        <CheckCircle2 className="w-8 h-8 text-status-success" />
-      </div>
-      <h3 className="text-sm font-semibold text-lia-text-primary mb-2">Processo finalizado!</h3>
-      <p className="text-xs text-lia-text-secondary mb-4" aria-live="polite" aria-atomic="true">
-        A vaga foi despublicada e congelada com sucesso.
-      </p>
-      <div className="bg-lia-bg-secondary rounded-md p-3 border border-lia-border-subtle text-left space-y-2">
-        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-          <Check className="w-3.5 h-3.5 text-status-success" />
-          <span aria-live="polite" aria-atomic="true">Vaga despublicada dos job boards</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-          <Check className="w-3.5 h-3.5 text-status-success" />
-          <span>Status alterado para "Paralisada"</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-          <Check className="w-3.5 h-3.5 text-status-success" />
-          <span aria-live="polite" aria-atomic="true">{selectedCandidateIds.size} candidatos notificados</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-          <Check className="w-3.5 h-3.5 text-status-success" />
-          <span>Agendamentos cancelados</span>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
-          <Mail className="w-3.5 h-3.5 text-lia-text-secondary" />
-          <span>Resumo enviado para seu email</span>
-        </div>
-      </div>
-    </div>
-  )
-
   const getFooterButtons = () => {
     switch (currentStep) {
       case 'options':
         return (
           <>
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
-            >
+            <Button variant="outline" onClick={handleClose} disabled={isSubmitting}
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary">
               Cancelar
             </Button>
-            <Button
-              onClick={handleProceed}
+            <Button onClick={handleProceed}
               disabled={isSubmitting || hasProposalBlock || (freezeJob && !freezeReason)}
-              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
-            >
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text">
               {isSubmitting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
               ) : notifyApplicants ? (
@@ -853,19 +155,13 @@ export function JobUnpublishModal({
       case 'communication':
         return (
           <>
-            <Button
-              variant="outline"
-              onClick={() => setCurrentStep('options')}
-              disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
-            >
+            <Button variant="outline" onClick={() => setCurrentStep('options')} disabled={isSubmitting}
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary">
               Voltar
             </Button>
-            <Button
-              onClick={handleCommunicationProceed}
+            <Button onClick={handleCommunicationProceed}
               disabled={isSubmitting || selectedCandidateIds.size === 0 || !notificationMessage}
-              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
-            >
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text">
               {isSubmitting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
               ) : freezeJob ? (
@@ -881,19 +177,12 @@ export function JobUnpublishModal({
       case 'confirmation':
         return (
           <>
-            <Button
-              variant="outline"
-              onClick={() => setCurrentStep('communication')}
-              disabled={isSubmitting}
-              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
-            >
+            <Button variant="outline" onClick={() => setCurrentStep('communication')} disabled={isSubmitting}
+              className="h-9 px-4 text-xs font-medium border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary">
               Voltar
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting || !acknowledgedWarning}
-              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
-            >
+            <Button onClick={handleSubmit} disabled={isSubmitting || !acknowledgedWarning}
+              className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text">
               {isSubmitting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
               ) : (
@@ -906,10 +195,8 @@ export function JobUnpublishModal({
 
       case 'complete':
         return (
-          <Button
-            onClick={handleClose}
-            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"
-          >
+          <Button onClick={handleClose}
+            className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text">
             <Check className="w-3.5 h-3.5 mr-1.5" />
             Concluir
           </Button>
@@ -918,7 +205,7 @@ export function JobUnpublishModal({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+    <Dialog open={props.isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="max-w-lg bg-lia-bg-primary border border-lia-border-subtle">
         <DialogHeader className="pb-3 border-b border-lia-border-subtle">
           <div className="flex items-center gap-3">
@@ -942,11 +229,11 @@ export function JobUnpublishModal({
 
         <div className="py-4">
           {getStepIndicator()}
-          
-          {currentStep === 'options' && renderOptionsStep()}
-          {currentStep === 'communication' && renderCommunicationStep()}
-          {currentStep === 'confirmation' && renderConfirmationStep()}
-          {currentStep === 'complete' && renderCompleteStep()}
+
+          {currentStep === 'options' && <OptionsStep hook={hook} />}
+          {currentStep === 'communication' && <CommunicationStep hook={hook} />}
+          {currentStep === 'confirmation' && <ConfirmationStep hook={hook} />}
+          {currentStep === 'complete' && <CompleteStep hook={hook} />}
         </div>
 
         <DialogFooter className="border-t border-lia-border-subtle pt-3 gap-2">
@@ -955,12 +242,4 @@ export function JobUnpublishModal({
       </DialogContent>
     </Dialog>
   )
-}
-
-function replaceTemplateVariables(body: string, vacancyTitle: string): string {
-  return body
-    .replace(/\{\{candidato_nome\}\}/g, '{{candidato_nome}}')
-    .replace(/\{\{vaga\}\}/g, vacancyTitle)
-    .replace(/\{\{empresa_nome\}\}/g, 'Nossa Empresa')
-    .replace(/\{\{recrutador_nome\}\}/g, 'Equipe de Recrutamento')
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import {
   Building, Heart, Network, Map, Link2, Workflow, FileText,
   User, Bell, Shield, Bot, ClipboardList, Star, Cog
@@ -33,8 +34,9 @@ export interface SettingsNavigationActions {
 }
 
 export function useSettingsNavigation(): { state: SettingsNavigationState; actions: SettingsNavigationActions } {
+  const uiPrefs = useUIPreferencesStore()
   const [activeTab, setActiveTab] = useState("preferences")
-  const [sidebarWidth, setSidebarWidth] = useState(256)
+  const [sidebarWidth, setSidebarWidth] = useState(uiPrefs.settingsSidebarWidth)
   const [isResizing, setIsResizing] = useState(false)
 
   const tabs: SettingsTab[] = [
@@ -148,15 +150,8 @@ export function useSettingsNavigation(): { state: SettingsNavigationState; actio
   ]
 
   useEffect(() => {
-    const savedWidth = localStorage.getItem('settings-sidebar-width')
-    if (savedWidth !== null) {
-      setSidebarWidth(parseInt(savedWidth))
-    }
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem('settings-sidebar-width', sidebarWidth.toString())
-  }, [sidebarWidth])
+    uiPrefs.setSettingsSidebarWidth(sidebarWidth)
+  }, [sidebarWidth, uiPrefs])
 
   const startResize = useCallback((e: React.MouseEvent) => {
     setIsResizing(true)

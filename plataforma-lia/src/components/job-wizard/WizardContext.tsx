@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react'
+import { useWizardStore } from '@/stores/wizard-store'
 import type {
   WizardStage,
   TechnicalSkill,
@@ -145,15 +146,12 @@ export function WizardProvider({ children, initialStage = 'input-evaluation', co
   const [currentStage, setCurrentStage] = useState<WizardStage>(initialStage)
   
   // Generate stable draft ID
+  const { draftId: storedDraftId, setDraftId } = useWizardStore()
   const [wizardDraftId] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const existingId = localStorage.getItem('wizard_draft_id')
-      if (existingId) return existingId
-      const newId = `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      localStorage.setItem('wizard_draft_id', newId)
-      return newId
-    }
-    return `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    if (storedDraftId) return storedDraftId
+    const newId = `draft-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    setDraftId(newId)
+    return newId
   })
   
   // Messages
@@ -408,9 +406,7 @@ export function WizardProvider({ children, initialStage = 'input-evaluation', co
     setCalibrationCandidates([])
     setJobDescription('')
     setPublishedJobId(null)
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('wizard_draft_id')
-    }
+    setDraftId(null)
   }, [])
   
   const value: WizardContextValue = {

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect } from "react"
+import { useTriagemStore } from "@/stores/triagem-store"
 import type { TriagemMessageType,
   TriagemSession,
   TriagemConfig,
@@ -17,7 +18,6 @@ const API_BASE = "/api/backend-proxy/triagem"
 const DEBOUNCE_MS = 300
 const TIMEOUT_MS = 30000
 const MAX_RETRIES = 2
-const LOCAL_STORAGE_KEY_PREFIX = "triagem_state_"
 
 function base64ToAudioUrl(base64Data: string): string {
   const binaryStr = atob(base64Data)
@@ -99,33 +99,6 @@ function mapBackendSession(raw: Record<string, unknown>): TriagemSession {
   }
 }
 
-interface LocalPersistedState {
-  messages: TriagemMessage[]
-  pageState: TriagemPageState
-}
-
-function getStorageKey(token: string): string {
-  return `${LOCAL_STORAGE_KEY_PREFIX}${token}`
-}
-
-function loadPersistedState(token: string): LocalPersistedState | null {
-  try {
-    const raw = localStorage.getItem(getStorageKey(token))
-    if (!raw) return null
-    return JSON.parse(raw) as LocalPersistedState
-  } catch {
-    return null
-  }
-}
-
-function persistState(token: string, state: LocalPersistedState): void {
-  try {
-    localStorage.setItem(getStorageKey(token), JSON.stringify(state))
-  } catch {
-    /* storage full or unavailable */
-  }
-}
-
 async function fetchWithTimeout(
   url: string,
   options: RequestInit,
@@ -191,6 +164,7 @@ function mapErrorResponse(status: number, body: Record<string, unknown>): Triage
 }
 
 export function useTriagemChat(token: string): UseTriagemChatReturn {
+  const triagemStore = useTriagemStore()
   const [pageState, setPageState] = useState<TriagemPageState>("loading")
   const [session, setSession] = useState<TriagemSession | null>(null)
   const [config, setConfig] = useState<TriagemConfig | null>(null)
@@ -217,9 +191,9 @@ export function useTriagemChat(token: string): UseTriagemChatReturn {
 
   useEffect(() => {
     if (messages.length > 0 && pageState !== "loading" && pageState !== "error") {
-      persistState(token, { messages, pageState })
+      triagemStore.setSessionState(token, { messages, pageState })
     }
-  }, [messages, pageState, token])
+  }, [messages, pageState, token, triagemStore])
 
   const initSession = useCallback(async () => {
     setPageState("loading")
@@ -266,9 +240,9 @@ export function useTriagemChat(token: string): UseTriagemChatReturn {
       }
 
       if (sessionData?.status === "in_progress" || sessionData?.status === "started") {
-        const persisted = loadPersistedState(token)
-        if (persisted && persisted.messages.length > 0) {
-          setMessages(persisted.messages)
+        const persisted = triagemStore.getSessionState(token)
+        if (persisted && Array.isArray(persisted.messages) && persisted.messages.length > 0) {
+          setMessages(persisted.messages as TriagemMessage[])
         }
         if (data.messages && Array.isArray(data.messages) && (data.messages as unknown[]).length > 0) {
           setMessages((data.messages as Record<string, unknown>[]).map(mapBackendMessage))
@@ -288,7 +262,7 @@ export function useTriagemChat(token: string): UseTriagemChatReturn {
       })
       setPageState("error")
     }
-  }, [token])
+  }, [token, triagemStore])
 
   const startChat = useCallback(async (voiceMode?: boolean) => {
     if (!session) return
@@ -460,11 +434,7 @@ export function useTriagemChat(token: string): UseTriagemChatReturn {
 
       setPageState("completion")
 
-      try {
-        localStorage.removeItem(getStorageKey(token))
-      } catch {
-        /* ignore */
-      }
+      triagemStore.removeSessionState(token)
     } catch {
       if (!mountedRef.current) return
       setError({ code: "SERVER_ERROR", message: "Erro ao finalizar triagem. Tente novamente." })
@@ -473,7 +443,7 @@ export function useTriagemChat(token: string): UseTriagemChatReturn {
         setIsSending(false)
       }
     }
-  }, [token])
+  }, [token, triagemStore])
 
   const reviewSession = useCallback(() => {
     setPageState("chat")

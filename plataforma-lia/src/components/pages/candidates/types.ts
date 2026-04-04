@@ -295,6 +295,29 @@ export interface TableFilters {
   registrationDateTo?: string
 }
 
+export interface FilterSectionBaseProps {
+  tableFilters: TableFilters
+  setTableFilters: React.Dispatch<React.SetStateAction<TableFilters>>
+}
+
+export interface FilterSectionBasicProps extends FilterSectionBaseProps {
+  searchSortBy: string
+  onSortChange: (value: string) => void
+}
+
+export interface FilterSectionProfileProps extends FilterSectionBaseProps {
+  onToggleFilter: (category: keyof TableFilters, value: string) => void
+}
+
+export interface FilterSectionAdvancedProps extends FilterSectionBaseProps {
+  onToggleFilter: (category: keyof TableFilters, value: string) => void
+  newSoftSkillFilter: string
+  setNewSoftSkillFilter: (value: string) => void
+  newCertificationFilter: string
+  setNewCertificationFilter: (value: string) => void
+  onClearAll: () => void
+}
+
 export interface CandidatesFilterPanelProps {
   tableFilters: TableFilters
   setTableFilters: React.Dispatch<React.SetStateAction<TableFilters>>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
 
 export interface KanbanFiltersPersisted {
   searchQuery: string
@@ -55,23 +56,21 @@ export function useFiltersPersistence(
 
   const [filters, setFiltersState] = useState<KanbanFiltersPersisted>(DEFAULT_FILTERS)
 
-  useEffect(() => {
-    if (!enabled || typeof window === 'undefined') return
+  const { getKanbanFilters, setKanbanFilters, removeKanbanFilters } = useUIPreferencesStore()
 
-    const saved = localStorage.getItem(fullStorageKey)
+  useEffect(() => {
+    if (!enabled) return
+
+    const saved = getKanbanFilters(fullStorageKey)
     if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as Partial<KanbanFiltersPersisted>
-        setFiltersState(prev => ({ ...prev, ...parsed }))
-      } catch (e) {
-      }
+      setFiltersState(prev => ({ ...prev, ...saved as Partial<KanbanFiltersPersisted> }))
     }
-  }, [fullStorageKey, enabled])
+  }, [fullStorageKey, enabled, getKanbanFilters])
 
   const saveFilters = useCallback((newFilters: KanbanFiltersPersisted) => {
-    if (!enabled || typeof window === 'undefined') return
-    localStorage.setItem(fullStorageKey, JSON.stringify(newFilters))
-  }, [fullStorageKey, enabled])
+    if (!enabled) return
+    setKanbanFilters(fullStorageKey, newFilters as unknown as Record<string, unknown>)
+  }, [fullStorageKey, enabled, setKanbanFilters])
 
   const setFilters = useCallback((partial: Partial<KanbanFiltersPersisted>) => {
     setFiltersState(prev => {
@@ -111,10 +110,10 @@ export function useFiltersPersistence(
 
   const resetFilters = useCallback(() => {
     setFiltersState(DEFAULT_FILTERS)
-    if (enabled && typeof window !== 'undefined') {
-      localStorage.removeItem(fullStorageKey)
+    if (enabled) {
+      removeKanbanFilters(fullStorageKey)
     }
-  }, [fullStorageKey, enabled])
+  }, [fullStorageKey, enabled, removeKanbanFilters])
 
   const hasActiveFilters = 
     filters.searchQuery !== '' ||

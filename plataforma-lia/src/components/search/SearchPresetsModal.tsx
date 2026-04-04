@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 export interface SearchPreset<T> {
   id: string
@@ -67,28 +68,27 @@ export function SearchPresetsModal<T>({
   const [newPresetDescription, setNewPresetDescription] = useState("")
   const [customPresets, setCustomPresets] = useState<SearchPreset<T>[]>([])
 
+  const { getCustomPresets, setCustomPresets: setCustomPresetsInStore } = useUIPreferencesStore()
+
   useEffect(() => {
     if (isOpen && localStorageKey && parseStoredPresets) {
       try {
-        const stored = localStorage.getItem(localStorageKey)
-        if (stored) {
-          setCustomPresets(parseStoredPresets(JSON.parse(stored)))
+        const stored = getCustomPresets(localStorageKey)
+        if (stored.length > 0) {
+          setCustomPresets(parseStoredPresets(stored))
         }
       } catch {
       }
     }
-  }, [isOpen, localStorageKey, parseStoredPresets])
+  }, [isOpen, localStorageKey, parseStoredPresets, getCustomPresets])
 
   const handleDeleteCustomPreset = (presetId: string) => {
     if (!localStorageKey) return
     try {
-      const stored = localStorage.getItem(localStorageKey)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        const filtered = parsed.filter((p: { id: string }) => p.id !== presetId)
-        localStorage.setItem(localStorageKey, JSON.stringify(filtered))
-        setCustomPresets(prev => prev.filter(p => p.id !== presetId))
-      }
+      const stored = getCustomPresets(localStorageKey)
+      const filtered = stored.filter((p: unknown) => (p as { id: string }).id !== presetId)
+      setCustomPresetsInStore(localStorageKey, filtered)
+      setCustomPresets(prev => prev.filter(p => p.id !== presetId))
     } catch {
     }
   }

@@ -1,32 +1,19 @@
 "use client"
 
-/**
- * useFloatConversation — Gerencia criação, histórico e persistência de conversa do float.
- *
- * Extrai de LiaChatPanel: criação de conversa, busca de histórico e
- * adição aos recentes, mantendo o componente abaixo de 150 linhas.
- *
- * Portabilidade Vue: mapeia para composable `useFloatConversation()`.
- */
-
 import { useState, useCallback } from "react"
+import { useRecentItemsStore } from "@/stores/recent-items-store"
 
 export interface FloatMessage {
   id: string
   sender: "lia" | "user"
   content: string
   timestamp: string
-  executionPlan?: Record<string, unknown>  // Plan progress data when orchestrator ran multi-step plan
-  planProgressSteps?: Array<{ task_id: string; action_id: string; status: string }>  // Real-time steps
+  executionPlan?: Record<string, unknown>
+  planProgressSteps?: Array<{ task_id: string; action_id: string; status: string }>
 }
 
-/** Tipos aceitos pelo backend como context_type */
 export const FLOAT_CONTEXT_TYPE = "general" as const
 
-const RECENTS_STORAGE_KEY = "lia-recent-items"
-const RECENTS_MAX_ITEMS = 15
-
-/** Máscara básica de PII no título antes de persistir no localStorage. */
 function maskPII(text: string): string {
   return text
     .replace(/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g, "[CPF]")
@@ -39,37 +26,14 @@ export function formatMessageTime(isoDate?: string): string {
   return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
 }
 
-function addToRecents(conversationId: string, title: string) {
-  if (typeof window === "undefined") return
-  try {
-    const raw = localStorage.getItem(RECENTS_STORAGE_KEY)
-    const existing: Array<{ id: string; type: string; title: string; timestamp: number; meta?: Record<string, unknown> }> =
-      raw ? (JSON.parse(raw) as typeof existing) : []
-    const filtered = existing.filter(
-      item => !(item.id === conversationId && item.type === "chat")
-    )
-    const updated = [
-      { id: conversationId, type: "chat", title, timestamp: Date.now(), meta: { conversationId } },
-      ...filtered,
-    ].slice(0, RECENTS_MAX_ITEMS)
-    localStorage.setItem(RECENTS_STORAGE_KEY, JSON.stringify(updated))
-  } catch {
-    // storage unavailable
-  }
-}
-
 interface UseFloatConversationResult {
   conversationId: string | null
   messages: FloatMessage[]
   isCreating: boolean
   isFetchingHistory: boolean
-  /** Cria nova conversa com base na primeira mensagem do usuário. */
   initConversation: (firstMessage: string) => Promise<string | null>
-  /** Carrega histórico de mensagens de uma conversa existente. */
   loadHistory: (id: string) => Promise<void>
-  /** Adiciona uma mensagem ao estado local. */
   addMessage: (msg: FloatMessage) => void
-  /** Substitui a lista de mensagens. */
   setMessages: React.Dispatch<React.SetStateAction<FloatMessage[]>>
   setConversationId: (id: string | null) => void
 }
@@ -78,6 +42,7 @@ export function useFloatConversation(
   initialConversationId: string | null,
   externalSetMessages?: React.Dispatch<React.SetStateAction<FloatMessage[]>>,
 ): UseFloatConversationResult {
+  const recentItemsStore = useRecentItemsStore()
   const [conversationId, setConversationId] = useState<string | null>(initialConversationId)
   const [internalMessages, setInternalMessages] = useState<FloatMessage[]>([])
   const [isCreating, setIsCreating] = useState(false)
@@ -100,7 +65,13 @@ export function useFloatConversation(
       const id = data.id ?? null
       if (id) {
         setConversationId(id)
-        addToRecents(id, title)
+        recentItemsStore.addItem({
+          id,
+          type: "chat",
+          title,
+          timestamp: Date.now(),
+          meta: { conversationId: id },
+        })
       }
       return id
     } catch {
@@ -108,7 +79,7 @@ export function useFloatConversation(
     } finally {
       setIsCreating(false)
     }
-  }, [])
+  }, [recentItemsStore])
 
   const loadHistory = useCallback(async (id: string): Promise<void> => {
     setIsFetchingHistory(true)
@@ -128,7 +99,6 @@ export function useFloatConversation(
       }))
       setMessages(restored)
     } catch {
-      // falha silenciosa — histórico não crítico
     } finally {
       setIsFetchingHistory(false)
     }

@@ -10,6 +10,7 @@ import {
   User, Filter, Search, Plus, MoreHorizontal,
   BookOpen, Clock, Check, X, AlertCircle
 } from "lucide-react"
+import { useChatStateStore } from "@/stores/chat-state-store"
 
 interface UserCommand extends SavedCommandData {
   id: string
@@ -32,17 +33,12 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
   const [commandToDelete, setCommandToDelete] = useState<UserCommand | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
-  // Carregar comandos do localStorage
+  const { userCommands: storedCommands, setUserCommands: setStoredCommands } = useChatStateStore()
+
   useEffect(() => {
-    const savedCommands = localStorage.getItem('lia-user-commands')
-    if (savedCommands) {
-      try {
-        const commands = JSON.parse(savedCommands)
-        setUserCommands(commands)
-      } catch (error) {
-      }
+    if (storedCommands.length > 0) {
+      setUserCommands(storedCommands as UserCommand[])
     } else {
-      // Mock data inicial
       const mockCommands: UserCommand[] = [
         {
           id: '1',
@@ -99,13 +95,12 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
         }
       ]
       setUserCommands(mockCommands)
-      localStorage.setItem('lia-user-commands', JSON.stringify(mockCommands))
+      setStoredCommands(mockCommands)
     }
   }, [])
 
-  // Salvar comandos no localStorage
   const saveCommands = (commands: UserCommand[]) => {
-    localStorage.setItem('lia-user-commands', JSON.stringify(commands))
+    setStoredCommands(commands)
     setUserCommands(commands)
   }
 
@@ -445,10 +440,8 @@ export function UserCommandsSection({ searchTerm, selectedCategory }: UserComman
 // Hook para adicionar comando externamente
 export const useUserCommands = () => {
   const addUserCommand = (commandData: SavedCommandData) => {
-    const savedCommands = localStorage.getItem('lia-user-commands')
-    const commands = savedCommands ? JSON.parse(savedCommands) : []
-
-    const newCommand: UserCommand = {
+    const commands = useChatStateStore.getState().userCommands
+    const newCommand = {
       ...commandData,
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
@@ -456,9 +449,8 @@ export const useUserCommands = () => {
       rating: 0,
       author: 'Ana Silva'
     }
-
     const updatedCommands = [newCommand, ...commands]
-    localStorage.setItem('lia-user-commands', JSON.stringify(updatedCommands))
+    useChatStateStore.getState().setUserCommands(updatedCommands)
   }
 
   return { addUserCommand }

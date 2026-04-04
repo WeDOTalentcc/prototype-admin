@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
 
 export const DEFAULT_COLUMN_ORDER = [
   'checkbox', 'id', 'notaLiaGeral', 'scoreLiaTriagem', 'scoreLiaCV', 'testeTecnico', 
@@ -38,28 +39,23 @@ export function useColumnConfig(options: UseColumnConfigOptions = {}): UseColumn
   const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null)
   const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null)
 
+  const { getKanbanColumnOrder, setKanbanColumnOrder, removeKanbanColumnOrder } = useUIPreferencesStore()
+
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    const saved = getKanbanColumnOrder(storageKey)
     
-    const savedOrder = localStorage.getItem(storageKey)
-    
-    if (savedOrder) {
-      try {
-        const parsed = JSON.parse(savedOrder) as string[]
-        const validOrder = defaultOrder.filter(id => parsed.includes(id))
-        
-        if (validOrder.length === defaultOrder.length) {
-          const orderedCols = parsed.filter((id: string) => defaultOrder.includes(id))
-          const finalOrder = ['checkbox', ...orderedCols.filter((id: string) => id !== 'checkbox' && id !== 'acoes'), 'acoes']
-          setColumnOrder(finalOrder)
-        } else {
-          setColumnOrder(defaultOrder)
-        }
-      } catch (e) {
+    if (saved) {
+      const validOrder = defaultOrder.filter(id => saved.includes(id))
+      
+      if (validOrder.length === defaultOrder.length) {
+        const orderedCols = saved.filter((id: string) => defaultOrder.includes(id))
+        const finalOrder = ['checkbox', ...orderedCols.filter((id: string) => id !== 'checkbox' && id !== 'acoes'), 'acoes']
+        setColumnOrder(finalOrder)
+      } else {
         setColumnOrder(defaultOrder)
       }
     }
-  }, [storageKey, defaultOrder])
+  }, [storageKey, defaultOrder, getKanbanColumnOrder])
 
   const handleColumnDragStart = useCallback((columnId: string) => {
     if (columnId === 'checkbox' || columnId === 'acoes') return
@@ -96,16 +92,14 @@ export function useColumnConfig(options: UseColumnConfigOptions = {}): UseColumn
       newOrder.splice(draggedIndex, 1)
       newOrder.splice(targetIndex, 0, draggedColumnId)
       
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(storageKey, JSON.stringify(newOrder))
-      }
+      setKanbanColumnOrder(storageKey, newOrder)
       
       return newOrder
     })
 
     setDraggedColumnId(null)
     setDragOverColumnId(null)
-  }, [draggedColumnId, storageKey])
+  }, [draggedColumnId, storageKey, setKanbanColumnOrder])
 
   const handleColumnDragEnd = useCallback(() => {
     setDraggedColumnId(null)
@@ -114,10 +108,8 @@ export function useColumnConfig(options: UseColumnConfigOptions = {}): UseColumn
 
   const resetColumnOrder = useCallback(() => {
     setColumnOrder(defaultOrder)
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(storageKey)
-    }
-  }, [defaultOrder, storageKey])
+    removeKanbanColumnOrder(storageKey)
+  }, [defaultOrder, storageKey, removeKanbanColumnOrder])
 
   return {
     columnOrder,

@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import { Plus, Search, UserCheck, FileText, Calendar, RefreshCcw, AlertTriangle, Clock, Users } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 export interface DynamicSuggestion {
   id: string
@@ -165,34 +166,21 @@ function generateContextualSuggestions(data: ContextualData): DynamicSuggestion[
   return contextual
 }
 
-function readContextFromFrontend(): ContextualData {
-  if (typeof window === "undefined") return {}
-
-  try {
-    const raw = localStorage.getItem("lia-recruiter-context")
-    if (raw) {
-      const parsed = JSON.parse(raw) as ContextualData
-      return {
-        openJobsWithoutCandidates: parsed.openJobsWithoutCandidates ?? 0,
-        stalledCandidates: parsed.stalledCandidates ?? 0,
-        upcomingInterviews: parsed.upcomingInterviews ?? 0,
-        pendingApprovals: parsed.pendingApprovals ?? 0,
-      }
-    }
-  } catch {
-    // fall through
-  }
-
-  return {}
-}
-
 export function useDynamicSuggestions(refreshKey?: unknown): {
   suggestions: DynamicSuggestion[]
   hasContextualData: boolean
 } {
+  const recruiterContext = useUIPreferencesStore((state) => state.recruiterContext)
+
   const contextualData: ContextualData = useMemo(() => {
-    return readContextFromFrontend()
-  }, [refreshKey]) // eslint-disable-line react-hooks/exhaustive-deps
+    if (!recruiterContext) return {}
+    return {
+      openJobsWithoutCandidates: recruiterContext.openJobsWithoutCandidates ?? 0,
+      stalledCandidates: recruiterContext.stalledCandidates ?? 0,
+      upcomingInterviews: recruiterContext.upcomingInterviews ?? 0,
+      pendingApprovals: recruiterContext.pendingApprovals ?? 0,
+    }
+  }, [recruiterContext, refreshKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasContextualData = useMemo(() => {
     return Object.values(contextualData).some(v => typeof v === "number" && v > 0)

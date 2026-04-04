@@ -1,124 +1,26 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import React from "react"
 import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Mail, Phone, MessageSquare, Calendar, Send, Copy,
-  X, Check, Clock, User, Briefcase, Video, AlertCircle,
-  RefreshCw, Eye, ChevronRight, Building,
-  Globe, FileText, Users, Link2, ExternalLink, CalendarDays,
-  CheckCircle, Info, Download
+  Mail, MessageSquare, Send, X, RefreshCw
 } from "lucide-react"
-import { liaApi } from "@/services/lia-api"
-import { Switch } from "@/components/ui/switch"
-import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
-import { CommunicationTemplate, TemplateSituation } from '@/hooks/use-communication-templates'
+import { textStyles, cardStyles } from '@/lib/design-tokens'
 import { MessageComposer } from '@/components/communication'
-import { sanitizeHtml } from "@/lib/sanitize"
-import { toast } from "sonner"
-import { useModalA11y } from "@/hooks/use-modal-a11y"
+import { useUnifiedCommunication } from "./useUnifiedCommunication"
+import { MessagePreviewPanel } from "./unified-communication-preview"
+import { ChannelSelector, InterviewSettingsSection, VacancyLinkingSection } from "./unified-communication-form-sections"
 
-// Types
-export type CommunicationType = 'email' | 'whatsapp' | 'triagem' | 'agendamento' | 'feedback'
-export type CommunicationChannel = 'email' | 'whatsapp' | 'both'
+export type { CommunicationType, CommunicationChannel } from "./unified-communication-types"
+export type { UnifiedCommunicationModalProps } from "./unified-communication-types"
 
-interface Candidate {
-  id: string
-  name: string
-  role: string
-  email: string
-  phone: string
-  location?: string
-  avatar?: string
-  score?: number
-  matchPercentage?: number
-  skills?: string[]
-}
+import type { UnifiedCommunicationModalProps } from "./unified-communication-types"
 
-interface UnifiedCommunicationModalProps {
-  isOpen: boolean
-  onClose: () => void
-  candidate: Candidate | null
-  type: CommunicationType
-  jobTitle?: string
-  onSend?: (data: CommunicationResult) => void
-  /** Required: Company ID for multi-tenancy. Must come from auth context. */
-  companyId: string
-  /** Optional: List of selected candidates for bulk operations */
-  selectedCandidates?: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>
-  situation?: import('@/hooks/use-communication-templates').TemplateSituation
-}
-
-interface CommunicationResult {
-  type: CommunicationType
-  channel: CommunicationChannel
-  message: string
-  subject?: string
-  recipient: string
-  metadata?: Record<string, unknown>
-}
-
-interface Template {
-  id: string
-  name: string
-  subject?: string
-  message: string
-  icon?: React.ReactNode
-}
-
-interface InterviewSettings {
-  interviewType: 'funcional' | 'tecnica' | 'completa' | 'cultural'
-  platform: 'zoom' | 'teams' | 'meet' | 'presencial'
-  duration: string
-  date: string
-  time: string
-  interviewer: string
-}
-
-interface JobVacancy {
-  id: string
-  title: string
-  department?: string
-  location?: string
-  status?: string
-}
-
-const PIPELINE_STAGES = [
-  { value: 'novo', label: 'Novo' },
-  { value: 'triagem', label: 'Triagem' },
-  { value: 'entrevista', label: 'Entrevista' },
-  { value: 'avaliacao', label: 'Avaliação' },
-  { value: 'oferta', label: 'Oferta' }
-]
-
-const interviewTypes = [
-  { id: 'funcional', name: 'Funcional', description: 'Avaliação de competências da função', icon: Briefcase },
-  { id: 'tecnica', name: 'Técnica', description: 'Avaliação de skills técnicos', icon: FileText },
-  { id: 'completa', name: 'Completa', description: 'Avaliação abrangente', icon: Users },
-  { id: 'cultural', name: 'Cultural', description: 'Fit cultural e valores', icon: Building }
-]
-
-const platforms = [
-  { id: 'zoom', name: 'Zoom', icon: Video },
-  { id: 'teams', name: 'Teams', icon: Users },
-  { id: 'meet', name: 'Google Meet', icon: Video },
-  { id: 'presencial', name: 'Presencial', icon: Building }
-]
-
-const interviewers = [
-  'Ana Silva - Recrutadora Sênior',
-  'Carlos Mendes - Tech Lead',
-  'Marina Costa - Gerente de Produto',
-  'Roberto Santos - RH'
-]
-
-export function UnifiedCommunicationModal({ 
-  isOpen, 
-  onClose, 
-  candidate: propCandidate, 
+export function UnifiedCommunicationModal({
+  isOpen,
+  onClose,
+  candidate: propCandidate,
   type,
   jobTitle,
   onSend,
@@ -126,351 +28,60 @@ export function UnifiedCommunicationModal({
   selectedCandidates = [],
   situation: explicitSituation
 }: UnifiedCommunicationModalProps) {
-  const isBulkMode = !propCandidate && selectedCandidates.length > 0
-  
-  const candidate: Candidate | null = propCandidate || (isBulkMode ? {
-    id: 'bulk',
-    name: `${selectedCandidates.length} candidato${selectedCandidates.length > 1 ? 's' : ''}`,
-    role: '',
-    email: selectedCandidates[0]?.email || '',
-    phone: selectedCandidates[0]?.phone || ''
-  } : null)
-  
-  const [channel, setChannel] = useState<CommunicationChannel>('email')
-  const [subject, setSubject] = useState('')
-  const [message, setMessage] = useState('')
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('')
-  const [isSending, setIsSending] = useState(false)
-  
-  // Interview specific settings
-  const [interviewSettings, setInterviewSettings] = useState<InterviewSettings>({
-    interviewType: 'funcional',
-    platform: 'zoom',
-    duration: '60',
-    date: '',
-    time: '',
-    interviewer: ''
+  const {
+    isBulkMode,
+    candidate,
+    channel,
+    setChannel,
+    subject,
+    setSubject,
+    message,
+    setMessage,
+    isSending,
+    interviewSettings,
+    setInterviewSettings,
+    linkToVacancy,
+    setLinkToVacancy,
+    selectedVacancyId,
+    setSelectedVacancyId,
+    selectedStage,
+    setSelectedStage,
+    vacancies,
+    isLoadingVacancies,
+    linkOnCompletionOnly,
+    setLinkOnCompletionOnly,
+    roleOrJob,
+    getSituationForType,
+    getModalInfo,
+    handleTemplateSelect,
+    handleSend,
+    dialogRef
+  } = useUnifiedCommunication({
+    isOpen,
+    onClose,
+    propCandidate,
+    type,
+    jobTitle,
+    onSend,
+    companyId,
+    selectedCandidates,
+    explicitSituation
   })
-  
-  // Vacancy linking states
-  const [linkToVacancy, setLinkToVacancy] = useState(false)
-  const [selectedVacancyId, setSelectedVacancyId] = useState<string | null>(null)
-  const [selectedStage, setSelectedStage] = useState('triagem')
-  const [vacancies, setVacancies] = useState<JobVacancy[]>([])
-  const [isLoadingVacancies, setIsLoadingVacancies] = useState(false)
-  // For WSI screening: link to vacancy only after candidate completes screening
-  const [linkOnCompletionOnly, setLinkOnCompletionOnly] = useState(type === 'triagem')
-const roleOrJob = jobTitle || candidate?.role || 'a vaga'
-
-  // Map CommunicationType to TemplateSituation for MessageComposer
-  const getSituationForType = useCallback((communicationType: CommunicationType): TemplateSituation | undefined => {
-    if (explicitSituation) return explicitSituation
-    switch (communicationType) {
-      case 'triagem':
-        return 'triagem'
-      case 'agendamento':
-        return 'agendamento'
-      case 'feedback':
-        return 'feedback_positivo'
-      default:
-        return undefined
-    }
-  }, [explicitSituation])
-
-  // Get title and description based on type
-  const getModalInfo = () => {
-    switch (type) {
-      case 'email':
-        return { title: 'Enviar Email', description: 'Envie uma mensagem por email', icon: Mail }
-      case 'whatsapp':
-        return { title: 'Enviar WhatsApp', description: 'Envie uma mensagem pelo WhatsApp', icon: MessageSquare }
-      case 'triagem':
-        return { title: 'Convidar para Triagem', description: 'Convide o candidato para a triagem com a LIA', icon: FileText }
-      case 'agendamento':
-        return { title: 'Agendar Entrevista', description: 'Envie convite para agendar entrevista', icon: Calendar }
-      case 'feedback':
-        return { title: 'Enviar Feedback', description: 'Envie feedback sobre o processo seletivo', icon: CheckCircle }
-      default:
-        return { title: 'Comunicação', description: '', icon: Mail }
-    }
-  }
-
-  // Handle template selection from MessageComposer
-  const handleTemplateSelect = useCallback((template: CommunicationTemplate) => {
-    setSelectedTemplate(template.id)
-    setMessage(template.body)
-    if (template.subject) {
-      setSubject(template.subject)
-    }
-  }, [])
-
-  // Load vacancies for vacancy linking feature
-  const loadVacancies = useCallback(async () => {
-    if (vacancies.length > 0) return
-    setIsLoadingVacancies(true)
-    try {
-      const response = await fetch('/api/backend-proxy/job-vacancies/')
-      if (response.ok) {
-        const data = await response.json()
-        const vacancyList = data.vacancies || data.items || data || []
-        setVacancies(Array.isArray(vacancyList) ? vacancyList : [])
-      }
-    } catch (error) {
-      setVacancies([])
-    } finally {
-      setIsLoadingVacancies(false)
-    }
-  }, [vacancies.length])
-
-  // Load vacancies when toggle is activated
-  useEffect(() => {
-    if (linkToVacancy) {
-      loadVacancies()
-    }
-  }, [linkToVacancy, loadVacancies])
-
-  // Sync channel with communication type when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      // Set default channel based on communication type
-      if (type === 'whatsapp') {
-        setChannel('whatsapp')
-      } else {
-        // For other types (email, triagem, agendamento, feedback), default to email
-        setChannel('email')
-      }
-      // Reset template selection to trigger re-selection with correct channel
-      setSelectedTemplate('')
-    }
-  }, [isOpen, type])
-
-  // Reset state when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedTemplate('')
-      setMessage('')
-      setSubject('')
-      setLinkToVacancy(false)
-      setSelectedVacancyId(null)
-      setSelectedStage('triagem')
-    }
-  }, [isOpen])
-  
-
-  const dialogRef = useModalA11y(isOpen, onClose)
 
   if (!isOpen || (!candidate && selectedCandidates.length === 0)) return null
 
   const safeCandidate = candidate!
   const modalInfo = getModalInfo()
 
-  const handleSend = async () => {
-    // Validação: se toggle ativo, exigir seleção de vaga
-    if (linkToVacancy && !selectedVacancyId) {
-      toast.error("Selecione uma vaga", { description: "Para vincular o(s) candidato(s), você precisa selecionar uma vaga." })
-      return
-    }
-    
-    setIsSending(true)
-
-    try {
-      // Handle vacancy linking if enabled
-      // For WSI screening with linkOnCompletionOnly, we don't link immediately
-      const shouldLinkNow = linkToVacancy && selectedVacancyId && !(type === 'triagem' && linkOnCompletionOnly)
-      
-      if (shouldLinkNow) {
-        try {
-          // Get candidate IDs - support both individual and bulk mode
-          const candidateIds = isBulkMode 
-            ? selectedCandidates.map(c => c.id)
-            : [safeCandidate.id]
-          
-          const response = await fetch(`/api/backend-proxy/search/vacancy/${selectedVacancyId}/add-candidates`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              candidate_ids: candidateIds,
-              stage: selectedStage
-            })
-          })
-          
-          if (response.ok) {
-            const selectedVacancy = vacancies.find(v => v.id === selectedVacancyId)
-            const candidateCount = isBulkMode ? selectedCandidates.length : 1
-            toast.success("Candidato(s) vinculado(s) à vaga", { description: `${candidateCount} candidato(s) adicionado(s) à vaga "${selectedVacancy?.title || 'selecionada'}"` })
-          } else {
-          }
-        } catch (error) {
-        }
-      }
-
-      const selectedVacancy = vacancies.find(v => v.id === selectedVacancyId)
-
-      const sendEmail = async () => {
-        const response = await fetch('/api/backend-proxy/communication/send-email', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'X-Company-ID': companyId
-          },
-          body: JSON.stringify({
-            to_email: safeCandidate.email,
-            to_name: safeCandidate.name,
-            subject: subject,
-            body_html: `<div style="font-family: Arial, sans-serif;">${message.replace(/\n/g, '<br>')}</div>`,
-            body_text: message,
-            candidate_id: safeCandidate.id,
-            candidate_name: safeCandidate.name,
-            vacancy_id: selectedVacancyId || undefined,
-            vacancy_title: selectedVacancy?.title,
-            communication_type: type,
-            metadata: {
-              source: 'unified_communication_modal',
-              type: type,
-              channel: 'email'
-            }
-          })
-        })
-        const result = await response.json()
-        if (!response.ok || !result.success) {
-          throw new Error(result.error || 'Falha ao enviar email')
-        }
-        return result
-      }
-
-      const sendWhatsApp = async () => {
-        const response = await fetch('/api/backend-proxy/communication/send-whatsapp', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'X-Company-ID': companyId
-          },
-          body: JSON.stringify({
-            to_phone: (safeCandidate.phone || '').replace(/\D/g, ''),
-            message: message,
-            candidate_id: safeCandidate.id,
-            candidate_name: safeCandidate.name,
-            vacancy_id: selectedVacancyId || undefined,
-            vacancy_title: selectedVacancy?.title,
-            communication_type: type,
-            metadata: {
-              source: 'unified_communication_modal',
-              type: type,
-              channel: 'whatsapp'
-            }
-          })
-        })
-        const result = await response.json()
-        if (!response.ok || !result.success) {
-          throw new Error(result.error || 'Falha ao enviar WhatsApp')
-        }
-        return result
-      }
-
-      if (channel === 'email') {
-        const result = await sendEmail()
-        toast.success(result.mock ? "Email simulado!" : "Email enviado!", { description: result.mock 
-            ? `Modo desenvolvimento: email para ${safeCandidate.email}` 
-            : `Email enviado para ${safeCandidate.email}` })
-      } else if (channel === 'whatsapp') {
-        const result = await sendWhatsApp()
-        toast.success(result.mock ? "WhatsApp simulado!" : "WhatsApp enviado!", { description: result.mock 
-            ? `Modo desenvolvimento: mensagem para ${safeCandidate.name}` 
-            : `WhatsApp enviado para ${safeCandidate.name}` })
-      } else if (channel === 'both') {
-        const emailResult = await sendEmail()
-        const waResult = await sendWhatsApp()
-        const isMock = emailResult.mock || waResult.mock
-        toast.success(isMock ? "Mensagens simuladas!" : "Mensagens enviadas!", { description: isMock 
-            ? `Modo desenvolvimento: email e WhatsApp para ${safeCandidate.name}` 
-            : `Mensagens enviadas para ${safeCandidate.name}` })
-      }
-
-      try {
-        await liaApi.logCommunication({
-          company_id: companyId,
-          candidate_id: safeCandidate.id,
-          candidate_name: safeCandidate.name,
-          candidate_email: safeCandidate.email,
-          candidate_phone: safeCandidate.phone,
-          communication_type: type,
-          channel: channel === 'both' ? 'email' : channel,
-          direction: 'outbound',
-          subject: (channel === 'email' || channel === 'both') ? subject : undefined,
-          message_content: message,
-          sent_by: 'recruiter',
-          metadata: type === 'agendamento' ? interviewSettings as unknown as Record<string, unknown> : undefined
-        })
-
-        const activityDescriptions: Record<CommunicationType, string> = {
-          email: `Enviou email para ${safeCandidate.name}`,
-          whatsapp: `Enviou WhatsApp para ${safeCandidate.name}`,
-          triagem: `Convidou ${safeCandidate.name} para triagem`,
-          agendamento: `Enviou convite de entrevista para ${safeCandidate.name}`,
-          feedback: `Enviou feedback para ${safeCandidate.name}`
-        }
-
-        await liaApi.createActivity({
-          company_id: companyId,
-          activity_type: `communication_${type}`,
-          description: activityDescriptions[type],
-          candidate_id: safeCandidate.id,
-          performed_by: 'recruiter',
-          metadata: {
-            channel,
-            type,
-            subject: (channel === 'email' || channel === 'both') ? subject : undefined
-          }
-        })
-      } catch (logError) {
-        toast.warning("Aviso", { description: "Mensagem enviada, mas o registro do histórico falhou." })
-      }
-
-      onSend?.({
-        type,
-        channel,
-        message,
-        subject: (channel === 'email' || channel === 'both') ? subject : undefined,
-        recipient: (channel === 'email' || channel === 'both') ? safeCandidate.email : safeCandidate.phone,
-        metadata: {
-          ...(type === 'agendamento' ? interviewSettings : {}),
-          ...(linkToVacancy && selectedVacancyId ? { 
-            vacancyId: selectedVacancyId, 
-            stage: selectedStage,
-            // For WSI screening: flag to indicate linking should happen only after completion
-            linkOnCompletionOnly: type === 'triagem' && linkOnCompletionOnly,
-            pendingVacancyLink: type === 'triagem' && linkOnCompletionOnly
-          } : {})
-        }
-      })
-
-      onClose()
-    } catch (error) {
-      toast.error("Erro ao enviar", { description: error instanceof Error ? error.message : 'Erro desconhecido' })
-    } finally {
-      setIsSending(false)
-    }
-  }
-
-  const formatPreviewMessage = (text: string) => {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\[(.*?)\]/g, '<span class="text-lia-text-secondary underline cursor-pointer">$1</span>')
-      .replace(/•/g, '&bull;')
-      .replace(/\n/g, '<br>')
-  }
-
   const modalContent = (
     <div className="fixed inset-0 bg-lia-overlay backdrop-blur-[1px] z-modal flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div 
+      <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="comm-modal-title"
         className={`${cardStyles.default} rounded-md w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col`}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-lia-border-subtle bg-lia-bg-secondary/50/50">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-lia-bg-tertiary rounded-full flex items-center justify-center">
@@ -485,8 +96,8 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
               </p>
             </div>
           </div>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="p-2 rounded-md text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan"
             aria-label="Fechar modal de comunicação"
           >
@@ -494,176 +105,22 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
           </button>
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Left Panel - Form */}
           <div className="w-1/2 border-r border-lia-border-subtle overflow-y-auto">
             <div className="p-5 space-y-5">
-              {/* Channel Selection */}
-              <div>
-                <h4 className={`${textStyles.label} mb-2`}>
-                  Canal de Envio
-                </h4>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    onClick={() => setChannel('email')}
-                    className={`flex items-center gap-2 p-3 rounded-md border transition-colors motion-reduce:transition-none ${
-                      channel === 'email'
-                        ? 'border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary'
-                        : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
-                    }`}
-                    aria-label="Enviar por Email"
-                  >
-                    <Mail className="w-4 h-4" />
-                    <div className="text-left">
-                      <div className="text-xs font-medium">Email</div>
-                      <div className="text-micro opacity-70 truncate max-w-[120px]">{safeCandidate.email}</div>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setChannel('whatsapp')}
-                    className={`flex items-center gap-2 p-3 rounded-md border transition-colors motion-reduce:transition-none ${
-                      channel === 'whatsapp'
-                        ? 'border-status-success/30 bg-status-success/10 text-status-success'
-                        : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
-                    }`}
-                    aria-label="Enviar por WhatsApp"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <div className="text-left">
-                      <div className="text-xs font-medium">WhatsApp</div>
-                      <div className="text-micro opacity-70">{safeCandidate.phone}</div>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setChannel('both')}
-                    className={`flex items-center gap-2 p-3 rounded-md border transition-colors motion-reduce:transition-none ${
-                      channel === 'both'
-                        ? 'border-lia-btn-primary-bg bg-lia-bg-secondary text-lia-text-primary'
-                        : 'border-lia-border-subtle hover:border-lia-border-default text-lia-text-primary'
-                    }`}
-                    aria-label="Enviar por Email e WhatsApp"
-                  >
-                    <div className="flex items-center -space-x-1">
-                      <Mail className="w-3.5 h-3.5" />
-                      <MessageSquare className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="text-left">
-                      <div className="text-xs font-medium">Ambos</div>
-                      <div className="text-micro opacity-70">Email + WA</div>
-                    </div>
-                  </button>
-                </div>
-              </div>
+              <ChannelSelector
+                channel={channel}
+                setChannel={setChannel}
+                candidate={safeCandidate}
+              />
 
-              {/* Interview Settings (only for agendamento) */}
               {type === 'agendamento' && (
-                <div className={`space-y-4 p-4 ${cardStyles.flat}`}>
-                  <h4 className={`${textStyles.label} flex items-center gap-2`}>
-                    <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
-                    Configurações da Entrevista
-                  </h4>
-                  
-                  {/* Interview Type */}
-                  <div>
-                    <label className={`${textStyles.caption} font-medium mb-1.5 block`}>Tipo de Entrevista</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {interviewTypes.map((iType) => (
-                        <button
-                          key={iType.id}
-                          onClick={() => setInterviewSettings(prev => ({ ...prev, interviewType: iType.id as typeof prev.interviewType }))}
-                          className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${
-                            interviewSettings.interviewType === iType.id
-                              ? 'border-lia-btn-primary-bg bg-lia-bg-secondary'
-                              : 'border-lia-border-subtle hover:border-lia-border-default'
-                          }`}
-                        >
-                          <iType.icon className={`w-3.5 h-3.5 mb-1 ${
-                            interviewSettings.interviewType === iType.id ? 'text-lia-text-primary' : 'text-lia-text-secondary'
-                          }`} />
-                          <div className="text-micro font-medium text-lia-text-primary">{iType.name}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Platform */}
-                  <div>
-                    <label className={`${textStyles.caption} font-medium mb-1.5 block`}>Plataforma</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {platforms.map((plat) => (
-                        <button
-                          key={plat.id}
-                          onClick={() => setInterviewSettings(prev => ({ ...prev, platform: plat.id as typeof prev.platform }))}
-                          className={`p-2 rounded-md border text-center transition-colors motion-reduce:transition-none ${
-                            interviewSettings.platform === plat.id
-                              ? 'border-lia-btn-primary-bg bg-lia-bg-secondary'
-                              : 'border-lia-border-subtle hover:border-lia-border-default'
-                          }`}
-                        >
-                          <plat.icon className={`w-3.5 h-3.5 mx-auto mb-1 ${
-                            interviewSettings.platform === plat.id ? 'text-lia-text-primary' : 'text-lia-text-secondary'
-                          }`} />
-                          <div className="text-micro text-lia-text-primary">{plat.name}</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Duration, Date, Time */}
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className={`${textStyles.caption} font-medium mb-1 block`}>Duração</label>
-                      <select
-                        value={interviewSettings.duration}
-                        onChange={(e) => setInterviewSettings(prev => ({ ...prev, duration: e.target.value }))}
-                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
-                      >
-                        <option value="30">30 min</option>
-                        <option value="45">45 min</option>
-                        <option value="60">1 hora</option>
-                        <option value="90">1h 30min</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className={`${textStyles.caption} font-medium mb-1 block`}>Data</label>
-                      <input
-                        type="date"
-                        value={interviewSettings.date}
-                        onChange={(e) => setInterviewSettings(prev => ({ ...prev, date: e.target.value }))}
-                        min={new Date().toISOString().split('T')[0]}
-                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
-                      />
-                    </div>
-                    <div>
-                      <label className={`${textStyles.caption} font-medium mb-1 block`}>Horário</label>
-                      <input
-                        type="time"
-                        value={interviewSettings.time}
-                        onChange={(e) => setInterviewSettings(prev => ({ ...prev, time: e.target.value }))}
-                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Interviewer */}
-                  <div>
-                    <label className={`${textStyles.caption} font-medium mb-1 block`}>Entrevistador</label>
-                    <select
-                      value={interviewSettings.interviewer}
-                      onChange={(e) => setInterviewSettings(prev => ({ ...prev, interviewer: e.target.value }))}
-                      className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20"
-                    >
-                      <option value="">Selecione...</option>
-                      {interviewers.map((person) => (
-                        <option key={person} value={person}>{person}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                <InterviewSettingsSection
+                  interviewSettings={interviewSettings}
+                  setInterviewSettings={setInterviewSettings}
+                />
               )}
 
-              {/* MessageComposer - Templates, LIA Adjust, Subject, Message, Variables */}
               <MessageComposer
                 channel={channel === 'both' ? 'email' : channel}
                 situation={getSituationForType(type)}
@@ -686,234 +143,33 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
                 }}
               />
 
-              {/* Vacancy Linking Section */}
-              <div className={`${cardStyles.default} p-4`}>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className={`${textStyles.label} flex items-center gap-2`}>
-                    <Briefcase className="w-4 h-4 text-lia-text-secondary" />
-                    Vincular à Vaga
-                  </h4>
-                  <Switch
-                    checked={linkToVacancy}
-                    onCheckedChange={setLinkToVacancy}
-                  />
-                </div>
-                
-                {linkToVacancy && (
-                  <div className="space-y-3">
-                    {/* Vacancy Selection */}
-                    <div>
-                      <label className={`${textStyles.caption} font-medium mb-1.5 block`}>
-                        Selecionar Vaga
-                      </label>
-                      <select
-                        value={selectedVacancyId || ''}
-                        onChange={(e) => setSelectedVacancyId(e.target.value || null)}
-                        disabled={isLoadingVacancies}
-                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary disabled:bg-lia-bg-tertiary disabled:cursor-not-allowed"
-                      >
-                        <option value="">
-                          {isLoadingVacancies ? 'Carregando vagas...' : 'Selecione uma vaga'}
-                        </option>
-                        {vacancies.map((vacancy) => (
-                          <option key={vacancy.id} value={vacancy.id}>
-                            {vacancy.title}
-                            {vacancy.department ? ` - ${vacancy.department}` : ''}
-                            {vacancy.status ? ` (${vacancy.status})` : ''}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    {/* Pipeline Stage Selection */}
-                    <div>
-                      <label className={`${textStyles.caption} font-medium mb-1.5 block`}>
-                        Etapa do Pipeline
-                      </label>
-                      <select
-                        value={selectedStage}
-                        onChange={(e) => setSelectedStage(e.target.value)}
-                        className="w-full h-9 text-xs border border-lia-border-subtle rounded-md focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary"
-                      >
-                        {PIPELINE_STAGES.map((stage) => (
-                          <option key={stage.value} value={stage.value}>
-                            {stage.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    {/* WSI Screening - Link on Completion Option */}
-                    {type === 'triagem' && (
-                      <div className="bg-status-warning/10 border border-status-warning/30 rounded-md p-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-3.5 h-3.5 text-status-warning flex-shrink-0" />
-                            <div>
-                              <span className="text-xs font-medium text-status-warning">
-                                Vincular após completar triagem
-                              </span>
-                              <p className="text-micro text-status-warning mt-0.5">
-                                Candidato só entra na vaga se responder a triagem
-                              </p>
-                            </div>
-                          </div>
-                          <Switch
-                            checked={linkOnCompletionOnly}
-                            onCheckedChange={setLinkOnCompletionOnly}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Confirmation Message */}
-                    {selectedVacancyId && (
-                      <div className={`${type === 'triagem' && linkOnCompletionOnly ? 'bg-status-warning/10 border-status-warning/30' : 'bg-status-success/10 border-status-success/30'} border rounded-md p-2.5`}>
-                        <div className="flex items-center gap-2">
-                          {type === 'triagem' && linkOnCompletionOnly ? (
-                            <Clock className="w-3.5 h-3.5 text-status-warning flex-shrink-0" />
-                          ) : (
-                            <CheckCircle className="w-3.5 h-3.5 text-status-success flex-shrink-0" />
-                          )}
-                          <span className={`text-micro ${type === 'triagem' && linkOnCompletionOnly ? 'text-status-warning' : 'text-status-success'}`}>
-                            {type === 'triagem' && linkOnCompletionOnly ? (
-                              isBulkMode 
-                                ? `${selectedCandidates.length} candidato(s) serão vinculados à vaga "${PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}" somente após completarem a triagem`
-                                : `Candidato será vinculado à vaga na etapa "${PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}" somente após completar a triagem`
-                            ) : (
-                              isBulkMode 
-                                ? `${selectedCandidates.length} candidato(s) serão vinculados à vaga selecionada na etapa "${PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}"`
-                                : `Candidato será vinculado à vaga selecionada na etapa "${PIPELINE_STAGES.find(s => s.value === selectedStage)?.label}"`
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              <VacancyLinkingSection
+                type={type}
+                linkToVacancy={linkToVacancy}
+                setLinkToVacancy={setLinkToVacancy}
+                selectedVacancyId={selectedVacancyId}
+                setSelectedVacancyId={setSelectedVacancyId}
+                selectedStage={selectedStage}
+                setSelectedStage={setSelectedStage}
+                vacancies={vacancies}
+                isLoadingVacancies={isLoadingVacancies}
+                linkOnCompletionOnly={linkOnCompletionOnly}
+                setLinkOnCompletionOnly={setLinkOnCompletionOnly}
+                isBulkMode={isBulkMode}
+                selectedCandidatesCount={selectedCandidates.length}
+              />
             </div>
           </div>
 
-          {/* Right Panel - Preview */}
-          <div className="w-1/2 bg-lia-bg-secondary overflow-y-auto">
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className={`${textStyles.label} flex items-center gap-2`}>
-                  <Eye className="w-3.5 h-3.5 text-lia-text-secondary" />
-                  Preview da Mensagem
-                </h4>
-                <Badge variant="outline" className={badgeStyles.default}>
-                  {channel === 'email' ? 'Email' : channel === 'whatsapp' ? 'WhatsApp' : 'Email + WhatsApp'}
-                </Badge>
-              </div>
-
-              {/* Preview Card */}
-              <div className={`rounded-md overflow-hidden ${
-                channel === 'whatsapp' ? 'bg-whatsapp-bg' : 'bg-lia-bg-primary border border-lia-border-subtle'
-              }`}>
-                {(channel === 'email' || channel === 'both') ? (
-                  <div>
-                    {/* Email Header */}
-                    <div className="px-4 py-3 border-b border-lia-border-subtle bg-lia-bg-secondary">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="text-micro bg-lia-btn-primary-bg text-lia-btn-primary-text">RH</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className={textStyles.bodySmall}>Equipe de Recrutamento</div>
-                          <div className={textStyles.caption}>recrutamento@empresa.com</div>
-                        </div>
-                      </div>
-                      <div className={textStyles.caption}>
-                        Para: <span className="text-lia-text-primary">{safeCandidate.email}</span>
-                      </div>
-                    </div>
-                    {/* Email Subject */}
-                    <div className="px-4 py-2 border-b border-lia-border-subtle">
-                      <div className={textStyles.subtitle}>
-                        {subject || 'Sem assunto'}
-                      </div>
-                    </div>
-                    {/* Email Body */}
-                    <div className="px-4 py-4">
-                      <div 
-                        className={`${textStyles.body} leading-relaxed`}
-                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="text-lia-text-secondary">A mensagem aparecerá aqui...</span>') }}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-3">
-                    {/* WhatsApp Chat Bubble */}
-                    <div className="flex justify-end mb-2">
-                      <div className="bg-whatsapp-bubble rounded-md p-3 max-w-[85%]">
-                        <div 
-                          className={`${textStyles.body} leading-relaxed whitespace-pre-wrap`}
-                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(formatPreviewMessage(message) || '<span class="text-lia-text-secondary">A mensagem aparecerá aqui...</span>') }}
-                        />
-                        <div className={`${textStyles.caption} text-right mt-1`}>
-                          {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ✓✓
-                        </div>
-                      </div>
-                    </div>
-                    {/* WhatsApp Info */}
-                    <div className={`text-center ${textStyles.caption} mt-3 bg-lia-bg-primary/60 rounded-full py-1 px-3 inline-block mx-auto`}>
-                      Será enviado via WhatsApp Business API
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Additional Info based on type */}
-              {type === 'triagem' && (
-                <div className="mt-4 bg-status-warning/10 border border-status-warning/30 rounded-md p-3">
-                  <div className="flex items-start gap-2">
-                    <Info className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
-                    <div className="text-micro text-status-warning">
-                      <strong>Fluxo de Triagem:</strong>
-                      <ul className="mt-1 space-y-0.5 ml-2">
-                        <li>• Candidato recebe a mensagem com link</li>
-                        <li>• Ao clicar, visualiza aviso LGPD e aceita termos</li>
-                        <li>• LIA inicia a conversa de triagem automaticamente</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {type === 'agendamento' && (
-                <div className="mt-4 bg-lia-bg-tertiary border border-lia-border-default rounded-md p-3">
-                  <div className="flex items-start gap-2">
-                    <CalendarDays className="w-4 h-4 text-lia-text-secondary flex-shrink-0 mt-0.5" />
-                    <div className="text-micro text-wedo-cyan-dark">
-                      <strong>Após Confirmação:</strong>
-                      <ul className="mt-1 space-y-0.5 ml-2">
-                        <li>• Candidato escolhe horário disponível</li>
-                        <li>• Recebe email de confirmação automático</li>
-                        <li>• Convite de calendário (Outlook/Google)</li>
-                        <li>• Link da plataforma de vídeo incluso</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {type === 'feedback' && (
-                <div className="mt-4 bg-status-success/10 border border-status-success/30 rounded-md p-3">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0 mt-0.5" />
-                    <div className="text-micro text-status-success">
-                      <strong>Dica:</strong> Um feedback bem estruturado fortalece a marca empregadora e mantém bom relacionamento com candidatos.
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <MessagePreviewPanel
+            channel={channel}
+            type={type}
+            subject={subject}
+            message={message}
+            candidate={safeCandidate}
+          />
         </div>
 
-        {/* Footer */}
         <div className="px-6 py-4 border-t border-lia-border-subtle bg-lia-bg-secondary flex items-center justify-between">
           <div className={textStyles.caption}>
             {channel === 'email' && (
@@ -970,7 +226,7 @@ const roleOrJob = jobTitle || candidate?.role || 'a vaga'
   )
 
   if (typeof document === 'undefined') return null
-  
+
   return createPortal(modalContent, document.body)
 }
 

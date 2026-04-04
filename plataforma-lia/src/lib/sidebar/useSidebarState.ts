@@ -20,9 +20,9 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import {
   type SidebarState,
   type SidebarComputed,
-  SIDEBAR_STORAGE_KEYS,
   SIDEBAR_DEFAULTS,
 } from "./sidebar.types"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 
 // ─── Return type ──────────────────────────────────────────────────────────────
 
@@ -52,28 +52,23 @@ export function useSidebarState(): UseSidebarStateReturn {
     setIsMounted(true)
   }, [])
 
-  // ── Persist collapsed state ────────────────────────────────────────────────
-  useEffect(() => {
-    if (!isMounted) return
-    const saved = localStorage.getItem(SIDEBAR_STORAGE_KEYS.COLLAPSED)
-    if (saved !== null) {
-      setIsCollapsed(JSON.parse(saved))
-    }
-    const savedWidth = localStorage.getItem(SIDEBAR_STORAGE_KEYS.WIDTH)
-    if (savedWidth !== null) {
-      setSidebarWidth(parseInt(savedWidth, 10))
-    }
-  }, [isMounted])
+  const { sidebarCollapsed, sidebarWidth: storedWidth, setSidebarCollapsed, setSidebarWidth: setStoredWidth } = useUIPreferencesStore()
 
   useEffect(() => {
     if (!isMounted) return
-    localStorage.setItem(SIDEBAR_STORAGE_KEYS.COLLAPSED, JSON.stringify(isCollapsed))
-  }, [isCollapsed, isMounted])
+    setIsCollapsed(sidebarCollapsed)
+    setSidebarWidth(storedWidth)
+  }, [isMounted, sidebarCollapsed, storedWidth])
 
   useEffect(() => {
     if (!isMounted) return
-    localStorage.setItem(SIDEBAR_STORAGE_KEYS.WIDTH, sidebarWidth.toString())
-  }, [sidebarWidth, isMounted])
+    setSidebarCollapsed(isCollapsed)
+  }, [isCollapsed, isMounted, setSidebarCollapsed])
+
+  useEffect(() => {
+    if (!isMounted) return
+    setStoredWidth(sidebarWidth)
+  }, [sidebarWidth, isMounted, setStoredWidth])
 
   // ── Keyboard shortcut Ctrl+B ───────────────────────────────────────────────
   useEffect(() => {

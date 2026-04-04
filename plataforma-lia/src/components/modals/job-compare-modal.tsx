@@ -1,7 +1,5 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { getJobScoreClass } from "@/lib/score-utils"
 import {
   Dialog,
   DialogContent,
@@ -13,31 +11,32 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Scale,
-  Brain,
   Download,
   Share2,
-  MapPin,
-  Users,
-  CheckCircle,
-  Clock,
-  DollarSign,
   Target,
   Award,
   Gift,
+  DollarSign,
+  MapPin,
+  Brain,
   Briefcase,
-  TrendingUp,
-  TrendingDown,
-  AlertCircle,
-  Lightbulb,
-  BarChart3,
-  Filter,
-  Zap,
-  Search,
-  ArrowRightLeft,
-  XCircle,
 } from "lucide-react"
 import { LiaAnalysisPanel, CandidateFunnelPanel } from "./job-compare"
-import { toast } from "sonner"
+import { JobCompareTable } from "./job-compare/JobCompareTable"
+import { useJobCompare, type ComparisonDimension } from "./job-compare/useJobCompare"
+
+const COMPARISON_DIMENSIONS: {
+  id: ComparisonDimension
+  label: string
+  icon: React.ElementType
+}[] = [
+  { id: "technical_requirements", label: "Técnicos", icon: Target },
+  { id: "competencies", label: "Competências", icon: Award },
+  { id: "benefits", label: "Benefícios", icon: Gift },
+  { id: "salary_range", label: "Salário", icon: DollarSign },
+  { id: "location", label: "Local", icon: MapPin },
+  { id: "performance", label: "Performance", icon: Brain },
+]
 
 interface JobCompareModalProps {
   isOpen: boolean
@@ -62,456 +61,17 @@ interface JobCompareModalProps {
   }>
 }
 
-type ComparisonDimension =
-  | "technical_requirements"
-  | "competencies"
-  | "benefits"
-  | "salary_range"
-  | "location"
-  | "performance"
-
-const COMPARISON_DIMENSIONS: {
-  id: ComparisonDimension
-  label: string
-  icon: React.ElementType
-}[] = [
-  { id: "technical_requirements", label: "Técnicos", icon: Target },
-  { id: "competencies", label: "Competências", icon: Award },
-  { id: "benefits", label: "Benefícios", icon: Gift },
-  { id: "salary_range", label: "Salário", icon: DollarSign },
-  { id: "location", label: "Local", icon: MapPin },
-  { id: "performance", label: "Performance", icon: Brain },
-]
-
-interface LiaInsight {
-  type: "action_recommended" | "analysis" | "comparative" | "attention"
-  title: string
-  description: string
-}
-
-const INSIGHT_STYLES: Record<LiaInsight["type"], {
-  bg: string
-  border: string
-  iconColor: string
-  badgeText: string
-  badgeBg: string
-  icon: React.ElementType
-}> = {
-  action_recommended: {
-    bg: "bg-status-warning/10",
-    border: "border-status-warning/30",
-    iconColor: "text-status-warning",
-    badgeText: "Ação Recomendada",
-    badgeBg: "bg-status-warning/15 text-status-warning",
-    icon: Zap,
-  },
-  analysis: {
-    bg: "bg-wedo-purple/10",
-    border: "border-wedo-purple/30",
-    iconColor: "text-wedo-purple",
-    badgeText: "Análise",
-    badgeBg: "bg-wedo-purple/15 text-wedo-purple",
-    icon: Search,
-  },
-  comparative: {
-    bg: "bg-wedo-cyan/10",
-    border: "border-wedo-cyan/30",
-    iconColor: "text-wedo-cyan-dark",
-    badgeText: "Comparativo",
-    badgeBg: "bg-wedo-cyan/15 text-wedo-cyan-dark",
-    icon: ArrowRightLeft,
-  },
-  attention: {
-    bg: "bg-status-error/10",
-    border: "border-status-error/30",
-    iconColor: "text-status-error",
-    badgeText: "Atenção",
-    badgeBg: "bg-status-error/15 text-status-error",
-    icon: XCircle,
-  },
-}
-
-const JOB_COLORS = [
- { bar: "bg-lia-btn-primary-bg", text: "text-lia-text-secondary", light: "bg-lia-bg-tertiary" },
-  { bar: "bg-wedo-purple", text: "text-wedo-purple", light: "bg-wedo-purple/15" },
-  { bar: "bg-status-success", text: "text-status-success", light: "bg-status-success/15" },
-  { bar: "bg-wedo-orange", text: "text-wedo-orange", light: "bg-wedo-orange/15" },
-]
-
-interface LiaAnalysisData {
-  summary: string
-  keyMetrics: {
-    label: string
-    value: string
-    trend?: "up" | "down" | "neutral"
-    highlight?: boolean
-  }[]
-  insights: LiaInsight[]
-  recommendations: string[]
-}
-
 export function JobCompareModal({ isOpen, onClose, jobs }: JobCompareModalProps) {
-const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimension>>(
-    new Set(["technical_requirements", "competencies", "salary_range", "location", "performance"])
-  )
-  const [isExporting, setIsExporting] = useState(false)
-
-  const toggleDimension = (dimension: ComparisonDimension) => {
-    const newSet = new Set(selectedDimensions)
-    if (newSet.has(dimension)) {
-      newSet.delete(dimension)
-    } else {
-      newSet.add(dimension)
-    }
-    setSelectedDimensions(newSet)
-  }
-
-  const formatCurrency = (value?: number) => {
-    if (!value) return "-"
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-
-  const formatSalaryRange = (range?: { min?: number; max?: number }) => {
-    if (!range) return "-"
-    if (range.min && range.max) {
-      return `${formatCurrency(range.min)} - ${formatCurrency(range.max)}`
-    }
-    if (range.min) return `A partir de ${formatCurrency(range.min)}`
-    if (range.max) return `Até ${formatCurrency(range.max)}`
-    return "-"
-  }
-
-  const getScoreColor = (score?: number) => {
-    if (!score) return "text-lia-text-tertiary"
-    return getJobScoreClass(score)
-  }
-
-  const liaAnalysis = useMemo<LiaAnalysisData | null>(() => {
-    if (jobs.length < 2) return null
-
-    const totalCandidates = jobs.reduce((sum, j) => sum + (j.candidates_count || 0), 0)
-    const totalApproved = jobs.reduce((sum, j) => sum + (j.approved_count || 0), 0)
-    const totalScreening = jobs.reduce((sum, j) => sum + (j.screening_count || 0), 0)
-    const avgPerformance = jobs.reduce((sum, j) => sum + (j.performance_score || 0), 0) / jobs.length
-    const avgConversionRate = totalCandidates > 0 ? (totalApproved / totalCandidates * 100) : 0
-
-    const bestPerformance = jobs.reduce((best, job) =>
-      (job.performance_score || 0) > (best.performance_score || 0) ? job : best
-    )
-    const worstPerformance = jobs.reduce((worst, job) =>
-      (job.performance_score || 0) < (worst.performance_score || 0) ? job : worst
-    )
-    const mostCandidates = jobs.reduce((best, job) =>
-      (job.candidates_count || 0) > (best.candidates_count || 0) ? job : best
-    )
-    const bestConversion = jobs.reduce((best, job) => {
-      const bestRate = (best.approved_count || 0) / Math.max(best.candidates_count || 1, 1)
-      const jobRate = (job.approved_count || 0) / Math.max(job.candidates_count || 1, 1)
-      return jobRate > bestRate ? job : best
-    })
-
-    const insights: LiaInsight[] = []
-
-    if (bestPerformance.performance_score && bestPerformance.performance_score >= 70) {
-      insights.push({
-        type: "analysis",
-        title: "Alta Performance Identificada",
-        description: `"${bestPerformance.title}" destaca-se com ${bestPerformance.performance_score}% de performance, ${((bestPerformance.performance_score || 0) - avgPerformance).toFixed(0)}% acima da média.`
-      })
-    }
-
-    if (worstPerformance.performance_score && worstPerformance.performance_score < 50 && jobs.length > 1) {
-      insights.push({
-        type: "analysis",
-        title: "Taxa de Conversão Baixa",
-        description: `"${worstPerformance.title}" apresenta performance de ${worstPerformance.performance_score}%. Considere revisar requisitos ou estratégia de sourcing.`
-      })
-    }
-
-    const conversionBestRate = (bestConversion.approved_count || 0) / Math.max(bestConversion.candidates_count || 1, 1) * 100
-    if (conversionBestRate > avgConversionRate * 1.2 && jobs.length > 1) {
-      insights.push({
-        type: "comparative",
-        title: "Diferença de Volume",
-        description: `"${bestConversion.title}" converte ${conversionBestRate.toFixed(1)}% dos candidatos, indicando boa qualificação do pipeline comparado às demais vagas.`
-      })
-    }
-
-    if (totalScreening > totalCandidates * 0.4) {
-      insights.push({
-        type: "action_recommended",
-        title: "Alto Volume em Triagem",
-        description: `${totalScreening} candidatos aguardam triagem (${((totalScreening/totalCandidates)*100).toFixed(0)}% do total). Priorize avaliações.`
-      })
-    }
-
-    const jobsWithNoApprovals = jobs.filter(j => (j.approved_count || 0) === 0 && (j.candidates_count || 0) > 0)
-    if (jobsWithNoApprovals.length > 0) {
-      insights.push({
-        type: "attention",
-        title: "Vagas Sem Aprovações",
-        description: `${jobsWithNoApprovals.length} vaga(s) sem candidatos aprovados: ${jobsWithNoApprovals.map(j => `"${j.title}"`).join(", ")}. Revise critérios de triagem.`
-      })
-    }
-
-    const recommendations: string[] = []
-    
-    if (bestPerformance.id !== mostCandidates.id) {
-      recommendations.push(`Considere replicar estratégias de sourcing de "${mostCandidates.title}" para "${bestPerformance.title}" para aumentar volume qualificado.`)
-    }
-    
-    if (avgConversionRate < 10) {
-      recommendations.push("Taxa de conversão média abaixo de 10%. Revise critérios de triagem ou qualidade das fontes de candidatos.")
-    }
-
-    if (totalScreening > 30) {
-      recommendations.push(`Priorize triagem das ${totalScreening} candidaturas pendentes para manter pipeline saudável.`)
-    }
-
-    const jobsWithLowBenefits = jobs.filter(j => !j.benefits || j.benefits.length < 3)
-    if (jobsWithLowBenefits.length > 0) {
-      recommendations.push(`Complete informações de benefícios em ${jobsWithLowBenefits.length} vaga(s) para melhorar atratividade.`)
-    }
-
-    return {
-      summary: `Comparando ${jobs.length} vagas com total de ${totalCandidates} candidatos. "${bestPerformance.title}" lidera em performance (${bestPerformance.performance_score || 0}%), enquanto "${mostCandidates.title}" possui maior volume (${mostCandidates.candidates_count || 0} candidatos).`,
-      keyMetrics: [
-        {
-          label: "Total Candidatos",
-          value: totalCandidates.toString(),
-          trend: "neutral"
-        },
-        {
-          label: "Performance Média",
-          value: `${avgPerformance.toFixed(0)}%`,
-          trend: avgPerformance >= 60 ? "up" : avgPerformance >= 40 ? "neutral" : "down",
-          highlight: avgPerformance >= 70
-        },
-        {
-          label: "Taxa Conversão",
-          value: `${avgConversionRate.toFixed(1)}%`,
-          trend: avgConversionRate >= 15 ? "up" : avgConversionRate >= 5 ? "neutral" : "down"
-        },
-        {
-          label: "Em Triagem",
-          value: totalScreening.toString(),
-          trend: totalScreening > totalCandidates * 0.3 ? "down" : "neutral"
-        }
-      ],
-      insights,
-      recommendations
-    }
-  }, [jobs])
-
-  const handleExportPDF = async () => {
-    setIsExporting(true)
-    try {
-      const pdfBlob = await generatePDFBlob()
-      const fileName = `comparativo-vagas-${new Date().toISOString().split("T")[0]}.pdf`
-      
-      const url = URL.createObjectURL(pdfBlob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = fileName
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      
-      toast.success("PDF exportado", { description: "Arquivo salvo com sucesso." })
-    } catch (error) {
-      toast.error("Erro ao exportar", { description: "Não foi possível gerar o PDF." })
-    } finally {
-      setIsExporting(false)
-    }
-  }
-
-  const generatePDFBlob = async (): Promise<Blob> => {
-    const { jsPDF } = await import("jspdf")
-    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" })
-    
-    doc.setFont("helvetica", "bold")
-    doc.setFontSize(18)
-    doc.setTextColor(17, 24, 39)
-    doc.text("Comparativo de Vagas - WedoTalent", 14, 20)
-    
-    doc.setFont("helvetica", "normal")
-    doc.setFontSize(10)
-    doc.setTextColor(107, 114, 128)
-    doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 14, 28)
-    doc.text(`${jobs.length} vagas comparadas`, 14, 34)
-    
-    let yPos = 45
-    
-    doc.setFont("helvetica", "bold")
-    doc.setFontSize(12)
-    doc.setTextColor(17, 24, 39)
-    doc.text("Vagas Comparadas", 14, yPos)
-    yPos += 8
-    
-    jobs.forEach((job, idx) => {
-      doc.setFont("helvetica", "normal")
-      doc.setFontSize(10)
-      doc.setTextColor(55, 65, 81)
-      const jobInfo = `${idx + 1}. ${job.code ? `[${job.code}] ` : ""}${job.title}`
-      doc.text(jobInfo, 14, yPos)
-      yPos += 6
-    })
-    
-    yPos += 5
-    
-    if (liaAnalysis) {
-      doc.setFont("helvetica", "bold")
-      doc.setFontSize(12)
-      doc.setTextColor(17, 24, 39)
-      doc.text("Análise LIA", 14, yPos)
-      yPos += 8
-      
-      doc.setFont("helvetica", "normal")
-      doc.setFontSize(9)
-      doc.setTextColor(55, 65, 81)
-      const summaryLines = doc.splitTextToSize(liaAnalysis.summary, 260)
-      doc.text(summaryLines, 14, yPos)
-      yPos += summaryLines.length * 5 + 5
-      
-      doc.setFont("helvetica", "bold")
-      doc.setFontSize(10)
-      doc.text("Indicadores-Chave:", 14, yPos)
-      yPos += 6
-      
-      liaAnalysis.keyMetrics.forEach(metric => {
-        doc.setFont("helvetica", "normal")
-        doc.setFontSize(9)
-        doc.text(`• ${metric.label}: ${metric.value}`, 18, yPos)
-        yPos += 5
-      })
-      
-      yPos += 3
-      
-      if (liaAnalysis.insights.length > 0) {
-        doc.setFont("helvetica", "bold")
-        doc.setFontSize(10)
-        doc.text("Insights:", 14, yPos)
-        yPos += 6
-        
-        liaAnalysis.insights.forEach(insight => {
-          doc.setFont("helvetica", "normal")
-          doc.setFontSize(9)
-          const insightText = `• ${insight.title}: ${insight.description}`
-          const insightLines = doc.splitTextToSize(insightText, 255)
-          doc.text(insightLines, 18, yPos)
-          yPos += insightLines.length * 5 + 2
-        })
-      }
-      
-      yPos += 3
-      
-      if (liaAnalysis.recommendations.length > 0) {
-        doc.setFont("helvetica", "bold")
-        doc.setFontSize(10)
-        doc.text("Recomendações:", 14, yPos)
-        yPos += 6
-        
-        liaAnalysis.recommendations.forEach(rec => {
-          doc.setFont("helvetica", "normal")
-          doc.setFontSize(9)
-          const recLines = doc.splitTextToSize(`• ${rec}`, 255)
-          doc.text(recLines, 18, yPos)
-          yPos += recLines.length * 5 + 2
-        })
-      }
-    }
-    
-    yPos += 10
-    
-    if (yPos > 150) {
-      doc.addPage()
-      yPos = 20
-    }
-    
-    doc.setFont("helvetica", "bold")
-    doc.setFontSize(12)
-    doc.setTextColor(17, 24, 39)
-    doc.text("Tabela Comparativa", 14, yPos)
-    yPos += 8
-    
-    const tableHeaders = ["Métrica", ...jobs.map(j => j.title.substring(0, 25))]
-    const tableData = [
-      ["Candidatos", ...jobs.map(j => (j.candidates_count ?? "-").toString())],
-      ["Aprovados", ...jobs.map(j => (j.approved_count ?? "-").toString())],
-      ["Em Triagem", ...jobs.map(j => (j.screening_count ?? "-").toString())],
-      ["Performance", ...jobs.map(j => j.performance_score ? `${j.performance_score}%` : "-")],
-      ["Local", ...jobs.map(j => j.location || "-")],
-      ["Modelo", ...jobs.map(j => j.work_model || "-")],
-    ]
-    
-    const colWidth = Math.min(70, 260 / (jobs.length + 1))
-    
-    doc.setFont("helvetica", "bold")
-    doc.setFontSize(8)
-    doc.setFillColor(249, 250, 251)
-    doc.rect(14, yPos - 3, colWidth * tableHeaders.length, 8, "F")
-    
-    tableHeaders.forEach((header, idx) => {
-      doc.text(header.substring(0, 15), 14 + idx * colWidth + 2, yPos + 2)
-    })
-    yPos += 10
-    
-    doc.setFont("helvetica", "normal")
-    tableData.forEach(row => {
-      row.forEach((cell, idx) => {
-        doc.text(cell.substring(0, 20), 14 + idx * colWidth + 2, yPos)
-      })
-      yPos += 6
-    })
-    
-    doc.setFontSize(8)
-    doc.setTextColor(156, 163, 175)
-    doc.text("WedoTalent - Plataforma LIA | Relatório gerado automaticamente", 14, 200)
-    
-    return doc.output("blob")
-  }
-
-  const handleShare = async () => {
-    setIsExporting(true)
-    try {
-      const pdfBlob = await generatePDFBlob()
-      const fileName = `comparativo-vagas-${new Date().toISOString().split("T")[0]}.pdf`
-      const file = new File([pdfBlob], fileName, { type: "application/pdf" })
-      
-      const shareData = {
-        title: "Comparativo de Vagas - WedoTalent",
-        text: `Comparativo de ${jobs.length} vagas`,
-        files: [file],
-      }
-
-      if (navigator.share && navigator.canShare(shareData)) {
-        await navigator.share(shareData)
-        toast.success("PDF compartilhado", { description: "Relatório enviado com sucesso." })
-      } else {
-        const url = URL.createObjectURL(pdfBlob)
-        const a = document.createElement("a")
-        a.href = url
-        a.download = fileName
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-        toast.success("PDF baixado", { description: "Compartilhamento não suportado. Arquivo baixado." })
-      }
-    } catch (error) {
-      if ((error as Error).name !== "AbortError") {
-        toast.error("Erro", { description: "Não foi possível compartilhar o PDF." })
-      }
-    } finally {
-      setIsExporting(false)
-    }
-  }
+  const {
+    selectedDimensions,
+    toggleDimension,
+    isExporting,
+    formatSalaryRange,
+    getScoreColor,
+    liaAnalysis,
+    handleExportPDF,
+    handleShare,
+  } = useJobCompare(jobs)
 
   if (!isOpen) return null
 
@@ -519,7 +79,6 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         className="max-w-4xl max-h-[90vh] overflow-y-auto bg-lia-bg-primary border border-lia-border-subtle rounded-md"
-       
       >
         <DialogHeader className="border-b border-lia-border-subtle pb-3">
           <div className="flex items-center justify-between">
@@ -620,225 +179,12 @@ const [selectedDimensions, setSelectedDimensions] = useState<Set<ComparisonDimen
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-xs">
-                <thead>
-                  <tr className="bg-lia-bg-secondary">
-                    <th className="text-left font-semibold text-lia-text-secondary uppercase tracking-wide p-2.5 border border-lia-border-subtle w-[100px]">
-                      Métrica
-                    </th>
-                    {jobs.map((job) => (
-                      <th
-                        key={job.id}
-                        className="text-left font-semibold text-lia-text-primary p-2.5 border border-lia-border-subtle min-w-[180px]"
-                      >
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            {job.code && (
-                              <span className="text-micro text-lia-text-secondary bg-lia-bg-tertiary px-1.5 py-0.5 rounded-full font-medium">
-                                {job.code}
-                              </span>
-                            )}
-                            <span className="text-lia-text-primary text-xs font-semibold">
-                              {job.title}
-                            </span>
-                          </div>
-                          {job.department && (
-                            <span className="text-micro font-normal text-lia-text-tertiary">{job.department}</span>
-                          )}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="hover:bg-lia-interactive-hover">
-                    <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
-                      <div className="flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                        Candidatos
-                      </div>
-                    </td>
-                    {jobs.map((job) => (
-                      <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle font-medium text-base-ui">
-                        {job.candidates_count ?? "-"}
-                      </td>
-                    ))}
-                  </tr>
-
-                  <tr className="hover:bg-lia-interactive-hover">
-                    <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle className="w-3.5 h-3.5 text-status-success" />
-                        Aprovados
-                      </div>
-                    </td>
-                    {jobs.map((job) => (
-                      <td key={job.id} className="text-lia-text-secondary p-2.5 border border-lia-border-subtle font-semibold text-base-ui">
-                        {job.approved_count ?? "-"}
-                      </td>
-                    ))}
-                  </tr>
-
-                  <tr className="hover:bg-lia-interactive-hover">
-                    <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
-                        Triagem
-                      </div>
-                    </td>
-                    {jobs.map((job) => (
-                      <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle font-medium text-base-ui">
-                        {job.screening_count ?? "-"}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {selectedDimensions.has("salary_range") && (
-                    <tr className="hover:bg-lia-interactive-hover">
-                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
-                        <div className="flex items-center gap-1.5">
-                          <DollarSign className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                          Salário
-                        </div>
-                      </td>
-                      {jobs.map((job) => (
-                        <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle text-xs">
-                          {formatSalaryRange(job.salary_range)}
-                        </td>
-                      ))}
-                    </tr>
-                  )}
-
-                  {selectedDimensions.has("location") && (
-                    <tr className="hover:bg-lia-interactive-hover">
-                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                          Local
-                        </div>
-                      </td>
-                      {jobs.map((job) => (
-                        <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle text-xs">
-                          {job.location || "-"} {job.work_model && `(${job.work_model})`}
-                        </td>
-                      ))}
-                    </tr>
-                  )}
-
-                  {selectedDimensions.has("performance") && (
-                    <tr className="hover:bg-lia-interactive-hover bg-lia-bg-secondary">
-                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle">
-                        <div className="flex items-center gap-1.5">
-                          <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-                          Performance
-                        </div>
-                      </td>
-                      {jobs.map((job) => (
-                        <td key={job.id} className="p-2.5 border border-lia-border-subtle">
-                          <span className={`text-base-ui font-semibold ${getScoreColor(job.performance_score)}`}>
-                            {job.performance_score ? `${job.performance_score}%` : "-"}
-                          </span>
-                        </td>
-                      ))}
-                    </tr>
-                  )}
-
-                  {selectedDimensions.has("technical_requirements") && (
-                    <tr className="hover:bg-lia-interactive-hover">
-                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
-                        <div className="flex items-center gap-1.5">
-                          <Target className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                          Requisitos
-                        </div>
-                      </td>
-                      {jobs.map((job) => (
-                        <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
-                          {job.technical_requirements && job.technical_requirements.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {job.technical_requirements.slice(0, 4).map((req, idx) => (
-                                <span key={`req-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
-                                  {(typeof req === "string" ? req : (req as Record<string, unknown>).name as string || (req as Record<string, unknown>).skill as string || "-")}
-                                </span>
-                              ))}
-                              {job.technical_requirements.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-tertiary">
-                                  +{job.technical_requirements.length - 4}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-lia-text-disabled">-</span>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  )}
-
-                  {selectedDimensions.has("competencies") && (
-                    <tr className="hover:bg-lia-interactive-hover">
-                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
-                        <div className="flex items-center gap-1.5">
-                          <Award className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                          Competências
-                        </div>
-                      </td>
-                      {jobs.map((job) => (
-                        <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
-                          {job.behavioral_competencies && job.behavioral_competencies.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {job.behavioral_competencies.slice(0, 4).map((comp, idx) => (
-                                <span key={`comp-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
-                                  {(typeof comp === "string" ? comp : (comp as Record<string, unknown>).name as string || (comp as Record<string, unknown>).competency as string || "-")}
-                                </span>
-                              ))}
-                              {job.behavioral_competencies.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-tertiary">
-                                  +{job.behavioral_competencies.length - 4}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-lia-text-disabled">-</span>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  )}
-
-                  {selectedDimensions.has("benefits") && (
-                    <tr className="hover:bg-lia-interactive-hover">
-                      <td className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
-                        <div className="flex items-center gap-1.5">
-                          <Gift className="w-3.5 h-3.5 text-lia-text-tertiary" />
-                          Benefícios
-                        </div>
-                      </td>
-                      {jobs.map((job) => (
-                        <td key={job.id} className="text-lia-text-primary p-2.5 border border-lia-border-subtle align-top">
-                          {job.benefits && job.benefits.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {job.benefits.slice(0, 4).map((benefit, idx) => (
-                                <span key={`ben-${idx}`} className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
-                                  {benefit}
-                                </span>
-                              ))}
-                              {job.benefits.length > 4 && (
-                                <span className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-tertiary">
-                                  +{job.benefits.length - 4}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-lia-text-disabled">-</span>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <JobCompareTable
+              jobs={jobs}
+              selectedDimensions={selectedDimensions}
+              formatSalaryRange={formatSalaryRange}
+              getScoreColor={getScoreColor}
+            />
           </div>
 
           {jobs.length >= 2 && (

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
+import { registerStoreReset } from './auth-store'
 
 export interface NavigateToCandidateData {
   candidateId?: string
@@ -44,6 +45,10 @@ interface NavigationState {
   candidatesFilterData: CandidatesFilterData | null
   jobsNavState: JobsNavState | null
   talentFunnelNavState: TalentFunnelNavState | null
+  liaSelectedCommand: string | null
+  liaChatPrefill: string | null
+  liaFilterSuggestion: string | null
+  liaFilterPage: string | null
 }
 
 interface NavigationActions {
@@ -60,6 +65,11 @@ interface NavigationActions {
   saveTalentFunnelState: (tab: 'search' | 'favorites' | 'lists', searchQuery?: string) => void
   getJobsNavState: () => JobsNavState | null
   getTalentFunnelNavState: () => TalentFunnelNavState | null
+  setLiaSelectedCommand: (command: string | null) => void
+  setLiaChatPrefill: (text: string | null) => void
+  setLiaFilterSuggestion: (suggestion: string | null) => void
+  setLiaFilterPage: (page: string | null) => void
+  resetStore: () => void
 }
 
 export type NavigationStore = NavigationState & NavigationActions
@@ -76,6 +86,10 @@ export const useNavigationStore = create<NavigationStore>()(
         candidatesFilterData: null,
         jobsNavState: null,
         talentFunnelNavState: null,
+        liaSelectedCommand: null,
+        liaChatPrefill: null,
+        liaFilterSuggestion: null,
+        liaFilterPage: null,
 
         setNavigateToCandidate: (data) =>
           set({ navigateToCandidate: data }, false, 'navigation/setNavigateToCandidate'),
@@ -139,6 +153,32 @@ export const useNavigationStore = create<NavigationStore>()(
           if (Date.now() - talentFunnelNavState.timestamp > NAV_TTL_MS) return null
           return talentFunnelNavState
         },
+
+        setLiaSelectedCommand: (command) =>
+          set({ liaSelectedCommand: command }, false, 'navigation/setLiaSelectedCommand'),
+
+        setLiaChatPrefill: (text) =>
+          set({ liaChatPrefill: text }, false, 'navigation/setLiaChatPrefill'),
+
+        setLiaFilterSuggestion: (suggestion) =>
+          set({ liaFilterSuggestion: suggestion }, false, 'navigation/setLiaFilterSuggestion'),
+
+        setLiaFilterPage: (page) =>
+          set({ liaFilterPage: page }, false, 'navigation/setLiaFilterPage'),
+
+        resetStore: () =>
+          set({
+            navigateToCandidate: null,
+            liaPrompt: null,
+            navigateToRecentCandidate: null,
+            candidatesFilterData: null,
+            jobsNavState: null,
+            talentFunnelNavState: null,
+            liaSelectedCommand: null,
+            liaChatPrefill: null,
+            liaFilterSuggestion: null,
+            liaFilterPage: null,
+          }, false, 'navigation/reset'),
       }),
       {
         name: 'lia-navigation-store',
@@ -149,9 +189,15 @@ export const useNavigationStore = create<NavigationStore>()(
           candidatesFilterData: state.candidatesFilterData,
           jobsNavState: state.jobsNavState,
           talentFunnelNavState: state.talentFunnelNavState,
+          liaSelectedCommand: state.liaSelectedCommand,
+          liaChatPrefill: state.liaChatPrefill,
+          liaFilterSuggestion: state.liaFilterSuggestion,
+          liaFilterPage: state.liaFilterPage,
         }),
       }
     ),
     { name: 'NavigationStore' }
   )
 )
+
+registerStoreReset(() => useNavigationStore.getState().resetStore())

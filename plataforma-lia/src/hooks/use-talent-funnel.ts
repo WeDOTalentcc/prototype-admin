@@ -3,52 +3,16 @@
 import { useState, useEffect, useCallback } from "react"
 import { liaApi } from "@/services/lia-api"
 import type { CandidateLocal } from "@/services/lia-api"
+import { useTalentFunnelStore } from "@/stores/talent-funnel-store"
+import type {
+  SearchMode,
+  SearchSource,
+  SearchHistoryItem,
+  SavedSearch,
+  FavoriteCandidate,
+} from "@/stores/talent-funnel-store"
 
-export type SearchMode = 'natural' | 'similar' | 'jd' | 'boolean' | 'archetypes'
-export type SearchSource = 'local' | 'global' | 'hybrid'
-
-export interface SearchHistoryItem {
-  id: string
-  query: string
-  mode: SearchMode
-  source: SearchSource
-  timestamp: string
-  resultsCount?: number
-  entities?: Record<string, unknown>
-  metadata?: Record<string, unknown>
-}
-
-export interface SavedSearch {
-  id: string
-  name: string
-  description?: string
-  query: string
-  mode: SearchMode
-  source: SearchSource
-  filters?: Record<string, unknown>
-  entities?: Record<string, unknown>
-  metadata?: Record<string, unknown>
-  isFavorite: boolean
-  usageCount: number
-  lastUsed?: string
-  avgResults?: number
-  createdAt: string
-  updatedAt: string
-}
-
-export interface FavoriteCandidate {
-  candidateId: string
-  note?: string
-  addedAt: string
-  isPinned: boolean
-}
-
-const STORAGE_KEYS = {
-  HISTORY: 'lia-search-history',
-  SAVED_SEARCHES: 'lia-saved-searches',
-  FAVORITES: 'lia-favorite-candidates',
-  PINNED: 'lia-pinned-candidates'
-}
+export type { SearchMode, SearchSource, SearchHistoryItem, SavedSearch, FavoriteCandidate }
 
 const MAX_HISTORY_ITEMS = 100
 const MAX_SAVED_SEARCHES = 100
@@ -91,7 +55,7 @@ async function toggleFavoriteAPI(candidateId: string, note?: string, isPinned?: 
       body: JSON.stringify({ note, is_pinned: isPinned || false })
     })
     return response.ok
-  } catch (error) {
+  } catch {
     return false
   }
 }
@@ -104,12 +68,13 @@ async function updateFavoriteAPI(candidateId: string, note?: string, isPinned?: 
       body: JSON.stringify({ note, is_pinned: isPinned })
     })
     return response.ok
-  } catch (error) {
+  } catch {
     return false
   }
 }
 
 export function useTalentFunnel() {
+  const store = useTalentFunnelStore()
   const [history, setHistory] = useState<SearchHistoryItem[]>([])
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
   const [favorites, setFavorites] = useState<Map<string, FavoriteCandidate>>(new Map())
@@ -123,20 +88,18 @@ export function useTalentFunnel() {
 
   const loadFromStorage = async () => {
     try {
-      const historyData = localStorage.getItem(STORAGE_KEYS.HISTORY)
-      if (historyData) {
-        const parsed = JSON.parse(historyData) as SearchHistoryItem[]
-        const normalized = parsed.map(item => ({
+      const storedHistory = store.history
+      if (storedHistory.length > 0) {
+        const normalized = storedHistory.map(item => ({
           ...item,
           source: normalizeSearchSource(item.source)
         }))
         setHistory(normalized)
       }
 
-      const savedSearchesData = localStorage.getItem(STORAGE_KEYS.SAVED_SEARCHES)
-      if (savedSearchesData) {
-        const parsed = JSON.parse(savedSearchesData) as SavedSearch[]
-        const normalized = parsed.map(search => ({
+      const storedSearches = store.savedSearches
+      if (storedSearches.length > 0) {
+        const normalized = storedSearches.map(search => ({
           ...search,
           source: normalizeSearchSource(search.source)
         }))
@@ -146,20 +109,19 @@ export function useTalentFunnel() {
       const apiFavorites = await fetchFavoritesFromAPI()
       if (apiFavorites.size > 0) {
         setFavorites(apiFavorites)
-        localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(apiFavorites)))
+        store.setFavoritesMap(Object.fromEntries(apiFavorites))
         fetchFavoriteCandidatesFullData(Array.from(apiFavorites.keys()))
       } else {
-        const favoritesData = localStorage.getItem(STORAGE_KEYS.FAVORITES)
-        if (favoritesData) {
-          const parsed = JSON.parse(favoritesData)
-          const favMap = new Map<string, FavoriteCandidate>(Object.entries(parsed))
+        const storedFavorites = store.favoritesMap
+        if (Object.keys(storedFavorites).length > 0) {
+          const favMap = new Map<string, FavoriteCandidate>(Object.entries(storedFavorites))
           setFavorites(favMap)
           if (favMap.size > 0) {
             fetchFavoriteCandidatesFullData(Array.from(favMap.keys()))
           }
         }
       }
-    } catch (error) {
+    } catch {
     } finally {
       setIsLoading(false)
     }
@@ -185,7 +147,7 @@ export function useTalentFunnel() {
       })
       const items = result.candidates || (result as unknown as Record<string, unknown>).items as typeof result.candidates || []
       setFavoriteCandidatesData(items)
-    } catch (error) {
+    } catch {
     } finally {
       setFavoritesDataLoading(false)
     }
@@ -200,25 +162,25 @@ export function useTalentFunnel() {
 
     setHistory(prev => {
       const updated = [newItem, ...prev].slice(0, MAX_HISTORY_ITEMS)
-      localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updated))
+      store.setHistory(updated)
       return updated
     })
 
     return newItem
-  }, [])
+  }, [store])
 
   const removeFromHistory = useCallback((id: string) => {
     setHistory(prev => {
       const updated = prev.filter(item => item.id !== id)
-      localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(updated))
+      store.setHistory(updated)
       return updated
     })
-  }, [])
+  }, [store])
 
   const clearHistory = useCallback(() => {
     setHistory([])
-    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify([]))
-  }, [])
+    store.setHistory([])
+  }, [store])
 
   const addSavedSearch = useCallback((search: Omit<SavedSearch, 'id' | 'createdAt' | 'updatedAt' | 'usageCount' | 'isFavorite'>) => {
     const now = new Date().toISOString()
@@ -233,12 +195,12 @@ export function useTalentFunnel() {
 
     setSavedSearches(prev => {
       const updated = [newSearch, ...prev].slice(0, MAX_SAVED_SEARCHES)
-      localStorage.setItem(STORAGE_KEYS.SAVED_SEARCHES, JSON.stringify(updated))
+      store.setSavedSearches(updated)
       return updated
     })
 
     return newSearch
-  }, [])
+  }, [store])
 
   const updateSavedSearch = useCallback((id: string, updates: Partial<SavedSearch>) => {
     setSavedSearches(prev => {
@@ -247,18 +209,18 @@ export function useTalentFunnel() {
           ? { ...search, ...updates, updatedAt: new Date().toISOString() }
           : search
       )
-      localStorage.setItem(STORAGE_KEYS.SAVED_SEARCHES, JSON.stringify(updated))
+      store.setSavedSearches(updated)
       return updated
     })
-  }, [])
+  }, [store])
 
   const removeSavedSearch = useCallback((id: string) => {
     setSavedSearches(prev => {
       const updated = prev.filter(search => search.id !== id)
-      localStorage.setItem(STORAGE_KEYS.SAVED_SEARCHES, JSON.stringify(updated))
+      store.setSavedSearches(updated)
       return updated
     })
-  }, [])
+  }, [store])
 
   const toggleSavedSearchFavorite = useCallback((id: string) => {
     setSavedSearches(prev => {
@@ -267,10 +229,10 @@ export function useTalentFunnel() {
           ? { ...search, isFavorite: !search.isFavorite, updatedAt: new Date().toISOString() }
           : search
       )
-      localStorage.setItem(STORAGE_KEYS.SAVED_SEARCHES, JSON.stringify(updated))
+      store.setSavedSearches(updated)
       return updated
     })
-  }, [])
+  }, [store])
 
   const incrementSavedSearchUsage = useCallback((id: string, resultsCount?: number) => {
     setSavedSearches(prev => {
@@ -291,10 +253,10 @@ export function useTalentFunnel() {
         }
         return search
       })
-      localStorage.setItem(STORAGE_KEYS.SAVED_SEARCHES, JSON.stringify(updated))
+      store.setSavedSearches(updated)
       return updated
     })
-  }, [])
+  }, [store])
 
   const saveHistoryAsSearch = useCallback((historyItem: SearchHistoryItem, name: string, description?: string) => {
     return addSavedSearch({
@@ -319,21 +281,21 @@ export function useTalentFunnel() {
     setFavorites(prev => {
       const updated = new Map(prev)
       updated.set(candidateId, favorite)
-      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
+      store.setFavoritesMap(Object.fromEntries(updated))
       return updated
     })
 
     return favorite
-  }, [])
+  }, [store])
 
   const removeFavoriteCandidate = useCallback((candidateId: string) => {
     setFavorites(prev => {
       const updated = new Map(prev)
       updated.delete(candidateId)
-      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
+      store.setFavoritesMap(Object.fromEntries(updated))
       return updated
     })
-  }, [])
+  }, [store])
 
   const toggleFavoriteCandidate = useCallback((candidateId: string, note?: string) => {
     setFavorites(prev => {
@@ -351,13 +313,13 @@ export function useTalentFunnel() {
         })
         fetchFavoriteCandidatesFullData([...Array.from(updated.keys())])
       }
-      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
+      store.setFavoritesMap(Object.fromEntries(updated))
       return updated
     })
     
-    toggleFavoriteAPI(candidateId, note).catch(err => {
+    toggleFavoriteAPI(candidateId, note).catch(() => {
     })
-  }, [])
+  }, [store])
 
   const togglePinnedCandidate = useCallback((candidateId: string) => {
     setFavorites(prev => {
@@ -373,19 +335,19 @@ export function useTalentFunnel() {
           isPinned: true
         })
       }
-      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
+      store.setFavoritesMap(Object.fromEntries(updated))
       
       if (existing) {
-        updateFavoriteAPI(candidateId, existing.note, newIsPinned).catch(err => {
+        updateFavoriteAPI(candidateId, existing.note, newIsPinned).catch(() => {
         })
       } else {
-        toggleFavoriteAPI(candidateId, undefined, true).catch(err => {
+        toggleFavoriteAPI(candidateId, undefined, true).catch(() => {
         })
       }
       
       return updated
     })
-  }, [])
+  }, [store])
 
   const updateFavoriteNote = useCallback((candidateId: string, note: string) => {
     setFavorites(prev => {
@@ -393,14 +355,14 @@ export function useTalentFunnel() {
       const existing = updated.get(candidateId)
       if (existing) {
         updated.set(candidateId, { ...existing, note })
-        localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(Object.fromEntries(updated)))
+        store.setFavoritesMap(Object.fromEntries(updated))
         
-        updateFavoriteAPI(candidateId, note, existing.isPinned).catch(err => {
+        updateFavoriteAPI(candidateId, note, existing.isPinned).catch(() => {
         })
       }
       return updated
     })
-  }, [])
+  }, [store])
 
   const isFavorite = useCallback((candidateId: string) => {
     return favorites.has(candidateId)
