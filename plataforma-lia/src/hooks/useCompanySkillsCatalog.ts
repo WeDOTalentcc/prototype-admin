@@ -77,16 +77,20 @@ export function useCompanySkillsCatalog(companyId: string = 'default'): UseCompa
 
       const data = await response.json()
       
-      // Transform backend response to frontend expected format
-      // Backend returns: skills_by_category, competencies, total_skills, total_competencies
-      // Frontend expects: technical_skills.{language, framework, database, tool, infrastructure, general}
-      // Helper to generate unique stable IDs with category prefix to avoid collisions
-      const mapSkillsFromCategory = (skills: Record<string, unknown>[], category: string) =>
-        (skills || []).map((s: Record<string, unknown>, i: number) => ({
-          // @ts-ignore // TODO: fix type
-          // @ts-ignore // TODO: fix type
-          id: s.id || `${category}-skill-${s.name?.toLowerCase().replace(/\s+/g, '-') || i}`,
-          name: s.name,
+      interface RawSkill {
+        id?: string
+        name?: string
+        subcategory?: string
+        default_weight?: number
+        default_level?: string
+        source?: string
+        usage_count?: number
+      }
+
+      const mapSkillsFromCategory = (skills: RawSkill[] | undefined, category: string): Skill[] =>
+        (skills || []).map((s, i) => ({
+          id: s.id || `${category}-skill-${(s.name || '').toLowerCase().replace(/\s+/g, '-') || i}`,
+          name: s.name || '',
           category,
           subcategory: s.subcategory,
           default_weight: s.default_weight || 3,
@@ -95,24 +99,16 @@ export function useCompanySkillsCatalog(companyId: string = 'default'): UseCompa
           usage_count: s.usage_count || 0,
         }))
 
+      const skillsByCategory = data.skills_by_category as Record<string, RawSkill[]> | undefined
+
       const transformedCatalog: CompanySkillsCatalog = {
-        // @ts-ignore // TODO: fix type
         technical_skills: {
-          // @ts-ignore // TODO: fix type
-          // @ts-ignore // TODO: fix type
-          language: mapSkillsFromCategory(data.skills_by_category?.language, 'language'),
-          // @ts-ignore // TODO: fix type
-          // @ts-ignore // TODO: fix type
-          framework: mapSkillsFromCategory(data.skills_by_category?.framework, 'framework'),
-          // @ts-ignore // TODO: fix type
-          // @ts-ignore // TODO: fix type
-          database: mapSkillsFromCategory(data.skills_by_category?.database, 'database'),
-          // @ts-ignore // TODO: fix type
-          tool: mapSkillsFromCategory(data.skills_by_category?.tool, 'tool'),
-          // @ts-ignore // TODO: fix type
-          infrastructure: mapSkillsFromCategory(data.skills_by_category?.infrastructure, 'infrastructure'),
-          // @ts-ignore // TODO: fix type
-          general: mapSkillsFromCategory(data.skills_by_category?.general, 'general'),
+          language: mapSkillsFromCategory(skillsByCategory?.language, 'language'),
+          framework: mapSkillsFromCategory(skillsByCategory?.framework, 'framework'),
+          database: mapSkillsFromCategory(skillsByCategory?.database, 'database'),
+          tool: mapSkillsFromCategory(skillsByCategory?.tool, 'tool'),
+          infrastructure: mapSkillsFromCategory(skillsByCategory?.infrastructure, 'infrastructure'),
+          general: mapSkillsFromCategory(skillsByCategory?.general, 'general'),
         },
         behavioral_competencies: (data.competencies || []).map((c: Record<string, unknown>) => ({
           id: c.id || c.name,

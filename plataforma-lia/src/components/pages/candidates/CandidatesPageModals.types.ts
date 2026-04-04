@@ -1,6 +1,72 @@
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { CommunicationType } from "@/components/modals/unified-communication-modal"
 import type { ParsedCVResponse } from "@/components/cv"
+export interface ModalPearchSearchOptions {
+  searchType?: string
+  limit?: number
+  requireEmails: boolean
+  requirePhoneNumbers: boolean
+  showEmails?: boolean
+  showPhoneNumbers?: boolean
+  highFreshness?: boolean
+}
+
+export interface ModalCreditEstimate {
+  query: string
+  pearch_type: string
+  limit: number
+  base_cost: number
+  insights_cost: number
+  freshness_cost: number
+  email_cost: number
+  phone_cost: number
+  cost_per_candidate: number
+  total_estimated: number
+}
+
+export interface ModalArchetype {
+  id: string
+  name: string
+  description?: string
+  emoji?: string
+  query?: string
+  filters?: Record<string, unknown>
+  tags?: string[]
+  industry?: string
+  createdAt?: Date
+  isDefault?: boolean
+  usage_count?: number
+}
+
+export interface ModalAISuggestion {
+  name: string
+  description: string
+  query: string
+  filters: {
+    job_title?: string
+    seniority?: string
+    skills?: string[]
+    location?: string
+  }
+}
+
+export interface ModalUnsavedCandidate {
+  id: string
+  name: string
+  email?: string | null
+  phone?: string | null
+  best_personal_email?: string | null
+  best_business_email?: string | null
+  personal_emails?: string[]
+  business_emails?: string[]
+}
+
+export interface ModalChatMessage {
+  id?: string
+  role?: string
+  content?: string
+  [key: string]: unknown
+}
 
 export interface CandidatesPageModalsProps {
   // Contact Modal
@@ -105,9 +171,9 @@ export interface CandidatesPageModalsProps {
   // Credit Confirmation Modal
   showCreditConfirmation: boolean
   setShowCreditConfirmation: (v: boolean) => void
-  creditEstimate: Record<string, unknown> | null
-  pearchSearchOptions: Record<string, unknown>
-  setPearchSearchOptions: (v: Record<string, unknown>) => void
+  creditEstimate: ModalCreditEstimate | null
+  pearchSearchOptions: ModalPearchSearchOptions
+  setPearchSearchOptions: (v: ModalPearchSearchOptions) => void
   setPendingSearchRequest: (v: Record<string, unknown> | null) => void
   handleConfirmPearchSearch: () => void
 
@@ -122,15 +188,15 @@ export interface CandidatesPageModalsProps {
   // Source Change Confirm Modal
   showSourceChangeModal: boolean
   setShowSourceChangeModal: (v: boolean) => void
-  pendingSourceChange: { source: string; label: string } | null
-  setPendingSourceChange: (v: { source: string; label: string } | null) => void
+  pendingSourceChange: 'hybrid' | 'global' | null
+  setPendingSourceChange: (v: 'hybrid' | 'global' | null) => void
   confirmSourceChange: () => void
 
   // Contact Filter Confirm Modal
   showContactFilterModal: boolean
   setShowContactFilterModal: (v: boolean) => void
-  pendingContactFilter: { filter: string; label: string } | null
-  setPendingContactFilter: (v: { filter: string; label: string } | null) => void
+  pendingContactFilter: 'email' | 'phone' | null
+  setPendingContactFilter: (v: 'email' | 'phone' | null) => void
   confirmContactFilterChange: () => void
 
   // Save As Archetype Modal
@@ -143,8 +209,8 @@ export interface CandidatesPageModalsProps {
   setArchetypeCreationStep: (v: string) => void
   newArchetypeData: Record<string, unknown>
   setNewArchetypeData: (v: Record<string, unknown>) => void
-  setUserArchetypes: (fn: (prev: Record<string, unknown>[]) => Record<string, unknown>[]) => void
-  setChatMessages: (fn: (prev: Record<string, unknown>[]) => Record<string, unknown>[]) => void
+  setUserArchetypes: (fn: (prev: ModalArchetype[]) => ModalArchetype[]) => void
+  setChatMessages: (fn: (prev: ModalChatMessage[]) => ModalChatMessage[]) => void
 
   // Advanced Filters Modal
   showAdvancedSearch: boolean
@@ -191,7 +257,7 @@ export interface CandidatesPageModalsProps {
   setPendingTabChange: (v: unknown) => void
   handleSaveAllAndExit: () => void
   handleExitWithoutSaving: () => void
-  unsavedPearchCandidates: Record<string, unknown>[]
+  unsavedPearchCandidates: ModalUnsavedCandidate[]
   isSavingToBase: boolean
 
   // Edit Query Modal
@@ -204,21 +270,21 @@ export interface CandidatesPageModalsProps {
   setSearchTerm: (v: string) => void
   setLastSearchQuery: (v: string) => void
   setLastSearchMode: (v: string) => void
-  setLastSearchEntities: (v: Record<string, unknown>) => void
-  setLastSearchMetadata: (v: Record<string, unknown>) => void
+  setLastSearchEntities: (v: Record<string, unknown> | null) => void
+  setLastSearchMetadata: (v: Record<string, unknown> | undefined) => void
   executeSearch: (...args: unknown[]) => Promise<void>
 
   // Preview Suggestion Modal
-  previewSuggestion: Record<string, unknown> | null
-  setPreviewSuggestion: (v: Record<string, unknown> | null) => void
-  previewingUserArchetype: Record<string, unknown> | null
-  setPreviewingUserArchetype: (v: Record<string, unknown> | null) => void
-  buildFiltersFromTags: (...args: unknown[]) => Record<string, unknown>
+  previewSuggestion: ModalAISuggestion | null
+  setPreviewSuggestion: (v: ModalAISuggestion | null) => void
+  previewingUserArchetype: ModalArchetype | null
+  setPreviewingUserArchetype: (v: ModalArchetype | null) => void
+  buildFiltersFromTags: (tags: string[]) => Record<string, string[]>
   setLiaPromptValue: (v: string) => void
   setActiveSearchTab: (v: string) => void
 
   // Delete Archetype Modal
-  archetypeToDelete: Record<string, unknown> | null
-  setArchetypeToDelete: (v: Record<string, unknown> | null) => void
+  archetypeToDelete: ModalArchetype | null
+  setArchetypeToDelete: (v: ModalArchetype | null) => void
 }
 

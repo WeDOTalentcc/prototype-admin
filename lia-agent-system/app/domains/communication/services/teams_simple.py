@@ -66,7 +66,7 @@ class SimpleTeamsBot:
             
             return self._access_token
     
-    async def process_activity(self, activity: Dict[str, Any]) -> Optional[str]:
+    async def process_activity(self, activity: Dict[str, Any]) -> Optional[Any]:
         """
         Process incoming activity from Teams.
         
@@ -74,7 +74,8 @@ class SimpleTeamsBot:
             activity: Activity payload from Teams
             
         Returns:
-            Response message or None
+            Response dict ({"type": "card", "card": ...} or {"type": "text", "text": ...})
+            or str for conversationUpdate, or None
         """
         activity_type = activity.get("type", "")
         
@@ -89,16 +90,27 @@ class SimpleTeamsBot:
         
         return None
     
-    async def _handle_message(self, activity: Dict[str, Any]) -> str:
-        """Handle incoming message from user."""
-        text = activity.get("text", "")
-        from_user = activity.get("from", {})
-        
-        logger.info(f"Received message from {from_user.get('name')}: {text}")
-        
-        # TODO: Integrate with LIA conversation agent
-        # For now, return acknowledgment
-        return f"Recebi sua mensagem: '{text}'. Integrando com LIA em breve!"
+    async def _handle_message(self, activity: Dict[str, Any]) -> Dict[str, Any]:
+        """Handle incoming message — routes through full LIA orchestrator."""
+        try:
+            from app.domains.communication.services.teams_orchestrator_bridge import teams_orchestrator_bridge
+            from app.domains.communication.services.teams_card_renderer import teams_card_renderer
+
+            text = activity.get("text", "").strip()
+            from_user = activity.get("from", {})
+            logger.info(f"[Teams] Message from {from_user.get('name')}: {text[:80]}")
+
+            result = await teams_orchestrator_bridge.process_message(activity)
+            card = teams_card_renderer.render(result, source_text=text)
+
+            if card:
+                return {"type": "card", "card": card}
+            else:
+                message = result.get("message") or result.get("response") or result.get("content", "Processando...")
+                return {"type": "text", "text": message}
+        except Exception as e:
+            logger.error(f"[Teams] _handle_message error: {e}", exc_info=True)
+            return {"type": "text", "text": "Ocorreu um erro ao processar sua mensagem. Tente novamente."}
     
     async def _handle_conversation_update(self, activity: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Handle conversation update (bot added, user joined, etc)."""
@@ -113,13 +125,13 @@ class SimpleTeamsBot:
                 name = member.get("name", "")
                 welcome_messages.append({
                     "text": (
-                        f"Olá {name}! 👋\\n\\n"
-                        "Sou a **LIA**, assistente de recrutamento da WedoTalent.\\n\\n"
-                        "Posso te ajudar a:\\n"
-                        "- Criar vagas\\n"
-                        "- Buscar candidatos\\n"
-                        "- Agendar entrevistas\\n"
-                        "- Organizar sua agenda de recrutamento\\n\\n"
+                        f"Olá {name}! 👋\n\n"
+                        "Sou a **LIA**, assistente de recrutamento da WedoTalent.\n\n"
+                        "Posso te ajudar a:\n"
+                        "- Criar vagas\n"
+                        "- Buscar candidatos\n"
+                        "- Agendar entrevistas\n"
+                        "- Organizar sua agenda de recrutamento\n\n"
                         "Como posso te ajudar hoje?"
                     ),
                     "user": member
@@ -135,6 +147,17 @@ class SimpleTeamsBot:
         action_data = activity.get("value", {})
         
         logger.info(f"Received invoke action: {action_data}")
+        
+        # If the invoke contains a "message" field, route through orchestrator
+        if isinstance(action_data, dict) and action_data.get("message"):
+            try:
+                from app.domains.communication.services.teams_orchestrator_bridge import teams_orchestrator_bridge
+                fake_activity = dict(activity)
+                fake_activity["text"] = action_data["message"]
+                result = await teams_orchestrator_bridge.process_message(fake_activity)
+                return result.get("message") or "Ação processada."
+            except Exception as e:
+                logger.error(f"[Teams] _handle_invoke orchestrator error: {e}", exc_info=True)
         
         return "Ação recebida! Processando..."
     

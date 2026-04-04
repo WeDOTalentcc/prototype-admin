@@ -190,6 +190,14 @@ export interface Candidate {
   business_emails?: string[]
   company_followers_count?: number
   company_keywords?: string[]
+  summary?: string
+  followers_count?: number
+  connections_count?: number
+  insights?: Record<string, unknown> | null
+  industry?: string
+  company_segment?: string
+  title?: string
+  company?: string
 }
 
 export interface CandidatesPageState {

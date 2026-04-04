@@ -41,7 +41,7 @@ export function useCandidatesQuery(options: UseCandidatesQueryOptions = {}): Use
   const [currentPage, setCurrentPage] = useState(1)
   const [lastQuery, setLastQuery] = useState("")
 
-  const transformCandidate = useCallback((raw: CandidateLocal): Candidate => {    // @ts-ignore // TODO: fix type
+  const transformCandidate = useCallback((raw: CandidateLocal): Candidate => {
     return {
       id: raw.id,
       candidateId: raw.id,
@@ -71,6 +71,9 @@ export function useCandidatesQuery(options: UseCandidatesQueryOptions = {}): Use
       score: raw.lia_score || 0,
       contractType: "CLT",
       linkedin: raw.linkedin_url || "",
+      skills: raw.technical_skills || [],
+      experience: raw.years_of_experience || 0,
+      education: "",
     }
   }, [])
 
@@ -84,28 +87,22 @@ export function useCandidatesQuery(options: UseCandidatesQueryOptions = {}): Use
     
     try {
       const request: SearchRequest = {
-        // @ts-ignore // TODO: fix type
         query,
-        // @ts-ignore // TODO: fix type
-        limit: initialPageSize,
-        offset: 0,
+        local_limit: initialPageSize,
+        pearch_limit: initialPageSize,
         filters: filters as SearchRequest["filters"],
       }
       
-      // @ts-ignore // TODO: fix type
       const response: SearchResponse = await searchCandidatesHybrid(request)
       
-      // @ts-ignore // TODO: fix type
-      const transformedCandidates = response.candidates.map((c) => transformCandidate(c as CandidateLocal))
+      const transformedCandidates = response.candidates.map((c) => transformCandidate(c as unknown as CandidateLocal))
       
-      setCandidates(transformedCandidates)      // @ts-ignore // TODO: fix type
-      setTotalCount(response.total)
+      setCandidates(transformedCandidates)
+      setTotalCount(response.total_count)
       setSearchMetadata({
         query,
-        // @ts-ignore // TODO: fix type
-        totalResults: response.total,
-        // @ts-ignore // TODO: fix type
-        source: response.source || "hybrid",
+        totalResults: response.total_count,
+        source: "hybrid",
         creditsUsed: response.credits_used,
         searchTime: Date.now() - startTime,
       })
@@ -119,29 +116,21 @@ export function useCandidatesQuery(options: UseCandidatesQueryOptions = {}): Use
 
   const searchLocal = useCallback(async (query: string) => {
     setIsLoading(true)
-    // @ts-ignore // TODO: fix type
     setError(null)
     setLastQuery(query)
     
     const startTime = Date.now()
     
-    try {      // @ts-ignore // TODO: fix type
-      const response = await searchLocalCandidates({
-        query,
-        // @ts-ignore // TODO: fix type
-        limit: initialPageSize,
-        offset: 0,
-      })      
-      // @ts-ignore // TODO: fix type
-      const transformedCandidates = response.candidates.map((c) => transformCandidate(c as CandidateLocal))
+    try {
+      const response = await searchLocalCandidates(query, initialPageSize)
+      
+      const transformedCandidates = response.candidates.map((c) => transformCandidate(c as unknown as CandidateLocal))
       
       setCandidates(transformedCandidates)
-      // @ts-ignore // TODO: fix type
-      setTotalCount(response.total)
+      setTotalCount(response.total_count)
       setSearchMetadata({
         query,
-        // @ts-ignore // TODO: fix type
-        totalResults: response.total,
+        totalResults: response.total_count,
         source: "local",
         searchTime: Date.now() - startTime,
       })
@@ -152,35 +141,27 @@ export function useCandidatesQuery(options: UseCandidatesQueryOptions = {}): Use
     }
   }, [initialPageSize, transformCandidate])
 
-  // @ts-ignore // TODO: fix type
   const searchGlobal = useCallback(async (query: string) => {
     setIsLoading(true)
     setError(null)
     setLastQuery(query)
     
-    // @ts-ignore // TODO: fix type
     const startTime = Date.now()
     
     try {
-      // @ts-ignore // TODO: fix type
       const response = await searchCandidatesHybrid({
         query,
-        // @ts-ignore // TODO: fix type
-        limit: initialPageSize,
-        offset: 0,
-        use_global: true,
+        pearch_limit: initialPageSize,
+        search_pearch: true,
       })
       
-      // @ts-ignore // TODO: fix type
-      const transformedCandidates = response.candidates.map((c) => transformCandidate(c as CandidateLocal))
+      const transformedCandidates = response.candidates.map((c) => transformCandidate(c as unknown as CandidateLocal))
       
       setCandidates(transformedCandidates)
-      // @ts-ignore // TODO: fix type
-      setTotalCount(response.total)
+      setTotalCount(response.total_count)
       setSearchMetadata({
         query,
-        // @ts-ignore // TODO: fix type
-        totalResults: response.total,
+        totalResults: response.total_count,
         source: "global",
         creditsUsed: response.credits_used,
         searchTime: Date.now() - startTime,
@@ -193,24 +174,21 @@ export function useCandidatesQuery(options: UseCandidatesQueryOptions = {}): Use
   }, [initialPageSize, transformCandidate])
 
   const loadMore = useCallback(async () => {
-    // @ts-ignore // TODO: fix type
     if (isLoading || !lastQuery) return
     
     setIsLoading(true)
     
     try {
       const nextPage = currentPage + 1
-      const offset = (nextPage - 1) * initialPageSize
       
       const response = await searchCandidatesHybrid({
         query: lastQuery,
-        // @ts-ignore // TODO: fix type
-        limit: initialPageSize,
-        offset,
+        local_limit: initialPageSize,
+        pearch_limit: initialPageSize,
+        exclude_candidate_ids: candidates.map(c => c.id),
       })
       
-      // @ts-ignore // TODO: fix type
-      const transformedCandidates = response.candidates.map((c) => transformCandidate(c as CandidateLocal))
+      const transformedCandidates = response.candidates.map((c) => transformCandidate(c as unknown as CandidateLocal))
       
       setCandidates((prev) => [...prev, ...transformedCandidates])
       setCurrentPage(nextPage)

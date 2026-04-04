@@ -41,32 +41,20 @@ export function toCompanyBenefit(input: string | { name: string; category?: stri
   }
   return {
     name: input.name,
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'string'.
-    description: input.description || '',
+    description: (input.description as string) || '',
     category: (input.category as BenefitCategory) || 'quality_life',
     value_type: (input.value_type as BenefitValueType) || 'informative',
-    // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'number | undefined'.
-    value: input.value,
-    // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'number | undefined'.
-    percentage_value: input.percentage_value,
-    // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'string | undefined'.
-    value_details: input.value_details,
-    // @ts-ignore TODO: fix type — Type '{}' is missing the following properties from type 'string[]': length, pop,
-    seniority_levels: input.seniority_levels || ['all'],
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'number'.
-    waiting_period_days: input.waiting_period_days || 0,
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'boolean'.
-    is_mandatory: input.is_mandatory || false,
-    // @ts-ignore TODO: fix type — Type '{} | null' is not assignable to type 'boolean'.
-    is_active: input.is_active !== undefined ? input.is_active : true,
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'boolean'.
-    is_highlighted: input.is_highlighted || false,
-    // @ts-ignore TODO: fix type — Type '{}' is not assignable to type 'boolean'.
-    is_discount: input.is_discount || false,
-    // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'string | undefined'.
-    provider: input.provider,
-    // @ts-ignore TODO: fix type — Type 'unknown' is not assignable to type 'string | undefined'.
-    id: input.id,
+    value: input.value as number | undefined,
+    percentage_value: input.percentage_value as number | undefined,
+    value_details: input.value_details as string | undefined,
+    seniority_levels: (input.seniority_levels as string[]) || ['all'],
+    waiting_period_days: (input.waiting_period_days as number) || 0,
+    is_mandatory: (input.is_mandatory as boolean) || false,
+    is_active: input.is_active !== undefined ? (input.is_active as boolean) : true,
+    is_highlighted: (input.is_highlighted as boolean) || false,
+    is_discount: (input.is_discount as boolean) || false,
+    provider: input.provider as string | undefined,
+    id: input.id as string | undefined,
   }
 }
 

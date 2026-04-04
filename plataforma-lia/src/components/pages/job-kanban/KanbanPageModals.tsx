@@ -13,30 +13,30 @@ const JobReportModal = dynamic(() => import("@/components/job-report-modal").the
   ssr: false,
   loading: () => null,
 })
-import { SendEmailModal } from "@/components/email-templates/send-email-modal"
-import { UnifiedCommunicationModal } from "@/components/modals/unified-communication-modal"
-import { AddToListModal } from "@/components/modals/add-to-list-modal"
-import { WSITextScreeningModal } from "@/components/wsi/wsi-text-screening-modal"
-import { WSITriagemInviteModal } from "@/components/wsi/wsi-triagem-invite-modal"
-import { AddCandidatesToVacancyModal } from "@/components/modals/add-candidates-to-vacancy-modal"
-import { RubricEvaluationModal } from "@/components/rubric-evaluation-modal"
-const BigFiveModal = dynamic(() => import("@/components/big-five-modal").then(m => ({ default: m.BigFiveModal })), { ssr: false })
-import { GeneralScoreModal } from "@/components/modals/general-score-modal"
-import { TechnicalTestModal } from "@/components/modals/technical-test-modal"
-import { EnglishTestModal } from "@/components/modals/english-test-modal"
-import { CandidateDecisionFlowModal } from "@/components/candidate-decision-flow-modal"
-import { TestPreviewModal } from "@/components/pages/job-kanban/TestPreviewModal"
-import { LIASuggestionsPanel } from "@/components/pages/job-kanban/LIASuggestionsPanel"
-import { TestLibraryModal } from "@/components/pages/job-kanban/TestLibraryModal"
-import { TestHistoryModal } from "@/components/pages/job-kanban/TestHistoryModal"
-import { LIAQuestionsPanel } from "@/components/pages/job-kanban/LIAQuestionsPanel"
-import { CandidateCompareModal } from "@/components/modals/candidate-compare-modal"
-import { UniversalTransitionModal } from "@/components/kanban"
-import { DataRequestModal } from "@/components/modals/data-request-modal"
-import { CloseVacancyModal } from "@/components/modals/close-vacancy-modal"
-import { JobStatusModal } from "@/components/modals/job-status-modal"
-import { ShareSearchModal } from "@/components/modals/share-search-modal"
-import { BulkActionModal } from "@/components/modals/bulk-action-modal"
+const SendEmailModal = dynamic(() => import("@/components/email-templates/send-email-modal").then(m => ({ default: m.SendEmailModal })), { ssr: false, loading: () => null })
+const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => null })
+const AddToListModal = dynamic(() => import("@/components/modals/add-to-list-modal").then(m => ({ default: m.AddToListModal })), { ssr: false, loading: () => null })
+const WSITextScreeningModal = dynamic(() => import("@/components/wsi/wsi-text-screening-modal").then(m => ({ default: m.WSITextScreeningModal })), { ssr: false, loading: () => null })
+const WSITriagemInviteModal = dynamic(() => import("@/components/wsi/wsi-triagem-invite-modal").then(m => ({ default: m.WSITriagemInviteModal })), { ssr: false, loading: () => null })
+const AddCandidatesToVacancyModal = dynamic(() => import("@/components/modals/add-candidates-to-vacancy-modal").then(m => ({ default: m.AddCandidatesToVacancyModal })), { ssr: false, loading: () => null })
+const RubricEvaluationModal = dynamic(() => import("@/components/rubric-evaluation-modal").then(m => ({ default: m.RubricEvaluationModal })), { ssr: false, loading: () => null })
+const BigFiveModal = dynamic(() => import("@/components/big-five-modal").then(m => ({ default: m.BigFiveModal })), { ssr: false, loading: () => null })
+const GeneralScoreModal = dynamic(() => import("@/components/modals/general-score-modal").then(m => ({ default: m.GeneralScoreModal })), { ssr: false, loading: () => null })
+const TechnicalTestModal = dynamic(() => import("@/components/modals/technical-test-modal").then(m => ({ default: m.TechnicalTestModal })), { ssr: false, loading: () => null })
+const EnglishTestModal = dynamic(() => import("@/components/modals/english-test-modal").then(m => ({ default: m.EnglishTestModal })), { ssr: false, loading: () => null })
+const CandidateDecisionFlowModal = dynamic(() => import("@/components/candidate-decision-flow-modal").then(m => ({ default: m.CandidateDecisionFlowModal })), { ssr: false, loading: () => null })
+const TestPreviewModal = dynamic(() => import("@/components/pages/job-kanban/TestPreviewModal").then(m => ({ default: m.TestPreviewModal })), { ssr: false, loading: () => null })
+const LIASuggestionsPanel = dynamic(() => import("@/components/pages/job-kanban/LIASuggestionsPanel").then(m => ({ default: m.LIASuggestionsPanel })), { ssr: false, loading: () => null })
+const TestLibraryModal = dynamic(() => import("@/components/pages/job-kanban/TestLibraryModal").then(m => ({ default: m.TestLibraryModal })), { ssr: false, loading: () => null })
+const TestHistoryModal = dynamic(() => import("@/components/pages/job-kanban/TestHistoryModal").then(m => ({ default: m.TestHistoryModal })), { ssr: false, loading: () => null })
+const LIAQuestionsPanel = dynamic(() => import("@/components/pages/job-kanban/LIAQuestionsPanel").then(m => ({ default: m.LIAQuestionsPanel })), { ssr: false, loading: () => null })
+const CandidateCompareModal = dynamic(() => import("@/components/modals/candidate-compare-modal").then(m => ({ default: m.CandidateCompareModal })), { ssr: false, loading: () => null })
+const UniversalTransitionModal = dynamic(() => import("@/components/kanban").then(m => ({ default: m.UniversalTransitionModal })), { ssr: false, loading: () => null })
+const DataRequestModal = dynamic(() => import("@/components/modals/data-request-modal").then(m => ({ default: m.DataRequestModal })), { ssr: false, loading: () => null })
+const CloseVacancyModal = dynamic(() => import("@/components/modals/close-vacancy-modal").then(m => ({ default: m.CloseVacancyModal })), { ssr: false, loading: () => null })
+const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), { ssr: false, loading: () => null })
+const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => null })
+const BulkActionModal = dynamic(() => import("@/components/modals/bulk-action-modal").then(m => ({ default: m.BulkActionModal })), { ssr: false, loading: () => null })
 import {
   Select,
   SelectContent,
@@ -130,7 +130,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
       <TestHistoryModal
         open={showTestHistory}
         onClose={() => setShowTestHistory(false)}
-        testName={selectedTestForHistory as unknown as Parameters<typeof TestHistoryModal>[0]["testName"]}
+        testName={selectedTestForHistory as any}
       />
 
       {/* Painel Lateral de Sugestões da LIA */}
@@ -167,7 +167,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             current_company: (emailCandidate.currentCompany as string | undefined) || (emailCandidate.current_company as string | undefined) || '',
             location_city: (emailCandidate.location as string | undefined)?.split(',')[0]?.trim() || (emailCandidate.location_city as string | undefined) || '',
             location_state: (emailCandidate.location as string | undefined)?.split(',')[1]?.trim() || (emailCandidate.location_state as string | undefined) || '',
-          } as unknown as Parameters<typeof SendEmailModal>[0]["candidate"]}
+          } as any}
           onSuccess={() => {
             setShowEmailModal(false)
             setEmailCandidate(null)
@@ -190,7 +190,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
           score: (unifiedModalCandidate.score || unifiedModalCandidate.fitScore) as number | undefined,
           matchPercentage: (unifiedModalCandidate.score || unifiedModalCandidate.fitScore) as number | undefined,
           skills: unifiedModalCandidate.skills as unknown[]
-        } as unknown as Parameters<typeof UnifiedCommunicationModal>[0]["candidate"] : null}
+        } as any : null}
         type={unifiedModalType}
         situation={unifiedModalSituation}
         companyId="demo"
@@ -241,9 +241,9 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             setShowWSIModal(false)
             setWsiCandidate(null)
           }}
-          candidate={wsiCandidate as unknown as Parameters<typeof WSITextScreeningModal>[0]["candidate"]}
+          candidate={wsiCandidate as any}
           jobVacancyId={jobData.id?.toString()}
-          jobTitle={jobData.title}
+          jobTitle={jobData.title as any}
         />
       )}
 
@@ -254,7 +254,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
           setShowWSIInviteModal(false)
           setWsiInviteCandidate(null)
         }}
-        candidate={wsiInviteCandidate as unknown as Parameters<typeof WSITriagemInviteModal>[0]["candidate"]}
+        candidate={wsiInviteCandidate as any}
         jobTitle={currentJob.title as string | undefined}
         jobId={(currentJob.id as string | number | undefined)?.toString()}
         screeningQuestions={
@@ -693,17 +693,17 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
       <GeneralScoreModal
         isOpen={showGeneralScoreModal}
         onClose={() => setShowGeneralScoreModal(false)}
-        candidate={scoreModalCandidate as unknown as Parameters<typeof GeneralScoreModal>[0]["candidate"]}
+        candidate={scoreModalCandidate as any}
       />
       <TechnicalTestModal
         isOpen={showTechnicalTestModal}
         onClose={() => setShowTechnicalTestModal(false)}
-        candidate={scoreModalCandidate as unknown as Parameters<typeof TechnicalTestModal>[0]["candidate"]}
+        candidate={scoreModalCandidate as any}
       />
       <EnglishTestModal
         isOpen={showEnglishTestModal}
         onClose={() => setShowEnglishTestModal(false)}
-        candidate={scoreModalCandidate as unknown as Parameters<typeof EnglishTestModal>[0]["candidate"]}
+        candidate={scoreModalCandidate as any}
       />
 
       {/* D9 — Modal de Análise Comparativa */}
@@ -796,7 +796,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
               email: c.email as string | undefined,
               avatar: (c.avatar as string | undefined) || (c.avatar_url as string | undefined),
               currentStage: c.stage as string | undefined
-            })) as unknown as Parameters<typeof BulkActionModal>[0]["candidates"]}
+            })) as any}
           stages={dynamicStages.map(s => ({
             name: s.name,
             displayName: s.displayName,
@@ -810,7 +810,7 @@ export function KanbanPageModals(state: KanbanPageCoreState) {
             icon: (s as unknown as Record<string, unknown>).icon || '',
             stageCategory: (s as unknown as Record<string, unknown>).stageCategory || 'active',
             allowedTransitions: (s as unknown as Record<string, unknown>).allowedTransitions || []
-          })) as unknown as Parameters<typeof BulkActionModal>[0]["stages"]}
+          })) as any}
           jobTitle={currentJob?.title as string | undefined}
           onExecute={handleBulkActionExecute}
         />

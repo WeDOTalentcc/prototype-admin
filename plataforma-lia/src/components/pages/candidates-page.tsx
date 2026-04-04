@@ -6,12 +6,13 @@ import { SavedSearchesTab } from "@/components/talent-funnel-tabs/saved-searches
 import { ListsTab } from "@/components/talent-funnel-tabs/lists-tab"
 import { CandidateSearchResultsView } from "@/components/pages/candidates/CandidateSearchResultsView"
 import type { Candidate } from "@/components/pages/candidates/types"
+import type { CandidatesPageModalsProps } from "@/components/pages/candidates/CandidatesPageModals.types"
 import { liaApi } from "@/services/lia-api"
 import dynamic from "next/dynamic"
 import { CandidateSearchBar } from "@/components/pages/candidates/CandidateSearchBar"
 import { useCandidatesPageCore } from "./candidates/hooks/useCandidatesPageCore"
 import { CandidatesPageHeader } from "@/components/pages/candidates/CandidatesPageHeader"
-import { CandidatesPageModals } from "@/components/pages/candidates/CandidatesPageModals"
+const CandidatesPageModals = dynamic(() => import("@/components/pages/candidates/CandidatesPageModals").then(m => ({ default: m.CandidatesPageModals })), { ssr: false, loading: () => null })
 import { toast } from "sonner"
 
 const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false })
@@ -217,7 +218,7 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
             isCreatingArchetype={isCreatingArchetype}
             setIsCreatingArchetype={setIsCreatingArchetype}
             archetypeCreationStep={archetypeCreationStep}
-            setArchetypeCreationStep={setArchetypeCreationStep as unknown as Parameters<typeof CandidatesPageModals>[0]["setArchetypeCreationStep"]}
+            setArchetypeCreationStep={setArchetypeCreationStep as unknown as CandidatesPageModalsProps["setArchetypeCreationStep"]}
             setNewArchetypeData={setNewArchetypeData}
             setShowSaveAsArchetypeModal={setShowSaveAsArchetypeModal}
             setShowGlobalExpansionConfirm={setShowGlobalExpansionConfirm}
@@ -534,23 +535,23 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
       {/* Modals - extracted to CandidatesPageModals */}
       <CandidatesPageModals
         selectedCandidateForAction={selectedCandidateForAction}
-        contactModalCandidate={contactModalCandidate as unknown as Parameters<typeof CandidatesPageModals>[0]["contactModalCandidate"]}
+        contactModalCandidate={contactModalCandidate as unknown as CandidatesPageModalsProps["contactModalCandidate"]}
         showContactModal={showContactModal}
         contactModalAction={contactModalAction}
         setShowContactModal={setShowContactModal}
-        setSelectedCandidateForAction={setSelectedCandidateForAction as unknown as Parameters<typeof CandidatesPageModals>[0]["setSelectedCandidateForAction"]}
-        setContactModalCandidate={setContactModalCandidate as unknown as Parameters<typeof CandidatesPageModals>[0]["setContactModalCandidate"]}
+        setSelectedCandidateForAction={setSelectedCandidateForAction as unknown as CandidatesPageModalsProps["setSelectedCandidateForAction"]}
+        setContactModalCandidate={setContactModalCandidate as unknown as CandidatesPageModalsProps["setContactModalCandidate"]}
         setContactModalAction={setContactModalAction}
-        handleSendMessage={handleSendMessage as unknown as Parameters<typeof CandidatesPageModals>[0]["handleSendMessage"]}
+        handleSendMessage={handleSendMessage as unknown as CandidatesPageModalsProps["handleSendMessage"]}
         showScheduleModal={showScheduleModal}
         setShowScheduleModal={setShowScheduleModal}
-        handleScheduleComplete={handleScheduleComplete as unknown as Parameters<typeof CandidatesPageModals>[0]["handleScheduleComplete"]}
+        handleScheduleComplete={handleScheduleComplete as unknown as CandidatesPageModalsProps["handleScheduleComplete"]}
         unifiedModalOpen={unifiedModalOpen}
         unifiedModalCandidate={unifiedModalCandidate}
         unifiedModalType={unifiedModalType}
         lastSearchQuery={lastSearchQuery}
         handleUnifiedModalClose={handleUnifiedModalClose}
-        handleUnifiedModalSend={handleUnifiedModalSend as unknown as Parameters<typeof CandidatesPageModals>[0]["handleUnifiedModalSend"]}
+        handleUnifiedModalSend={handleUnifiedModalSend as unknown as CandidatesPageModalsProps["handleUnifiedModalSend"]}
         showComparisonModal={showComparisonModal}
         setShowComparisonModal={setShowComparisonModal}
         selectedCandidatesForBatch={selectedCandidatesForBatch}
@@ -566,22 +567,22 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setShowAddCandidateModal={setShowAddCandidateModal}
         preSelectedListForModal={preSelectedListForModal}
         setPreSelectedListForModal={setPreSelectedListForModal}
-        handleAddCandidate={handleAddCandidate as unknown as Parameters<typeof CandidatesPageModals>[0]["handleAddCandidate"]}
-        setCandidateListsForModal={setCandidateListsForModal as unknown as Parameters<typeof CandidatesPageModals>[0]["setCandidateListsForModal"]}
+        handleAddCandidate={handleAddCandidate as unknown as CandidatesPageModalsProps["handleAddCandidate"]}
+        setCandidateListsForModal={setCandidateListsForModal as unknown as CandidatesPageModalsProps["setCandidateListsForModal"]}
         bulkJobVacancies={bulkJobVacancies}
         candidateListsForModal={candidateListsForModal}
         handleCandidatePageOpen={handleCandidatePageOpen}
         showBatchApproval={showBatchApproval}
         setShowBatchApproval={setShowBatchApproval}
         convertCandidatesForBatch={convertCandidatesForBatch}
-        handleBatchApprovalComplete={handleBatchApprovalComplete as unknown as Parameters<typeof CandidatesPageModals>[0]["handleBatchApprovalComplete"]}
+        handleBatchApprovalComplete={handleBatchApprovalComplete as unknown as CandidatesPageModalsProps["handleBatchApprovalComplete"]}
         wsiCandidateForScreening={wsiCandidateForScreening}
         setWsiCandidateForScreening={setWsiCandidateForScreening}
         showWSITextModal={showWSITextModal}
         setShowWSITextModal={setShowWSITextModal}
         showWSIVoiceModal={showWSIVoiceModal}
         setShowWSIVoiceModal={setShowWSIVoiceModal}
-        handleWSIScreeningComplete={handleWSIScreeningComplete as unknown as Parameters<typeof CandidatesPageModals>[0]["handleWSIScreeningComplete"]}
+        handleWSIScreeningComplete={handleWSIScreeningComplete as unknown as CandidatesPageModalsProps["handleWSIScreeningComplete"]}
         showWSIInviteModal={showWSIInviteModal}
         setShowWSIInviteModal={setShowWSIInviteModal}
         wsiInviteCandidate={wsiInviteCandidate}
@@ -600,19 +601,19 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         setShowRevealModal={setShowRevealModal}
         revealCandidate={revealCandidate}
         setRevealCandidate={setRevealCandidate}
-        handleRevealContact={handleRevealContact as unknown as Parameters<typeof CandidatesPageModals>[0]["handleRevealContact"]}
+        handleRevealContact={handleRevealContact as unknown as CandidatesPageModalsProps["handleRevealContact"]}
         revealType={revealType}
         showCVPreviewModal={showCVPreviewModal}
         setShowCVPreviewModal={setShowCVPreviewModal}
         parsedCVData={parsedCVData}
         setParsedCVData={setParsedCVData}
-        handleCVConfirmed={handleCVConfirmed as unknown as Parameters<typeof CandidatesPageModals>[0]["handleCVConfirmed"]}
+        handleCVConfirmed={handleCVConfirmed as unknown as CandidatesPageModalsProps["handleCVConfirmed"]}
         showCreditConfirmation={showCreditConfirmation}
         setShowCreditConfirmation={setShowCreditConfirmation}
-        creditEstimate={creditEstimate as unknown as Parameters<typeof CandidatesPageModals>[0]["creditEstimate"]}
-        pearchSearchOptions={pearchSearchOptions as unknown as Parameters<typeof CandidatesPageModals>[0]["pearchSearchOptions"]}
-        setPearchSearchOptions={setPearchSearchOptions as unknown as Parameters<typeof CandidatesPageModals>[0]["setPearchSearchOptions"]}
-        setPendingSearchRequest={setPendingSearchRequest as unknown as Parameters<typeof CandidatesPageModals>[0]["setPendingSearchRequest"]}
+        creditEstimate={creditEstimate as unknown as CandidatesPageModalsProps["creditEstimate"]}
+        pearchSearchOptions={pearchSearchOptions as unknown as CandidatesPageModalsProps["pearchSearchOptions"]}
+        setPearchSearchOptions={setPearchSearchOptions as unknown as CandidatesPageModalsProps["setPearchSearchOptions"]}
+        setPendingSearchRequest={setPendingSearchRequest as unknown as CandidatesPageModalsProps["setPendingSearchRequest"]}
         handleConfirmPearchSearch={handleConfirmPearchSearch}
         showGlobalExpansionConfirm={showGlobalExpansionConfirm}
         setShowGlobalExpansionConfirm={setShowGlobalExpansionConfirm}
@@ -622,13 +623,13 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         handleExpandToGlobal={handleExpandToGlobal}
         showSourceChangeModal={showSourceChangeModal}
         setShowSourceChangeModal={setShowSourceChangeModal}
-        pendingSourceChange={pendingSourceChange as unknown as Parameters<typeof CandidatesPageModals>[0]["pendingSourceChange"]}
-        setPendingSourceChange={setPendingSourceChange as unknown as Parameters<typeof CandidatesPageModals>[0]["setPendingSourceChange"]}
+        pendingSourceChange={pendingSourceChange as unknown as CandidatesPageModalsProps["pendingSourceChange"]}
+        setPendingSourceChange={setPendingSourceChange as unknown as CandidatesPageModalsProps["setPendingSourceChange"]}
         confirmSourceChange={confirmSourceChange}
         showContactFilterModal={showContactFilterModal}
         setShowContactFilterModal={setShowContactFilterModal}
-        pendingContactFilter={pendingContactFilter as unknown as Parameters<typeof CandidatesPageModals>[0]["pendingContactFilter"]}
-        setPendingContactFilter={setPendingContactFilter as unknown as Parameters<typeof CandidatesPageModals>[0]["setPendingContactFilter"]}
+        pendingContactFilter={pendingContactFilter as unknown as CandidatesPageModalsProps["pendingContactFilter"]}
+        setPendingContactFilter={setPendingContactFilter as unknown as CandidatesPageModalsProps["setPendingContactFilter"]}
         confirmContactFilterChange={confirmContactFilterChange}
         showSaveAsArchetypeModal={showSaveAsArchetypeModal}
         setShowSaveAsArchetypeModal={setShowSaveAsArchetypeModal}
@@ -636,16 +637,16 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         isCreatingArchetype={isCreatingArchetype}
         setIsCreatingArchetype={setIsCreatingArchetype}
         archetypeCreationStep={archetypeCreationStep}
-        setArchetypeCreationStep={setArchetypeCreationStep as unknown as Parameters<typeof CandidatesPageModals>[0]["setArchetypeCreationStep"]}
+        setArchetypeCreationStep={setArchetypeCreationStep as unknown as CandidatesPageModalsProps["setArchetypeCreationStep"]}
         newArchetypeData={newArchetypeData}
         setNewArchetypeData={setNewArchetypeData}
-        setUserArchetypes={setUserArchetypes as unknown as Parameters<typeof CandidatesPageModals>[0]["setUserArchetypes"]}
-        setChatMessages={setChatMessages as unknown as Parameters<typeof CandidatesPageModals>[0]["setChatMessages"]}
+        setUserArchetypes={setUserArchetypes as unknown as CandidatesPageModalsProps["setUserArchetypes"]}
+        setChatMessages={setChatMessages as unknown as CandidatesPageModalsProps["setChatMessages"]}
         showAdvancedSearch={showAdvancedSearch}
         setShowAdvancedSearch={setShowAdvancedSearch}
-        activeSearchFilters={activeSearchFilters as unknown as Parameters<typeof CandidatesPageModals>[0]["activeSearchFilters"]}
-        setActiveSearchFilters={setActiveSearchFilters as unknown as Parameters<typeof CandidatesPageModals>[0]["setActiveSearchFilters"]}
-        hideViewedCandidates={hideViewedCandidates as unknown as Parameters<typeof CandidatesPageModals>[0]["hideViewedCandidates"]}
+        activeSearchFilters={activeSearchFilters as unknown as CandidatesPageModalsProps["activeSearchFilters"]}
+        setActiveSearchFilters={setActiveSearchFilters as unknown as CandidatesPageModalsProps["setActiveSearchFilters"]}
+        hideViewedCandidates={hideViewedCandidates as unknown as CandidatesPageModalsProps["hideViewedCandidates"]}
         showAddToListModal={showAddToListModal}
         setShowAddToListModal={setShowAddToListModal}
         addToListCandidateIds={addToListCandidateIds}
@@ -657,43 +658,43 @@ export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandid
         shareSearchTitle={shareSearchTitle}
         setShareSearchTitle={setShareSearchTitle}
         shareSearchCandidates={shareSearchCandidates}
-        setShareSearchCandidates={setShareSearchCandidates as unknown as Parameters<typeof CandidatesPageModals>[0]["setShareSearchCandidates"]}
+        setShareSearchCandidates={setShareSearchCandidates as unknown as CandidatesPageModalsProps["setShareSearchCandidates"]}
         showAddListToVacanciesModal={showAddListToVacanciesModal}
         setShowAddListToVacanciesModal={setShowAddListToVacanciesModal}
         selectedListForVacancies={selectedListForVacancies}
-        setSelectedListForVacancies={setSelectedListForVacancies as unknown as Parameters<typeof CandidatesPageModals>[0]["setSelectedListForVacancies"]}
+        setSelectedListForVacancies={setSelectedListForVacancies as unknown as CandidatesPageModalsProps["setSelectedListForVacancies"]}
         showAddToVacancyModal={showAddToVacancyModal}
         setShowAddToVacancyModal={setShowAddToVacancyModal}
         setSelectedCandidatesForBatch={setSelectedCandidatesForBatch}
         user={user}
         showUnsavedWarningModal={showUnsavedWarningModal}
         setShowUnsavedWarningModal={setShowUnsavedWarningModal}
-        setPendingTabChange={setPendingTabChange as unknown as Parameters<typeof CandidatesPageModals>[0]["setPendingTabChange"]}
+        setPendingTabChange={setPendingTabChange as unknown as CandidatesPageModalsProps["setPendingTabChange"]}
         handleSaveAllAndExit={handleSaveAllAndExit}
         handleExitWithoutSaving={handleExitWithoutSaving}
-        unsavedPearchCandidates={unsavedPearchCandidates as unknown as Parameters<typeof CandidatesPageModals>[0]["unsavedPearchCandidates"]}
+        unsavedPearchCandidates={unsavedPearchCandidates as unknown as CandidatesPageModalsProps["unsavedPearchCandidates"]}
         isSavingToBase={isSavingToBase}
         showEditQueryModal={showEditQueryModal}
         setShowEditQueryModal={setShowEditQueryModal}
         editQueryValue={editQueryValue}
         getActiveSearchFiltersCount={getActiveSearchFiltersCount}
         searchSource={searchSource}
-        setSearchSource={setSearchSource as unknown as Parameters<typeof CandidatesPageModals>[0]["setSearchSource"]}
+        setSearchSource={setSearchSource as unknown as CandidatesPageModalsProps["setSearchSource"]}
         setSearchTerm={setSearchTerm}
         setLastSearchQuery={setLastSearchQuery}
         setLastSearchMode={setLastSearchMode}
         setLastSearchEntities={setLastSearchEntities}
-        setLastSearchMetadata={setLastSearchMetadata as unknown as Parameters<typeof CandidatesPageModals>[0]["setLastSearchMetadata"]}
-        executeSearch={executeSearch as unknown as Parameters<typeof CandidatesPageModals>[0]["executeSearch"]}
+        setLastSearchMetadata={setLastSearchMetadata as unknown as CandidatesPageModalsProps["setLastSearchMetadata"]}
+        executeSearch={executeSearch as unknown as CandidatesPageModalsProps["executeSearch"]}
         previewSuggestion={previewSuggestion}
-        setPreviewSuggestion={setPreviewSuggestion as unknown as Parameters<typeof CandidatesPageModals>[0]["setPreviewSuggestion"]}
+        setPreviewSuggestion={setPreviewSuggestion as unknown as CandidatesPageModalsProps["setPreviewSuggestion"]}
         previewingUserArchetype={previewingUserArchetype}
-        setPreviewingUserArchetype={setPreviewingUserArchetype as unknown as Parameters<typeof CandidatesPageModals>[0]["setPreviewingUserArchetype"]}
-        buildFiltersFromTags={buildFiltersFromTags as unknown as Parameters<typeof CandidatesPageModals>[0]["buildFiltersFromTags"]}
+        setPreviewingUserArchetype={setPreviewingUserArchetype as unknown as CandidatesPageModalsProps["setPreviewingUserArchetype"]}
+        buildFiltersFromTags={buildFiltersFromTags as unknown as CandidatesPageModalsProps["buildFiltersFromTags"]}
         setLiaPromptValue={setLiaPromptValue}
-        setActiveSearchTab={setActiveSearchTab as unknown as Parameters<typeof CandidatesPageModals>[0]["setActiveSearchTab"]}
+        setActiveSearchTab={setActiveSearchTab as unknown as CandidatesPageModalsProps["setActiveSearchTab"]}
         archetypeToDelete={archetypeToDelete}
-        setArchetypeToDelete={setArchetypeToDelete as unknown as Parameters<typeof CandidatesPageModals>[0]["setArchetypeToDelete"]}
+        setArchetypeToDelete={setArchetypeToDelete as unknown as CandidatesPageModalsProps["setArchetypeToDelete"]}
       />
     </div>
   )

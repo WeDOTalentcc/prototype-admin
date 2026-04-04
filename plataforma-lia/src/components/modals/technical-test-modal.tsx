@@ -5,6 +5,22 @@ import { getPercentageScoreVar } from "@/lib/score-utils"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 
+interface TestCategory {
+  name: string
+  score: number
+  avgScore: number
+}
+
+interface TestData {
+  status?: TestStatus
+  score?: number
+  duration?: number
+  maxDuration?: number
+  completedAt?: string
+  categories?: TestCategory[]
+  averageScore?: number
+}
+
 interface TechnicalTestModalProps {
   isOpen: boolean
   onClose: () => void
@@ -40,7 +56,7 @@ const STATUS_CONFIG = {
 export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTestModalProps) {
   if (!isOpen) return null
 
-  const testData = candidate?.technicalTest ?? {
+  const testData: TestData = (candidate?.technicalTest as TestData) ?? {
     status: 'completed',
     score: 78,
     duration: 72,
@@ -56,7 +72,6 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
     averageScore: 72
   }
 
-  // @ts-ignore TODO: fix type
   const status: TestStatus = testData.status ?? 'pending'
   const statusConfig = STATUS_CONFIG[status]
   const StatusIcon = statusConfig.icon
@@ -104,9 +119,8 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               <p 
                 className="text-xs text-lia-text-secondary"
                
-               // @ts-ignore TODO: fix type
                aria-live="polite" aria-atomic="true">
-                {((candidate?.name ?? 'Candidato') as React.ReactNode)}
+                {String(candidate?.name ?? 'Candidato')}
               </p>
             </div>
           </div>
@@ -135,74 +149,48 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 {statusConfig.label}
               </span>
             </div>
-            {(testData as any).completedAt && status === 'completed' && (
+            {testData.completedAt && status === 'completed' && (
               <span 
                 className="text-micro text-lia-text-secondary"
-               
-              // @ts-ignore TODO: fix type
               >
-                Concluído em {new Date((testData as any).completedAt).toLocaleDateString('pt-BR')}
+                Concluído em {new Date(testData.completedAt).toLocaleDateString('pt-BR')}
               </span>
             )}
           </div>
 
           {status === 'completed' && (
-            // @ts-ignore TODO: fix type
             <>
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <div 
-                  className="p-3 rounded-md border border-lia-border-subtle"
-                >
+                <div className="p-3 rounded-md border border-lia-border-subtle">
                   <div className="flex items-center gap-2 mb-1">
                     <Trophy className="w-3.5 h-3.5 text-lia-text-secondary" />
-                    <span 
-                      className="text-micro text-lia-text-secondary"
-                     
-                    >
+                    <span className="text-micro text-lia-text-secondary">
                       Score Geral
                     </span>
                   </div>
                   <span 
                     className="text-2xl font-bold"
-                    // @ts-ignore TODO: fix type
-                    style={{color: getScoreColor(testData.score)}}
-                  // @ts-ignore TODO: fix type
+                    style={{color: getScoreColor(testData.score ?? 0)}}
                   >
-                    {((testData as any).score as React.ReactNode)}
+                    {testData.score}
                   </span>
-                  <span 
-                    className="text-sm ml-1 text-lia-text-disabled"
-                   
-                  >
+                  <span className="text-sm ml-1 text-lia-text-disabled">
                     / 100
                   </span>
                 </div>
 
-                <div 
-                  className="p-3 rounded-md border border-lia-border-subtle"
-                >
+                <div className="p-3 rounded-md border border-lia-border-subtle">
                   <div className="flex items-center gap-2 mb-1">
                     <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
-                    <span 
-                      className="text-micro text-lia-text-secondary"
-                     
-                    >
+                    <span className="text-micro text-lia-text-secondary">
                       Tempo de Conclusão
                     </span>
                   </div>
-                  <span 
-                    className="text-2xl font-bold text-lia-text-primary"
-                   
-                  // @ts-ignore TODO: fix type
-                  >
-                    {((testData as any).duration as React.ReactNode)}
+                  <span className="text-2xl font-bold text-lia-text-primary">
+                    {testData.duration}
                   </span>
-                  <span 
-                    className="text-sm ml-1 text-lia-text-disabled"
-                   
-                  // @ts-ignore TODO: fix type
-                  >
-                    / {(testData as any).maxDuration} min
+                  <span className="text-sm ml-1 text-lia-text-disabled">
+                    / {testData.maxDuration} min
                   </span>
                 </div>
               </div>
@@ -211,59 +199,45 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                 <Users className="w-4 h-4 text-lia-text-secondary" />
                 <span 
                   className="text-xs text-lia-text-secondary"
-                 
-                 aria-live="polite" aria-atomic="true">
+                  aria-live="polite" aria-atomic="true">
                   Comparação com outros candidatos:
                 </span>
                 <span 
                   className="text-xs font-semibold ml-auto"
-                  // @ts-ignore TODO: fix type
-                  style={{color: testData.score >= testData.averageScore ? 'var(--status-success)' : 'var(--status-error)'}}
-                // @ts-ignore TODO: fix type
+                  style={{color: (testData.score ?? 0) >= (testData.averageScore ?? 0) ? 'var(--status-success)' : 'var(--status-error)'}}
                 >
-                  {(getComparisonLabel((testData as any).score, (testData as any).averageScore) as React.ReactNode)}
+                  {getComparisonLabel(testData.score ?? 0, testData.averageScore ?? 0)}
                 </span>
               </div>
 
               <div className="mb-4">
-                <p 
-                  className="text-xs font-semibold mb-3 text-lia-text-primary"
-                 
-                >
+                <p className="text-xs font-semibold mb-3 text-lia-text-primary">
                   Breakdown por Categoria
                 </p>
 
-
                 <div className="space-y-2.5">
-                  {((testData as any).categories as any[])?.map((category: Record<string, unknown>, index: number) => (
+                  {testData.categories?.map((category: TestCategory, index: number) => (
                     <div 
                       key={index}
                       className="p-3 rounded-md border border-lia-border-subtle"
-
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span 
-                          className="text-xs font-medium text-lia-text-primary"
-                         
-                        >
-                          {(category.name as React.ReactNode)}
+                        <span className="text-xs font-medium text-lia-text-primary">
+                          {category.name}
                         </span>
 
                         <div className="flex items-center gap-2">
-                          {(getComparisonIcon((category as any).score, (category as any).avgScore) as React.ReactNode)}
+                          {getComparisonIcon(category.score, category.avgScore)}
                           <span 
-
                             className="text-xs font-bold"
-                            // @ts-ignore TODO: fix type
-                            style={{color: getScoreColor((category as any).score)}}
+                            style={{color: getScoreColor(category.score)}}
                           >
-                            {(category.score as React.ReactNode)}
+                            {category.score}
                           </span>
                         </div>
                       </div>
                       <div className="relative">
                         <Progress 
-                          // @ts-ignore TODO: fix type
                           value={category.score} 
                           className="h-1.5 bg-lia-interactive-active"
                         />
@@ -274,16 +248,14 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                       <div className="flex items-center justify-between mt-1">
                         <span 
                           className="text-micro text-lia-text-secondary"
-                         
-                         // @ts-ignore TODO: fix type
-                         aria-live="polite" aria-atomic="true">
-                          Média dos candidatos: {(category.avgScore as React.ReactNode)}
+                          aria-live="polite" aria-atomic="true">
+                          Média dos candidatos: {category.avgScore}
                         </span>
                         <span 
                           className="text-micro"
-                          style={{color: (category as any).score >= (category as any).avgScore ? 'var(--status-success)' : 'var(--status-error)'}}
+                          style={{color: category.score >= category.avgScore ? 'var(--status-success)' : 'var(--status-error)'}}
                         >
-                          {(category as any).score >= (category as any).avgScore ? '+' : ''}{(category as any).score - (category as any).avgScore}
+                          {category.score >= category.avgScore ? '+' : ''}{category.score - category.avgScore}
                         </span>
                       </div>
                     </div>
@@ -306,9 +278,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
               </p>
               <p 
                 className="text-micro text-center text-lia-text-disabled"
-                // @ts-ignore TODO: fix type
-               
-               aria-live="polite" aria-atomic="true">
+                aria-live="polite" aria-atomic="true">
                 O candidato receberá um convite para realizar o teste técnico.
               </p>
             </div>

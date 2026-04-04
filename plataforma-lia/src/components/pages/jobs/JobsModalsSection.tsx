@@ -96,7 +96,7 @@ interface JobsModalsSectionProps {
   showScreeningSchedulingModal: boolean
   onCloseScreeningSchedulingModal: () => void
   screeningConfig: ScreeningConfig
-  updateScreeningConfig: (updates: Partial<ScreeningConfig>) => void
+  updateScreeningConfig: (updates: Partial<ScreeningConfig>) => Promise<boolean>
 
   showReactivateScreeningDialog: boolean
   reactivateScreeningJobs: Job[]
@@ -191,8 +191,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
     <>
       {showReport && reportJob && (
         <JobReportModal
-          // @ts-ignore TODO: fix type
-          job={reportJob}
+          job={reportJob as any}
           isOpen={showReport}
           onClose={onCloseReport}
         />
@@ -201,8 +200,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
       <JobCompareModal
         isOpen={showCompareModal}
         onClose={onCloseCompareModal}
-        // @ts-ignore TODO: fix type
-        jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
+        jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map((job) => ({
           id: String(job.id),
           code: job.jobId,
           title: job.title,
@@ -219,7 +217,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
           benefits: job.benefits,
           technical_requirements: job.technicalRequirements,
           behavioral_competencies: job.behavioralCompetencies
-        }))}
+        })) as any}
       />
 
       <JobPublishModal
@@ -536,9 +534,8 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
               const channels = channelMap[data.recruiterNotificationChannel] || ['bell']
               
               const recruiterIds = [...new Set(selectedJobs
-                // @ts-ignore TODO: fix type
-                .map(j => j.recruiter?.id || j.recruiterId)
-                .filter(Boolean) as string[])]
+                .map(j => j.recruiter)
+                .filter(Boolean))]
               
               if (recruiterIds.length === 0) {
                 recruiterIds.push('default_user')
@@ -591,8 +588,8 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
             })
             await Promise.all(updatePromises)
             
-            // @ts-ignore TODO: fix type
-            if (data.sendRecruiterSummary && data.recruiterNotificationChannel) {
+            const activateData = data as any
+            if (activateData.sendRecruiterSummary && activateData.recruiterNotificationChannel) {
               const channelMap: Record<string, string[]> = {
                 'email': ['email'],
                 'teams': ['teams'],
@@ -600,13 +597,11 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
                 'email_teams': ['email', 'teams'],
                 'all': ['email', 'teams', 'bell']
               }
-              // @ts-ignore TODO: fix type
-              const channels = channelMap[data.recruiterNotificationChannel] || ['bell']
+              const channels = channelMap[String(activateData.recruiterNotificationChannel)] || ['bell']
               
               const recruiterIds = [...new Set(selectedJobs
-                // @ts-ignore TODO: fix type
-                .map(j => j.recruiter?.id || j.recruiterId)
-                .filter(Boolean) as string[])]
+                .map(j => j.recruiter)
+                .filter(Boolean))]
               
               if (recruiterIds.length === 0) {
                 recruiterIds.push('default_user')
@@ -681,9 +676,8 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
             }
             
             const previousRecruiters = [...new Set(selectedJobs
-              // @ts-ignore TODO: fix type
-              .map(j => j.recruiter?.id || j.recruiterId)
-              .filter(Boolean) as string[])]
+              .map(j => j.recruiter)
+              .filter(Boolean))]
             
             const updatePromises = selectedJobs.map(job => {
               if (job.backendId) {
@@ -721,10 +715,9 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
               }
             }
             
-            // @ts-ignore TODO: fix type
             onSetBackendJobs(prev => prev.map(job => 
               selectedJobsForBatch.has(job.id) 
-                ? { ...job, recruiter: recruiter.name, recruiterEmail: recruiter.email } 
+                ? { ...job, recruiter: recruiter.name, recruiterEmail: recruiter.email || '' } 
                 : job
             ))
             
@@ -766,8 +759,7 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         job={editingJob}
         onSave={async (jobId, updates) => {
           try {
-            // @ts-ignore TODO: fix type
-            await liaApi.updateJobVacancy(jobId, updates)
+            await liaApi.updateJobVacancy(jobId, updates as Record<string, unknown>)
             toast.success('Vaga atualizada com sucesso!')
             onCloseEditJobModal()
             onSetEditingJob(null)
@@ -783,7 +775,6 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showScreeningChannelsModal}
         onClose={onCloseScreeningChannelsModal}
         config={screeningConfig}
-        // @ts-ignore TODO: fix type
         updateConfig={updateScreeningConfig}
       />
 
@@ -791,7 +782,6 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showScreeningSettingsModal}
         onClose={onCloseScreeningSettingsModal}
         config={screeningConfig}
-        // @ts-ignore TODO: fix type
         updateConfig={updateScreeningConfig}
       />
 
@@ -799,7 +789,6 @@ export function JobsModalsSection(props: JobsModalsSectionProps) {
         isOpen={showScreeningSchedulingModal}
         onClose={onCloseScreeningSchedulingModal}
         config={screeningConfig}
-        // @ts-ignore TODO: fix type
         updateConfig={updateScreeningConfig}
       />
 

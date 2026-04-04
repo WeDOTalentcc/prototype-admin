@@ -1,0 +1,186 @@
+"""
+Teams <-> Orchestrator bridge.
+Connects incoming Teams messages to the full LIA orchestrator (same as floating chat).
+"""
+import logging
+from typing import Optional, Dict, Any
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+logger = logging.getLogger(__name__)
+
+
+class TeamsOrchestratorBridge:
+    """
+    Routes Teams text messages through the LIA orchestrator.
+    Same intelligence as the floating chat panel.
+    """
+
+    async def process_message(
+        self,
+        activity: Dict[str, Any],
+        db: Optional[AsyncSession] = None,
+    ) -> Dict[str, Any]:
+        """
+        Process a text message from Teams through the LIA orchestrator.
+        Returns orchestrator result dict.
+        """
+        from app.api.orchestrator_routes import get_orchestrator
+
+        text = (activity.get("text") or "").strip()
+        if not text:
+            return {"message": "Não entendi sua mensagem. Pode repetir?", "success": False}
+
+        teams_user_id = activity.get("from", {}).get("id", "unknown")
+        teams_user_name = activity.get("from", {}).get("name", "")
+        conversation_id = activity.get("conversation", {}).get("id", "")
+        tenant_id = activity.get("channelData", {}).get("tenant", {}).get("id", "")
+
+        # Resolve company_id from stored conversation reference or tenant mapping
+        company_id = await self._resolve_company_id(teams_user_id, tenant_id, db)
+
+        # Use teams_<conversation_id> as conversation_id so state is persisted
+        orch_conversation_id = f"teams_{conversation_id}"
+
+        try:
+            orchestrator = get_orchestrator()
+            result = await orchestrator.process_request(
+                user_id=teams_user_id,
+                message=text,
+                conversation_id=orch_conversation_id,
+                context={
+                    "company_id": company_id,
+                    "source": "teams",
+                    "teams_user_name": teams_user_name,
+                    "teams_user_id": teams_user_id,
+                    "teams_conversation_id": conversation_id,
+                    "tenant_id": tenant_id,
+                },
+            )
+            return result
+        except Exception as e:
+            logger.error(f"[TeamsOrchestratorBridge] Error: {e}", exc_info=True)
+            return {
+                "success": False,
+                "message": "Ocorreu um erro ao processar sua mensagem. Tente novamente.",
+                "error": str(e),
+            }
+
+    async def process_cv_attachment(
+        self,
+        activity: Dict[str, Any],
+        attachment: Dict[str, Any],
+        db: Optional[AsyncSession] = None,
+    ) -> Dict[str, Any]:
+        """
+        Process a file attachment (CV) from Teams.
+        Downloads the file and runs cv screening.
+        """
+        import httpx
+        import re
+
+        teams_user_id = activity.get("from", {}).get("id", "unknown")
+        tenant_id = activity.get("channelData", {}).get("tenant", {}).get("id", "")
+        company_id = await self._resolve_company_id(teams_user_id, tenant_id, db)
+
+        content_url = attachment.get("contentUrl", "")
+        filename = attachment.get("name", "cv.pdf")
+
+        try:
+            # Get bot token to download the file
+            from app.domains.communication.services.teams_simple import simple_teams_bot
+            token = await simple_teams_bot.get_access_token()
+
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    content_url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=30.0,
+                )
+                file_bytes = response.content
+
+            # Extract text from file
+            cv_text = ""
+            if filename.lower().endswith(".pdf"):
+                try:
+                    from app.domains.cv_screening.services.cv_parser import CVParserService
+                    parser = CVParserService()
+                    cv_text = await parser.extract_text_from_pdf(file_bytes)
+                except Exception as parse_err:
+                    logger.warning(f"[TeamsOrchestratorBridge] PDF parser error: {parse_err}")
+                    cv_text = ""
+            else:
+                cv_text = file_bytes.decode("utf-8", errors="ignore")
+
+            if not cv_text.strip():
+                return {"success": False, "message": "Não foi possível extrair texto do arquivo."}
+
+            # Check if message has vacancy hint
+            text = (activity.get("text") or "").strip()
+            vacancy_title = None
+            if text:
+                m = re.search(r"(?:para a vaga de|vaga:?)\s+(.+?)(?:\.|$)", text, re.IGNORECASE)
+                if m:
+                    vacancy_title = m.group(1).strip()
+
+            try:
+                from app.domains.cv_screening.tools.cv_upload_tool import create_and_screen_candidate
+
+                class _Ctx:
+                    pass
+                ctx = _Ctx()
+                ctx.company_id = company_id
+                ctx.user_id = teams_user_id
+
+                result = await create_and_screen_candidate(
+                    cv_text=cv_text,
+                    vacancy_title=vacancy_title,
+                    run_bars=True,
+                    run_wsi=False,
+                    context=ctx,
+                )
+                return result
+            except ImportError:
+                # Fallback: route through orchestrator with the CV text inline
+                logger.warning("[TeamsOrchestratorBridge] cv_upload_tool not available, routing via orchestrator")
+                msg = f"Analise este CV e faça a triagem:\n\n{cv_text[:3000]}"
+                if vacancy_title:
+                    msg = f"Analise este CV para a vaga de {vacancy_title}:\n\n{cv_text[:3000]}"
+                fake_activity = dict(activity)
+                fake_activity["text"] = msg
+                return await self.process_message(fake_activity, db=db)
+
+        except Exception as e:
+            logger.error(f"[TeamsOrchestratorBridge] CV processing error: {e}", exc_info=True)
+            return {"success": False, "message": f"Erro ao processar CV: {str(e)}"}
+
+    async def _resolve_company_id(
+        self,
+        teams_user_id: str,
+        tenant_id: str,
+        db: Optional[AsyncSession] = None,
+    ) -> str:
+        """
+        Resolve company_id from Teams user/tenant.
+        Checks stored conversation reference first, then falls back.
+        """
+        if db:
+            try:
+                from app.models.teams import TeamsConversation
+                stmt = select(TeamsConversation).where(
+                    TeamsConversation.user_id == teams_user_id
+                ).limit(1)
+                result = await db.execute(stmt)
+                row = result.scalar_one_or_none()
+                if row and getattr(row, "company_id", None):
+                    return row.company_id
+            except Exception:
+                pass
+
+        # Fallback: use tenant_id as company identifier or demo
+        if tenant_id:
+            return f"tenant_{tenant_id}"
+        return "demo_company"
+
+
+teams_orchestrator_bridge = TeamsOrchestratorBridge()

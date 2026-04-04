@@ -18,13 +18,14 @@ import {
   MousePointer, Compass, HelpCircle, Rocket,
   ChevronDown, ChevronUp, Lock, Unlock, Circle
 } from "lucide-react"
-import { ProgressDashboard } from "@/components/settings/progress-dashboard"
-import { CompanyTeamHub } from "@/components/settings/CompanyTeamHub"
-import { RecruitmentHub } from "@/components/settings/RecruitmentHub"
-import { CommunicationHub } from "@/components/settings/CommunicationHub"
-import { GoalsPlanningHub } from "@/components/settings/GoalsPlanningHub"
-import { GlobalSearchHub } from "@/components/settings/GlobalSearchHub"
-import { TasksPage } from "@/components/pages/tasks-page"
+import dynamic from "next/dynamic"
+const ProgressDashboard = dynamic(() => import("@/components/settings/progress-dashboard").then(m => ({ default: m.ProgressDashboard })), { ssr: false, loading: () => null })
+const CompanyTeamHub = dynamic(() => import("@/components/settings/CompanyTeamHub").then(m => ({ default: m.CompanyTeamHub })), { ssr: false, loading: () => null })
+const RecruitmentHub = dynamic(() => import("@/components/settings/RecruitmentHub").then(m => ({ default: m.RecruitmentHub })), { ssr: false, loading: () => null })
+const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => null })
+const GoalsPlanningHub = dynamic(() => import("@/components/settings/GoalsPlanningHub").then(m => ({ default: m.GoalsPlanningHub })), { ssr: false, loading: () => null })
+const GlobalSearchHub = dynamic(() => import("@/components/settings/GlobalSearchHub").then(m => ({ default: m.GlobalSearchHub })), { ssr: false, loading: () => null })
+const TasksPage = dynamic(() => import("@/components/pages/tasks-page").then(m => ({ default: m.TasksPage })), { ssr: false, loading: () => null })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 
@@ -371,10 +372,8 @@ export default function SettingsPageEnhanced() {
         return (
           <CompanyTeamHub
             activeSubsection={activeSubsection}
-            // @ts-ignore TODO: fix type
-            onUserUpdate={handleUserUpdate}
-            // @ts-ignore TODO: fix type
-            onGoalUpdate={handleGoalUpdate}
+            onUserUpdate={handleUserUpdate as any}
+            onGoalUpdate={handleGoalUpdate as any}
           />
         )
       case 'recruitment':

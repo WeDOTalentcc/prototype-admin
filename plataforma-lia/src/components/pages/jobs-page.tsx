@@ -69,7 +69,7 @@ import { TableFiltersPanel } from"@/components/pages/jobs/TableFiltersPanel"
 import { InlineChatPanel } from"@/components/pages/jobs/InlineChatPanel"
 import { JobPreviewPanel } from"@/components/pages/jobs/JobPreviewPanel"
 import { JobsCompactTableView } from"@/components/pages/jobs/JobsCompactTableView"
-import { JobsModalsSection } from"@/components/pages/jobs/JobsModalsSection"
+const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModalsSection").then(m => ({ default: m.JobsModalsSection })), { ssr: false, loading: () => null }) as any
 import { JobsDashboardView } from"@/components/pages/jobs/JobsDashboardView"
 const ExpandedChatModal = dynamic(() => import("@/components/expanded-chat-modal").then(m => ({ default: m.ExpandedChatModal })), { ssr: false })
 import { liaApi } from"@/services/lia-api"
@@ -779,8 +779,7 @@ export function JobsPage(props: JobsPageProps) {
           screeningConfig={screeningConfig}
           updateScreeningConfig={updateScreeningConfig}
           showReactivateScreeningDialog={showReactivateScreeningDialog}
-          // @ts-ignore TODO: fix type
-          reactivateScreeningJobs={reactivateScreeningJobs}
+          reactivateScreeningJobs={reactivateScreeningJobs as any}
           reactivateEndDate={reactivateEndDate}
           showWSITutorialModal={showWSITutorialModal}
           onCloseWSITutorialModal={() => setShowWSITutorialModal(false)}
@@ -796,8 +795,7 @@ export function JobsPage(props: JobsPageProps) {
           onOpenJobCreationChat={openJobCreationChat}
           onSetPendingNavigateJobId={setPendingNavigateJobId}
           onSetReactivateScreeningDialog={setShowReactivateScreeningDialog}
-          // @ts-ignore TODO: fix type
-          onSetReactivateScreeningJobs={setReactivateScreeningJobs}
+          onSetReactivateScreeningJobs={setReactivateScreeningJobs as any}
           onSetReactivateEndDate={setReactivateEndDate}
           jobs={allJobs.filter(job => selectedJobsForBatch.has(job.id)).map(job => ({
             id: String(job.id),
@@ -806,7 +804,7 @@ export function JobsPage(props: JobsPageProps) {
             status: job.status,
             is_published: job.status === "Ativa",
             published_channels: []
-          }))}
+          })) as any}
           onPublish={async (jobIds, channels, options) => {
             try {
               const selectedJobs = allJobs.filter(job => selectedJobsForBatch.has(job.id))

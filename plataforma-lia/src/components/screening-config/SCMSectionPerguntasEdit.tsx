@@ -18,13 +18,15 @@ import type { useScreeningConfigManagerCore } from "./hooks/useScreeningConfigMa
 
 type Props = ReturnType<typeof useScreeningConfigManagerCore>
 
-function getBloomLabelPTBR(level: number): string {
+function getBloomLabelPTBR(level: string | number): string {
+  const numLevel = typeof level === 'string' ? parseInt(level, 10) : level
   const labels: Record<number, string> = { 1: 'Conhecimento', 2: 'Compreensão', 3: 'Aplicação', 4: 'Análise', 5: 'Síntese', 6: 'Avaliação' }
-  return labels[level] || 'Aplicação'
+  return labels[numLevel] || 'Aplicação'
 }
-function getDreyfusLabelPTBR(level: string): string {
+function getDreyfusLabelPTBR(level: string | number): string {
+  const key = String(level)
   const labels: Record<string, string> = { novice: 'Iniciante', advanced_beginner: 'Iniciante Avançado', competent: 'Competente', proficient: 'Proficiente', expert: 'Expert' }
-  return labels[level] || level
+  return labels[key] || key
 }
 function getBigFiveLabelPTBR(trait: string): string {
   const labels: Record<string, string> = { openness: 'Abertura', conscientiousness: 'Conscienciosidade', extraversion: 'Extroversão', agreeableness: 'Amabilidade', neuroticism: 'Neuroticismo' }
@@ -51,10 +53,8 @@ export function SCMSectionPerguntasEdit({
   wsiSummaryTypedText, wsiSummaryTypingDone, wsiTypedMessage,
   setWsiDynamicMessage, setWsiGenerationCompleted, setWsiGenerationContext, setWsiGenerationStep,
 }: Props) {
-  // @ts-ignore TODO: fix type — Property 'filter' does not exist on type '{}'.
-  const techSkillsCount = (job?.technicalRequirements || []).filter(Boolean).length
-  // @ts-ignore TODO: fix type — Property 'filter' does not exist on type '{}'.
-  const behavCompCount = (job?.behavioralCompetencies || []).filter(Boolean).length
+  const techSkillsCount = (Array.isArray(job?.technicalRequirements) ? job.technicalRequirements : []).filter(Boolean).length
+  const behavCompCount = (Array.isArray(job?.behavioralCompetencies) ? job.behavioralCompetencies : []).filter(Boolean).length
   const showTechWarning = techSkillsCount < 9
   const showBehavWarning = behavCompCount < 5
   const showFullDisabled = techSkillsCount < 5
@@ -359,8 +359,7 @@ export function SCMSectionPerguntasEdit({
       <div className="px-5 py-5 overflow-y-auto">
         <div className="space-y-3">
           {WSI_BLOCKS.map((block) => {
-            // @ts-ignore TODO: fix type — Argument of type 'string | number' is not assignable to parameter of type 'numbe
-            const isExpanded = expandedBlocks.includes(block.id)
+            const isExpanded = (expandedBlocks as (string | number)[]).includes(block.id)
             const allQuestions = job.screeningQuestions || []
             const cat = (q: ScreeningQuestionItem) => (q.category || '').toLowerCase()
             const typ = (q: ScreeningQuestionItem) => (q.type || '').toLowerCase()
@@ -377,8 +376,7 @@ export function SCMSectionPerguntasEdit({
               return cat(q).includes('tecn') || cat(q).includes('tech') || cat(q).includes('skill') || cat(q).includes('técnica') || typ(q).includes('tech')
             }
             const isBlock4 = (q: ScreeningQuestionItem) => isBlock2(q) || isBlock3(q) ? false : true
-            // @ts-ignore TODO: fix type — Property 'filter' does not exist on type '{}'.
-            const blockQuestions = allQuestions.filter((q: ScreeningQuestionItem) => {
+            const blockQuestions = (Array.isArray(allQuestions) ? allQuestions : []).filter((q: ScreeningQuestionItem) => {
               if (q.block_id !== undefined && q.block_id !== null) return q.block_id === block.id
               if (block.id === 2) return isBlock2(q)
               if (block.id === 3) return isBlock3(q)
@@ -393,8 +391,7 @@ export function SCMSectionPerguntasEdit({
             return (
               <div key={block.id} className={`border rounded-md overflow-hidden ${block.editable ? 'border-lia-border-subtle' : 'border-lia-border-subtle bg-lia-bg-secondary/50/30'}`}>
                 <div className={`flex items-center justify-between p-3 cursor-pointer transition-colors motion-reduce:transition-none ${block.editable ? 'bg-lia-bg-secondary hover:bg-lia-bg-tertiary hover:bg-lia-interactive-hover' : 'bg-lia-bg-tertiary/80/50'}`}
-                  // @ts-ignore TODO: fix type — Argument of type '(prev: number[]) => (string | number)[]' is not assignable to 
-                  onClick={() => setExpandedBlocks(prev => isExpanded ? prev.filter(id => id !== block.id) : [...prev, block.id])}>
+                  onClick={() => setExpandedBlocks(((prev: number[]) => isExpanded ? prev.filter(id => id !== block.id) : [...prev, block.id as number]) as any)}>
                   <div className="flex items-center gap-2">
                     <span className={`w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center ${block.editable ? 'bg-lia-btn-primary-bg' : 'bg-lia-border-medium'}`}>{block.id}</span>
                     <div>
@@ -468,7 +465,6 @@ export function SCMSectionPerguntasEdit({
                                       item={item}
                                       isDetailsExpanded={isDetailsExpanded}
                                       onToggleDetails={(id) => setExpandedQuestionDetails(prev => { const next = new Set(prev); if (next.has(id)) { next.delete(id) } else { next.add(id) } return next })}
-                                      // @ts-ignore TODO: fix type — Type '(level: string) => string' is not assignable to type '(level: string | num
                                       helpers={{ getBloomComplexity, getBloomLabelPTBR, getDreyfusLabelPTBR, getBigFiveLabelPTBR, getEstimatedTime }}
                                     />
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none shrink-0">
@@ -507,7 +503,6 @@ export function SCMSectionPerguntasEdit({
                                       item={item}
                                       isDetailsExpanded={genDetailsExpanded}
                                       onToggleDetails={(id) => setExpandedQuestionDetails(prev => { const next = new Set(prev); if (next.has(id)) { next.delete(id) } else { next.add(id) } return next })}
-                                      // @ts-ignore TODO: fix type — Type '(level: string) => string' is not assignable to type '(level: string | num
                                       helpers={{ getBloomComplexity, getBloomLabelPTBR, getDreyfusLabelPTBR, getBigFiveLabelPTBR, getEstimatedTime }}
                                     />
                                     <div className="flex items-center gap-1.5 shrink-0">
@@ -548,16 +543,15 @@ export function SCMSectionPerguntasEdit({
         </Button>
         <div className="flex items-center gap-2">
           <Button size="sm" className="h-7 text-micro px-4 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text" onClick={async () => {
-            // @ts-ignore TODO: fix type — Property 'length' does not exist on type '{}'.
-            const existingCount = (job.screeningQuestions || []).length
+            const screeningQs = Array.isArray(job.screeningQuestions) ? job.screeningQuestions : []
+            const existingCount = screeningQs.length
             const acceptedCount = Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length
             const totalQuestions = existingCount + acceptedCount
             if (totalQuestions === 0) { toast.error('Selecione pelo menos uma pergunta antes de salvar o roteiro.'); return }
             if (totalQuestions < 3) { toast.error('O roteiro precisa ter no mínimo 3 perguntas. Atualmente: ' + totalQuestions); return }
             try {
               const jobId = job.backendId || job.jobId || String(job.id)
-              // @ts-ignore TODO: fix type — Property 'map' does not exist on type '{}'.
-              const existingQuestions = (job.screeningQuestions || []).map((q: ScreeningQuestionItem) => ({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id }))
+              const existingQuestions = screeningQs.map((q: ScreeningQuestionItem) => ({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id }))
               const acceptedGenerated: ScreeningQuestionItem[] = []
               Object.values(generatedQuestions).forEach((blockQs: ScreeningQuestionItem[]) => {
                 blockQs.forEach((q: ScreeningQuestionItem) => { if (acceptedQuestions.has(q.id)) { acceptedGenerated.push({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight || 0.75, skill_targeted: q.skill_targeted, block_id: q.block_id }) } })
@@ -565,8 +559,7 @@ export function SCMSectionPerguntasEdit({
               const allQuestions = [...existingQuestions, ...acceptedGenerated]
               const response = await fetch('/api/backend-proxy/wsi/questions/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job_id: jobId, questions: allQuestions, source: 'manual_save' }) })
               if (response.ok) {
-                // @ts-ignore TODO: fix type — Type '{}' must have a '[Symbol.iterator]()' method that returns an iterator.
-                const newScreeningQuestions = [...(job.screeningQuestions || []), ...Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).map((q: ScreeningQuestionItem) => ({ ...q, question: q.question || q.text, generated: undefined }))]
+                const newScreeningQuestions = [...screeningQs, ...Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).map((q: ScreeningQuestionItem) => ({ ...q, question: q.question || q.text, generated: undefined }))]
                 onJobUpdate?.({ ...job, screeningQuestions: newScreeningQuestions })
                 toast.success(`Roteiro salvo com sucesso! ${allQuestions.length} perguntas salvas.`)
                 resetScreeningEditing()
@@ -577,16 +570,15 @@ export function SCMSectionPerguntasEdit({
           </Button>
           {(job.screeningStatus !== 'active') && (
             <Button size="sm" className="h-7 text-micro px-4 bg-status-success hover:bg-status-success text-white" onClick={async () => {
-              // @ts-ignore TODO: fix type — Property 'length' does not exist on type '{}'.
-              const existingCount = (job.screeningQuestions || []).length
+              const screeningQs2 = Array.isArray(job.screeningQuestions) ? job.screeningQuestions : []
+              const existingCount = screeningQs2.length
               const acceptedCount = Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).length
               const totalQuestions = existingCount + acceptedCount
               if (totalQuestions === 0) { toast.error('Selecione pelo menos uma pergunta antes de ativar a triagem.'); return }
               if (totalQuestions < 3) { toast.error('O roteiro precisa ter no mínimo 3 perguntas para ativar. Atualmente: ' + totalQuestions); return }
               try {
                 const jobId = job.backendId || job.jobId || String(job.id)
-                // @ts-ignore TODO: fix type — Property 'map' does not exist on type '{}'.
-                const existingQuestions = (job.screeningQuestions || []).map((q: ScreeningQuestionItem) => ({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id }))
+                const existingQuestions = screeningQs2.map((q: ScreeningQuestionItem) => ({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight, skill_targeted: q.skill_targeted, block_id: q.block_id }))
                 const acceptedGenerated: ScreeningQuestionItem[] = []
                 Object.values(generatedQuestions).forEach((blockQs: ScreeningQuestionItem[]) => {
                   blockQs.forEach((q: ScreeningQuestionItem) => { if (acceptedQuestions.has(q.id)) { acceptedGenerated.push({ id: q.id, text: q.question || q.text, category: q.category, type: q.type, weight: q.weight || 0.75, skill_targeted: q.skill_targeted, block_id: q.block_id }) } })
@@ -594,8 +586,7 @@ export function SCMSectionPerguntasEdit({
                 const allQuestions = [...existingQuestions, ...acceptedGenerated]
                 const response = await fetch('/api/backend-proxy/wsi/questions/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ job_id: jobId, questions: allQuestions, source: 'manual_save' }) })
                 if (response.ok) {
-                  // @ts-ignore TODO: fix type — Type '{}' must have a '[Symbol.iterator]()' method that returns an iterator.
-                  const newScreeningQuestions = [...(job.screeningQuestions || []), ...Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).map((q: ScreeningQuestionItem) => ({ ...q, question: q.question || q.text, generated: undefined }))]
+                  const newScreeningQuestions = [...screeningQs2, ...Object.values(generatedQuestions).flat().filter((q: ScreeningQuestionItem) => acceptedQuestions.has(q.id)).map((q: ScreeningQuestionItem) => ({ ...q, question: q.question || q.text, generated: undefined }))]
                   onJobUpdate?.({ ...job, screeningQuestions: newScreeningQuestions, screeningStatus: 'active' })
                   toast.success(`Roteiro salvo e triagem ativada! ${allQuestions.length} perguntas configuradas.`)
                   resetScreeningEditing()

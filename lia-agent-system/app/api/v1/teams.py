@@ -607,18 +607,19 @@ async def receive_teams_message(
 ):
     """
     Webhook endpoint for Teams messages.
-    
+
     This is called by Microsoft Bot Framework when:
     - User sends a message to the bot
     - Bot is added to a conversation
     - Adaptive card action is triggered
+    - File attachment (CV) is sent
     """
     try:
         # Get activity payload
         activity = await request.json()
-        
+
         logger.info(f"Received Teams activity: {activity.get('type')}")
-        
+
         # Validate JWT token from Microsoft Bot Framework (REQUIRED)
         if not settings.MICROSOFT_APP_ID or not settings.MICROSOFT_APP_PASSWORD:
             logger.error("Teams Bot not configured - rejecting webhook request")
@@ -626,49 +627,98 @@ async def receive_teams_message(
                 status_code=503,
                 detail="Teams Bot not configured. Set MICROSOFT_APP_ID and MICROSOFT_APP_PASSWORD."
             )
-        
+
         # Validate JWT token - ALWAYS required
         is_valid = await bot_auth.validate_token(authorization, settings.MICROSOFT_APP_ID)
         if not is_valid:
             logger.warning("Invalid or missing Bot Framework JWT token")
             raise HTTPException(status_code=401, detail="Unauthorized - invalid JWT token")
-        
-        # Process activity with simplified bot
-        response = await simple_teams_bot.process_activity(activity)
-        
-        # Send response based on activity type
+
         service_url = activity.get("serviceUrl")
         conversation_id = activity.get("conversation", {}).get("id")
         activity_id = activity.get("id")
-        
-        if isinstance(response, str):
-            # Simple text response (for messages)
+
+        # Handle file attachments (CV uploads) first
+        if activity.get("type") == "message":
+            attachments = activity.get("attachments") or []
+            file_attachments = [
+                a for a in attachments
+                if a.get("contentType") not in ("text/html",) and a.get("contentUrl")
+            ]
+            if file_attachments:
+                try:
+                    from app.domains.communication.services.teams_orchestrator_bridge import teams_orchestrator_bridge
+                    from app.domains.communication.services.teams_card_renderer import teams_card_renderer
+
+                    cv_result = await teams_orchestrator_bridge.process_cv_attachment(
+                        activity, file_attachments[0], db=db
+                    )
+                    cv_card = teams_card_renderer.render(cv_result)
+                    if cv_card:
+                        await simple_teams_bot.send_adaptive_card(
+                            service_url=service_url,
+                            conversation_id=conversation_id,
+                            card_payload=cv_card,
+                        )
+                    else:
+                        await simple_teams_bot.send_message(
+                            service_url=service_url,
+                            conversation_id=conversation_id,
+                            text=cv_result.get("message", "CV processado."),
+                        )
+                except Exception as cv_err:
+                    logger.error(f"[Teams] CV attachment processing error: {cv_err}", exc_info=True)
+                    await simple_teams_bot.send_message(
+                        service_url=service_url,
+                        conversation_id=conversation_id,
+                        text="Erro ao processar o arquivo. Tente novamente.",
+                    )
+                await _store_conversation_reference(activity, db)
+                await _log_teams_message(activity, db)
+                return {"status": "ok"}
+
+        # Process text message via orchestrator-backed bot
+        response = await simple_teams_bot.process_activity(activity)
+
+        if isinstance(response, dict) and response.get("type") == "card":
+            await simple_teams_bot.send_adaptive_card(
+                service_url=service_url,
+                conversation_id=conversation_id,
+                card_payload=response["card"],
+            )
+        elif isinstance(response, dict) and response.get("type") == "text":
+            await simple_teams_bot.send_message(
+                service_url=service_url,
+                conversation_id=conversation_id,
+                text=response["text"],
+                reply_to_activity_id=activity_id if activity.get("type") == "message" else None,
+            )
+        elif isinstance(response, str):
+            # Legacy plain string response
             await simple_teams_bot.send_message(
                 service_url=service_url,
                 conversation_id=conversation_id,
                 text=response,
-                reply_to_activity_id=activity_id if activity.get("type") == "message" else None
+                reply_to_activity_id=activity_id if activity.get("type") == "message" else None,
             )
         elif isinstance(response, dict) and "messages" in response:
-            # Multiple messages (for conversationUpdate)
+            # Multiple messages (for conversationUpdate welcome)
             for msg in response["messages"]:
                 await simple_teams_bot.send_message(
                     service_url=service_url,
                     conversation_id=conversation_id,
-                    text=msg["text"]
+                    text=msg["text"],
                 )
-        
-        response = {"status": "ok"}
-        
+
         # Store conversation reference if this is a message
         if activity.get("type") == "message":
             await _store_conversation_reference(activity, db)
-        
+
         # Log the message
         await _log_teams_message(activity, db)
-        
-        return response
-    
+
+        return {"status": "ok"}
+
     except HTTPException:
         # Re-raise HTTP exceptions (401, 503, etc) with original status codes
         raise
@@ -867,3 +917,80 @@ def _create_notification_card(notification_type: str, data: Dict[str, Any]) -> D
             }
         ]
     }
+
+
+@router.post("/proactive/check")
+async def run_proactivity_checks(
+    company_id: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Run proactivity checks (stalled pipelines, deadlines). Call periodically."""
+    try:
+        from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
+        stalled_sent = await teams_proactivity_engine.check_stalled_pipelines(company_id)
+        deadlines_sent = await teams_proactivity_engine.check_approaching_deadlines(company_id)
+        return {
+            "stalled_notifications_sent": stalled_sent,
+            "deadline_notifications_sent": deadlines_sent,
+            "total": stalled_sent + deadlines_sent,
+        }
+    except Exception as e:
+        logger.error(f"[Teams] proactivity check error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/proactive/new-candidate")
+async def notify_new_candidate(
+    candidate_id: str,
+    candidate_name: str,
+    vacancy_id: str,
+    vacancy_title: str,
+    company_id: str,
+    estimated_score: Optional[float] = None,
+):
+    """Notify recruiters when new candidate applies."""
+    try:
+        from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
+        sent = await teams_proactivity_engine.on_candidate_applied(
+            candidate_id=candidate_id,
+            candidate_name=candidate_name,
+            vacancy_id=vacancy_id,
+            vacancy_title=vacancy_title,
+            company_id=company_id,
+            estimated_score=estimated_score,
+        )
+        return {"sent": sent}
+    except Exception as e:
+        logger.error(f"[Teams] notify_new_candidate error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/proactive/screening-complete")
+async def notify_screening_complete(
+    candidate_id: str,
+    candidate_name: str,
+    vacancy_id: str,
+    job_title: str,
+    match_score: float,
+    recommendation: str,
+    company_id: str,
+    recruiter_teams_id: Optional[str] = None,
+):
+    """Notify recruiters when a screening (WSI/BARS) completes."""
+    try:
+        from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
+        sent = await teams_proactivity_engine.on_screening_complete(
+            candidate_id=candidate_id,
+            candidate_name=candidate_name,
+            vacancy_id=vacancy_id,
+            job_title=job_title,
+            match_score=match_score,
+            recommendation=recommendation,
+            company_id=company_id,
+            recruiter_teams_id=recruiter_teams_id,
+        )
+        return {"sent": sent}
+    except Exception as e:
+        logger.error(f"[Teams] notify_screening_complete error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+

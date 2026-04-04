@@ -4,6 +4,28 @@ import React from "react"
 import type { Candidate } from "../types"
 import { toast } from "sonner"
 
+interface CandidateExperience {
+  company?: string
+  company_name?: string
+  company_linkedin_url?: string
+  company_domain?: string
+  title?: string
+  start_date?: string
+  end_date?: string
+  duration_years?: number
+  current?: boolean
+  description?: string
+  location?: string
+  industries?: string[]
+  company_size?: string
+  company_size_range?: string
+  technologies?: string[]
+  is_startup?: boolean
+  company_followers_count?: number
+  company_keywords?: string[]
+  company_info?: { followers_count?: number; keywords?: string[] }
+}
+
 export interface CandidatesActionsContext {
   candidates: Candidate[]
   setCandidates: React.Dispatch<React.SetStateAction<Candidate[]>>
@@ -85,7 +107,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           avatar_url: c.avatar_url || null,
           current_title: c.current_title || null,
           current_company: c.current_company || null,
-          headline: c.headline || null,          // @ts-ignore // TODO: fix type
+          headline: c.headline || null,
           summary: c.summary || null,
           location: c.location || null,
           years_of_experience: c.years_of_experience || null,
@@ -93,7 +115,7 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           expertise: c.expertise || [],
           languages: c.languages || [],
           education: c.education || [],
-          experiences: (c.experiences || []).map((exp: { company?: string; company_name?: string; company_linkedin_url?: string; company_domain?: string; title?: string; start_date?: string; end_date?: string; duration_years?: number; current?: boolean; description?: string; location?: string; industries?: string[]; company_size?: string; company_size_range?: string; technologies?: string[] }) => ({
+          experiences: (c.experiences || []).map((exp: CandidateExperience) => ({
             company_name: exp.company || exp.company_name || 'Empresa não informada',
             company_linkedin_url: exp.company_linkedin_url || null,
             company_domain: exp.company_domain || null,
@@ -107,17 +129,11 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
             industries: exp.industries || [],
             company_size: exp.company_size || null,
             company_size_range: exp.company_size_range || null,
-            // @ts-ignore // TODO: fix type
             technologies: exp.technologies || [],
-            // @ts-ignore // TODO: fix type
             is_startup: exp.is_startup || null,
-            // @ts-ignore // TODO: fix type
             company_founded_year: null,
-            // @ts-ignore // TODO: fix type
             company_annual_revenue: null,
-            // @ts-ignore // TODO: fix type
             company_followers_count: exp.company_followers_count || exp.company_info?.followers_count || null,
-            // @ts-ignore // TODO: fix type
             company_keywords: exp.company_keywords || exp.company_info?.keywords || []
           })),
           is_open_to_work: c.is_open_to_work || null,
@@ -126,18 +142,12 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           is_hiring: c.is_hiring || null,
           best_personal_email: c.best_personal_email || null,
           best_business_email: c.best_business_email || null,
-          // @ts-ignore // TODO: fix type
           personal_emails: c.personal_emails || [],
-          // @ts-ignore // TODO: fix type
           business_emails: c.business_emails || [],
-          // @ts-ignore // TODO: fix type
           phone_types: c.phone_types || null,
           estimated_age: c.estimated_age || null,
-          // @ts-ignore // TODO: fix type
           linkedin_followers_count: c.linkedin_followers_count || c.followers_count || null,
-          // @ts-ignore // TODO: fix type
           linkedin_connections_count: c.linkedin_connections_count || c.connections_count || null,
-          // @ts-ignore // TODO: fix type
           insights: c.pearch_insights || c.insights || null,
           outreach_message: c.outreach_message || null
         })),
@@ -197,7 +207,6 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           first_name: c.name?.split(' ')[0] || null,
           last_name: c.name?.split(' ').slice(1).join(' ') || null,
           middle_name: c.middle_name || null,
-          // @ts-ignore // TODO: fix type
           email: c.email || null,
           phone: c.phone || null,
           linkedin_url: c.linkedin_url || null,
@@ -205,7 +214,6 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           current_title: c.current_title || null,
           current_company: c.current_company || null,
           headline: c.headline || null,
-          // @ts-ignore // TODO: fix type
           summary: c.summary || null,
           location: c.location || null,
           years_of_experience: c.years_of_experience || null,
@@ -213,37 +221,28 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           expertise: c.expertise || [],
           languages: c.languages || [],
           education: c.education || [],
-          experiences: (c.experiences || []).map((exp: { company?: string; company_name?: string; company_linkedin_url?: string; company_domain?: string; title?: string; start_date?: string; end_date?: string; duration_years?: number; current?: boolean; description?: string; location?: string; industries?: string[]; company_size?: string; company_size_range?: string; technologies?: string[] }) => ({
+          experiences: (c.experiences || []).map((exp: CandidateExperience) => ({
             company_name: exp.company || exp.company_name || 'Empresa não informada',
             company_linkedin_url: exp.company_linkedin_url || null,
             company_domain: exp.company_domain || null,
             title: exp.title || null,
             start_date: exp.start_date || null,
             end_date: exp.end_date || null,
-            // @ts-ignore // TODO: fix type
             duration_years: exp.duration_years || null,
             is_current: exp.current || false,
             description: exp.description || null,
-            // @ts-ignore // TODO: fix type
             location: exp.location || null,
-            // @ts-ignore // TODO: fix type
             industries: exp.industries || [],
             company_size: exp.company_size || null,
             company_size_range: exp.company_size_range || null,
             technologies: exp.technologies || [],
-            // @ts-ignore // TODO: fix type
             is_startup: exp.is_startup || null,
             company_founded_year: null,
             company_annual_revenue: null,
-            // @ts-ignore // TODO: fix type
             company_followers_count: exp.company_followers_count || exp.company_info?.followers_count || null,
-            // @ts-ignore // TODO: fix type
             company_keywords: exp.company_keywords || exp.company_info?.keywords || []
-          // @ts-ignore // TODO: fix type
           })),
-          // @ts-ignore // TODO: fix type
           is_open_to_work: c.is_open_to_work || null,
-          // @ts-ignore // TODO: fix type
           is_decision_maker: c.is_decision_maker || null,
           is_top_universities: c.is_top_universities || null,
           is_hiring: c.is_hiring || null,
@@ -253,11 +252,8 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           business_emails: c.business_emails || [],
           phone_types: c.phone_types || null,
           estimated_age: c.estimated_age || null,
-          // @ts-ignore // TODO: fix type
           linkedin_followers_count: c.linkedin_followers_count || c.followers_count || null,
-          // @ts-ignore // TODO: fix type
           linkedin_connections_count: c.linkedin_connections_count || c.connections_count || null,
-          // @ts-ignore // TODO: fix type
           insights: c.pearch_insights || c.insights || null,
           outreach_message: c.outreach_message || null
         })),
@@ -337,7 +333,6 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
     setIsSavingToBase(true)
 
     try {
-      // @ts-ignore // TODO: fix type
       const importPayload = {
         candidates: unsavedPearchCandidates.map(c => ({
           pearch_id: c.pearch_profile_id || c.id,
@@ -352,7 +347,6 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           current_title: c.current_title || null,
           current_company: c.current_company || null,
           headline: c.headline || null,
-          // @ts-ignore // TODO: fix type
           summary: c.summary || null,
           location: c.location || null,
           years_of_experience: c.years_of_experience || null,
@@ -360,13 +354,10 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           expertise: c.expertise || [],
           languages: c.languages || [],
           education: c.education || [],
-          // @ts-ignore // TODO: fix type
-          experiences: (c.experiences || []).map((exp: { company?: string; company_name?: string; company_linkedin_url?: string; company_domain?: string; title?: string; start_date?: string; end_date?: string; duration_years?: number; current?: boolean; description?: string; location?: string; industries?: string[]; company_size?: string; company_size_range?: string; technologies?: string[] }) => ({
+          experiences: (c.experiences || []).map((exp: CandidateExperience) => ({
             company_name: exp.company || exp.company_name || 'Empresa não informada',
             company_linkedin_url: exp.company_linkedin_url || null,
-            // @ts-ignore // TODO: fix type
             company_domain: exp.company_domain || null,
-            // @ts-ignore // TODO: fix type
             title: exp.title || null,
             start_date: exp.start_date || null,
             end_date: exp.end_date || null,
@@ -378,15 +369,10 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
             company_size: exp.company_size || null,
             company_size_range: exp.company_size_range || null,
             technologies: exp.technologies || [],
-            // @ts-ignore // TODO: fix type
             is_startup: exp.is_startup || null,
-            // @ts-ignore // TODO: fix type
             company_founded_year: null,
-            // @ts-ignore // TODO: fix type
             company_annual_revenue: null,
-            // @ts-ignore // TODO: fix type
             company_followers_count: exp.company_followers_count || exp.company_info?.followers_count || null,
-            // @ts-ignore // TODO: fix type
             company_keywords: exp.company_keywords || exp.company_info?.keywords || []
           })),
           is_open_to_work: c.is_open_to_work || null,
@@ -399,11 +385,8 @@ export function useCandidatesActions(ctx: CandidatesActionsContext) {
           business_emails: c.business_emails || [],
           phone_types: c.phone_types || null,
           estimated_age: c.estimated_age || null,
-          // @ts-ignore // TODO: fix type
           linkedin_followers_count: c.linkedin_followers_count || c.followers_count || null,
-          // @ts-ignore // TODO: fix type
           linkedin_connections_count: c.linkedin_connections_count || c.connections_count || null,
-          // @ts-ignore // TODO: fix type
           insights: c.pearch_insights || c.insights || null,
           outreach_message: c.outreach_message || null
         })),

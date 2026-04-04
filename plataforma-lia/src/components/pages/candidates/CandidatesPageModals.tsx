@@ -39,7 +39,7 @@ const NewCandidateUnifiedModal = dynamic(() => import("@/components/modals/new-c
 const CandidatePage = dynamic(() => import("@/components/candidate-page").then(m => ({ default: m.CandidatePage })), { ssr: false })
 const AdvancedFiltersModal = dynamic(() => import("@/components/search/advanced-filters-modal").then(m => ({ default: m.AdvancedFiltersModal })), { ssr: false })
 
-import type { CandidatesPageModalsProps } from "./CandidatesPageModals.types"
+import type { CandidatesPageModalsProps, ModalArchetype, ModalChatMessage } from "./CandidatesPageModals.types"
 import { toast } from "sonner"
 export function CandidatesPageModals({
   selectedCandidateForAction,
@@ -257,7 +257,6 @@ export function CandidatesPageModals({
             setShowScheduleModal(false)
             setSelectedCandidateForAction(null)
           }}
-          // @ts-ignore TODO: fix type
           candidate={(() => {
             const sca = selectedCandidateForAction
             return ({
@@ -267,9 +266,9 @@ export function CandidatesPageModals({
             email: sca.email,
             phone: sca.phone,
             location: sca.location,
-            avatar: sca.avatar,
+            avatar: sca.avatar || '',
             score: sca.score,
-            status: sca.status,
+            status: sca.status || '',
             matchPercentage: sca.liaAnalysis?.score ?? sca.score,
             riskLevel: 'low' as const,
             culturalFit: 85,
@@ -319,7 +318,6 @@ export function CandidatesPageModals({
         <CandidateComparison
           isOpen={showComparisonModal}
           onClose={() => setShowComparisonModal(false)}
-          // @ts-ignore TODO: fix type
           candidates={sortedCandidates
             .filter(c => selectedCandidatesForBatch.has(c.id))
             .map(c => ({
@@ -329,9 +327,9 @@ export function CandidatesPageModals({
               email: c.email,
               phone: c.phone,
               location: c.location,
-              avatar: c.avatar,
+              avatar: c.avatar || '',
               score: c.score,
-              status: c.status,
+              status: c.status || '',
               matchPercentage: c.liaAnalysis?.score ?? c.score,
               riskLevel: 'low' as const,
               culturalFit: 85,
@@ -362,8 +360,7 @@ export function CandidatesPageModals({
       {/* Candidate Page Modal */}
       {showCandidatePage && selectedCandidate && (
         <CandidatePage
-          // @ts-ignore TODO: fix type
-          candidate={selectedCandidate}
+          candidate={selectedCandidate as unknown as Record<string, unknown>}
           isOpen={showCandidatePage}
           onClose={handleCloseCandidatePage}
           onBackToKanban={() => {}}
@@ -411,8 +408,7 @@ export function CandidatesPageModals({
       {/* Batch Approval Modal */}
       {showBatchApproval && (
         <BatchApprovalModal
-          // @ts-ignore TODO: fix type
-          candidates={convertCandidatesForBatch(candidates.filter(c => selectedCandidatesForBatch.has(c.id)))}
+          candidates={convertCandidatesForBatch(candidates.filter(c => selectedCandidatesForBatch.has(c.id))) as any}
           isOpen={showBatchApproval}
           onClose={() => setShowBatchApproval(false)}
           onApprovalComplete={handleBatchApprovalComplete}
@@ -538,7 +534,6 @@ export function CandidatesPageModals({
           setShowSendEmailModal(false)
           setEmailCandidateSelected(null)
         }}
-        // @ts-ignore TODO: fix type
         candidate={emailCandidateSelected ? ({
           id: emailCandidateSelected.id,
           name: emailCandidateSelected.name,
@@ -550,8 +545,8 @@ export function CandidatesPageModals({
           is_active: true,
           is_remote: emailCandidateSelected.workModel === 'remoto',
           willing_to_relocate: false,
-          tags: emailCandidateSelected.tags,
-          status: emailCandidateSelected.status,
+          tags: emailCandidateSelected.tags || [],
+          status: emailCandidateSelected.status || '',
           lia_insights: {},
           soft_skills: [],
           languages: {},
@@ -571,8 +566,7 @@ export function CandidatesPageModals({
             setShowRevealModal(false)
             setRevealCandidate(null)
           }}
-          // @ts-ignore TODO: fix type
-          onConfirm={handleRevealContact}
+          onConfirm={handleRevealContact as () => Promise<void>}
           revealType={revealType}
           candidateName={revealCandidate.name}
           creditsRequired={revealType === 'email' ? 2 : 14}
@@ -597,12 +591,9 @@ export function CandidatesPageModals({
       <CreditConfirmationModal
         open={showCreditConfirmation}
         onOpenChange={setShowCreditConfirmation}
-        // @ts-ignore TODO: fix type
-        creditEstimate={creditEstimate}
-        // @ts-ignore TODO: fix type
-        pearchSearchOptions={pearchSearchOptions}
-        // @ts-ignore TODO: fix type
-        onSearchOptionsChange={setPearchSearchOptions}
+        creditEstimate={creditEstimate as any}
+        pearchSearchOptions={pearchSearchOptions as any}
+        onSearchOptionsChange={setPearchSearchOptions as any}
         onCancel={() => {
           setShowCreditConfirmation(false)
           setPendingSearchRequest(null)
@@ -625,7 +616,6 @@ export function CandidatesPageModals({
       <SourceChangeConfirmModal
         open={showSourceChangeModal}
         onOpenChange={setShowSourceChangeModal}
-        // @ts-ignore TODO: fix type
         pendingSourceChange={pendingSourceChange}
         onCancel={() => { setShowSourceChangeModal(false); setPendingSourceChange(null) }}
         onConfirm={confirmSourceChange}
@@ -635,7 +625,6 @@ export function CandidatesPageModals({
       <ContactFilterConfirmModal
         open={showContactFilterModal}
         onOpenChange={setShowContactFilterModal}
-        // @ts-ignore TODO: fix type
         pendingContactFilter={pendingContactFilter}
         onCancel={() => { setShowContactFilterModal(false); setPendingContactFilter(null) }}
         onConfirm={confirmContactFilterChange}
@@ -656,11 +645,9 @@ export function CandidatesPageModals({
           }
         }}
         onSave={(archetype, message) => {
-          // @ts-ignore TODO: fix type
-          setUserArchetypes(prev => [...prev, archetype])
+          setUserArchetypes(prev => [...prev, archetype as unknown as ModalArchetype])
           setShowSaveAsArchetypeModal(false)
-          // @ts-ignore TODO: fix type
-          setChatMessages(prev => [...prev, message])
+          setChatMessages(prev => [...prev, message as unknown as ModalChatMessage])
           if (isCreatingArchetype) {
             setIsCreatingArchetype(false)
             setArchetypeCreationStep('initial')
@@ -674,8 +661,7 @@ export function CandidatesPageModals({
         isOpen={showAdvancedSearch}
         onClose={() => setShowAdvancedSearch(false)}
         onApply={(filters) => {
-          // @ts-ignore TODO: fix type
-          setActiveSearchFilters(filters)
+          setActiveSearchFilters(filters as Record<string, unknown>)
           setShowAdvancedSearch(false)
           const hideScope = (filters as Record<string, unknown>).general ? ((filters as Record<string, unknown>).general as Record<string, unknown>)?.hideViewedScope as string || "dont_hide" : "dont_hide"
           const hidePeriod = (filters as Record<string, unknown>).general ? ((filters as Record<string, unknown>).general as Record<string, unknown>)?.hideViewedPeriod as string || "all_time" : "all_time"
@@ -759,7 +745,6 @@ export function CandidatesPageModals({
         onSaveAndExit={handleSaveAllAndExit}
         onExitWithoutSaving={handleExitWithoutSaving}
         unsavedCount={unsavedPearchCandidates.length}
-        // @ts-ignore TODO: fix type
         unsavedCandidates={unsavedPearchCandidates}
         isSaving={isSavingToBase}
       />
@@ -772,26 +757,21 @@ export function CandidatesPageModals({
         activeFiltersCount={getActiveSearchFiltersCount()}
         searchSource={searchSource}
         onSearchSourceChange={setSearchSource}
-        // @ts-ignore TODO: fix type
-        pearchSearchOptions={pearchSearchOptions}
-        // @ts-ignore TODO: fix type
-        onPearchOptionsChange={setPearchSearchOptions}
+        pearchSearchOptions={pearchSearchOptions as any}
+        onPearchOptionsChange={setPearchSearchOptions as any}
         onOpenFilters={() => setShowAdvancedSearch(true)}
         onSubmitNatural={async (query, entities, mode, metadata) => {
           setSearchTerm(query)
           setLastSearchQuery(query)
           setLastSearchMode(mode || 'natural')
-          // @ts-ignore TODO: fix type
-          setLastSearchEntities(entities)
-          // @ts-ignore TODO: fix type
-          setLastSearchMetadata(metadata)
+          setLastSearchEntities(entities as unknown as Record<string, unknown>)
+          setLastSearchMetadata(metadata as unknown as Record<string, unknown>)
           await executeSearch(query, entities, mode || 'natural', metadata, false)
         }}
         onSubmitAI={async (query) => {
           setSearchTerm(query)
           setLastSearchQuery(query)
           setLastSearchMode('ai-natural')
-          // @ts-ignore TODO: fix type
           setLastSearchEntities(null)
           await executeSearch(query, null, 'ai-natural', undefined, false)
         }}
@@ -799,24 +779,19 @@ export function CandidatesPageModals({
 
       {/* Preview Suggestion Modal */}
       <PreviewSuggestionModal
-        // @ts-ignore TODO: fix type
-        previewSuggestion={previewSuggestion}
-        // @ts-ignore TODO: fix type
-        previewingUserArchetype={previewingUserArchetype}
+        previewSuggestion={previewSuggestion as any}
+        previewingUserArchetype={previewingUserArchetype as any}
         onClose={() => {
           setPreviewSuggestion(null)
           setPreviewingUserArchetype(null)
         }}
-        // @ts-ignore TODO: fix type
         buildFiltersFromTags={buildFiltersFromTags}
         onUpdateArchetype={(id, updates) => {
-          // @ts-ignore TODO: fix type
-          setUserArchetypes(prev => prev.map((a: unknown) =>
-            (a as Record<string, unknown>).id === id ? { ...(a as object), ...updates } : a
+          setUserArchetypes(prev => prev.map((a) =>
+            a.id === id ? { ...a, ...updates } : a
           ))
         }}
-        // @ts-ignore TODO: fix type
-        onSaveArchetype={(newArchetype) => setUserArchetypes(prev => [...prev, newArchetype as Record<string, unknown>])}
+        onSaveArchetype={(newArchetype) => setUserArchetypes(prev => [...prev, newArchetype as unknown as ModalArchetype])}
         onExecuteSearch={async (query, filters, mode, metadata, usePearch) => {
           await executeSearch(query, filters as Record<string, unknown>, mode as string, metadata as Record<string, unknown>, usePearch)
         }}
@@ -826,10 +801,9 @@ export function CandidatesPageModals({
 
       {/* Delete Archetype Modal */}
       <DeleteArchetypeModal
-        // @ts-ignore TODO: fix type
         archetypeToDelete={archetypeToDelete}
         onClose={() => setArchetypeToDelete(null)}
-        onDeleted={(id) => setUserArchetypes(prev => prev.filter((a: unknown) => (a as Record<string, unknown>).id !== id))}
+        onDeleted={(id) => setUserArchetypes(prev => prev.filter(a => a.id !== id))}
       />
     </>
   )

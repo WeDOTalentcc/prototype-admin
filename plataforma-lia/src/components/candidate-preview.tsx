@@ -345,13 +345,11 @@ const {
             if (!createdAt && !updatedAt && !lastContactedAt) return null
             
             return (
-              // @ts-ignore TODO: fix type
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                {(createdAt as any) && (
+                {createdAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-micro text-lia-text-secondary flex items-center gap-0.5 cursor-help">
-                        {/* @ts-ignore TODO: fix type */}
                         <Calendar className="w-2.5 h-2.5" />
                         {formatDate(createdAt as string | Date | null | undefined)}
                       </span>
@@ -359,25 +357,23 @@ const {
                     <TooltipContent side="bottom" className="text-xs">Data de cadastro</TooltipContent>
                   </Tooltip>
                 )}
-                {(updatedAt as any) && (
+                {updatedAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-micro text-lia-text-secondary flex items-center gap-0.5 cursor-help">
-                        {/* @ts-ignore TODO: fix type */}
                         <Clock className="w-2.5 h-2.5" />
-                        {(formatDate(updatedAt as string | Date | null | undefined) as React.ReactNode)}
+                        {formatDate(updatedAt as string | Date | null | undefined)}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">Última atualização</TooltipContent>
                   </Tooltip>
                 )}
-                {(lastContactedAt as any) && (
+                {lastContactedAt && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="text-micro text-lia-text-tertiary flex items-center gap-0.5 cursor-help">
-                        {/* @ts-ignore TODO: fix type */}
                         <MessageSquare className="w-2.5 h-2.5" />
-                        {(formatDate(lastContactedAt as string | Date | null | undefined) as React.ReactNode)}
+                        {formatDate(lastContactedAt as string | Date | null | undefined)}
                       </span>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="text-xs">Último contato</TooltipContent>

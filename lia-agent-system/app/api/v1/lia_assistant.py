@@ -2956,3 +2956,152 @@ async def clear_job_draft(
 #   lia_assistant_fasttrack.py     → /lia/fast-track/*
 # These are registered in main.py alongside this router.
 # ============================================================================
+
+
+# ============================================================================
+# Context-Aware Suggestions (Notion AI-style: badge + proactive chips)
+# ============================================================================
+
+class ContextBadge(BaseModel):
+    """Badge showing the current page/entity context."""
+    label: str
+    icon: str
+    color: str
+    description: Optional[str] = None
+
+
+class ContextSuggestion(BaseModel):
+    """A proactive suggestion chip for the chat input."""
+    id: str
+    label: str          # Short text shown on the chip
+    prompt: str         # Full message sent when clicked
+    icon: Optional[str] = None
+    category: str = "action"   # action | analysis | report | navigation
+
+
+class ContextSuggestionsResponse(BaseModel):
+    context_badge: Optional[ContextBadge] = None
+    suggestions: List[ContextSuggestion]
+    page: str
+    entity_id: Optional[str] = None
+    generated_at: str
+
+
+# Suggestion templates keyed by page
+_CONTEXT_SUGGESTIONS: Dict[str, List[Dict[str, str]]] = {
+    "home": [
+        {"id": "h1", "label": "Resumo do dia", "prompt": "Me dê um resumo das atividades e alertas de hoje", "icon": "Sun", "category": "analysis"},
+        {"id": "h2", "label": "Vagas críticas", "prompt": "Quais vagas estão em estado crítico ou com prazo vencendo?", "icon": "AlertTriangle", "category": "analysis"},
+        {"id": "h3", "label": "Candidatos aguardando", "prompt": "Quantos candidatos estão aguardando triagem ou retorno?", "icon": "Users", "category": "analysis"},
+        {"id": "h4", "label": "Criar nova vaga", "prompt": "Quero criar uma nova vaga com a LIA", "icon": "Plus", "category": "action"},
+        {"id": "h5", "label": "Relatório semanal", "prompt": "Gera o relatório semanal com métricas de recrutamento", "icon": "FileText", "category": "report"},
+        {"id": "h6", "label": "Pipeline geral", "prompt": "Como está a saúde geral do pipeline de recrutamento?", "icon": "TrendingUp", "category": "analysis"},
+    ],
+    "vaga": [
+        {"id": "v1", "label": "Buscar candidatos", "prompt": "Busca os melhores candidatos para esta vaga e compara os perfis", "icon": "Search", "category": "action"},
+        {"id": "v2", "label": "Saúde do pipeline", "prompt": "Como está o pipeline desta vaga? Tem algum gargalo?", "icon": "Activity", "category": "analysis"},
+        {"id": "v3", "label": "Candidatos triagem", "prompt": "Quais candidatos desta vaga ainda precisam de triagem WSI?", "icon": "ClipboardCheck", "category": "action"},
+        {"id": "v4", "label": "Benchmark salarial", "prompt": "Qual o benchmark salarial para esta posição no mercado atual?", "icon": "DollarSign", "category": "analysis"},
+        {"id": "v5", "label": "Relatório da vaga", "prompt": "Gera um relatório completo desta vaga com métricas e candidatos", "icon": "FileText", "category": "report"},
+        {"id": "v6", "label": "Editar descrição", "prompt": "Quero revisar e melhorar a descrição desta vaga", "icon": "Edit", "category": "action"},
+    ],
+    "candidato": [
+        {"id": "c1", "label": "Comparar candidatos", "prompt": "Compara este candidato com os outros finalistas da vaga", "icon": "GitMerge", "category": "analysis"},
+        {"id": "c2", "label": "Parecer técnico", "prompt": "Gera um parecer técnico completo deste candidato", "icon": "FileText", "category": "report"},
+        {"id": "c3", "label": "Disparar triagem", "prompt": "Dispara a triagem WSI para este candidato", "icon": "Zap", "category": "action"},
+        {"id": "c4", "label": "Agendar entrevista", "prompt": "Quero agendar uma entrevista com este candidato", "icon": "Calendar", "category": "action"},
+        {"id": "c5", "label": "Pontos fortes", "prompt": "Quais são os pontos fortes e fracos deste candidato para a vaga?", "icon": "Star", "category": "analysis"},
+        {"id": "c6", "label": "Avançar no pipeline", "prompt": "Avança este candidato para a próxima etapa do pipeline", "icon": "ArrowRight", "category": "action"},
+    ],
+    "pipeline": [
+        {"id": "p1", "label": "Vagas travadas", "prompt": "Quais vagas estão travadas no pipeline há mais de 5 dias?", "icon": "AlertTriangle", "category": "analysis"},
+        {"id": "p2", "label": "Velocidade média", "prompt": "Qual a velocidade média do pipeline por etapa?", "icon": "TrendingUp", "category": "analysis"},
+        {"id": "p3", "label": "Mover candidatos", "prompt": "Quero mover candidatos em lote no pipeline", "icon": "MoveRight", "category": "action"},
+        {"id": "p4", "label": "Taxa de conversão", "prompt": "Qual a taxa de conversão entre as etapas do pipeline?", "icon": "BarChart", "category": "analysis"},
+        {"id": "p5", "label": "Candidatos prontos", "prompt": "Quais candidatos estão prontos para avançar para oferta?", "icon": "CheckCircle", "category": "action"},
+    ],
+    "triagem": [
+        {"id": "t1", "label": "Ver resultado WSI", "prompt": "Mostra o resultado completo da triagem WSI deste candidato", "icon": "BarChart2", "category": "analysis"},
+        {"id": "t2", "label": "Comparar respostas", "prompt": "Compara as respostas deste candidato com o perfil ideal da vaga", "icon": "GitMerge", "category": "analysis"},
+        {"id": "t3", "label": "Relatório de triagem", "prompt": "Gera o relatório de triagem com recomendação de contratação", "icon": "FileText", "category": "report"},
+        {"id": "t4", "label": "Ajustar perguntas", "prompt": "Quero revisar e ajustar as perguntas da triagem WSI", "icon": "Edit", "category": "action"},
+        {"id": "t5", "label": "Aprovação em lote", "prompt": "Quero aprovar ou rejeitar candidatos em lote baseado nos scores", "icon": "CheckSquare", "category": "action"},
+    ],
+    "relatorios": [
+        {"id": "r1", "label": "Relatório semanal", "prompt": "Gera o relatório semanal completo de recrutamento", "icon": "FileText", "category": "report"},
+        {"id": "r2", "label": "Análise de diversidade", "prompt": "Mostra os indicadores de diversidade e inclusão do mês", "icon": "Users", "category": "analysis"},
+        {"id": "r3", "label": "Time-to-hire", "prompt": "Qual o time-to-hire médio por vaga e por etapa?", "icon": "Clock", "category": "analysis"},
+        {"id": "r4", "label": "Custo por contratação", "prompt": "Analisa o custo por contratação e onde está o gasto maior", "icon": "DollarSign", "category": "analysis"},
+        {"id": "r5", "label": "Exportar dados", "prompt": "Quero exportar os dados de recrutamento para análise", "icon": "Download", "category": "action"},
+    ],
+    "configuracoes": [
+        {"id": "cfg1", "label": "Políticas de triagem", "prompt": "Quero revisar as políticas de triagem automática", "icon": "Shield", "category": "action"},
+        {"id": "cfg2", "label": "Perfis de sourcing", "prompt": "Como estão configurados os perfis de sourcing?", "icon": "Search", "category": "analysis"},
+        {"id": "cfg3", "label": "Integração ATS", "prompt": "Como está a integração com o ATS atual?", "icon": "Link", "category": "analysis"},
+    ],
+}
+
+_PAGE_BADGES: Dict[str, Dict[str, str]] = {
+    "home":           {"label": "Painel Principal",      "icon": "Home",          "color": "#6366F1"},
+    "vaga":           {"label": "Vaga",                  "icon": "Briefcase",     "color": "#8B5CF6"},
+    "candidato":      {"label": "Candidato",             "icon": "User",          "color": "#0EA5E9"},
+    "pipeline":       {"label": "Pipeline",              "icon": "GitBranch",     "color": "#F59E0B"},
+    "triagem":        {"label": "Triagem",               "icon": "ClipboardCheck","color": "#10B981"},
+    "relatorios":     {"label": "Relatórios",            "icon": "BarChart2",     "color": "#EF4444"},
+    "configuracoes":  {"label": "Configurações",         "icon": "Settings",      "color": "#6B7280"},
+}
+
+
+@router.get("/context-suggestions", response_model=ContextSuggestionsResponse)
+async def get_context_suggestions(
+    page: str = Query(..., description="Page context: home|vaga|candidato|pipeline|triagem|relatorios|configuracoes"),
+    entity_id: Optional[str] = Query(None, description="ID of the current entity (job or candidate)"),
+    entity_name: Optional[str] = Query(None, description="Display name of the current entity"),
+    limit: int = Query(default=5, ge=1, le=8),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """
+    Returns a context badge + proactive suggestion chips for the current page.
+    Mirrors the Notion AI pattern: badge shows where you are, chips offer smart actions.
+    """
+    page_key = page.lower().strip()
+
+    # Build context badge
+    badge_config = _PAGE_BADGES.get(page_key, _PAGE_BADGES["home"])
+    badge_label = badge_config["label"]
+    if entity_name:
+        badge_label = f"{badge_config[label]}: {entity_name}"
+
+    context_badge = ContextBadge(
+        label=badge_label,
+        icon=badge_config["icon"],
+        color=badge_config["color"],
+        description=f"Contexto: {badge_config[label].lower()}",
+    )
+
+    # Build suggestions — use page key or fall back to home
+    raw_suggestions = _CONTEXT_SUGGESTIONS.get(page_key, _CONTEXT_SUGGESTIONS["home"])
+
+    # If entity context (vaga or candidato), personalize the prompts
+    personalized: List[ContextSuggestion] = []
+    for s in raw_suggestions[:limit]:
+        prompt = s["prompt"]
+        if entity_name and page_key in ("vaga", "candidato"):
+            # Append entity context to prompt so orchestrator knows which entity
+            prompt = f"{prompt} (referindo-se a: {entity_name}" + (f", ID: {entity_id}" if entity_id else "") + ")"
+        personalized.append(ContextSuggestion(
+            id=s["id"],
+            label=s["label"],
+            prompt=prompt,
+            icon=s.get("icon"),
+            category=s.get("category", "action"),
+        ))
+
+    return ContextSuggestionsResponse(
+        context_badge=context_badge,
+        suggestions=personalized,
+        page=page_key,
+        entity_id=entity_id,
+        generated_at=datetime.utcnow().isoformat(),
+    )
