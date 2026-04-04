@@ -634,7 +634,7 @@ const { saveJobsState } = useNavigationPersistence()
     setShowReport,
     setCandidatesData,
     candidatesData,
-    jobDataId: currentJob?.id,
+    jobDataId: currentJob?.id as string | number | undefined,
     openTransition,
   })
 

@@ -80,8 +80,13 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
         contactName: raw.contactName || '',
         contactEmail: raw.contactEmail || '',
         contactPhone: raw.contactPhone || '',
-        plan: raw.plan || 'starter',
+        companyData: {
+          razaoSocial: raw.companyData?.razaoSocial || raw.companyName || '',
+          endereco: raw.companyData?.endereco || '',
+          telefone: raw.companyData?.telefone || '',
+        },
         expiresAt: raw.expiresAt || new Date(0).toISOString(),
+        createdAt: raw.createdAt || new Date().toISOString(),
       }
 
       if (new Date(data.expiresAt) < new Date()) {
@@ -320,15 +325,15 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                   <div className="space-y-4 lia-text-medium">
                     <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
                       <Building className="w-5 h-5 lia-text-blue flex-shrink-0" />
-                      <span>{accessData?.companyData.razaoSocial}</span>
+                      <span>{accessData?.companyData?.razaoSocial}</span>
                     </div>
                     <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
                       <MapPin className="w-5 h-5 lia-text-blue flex-shrink-0" />
-                      <span>{accessData?.companyData.endereco}</span>
+                      <span>{accessData?.companyData?.endereco}</span>
                     </div>
                     <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
                       <Phone className="w-5 h-5 lia-text-blue flex-shrink-0" />
-                      <span>{accessData?.companyData.telefone}</span>
+                      <span>{accessData?.companyData?.telefone}</span>
                     </div>
                     <div className="flex items-center gap-4 p-4 lia-bg-cream rounded-md border border-lia-border-subtle">
                       <Calendar className="w-5 h-5 lia-text-blue flex-shrink-0" />
