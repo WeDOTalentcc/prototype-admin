@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
+import { DEMO_VALUES } from "@/lib/pricing"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -52,7 +53,7 @@ const MOCK_DATA: Record<string, string> = {
   interview_location: "Sala de Reuniões Virtual - Link: meet.google.com/abc-xyz",
   recruiter_name: "Ana Costa",
   recruiter_email: "ana.costa@techcorp.com.br",
-  offer_salary: "R$ 12.000,00",
+  offer_salary: DEMO_VALUES.OFFER_SALARY_EXAMPLE,
   offer_benefits: "VR, VT, Plano de Saúde, Gympass",
   start_date: "1º de Fevereiro de 2025",
 }

@@ -1,4 +1,4 @@
-import type { UserRole, Permission } from '@/utils/permissions'
+import type { UserRole } from '@/utils/permissions'
 
 export type PermissionAction = 'read' | 'write' | 'delete' | 'execute' | '*'
 export type PermissionResource =

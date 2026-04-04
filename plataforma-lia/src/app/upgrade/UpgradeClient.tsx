@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, ArrowRight, Brain } from "lucide-react"
 import Link from "next/link"
-import { PLANS, getPlanDisplayPrice } from "@/lib/pricing"
+import { PLANS } from "@/lib/pricing"
 
 export default function UpgradePage() {
   return (

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { DEMO_VALUES } from "@/lib/pricing"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -343,7 +344,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       id="currentSalary"
                       value={formData.currentSalary}
                       onChange={(e) => handleInputChange("currentSalary", e.target.value)}
-                      placeholder="R$ 8.000"
+                      placeholder={DEMO_VALUES.SALARY_PLACEHOLDER_CURRENT}
                       className="pl-10"
                     />
                   </div>
@@ -357,7 +358,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       id="expectedSalary"
                       value={formData.expectedSalary}
                       onChange={(e) => handleInputChange("expectedSalary", e.target.value)}
-                      placeholder="R$ 10.000"
+                      placeholder={DEMO_VALUES.SALARY_PLACEHOLDER_EXPECTED}
                       className="pl-10"
                     />
                   </div>

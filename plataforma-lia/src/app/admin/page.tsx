@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { DEMO_VALUES } from "@/lib/pricing"
 import {
   Users,
   Building,
@@ -149,7 +150,7 @@ export default function AdminDashboard() {
       iconColor: "var(--lia-text-secondary)",
       title: "Consumo de IA (Claude + Gemini)",
       subtitle: "1.2M tokens este mês",
-      value: "R$ 850",
+      value: DEMO_VALUES.AI_CONSUMPTION_MONTHLY,
       trend: "+8% vs média",
       trendDirection: "up",
     },
@@ -158,7 +159,7 @@ export default function AdminDashboard() {
       iconColor: "var(--wedo-blue)",
       title: "Buscas Globais (Base Global)",
       subtitle: "3.500 buscas (850 créditos)",
-      value: "R$ 420",
+      value: DEMO_VALUES.GLOBAL_SEARCH_MONTHLY,
       trend: "-5% vs média",
       trendDirection: "down",
     },

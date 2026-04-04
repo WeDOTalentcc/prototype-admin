@@ -226,6 +226,14 @@ export const MODULE_PRICES: Record<string, ModulePriceEntry> = {
   },
 }
 
+export const DEMO_VALUES = {
+  AI_CONSUMPTION_MONTHLY: formatBRL(850),
+  GLOBAL_SEARCH_MONTHLY: formatBRL(420),
+  OFFER_SALARY_EXAMPLE: 'R$ 12.000,00',
+  SALARY_PLACEHOLDER_CURRENT: 'R$ 8.000',
+  SALARY_PLACEHOLDER_EXPECTED: 'R$ 10.000',
+} as const
+
 export function getModulePrice(moduleId: string): PriceValue | undefined {
   return MODULE_PRICES[moduleId]?.price
 }
