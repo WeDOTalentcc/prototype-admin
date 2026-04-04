@@ -305,4 +305,120 @@ class TeamsProactivityEngine:
             return False
 
 
+    async def send_daily_digest(self, company_id: Optional[str] = None) -> int:
+        """
+        Send the daily morning digest to all recruiters via Teams.
+        Shows: active jobs, pending candidates, critical alerts, suggested actions.
+        Called by cron at 08:00 every weekday.
+        """
+        from app.domains.communication.services.teams_card_renderer import teams_card_renderer
+        from sqlalchemy import select, func, and_
+        from app.models import JobVacancy, Candidate
+        from datetime import datetime, timedelta
+
+        sent = 0
+        try:
+            async for db in self._get_db():
+                # Pull live metrics
+                today = datetime.utcnow()
+                week_ago = today - timedelta(days=7)
+                week_ahead = today + timedelta(days=7)
+
+                # Active jobs
+                jobs_q = select(func.count(JobVacancy.id)).where(
+                    JobVacancy.status.in_(["open", "active", "Open", "Active", "Em Andamento"])
+                )
+                if company_id:
+                    jobs_q = jobs_q.where(JobVacancy.company_id == company_id)
+                active_jobs = (await db.execute(jobs_q)).scalar() or 0
+
+                # Expiring soon
+                expiring_q = select(func.count(JobVacancy.id)).where(
+                    and_(
+                        JobVacancy.status.in_(["open", "active", "Open", "Active"]),
+                        JobVacancy.deadline != None,
+                        JobVacancy.deadline <= week_ahead,
+                    )
+                )
+                if company_id:
+                    expiring_q = expiring_q.where(JobVacancy.company_id == company_id)
+                expiring_jobs = (await db.execute(expiring_q)).scalar() or 0
+
+                # New candidates (last 7 days)
+                cands_q = select(func.count(Candidate.id)).where(
+                    Candidate.created_at >= week_ago
+                )
+                if company_id:
+                    cands_q = cands_q.where(Candidate.company_id == company_id)
+                new_candidates = (await db.execute(cands_q)).scalar() or 0
+
+                # Stalled pipelines (reuse existing check)
+                stalled = await self._find_stalled_pipelines(db, company_id)
+
+                # Build digest card
+                from datetime import datetime as _dt
+                weekday_names = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"]
+                weekday = weekday_names[_dt.now().weekday()]
+
+                body_lines = [
+                    f"**{weekday}, {_dt.now().strftime('%d/%m/%Y')}** — Bom dia! ☀️",
+                    "",
+                    f"📋 **{active_jobs}** vagas ativas",
+                    f"👥 **{new_candidates}** novos candidatos esta semana",
+                ]
+                if expiring_jobs:
+                    body_lines.append(f"⏰ **{expiring_jobs}** vaga(s) com prazo nos próximos 7 dias")
+                if stalled:
+                    body_lines.append(f"⚠️ **{len(stalled)}** pipeline(s) parado(s) há 5+ dias")
+
+                body_text = "\n".join(body_lines)
+
+                actions = [
+                    {"type": "Action.Submit", "title": "📊 Ver pipeline", "data": {"message": "Como está a saúde geral do pipeline?"}},
+                    {"type": "Action.Submit", "title": "👥 Candidatos aguardando", "data": {"message": "Quais candidatos estão aguardando triagem ou retorno?"}},
+                    {"type": "Action.Submit", "title": "⚠️ Vagas críticas", "data": {"message": "Quais vagas estão em estado crítico?"}},
+                    {"type": "Action.OpenUrl", "title": "🔗 Abrir plataforma", "url": "https://app.wedotalent.com"},
+                ]
+
+                card = teams_card_renderer.render_notification_card(
+                    title="📅 Resumo Diário — LIA",
+                    body_text=body_text,
+                    actions=actions,
+                    color="#6366F1",
+                    emoji="📅",
+                )
+
+                # Get all recruiters refs for this company
+                refs = await self._get_recruiter_refs_for_vacancy(
+                    vacancy_id=None, company_id=company_id or ""
+                )
+                if not refs and company_id:
+                    # Broader query — all refs for company
+                    try:
+                        async for db2 in self._get_db():
+                            result = await db2.execute(
+                                "SELECT DISTINCT service_url, conversation_id FROM teams_conversations WHERE company_id = :cid LIMIT 50",
+                                {"cid": company_id}
+                            )
+                            refs = [{"service_url": r.service_url, "conversation_id": r.conversation_id} for r in result]
+                            break
+                    except Exception:
+                        pass
+
+                if refs:
+                    sent_ok = await self._broadcast_card(card, refs)
+                    sent = len(refs) if sent_ok else 0
+                break  # Only one DB iteration needed
+
+        except Exception as e:
+            logger.error(f"[ProactivityEngine] send_daily_digest error: {e}", exc_info=True)
+        return sent
+
+    async def _get_db(self):
+        """Yield a DB session for internal use."""
+        from app.core.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as session:
+            yield session
+
+
 teams_proactivity_engine = TeamsProactivityEngine()

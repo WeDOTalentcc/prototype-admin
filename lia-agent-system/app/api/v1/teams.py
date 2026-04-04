@@ -994,3 +994,33 @@ async def notify_screening_complete(
         logger.error(f"[Teams] notify_screening_complete error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/proactive/daily-digest")
+async def send_daily_digest(
+    company_id: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Trigger the daily digest card for all Teams recruiters.
+    Should be called by a cron job at 08:00 every weekday.
+    """
+    from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
+    sent = await teams_proactivity_engine.send_daily_digest(company_id=company_id)
+    return {"sent": sent, "status": "ok"}
+
+
+@router.post("/feedback")
+async def receive_card_feedback(
+    payload: Dict[str, Any],
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Receive 👍👎 feedback from Teams Adaptive Card buttons.
+    Logs the feedback for LIA quality improvement.
+    """
+    feedback_type = payload.get("feedback", "unknown")
+    feedback_text = payload.get("feedback_text", "")
+    user_id = payload.get("user_id", "unknown")
+    logger.info(f"[Teams Feedback] type={feedback_type} user={user_id} text={feedback_text[:80]!r}")
+    # TODO: persist to feedback table for LIA training
+    return {"status": "received", "feedback": feedback_type}
+
