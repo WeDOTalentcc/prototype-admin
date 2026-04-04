@@ -164,12 +164,18 @@ const { saveJobsState } = useNavigationPersistence()
 
   const candidatesData = useKanbanStore((s) => s.candidatesData)
   const setCandidatesData = useKanbanStore((s) => s.setCandidatesData)
+  const resetKanbanStore = useKanbanStore((s) => s.resetStore)
   const jobId = job?.id
   const jobStagesJson = JSON.stringify(job?.interviewStages ?? [])
   useEffect(() => {
     const initial = createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0]))
     setCandidatesData(initial)
+    useKanbanStore.getState().clearSelection()
+    useKanbanStore.getState().setSearchQuery('')
   }, [jobId, jobStagesJson])
+  useEffect(() => {
+    return () => { resetKanbanStore() }
+  }, [])
 
   // ── handleUniversalTransitionConfirm — extraído para useKanbanTransitions ──
   const { handleUniversalTransitionConfirm } = useKanbanTransitions({

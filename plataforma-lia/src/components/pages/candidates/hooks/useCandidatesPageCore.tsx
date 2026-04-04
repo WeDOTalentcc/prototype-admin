@@ -133,6 +133,10 @@ const hideViewedCandidates = useHideViewedCandidates({
   const setIsLoading = useCandidatesStore((s) => s.setIsLoading)
   const isSearchActive = useCandidatesStore((s) => s.isSearchActive)
   const setIsSearchActive = useCandidatesStore((s) => s.setIsSearchActive)
+  const resetCandidatesStore = useCandidatesStore((s) => s.resetStore)
+  useEffect(() => {
+    return () => { resetCandidatesStore() }
+  }, [])
 
   // ── Search state ──────────────────────────────────────────────────────────
   const {
