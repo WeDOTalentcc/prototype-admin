@@ -2,8 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { toast } from "sonner"
-import { RECRUITMENT_STAGES } from "@/lib/recruitment-stages"
+import { RECRUITMENT_STAGES, type RecruitmentStage } from "@/lib/recruitment-stages"
 import { useCommunicationTemplates, type CommunicationTemplate, type TemplateSituation } from "@/hooks/use-communication-templates"
+import React from "react"
+import {
+  Mail,
+  MessageSquare,
+  Calendar,
+  ArrowRight,
+  ClipboardList,
+} from "lucide-react"
 import {
   getSuggestedActions,
   generateDefaultMessage,

@@ -230,7 +230,7 @@ function StreamingBubble({ content }: { content: string }) {
         <div className="flex items-center gap-1.5 mb-1">
           <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
         </div>
-        <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
+        <div className="bg-chat-cyan/[0.04] rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
           <RichContent
             html={html}
             className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"
@@ -282,7 +282,7 @@ function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversatio
           <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
           <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums">{msg.timestamp}</span>
         </div>
-        <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
+        <div className="bg-chat-cyan/[0.04] rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
           <RichContent
             html={renderedHtml}
             className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"

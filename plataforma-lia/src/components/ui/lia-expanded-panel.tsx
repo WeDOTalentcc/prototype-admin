@@ -464,7 +464,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
         <div 
           data-testid="chat-message"
           data-role="lia"
-          className="max-w-[85%] px-3.5 py-2.5 bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px]"
+          className="max-w-[85%] px-3.5 py-2.5 bg-chat-cyan/[0.04] rounded-[14px] rounded-bl-[4px]"
         >
           <div 
             className="text-base-ui leading-relaxed text-lia-text-secondary" 
@@ -500,7 +500,7 @@ export function LiaLoadingIndicator() {
             LIA
           </span>
         </div>
-        <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
+        <div className="bg-chat-cyan/[0.04] rounded-[14px] rounded-bl-[4px] p-3 inline-block">
           <div className="flex items-center gap-1">
             <ThinkingDots dotClassName="bg-chat-cyan" size="md" />
           </div>

@@ -44,7 +44,7 @@ interface StageTransitionLeftPanelProps {
   setSelectedAction: (action: TransitionActionType) => void
   channel: 'email' | 'whatsapp' | 'both'
   setChannel: (channel: 'email' | 'whatsapp' | 'both') => void
-  needsMessageComposition: boolean | TransitionActionType | null
+  needsMessageComposition: TransitionActionType | boolean | null
   filteredTemplates: CommunicationTemplate[]
   selectedTemplateId: string
   handleTemplateSelect: (template: CommunicationTemplate) => void

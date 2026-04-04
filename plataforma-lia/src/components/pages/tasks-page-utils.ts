@@ -86,7 +86,7 @@ export function getFormattedDate(): string {
   return formatted.charAt(0).toUpperCase() + formatted.slice(1)
 }
 
-export function getPlatformIcon(_platform: 'google_meet' | 'microsoft_teams' | 'zoom') {
+export function getPlatformIcon(platform: 'google_meet' | 'microsoft_teams' | 'zoom') {
   return React.createElement(Video, { className: "w-3 h-3" })
 }
 
@@ -116,17 +116,21 @@ export function getStatusClasses(status: string): string {
   }
 }
 
-export function getStatusIcon(_status: string) {
-  return React.createElement('span', {
-    className: "w-1.5 h-1.5 rounded-full bg-lia-border-medium dark:bg-lia-bg-elevated inline-block"
-  })
+export function getStatusIcon(status: string) {
+  switch (status) {
+    case 'completed': return React.createElement('span', { className: "w-1.5 h-1.5 rounded-full bg-lia-border-medium dark:bg-lia-bg-elevated inline-block" })
+    case 'cancelled': return React.createElement('span', { className: "w-1.5 h-1.5 rounded-full bg-lia-border-medium dark:bg-lia-bg-elevated inline-block" })
+    case 'rescheduled': return React.createElement('span', { className: "w-1.5 h-1.5 rounded-full bg-lia-border-medium dark:bg-lia-bg-elevated inline-block" })
+    default: return React.createElement('span', {
+      className: "w-1.5 h-1.5 rounded-full bg-lia-border-medium dark:bg-lia-bg-elevated inline-block"
+    })
+  }
 }
 
 export function getTimeUntilNext(interviews: ScheduledInterview[]): string | null {
   const now = new Date()
   const scheduled = interviews.filter(i => i.status === 'scheduled')
   if (scheduled.length === 0) return null
-
   const [hours, minutes] = scheduled[0].time.split(':').map(Number)
   const nextTime = new Date()
   nextTime.setHours(hours, minutes, 0, 0)
@@ -136,7 +140,6 @@ export function getTimeUntilNext(interviews: ScheduledInterview[]): string | nul
 
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
   const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
-
   if (diffHours > 0 && diffMinutes > 0) return `${diffHours}h${diffMinutes}min`
   if (diffHours > 0) return `${diffHours}h`
   return `${diffMinutes}min`
@@ -190,7 +193,6 @@ export function mapBackendToScheduled(bi: BackendInterview, candidateInfo?: Reco
   const dateStr = startDate.toISOString().split('T')[0]
   const displayName = bi.candidate_name.replace('[DEMO] ', '')
   const cid = bi.candidate_id || bi.id
-
   return {
     id: bi.id,
     candidateId: cid,

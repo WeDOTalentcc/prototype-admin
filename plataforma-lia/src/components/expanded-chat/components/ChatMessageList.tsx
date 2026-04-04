@@ -463,7 +463,7 @@ export function ChatMessageList({
                     <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
                     <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                   </div>
-                  <div className="px-3.5 py-2.5 bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px]">
+                  <div className="px-3.5 py-2.5 bg-chat-cyan/[0.04] rounded-[14px] rounded-bl-[4px]">
                     <div className="text-base-ui text-lia-text-secondary space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
                       {formatMessageContent(message.content, message.isTyping || false, message.id)}
                       {message.isTyping && messages[messages.length - 1]?.id === message.id && isTypingEffect && (

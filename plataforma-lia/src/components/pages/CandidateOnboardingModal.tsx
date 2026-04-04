@@ -123,7 +123,6 @@ export function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboar
                           style={{width: `${candidate.progress}%`}}
                         />
                       </div>
-
                       <div className="space-y-2">
                         {kanbanStages.map(stage => (
                           <div key={stage.id} className="flex items-center justify-between">
@@ -142,7 +141,6 @@ export function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboar
                   </CardContent>
                 </Card>
               </div>
-
               <div className="space-y-4">
                 <Card>
                   <CardHeader>

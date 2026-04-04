@@ -95,12 +95,12 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                 <button
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors motion-reduce:transition-none font-open-sans ${
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-md text-left transition-colors motion-reduce:transition-none font-open-sans text-xs leading-[1.125rem] font-medium ${
  activeSection === section.id
                       ? 'bg-lia-bg-secondary border border-lia-btn-primary-bg text-wedo-cyan-dark'
                       : 'hover:bg-lia-interactive-hover text-lia-text-primary border border-transparent'
                   }`}
-                  style={{fontSize: '0.6875rem', lineHeight: '1.125rem', fontWeight: '500'}}
+                  
                 >
                   <section.icon className="w-4 h-4 flex-shrink-0" />
                   <div className="flex-1 min-w-0">

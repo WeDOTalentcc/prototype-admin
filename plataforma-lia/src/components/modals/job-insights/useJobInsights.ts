@@ -388,7 +388,7 @@ export function useJobInsights({
         <div class="section">
           ${jobs.map((job) => `<div class="job-item"><strong>${job.code || ""} ${job.title}</strong><div style="font-size:12px;color:#6b7280;">${job.candidates_count || 0} candidatos • ${job.approved_count || 0} aprovados • Score: ${job.performance_score || "--"}%</div></div>`).join("")}
         </div>
-        <p style="font-size:11px;color:#9ca3af;margin-top:32px;">Gerado pela Plataforma LIA - WeDO Talent</p>
+        <p style="font-size:12px;color:#9ca3af;margin-top:32px;">Gerado pela Plataforma LIA - WeDO Talent</p>
       </body>
       </html>
     `)

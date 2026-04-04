@@ -42,7 +42,7 @@ export function TriagemDetailsHeader({ candidate, details, ranking, onClose }: T
                 </div>
                 <p style="color:var(--lia-text-secondary);font-size:12px;margin-bottom:4px;"><strong>Pergunta:</strong> ${resp.question.text}</p>
                 <p style="font-size:12px;margin-bottom:4px;"><strong>Resposta:</strong> ${resp.response_text}</p>
-                <p style="font-size:11px;color:var(--lia-text-secondary);font-style:italic;">${resp.justification || ''}</p>
+                <p style="font-size:12px;color:var(--lia-text-secondary);font-style:italic;">${resp.justification || ''}</p>
               </div>
             `).join('')
             printWindow.document.write(`
@@ -50,7 +50,7 @@ export function TriagemDetailsHeader({ candidate, details, ranking, onClose }: T
               <style>body{font-family:'Open Sans',sans-serif;padding:32px;color:var(--lia-text-primary);max-width:800px;margin:0 auto;}
               h1{font-size:20px;margin-bottom:4px;}h2{font-size:16px;margin-top:24px;margin-bottom:12px;color:var(--lia-text-primary);}
               .scores{display:flex;gap:24px;margin:16px 0;}.score-box{text-align:center;padding:12px 20px;border:1px solid #F3F4F6;border-radius:8px;}
-              .score-box .value{font-size:24px;font-weight:bold;}.score-box .label{font-size:11px;color:var(--lia-text-secondary);}
+              .score-box .value{font-size:24px;font-weight:bold;}.score-box .label{font-size:12px;color:var(--lia-text-secondary);}
               .meta{font-size:12px;color:var(--lia-text-secondary);margin-bottom:16px;}
               @media print{body{padding:16px;}}</style></head><body>
               <h1>Triagem WSI - ${candidate.name}</h1>

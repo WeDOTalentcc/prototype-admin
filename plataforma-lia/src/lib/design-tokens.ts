@@ -133,7 +133,7 @@ export const typography = {
   
   fontSize: {
     xs: '10px',
-    sm: '11px',
+    sm: '12px',
     base: '12px',
     md: '13px',
     lg: '14px',
@@ -403,7 +403,7 @@ export const tailwindToVuetify = {
   },
   
   typography: {
-    // text-xs = 11px neste projeto → Vuetify text-caption (≈12px)
+    // text-xs = 12px neste projeto → Vuetify text-caption (≈12px)
     'text-xs font-medium':        'class="text-caption font-weight-medium"',
     'text-xs font-normal':        'class="text-caption"',
     // text-micro = 10px → Vuetify text-overline (10px, exato)

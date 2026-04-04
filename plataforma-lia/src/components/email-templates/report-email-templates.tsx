@@ -218,7 +218,7 @@ Relatório gerado pela Plataforma LIA em {{generated_date}}
           </div>
         </div>
 
-        <div style="background: #f8fafc; padding: 15px; text-align: center; font-size: 11px; color: #64748b;">
+        <div style="background: #f8fafc; padding: 15px; text-align: center; font-size: 12px; color: #64748b;">
           Enviado para {{manager_name}} | {{generated_date}}
         </div>
       </div>
