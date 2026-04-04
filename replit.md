@@ -65,6 +65,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Design Token Migration (Tasks #95–#98 Complete)**: Full codebase migration from hardcoded Tailwind color classes to semantic Design System LIA v4.2.1 tokens.
 - **Admin Audit & Streamlining (Task #100)**: Reduced accessible admin pages from 61 to 30 (51% reduction) by removing redundant or premature features and consolidating sections.
 - **Security Audit Tasks #105-107**: Removed hardcoded credentials, migrated authentication to httpOnly cookies with JWT and WorkOS SSO, and added API security measures including Zod validation, file/body size limits, HSTS, and X-XSS-Protection headers.
+- **Zustand State Management (Task #116)**: Introduced zustand for centralized state management. Created `src/stores/auth-store.ts` (auth state), `src/stores/kanban-store.ts` (kanban view/candidates), `src/stores/candidates-store.ts` (search/candidates). Auth context now delegates to zustand store. Kanban and candidates hooks consume from stores for shared state (viewMode, selectedCandidates, candidatesData, etc.).
 
 # External Dependencies
 - Anthropic (Claude API)

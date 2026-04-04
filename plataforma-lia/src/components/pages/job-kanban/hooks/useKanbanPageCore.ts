@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
+import { useKanbanStore } from "@/stores/kanban-store"
 import { useShortList } from "@/hooks/use-short-list"
 import { useProactiveInsights } from "@/hooks/use-proactive-insights"
 import { useNavigationPersistence } from "@/hooks/use-navigation-persistence"
@@ -89,7 +90,8 @@ const { saveJobsState } = useNavigationPersistence()
     }
   }, [job?.id])
 
-  const [viewMode, setViewMode] = useState<"kanban" | "table">("kanban")
+  const viewMode = useKanbanStore((s) => s.viewMode)
+  const setViewMode = useKanbanStore((s) => s.setViewMode)
   const [saturationData, setSaturationData] = useState<{ is_saturated: boolean; approved_count: number; saturation_threshold: number; saturation_percentage: number } | null>(null)
 
   const saturationJobId = job?.backendId || job?.id
@@ -101,10 +103,13 @@ const { saveJobsState } = useNavigationPersistence()
       .catch(() => {})
   }, [saturationJobId])
 
-  const [activeTab, setActiveTab] = useState<"management" | "edit">("management")
-  const [selectedCandidate, setSelectedCandidate] = useState<Record<string, unknown> | null>(null)
+  const activeTab = useKanbanStore((s) => s.activeTab)
+  const setActiveTab = useKanbanStore((s) => s.setActiveTab)
+  const selectedCandidate = useKanbanStore((s) => s.selectedCandidate)
+  const setSelectedCandidate = useKanbanStore((s) => s.setSelectedCandidate)
   const [selectedTriagemCandidate, setSelectedTriagemCandidate] = useState<Record<string, unknown> | null>(null)
-  const [showExpandedMetrics, setShowExpandedMetrics] = useState(false)
+  const showExpandedMetrics = useKanbanStore((s) => s.showExpandedMetrics)
+  const setShowExpandedMetrics = useKanbanStore((s) => s.setShowExpandedMetrics)
 
   const [jobEditForm, setJobEditForm] = useState<Record<string, unknown>>({})
 
@@ -157,10 +162,14 @@ const { saveJobsState } = useNavigationPersistence()
 
   // handleTransitionRequired — extracted to useKanbanTransitionHandlers
 
-  // Estados para candidatesData (hoisted before useKanbanTransitions)
-  const [candidatesData, setCandidatesData] = useState<Record<string, Record<string, unknown>[]>>(() =>
-    createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0]))
-  )
+  const candidatesData = useKanbanStore((s) => s.candidatesData)
+  const setCandidatesData = useKanbanStore((s) => s.setCandidatesData)
+  const jobId = job?.id
+  const jobStagesJson = JSON.stringify(job?.interviewStages ?? [])
+  useEffect(() => {
+    const initial = createInitialCandidatesData(mapInterviewStagesToKanban(job?.interviewStages as Parameters<typeof mapInterviewStagesToKanban>[0]))
+    setCandidatesData(initial)
+  }, [jobId, jobStagesJson])
 
   // ── handleUniversalTransitionConfirm — extraído para useKanbanTransitions ──
   const { handleUniversalTransitionConfirm } = useKanbanTransitions({

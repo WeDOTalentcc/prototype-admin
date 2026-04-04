@@ -1,8 +1,8 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react"
-import authService, { User, SSOUser, AuthenticatedUser, AuthMethod } from "@/services/auth-service"
-import { clearSessionStorage } from "@/lib/session-cleanup"
+import { createContext, useContext, useEffect, ReactNode } from "react"
+import { useAuthStore } from "@/stores/auth-store"
+import type { AuthenticatedUser, AuthMethod } from "@/services/auth-service"
 
 interface AuthContextType {
   user: AuthenticatedUser | null
@@ -20,112 +20,33 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function JWTAuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthenticatedUser | null>(null)
-  const [authMethod, setAuthMethod] = useState<AuthMethod | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const refreshUser = useCallback(async () => {
-    const currentAuthMethod = authService.getAuthMethod()
-
-    if (currentAuthMethod === 'sso') {
-      try {
-        const ssoSession = await authService.checkSSOSession()
-        if (ssoSession.authenticated && ssoSession.user) {
-          setUser(ssoSession.user)
-          setAuthMethod('sso')
-        } else {
-          setUser(null)
-          setAuthMethod(null)
-        }
-      } catch {
-        setUser(null)
-        setAuthMethod(null)
-      }
-    } else if (currentAuthMethod === 'jwt' || authService.isJWTAuthenticated()) {
-      try {
-        const userData = await authService.getMe()
-        setUser(userData)
-        setAuthMethod('jwt')
-      } catch {
-        setUser(null)
-        setAuthMethod(null)
-        await authService.clearTokens()
-      }
-    } else {
-      setUser(null)
-      setAuthMethod(null)
-    }
-  }, [])
+  const user = useAuthStore((s) => s.user)
+  const authMethod = useAuthStore((s) => s.authMethod)
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isLoading = useAuthStore((s) => s.isLoading)
+  const isSSO = useAuthStore((s) => s.isSSO)
+  const login = useAuthStore((s) => s.login)
+  const loginWithSSO = useAuthStore((s) => s.loginWithSSO)
+  const register = useAuthStore((s) => s.register)
+  const logout = useAuthStore((s) => s.logout)
+  const refreshUser = useAuthStore((s) => s.refreshUser)
+  const initAuth = useAuthStore((s) => s.initAuth)
 
   useEffect(() => {
-    const initAuth = async () => {
-      const currentAuthMethod = authService.getAuthMethod()
-
-      if (currentAuthMethod === 'sso') {
-        try {
-          const ssoSession = await authService.checkSSOSession()
-          if (ssoSession.authenticated && ssoSession.user) {
-            setUser(ssoSession.user)
-            setAuthMethod('sso')
-          } else {
-            await authService.clearTokens()
-          }
-        } catch {
-          await authService.clearTokens()
-        }
-      } else if (authService.isJWTAuthenticated()) {
-        try {
-          await authService.refreshToken()
-          const userData = await authService.getMe()
-          setUser(userData)
-          setAuthMethod('jwt')
-        } catch {
-          await authService.clearTokens()
-          setUser(null)
-          setAuthMethod(null)
-        }
-      }
-
-      setIsLoading(false)
-    }
-
     initAuth()
-  }, [])
-
-  const login = async (email: string, password: string) => {
-    await authService.login(email, password)
-    const userData = await authService.getMe()
-    setUser(userData)
-    setAuthMethod('jwt')
-  }
-
-  const loginWithSSO = (options: { organization?: string; connection?: string; email?: string }) => {
-    authService.initiateSSO(options)
-  }
-
-  const register = async (email: string, password: string, name: string) => {
-    await authService.register(email, password, name)
-    await login(email, password)
-  }
-
-  const logout = async () => {
-    clearSessionStorage()
-    await authService.logout()
-    setUser(null)
-    setAuthMethod(null)
-  }
+  }, [initAuth])
 
   const value: AuthContextType = {
     user,
     authMethod,
-    isAuthenticated: !!user,
+    isAuthenticated,
     isLoading,
     login,
     loginWithSSO,
     register,
     logout,
     refreshUser,
-    isSSO: authMethod === 'sso',
+    isSSO,
   }
 
   return (

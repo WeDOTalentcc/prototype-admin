@@ -20,6 +20,7 @@ import { type ParsedEntities } from "@/components/search/smart-search-input"
 
 // ── Global hooks ──────────────────────────────────────────────────────────────
 import { useJWTAuth } from "@/contexts/auth-context"
+import { useCandidatesStore } from "@/stores/candidates-store"
 import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
 import { useHideViewedCandidates } from "@/hooks/useHideViewedCandidates"
 import { useCandidateFilters, type TableFilters, getDefaultTableFilters } from "@/hooks/use-candidate-filters"
@@ -123,10 +124,12 @@ const hideViewedCandidates = useHideViewedCandidates({
 
   const showGlobalSearchOptions = !globalSettingsLoading && globalSettings.globalSearchEnabled
 
-  // ── Core candidate state ──────────────────────────────────────────────────
-  const [candidates, setCandidates] = useState<Candidate[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSearchActive, setIsSearchActive] = useState(false)
+  const candidates = useCandidatesStore((s) => s.candidates) as Candidate[]
+  const setCandidates = useCandidatesStore((s) => s.setCandidates) as unknown as React.Dispatch<React.SetStateAction<Candidate[]>>
+  const isLoading = useCandidatesStore((s) => s.isLoading)
+  const setIsLoading = useCandidatesStore((s) => s.setIsLoading)
+  const isSearchActive = useCandidatesStore((s) => s.isSearchActive)
+  const setIsSearchActive = useCandidatesStore((s) => s.setIsSearchActive)
 
   // ── Search state ──────────────────────────────────────────────────────────
   const {
