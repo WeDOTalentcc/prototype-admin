@@ -526,7 +526,7 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
           setIsSchedulingModalOpen(true)
         }
         
-        if (result.navigate) {
+        if (result.navigate && typeof result.navigate === 'string' && result.navigate.startsWith('/')) {
           window.location.href = result.navigate
         }
         

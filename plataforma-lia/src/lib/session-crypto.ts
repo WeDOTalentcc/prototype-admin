@@ -1,6 +1,9 @@
 import { createHmac, timingSafeEqual } from 'crypto'
 
-const SESSION_SECRET = process.env.WORKOS_SESSION_SECRET || process.env.WORKOS_API_KEY || 'fallback-dev-secret'
+const SESSION_SECRET = process.env.WORKOS_SESSION_SECRET || process.env.WORKOS_API_KEY || ''
+if (!SESSION_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('SESSION_SECRET: WORKOS_SESSION_SECRET or WORKOS_API_KEY must be set in production')
+}
 
 export interface SessionPayload {
   workosProfile: {

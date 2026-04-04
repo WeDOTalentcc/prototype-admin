@@ -37,9 +37,9 @@ export async function handlePaymentRequired(response: Response): Promise<never> 
     // ignore parse errors — use defaults
   }
 
-  // Client-side redirect (works in browser context)
   if (typeof window !== "undefined") {
-    window.location.href = detail.upgrade_url
+    const safeUrl = detail.upgrade_url.startsWith("/") ? detail.upgrade_url : "/upgrade"
+    window.location.href = safeUrl
   }
 
   throw new Error(detail.message)
