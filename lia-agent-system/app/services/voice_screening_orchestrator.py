@@ -8,22 +8,30 @@ Connects:
 - WSI pipeline (transcript analysis and scoring)
 - Consent management (LGPD compliance — hard-block on revoke, soft-warn on absent)
 - PII Masking (before any logging or persistence)
+- FairnessGuard middleware — applied to all Gemini responses before delivery
 
 Audio pipeline:
   Twilio → [raw μ-law 8kHz] → mulaw_to_wav() → [WAV] → Gemini STT → [text]
-  Gemini LLM → [text] → OpenAI TTS → [MP3] → mp3_to_mulaw() → [μ-law] → Twilio
+  Gemini LLM → [text] → FairnessGuard → OpenAI TTS → [MP3] → mp3_to_mulaw() → [μ-law] → Twilio
 
 Compliance:
 - LGPD Art. 7: Consentimento explícito verificado antes de iniciar ligação
 - LGPD Art. 12 / SEG-3B: PII masked before logging
 - Crença #4: Transparência — candidato informado sobre finalidade e duração
+- Crença #11: Anti-sycophancy em 100% das interações IA
 - LGPD absent consent → soft_warning logged, call proceeds
 - LGPD revoked consent → ConsentNotGrantedError raised, call BLOCKED
+- FairnessGuard: L1+L2 bias check on all LIA voice responses
+
+Session persistence:
+- Active sessions persisted in wsi_sessions.voice_session_state (JSONB)
+- Session survives server restarts; loaded from DB on first request
 """
 
 import asyncio
+import json
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
@@ -37,6 +45,8 @@ from app.domains.communication.services.twilio_voice_service import (
 )
 from app.services.voice_service import VoiceService
 from app.shared.resilience.circuit_breaker import TWILIO_VOICE_CIRCUIT, CircuitBreakerError
+from app.shared.compliance.fairness_guard_middleware import check_fairness
+from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 
 try:
     from app.services.gemini_voice_service import get_voice_service as _get_voice_service
@@ -121,6 +131,156 @@ class VoiceScreeningOrchestrator:
     def __init__(self):
         self._sessions: Dict[str, VoiceScreeningSession] = {}
         self._tts_service = VoiceService()
+
+    # ── Session persistence helpers ──────────────────────────────────────────
+
+    def _session_to_state(self, session: "VoiceScreeningSession") -> Dict[str, Any]:
+        """Serialize VoiceScreeningSession to JSON-serializable dict for DB storage."""
+        return {
+            "session_id": session.session_id,
+            "candidate_id": session.candidate_id,
+            "candidate_name": session.candidate_name,
+            "job_title": session.job_title,
+            "company_id": session.company_id,
+            "phone_number": session.phone_number,
+            "job_id": session.job_id,
+            "call_sid": session.call_sid,
+            "status": session.status,
+            "language": session.language,
+            "transcript_segments": session.transcript_segments,
+            "questions_asked": session.questions_asked,
+            "started_at": session.started_at.isoformat() if session.started_at else None,
+            "ended_at": session.ended_at.isoformat() if session.ended_at else None,
+            "wsi_result": session.wsi_result,
+            "error": session.error,
+            "consent_verified": session.consent_verified,
+        }
+
+    def _state_to_session(self, state: Dict[str, Any]) -> "VoiceScreeningSession":
+        """Deserialize DB state dict back to VoiceScreeningSession."""
+        return VoiceScreeningSession(
+            session_id=state["session_id"],
+            candidate_id=state["candidate_id"],
+            candidate_name=state["candidate_name"],
+            job_title=state["job_title"],
+            company_id=state["company_id"],
+            phone_number=state["phone_number"],
+            job_id=state.get("job_id"),
+            call_sid=state.get("call_sid"),
+            status=state.get("status", "pending"),
+            language=state.get("language", "pt-BR"),
+            transcript_segments=state.get("transcript_segments", []),
+            questions_asked=state.get("questions_asked", []),
+            started_at=(
+                datetime.fromisoformat(state["started_at"])
+                if state.get("started_at") else None
+            ),
+            ended_at=(
+                datetime.fromisoformat(state["ended_at"])
+                if state.get("ended_at") else None
+            ),
+            wsi_result=state.get("wsi_result"),
+            error=state.get("error"),
+            consent_verified=state.get("consent_verified", False),
+        )
+
+    async def _persist_session_state(self, session: "VoiceScreeningSession", db) -> None:
+        """Persist session state to wsi_sessions.voice_session_state (JSONB)."""
+        if db is None:
+            return
+        try:
+            from sqlalchemy import text as _text
+            state_dict = self._session_to_state(session)
+            state_json = json.dumps(state_dict)
+            await db.execute(
+                _text("""
+                    UPDATE wsi_sessions
+                    SET voice_session_state = CAST(:state AS jsonb),
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = :session_id
+                """),
+                {"state": state_json, "session_id": session.session_id},
+            )
+            await db.commit()
+            logger.debug(
+                "[VOICE SCREENING] Session state persisted session=%s status=%s",
+                session.session_id, session.status,
+            )
+        except Exception as e:
+            logger.error(
+                "[VOICE SCREENING] FAILED to persist session state session=%s: %s — "
+                "session will not survive restart",
+                session.session_id, e,
+            )
+
+    async def _load_session_from_db(self, session_id: str, db) -> Optional["VoiceScreeningSession"]:
+        """Try to load a session from wsi_sessions.voice_session_state."""
+        if db is None:
+            return None
+        try:
+            from sqlalchemy import text as _text
+            result = await db.execute(
+                _text("""
+                    SELECT voice_session_state
+                    FROM wsi_sessions
+                    WHERE id = :session_id
+                      AND voice_session_state IS NOT NULL
+                """),
+                {"session_id": session_id},
+            )
+            row = result.fetchone()
+            if row and row[0]:
+                state = row[0] if isinstance(row[0], dict) else json.loads(row[0])
+                session = self._state_to_session(state)
+                logger.info(
+                    "[VOICE SCREENING] Session recovered from DB: session=%s status=%s",
+                    session_id, session.status,
+                )
+                return session
+        except Exception as e:
+            logger.warning(
+                "[VOICE SCREENING] Failed to load session from DB session=%s: %s",
+                session_id, e,
+            )
+        return None
+
+    async def _load_wsi_questions_for_session(
+        self, session_id: str, db
+    ) -> List[str]:
+        """
+        Load WSI question texts from wsi_questions table for the given session.
+
+        Returns list of question_text strings ordered by sequence_order.
+        Returns empty list if not found or DB unavailable (caller falls back
+        to SCREENING_QUESTIONS_PT).
+        """
+        if db is None:
+            return []
+        try:
+            from sqlalchemy import text as _text
+            result = await db.execute(
+                _text("""
+                    SELECT question_text
+                    FROM wsi_questions
+                    WHERE session_id = :session_id
+                    ORDER BY sequence_order
+                """),
+                {"session_id": session_id},
+            )
+            rows = result.fetchall()
+            if rows:
+                questions = [row[0] for row in rows if row[0]]
+                logger.info(
+                    "[VOICE SCREENING] Loaded %d WSI questions from DB for session=%s",
+                    len(questions), session_id,
+                )
+                return questions
+        except Exception as e:
+            logger.warning(
+                "[VOICE SCREENING] Failed to load WSI questions for session=%s: %s",
+                session_id, e,
+            )
+        return []
 
     async def verify_consent(
         self,
@@ -340,6 +500,8 @@ class VoiceScreeningOrchestrator:
             session.error = str(e)
 
         self._sessions[session.session_id] = session
+        if db is not None and session.session_id:
+            await self._persist_session_state(session, db)
         return session
 
     async def process_audio_chunk(
@@ -416,27 +578,46 @@ class VoiceScreeningOrchestrator:
         self,
         session_id: str,
         candidate_utterance: str,
+        db=None,
     ) -> str:
         """
         Generate LIA's next question/response using Gemini conversational LLM.
 
         Drives the screening conversation based on:
         - What the candidate said
-        - Questions already asked
+        - WSI questions loaded from the database (per session)
         - Job requirements context
 
-        Falls back to scripted questions if Gemini is unavailable.
+        Compliance:
+        - System prompt includes ANTI_SYCOPHANCY_OPERATIONAL and fairness guardrails
+        - All LIA responses pass through FairnessGuard (L1+L2) before delivery
+        - Falls back to SCREENING_QUESTIONS_PT only if BOTH WSI questions AND Gemini fail
 
         Args:
             session_id: Active screening session ID
             candidate_utterance: What the candidate just said
+            db: Optional async DB session (used to load WSI questions)
 
         Returns:
-            LIA's next response text (ready for TTS)
+            LIA's next response text (ready for TTS), fairness-checked
         """
         session = self._sessions.get(session_id)
         if not session:
             return "Desculpe, ocorreu um erro. Podemos encerrar a triagem."
+
+        wsi_questions = getattr(session, "_wsi_questions_cache", None)
+        has_wsi_questions = True
+        if wsi_questions is None:
+            wsi_questions = await self._load_wsi_questions_for_session(session_id, db)
+            if wsi_questions:
+                session._wsi_questions_cache = wsi_questions  # type: ignore[attr-defined]
+            else:
+                has_wsi_questions = False
+                logger.info(
+                    "[VOICE SCREENING] No WSI questions in DB for session=%s — "
+                    "Gemini will generate contextual questions autonomously",
+                    session_id,
+                )
 
         try:
             import os
@@ -447,7 +628,7 @@ class VoiceScreeningOrchestrator:
             base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
 
             if not api_key or not base_url:
-                return self._get_next_scripted_question(session)
+                return self._get_next_scripted_question(session, wsi_questions if has_wsi_questions else None)
 
             client = genai.Client(
                 api_key=api_key,
@@ -456,18 +637,44 @@ class VoiceScreeningOrchestrator:
 
             questions_asked = session.questions_asked
             next_q_index = len(questions_asked)
-            is_last = next_q_index >= len(self.SCREENING_QUESTIONS_PT) - 1
+
+            total_questions = len(wsi_questions) if has_wsi_questions else 5
+            is_last = next_q_index >= total_questions - 1
+
+            fairness_instructions = (
+                "\n=== COMPLIANCE E FAIRNESS ===\n"
+                "REGRAS ABSOLUTAS PARA TRIAGEM POR VOZ:\n"
+                "1. NUNCA pergunte sobre idade, gênero, raça, estado civil, filhos, religião ou aparência\n"
+                "2. NUNCA discrimine candidatos por características protegidas (LGPD, CLT, CF Art. 5º)\n"
+                "3. Avalie APENAS competências, experiências e habilidades relevantes para a vaga\n"
+                "4. Se o candidato mencionar informação protegida, NÃO use para avaliação — registre e siga\n"
+                "5. Mantenha tom neutro e profissional com TODOS os candidatos\n"
+            )
+
+            if has_wsi_questions:
+                question_guidance = (
+                    f"Perguntas já feitas: {next_q_index} de {len(wsi_questions)}\n"
+                    f"{'Esta é a última pergunta da triagem.' if is_last else ''}\n"
+                )
+            else:
+                question_guidance = (
+                    f"Perguntas já feitas: {next_q_index} de ~{total_questions}\n"
+                    f"{'Esta é a última pergunta da triagem.' if is_last else ''}\n"
+                    "IMPORTANTE: Gere perguntas comportamentais e técnicas relevantes para a vaga.\n"
+                    "Use a metodologia STAR (Situação, Tarefa, Ação, Resultado).\n"
+                )
 
             system_prompt = (
                 f"Você é LIA, assistente de recrutamento da WeDO Talent.\n"
                 f"Você está conduzindo uma triagem por voz para a vaga de: {session.job_title}\n"
-                f"Perguntas já feitas: {next_q_index} de {len(self.SCREENING_QUESTIONS_PT)}\n"
-                f"{'Esta é a última pergunta da triagem.' if is_last else ''}\n\n"
+                f"{question_guidance}\n"
                 f"Instruções:\n"
                 f"- Seja profissional, empático e conciso (respostas curtas para voz)\n"
                 f"- Faça UMA pergunta por vez\n"
                 f"- Valide brevemente o que o candidato disse antes da próxima pergunta\n"
-                f"- Língua: {session.language}"
+                f"- Língua: {session.language}\n"
+                f"{fairness_instructions}\n"
+                f"{ANTI_SYCOPHANCY_OPERATIONAL}"
             )
 
             conversation_history = []
@@ -487,9 +694,15 @@ class VoiceScreeningOrchestrator:
 
             if is_last:
                 next_prompt = "Agradeça ao candidato e encerre a triagem de forma cordial."
-            else:
-                next_q = self.SCREENING_QUESTIONS_PT[next_q_index]
+            elif has_wsi_questions:
+                next_q = wsi_questions[next_q_index]
                 next_prompt = f"Responda brevemente e faça esta pergunta: {next_q}"
+            else:
+                next_prompt = (
+                    "Responda brevemente ao candidato e gere a próxima pergunta "
+                    f"comportamental/técnica relevante para a vaga de {session.job_title}. "
+                    "Use metodologia STAR."
+                )
 
             conversation_history.append(
                 types.Content(
@@ -511,8 +724,24 @@ class VoiceScreeningOrchestrator:
             lia_text = response.text.strip() if response.text else ""
 
             if lia_text:
-                if not is_last and next_q_index < len(self.SCREENING_QUESTIONS_PT):
-                    session.questions_asked.append(self.SCREENING_QUESTIONS_PT[next_q_index])
+                fairness_result = check_fairness(
+                    texts={"lia_voice_response": lia_text},
+                    context="voice_screening",
+                    company_id=session.company_id,
+                )
+                if fairness_result.is_blocked:
+                    logger.warning(
+                        "[VOICE SCREENING] FairnessGuard BLOCKED LIA response session=%s "
+                        "category=%s — using safe fallback question",
+                        session_id,
+                        fairness_result.blocked_result.category if fairness_result.blocked_result else "unknown",
+                    )
+                    return self._get_next_scripted_question(session, wsi_questions if has_wsi_questions else None)
+
+                if has_wsi_questions and not is_last and next_q_index < len(wsi_questions):
+                    session.questions_asked.append(wsi_questions[next_q_index])
+                elif not has_wsi_questions and not is_last:
+                    session.questions_asked.append(lia_text[:200])
 
                 session.transcript_segments.append({
                     "text": lia_text,
@@ -520,7 +749,10 @@ class VoiceScreeningOrchestrator:
                     "role": "lia",
                 })
 
-            return lia_text or self._get_next_scripted_question(session)
+            if lia_text:
+                return lia_text
+
+            return self._get_next_scripted_question(session, wsi_questions if has_wsi_questions else None)
 
         except Exception as e:
             logger.error(
@@ -528,13 +760,26 @@ class VoiceScreeningOrchestrator:
                 session_id,
                 e,
             )
-            return self._get_next_scripted_question(session)
+            return self._get_next_scripted_question(session, wsi_questions if has_wsi_questions else None)
 
-    def _get_next_scripted_question(self, session: VoiceScreeningSession) -> str:
-        """Fallback: return next scripted question if Gemini unavailable."""
+    def _get_next_scripted_question(
+        self,
+        session: VoiceScreeningSession,
+        questions: Optional[List[str]] = None,
+    ) -> str:
+        """
+        Fallback: return next question when Gemini is unavailable or FairnessGuard blocks.
+
+        Uses `questions` list (WSI questions from DB) when provided;
+        falls back to SCREENING_QUESTIONS_PT only as last resort.
+
+        All returned text passes through FairnessGuard before delivery.
+        """
+        question_pool = questions if questions else self.SCREENING_QUESTIONS_PT
         asked = len(session.questions_asked)
-        if asked < len(self.SCREENING_QUESTIONS_PT):
-            q = self.SCREENING_QUESTIONS_PT[asked]
+        if asked < len(question_pool):
+            q = question_pool[asked]
+            q = self._check_fairness_on_response(q, session)
             session.questions_asked.append(q)
             session.transcript_segments.append({
                 "text": q,
@@ -542,10 +787,39 @@ class VoiceScreeningOrchestrator:
                 "role": "lia",
             })
             return q
-        return (
+        closing = (
             "Muito obrigada pela sua participação! Encerramos a triagem por aqui. "
             "Nossa equipe entrará em contato em breve. Tenha um ótimo dia!"
         )
+        return self._check_fairness_on_response(closing, session)
+
+    def _check_fairness_on_response(self, text: str, session: VoiceScreeningSession) -> str:
+        """
+        Run FairnessGuard on any outbound LIA text. Returns safe replacement if blocked.
+        """
+        try:
+            result = check_fairness(
+                texts={"lia_voice_response": text},
+                context="voice_screening",
+                company_id=session.company_id,
+            )
+            if result.is_blocked:
+                logger.warning(
+                    "[VOICE SCREENING] FairnessGuard BLOCKED scripted/fallback response "
+                    "session=%s — replacing with neutral prompt",
+                    session.session_id,
+                )
+                return (
+                    "Poderia me contar mais sobre sua experiência profissional "
+                    "e como ela se relaciona com esta vaga?"
+                )
+        except Exception as e:
+            logger.error(
+                "[VOICE SCREENING] FairnessGuard check failed session=%s: %s — "
+                "allowing response (fail-open for availability)",
+                session.session_id, e,
+            )
+        return text
 
     async def synthesize_lia_response(
         self,
@@ -617,6 +891,14 @@ class VoiceScreeningOrchestrator:
             Analysis result dict with WSI scores and recommendation
         """
         session = self._sessions.get(session_id)
+        if not session and db is not None:
+            session = await self._load_session_from_db(session_id, db)
+            if session:
+                self._sessions[session_id] = session
+                logger.info(
+                    "[VOICE SCREENING] Session recovered from DB for finalization: session=%s",
+                    session_id,
+                )
         if not session:
             logger.error("[VOICE SCREENING] Session not found: %s", session_id)
             return {"error": "Session not found", "session_id": session_id}
@@ -703,6 +985,8 @@ class VoiceScreeningOrchestrator:
                 score,
             )
 
+            await self._persist_session_state(session, db)
+
             return {
                 "session_id": session_id,
                 "status": "completed",
@@ -718,6 +1002,7 @@ class VoiceScreeningOrchestrator:
             )
             session.status = "analysis_failed"
             session.error = str(e)
+            await self._persist_session_state(session, db)
             return {
                 "session_id": session_id,
                 "status": "analysis_failed",
@@ -726,8 +1011,33 @@ class VoiceScreeningOrchestrator:
             }
 
     def get_session(self, session_id: str) -> Optional[VoiceScreeningSession]:
-        """Get an active screening session by ID."""
+        """Get an active screening session by ID (in-memory only)."""
         return self._sessions.get(session_id)
+
+    async def get_or_restore_session(
+        self, session_id: str, db=None
+    ) -> Optional[VoiceScreeningSession]:
+        """
+        Get session from memory or restore from PostgreSQL if not found.
+
+        This supports server-restart recovery: if the session is not in memory
+        (e.g. after a restart), it is loaded from wsi_sessions.voice_session_state.
+
+        Args:
+            session_id: Screening session ID
+            db: Async DB session for DB lookup
+
+        Returns:
+            VoiceScreeningSession or None if not found anywhere
+        """
+        session = self._sessions.get(session_id)
+        if session is not None:
+            return session
+
+        session = await self._load_session_from_db(session_id, db)
+        if session is not None:
+            self._sessions[session_id] = session
+        return session
 
     def _get_session_language(self, session_id: str) -> str:
         session = self._sessions.get(session_id)
@@ -753,11 +1063,12 @@ class VoiceScreeningOrchestrator:
         db,
     ) -> None:
         """
-        Register Twilio call in wsi_sessions table using call_sid as call_id.
+        Register Twilio call in wsi_sessions table and generate WSI questions.
 
-        This enables wsi_voice_orchestrator.process_call_completed() to find
-        the session by Twilio call_sid during finalization, making the WSI
-        pipeline the primary analysis path (not a fallback).
+        1. Creates wsi_sessions row with call_id = Twilio call_sid
+        2. Tries to load versioned question set for the job vacancy
+        3. If none, generates WSI questions dynamically via wsi_service
+        4. Inserts questions into wsi_questions table for use during the call
 
         Schema: wsi_sessions(id, candidate_id, job_vacancy_id, mode, call_id, status)
         """
@@ -786,9 +1097,125 @@ class VoiceScreeningOrchestrator:
                 session.session_id,
                 session.call_sid,
             )
+
+            await self._generate_and_store_wsi_questions(session, db)
+
         except Exception as e:
             logger.warning(
                 "[VOICE SCREENING] Failed to register WSI session (non-blocking): %s", e
+            )
+
+    async def _generate_and_store_wsi_questions(
+        self,
+        session: VoiceScreeningSession,
+        db,
+    ) -> None:
+        """
+        Generate WSI questions for a voice session and store them in wsi_questions table.
+
+        Tries (in order):
+        1. Load versioned question set for the job vacancy
+        2. Generate questions dynamically via WSI service using job title as context
+        """
+        try:
+            from sqlalchemy import text
+            from uuid import uuid4
+
+            existing = await self._load_wsi_questions_for_session(session.session_id, db)
+            if existing:
+                logger.info(
+                    "[VOICE SCREENING] WSI questions already exist for session=%s (%d questions)",
+                    session.session_id, len(existing),
+                )
+                return
+
+            question_texts = []
+            try:
+                from app.services.screening_question_set_service import screening_question_set_service
+                job_vacancy_id = session.job_id or session.session_id
+                active_qs = await screening_question_set_service.get_active_version(db, job_vacancy_id)
+                if active_qs and active_qs.questions_snapshot:
+                    question_texts = [
+                        q.get("question_text", q.get("text", ""))
+                        for q in active_qs.questions_snapshot
+                        if q.get("question_text") or q.get("text")
+                    ]
+                    logger.info(
+                        "[VOICE SCREENING] Loaded %d questions from versioned set v%s for session=%s",
+                        len(question_texts), active_qs.version, session.session_id,
+                    )
+            except Exception as e:
+                logger.debug(
+                    "[VOICE SCREENING] Versioned question set not available: %s", e
+                )
+
+            if not question_texts:
+                try:
+                    from app.domains.cv_screening.services.wsi_service import Competency, WSIService
+                    wsi_svc = WSIService()
+                    default_competencies = [
+                        Competency(name="Experiência Relevante", type="technical", weight=0.3, seniority_level="pleno"),
+                        Competency(name="Resolução de Problemas", type="behavioral", weight=0.25, seniority_level="pleno"),
+                        Competency(name="Comunicação", type="behavioral", weight=0.2, seniority_level="pleno"),
+                        Competency(name="Trabalho em Equipe", type="cultural", weight=0.15, seniority_level="pleno"),
+                        Competency(name="Adaptabilidade", type="behavioral", weight=0.1, seniority_level="pleno"),
+                    ]
+                    wsi_questions = await wsi_svc.generate_screening_questions(
+                        competencies=default_competencies,
+                        mode="compact",
+                        job_description=f"Vaga: {session.job_title}",
+                    )
+                    question_texts = [q.question_text for q in wsi_questions if q.question_text]
+                    logger.info(
+                        "[VOICE SCREENING] Generated %d WSI questions dynamically for session=%s",
+                        len(question_texts), session.session_id,
+                    )
+                except Exception as e:
+                    logger.warning(
+                        "[VOICE SCREENING] WSI dynamic question generation failed for session=%s: %s — "
+                        "Gemini will generate questions autonomously during the call",
+                        session.session_id, e,
+                    )
+                    return
+
+            if not question_texts:
+                logger.info(
+                    "[VOICE SCREENING] No WSI questions generated for session=%s — "
+                    "Gemini will generate questions autonomously during the call",
+                    session.session_id,
+                )
+                return
+
+            for idx, q_text in enumerate(question_texts):
+                await db.execute(
+                    text("""
+                        INSERT INTO wsi_questions (id, session_id, competency, framework, question_type,
+                            question_text, weight, sequence_order)
+                        VALUES (:id, :session_id, :competency, :framework, :question_type,
+                                :question_text, :weight, :sequence_order)
+                        ON CONFLICT DO NOTHING
+                    """),
+                    {
+                        "id": str(uuid4()),
+                        "session_id": session.session_id,
+                        "competency": "voice_screening",
+                        "framework": "CBI",
+                        "question_type": "behavioral",
+                        "question_text": q_text,
+                        "weight": 1.0 / len(question_texts),
+                        "sequence_order": idx + 1,
+                    },
+                )
+            await db.commit()
+            logger.info(
+                "[VOICE SCREENING] Stored %d WSI questions in DB for session=%s",
+                len(question_texts), session.session_id,
+            )
+
+        except Exception as e:
+            logger.warning(
+                "[VOICE SCREENING] WSI question generation/storage failed (non-blocking) session=%s: %s",
+                session.session_id, e,
             )
 
     @staticmethod

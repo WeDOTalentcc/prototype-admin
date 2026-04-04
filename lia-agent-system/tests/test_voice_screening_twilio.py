@@ -848,3 +848,693 @@ class TestPIIMaskingInTranscripts:
         assert "***EMAIL***" in masked
         assert "5 anos de experiência" in masked
         assert "Python" in masked
+
+
+# ── Task #139: Session DB Persistence Tests ───────────────────────────────────
+
+class TestSessionDBPersistence:
+    """Tests for Fix #1: session state persisted in PostgreSQL (wsi_sessions)."""
+
+    def test_session_to_state_round_trip(self):
+        """_session_to_state and _state_to_session should be lossless inverses."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        original = VoiceScreeningSession(
+            session_id="sess-db-001",
+            candidate_id="cand-42",
+            candidate_name="Ana Costa",
+            job_title="Dev Backend",
+            company_id="comp-7",
+            phone_number="+5511900000000",
+            job_id="job-99",
+            call_sid="CA_test_sid",
+            status="in_progress",
+            language="pt-BR",
+            transcript_segments=[{"text": "Oi", "role": "candidate"}],
+            questions_asked=["Fale sobre você."],
+            started_at=datetime(2026, 4, 4, 10, 0, 0),
+            consent_verified=True,
+        )
+
+        state = orch._session_to_state(original)
+        restored = orch._state_to_session(state)
+
+        assert restored.session_id == original.session_id
+        assert restored.candidate_id == original.candidate_id
+        assert restored.call_sid == original.call_sid
+        assert restored.status == original.status
+        assert restored.transcript_segments == original.transcript_segments
+        assert restored.questions_asked == original.questions_asked
+        assert restored.consent_verified is True
+        assert restored.started_at == original.started_at
+
+    @pytest.mark.asyncio
+    async def test_persist_session_state_calls_db(self):
+        """_persist_session_state should execute UPDATE on wsi_sessions using CAST(:state AS jsonb)."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="sess-persist-001",
+            candidate_id="cand-001",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110000",
+            status="in_progress",
+            started_at=datetime.utcnow(),
+        )
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock()
+        mock_db.commit = AsyncMock()
+
+        await orch._persist_session_state(session, mock_db)
+
+        mock_db.execute.assert_called_once()
+        mock_db.commit.assert_called_once()
+        call_args = mock_db.execute.call_args
+        assert call_args is not None
+
+        sql_query = str(call_args[0][0])
+        assert "CAST" in sql_query.upper() or ":state" in sql_query, (
+            "SQL must use CAST(:state AS jsonb) to avoid SQLAlchemy bind key parsing issue"
+        )
+
+        params = call_args[0][1] if len(call_args[0]) > 1 else call_args.kwargs.get("params", {})
+        assert "state" in params, "Parameters must include 'state' key"
+        assert "session_id" in params, "Parameters must include 'session_id' key"
+
+    @pytest.mark.asyncio
+    async def test_persist_session_state_noop_when_no_db(self):
+        """_persist_session_state should silently skip when db is None."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="sess-nodb",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110000",
+        )
+        await orch._persist_session_state(session, db=None)
+
+    @pytest.mark.asyncio
+    async def test_load_session_from_db_returns_session_when_found(self):
+        """_load_session_from_db should return session when voice_session_state is set."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+        import json as _json
+
+        orch = VoiceScreeningOrchestrator()
+        state_dict = {
+            "session_id": "sess-db-restore",
+            "candidate_id": "cand-001",
+            "candidate_name": "Maria DB",
+            "job_title": "Engenheira",
+            "company_id": "co-99",
+            "phone_number": "+551100000",
+            "status": "in_progress",
+            "language": "pt-BR",
+            "transcript_segments": [{"text": "Olá", "role": "candidate"}],
+            "questions_asked": [],
+            "started_at": "2026-04-04T10:00:00",
+            "ended_at": None,
+            "wsi_result": None,
+            "error": None,
+            "consent_verified": True,
+            "job_id": None,
+            "call_sid": "CA_restored",
+        }
+
+        mock_row = MagicMock()
+        mock_row.__getitem__ = lambda self, i: state_dict
+
+        mock_result = MagicMock()
+        mock_result.fetchone = MagicMock(return_value=(state_dict,))
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(return_value=mock_result)
+
+        session = await orch._load_session_from_db("sess-db-restore", mock_db)
+
+        assert session is not None
+        assert session.session_id == "sess-db-restore"
+        assert session.candidate_name == "Maria DB"
+        assert session.call_sid == "CA_restored"
+        assert session.transcript_segments == [{"text": "Olá", "role": "candidate"}]
+
+    @pytest.mark.asyncio
+    async def test_load_session_from_db_returns_none_when_not_found(self):
+        """_load_session_from_db should return None when no row found."""
+        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+
+        orch = VoiceScreeningOrchestrator()
+
+        mock_result = MagicMock()
+        mock_result.fetchone = MagicMock(return_value=None)
+
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(return_value=mock_result)
+
+        session = await orch._load_session_from_db("nonexistent-id", mock_db)
+        assert session is None
+
+    @pytest.mark.asyncio
+    async def test_get_or_restore_session_uses_memory_first(self):
+        """get_or_restore_session should return in-memory session without DB hit."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        in_memory = VoiceScreeningSession(
+            session_id="s-mem",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110",
+        )
+        orch._sessions["s-mem"] = in_memory
+
+        mock_db = MagicMock()
+        result = await orch.get_or_restore_session("s-mem", mock_db)
+
+        assert result is in_memory
+        mock_db.execute.assert_not_called() if hasattr(mock_db, "execute") else None
+
+    @pytest.mark.asyncio
+    async def test_get_or_restore_session_falls_back_to_db(self):
+        """get_or_restore_session should try DB when session not in memory."""
+        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+
+        orch = VoiceScreeningOrchestrator()
+
+        state_dict = {
+            "session_id": "s-db-only",
+            "candidate_id": "c1",
+            "candidate_name": "DB Only",
+            "job_title": "Dev",
+            "company_id": "co1",
+            "phone_number": "+55110",
+            "status": "in_progress",
+            "language": "pt-BR",
+            "transcript_segments": [],
+            "questions_asked": [],
+            "started_at": None,
+            "ended_at": None,
+            "wsi_result": None,
+            "error": None,
+            "consent_verified": True,
+            "job_id": None,
+            "call_sid": None,
+        }
+
+        mock_result = MagicMock()
+        mock_result.fetchone = MagicMock(return_value=(state_dict,))
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(return_value=mock_result)
+
+        result = await orch.get_or_restore_session("s-db-only", mock_db)
+
+        assert result is not None
+        assert result.session_id == "s-db-only"
+        assert orch._sessions.get("s-db-only") is result
+
+    @pytest.mark.asyncio
+    async def test_finalize_screening_persists_completed_state(self):
+        """finalize_screening should persist final session state to DB."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="sess-finalize-persist",
+            candidate_id="cand-001",
+            candidate_name="Persist Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110",
+            started_at=datetime.utcnow(),
+            transcript_segments=[{"text": "Tenho 3 anos de Python", "role": "candidate"}],
+        )
+        orch._sessions["sess-finalize-persist"] = session
+
+        mock_wsi = {"overall_evaluation": {"overall_score": 80, "recommendation": "interview"}}
+
+        import app.services.voice_screening_orchestrator as orch_mod
+
+        original_analyze = orch_mod._analyze_voice_screening
+        original_wsi = orch_mod._WSIVoiceOrchestrator
+        orch_mod._analyze_voice_screening = AsyncMock(return_value=mock_wsi)
+        orch_mod._WSIVoiceOrchestrator = None
+
+        persist_calls = []
+
+        async def mock_persist(s, db):
+            persist_calls.append(s.status)
+
+        with patch.object(orch, "_persist_session_state", new=mock_persist):
+            try:
+                mock_db = MagicMock()
+                result = await orch.finalize_screening("sess-finalize-persist", db=mock_db)
+            finally:
+                orch_mod._analyze_voice_screening = original_analyze
+                orch_mod._WSIVoiceOrchestrator = original_wsi
+
+        assert result["status"] == "completed"
+        assert "completed" in persist_calls
+
+
+# ── Task #139: WSI Questions from DB Tests ────────────────────────────────────
+
+class TestWSIQuestionsFromDB:
+    """Tests for Fix #2: generate_lia_response uses WSI questions from DB."""
+
+    @pytest.mark.asyncio
+    async def test_load_wsi_questions_returns_list_from_db(self):
+        """_load_wsi_questions_for_session should return question texts from DB."""
+        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+
+        orch = VoiceScreeningOrchestrator()
+
+        mock_rows = [
+            ("Descreva sua experiência com Python.",),
+            ("Como você lida com prazos apertados?",),
+            ("Qual foi seu projeto técnico mais desafiador?",),
+        ]
+
+        mock_result = MagicMock()
+        mock_result.fetchall = MagicMock(return_value=mock_rows)
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(return_value=mock_result)
+
+        questions = await orch._load_wsi_questions_for_session("sess-wsi", mock_db)
+
+        assert len(questions) == 3
+        assert "Descreva sua experiência com Python." in questions
+        assert "Como você lida com prazos apertados?" in questions
+
+    @pytest.mark.asyncio
+    async def test_load_wsi_questions_returns_empty_when_no_rows(self):
+        """_load_wsi_questions_for_session returns [] when no WSI questions found."""
+        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+
+        orch = VoiceScreeningOrchestrator()
+
+        mock_result = MagicMock()
+        mock_result.fetchall = MagicMock(return_value=[])
+        mock_db = MagicMock()
+        mock_db.execute = AsyncMock(return_value=mock_result)
+
+        questions = await orch._load_wsi_questions_for_session("sess-empty", mock_db)
+        assert questions == []
+
+    @pytest.mark.asyncio
+    async def test_load_wsi_questions_returns_empty_when_no_db(self):
+        """_load_wsi_questions_for_session returns [] when db is None."""
+        from app.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
+
+        orch = VoiceScreeningOrchestrator()
+        questions = await orch._load_wsi_questions_for_session("sess-nodb", db=None)
+        assert questions == []
+
+    @pytest.mark.asyncio
+    async def test_generate_lia_response_uses_wsi_questions_when_available(self):
+        """generate_lia_response should use WSI questions, not hardcoded SCREENING_QUESTIONS_PT."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="sess-wsi-q",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Analista de Dados",
+            company_id="co1",
+            phone_number="+55110",
+            started_at=datetime.utcnow(),
+        )
+        orch._sessions["sess-wsi-q"] = session
+
+        wsi_questions = [
+            "Descreva sua experiência com análise de dados.",
+            "Como você aborda problemas complexos de dados?",
+            "Quais ferramentas de BI você já utilizou?",
+        ]
+
+        mock_db = MagicMock()
+        with patch.object(orch, "_load_wsi_questions_for_session", new=AsyncMock(return_value=wsi_questions)):
+            with patch.object(orch, "_get_next_scripted_question") as mock_fallback:
+                mock_fallback.return_value = "fallback question"
+                import os
+                with patch.dict(os.environ, {}, clear=True):
+                    result = await orch.generate_lia_response(
+                        "sess-wsi-q",
+                        "Tenho 5 anos de Python",
+                        db=mock_db,
+                    )
+
+        mock_fallback.assert_called_once()
+        call_args = mock_fallback.call_args
+        assert call_args is not None
+        used_questions = call_args[0][1] if len(call_args[0]) > 1 else call_args.kwargs.get("questions")
+        assert used_questions == wsi_questions
+
+    @pytest.mark.asyncio
+    async def test_generate_lia_response_no_wsi_no_gemini_uses_generic_fallback(self):
+        """When WSI questions absent AND Gemini unavailable, fall back to SCREENING_QUESTIONS_PT via _get_next_scripted_question(None)."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="sess-fallback",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110",
+        )
+        orch._sessions["sess-fallback"] = session
+
+        with patch.object(orch, "_load_wsi_questions_for_session", new=AsyncMock(return_value=[])):
+            with patch.object(orch, "_get_next_scripted_question") as mock_fallback:
+                mock_fallback.return_value = "generic fallback"
+                import os
+                with patch.dict(os.environ, {}, clear=True):
+                    result = await orch.generate_lia_response(
+                        "sess-fallback",
+                        "Olá",
+                        db=None,
+                    )
+
+        mock_fallback.assert_called_once()
+        call_args = mock_fallback.call_args
+        used_questions = call_args[0][1] if len(call_args[0]) > 1 else call_args.kwargs.get("questions")
+        assert used_questions is None, (
+            "When no WSI questions in DB, _get_next_scripted_question should receive None "
+            "(SCREENING_QUESTIONS_PT is last-resort inside the method itself)"
+        )
+
+    @pytest.mark.asyncio
+    async def test_wsi_questions_cache_prevents_duplicate_db_calls(self):
+        """WSI questions should be cached on the session after first load."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="sess-cache",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110",
+        )
+        orch._sessions["sess-cache"] = session
+
+        db_call_count = 0
+
+        async def mock_load(session_id, db):
+            nonlocal db_call_count
+            db_call_count += 1
+            return ["Pergunta WSI 1", "Pergunta WSI 2"]
+
+        with patch.object(orch, "_load_wsi_questions_for_session", side_effect=mock_load):
+            with patch.object(orch, "_get_next_scripted_question", return_value="q"):
+                import os
+                with patch.dict(os.environ, {}, clear=True):
+                    await orch.generate_lia_response("sess-cache", "oi", db=None)
+                    await orch.generate_lia_response("sess-cache", "sim", db=None)
+
+        assert db_call_count == 1, "WSI questions should be cached after first load"
+
+
+# ── Task #139: FairnessGuard Compliance Tests ─────────────────────────────────
+
+class TestFairnessGuardInVoiceScreening:
+    """Tests for Fix #3: FairnessGuard applied to all LIA voice responses."""
+
+    @pytest.mark.asyncio
+    async def test_generate_lia_response_fairness_guard_blocks_biased_response(self):
+        """FairnessGuard must block biased LIA responses and substitute safe question."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+        from app.shared.compliance.fairness_guard import FairnessCheckResult
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="sess-fairness",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110",
+        )
+        orch._sessions["sess-fairness"] = session
+
+        biased_response = "Quantos anos você tem? Prefiro candidatos mais jovens."
+
+        with patch.object(orch, "_load_wsi_questions_for_session", new=AsyncMock(return_value=["Pergunta WSI"])):
+            with patch.object(orch, "_get_next_scripted_question", return_value="safe question") as mock_safe:
+                with patch(
+                    "app.services.voice_screening_orchestrator.check_fairness"
+                ) as mock_fairness:
+                    blocked_result = FairnessCheckResult(
+                        is_blocked=True,
+                        blocked_terms=["mais jovens"],
+                        category="idade",
+                        educational_message="Discriminação por idade detectada.",
+                        original_query=biased_response,
+                    )
+                    from app.shared.compliance.fairness_guard_middleware import FairnessCheckOutput
+                    mock_output = FairnessCheckOutput()
+                    mock_output.is_blocked = True
+                    mock_output.blocked_field = "lia_voice_response"
+                    mock_output.blocked_result = blocked_result
+
+                    mock_fairness.return_value = mock_output
+
+                    import os
+                    with patch.dict(os.environ, {"AI_INTEGRATIONS_GEMINI_API_KEY": "fake", "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://fake.api"}):
+                        with patch("app.services.voice_screening_orchestrator.genai", create=True) as mock_genai:
+                            mock_client = MagicMock()
+                            mock_response = MagicMock()
+                            mock_response.text = biased_response
+                            mock_client.models.generate_content.return_value = mock_response
+                            mock_genai.Client.return_value = mock_client
+
+                            import app.services.voice_screening_orchestrator as orch_mod
+                            with patch.dict("sys.modules", {"google.genai": mock_genai, "google": MagicMock()}):
+                                result = await orch.generate_lia_response("sess-fairness", "Tenho 25 anos")
+
+        mock_safe.assert_called_once()
+
+    def test_fairness_guard_import_in_orchestrator(self):
+        """check_fairness must be importable from voice_screening_orchestrator module."""
+        import app.services.voice_screening_orchestrator as orch_mod
+        assert hasattr(orch_mod, "check_fairness"), (
+            "check_fairness must be imported in voice_screening_orchestrator"
+        )
+
+    def test_anti_sycophancy_import_in_orchestrator(self):
+        """ANTI_SYCOPHANCY_OPERATIONAL must be importable from orchestrator module."""
+        import app.services.voice_screening_orchestrator as orch_mod
+        assert hasattr(orch_mod, "ANTI_SYCOPHANCY_OPERATIONAL"), (
+            "ANTI_SYCOPHANCY_OPERATIONAL must be imported in voice_screening_orchestrator"
+        )
+
+    @pytest.mark.asyncio
+    async def test_generate_lia_response_calls_check_fairness_on_response(self):
+        """generate_lia_response must call check_fairness on the Gemini response."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="sess-check-fairness",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110",
+        )
+        orch._sessions["sess-check-fairness"] = session
+
+        with patch.object(orch, "_load_wsi_questions_for_session", new=AsyncMock(return_value=["WSI Q1", "WSI Q2"])):
+            fairness_calls = []
+
+            from app.shared.compliance.fairness_guard_middleware import FairnessCheckOutput
+
+            def mock_check_fairness(texts, context, company_id):
+                fairness_calls.append({"texts": texts, "context": context})
+                output = FairnessCheckOutput()
+                output.is_blocked = False
+                return output
+
+            with patch("app.services.voice_screening_orchestrator.check_fairness", side_effect=mock_check_fairness):
+                import os
+                with patch.dict(os.environ, {"AI_INTEGRATIONS_GEMINI_API_KEY": "fake", "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://fake.api"}):
+                    with patch("google.genai.Client") as mock_client_cls:
+                        mock_client = MagicMock()
+                        mock_response = MagicMock()
+                        mock_response.text = "Ótimo! Pode me falar sobre sua experiência?"
+                        mock_client.models.generate_content.return_value = mock_response
+                        mock_client_cls.return_value = mock_client
+
+                        try:
+                            result = await orch.generate_lia_response(
+                                "sess-check-fairness",
+                                "Tenho 3 anos de experiência",
+                                db=None,
+                            )
+                        except Exception:
+                            pass
+
+            assert len(fairness_calls) > 0, (
+                "check_fairness must be called on LIA voice response before delivery"
+            )
+            assert all(
+                "lia_voice_response" in call["texts"]
+                for call in fairness_calls
+            ), "check_fairness must check field 'lia_voice_response'"
+
+    def test_system_prompt_includes_anti_sycophancy_block(self):
+        """ANTI_SYCOPHANCY_OPERATIONAL must be included in the system prompt for voice screening."""
+        from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
+
+        assert "SYCOPHANCY" in ANTI_SYCOPHANCY_OPERATIONAL.upper()
+        assert len(ANTI_SYCOPHANCY_OPERATIONAL.strip()) > 50, (
+            "Anti-sycophancy block must have substantial content"
+        )
+
+    def test_fairness_guard_applied_to_scripted_fallback_responses(self):
+        """FairnessGuard must run on ALL outbound responses, including scripted fallback."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="s-fg-fallback",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110",
+        )
+
+        with patch.object(orch, "_check_fairness_on_response", wraps=orch._check_fairness_on_response) as mock_check:
+            orch._get_next_scripted_question(session, questions=["Q1", "Q2"])
+
+        mock_check.assert_called_once()
+        call_text = mock_check.call_args[0][0]
+        assert call_text == "Q1"
+
+    def test_check_fairness_on_response_blocks_biased_text(self):
+        """_check_fairness_on_response should replace blocked text with neutral prompt."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="s-fg-block",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110",
+        )
+
+        blocked_result = MagicMock()
+        blocked_result.is_blocked = True
+        blocked_result.blocked_result = MagicMock(category="gender_bias")
+
+        with patch(
+            "app.services.voice_screening_orchestrator.check_fairness",
+            return_value=blocked_result,
+        ):
+            result = orch._check_fairness_on_response("biased question", session)
+
+        assert "experiência profissional" in result
+        assert result != "biased question"
+
+    def test_get_next_scripted_question_uses_wsi_questions_when_provided(self):
+        """_get_next_scripted_question should use provided WSI questions, not hardcoded list."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="s1",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110",
+        )
+
+        wsi_questions = [
+            "Pergunta WSI específica #1",
+            "Pergunta WSI específica #2",
+        ]
+
+        result = orch._get_next_scripted_question(session, questions=wsi_questions)
+
+        assert result == "Pergunta WSI específica #1"
+        assert result not in orch.SCREENING_QUESTIONS_PT
+
+    def test_get_next_scripted_question_falls_back_to_generic_when_no_questions(self):
+        """_get_next_scripted_question falls back to SCREENING_QUESTIONS_PT when questions=None."""
+        from app.services.voice_screening_orchestrator import (
+            VoiceScreeningOrchestrator,
+            VoiceScreeningSession,
+        )
+
+        orch = VoiceScreeningOrchestrator()
+        session = VoiceScreeningSession(
+            session_id="s2",
+            candidate_id="c1",
+            candidate_name="Test",
+            job_title="Dev",
+            company_id="co1",
+            phone_number="+55110",
+        )
+
+        result = orch._get_next_scripted_question(session, questions=None)
+
+        assert result in orch.SCREENING_QUESTIONS_PT

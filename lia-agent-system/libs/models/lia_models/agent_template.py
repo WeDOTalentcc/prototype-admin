@@ -17,7 +17,7 @@ from typing import Optional
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from libs.models.base import Base  # ajuste o import conforme o projeto
+from lia_config.database import Base
 
 
 class AgentTemplateStatus(str, Enum):

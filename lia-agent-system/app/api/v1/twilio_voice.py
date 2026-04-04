@@ -313,22 +313,52 @@ async def twiml_call_status(
     )
 
     if CallStatus in ("completed", "failed", "busy", "no-answer", "canceled"):
+        matched_session = None
         for active in voice_screening_orchestrator.list_active_sessions():
             s = voice_screening_orchestrator.get_session(active["session_id"])
             if s and s.call_sid == CallSid:
-                if CallStatus == "completed" and s.status not in (
-                    "completed", "analyzing", "analysis_failed", "declined"
-                ):
-                    logger.info(
-                        "[TWILIO VOICE] Call completed, finalizing session=%s",
-                        s.session_id,
-                    )
-                    asyncio.create_task(
-                        voice_screening_orchestrator.finalize_screening(s.session_id)
-                    )
-                elif CallStatus in ("failed", "busy", "no-answer", "canceled"):
-                    s.status = CallStatus
+                matched_session = s
                 break
+
+        if not matched_session:
+            from app.core.database import AsyncSessionLocal
+            try:
+                async with AsyncSessionLocal() as db:
+                    from sqlalchemy import text as _text
+                    result = await db.execute(
+                        _text("SELECT id FROM wsi_sessions WHERE call_id = :call_sid LIMIT 1"),
+                        {"call_sid": CallSid},
+                    )
+                    row = result.fetchone()
+                    if row:
+                        matched_session = await voice_screening_orchestrator.get_or_restore_session(row[0], db)
+            except Exception as e:
+                logger.warning("[TWILIO VOICE] DB session lookup by call_sid failed: %s", e)
+
+        if matched_session:
+            if CallStatus == "completed" and matched_session.status not in (
+                "completed", "analyzing", "analysis_failed", "declined"
+            ):
+                logger.info(
+                    "[TWILIO VOICE] Call completed, finalizing session=%s",
+                    matched_session.session_id,
+                )
+
+                async def _finalize_with_db(sid: str):
+                    from app.core.database import AsyncSessionLocal as _ASL
+                    async with _ASL() as _db:
+                        await voice_screening_orchestrator.finalize_screening(sid, db=_db)
+
+                asyncio.create_task(_finalize_with_db(matched_session.session_id))
+            elif CallStatus in ("failed", "busy", "no-answer", "canceled"):
+                matched_session.status = CallStatus
+
+                async def _persist_terminal_status(session):
+                    from app.core.database import AsyncSessionLocal as _ASL
+                    async with _ASL() as _db:
+                        await voice_screening_orchestrator._persist_session_state(session, _db)
+
+                asyncio.create_task(_persist_terminal_status(matched_session))
 
     return Response(content="", status_code=204)
 
@@ -347,7 +377,7 @@ async def audio_stream_websocket(
       base64(raw μ-law 8kHz) → decode → mulaw_to_wav() → Gemini STT → text
 
     Audio pipeline (outbound to Twilio):
-      LIA text → OpenAI TTS → MP3 → mp3_to_mulaw() → base64 → Twilio media event
+      LIA text → FairnessGuard → OpenAI TTS → MP3 → mp3_to_mulaw() → base64 → Twilio
 
     Protocol (Twilio Media Streams):
       {"event": "connected"} → {"event": "start", "streamSid": "..."} →
@@ -355,122 +385,136 @@ async def audio_stream_websocket(
       {"event": "stop"}
 
     Security:
-      - session_id must match an existing session created via /initiate
+      - session_id must match a session in memory or PostgreSQL (post-restart recovery)
       - Unknown session_id is rejected immediately
     """
-    session = voice_screening_orchestrator.get_session(session_id)
-    if not session:
+    from app.core.database import AsyncSessionLocal
+
+    async with AsyncSessionLocal() as db:
+        session = await voice_screening_orchestrator.get_or_restore_session(session_id, db)
+        if not session:
+            await websocket.accept()
+            await websocket.send_json({
+                "event": "error",
+                "message": f"Unknown session_id: {session_id}. Call must be initiated via /initiate first.",
+            })
+            await websocket.close(code=4403)
+            return
+
         await websocket.accept()
-        await websocket.send_json({
-            "event": "error",
-            "message": f"Unknown session_id: {session_id}. Call must be initiated via /initiate first.",
-        })
-        await websocket.close(code=4403)
-        return
+        logger.info("[TWILIO VOICE WS] Audio stream connected session=%s", session_id)
 
-    await websocket.accept()
-    logger.info("[TWILIO VOICE WS] Audio stream connected session=%s", session_id)
+        audio_buffer = bytearray()
+        stream_sid = None
+        BUFFER_THRESHOLD = 8000
+        turns_since_persist = 0
+        PERSIST_EVERY_N_TURNS = 2
 
-    audio_buffer = bytearray()
-    stream_sid = None
-    BUFFER_THRESHOLD = 8000
+        try:
+            while True:
+                try:
+                    message = await websocket.receive()
+                    if message.get("type") == "websocket.disconnect":
+                        break
 
-    try:
-        while True:
-            try:
-                message = await websocket.receive()
-                if message.get("type") == "websocket.disconnect":
-                    break
+                    if "text" in message:
+                        data = json.loads(message["text"])
+                        event = data.get("event")
 
-                if "text" in message:
-                    data = json.loads(message["text"])
-                    event = data.get("event")
+                        if event == "connected":
+                            logger.debug("[TWILIO VOICE WS] Stream connected")
 
-                    if event == "connected":
-                        logger.debug("[TWILIO VOICE WS] Stream connected")
+                        elif event == "start":
+                            stream_sid = data.get("streamSid")
+                            logger.info(
+                                "[TWILIO VOICE WS] Stream started: sid=%s session=%s",
+                                stream_sid,
+                                session_id,
+                            )
+                            session.status = "in_progress"
+                            await voice_screening_orchestrator._persist_session_state(session, db)
 
-                    elif event == "start":
-                        stream_sid = data.get("streamSid")
-                        logger.info(
-                            "[TWILIO VOICE WS] Stream started: sid=%s session=%s",
-                            stream_sid,
-                            session_id,
-                        )
-                        session.status = "in_progress"
+                        elif event == "media":
+                            payload = data.get("media", {}).get("payload", "")
+                            if payload:
+                                chunk = base64.b64decode(payload)
+                                audio_buffer.extend(chunk)
 
-                    elif event == "media":
-                        payload = data.get("media", {}).get("payload", "")
-                        if payload:
-                            chunk = base64.b64decode(payload)
-                            audio_buffer.extend(chunk)
+                                if len(audio_buffer) >= BUFFER_THRESHOLD:
+                                    transcript = await voice_screening_orchestrator.process_audio_chunk(
+                                        session_id=session_id,
+                                        audio_data=bytes(audio_buffer),
+                                        mime_type="audio/mulaw",
+                                    )
+                                    audio_buffer.clear()
 
-                            if len(audio_buffer) >= BUFFER_THRESHOLD:
-                                transcript = await voice_screening_orchestrator.process_audio_chunk(
+                                    if transcript:
+                                        lia_response = await voice_screening_orchestrator.generate_lia_response(
+                                            session_id=session_id,
+                                            candidate_utterance=transcript,
+                                            db=db,
+                                        )
+
+                                        turns_since_persist += 1
+                                        if turns_since_persist >= PERSIST_EVERY_N_TURNS:
+                                            await voice_screening_orchestrator._persist_session_state(session, db)
+                                            turns_since_persist = 0
+
+                                        if lia_response and stream_sid:
+                                            mulaw_audio = await voice_screening_orchestrator.synthesize_lia_response(
+                                                lia_response, for_twilio_stream=True
+                                            )
+                                            if mulaw_audio:
+                                                audio_b64 = base64.b64encode(mulaw_audio).decode()
+                                                await websocket.send_json({
+                                                    "event": "media",
+                                                    "streamSid": stream_sid,
+                                                    "media": {"payload": audio_b64},
+                                                })
+                                            else:
+                                                logger.info(
+                                                    "[TWILIO VOICE WS] TTS→μ-law unavailable; "
+                                                    "LIA response logged but not streamed: %s",
+                                                    lia_response[:80],
+                                                )
+
+                        elif event == "stop":
+                            logger.info(
+                                "[TWILIO VOICE WS] Stream stopped session=%s", session_id
+                            )
+                            if audio_buffer:
+                                await voice_screening_orchestrator.process_audio_chunk(
                                     session_id=session_id,
                                     audio_data=bytes(audio_buffer),
                                     mime_type="audio/mulaw",
                                 )
                                 audio_buffer.clear()
+                            await voice_screening_orchestrator._persist_session_state(session, db)
+                            break
 
-                                if transcript:
-                                    lia_response = await voice_screening_orchestrator.generate_lia_response(
-                                        session_id=session_id,
-                                        candidate_utterance=transcript,
-                                    )
+                    elif "bytes" in message:
+                        audio_buffer.extend(message["bytes"])
 
-                                    if lia_response and stream_sid:
-                                        mulaw_audio = await voice_screening_orchestrator.synthesize_lia_response(
-                                            lia_response, for_twilio_stream=True
-                                        )
-                                        if mulaw_audio:
-                                            audio_b64 = base64.b64encode(mulaw_audio).decode()
-                                            await websocket.send_json({
-                                                "event": "media",
-                                                "streamSid": stream_sid,
-                                                "media": {"payload": audio_b64},
-                                            })
-                                        else:
-                                            logger.info(
-                                                "[TWILIO VOICE WS] TTS→μ-law unavailable; "
-                                                "LIA response logged but not streamed: %s",
-                                                lia_response[:80],
-                                            )
+                except WebSocketDisconnect:
+                    break
 
-                    elif event == "stop":
-                        logger.info(
-                            "[TWILIO VOICE WS] Stream stopped session=%s", session_id
-                        )
-                        if audio_buffer:
-                            await voice_screening_orchestrator.process_audio_chunk(
-                                session_id=session_id,
-                                audio_data=bytes(audio_buffer),
-                                mime_type="audio/mulaw",
-                            )
-                            audio_buffer.clear()
-                        break
+        except Exception as e:
+            logger.error("[TWILIO VOICE WS] Stream error session=%s: %s", session_id, e)
+        finally:
+            try:
+                await websocket.close()
+            except Exception:
+                pass
 
-                elif "bytes" in message:
-                    audio_buffer.extend(message["bytes"])
+            if audio_buffer:
+                await voice_screening_orchestrator.process_audio_chunk(
+                    session_id=session_id,
+                    audio_data=bytes(audio_buffer),
+                    mime_type="audio/mulaw",
+                )
 
-            except WebSocketDisconnect:
-                break
-
-    except Exception as e:
-        logger.error("[TWILIO VOICE WS] Stream error session=%s: %s", session_id, e)
-    finally:
-        try:
-            await websocket.close()
-        except Exception:
-            pass
-
-        if audio_buffer:
-            await voice_screening_orchestrator.process_audio_chunk(
-                session_id=session_id,
-                audio_data=bytes(audio_buffer),
-                mime_type="audio/mulaw",
-            )
-
-        logger.info("[TWILIO VOICE WS] Stream closed session=%s", session_id)
+            await voice_screening_orchestrator._persist_session_state(session, db)
+            logger.info("[TWILIO VOICE WS] Stream closed session=%s", session_id)
 
 
 # ── Management endpoints ───────────────────────────────────────────────────────
@@ -478,28 +522,34 @@ async def audio_stream_websocket(
 @router.post("/twilio-voice/end-call/{session_id}")
 async def end_call(session_id: str):
     """Programmatically end an active screening call."""
-    session = voice_screening_orchestrator.get_session(session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+    from app.core.database import AsyncSessionLocal
 
-    if session.call_sid:
-        result = twilio_voice_service.end_call(session.call_sid)
-        if result.get("success"):
-            finalization = await voice_screening_orchestrator.finalize_screening(session_id)
-            return {"success": True, "session_id": session_id, "result": finalization}
-        else:
-            raise HTTPException(
-                status_code=500,
-                detail=result.get("error", "Failed to end call"),
-            )
+    async with AsyncSessionLocal() as db:
+        session = await voice_screening_orchestrator.get_or_restore_session(session_id, db)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
 
-    return {"success": True, "session_id": session_id, "message": "No active call to end"}
+        if session.call_sid:
+            result = twilio_voice_service.end_call(session.call_sid)
+            if result.get("success"):
+                finalization = await voice_screening_orchestrator.finalize_screening(session_id, db=db)
+                return {"success": True, "session_id": session_id, "result": finalization}
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail=result.get("error", "Failed to end call"),
+                )
+
+        return {"success": True, "session_id": session_id, "message": "No active call to end"}
 
 
 @router.get("/twilio-voice/sessions/{session_id}")
 async def get_session_status(session_id: str):
     """Get status and results of a voice screening session."""
-    session = voice_screening_orchestrator.get_session(session_id)
+    from app.core.database import AsyncSessionLocal
+
+    async with AsyncSessionLocal() as db:
+        session = await voice_screening_orchestrator.get_or_restore_session(session_id, db)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 

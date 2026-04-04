@@ -296,7 +296,7 @@ class AuditService:
                 agent_used, session_id, candidate_id
             )
 
-        async def record_human_review(
+    async def record_human_review(
         self,
         audit_log_id: str,
         reviewed_by: str,
