@@ -20,7 +20,6 @@ import {
 } from "lucide-react"
 import dynamic from "next/dynamic"
 import { LoadingFallback } from "@/components/ui/loading"
-const ProgressDashboard = dynamic(() => import("@/components/settings/progress-dashboard").then(m => ({ default: m.ProgressDashboard })), { ssr: false, loading: () => <LoadingFallback text="Carregando dashboard..." /> })
 const CompanyTeamHub = dynamic(() => import("@/components/settings/CompanyTeamHub").then(m => ({ default: m.CompanyTeamHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
 const RecruitmentHub = dynamic(() => import("@/components/settings/RecruitmentHub").then(m => ({ default: m.RecruitmentHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando recrutamento..." /> })
 const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
@@ -219,8 +218,6 @@ export default function SettingsPageEnhanced() {
 
 
   const [showTemplateSelector, setShowTemplateSelector] = useState(false)
-
-  const [showProgressDashboard, setShowProgressDashboard] = useState(false)
 
   const [formData, setFormData] = useState<Record<string, string>>({
     company_name: 'WedoTalent Enterprise',
@@ -483,20 +480,9 @@ export default function SettingsPageEnhanced() {
                     <span className={textStyles.metricSmall}>
                       {Math.round(progressMetrics.overall)}%
                     </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowProgressDashboard(true)}
-                      className="h-5 w-5 p-0 hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
-                      title="Ver Dashboard Detalhado"
-                    >
-                      <BarChart3 className="w-3 h-3" />
-                    </Button>
                   </div>
                 </div>
-                <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5 mb-3 cursor-pointer"
-                     onClick={() => setShowProgressDashboard(true)}
-                     title="Clique para ver detalhes">
+                <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5 mb-3">
                   <div
                     className="bg-lia-btn-primary-bg dark:bg-lia-bg-secondary h-1.5 rounded-full transition-[width,height] duration-500"
                     style={{width: `${progressMetrics.overall}%`}}
@@ -620,16 +606,6 @@ export default function SettingsPageEnhanced() {
       </div>
 
 
-      {showProgressDashboard && (
-        <ProgressDashboard
-          sections={settingsSections}
-          onClose={() => setShowProgressDashboard(false)}
-          onSectionSelect={(sectionId) => {
-            setActiveSection(sectionId)
-            setShowProgressDashboard(false)
-          }}
-        />
-      )}
     </>
   )
 }

@@ -56,6 +56,7 @@ export function useExpandedChatModalCore({
     awaitingFastTrackSelection: state.awaitingFastTrackSelection,
     setAwaitingFastTrackSelection: state.setAwaitingFastTrackSelection,
     resetFastTrackConversationState: state.resetFastTrackConversationState,
+
   })
 
   return useExpandedChatWiring({
