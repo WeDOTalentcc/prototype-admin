@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.models.job_pattern import JobEmbedding, EMBEDDING_DIMENSION
-from app.services.embedding_service import EmbeddingService, EMBEDDING_DIMENSION as EMB_DIM
+from app.shared.intelligence.embedding_service import EmbeddingService, EMBEDDING_DIMENSION as EMB_DIM
 
 logger = logging.getLogger(__name__)
 
@@ -55,18 +55,9 @@ class JobEmbeddingService:
     ) -> List[float]:
         """
         Generate embedding vector for a job.
-        
-        Args:
-            job_title: Job title
-            department: Department name
-            seniority: Seniority level
-            location: Job location
-            skills: List of technical skills
-            behavioral: List of behavioral competencies
-            description: Job description summary
-            
+
         Returns:
-            Embedding vector (768 dimensions)
+            Embedding vector (dimensions depend on provider).
         """
         embedding_text = JobEmbedding.create_embedding_text(
             job_title=job_title,
@@ -77,13 +68,45 @@ class JobEmbeddingService:
             behavioral=behavioral or [],
             description=description
         )
-        
+
         try:
             embedding = await self.embedding_service.generate_embedding(embedding_text)
             return embedding
         except Exception as e:
             logger.error(f"Error generating job embedding: {e}")
             return [0.0] * EMBEDDING_DIMENSION
+
+    async def generate_job_embedding_with_metadata(
+        self,
+        job_title: str,
+        department: str = None,
+        seniority: str = None,
+        location: str = None,
+        skills: List[str] = None,
+        behavioral: List[str] = None,
+        description: str = None
+    ) -> tuple:
+        """
+        Generate embedding vector for a job and return (vector, provider, model).
+
+        Returns:
+            Tuple of (embedding vector, provider_name, model_name).
+        """
+        embedding_text = JobEmbedding.create_embedding_text(
+            job_title=job_title,
+            department=department,
+            seniority=seniority,
+            location=location,
+            skills=skills or [],
+            behavioral=behavioral or [],
+            description=description
+        )
+
+        try:
+            return await self.embedding_service.generate_embedding_with_metadata(embedding_text)
+        except Exception as e:
+            logger.error(f"Error generating job embedding with metadata: {e}")
+            return [0.0] * EMBEDDING_DIMENSION, "unknown", "unknown"
     
     async def create_or_update_job_embedding(
         self,
@@ -119,7 +142,7 @@ class JobEmbeddingService:
         )
         
         try:
-            embedding = await self.generate_job_embedding(
+            embedding, emb_provider, emb_model = await self.generate_job_embedding_with_metadata(
                 job_title=job_title,
                 department=department,
                 seniority=seniority,
@@ -128,7 +151,7 @@ class JobEmbeddingService:
                 behavioral=behavioral,
                 description=description
             )
-            
+
             async with AsyncSessionLocal() as session:
                 existing = await session.execute(
                     select(JobEmbedding).where(
@@ -136,9 +159,9 @@ class JobEmbeddingService:
                     )
                 )
                 job_embedding = existing.scalar_one_or_none()
-                
+
                 normalized_title = self._normalize_title(job_title)
-                
+
                 if job_embedding:
                     job_embedding.job_title = job_title
                     job_embedding.job_title_normalized = normalized_title
@@ -150,10 +173,13 @@ class JobEmbeddingService:
                     job_embedding.behavioral_competencies = behavioral or []
                     job_embedding.embedding = embedding
                     job_embedding.embedding_text = embedding_text
+                    job_embedding.embedding_provider = emb_provider
+                    job_embedding.embedding_model = emb_model
                     job_embedding.outcome_status = outcome_status
                     job_embedding.time_to_fill_days = time_to_fill_days
                     job_embedding.is_template = is_template
                     job_embedding.updated_at = datetime.utcnow()
+                    action = "updated"
                 else:
                     job_embedding = JobEmbedding(
                         company_id=UUID(company_id),
@@ -169,22 +195,27 @@ class JobEmbeddingService:
                         behavioral_competencies=behavioral or [],
                         embedding=embedding,
                         embedding_text=embedding_text,
+                        embedding_provider=emb_provider,
+                        embedding_model=emb_model,
                         outcome_status=outcome_status,
                         time_to_fill_days=time_to_fill_days,
                         is_template=is_template
                     )
                     session.add(job_embedding)
-                
+                    action = "created"
+
                 await session.commit()
                 await session.refresh(job_embedding)
-                
+
                 return {
                     "success": True,
                     "job_id": str(job_embedding.job_id),
                     "embedding_id": str(job_embedding.id),
-                    "action": "updated" if existing.scalar_one_or_none() else "created"
+                    "embedding_provider": emb_provider,
+                    "embedding_model": emb_model,
+                    "action": action,
                 }
-                
+
         except Exception as e:
             logger.error(f"Error creating/updating job embedding: {e}")
             return {
@@ -222,55 +253,70 @@ class JobEmbeddingService:
             List of similar jobs with similarity scores
         """
         try:
-            query_embedding = await self.generate_job_embedding(
-                job_title=job_title,
-                department=department,
-                seniority=seniority,
-                location=location,
-                skills=skills,
-                behavioral=behavioral,
-                description=description
+            query_embedding, query_provider, query_model = (
+                await self.generate_job_embedding_with_metadata(
+                    job_title=job_title,
+                    department=department,
+                    seniority=seniority,
+                    location=location,
+                    skills=skills,
+                    behavioral=behavioral,
+                    description=description
+                )
             )
-            
+
             if all(v == 0.0 for v in query_embedding):
                 logger.warning("Empty embedding generated, falling back to text search")
                 return await self._fallback_text_search(
                     company_id, job_title, department, seniority, limit
                 )
-            
+
             async with AsyncSessionLocal() as session:
                 similarity_sql = text("""
-                    SELECT 
+                    WITH provider_candidates AS (
+                        SELECT
+                            id, job_id, job_title, department, seniority, location,
+                            work_model, skills, behavioral_competencies,
+                            outcome_status, time_to_fill_days, is_template,
+                            metadata_json, embedding_provider, embedding_model,
+                            embedding
+                        FROM job_embeddings
+                        WHERE company_id = :company_id
+                            AND is_active = true
+                            AND embedding IS NOT NULL
+                            AND embedding_provider = :provider
+                            AND embedding_model = :model
+                    )
+                    SELECT
                         id, job_id, job_title, department, seniority, location,
                         work_model, skills, behavioral_competencies,
                         outcome_status, time_to_fill_days, is_template,
-                        metadata_json,
+                        metadata_json, embedding_provider, embedding_model,
                         1 - (embedding <=> :query_embedding::vector) as base_similarity,
                         COALESCE(
                             (metadata_json->'outcome_data'->>'success_weight')::float,
                             (metadata_json->'fast_track_stats'->>'success_weight')::float,
                             1.0
                         ) as success_weight,
-                        (1 - (embedding <=> :query_embedding::vector)) * 
+                        (1 - (embedding <=> :query_embedding::vector)) *
                         COALESCE(
                             (metadata_json->'outcome_data'->>'success_weight')::float,
                             (metadata_json->'fast_track_stats'->>'success_weight')::float,
                             1.0
                         ) as similarity
-                    FROM job_embeddings
-                    WHERE company_id = :company_id
-                        AND is_active = true
-                        AND embedding IS NOT NULL
-                        AND 1 - (embedding <=> :query_embedding::vector) >= :min_similarity
+                    FROM provider_candidates
+                    WHERE 1 - (embedding <=> :query_embedding::vector) >= :min_similarity
                     ORDER BY similarity DESC
                     LIMIT :limit
                 """)
-                
+
                 result = await session.execute(
                     similarity_sql,
                     {
                         "query_embedding": str(query_embedding),
                         "company_id": str(company_id),
+                        "provider": query_provider,
+                        "model": query_model,
                         "min_similarity": min_similarity,
                         "limit": limit + len(exclude_job_ids or [])
                     }
@@ -446,16 +492,18 @@ class JobEmbeddingService:
                 
                 for job in jobs:
                     try:
-                        embedding = await self.generate_job_embedding(
-                            job_title=job.job_title,
-                            department=job.department,
-                            seniority=job.seniority,
-                            location=job.location,
-                            skills=job.skills,
-                            behavioral=job.behavioral_competencies,
-                            description=job.description_summary
+                        embedding, emb_provider, emb_model = (
+                            await self.generate_job_embedding_with_metadata(
+                                job_title=job.job_title,
+                                department=job.department,
+                                seniority=job.seniority,
+                                location=job.location,
+                                skills=job.skills,
+                                behavioral=job.behavioral_competencies,
+                                description=job.description_summary
+                            )
                         )
-                        
+
                         job.embedding = embedding
                         job.embedding_text = JobEmbedding.create_embedding_text(
                             job_title=job.job_title,
@@ -465,9 +513,11 @@ class JobEmbeddingService:
                             skills=job.skills,
                             behavioral=job.behavioral_competencies
                         )
+                        job.embedding_provider = emb_provider
+                        job.embedding_model = emb_model
                         job.updated_at = datetime.utcnow()
                         processed += 1
-                        
+
                     except Exception as e:
                         logger.error(f"Error processing job {job.job_id}: {e}")
                         errors += 1

@@ -287,7 +287,9 @@ class JobEmbedding(Base):
     
     embedding = Column(Vector(EMBEDDING_DIMENSION), nullable=True)
     embedding_text = Column(Text, nullable=True)
-    
+    embedding_provider = Column(String(50), nullable=True, comment="Provider that generated this vector (gemini, openai, etc.)")
+    embedding_model = Column(String(100), nullable=True, comment="Model used (e.g. text-embedding-004, text-embedding-3-small)")
+
     outcome_status = Column(String(50), nullable=True)
     time_to_fill_days = Column(Integer, nullable=True)
     hire_quality_score = Column(Float, nullable=True)
@@ -321,6 +323,8 @@ class JobEmbedding(Base):
             "outcome_status": self.outcome_status,
             "time_to_fill_days": self.time_to_fill_days,
             "is_template": self.is_template,
+            "embedding_provider": self.embedding_provider,
+            "embedding_model": self.embedding_model,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
     

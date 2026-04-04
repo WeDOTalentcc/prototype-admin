@@ -13,5 +13,6 @@ export const modules: ModuleMap = {
   "./components/mockups/weekly-digest/TeamsAdaptiveCard.tsx": () => import("../components/mockups/weekly-digest/TeamsAdaptiveCard.tsx"),
   "./components/mockups/wsi-report/Tab1Respostas.tsx": () => import("../components/mockups/wsi-report/Tab1Respostas.tsx"),
   "./components/mockups/wsi-report/Tab2Aprovado.tsx": () => import("../components/mockups/wsi-report/Tab2Aprovado.tsx"),
-  "./components/mockups/wsi-report/Tab2Pendente.tsx": () => import("../components/mockups/wsi-report/Tab2Pendente.tsx")
+  "./components/mockups/wsi-report/Tab2Pendente.tsx": () => import("../components/mockups/wsi-report/Tab2Pendente.tsx"),
+  "./components/mockups/funil-elevenlabs/FunilElevenLabs.tsx": () => import("../components/mockups/funil-elevenlabs/FunilElevenLabs.tsx")
 };

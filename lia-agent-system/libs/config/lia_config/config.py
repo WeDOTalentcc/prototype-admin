@@ -103,6 +103,10 @@ class LLMSettings(BaseSettings):
     ROUTER_FAST_CONFIDENCE_THRESHOLD: float = 0.7
     ROUTER_CONFIDENCE_THRESHOLD: float = 0.80
 
+    # Embedding provider configuration — Task #134
+    # Supported values: "gemini" (default, 768-dim), "openai" (768-dim via dimensions param)
+    EMBEDDING_DEFAULT_PROVIDER: str = "gemini"
+
     # LangSmith
     LANGCHAIN_TRACING_V2: bool = False
     LANGCHAIN_API_KEY: Optional[str] = None
@@ -199,6 +203,9 @@ class AppSettings(BaseSettings):
     ENABLE_LLM_DISPATCH_PERSONALIZATION: bool = True
     ENABLE_LLM_INFER_BEHAVIOR: bool = True
     ENABLE_LLM_SUBSTATUS_PREDICTION: bool = True
+
+    # LangGraph native mode flag
+    USE_LANGGRAPH_NATIVE: bool = False
 
     # WebSocket
     WS_MAX_CONNECTIONS_PER_TENANT: int = 100
