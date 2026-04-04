@@ -64,7 +64,7 @@ WSI_BLOCKS = [
 ]
 
 WELCOME_MESSAGE = (
-    "Vou conduzir sua triagem para a vaga de **{job_title}** na **{company_name}**. "
+    "Vou conduzir sua triagem para a vaga de {job_title} na {company_name}. "
     "A conversa tem {total_blocks} etapas e dura aproximadamente 15-20 minutos. "
     "Você pode responder por texto ou gravar áudio. Vamos começar?"
 )
@@ -372,8 +372,8 @@ class TriagemSessionService:
                     job_info["location"] = job.location
                     job_info["workModel"] = job.work_model
                     meta = (session_orm.metadata_json if session_orm else None) or {}
-                    show_salary = meta.get("show_salary", False)
-                    show_benefits = meta.get("show_benefits", False)
+                    show_salary = meta.get("show_salary", bool(job.salary_range))
+                    show_benefits = meta.get("show_benefits", bool(job.benefits))
                     if show_salary and job.salary_range:
                         job_info["salaryRange"] = job.salary_range
                     if show_benefits and job.benefits:
