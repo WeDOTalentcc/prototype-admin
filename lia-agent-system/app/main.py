@@ -16,6 +16,7 @@ from app.core.config import settings
 from app.core.database import init_db
 from app.api.v1 import chat, teams, calendar, candidates, voice, openmic, activities, test_activities, job_vacancies, job_drafts, credits, interviews, ats, auth, email_templates, bulk_actions, cv_parser, tasks, task_lifecycle, alerts, reports, sourcing_pipeline, admin, briefing, notifications, automation, pipeline, agent_monitoring, predictive_analytics, calibration, candidate_search, company, workforce, applications, recruitment_stages, voice_screening_test, company_culture, goals, benefits, search_assistant, candidate_lists, analysis, email, scheduling, communications, attachments, approvals, kanban_assistant, file_analysis, transcription, autocomplete, opinions, journey_mapping, integrations_hub, recruitment_journey, admin_settings, settings_progress, screening, search_archetypes, dashboard_data, automations, webhooks, integrations, communication_settings, communication, admin_templates, policies, communication_matrix, clients, billing, observability, client_users, ai_consumption, saas_metrics, lgpd_compliance, compliance_controls, trust_center, audit_logs, default_templates, global_policies, technical_tests, workforce_planning, big_five, experience_highlights, lia_profile_analysis, data_subject_requests, consent_management, insurance, risk_register, sod_matrix, continuity, health_check, rubric_evaluation, task_planner, policy_engine, semantic_search, workos, interview_notes, external_webhooks, automation_rules, merge_webhooks, whatsapp, company_benefits, screening_questions, pipeline_templates, sourcing, job_board, job_status_webhooks, recruitment_email_templates, interview_analysis, data_request, lia_assistant, job_analytics, orchestrated_job_chat, orchestrated_talent_chat, orchestrated_jobs_management, shared_searches, lia_field_toggles, organization_catalog, intelligence, recruiter_profiles, microsoft_graph, cache, ml_predictions, affirmative, conversations, skills_catalog, multi_channel, admin_token_budget
 from app.api.v1 import communication_optout
+from app.api.v1 import twilio_voice
 from app.api.v1 import digest
 from app.api.v1 import task_monitoring
 from app.api.v1 import fairness_reports
@@ -403,6 +404,7 @@ app.include_router(calendar.router, prefix="/api/v1")
 app.include_router(candidates.router, prefix="/api/v1/candidates", tags=["candidates"])
 app.include_router(toon_router, prefix="/api/v1", tags=["toon"])
 app.include_router(voice.router, prefix="/api/v1", tags=["voice"])
+app.include_router(twilio_voice.router, prefix="/api/v1", tags=["twilio-voice"])
 app.include_router(openmic.router, prefix="/api/v1", tags=["openmic"])
 app.include_router(activities.router, prefix="/api/v1", tags=["activities"])
 app.include_router(test_activities.router, prefix="/api/v1", tags=["testing"])

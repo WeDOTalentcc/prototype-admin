@@ -625,6 +625,85 @@ class CommunicationDispatcher:
         
         return message
     
+    async def make_voice_call(
+        self,
+        candidate_id: str,
+        candidate_name: str,
+        phone_number: str,
+        job_title: str,
+        company_id: str,
+        job_id: Optional[str] = None,
+        language: str = "pt-BR",
+        db=None,
+    ) -> Dict[str, Any]:
+        """
+        Initiate a voice screening call via Twilio Programmable Voice.
+
+        Checks LGPD consent before calling. If Twilio circuit is open or
+        voice is not configured, returns fallback_channel='whatsapp' so
+        callers can route to chat/WhatsApp screening.
+
+        Args:
+            candidate_id: Candidate UUID
+            candidate_name: Candidate display name
+            phone_number: E.164 phone number (e.g. +5511999999999)
+            job_title: Job title for screening context
+            company_id: Company/tenant UUID
+            job_id: Optional job vacancy UUID
+            language: Conversation language (default: pt-BR)
+            db: SQLAlchemy async session for consent check
+
+        Returns:
+            Dict with success, session_id, call_sid, status, fallback_channel
+        """
+        try:
+            from app.services.voice_screening_orchestrator import (
+                voice_screening_orchestrator,
+                ConsentNotGrantedError,
+            )
+
+            session = await voice_screening_orchestrator.initiate_call(
+                candidate_id=candidate_id,
+                candidate_name=candidate_name,
+                phone_number=phone_number,
+                job_title=job_title,
+                company_id=company_id,
+                job_id=job_id,
+                language=language,
+                db=db,
+            )
+
+            fallback = None
+            if session.status in ("fallback", "failed", "circuit_open"):
+                fallback = "whatsapp"
+                logger.warning(
+                    "[DISPATCHER] Voice call unavailable (status=%s) — fallback to WhatsApp for %s",
+                    session.status,
+                    phone_number,
+                )
+
+            return {
+                "success": session.status == "initiated",
+                "session_id": session.session_id,
+                "call_sid": session.call_sid,
+                "status": session.status,
+                "channel": "voice",
+                "fallback_channel": fallback,
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+
+        except ConsentNotGrantedError:
+            raise
+        except Exception as e:
+            logger.error("[DISPATCHER] make_voice_call error: %s", e)
+            return {
+                "success": False,
+                "error": str(e),
+                "channel": "voice",
+                "fallback_channel": "whatsapp",
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+
     async def get_communication_policy(
         self,
         company_id: str,

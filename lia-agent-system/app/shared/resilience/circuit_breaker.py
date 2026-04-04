@@ -465,6 +465,16 @@ VINDI_CIRCUIT = CircuitBreaker(
     )
 )
 
+TWILIO_VOICE_CIRCUIT = CircuitBreaker(
+    "twilio_voice",
+    CircuitBreakerConfig(
+        failure_threshold=3,
+        recovery_timeout=60.0,
+        success_threshold=2,
+        timeout=30.0,
+    )
+)
+
 ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
     "anthropic": ANTHROPIC_CIRCUIT,
     "openai": OPENAI_CIRCUIT,
@@ -480,6 +490,7 @@ ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
     "resend": RESEND_CIRCUIT,
     "iugu": IUGU_CIRCUIT,
     "vindi": VINDI_CIRCUIT,
+    "twilio_voice": TWILIO_VOICE_CIRCUIT,
 }
 
 
@@ -583,6 +594,13 @@ CIRCUIT_BREAKER_SLOS: Dict[str, Dict[str, Any]] = {
         "tier": "medium",
         "description": "Pagamentos recorrentes — Vindi",
     },
+    "twilio_voice": {
+        "availability_target": 0.99,
+        "latency_p95_ms": 5000,
+        "error_budget_pct": 1.0,
+        "tier": "high",
+        "description": "Screening por voz — Twilio Programmable Voice",
+    },
 }
 
 # F1-03: respostas de modo degradado — retornadas quando o circuit está OPEN
@@ -644,6 +662,10 @@ DEGRADED_MODE_RESPONSES: Dict[str, str] = {
     "vindi": (
         "O serviço de pagamentos recorrentes está temporariamente indisponível. "
         "Tente novamente em alguns minutos."
+    ),
+    "twilio_voice": (
+        "O screening por voz está temporariamente indisponível. "
+        "A triagem será conduzida via chat ou WhatsApp como alternativa."
     ),
 }
 

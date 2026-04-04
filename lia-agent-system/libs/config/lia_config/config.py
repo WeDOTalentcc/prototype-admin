@@ -266,6 +266,8 @@ class IntegrationSettings(BaseSettings):
     TWILIO_ACCOUNT_SID: Optional[str] = None
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_WHATSAPP_NUMBER: Optional[str] = None
+    # Twilio Programmable Voice — screening calls (Task #135)
+    TWILIO_VOICE_NUMBER: Optional[str] = None  # E.164 format, e.g. +5511999999999
 
     # Google Calendar
     GOOGLE_CALENDAR_CLIENT_ID: Optional[str] = None
