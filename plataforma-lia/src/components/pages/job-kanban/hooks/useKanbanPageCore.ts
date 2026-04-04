@@ -49,7 +49,7 @@ import { useKanbanTransitionHandlers } from "@/components/pages/job-kanban/hooks
 import { useKanbanNavigation } from "@/components/pages/job-kanban/hooks/useKanbanNavigation"
 import { toast } from "sonner"
 
-const EMPTY_JOB_FALLBACK: Record<string, unknown> = {
+const EMPTY_JOB_FALLBACK: Record<string, unknown> & { id: number; jobId: string } = {
   id: 0,
   jobId: "",
   title: "Vaga não carregada",

@@ -69,12 +69,19 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
         body: JSON.stringify({ token: tokenValue, action: 'validate' }),
       })
 
-      let data: FirstAccessData
-
-      if (response.ok) {
-        data = await response.json()
-      } else {
+      if (!response.ok) {
         throw new Error('Token inválido ou expirado')
+      }
+
+      const raw = await response.json()
+      const data: FirstAccessData = {
+        token: raw.token || tokenValue,
+        companyName: raw.companyName || '',
+        contactName: raw.contactName || '',
+        contactEmail: raw.contactEmail || '',
+        contactPhone: raw.contactPhone || '',
+        plan: raw.plan || 'starter',
+        expiresAt: raw.expiresAt || new Date(0).toISOString(),
       }
 
       if (new Date(data.expiresAt) < new Date()) {
