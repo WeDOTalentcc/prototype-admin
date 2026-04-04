@@ -27,6 +27,7 @@ import { toast } from "sonner"
 import { complianceService, ComplianceDashboard } from '@/services/admin/compliance-service'
 import { biasAuditService, BiasAuditSummary, BiasAuditReport } from '@/services/admin/bias-service'
 import { lgpdService, LGPDStats } from '@/services/admin/lgpd-service'
+import { useCurrentCompany } from '@/hooks/use-current-company'
 
 interface FrameworkDisplay {
   key: string
@@ -46,8 +47,6 @@ interface Alert {
   timestamp: string
   status: 'pending' | 'resolved' | 'investigating'
 }
-
-const ADMIN_CLIENT_ID = 'demo_company'
 
 const FRAMEWORK_NAME_MAP: Record<string, string> = {
   'ISO27001': 'ISO 27001:2022',
@@ -131,6 +130,7 @@ async function fetchAlerts(): Promise<Alert[]> {
 }
 
 export default function ComplianceDashboardPage() {
+  const { companyId } = useCurrentCompany()
   const [complianceDashboard, setComplianceDashboard] = useState<ComplianceDashboard | null>(null)
   const [biasSummary, setBiasSummary] = useState<BiasAuditSummary | null>(null)
   const [latestBiasAudit, setLatestBiasAudit] = useState<BiasAuditReport | null>(null)
@@ -143,11 +143,12 @@ export default function ComplianceDashboardPage() {
     setIsRefreshing(true)
 
     try {
+      const clientId = companyId || ''
       const [dashboardData, biasData, latestBias, lgpdData, alertsData] = await Promise.all([
-        complianceService.getDashboard(ADMIN_CLIENT_ID).catch(() => null),
-        biasAuditService.getSummary(ADMIN_CLIENT_ID).catch(() => null),
-        biasAuditService.getLatest(ADMIN_CLIENT_ID).catch(() => null),
-        lgpdService.getStats(ADMIN_CLIENT_ID).catch(() => null),
+        complianceService.getDashboard(clientId).catch(() => null),
+        biasAuditService.getSummary(clientId).catch(() => null),
+        biasAuditService.getLatest(clientId).catch(() => null),
+        lgpdService.getStats(clientId).catch(() => null),
         fetchAlerts().catch(() => [])
       ])
 
@@ -162,7 +163,7 @@ export default function ComplianceDashboardPage() {
       setIsRefreshing(false)
       setIsLoading(false)
     }
-  }, [])
+  }, [companyId])
 
   useEffect(() => {
     fetchData()

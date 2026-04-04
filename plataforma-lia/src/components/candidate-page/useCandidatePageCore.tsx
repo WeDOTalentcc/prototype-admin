@@ -4,12 +4,14 @@
 import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
+import { useCurrentCompany } from '@/hooks/use-current-company'
 import {
   Brain, FileText, Code, Bot, Video, UserCircle,
   UserCheck, Activity
 } from "lucide-react"
 
 export function useCandidatePageCore(candidate: Record<string, unknown> | null) {
+  const { companyId } = useCurrentCompany()
   const [activeTab, setActiveTab] = useState<'profile' | 'activities' | 'files' | 'opinions'>('profile')
   const [showLiaModal, setShowLiaModal] = useState(false)
   const [liaCommand, setLiaCommand] = useState('')
@@ -351,7 +353,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
   const handleDeleteAnalysis = async () => {
     if (!analysisToDelete || !candidate) return
     try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/${candidate.id}/${analysisToDelete.analysis_type}?company_id=demo_company`, {
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/${candidate.id}/${analysisToDelete.analysis_type}?company_id=${companyId || ''}`, {
         method: 'DELETE'
       })
       if (response.ok) {
@@ -374,7 +376,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
   const handleAnalysisTransport = async () => {
     if (!candidate) return
     try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidate.id}?company_id=demo_company`)
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidate.id}?company_id=${companyId || ''}`)
       if (response.ok) {
         const data = await response.json()
         setSavedAnalyses(data)
@@ -390,7 +392,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       if (!candidate?.id) return
       setIsLoadingHistory(true)
       try {
-        const response = await fetch(`/api/backend-proxy/opinions/history/${candidate.id}?company_id=demo_company`)
+        const response = await fetch(`/api/backend-proxy/opinions/history/${candidate.id}?company_id=${companyId || ''}`)
         if (response.ok) {
           const data = await response.json()
           setOpinionsHistory(data.opinions || [])
@@ -405,7 +407,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       if (!candidate?.id) return
       setIsLoadingAnalyses(true)
       try {
-        const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidate.id}?company_id=demo_company`)
+        const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidate.id}?company_id=${companyId || ''}`)
         if (response.ok) {
           const data = await response.json()
           setSavedAnalyses(data)

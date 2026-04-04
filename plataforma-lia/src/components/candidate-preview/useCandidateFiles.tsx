@@ -6,6 +6,7 @@ import { FileText, FileVideo, Award, File, Image } from "lucide-react"
 import { formatRelativeTime } from "@/lib/format-utils"
 import type { FileItem } from "@/components/candidate-preview/FilePreviewModal"
 import { toast } from "sonner"
+import { useCurrentCompany } from '@/hooks/use-current-company'
 
 export { formatFileSize, formatRelativeTime } from "@/lib/format-utils"
 
@@ -30,6 +31,7 @@ export function getFileIcon(fileType: string, mimeType?: string) {
 }
 
 export function useCandidateFiles(candidate: Record<string, any>) {
+  const { companyId } = useCurrentCompany()
   const [candidateFiles, setCandidateFiles] = useState<any[]>([])
   const [fileCategories, setFileCategories] = useState<any[]>([])
   const [isLoadingFiles, setIsLoadingFiles] = useState(false)
@@ -48,7 +50,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:800
 
     setIsLoadingFiles(true)
     try {
-      const url = `${BACKEND_URL}/api/v1/candidates/${candidate.id}/files?company_id=demo_company`
+      const url = `${BACKEND_URL}/api/v1/candidates/${candidate.id}/files?company_id=${companyId || ''}`
       const response = await fetch(url)
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({})) as { error?: string }
@@ -64,7 +66,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:800
     } finally {
       setIsLoadingFiles(false)
     }
-  }, [candidate?.id, BACKEND_URL])
+  }, [candidate?.id, BACKEND_URL, companyId])
 
   useEffect(() => {
     if (candidate?.id) {
@@ -93,7 +95,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:800
       const formData = new FormData()
       formData.append('file', file)
       formData.append('candidate_name', String(candidate.name || 'Candidato'))
-      formData.append('company_id', 'demo_company')
+      formData.append('company_id', companyId || '')
       formData.append('uploaded_by', 'user')
       formData.append('uploaded_by_name', 'Recrutador')
 

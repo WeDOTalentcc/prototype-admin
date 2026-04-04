@@ -43,24 +43,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 
   const [userData, setUserData] = useState<UserData | null>(() => {
     if (typeof window === 'undefined') {
-      const demoUser: UserData = {
-        id: 'demo-user-1',
-        name: 'Usuário Demo',
-        email: 'demo@wedotalent.com',
-        phone: '+55 11 99999-9999',
-        role: 'Recrutador',
-        companyId: 'demo-company',
-        companyName: 'WeDo Talent Demo',
-        isFirstAccess: false,
-        permissions: ['admin', 'recruitment', 'users', 'settings'],
-        createdAt: new Date().toISOString(),
-        companyData: {
-          razaoSocial: 'WeDo Talent Soluções Ltda',
-          endereco: 'São Paulo, SP',
-          telefone: '+55 11 3000-0000'
-        }
-      }
-      return demoUser
+      return null
     }
 
     const storeState = useOnboardingStore.getState()
@@ -70,28 +53,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
       return storedUserData as unknown as UserData
     }
 
-    const demoUser: UserData = {
-      id: 'demo-user-1',
-      name: 'Usuário Demo',
-      email: 'demo@wedotalent.com',
-      phone: '+55 11 99999-9999',
-      role: 'Recrutador',
-      companyId: 'demo-company',
-      companyName: 'WeDo Talent Demo',
-      isFirstAccess: false,
-      permissions: ['admin', 'recruitment', 'users', 'settings'],
-      createdAt: new Date().toISOString(),
-      companyData: {
-        razaoSocial: 'WeDo Talent Soluções Ltda',
-        endereco: 'São Paulo, SP',
-        telefone: '+55 11 3000-0000'
-      }
-    }
-
-    storeState.setUserData(demoUser as unknown as Record<string, unknown>)
-    storeState.setCanReplayOnboarding(true)
-
-    return demoUser
+    return null
   })
 
   useEffect(() => {

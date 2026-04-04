@@ -50,6 +50,7 @@ import {
 } from "lucide-react"
 import { useGlobalPolicies, Policy, PolicyCategory, PolicyHistoryEntry } from "@/hooks/admin/useGlobalPolicies"
 import { useAuth } from "@/contexts/auth-context"
+import { useCurrentCompany } from "@/hooks/use-current-company"
 
 const SECTOR_OPTIONS = [
   { value: "tech", label: "Tecnologia" },
@@ -105,6 +106,7 @@ const REVIEW_LABELS: Record<string, string> = {
 
 export default function GlobalPoliciesPage() {
   const { user } = useAuth()
+  const { companyId } = useCurrentCompany()
   const {
     policies,
     history,
@@ -193,8 +195,6 @@ export default function GlobalPoliciesPage() {
     if (!selectedSector) return
     setIsApplyingSector(true)
     try {
-      // company_id not available in auth context shape; fall back to demo for now
-      const companyId = "demo_company"
       const res = await fetch(
         `/api/backend-proxy/policy-engine/apply-sector?companyId=${companyId}&sector=${selectedSector}`,
         { method: "POST" },

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { DataRequirement, validateCandidateDataForOpinion } from "@/components/modals/insufficient-data-modal"
 import type { ScreeningQuestion, TranscriptionSegment } from "@/components/modals/screening-media-modal"
 import { toast } from "sonner"
+import { useCurrentCompany } from '@/hooks/use-current-company'
 
 interface LiaChatMessage {
   role: 'user' | 'lia'
@@ -12,6 +13,7 @@ interface LiaChatMessage {
 }
 
 export function useCandidatePreviewCore(candidate: Record<string, unknown> | null) {
+  const { companyId } = useCurrentCompany()
   const [activeTab, setActiveTab] = useState<'profile' | 'activities' | 'files' | 'opinions'>('profile')
   const [showLiaModal, setShowLiaModal] = useState(false)
   const [liaConversation, setLiaConversation] = useState("")
@@ -74,7 +76,7 @@ const candidateId = candidate?.id as string | undefined
     if (!candidateId) return
     setIsLoadingOpinions(true)
     try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=demo_company`)
+      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${companyId || ''}`)
       if (response.ok) {
         const data = await response.json()
         setOpinionsData(data)
@@ -83,13 +85,13 @@ const candidateId = candidate?.id as string | undefined
     } finally {
       setIsLoadingOpinions(false)
     }
-  }, [candidateId])
+  }, [candidateId, companyId])
 
   const fetchSavedAnalyses = useCallback(async () => {
     if (!candidateId) return
     setIsLoadingAnalyses(true)
     try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidateId}?company_id=demo_company`)
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidateId}?company_id=${companyId || ''}`)
       if (response.ok) {
         const data = await response.json()
         setSavedAnalyses(data)
@@ -98,11 +100,11 @@ const candidateId = candidate?.id as string | undefined
     } finally {
       setIsLoadingAnalyses(false)
     }
-  }, [candidateId])
+  }, [candidateId, companyId])
 
   const saveAnalysisToBackend = async (analysis: { type: string; content: string; candidate_id: string }) => {
     try {
-      const response = await fetch('/api/backend-proxy/lia/profile-analysis/save?company_id=demo_company', {
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/save?company_id=${companyId || ''}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -142,7 +144,7 @@ const candidateId = candidate?.id as string | undefined
     lastFetchedHistoryCandidateRef.current = candidateId
     setIsLoadingHistory(true)
     try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=demo_company`)
+      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=${companyId || ''}`)
       if (response.ok) {
         const data = await response.json()
         setOpinionsHistory(data)
@@ -151,7 +153,7 @@ const candidateId = candidate?.id as string | undefined
     } finally {
       setIsLoadingHistory(false)
     }
-  }, [candidateId, opinionsHistory.length])
+  }, [candidateId, companyId, opinionsHistory.length])
 
   useEffect(() => {
     if (candidateId) {
@@ -246,7 +248,7 @@ const candidateId = candidate?.id as string | undefined
         seniority_level: c.seniorityLevel || c.seniority_level || ''
       }
 
-      const analysisResponse = await fetch(`/api/backend-proxy/analysis/candidates?company_id=demo_company`, {
+      const analysisResponse = await fetch(`/api/backend-proxy/analysis/candidates?company_id=${companyId || ''}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -295,7 +297,7 @@ const candidateId = candidate?.id as string | undefined
         next_steps: result.potential_roles ? `Cargos potenciais: ${result.potential_roles.join(', ')}` : 'Validar perfil em entrevista'
       }
 
-      const opinionResponse = await fetch(`/api/backend-proxy/opinions?company_id=demo_company&user_id=system`, {
+      const opinionResponse = await fetch(`/api/backend-proxy/opinions?company_id=${companyId || ''}&user_id=system`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(opinionPayload)
@@ -336,7 +338,7 @@ const candidateId = candidate?.id as string | undefined
     }
 
     try {
-      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=demo_company`)
+      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${companyId || ''}`)
       if (summaryResponse.ok) {
         const data = await summaryResponse.json()
         if (data.current_general_opinion?.created_at) {
@@ -359,7 +361,7 @@ const candidateId = candidate?.id as string | undefined
     setShowInsufficientDataModal(false)
 
     try {
-      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=demo_company`)
+      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${companyId || ''}`)
       if (summaryResponse.ok) {
         const data = await summaryResponse.json()
         if (data.current_general_opinion?.created_at) {
@@ -482,7 +484,7 @@ const candidateId = candidate?.id as string | undefined
     try {
       const c = candidate as Record<string, unknown>
       const cId = c.id || c.candidate_id
-      const response = await fetch(`/api/lia/profile-analysis/${cId}/${analysis.analysis_type}?company_id=demo_company`, {
+      const response = await fetch(`/api/lia/profile-analysis/${cId}/${analysis.analysis_type}?company_id=${companyId || ''}`, {
         method: 'DELETE',
       })
 

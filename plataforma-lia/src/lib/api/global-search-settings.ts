@@ -3,9 +3,6 @@ import type { StoredGlobalSearchSettings } from "@/stores/ui-preferences-store"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || ""
 
-// TODO: For production multi-tenancy, pass company_id from user session/auth context
-// Currently uses 'demo_company' fallback in the proxy route for development
-
 export interface GlobalSearchSettings {
   id?: string
   company_id?: string | null

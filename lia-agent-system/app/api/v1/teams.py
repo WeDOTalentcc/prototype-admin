@@ -1319,3 +1319,211 @@ async def get_teams_manifest():
         content=manifest,
         headers={"Content-Disposition": "attachment; filename=manifest.json"},
     )
+
+
+# ================================================================== #
+# Teams Tab endpoints (Approach 2: SSO + behavioral tracking)
+# ================================================================== #
+
+class TabAuthRequest(BaseModel):
+    """SSO token from Teams SDK sent by the iframe."""
+    sso_token: str = Field(..., description="JWT from Teams authentication.getAuthToken()")
+
+
+class TabAuthResponse(BaseModel):
+    """Platform JWT for authenticated API calls from the iframe."""
+    access_token: str
+    user_id: str
+    email: str
+    company_id: str
+    teams_user_id: Optional[str] = None
+
+
+class TabEventRequest(BaseModel):
+    """Behavioral event from the Teams Tab tracker hook."""
+    event_type: str = Field(..., description="e.g. click_create_job, prolonged_stay")
+    entity_type: Optional[str] = Field(None, description="e.g. job, candidate")
+    entity_id: Optional[str] = Field(None, description="ID of the entity being acted on")
+    teams_user_id: Optional[str] = Field(None, description="AAD object ID of the tab user")
+    platform_user_id: Optional[str] = Field(None, description="WeDOTalent user UUID")
+    context: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+
+@router.post("/tab/auth", response_model=TabAuthResponse)
+async def teams_tab_auth(
+    payload: TabAuthRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Validate a Teams Tab SSO token and return a platform access token.
+
+    Flow:
+    1. Receive the JWT from Teams SDK `authentication.getAuthToken()`
+    2. Exchange it with Azure AD for an access token (OBO flow)
+    3. Fetch Graph /me to get AAD object ID + email
+    4. Look up or create the matching WeDOTalent user
+    5. Return a platform JWT so the iframe can call protected APIs
+    """
+    import httpx, jwt as pyjwt, os
+    from sqlalchemy import select
+    from app.auth.models import User
+
+    azure_client_id = os.environ.get("AZURE_CLIENT_ID", "")
+    azure_client_secret = os.environ.get("AZURE_CLIENT_SECRET", "")
+    azure_tenant_id = os.environ.get("AZURE_TENANT_ID", "")
+
+    if not (azure_client_id and azure_client_secret and azure_tenant_id):
+        # SSO not configured — return a minimal guest token for dev
+        logger.warning("[TeamsTabAuth] Azure not configured, returning guest token")
+        return TabAuthResponse(
+            access_token="dev-fallback-token",
+            user_id="dev-user",
+            email="dev@wedotalent.com",
+            company_id="demo_company",
+        )
+
+    try:
+        # OBO (On-Behalf-Of) flow: exchange Teams SSO token for Graph token
+        token_url = f"https://login.microsoftonline.com/{azure_tenant_id}/oauth2/v2.0/token"
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.post(token_url, data={
+                "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                "client_id": azure_client_id,
+                "client_secret": azure_client_secret,
+                "assertion": payload.sso_token,
+                "requested_token_use": "on_behalf_of",
+                "scope": "https://graph.microsoft.com/User.Read openid profile email",
+            })
+            token_data = resp.json()
+
+        graph_token = token_data.get("access_token")
+        if not graph_token:
+            logger.error(f"[TeamsTabAuth] OBO exchange failed: {token_data}")
+            raise HTTPException(status_code=401, detail="Invalid SSO token")
+
+        # Fetch user profile from Graph
+        async with httpx.AsyncClient(timeout=10) as client:
+            me_resp = await client.get(
+                "https://graph.microsoft.com/v1.0/me",
+                headers={"Authorization": f"Bearer {graph_token}"},
+            )
+            profile = me_resp.json()
+
+        aad_object_id: str = profile.get("id", "")
+        email: str = profile.get("mail") or profile.get("userPrincipalName") or ""
+        display_name: str = profile.get("displayName") or email
+
+        if not aad_object_id or not email:
+            raise HTTPException(status_code=401, detail="Could not retrieve user profile from Azure AD")
+
+        # Look up WeDOTalent user by AAD object ID first, then email
+        user: Optional[User] = None
+        stmt = select(User).where(User.azure_ad_object_id == aad_object_id).limit(1)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
+
+        if not user:
+            stmt = select(User).where(User.email == email).limit(1)
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
+            if user and not user.azure_ad_object_id:
+                # Backfill AAD ID
+                user.azure_ad_object_id = aad_object_id
+                db.add(user)
+                await db.commit()
+
+        if not user:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No WeDOTalent account found for {email}. Ask your admin to invite you.",
+            )
+
+        # Generate a platform JWT (reuse existing auth service if available)
+        from app.core.security import create_access_token
+        platform_token = create_access_token(data={"sub": str(user.id)})
+
+        logger.info(f"[TeamsTabAuth] SSO resolved: AAD={aad_object_id} → user={user.id}")
+        return TabAuthResponse(
+            access_token=platform_token,
+            user_id=str(user.id),
+            email=user.email,
+            company_id=str(user.company_id) if user.company_id else "",
+            teams_user_id=aad_object_id,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[TeamsTabAuth] Unexpected error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="SSO authentication failed")
+
+
+@router.post("/tab/events")
+async def teams_tab_events(
+    payload: TabEventRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Receive a behavioral event from the Teams Tab iframe tracker.
+
+    If the event represents a complex action, sends a proactive Adaptive
+    Card to the recruiter's Teams chat with a deep link to the platform.
+    """
+    from app.domains.communication.services.teams_tab_trigger import get_trigger_engine
+    from app.services.teams_simple import SimpleTeamsBot
+    from sqlalchemy import select
+
+    engine = get_trigger_engine()
+    card = engine.evaluate(
+        event_type=payload.event_type,
+        entity_id=payload.entity_id,
+        context=payload.context,
+    )
+
+    if card is None:
+        return {"status": "ignored", "event_type": payload.event_type}
+
+    # Find conversation reference for this Teams user
+    teams_user_id = payload.teams_user_id
+    if not teams_user_id and payload.platform_user_id:
+        # Look up AAD object ID from User record
+        try:
+            from app.auth.models import User
+            stmt = select(User).where(User.id == payload.platform_user_id).limit(1)
+            result = await db.execute(stmt)
+            user = result.scalar_one_or_none()
+            if user and user.azure_ad_object_id:
+                teams_user_id = user.azure_ad_object_id
+        except Exception as e:
+            logger.warning(f"[TeamsTabEvents] Could not resolve platform_user_id: {e}")
+
+    if not teams_user_id:
+        logger.warning(f"[TeamsTabEvents] No teams_user_id for event '{payload.event_type}' — cannot send proactive")
+        return {"status": "no_teams_identity", "event_type": payload.event_type}
+
+    # Find TeamsConversation by user_aad_object_id
+    stmt = select(TeamsConversation).where(
+        TeamsConversation.user_aad_object_id == teams_user_id,
+        TeamsConversation.is_active == True,
+    ).limit(1)
+    result = await db.execute(stmt)
+    conv = result.scalar_one_or_none()
+
+    if not conv:
+        logger.warning(f"[TeamsTabEvents] No active TeamsConversation for AAD user '{teams_user_id}'")
+        return {"status": "no_conversation", "event_type": payload.event_type}
+
+    # Send proactive Adaptive Card
+    bot = SimpleTeamsBot()
+    success = await bot.send_adaptive_card(
+        service_url=conv.service_url,
+        conversation_id=conv.conversation_id,
+        card_payload=card,
+    )
+
+    if not success:
+        logger.error(f"[TeamsTabEvents] Failed to send card for event '{payload.event_type}'")
+        return {"status": "send_failed", "event_type": payload.event_type}
+
+    logger.info(f"[TeamsTabEvents] Proactive card sent for event='{payload.event_type}', user='{teams_user_id}'")
+    return {"status": "sent", "event_type": payload.event_type}

@@ -10,7 +10,7 @@ import type { CandidateResult } from "@/components/search/search-results-card"
 import { useGlobalSearchSettings } from "@/hooks/useGlobalSearchSettings"
 import { useEmptyFieldNotifications, type FieldValueSuggestion } from "@/hooks/use-empty-field-notifications"
 import { useSearchFlow } from "@/hooks/useSearchFlow"
-import { DEFAULT_COMPANY_ID } from "./chat-core.constants"
+import { useCurrentCompany } from "@/hooks/use-current-company"
 
 interface UseChatSessionOptions {
   initialConversation: Message[]
@@ -71,6 +71,9 @@ export function useChatSession({
       }))
     }
   }, [globalSettingsLoading, globalSearchSettings])
+
+  // ── Company context ──────────────────────────────────────
+  const { companyId } = useCurrentCompany()
 
   // ── Empty field notifications ──────────────────────────────
   const emptyFieldNotifications = useEmptyFieldNotifications()
@@ -253,7 +256,7 @@ export function useChatSession({
   useEffect(() => {
     const handleNewJob = async () => {
       setChatTitle('Nova Vaga')
-      await emptyFieldNotifications.fetchNotifications(DEFAULT_COMPANY_ID)
+      if (companyId) await emptyFieldNotifications.fetchNotifications(companyId)
       setMessages(prev => [...prev, {
         id: Date.now(), sender: "lia",
         content: `Olá! Sou a **LIA**, sua assistente de recrutamento. Vou ajudar você a criar uma nova vaga de forma conversacional.\n\nPara começar, me conte sobre a posição que você precisa preencher:\n\n**O que preciso saber:**\n- Qual é o **cargo/título** da vaga?\n- Para qual **departamento** ou **área** é essa posição?\n- É uma vaga **presencial**, **híbrida** ou **remota**?\n\nVocê pode me contar livremente ou colar uma descrição de vaga existente que eu extraio as informações automaticamente!`,
@@ -322,12 +325,14 @@ export function useChatSession({
     if (!notification) return
     if (action === 'fill_now') {
       setIsLoadingSuggestion(true)
-      const suggestion = await emptyFieldNotifications.getSuggestion(DEFAULT_COMPANY_ID, notification.field_key)
+      if (!companyId) return
+      const suggestion = await emptyFieldNotifications.getSuggestion(companyId, notification.field_key)
       setCurrentSuggestion(suggestion)
       setIsLoadingSuggestion(false)
-      await emptyFieldNotifications.handleAction(DEFAULT_COMPANY_ID, notification.field_key, action)
+      await emptyFieldNotifications.handleAction(companyId, notification.field_key, action)
     } else {
-      await emptyFieldNotifications.handleAction(DEFAULT_COMPANY_ID, notification.field_key, action)
+      if (!companyId) return
+      await emptyFieldNotifications.handleAction(companyId, notification.field_key, action)
       setCurrentSuggestion(null)
       setMessages(prev => [...prev, {
         id: Date.now(), sender: "lia",

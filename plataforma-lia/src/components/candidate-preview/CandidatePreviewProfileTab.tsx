@@ -1,6 +1,7 @@
 "use client"
 
 import { ExperienceHighlightCard } from "@/components/experience-highlight-card"
+import { useCurrentCompany } from '@/hooks/use-current-company'
 import { ProfileLiaOpinionCard } from './ProfileLiaOpinionCard'
 import { ProfileSkillsMapCard } from './ProfileSkillsMapCard'
 import { ProfileExperienceCards } from './ProfileExperienceCards'
@@ -41,9 +42,10 @@ export function CandidatePreviewProfileTab({
   hasAddressData,
   getAddressString,
 }: CandidatePreviewProfileTabProps) {
+  const { companyId } = useCurrentCompany()
   return (
     <div className="p-3 space-y-3">
-      <ExperienceHighlightCard candidate={candidate as { id: string; name: string }} companyId="demo_company" />
+      <ExperienceHighlightCard candidate={candidate as { id: string; name: string }} companyId={companyId || ''} />
       
       <ProfileLiaOpinionCard
         jobId={jobId}

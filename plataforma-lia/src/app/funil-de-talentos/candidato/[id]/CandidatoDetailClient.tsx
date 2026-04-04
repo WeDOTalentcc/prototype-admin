@@ -23,6 +23,7 @@ import dynamic from "next/dynamic"
 import { LoadingModal } from "@/components/ui/loading"
 const UnifiedCommunicationModal = dynamic(() => import("@/components/modals/unified-communication-modal").then(m => ({ default: m.UnifiedCommunicationModal })), { ssr: false, loading: () => <LoadingModal /> })
 
+import { useCurrentCompany } from '@/hooks/use-current-company'
 import { useCandidatePageCore } from "./useCandidatePageCore"
 import { CandidateProfileTab } from "./CandidateProfileTab"
 import { CandidatoActivitiesTab } from "./components/CandidatoActivitiesTab"
@@ -57,6 +58,8 @@ export default function CandidateProfilePage() {
     showAddToListModal, showAddToVacancyModal, showCommunicationModal,
     showLiaAnalysisModal, skillCategories, uploadProgress,
   } = useCandidatePageCore()
+
+  const { companyId } = useCurrentCompany()
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
@@ -337,7 +340,7 @@ export default function CandidateProfilePage() {
               <TabsTrigger value="opinions" className="gap-1.5"><Brain className="w-4 h-4 text-wedo-cyan" />Pareceres e Análises</TabsTrigger>
             </TabsList>
 
-            {candidate && <ExperienceHighlightCard candidate={candidate} companyId="demo_company" />}
+            {candidate && <ExperienceHighlightCard candidate={candidate} companyId={companyId || ''} />}
 
             <CandidateProfileTab
               candidate={candidate}
@@ -427,7 +430,7 @@ export default function CandidateProfilePage() {
                 avatar: candidate.avatar_url,
               }}
               type={communicationType}
-              companyId="demo_company"
+              companyId={companyId || ''}
             />
             <AddToListModal
               isOpen={showAddToListModal}

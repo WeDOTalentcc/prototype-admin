@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
+import { useCurrentCompany } from "@/hooks/use-current-company"
 import { Brain, RefreshCw, AlertCircle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -41,7 +42,9 @@ interface HighlightData {
   model_used: string
 }
 
-export function ExperienceHighlightCard({ candidate, companyId = "demo_company" }: ExperienceHighlightCardProps) {
+export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }: ExperienceHighlightCardProps) {
+  const { companyId: currentCompanyId } = useCurrentCompany()
+  const companyId = companyIdProp || currentCompanyId || ''
   const [highlight, setHighlight] = useState<HighlightData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isRegenerating, setIsRegenerating] = useState(false)

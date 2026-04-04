@@ -7,6 +7,7 @@ import { formatRelativeTime, formatFileSize } from "@/lib/format-utils"
 import { liaApi, type CandidateLocal } from "@/services/lia-api"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { toast } from "sonner"
+import { useCurrentCompany } from '@/hooks/use-current-company'
 type ActiveTab = 'profile' | 'activities' | 'files' | 'opinions'
 type ActivityCategory = 'all' | 'interview' | 'screening' | 'general'
 
@@ -18,6 +19,7 @@ interface OpinionData {
 export function useCandidatePageCore() {
   const params = useParams()
   const router = useRouter()
+  const { companyId } = useCurrentCompany()
 const candidateId = params.id as string
 
   
@@ -115,7 +117,7 @@ const candidateId = params.id as string
     if (!candidateId) return
     setIsLoadingOpinions(true)
     try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=demo_company`)
+      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${companyId || ''}`)
       if (response.ok) {
         const data = await response.json()
         setOpinionsData(data)
@@ -129,7 +131,7 @@ const candidateId = params.id as string
   const fetchOpinionsHistory = useCallback(async () => {
     if (!candidateId) return
     try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=demo_company`)
+      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=${companyId || ''}`)
       if (response.ok) {
         const data = await response.json()
         setOpinionsHistory(data)
@@ -142,7 +144,7 @@ const candidateId = params.id as string
     if (!candidateId) return
     setIsLoadingAnalyses(true)
     try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidateId}?company_id=demo_company`)
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidateId}?company_id=${companyId || ''}`)
       if (response.ok) {
         const data = await response.json()
         setSavedAnalyses({
@@ -161,7 +163,7 @@ const candidateId = params.id as string
     
     setIsLoadingFiles(true)
     try {
-      const url = `${BACKEND_URL}/api/v1/candidates/${candidateId}/files?company_id=demo_company`
+      const url = `${BACKEND_URL}/api/v1/candidates/${candidateId}/files?company_id=${companyId || ''}`
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
@@ -195,7 +197,7 @@ const candidateId = params.id as string
       const formData = new FormData()
       formData.append('file', file)
       formData.append('candidate_name', candidate?.name || 'Candidato')
-      formData.append('company_id', 'demo_company')
+      formData.append('company_id', companyId || '')
       formData.append('uploaded_by', 'user')
       formData.append('uploaded_by_name', 'Recrutador')
       
@@ -286,7 +288,7 @@ const candidateId = params.id as string
       
       setIsLoadingActivities(true)
       try {
-        const response = await fetch(`/api/backend-proxy/candidates/${candidateId}/activities?company_id=demo_company`)
+        const response = await fetch(`/api/backend-proxy/candidates/${candidateId}/activities?company_id=${companyId || ''}`)
         if (response.ok) {
           const data = await response.json()
           setActivities(Array.isArray(data) ? data : data?.activities || [])

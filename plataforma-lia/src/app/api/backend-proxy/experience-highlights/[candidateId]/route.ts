@@ -2,12 +2,29 @@ export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { validateParams } from '@/lib/api/validate'
+import { cookies } from 'next/headers'
+import { verifyAndDecodeSession } from '@/lib/session-crypto'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
+const IS_DEVELOPMENT = process.env.NODE_ENV === 'development'
+const DEV_FALLBACK_COMPANY = 'dev_company'
 
 const routeParamsSchema = z.object({
   candidateId: z.string().min(1, 'candidateId is required'),
 })
+
+async function resolveCompanyId(request: NextRequest): Promise<string | null> {
+  const cookieStore = await cookies()
+  const session = cookieStore.get('workos_session')
+  if (session) {
+    const data = verifyAndDecodeSession(session.value)
+    if (data) return data.workosProfile.organizationId || data.workosProfile.id
+  }
+  const fromQuery = new URL(request.url).searchParams.get('company_id')
+  if (fromQuery) return fromQuery
+  if (IS_DEVELOPMENT) return DEV_FALLBACK_COMPANY
+  return null
+}
 
 export async function GET(
   request: NextRequest,
@@ -17,8 +34,14 @@ export async function GET(
     const { candidateId } = await params
     const paramValidation = validateParams({ candidateId }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
-    const searchParams = request.nextUrl.searchParams
-    const companyId = searchParams.get('company_id') || 'demo_company'
+
+    const companyId = await resolveCompanyId(request)
+    if (!companyId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
 
     const response = await fetch(
       `${BACKEND_URL}/api/v1/experience-highlights/${candidateId}?company_id=${companyId}`,
@@ -62,8 +85,14 @@ export async function DELETE(
     const { candidateId } = await params
     const paramValidation = validateParams({ candidateId }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
-    const searchParams = request.nextUrl.searchParams
-    const companyId = searchParams.get('company_id') || 'demo_company'
+
+    const companyId = await resolveCompanyId(request)
+    if (!companyId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
 
     const response = await fetch(
       `${BACKEND_URL}/api/v1/experience-highlights/${candidateId}?company_id=${companyId}`,

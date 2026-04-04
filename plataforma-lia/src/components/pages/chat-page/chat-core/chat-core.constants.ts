@@ -15,4 +15,4 @@ export const ALLOWED_FILE_TYPES = {
   'image/jpg': 'JPG',
 } as const
 
-export const DEFAULT_COMPANY_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+export const DEFAULT_COMPANY_ID: string | null = null

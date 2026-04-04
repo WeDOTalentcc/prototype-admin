@@ -44,6 +44,7 @@ class User(Base):
     
     notification_preferences = Column(JSONB, nullable=True, default=dict, server_default="{}")
 
+    azure_ad_object_id = Column(String(255), nullable=True, index=True)
     workos_id = Column(String(255), unique=True, nullable=True, index=True)
     workos_directory_id = Column(String(255), nullable=True, index=True)
     workos_organization_id = Column(String(255), nullable=True, index=True)

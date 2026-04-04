@@ -306,35 +306,22 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
         const data = await response.json()
         setRubricEvaluationData(data)
       } else {
-        const fitScore = candidate.fitScore ?? 0
-        const mockEvaluation: RubricEvaluationData = {
-          overall_score: candidate.fitScore || candidate.score || 75,
-          recommendation: fitScore >= 70 ? 'approve' : fitScore >= 50 ? 'review' : 'reject',
-          summary: `Análise do candidato ${candidate.name} para a vaga. Avaliação baseada no currículo e requisitos da posição.`,
-          criteria: [
-            { name: 'Experiência Técnica', score: Math.round((candidate.wsiScore || candidate.fitScore || 70) * 0.8 + 20), weight: 30, details: 'Avaliação da experiência técnica do candidato' },
-            { name: 'Formação Acadêmica', score: Math.round(60 + Math.random() * 30), weight: 20, details: 'Compatibilidade da formação com a vaga' },
-            { name: 'Habilidades Interpessoais', score: Math.round(65 + Math.random() * 25), weight: 20, details: 'Competências comportamentais identificadas' },
-            { name: 'Fit Cultural', score: Math.round(70 + Math.random() * 20), weight: 15, details: 'Alinhamento com os valores da empresa' },
-            { name: 'Disponibilidade', score: Math.round(75 + Math.random() * 20), weight: 15, details: 'Adequação ao modelo de trabalho e início' }
-          ]
-        }
-        setRubricEvaluationData(mockEvaluation)
+        setRubricEvaluationData({
+          overall_score: 0,
+          recommendation: 'review',
+          summary: 'Não foi possível carregar a avaliação deste candidato. A análise detalhada não está disponível no momento.',
+          criteria: [],
+          _unavailable: true,
+        } as RubricEvaluationData)
       }
-    } catch (error) {
-      const mockEvaluation: RubricEvaluationData = {
-        overall_score: candidate.fitScore || candidate.score || 75,
+    } catch {
+      setRubricEvaluationData({
+        overall_score: 0,
         recommendation: 'review',
-        summary: `Análise do candidato ${candidate.name} para a vaga.`,
-        criteria: [
-          { name: 'Experiência Técnica', score: 75, weight: 30, details: 'Avaliação da experiência técnica' },
-          { name: 'Formação Acadêmica', score: 70, weight: 20, details: 'Compatibilidade da formação' },
-          { name: 'Habilidades Interpessoais', score: 72, weight: 20, details: 'Competências comportamentais' },
-          { name: 'Fit Cultural', score: 78, weight: 15, details: 'Alinhamento cultural' },
-          { name: 'Disponibilidade', score: 85, weight: 15, details: 'Disponibilidade para início' }
-        ]
-      }
-      setRubricEvaluationData(mockEvaluation)
+        summary: 'Erro ao carregar avaliação. Tente novamente mais tarde.',
+        criteria: [],
+        _unavailable: true,
+      } as RubricEvaluationData)
     }
   }
 

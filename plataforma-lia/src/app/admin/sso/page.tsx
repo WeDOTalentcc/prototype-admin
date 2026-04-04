@@ -16,8 +16,8 @@ import { Shield, Users, Clock, AlertCircle, CheckCircle2, ExternalLink, Database
 import { getWorkOSLinks } from '@/lib/workos-links'
 import { WorkOSAdminPortal } from '@/components/admin/workos-admin-portal'
 import { useWorkOSMetrics } from '@/hooks/use-workos-metrics'
+import { useCurrentCompany } from '@/hooks/use-current-company'
 
-const COMPANY_ID = 'demo_company'
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 interface SSOStatus {
@@ -42,22 +42,23 @@ interface WorkOSGroup {
 
 export default function SSOAdminPage() {
   const [selectedTab, setSelectedTab] = useState('overview')
+  const { companyId } = useCurrentCompany()
   
-  const { metrics: realtimeMetrics, isFromWorkOS, isLoading: metricsLoading } = useWorkOSMetrics(COMPANY_ID)
+  const { metrics: realtimeMetrics, isFromWorkOS, isLoading: metricsLoading } = useWorkOSMetrics(companyId || '')
   
   const { data: status, error: statusError } = useSWR<SSOStatus>(
-    `/api/backend-proxy/workos/admin/status?company_id=${COMPANY_ID}`,
+    companyId ? `/api/backend-proxy/workos/admin/status?company_id=${companyId}` : null,
     fetcher
   )
   
   const { data: groups, mutate: mutateGroups } = useSWR<WorkOSGroup[]>(
-    `/api/backend-proxy/workos/admin/groups?company_id=${COMPANY_ID}`,
+    companyId ? `/api/backend-proxy/workos/admin/groups?company_id=${companyId}` : null,
     fetcher
   )
   
   const handleRoleMapping = async (groupId: string, role: string) => {
     try {
-      await fetch(`/api/backend-proxy/workos/admin/groups/${groupId}/role-mapping?company_id=${COMPANY_ID}`, {
+      await fetch(`/api/backend-proxy/workos/admin/groups/${groupId}/role-mapping?company_id=${companyId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, permissions: [] })
