@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React from "react"
 import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
 import { Button } from "@/components/ui/button"
@@ -776,14 +778,14 @@ export function JobEditTab({
                           <div>
                             <label className={labelClass}>Mínimo</label>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">R$</span>
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">{CURRENCY_SYMBOL}</span>
                               <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.salaryMin as string) || ""} onChange={(e) => updateField("salaryMin", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
                           <div>
                             <label className={labelClass}>Máximo</label>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">R$</span>
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">{CURRENCY_SYMBOL}</span>
                               <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.salaryMax as string) || ""} onChange={(e) => updateField("salaryMax", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
@@ -799,14 +801,14 @@ export function JobEditTab({
                           <div>
                             <label className={labelClass}>Mínimo</label>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">R$</span>
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">{CURRENCY_SYMBOL}</span>
                               <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.bonusMin as string) || ""} onChange={(e) => updateField("bonusMin", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>
                           <div>
                             <label className={labelClass}>Máximo</label>
                             <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">R$</span>
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-tertiary">{CURRENCY_SYMBOL}</span>
                               <input type="number" className={`${inputClass(!isEditing)} pl-9`} value={(jobEditForm.bonusMax as string) || ""} onChange={(e) => updateField("bonusMax", e.target.value)} disabled={!isEditing} placeholder="0,00" />
                             </div>
                           </div>

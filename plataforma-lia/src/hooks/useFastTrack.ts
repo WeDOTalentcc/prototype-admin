@@ -7,6 +7,7 @@
  * - Ask only for sensitive fields (affirmative, manager, location)
  * - Regenerate WSI questions if competencies change
  */
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState, useCallback, useEffect, useRef } from 'react'
 import type { 
   TechnicalSkill, 
@@ -244,7 +245,7 @@ export function useFastTrack(options: FastTrackOptions) {
       })
       
       const defaultBenefits: Benefit[] = [
-        { id: '1', name: 'Vale Refeição', value: 'R$ 35/dia', enabled: true },
+        { id: '1', name: 'Vale Refeição', value: `${CURRENCY_SYMBOL} 35/dia`, enabled: true },
         { id: '2', name: 'Vale Transporte', enabled: true },
         { id: '3', name: 'Plano de Saúde', enabled: true },
         { id: '4', name: 'Plano Odontológico', enabled: true },
@@ -398,7 +399,7 @@ Quer usar uma delas como base? Vai ser bem mais rápido!`
     const behavioralList = job.behavioral_competencies || []
     const behavioralCount = behavioralList.length
     const salaryInfo = job.salary_min && job.salary_max
-      ? `R$ ${(job.salary_min / 1000).toFixed(0)}k - ${(job.salary_max / 1000).toFixed(0)}k`
+      ? `${formatBRL(job.salary_min / 1000)}k - ${(job.salary_max / 1000).toFixed(0)}k`
       : ''
     const wsiCount = job.wsi_questions?.length || 0
     const gestorName = job.manager || job.gestor

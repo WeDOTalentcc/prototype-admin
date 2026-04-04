@@ -1,5 +1,7 @@
 'use client'
 
+
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import React, { useState } from 'react'
 import { 
   DollarSign, Star, CheckCircle2, Plus, Check, Settings, TrendingUp, 
@@ -26,7 +28,7 @@ const CATEGORY_ICONS: Record<BenefitCategory, any> = {
 
 function formatBenefitDisplay(benefit: JobBenefit): string {
   if (benefit.value_type === 'monetary' && benefit.value) {
-    return `R$ ${benefit.value.toLocaleString('pt-BR')}`
+    return formatBRL(benefit.value)
   }
   if (benefit.value_type === 'percentage' && benefit.percentage_value) {
     return `${benefit.percentage_value}%`
@@ -146,7 +148,7 @@ export function SalaryStage() {
                 )}
               </div>
               <div className="text-xs font-semibold text-lia-text-primary">
-                R$ {salaryBenchmark.internal.min.toLocaleString()} - R$ {salaryBenchmark.internal.max.toLocaleString()}
+                {formatBRL(salaryBenchmark.internal.min)} - {formatBRL(salaryBenchmark.internal.max)}
               </div>
             </div>
           )}
@@ -168,7 +170,7 @@ export function SalaryStage() {
                 </span>
               </div>
               <div className="text-xs font-semibold text-lia-text-primary">
-                R$ {salaryBenchmark.market.min.toLocaleString()} - R$ {salaryBenchmark.market.max.toLocaleString()}
+                {formatBRL(salaryBenchmark.market.min)} - {formatBRL(salaryBenchmark.market.max)}
               </div>
             </div>
           )}
@@ -180,7 +182,7 @@ export function SalaryStage() {
               className="w-full py-1.5 mt-1 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active text-micro font-medium rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-1"
             >
               <Brain className="w-3 h-3 text-wedo-cyan" />
-              Aplicar sugestão: R$ {salaryBenchmark.combined.min.toLocaleString()} - R$ {salaryBenchmark.combined.max.toLocaleString()}
+              Aplicar sugestão: {formatBRL(salaryBenchmark.combined.min)} - {formatBRL(salaryBenchmark.combined.max)}
             </button>
           )}
           
@@ -208,7 +210,7 @@ export function SalaryStage() {
           <div className="flex-1">
             <span className="text-micro text-lia-text-secondary">De</span>
             <div className="relative mt-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">{CURRENCY_SYMBOL}</span>
               <input
                 type="text"
                 value={salaryInfo.minSalary}
@@ -222,7 +224,7 @@ export function SalaryStage() {
           <div className="flex-1">
             <span className="text-micro text-lia-text-secondary">Até</span>
             <div className="relative mt-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">{CURRENCY_SYMBOL}</span>
               <input
                 type="text"
                 value={salaryInfo.maxSalary}
@@ -246,7 +248,7 @@ export function SalaryStage() {
           <div className="flex-1">
             <span className="text-micro text-lia-text-secondary">De</span>
             <div className="relative mt-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">{CURRENCY_SYMBOL}</span>
               <input
                 type="text"
                 value={salaryInfo.minBonus}
@@ -260,7 +262,7 @@ export function SalaryStage() {
           <div className="flex-1">
             <span className="text-micro text-lia-text-secondary">Até</span>
             <div className="relative mt-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lia-text-secondary">{CURRENCY_SYMBOL}</span>
               <input
                 type="text"
                 value={salaryInfo.maxBonus}
@@ -388,7 +390,7 @@ export function SalaryStage() {
               type="text"
               value={newBenefitValue}
               onChange={(e) => setNewBenefitValue(e.target.value)}
-              placeholder="Valor (opcional, ex: R$ 500/mês)..."
+              placeholder={`Valor (opcional, ex: ${CURRENCY_SYMBOL} 500/mês)...`}
               className="w-full px-3 py-1.5 border border-lia-border-subtle rounded-md text-xs"
             />
             <input

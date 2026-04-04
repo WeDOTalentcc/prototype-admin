@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 import { useState, useEffect } from "react"
 import { liaApi, CandidateLocal } from "@/services/lia-api"
 import {
@@ -99,9 +101,9 @@ export function useKanbanCandidateLoader({
                   ? c.languages.map((l: Record<string, unknown>) => typeof l === 'string' ? l : l.language)
                   : Object.keys(c.languages || {}),
                 expectedSalary: c.desired_salary_max
-                  ? `R$ ${c.desired_salary_max.toLocaleString('pt-BR')}`
-                  : `R$ ${Math.floor(monthlySalary * 1.2).toLocaleString('pt-BR')}`,
-                currentSalary: `R$ ${monthlySalary.toLocaleString('pt-BR')}`,
+                  ? `${formatBRL(c.desired_salary_max)}`
+                  : `${formatBRL(Math.floor(monthlySalary * 1.2))}`,
+                currentSalary: `${formatBRL(monthlySalary)}`,
                 contractType: c.contract_type_preference || 'CLT',
                 workModel: c.work_model_preference || 'híbrido',
                 availability: 'A confirmar', portfolio: c.portfolio_url || '', github: c.github_url || '',

@@ -1,3 +1,4 @@
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import {
   BarChart3, Brain, Calendar, ClipboardList, Copy, Download,
   FileText, Filter, Phone, Settings, Target, Users, Workflow, Zap
@@ -170,21 +171,21 @@ const modernConversationPart2: Message[] = [
           location: "São Paulo, SP - Modelo Híbrido"
         },
         compensation: {
-          base_salary: "R$ 47.500,00/mês",
+          base_salary: `${CURRENCY_SYMBOL} 47.500,00/mês`,
           variable_bonus: "Até 50% do salário base (target: 30%)",
-          sign_on_bonus: "R$ 30.000,00 (pagamento único)",
+          sign_on_bonus: `${CURRENCY_SYMBOL} 30.000,00 (pagamento único)`,
           stock_options: "0.15% equity - 4 anos vesting",
-          total_annual: "R$ 807.000,00"
+          total_annual: `${CURRENCY_SYMBOL} 807.000,00`
         },
         benefits: {
           health_insurance: "Plano de saúde premium (titular + dependentes)",
           dental: "Plano odontológico completo",
           life_insurance: "Seguro de vida em grupo",
-          meal_voucher: "R$ 1.200/mês (Flash)",
+          meal_voucher: `${CURRENCY_SYMBOL} 1.200/mês (Flash)`,
           transport: "Vale-transporte ou estacionamento",
           gym: "Gympass premium",
-          home_office: "Auxílio home office R$ 500/mês",
-          education: "Budget anual de R$ 15.000 para cursos e certificações",
+          home_office: "Auxílio home office ${CURRENCY_SYMBOL} 500/mês",
+          education: "Budget anual de ${CURRENCY_SYMBOL} 15.000 para cursos e certificações",
           vacation: "30 dias de férias anuais",
           pto: "15 dias de PTO (Paid Time Off) adicionais"
         },
@@ -202,21 +203,21 @@ Data de início: 15 de Março de 2024
 Localização: São Paulo, SP - Modelo Híbrido (3 dias presencial)
 
 **COMPENSAÇÃO:**
-• Salário base: R$ 47.500,00 mensais (CLT)
+• Salário base: ${CURRENCY_SYMBOL} 47.500,00 mensais (CLT)
 • Bônus variável: Até 50% do salário base anual (target: 30%)
-• Sign-on bonus: R$ 30.000,00 (pagamento único no primeiro mês)
+• Sign-on bonus: ${CURRENCY_SYMBOL} 30.000,00 (pagamento único no primeiro mês)
 • Stock Options: 0.15% equity com vesting de 4 anos
-• Total anual estimado: R$ 807.000,00
+• Total anual estimado: ${CURRENCY_SYMBOL} 807.000,00
 
 **PACOTE DE BENEFÍCIOS:**
 • Plano de saúde premium (titular + dependentes) - Bradesco Saúde Top
 • Plano odontológico completo
 • Seguro de vida em grupo
-• Vale-refeição: R$ 1.200/mês (Flash)
+• Vale-refeição: ${CURRENCY_SYMBOL} 1.200/mês (Flash)
 • Vale-transporte ou estacionamento
 • Gympass premium
-• Auxílio home office: R$ 500/mês
-• Budget educacional: R$ 15.000/ano para cursos, certificações e conferências
+• Auxílio home office: ${CURRENCY_SYMBOL} 500/mês
+• Budget educacional: ${CURRENCY_SYMBOL} 15.000/ano para cursos, certificações e conferências
 • 30 dias de férias anuais
 • 15 dias de PTO (Paid Time Off) adicionais
 
@@ -331,8 +332,8 @@ WeDo Talent Solutions`
         executive_summary: {
           position: "Diretor de Tecnologia da Informação",
           journey_duration: "Planejamento: 2 semanas | Execução: 6 semanas | Onboarding: 12 semanas",
-          total_investment: "R$ 127.500 (recrutamento) + R$ 807.000 (compensação anual)",
-          roi_projection: "R$ 3.2M em valor gerado no primeiro ano",
+          total_investment: `${CURRENCY_SYMBOL} 127.500 (recrutamento) + ${CURRENCY_SYMBOL} 807.000 (compensação anual)`,
+          roi_projection: `${CURRENCY_SYMBOL} 3.2M em valor gerado no primeiro ano`,
           success_probability: "94% baseado em assessment completo e cultural fit"
         },
         journey_phases: {
@@ -383,7 +384,7 @@ WeDo Talent Solutions`
         },
         measurable_results: {
           time_to_hire: "45 dias (vs 65 dias industry average)",
-          cost_per_hire: "R$ 127.500 (vs R$ 180.000 executive search)",
+          cost_per_hire: `${CURRENCY_SYMBOL} 127.500 (vs ${CURRENCY_SYMBOL} 180.000 executive search)`,
           candidate_quality: "94/100 final score (vs 78 average)",
           hiring_manager_satisfaction: "9.8/10 NPS"
         }

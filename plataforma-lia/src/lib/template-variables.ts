@@ -1,3 +1,5 @@
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
+
 export interface TemplateVariable {
   key: string
   label: string
@@ -293,7 +295,7 @@ export const VARIABLE_REGISTRY: VariableGroup[] = [
         key: 'cost_per_hire',
         label: 'Custo por Contratação',
         description: 'Custo médio por contratação',
-        example: 'R$ 2.500'
+        example: `${CURRENCY_SYMBOL} 2.500`
       },
       {
         key: 'total_hires',

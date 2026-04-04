@@ -45,8 +45,29 @@ function brl(amount: number, period?: string): PriceValue {
   }
 }
 
+export const CURRENCY_SYMBOL = 'R$'
+export const CURRENCY_PLACEHOLDER = 'R$ 0,00'
+
 export function formatBRL(amount: number): string {
   return amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+}
+
+export function formatBRLDecimal(amount: number): string {
+  return amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+export function formatBRLCompact(amount: number): string {
+  if (amount >= 1_000_000) return `R$ ${(amount / 1_000_000).toFixed(1)}M`
+  if (amount >= 1_000) return `R$ ${(amount / 1_000).toFixed(0)}k`
+  return formatBRL(amount)
+}
+
+export function formatSalaryRange(min: number, max: number): string {
+  return `${formatBRL(min)} - ${formatBRL(max)}`
+}
+
+export function formatCurrencyLabel(label: string): string {
+  return `${label} (${CURRENCY_SYMBOL})`
 }
 
 export const PLAN_PRICES: Record<PlanTier, PriceValue | null> = {

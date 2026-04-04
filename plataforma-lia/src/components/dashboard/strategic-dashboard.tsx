@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
+
 import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -135,7 +137,7 @@ export function StrategicDashboard({ dateRange, onExportPDF, onExportExcel }: St
   }
 
   const formatValue = (value: number, unit: string) => {
-    if (unit === 'R$') return `R$ ${value.toLocaleString('pt-BR')}`
+    if (unit === CURRENCY_SYMBOL) return `${formatBRL(value)}`
     if (unit === '%') return `${value}%`
     if (unit === '/5') return `${value}/5`
     if (unit === ':1') return `${value}:1`

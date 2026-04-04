@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 import React from "react"
 import {
   Sheet,
@@ -71,7 +73,7 @@ function getCategoryInfo(categoryId: string) {
 function formatBenefitValue(benefit: Benefit): string {
   if (benefit.value_type === "monetary" && benefit.value) {
     const prefix = benefit.is_discount ? "Desconto: " : ""
-    return `${prefix}R$ ${benefit.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+    return `${prefix}${formatBRL(benefit.value)}`
   }
   if (benefit.value_type === "percentage" && benefit.percentage_value) {
     return `${benefit.percentage_value}%`

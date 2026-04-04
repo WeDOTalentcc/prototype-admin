@@ -1,5 +1,7 @@
 "use client"
 
+
+import { formatBRL } from "@/lib/pricing"
 import { useState, useEffect, useRef } from "react"
 import { liaApi } from "@/services/lia-api"
 import type { Job } from "@/components/jobs"
@@ -76,7 +78,7 @@ export function useJobsData(): UseJobsDataReturn {
           type: (jv.employment_type as string) || 'CLT',
           level: (jv.seniority_level as string) || 'Pleno',
           salary: jv.salary_range
-            ? `R$ ${(jv.salary_range as Record<string, number>).min?.toLocaleString()} - R$ ${(jv.salary_range as Record<string, number>).max?.toLocaleString()}`
+            ? `${formatBRL(Number((jv.salary_range as Record<string, number>).min ?? 0))} - ${formatBRL(Number((jv.salary_range as Record<string, number>).max ?? 0))}`
             : 'A combinar',
           benefits: (jv.benefits as string[]) || [],
           status: ((jv.status as Job['status']) || 'Rascunho'),

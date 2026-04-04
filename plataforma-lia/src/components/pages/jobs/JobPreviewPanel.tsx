@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL, formatBRLCompact } from "@/lib/pricing"
 import React, { useState } from "react"
 import { SCREENING_STATUS_LABELS } from "@/types/screening"
 import { Button } from "@/components/ui/button"
@@ -213,9 +215,9 @@ export function JobPreviewPanel({
                               {(() => {
                                 const min = _previewJob.salaryRange?.min || (_previewJob as unknown as Record<string, number | undefined>).salaryMin
                                 const max = _previewJob.salaryRange?.max || (_previewJob as unknown as Record<string, number | undefined>).salaryMax
-                                if (min && max) return `R$ ${((min as number)/1000).toFixed(0)}k - ${((max as number)/1000).toFixed(0)}k`
-                                if (min) return `A partir de R$ ${((min as number)/1000).toFixed(0)}k`
-                                if (max) return `Até R$ ${((max as number)/1000).toFixed(0)}k`
+                                if (min && max) return `${formatBRLCompact(min as number)} - ${formatBRLCompact(max as number)}`
+                                if (min) return `A partir de ${formatBRLCompact(min as number)}`
+                                if (max) return `Até ${formatBRLCompact(max as number)}`
                                 return ''
                               })()}
                             </Badge>
@@ -422,7 +424,7 @@ export function JobPreviewPanel({
                           <div className="text-center p-2 bg-lia-bg-secondary rounded-md">
                             <p className={`${textStyles.bodySmall}`}>Salário</p>
                             <p className="text-sm font-bold text-lia-text-primary">
-                              {_previewJob.salary > 'R$ 10.000' ? '+15%' : '-5%'}
+                              {_previewJob.salary > `${CURRENCY_SYMBOL} 10.000` ? '+15%' : '-5%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. mercado</p>
                           </div>

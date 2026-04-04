@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
+
 import React, { useState, useRef, useEffect, useCallback } from "react"
 import { useJobReport } from "@/hooks/use-job-report"
 import { Button } from "@/components/ui/button"
@@ -295,7 +297,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                   </div>
                   <div className="text-center p-2 bg-wedo-orange/10 rounded-md border border-wedo-orange/30">
                     <DollarSign className="w-4 h-4 text-wedo-orange mx-auto mb-0.5" />
-                    <p className="text-lg font-bold text-wedo-orange">R${reportData.funnelMetrics.costPerHire.toLocaleString('pt-BR')}</p>
+                    <p className="text-lg font-bold text-wedo-orange">{formatBRL(reportData.funnelMetrics.costPerHire)}</p>
                     <p className="text-micro text-lia-text-secondary">Custo/Contratação</p>
                   </div>
                 </div>
@@ -397,7 +399,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                               </span>
                             </td>
                             <td className="text-right py-1 px-1.5 text-lia-text-secondary">
-                              {channel.cost > 0 ? `R$${channel.cost.toLocaleString('pt-BR')}` : '-'}
+                              {channel.cost > 0 ? `${formatBRL(channel.cost)}` : '-'}
                             </td>
                           </tr>
                         ))}
@@ -483,22 +485,22 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 <div className="grid grid-cols-6 gap-2">
                   <div className="col-span-2 p-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default dark:border-lia-border-default">
                     <p className="text-micro text-lia-text-secondary">Orçamento Total</p>
-                    <p className="text-sm font-bold text-lia-text-primary">R$ {reportData.budget.total.toLocaleString('pt-BR')}</p>
+                    <p className="text-sm font-bold text-lia-text-primary">{formatBRL(reportData.budget.total)}</p>
                   </div>
                   <div className="col-span-2 p-2 bg-wedo-orange/10 rounded-md border border-wedo-orange/30">
                     <p className="text-micro text-lia-text-secondary">Gasto ({Math.round((reportData.budget.spent / reportData.budget.total) * 100)}%)</p>
-                    <p className="text-sm font-bold text-wedo-orange">R$ {reportData.budget.spent.toLocaleString('pt-BR')}</p>
+                    <p className="text-sm font-bold text-wedo-orange">{formatBRL(reportData.budget.spent)}</p>
                   </div>
                   <div className="col-span-2 p-2 bg-status-success/10 rounded-md border border-status-success/30">
                     <p className="text-micro text-lia-text-secondary">Disponível ({Math.round((reportData.budget.remaining / reportData.budget.total) * 100)}%)</p>
-                    <p className="text-sm font-bold text-status-success">R$ {reportData.budget.remaining.toLocaleString('pt-BR')}</p>
+                    <p className="text-sm font-bold text-status-success">{formatBRL(reportData.budget.remaining)}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
                   {reportData.budget.breakdown.map((item) => (
                     <div key={item.category} className="p-1.5 bg-lia-bg-secondary rounded-md border border-lia-border-subtle text-center">
                       <p className="text-micro text-lia-text-secondary truncate">{item.category}</p>
-                      <p className="text-micro font-semibold text-lia-text-primary">R$ {item.amount.toLocaleString('pt-BR')}</p>
+                      <p className="text-micro font-semibold text-lia-text-primary">{formatBRL(item.amount)}</p>
                       <p className="text-micro text-lia-text-secondary">{Math.round((item.amount / reportData.budget.spent) * 100)}%</p>
                     </div>
                   ))}
@@ -516,7 +518,7 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                 <div className="space-y-1.5 p-2 bg-lia-bg-primary rounded-b border border-lia-border-subtle border-t-0">
                   {[
                     { icon: CheckCircle, color: "text-status-success", bgColor: "bg-status-success/10", title: "Acelerar Processo de Entrevista", desc: "Com 34 candidatos em fase de entrevista, recomenda-se agendar entrevistas em bloco para reduzir o tempo de processo em 30%." },
-                    { icon: Brain, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary", title: "Otimizar Triagem com LIA", desc: "Aumentar o uso da LIA para triagem inicial pode reduzir custos em R$ 3.000 e melhorar a qualidade dos candidatos em 15%." },
+                    { icon: Brain, color: "text-lia-text-secondary", bgColor: "bg-lia-bg-tertiary dark:bg-lia-bg-secondary", title: "Otimizar Triagem com LIA", desc: `Aumentar o uso da LIA para triagem inicial pode reduzir custos em ${CURRENCY_SYMBOL} 3.000 e melhorar a qualidade dos candidatos em 15%.` },
                     { icon: Target, color: "text-wedo-purple", bgColor: "bg-wedo-purple/10", title: "Focar em Canais de Alta Performance", desc: "LinkedIn e LIA Database apresentam melhor qualidade de candidatos. Considere realocar 40% do orçamento para estes canais." },
                     { icon: Clock, color: "text-wedo-orange", bgColor: "bg-wedo-orange/10", title: "Definir Prazo para Decisão Final", desc: "Estabelecer deadline de 10 dias para decisões finais pode evitar perda de candidatos qualificados para concorrentes." }
                   ].map((rec, idx) => (

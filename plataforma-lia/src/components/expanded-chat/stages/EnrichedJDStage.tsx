@@ -1,5 +1,7 @@
 'use client'
 
+
+import { formatBRL } from "@/lib/pricing"
 import React, { useState } from 'react'
 import { 
   FileText, 
@@ -445,13 +447,13 @@ export function EnrichedJDStage({
               <div className="flex justify-between items-center p-2 bg-lia-bg-secondary/50 rounded-md">
                 <span className="text-sm text-lia-text-secondary">Sua proposta:</span>
                 <span className="text-sm font-medium text-lia-text-primary">
-                  R$ {enrichedData.compensation.currentRange.min.toLocaleString()} - R$ {enrichedData.compensation.currentRange.max.toLocaleString()}
+                  {formatBRL(enrichedData.compensation.currentRange.min)} - {formatBRL(enrichedData.compensation.currentRange.max)}
                 </span>
               </div>
               <div className="flex justify-between items-center p-2 bg-lia-bg-tertiary rounded-md">
                 <span className="text-sm text-lia-text-secondary">Benchmark:</span>
                 <span className="text-sm font-medium text-lia-text-secondary">
-                  R$ {enrichedData.compensation.marketRange.min.toLocaleString()} - R$ {enrichedData.compensation.marketRange.max.toLocaleString()}
+                  {formatBRL(enrichedData.compensation.marketRange.min)} - {formatBRL(enrichedData.compensation.marketRange.max)}
                 </span>
               </div>
               

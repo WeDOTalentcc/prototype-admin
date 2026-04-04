@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -446,7 +448,7 @@ export default function SetupEmpresaPage() {
               {editingBenefit.value_type === "monetary" && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Valor (R$)</Label>
+                    <Label>Valor ({CURRENCY_SYMBOL})</Label>
                     <Input type="number" value={editingBenefit.value || ""} onChange={(e) => setEditingBenefit({ ...editingBenefit, value: parseFloat(e.target.value) || undefined })} placeholder="0,00" />
                   </div>
                   <div className="space-y-2">

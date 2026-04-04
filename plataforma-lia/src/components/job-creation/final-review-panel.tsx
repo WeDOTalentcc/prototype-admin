@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React, { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -126,7 +128,7 @@ function formatFieldValue(fieldKey: string, value: unknown): string {
   
   if (fieldKey === "salary_range" && typeof value === "object") {
     const { min, max, currency } = value as { min?: number; max?: number; currency?: string }
-    return `${currency || "R$"} ${min?.toLocaleString()} - ${max?.toLocaleString()}`
+    return `${currency || CURRENCY_SYMBOL} ${min?.toLocaleString()} - ${max?.toLocaleString()}`
   }
   
   if (fieldKey === "benefits" && Array.isArray(value)) {

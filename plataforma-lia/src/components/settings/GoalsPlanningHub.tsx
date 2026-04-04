@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_PLACEHOLDER } from "@/lib/pricing"
 import React, { useState, useMemo, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -861,7 +863,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                   min={0}
                                   value={pos.salary_min ?? ''}
                                   onChange={(e) => updatePositionSalary(dept.id, pos.id, 'salary_min', e.target.value ? parseInt(e.target.value) : undefined)}
-                                  placeholder="R$ 0"
+                                  placeholder={CURRENCY_PLACEHOLDER}
                                   disabled={!isEditingWorkforce}
                                   className={`w-20 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-lia-bg-primary dark:bg-lia-bg-elevated disabled:bg-lia-bg-secondary dark:disabled:bg-lia-btn-primary-hover disabled:text-lia-text-secondary`}
                                 />
@@ -872,7 +874,7 @@ export function GoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection }:
                                   min={0}
                                   value={pos.salary_max ?? ''}
                                   onChange={(e) => updatePositionSalary(dept.id, pos.id, 'salary_max', e.target.value ? parseInt(e.target.value) : undefined)}
-                                  placeholder="R$ 0"
+                                  placeholder={CURRENCY_PLACEHOLDER}
                                   disabled={!isEditingWorkforce}
                                   className={`w-20 px-1 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md text-center bg-lia-bg-primary dark:bg-lia-bg-elevated disabled:bg-lia-bg-secondary dark:disabled:bg-lia-btn-primary-hover disabled:text-lia-text-secondary`}
                                 />

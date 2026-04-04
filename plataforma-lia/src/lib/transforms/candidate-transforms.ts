@@ -6,6 +6,7 @@
  *
  * Portabilidade Vue: funções puras, sem dependência de hooks React.
  */
+import { formatBRL } from "@/lib/pricing"
 import type { CandidateLocal } from "@/services/lia-api"
 import type { Candidate } from "@/components/pages/candidates/types"
 
@@ -270,10 +271,10 @@ export function mapCandidateLocalToCandidate(c: CandidateLocal, index: number): 
     location: c.location_city || 'Não especificado',
     workModel: (c.work_model_preference as 'remoto' | 'híbrido' | 'presencial') || 'remoto',
     score: c.lia_score || 75,
-    currentSalary: `R$ ${monthlySalary.toLocaleString('pt-BR')}`,
+    currentSalary: `${formatBRL(monthlySalary)}`,
     expectedSalary: c.desired_salary_max
-      ? `R$ ${c.desired_salary_max.toLocaleString('pt-BR')}`
-      : `R$ ${Math.floor(monthlySalary * 1.2).toLocaleString('pt-BR')}`,
+      ? `${formatBRL(c.desired_salary_max)}`
+      : `${formatBRL(Math.floor(monthlySalary * 1.2))}`,
     contractType: (c.contract_type_preference?.toUpperCase() || 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
     linkedin: c.linkedin_url || '',
     skills: c.technical_skills || [],

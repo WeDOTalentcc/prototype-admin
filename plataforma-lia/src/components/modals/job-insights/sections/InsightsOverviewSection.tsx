@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 import { getJobDimensionColorClass } from "@/lib/score-utils"
 import {
   Users,
@@ -297,8 +299,8 @@ export function InsightsOverviewSection({
           </h3>
           <div className="space-y-3">
             {[
-              { label: "Faixa da Vaga", value: `R$ ${salaryData.vagaMin.toLocaleString()} - R$ ${salaryData.vagaMax.toLocaleString()}` },
-              { label: "Média Pretensão Candidatos", value: `R$ ${salaryData.mediaInscritos.toLocaleString()}` },
+              { label: "Faixa da Vaga", value: `${formatBRL(salaryData.vagaMin)} - ${formatBRL(salaryData.vagaMax)}` },
+              { label: "Média Pretensão Candidatos", value: `${formatBRL(salaryData.mediaInscritos)}` },
               { label: "Candidatos Dentro da Faixa", value: `${salaryData.dentroFaixa} (${salaryData.percentualDentro}%)` },
             ].map(({ label, value }) => (
               <div key={label} className="flex items-center justify-between bg-lia-bg-primary rounded-md p-2.5 border border-lia-border-subtle">

@@ -1,3 +1,4 @@
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { RecruitmentMLDashboard } from "@/components/ml/recruitment-ml-engine"
@@ -75,8 +76,8 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-wedo-orange font-medium">Budget Impact</p>
-                <p className="text-2xl font-bold text-wedo-orange">R$ 2.8M</p>
-                <p className="text-xs text-lia-text-primary">
+                <p className="text-2xl font-bold text-wedo-orange`>${CURRENCY_SYMBOL} 2.8M</p>
+                <p className=`text-xs text-lia-text-primary">
                   Economia prevista
                 </p>
               </div>

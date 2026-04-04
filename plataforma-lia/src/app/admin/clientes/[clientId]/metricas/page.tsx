@@ -1,5 +1,7 @@
 "use client"
 
+
+import { formatBRL } from "@/lib/pricing"
 import React, { use } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -250,11 +252,11 @@ export default function ClientMetricasPage({
                           MRR (Receita Mensal)
                         </p>
                         <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
-                          R$ {saasMetrics.revenue.mrr.toLocaleString('pt-BR')}
+                          {formatBRL(saasMetrics.revenue.mrr)}
                         </p>
                         <div className="flex items-center gap-1 text-xs text-status-success">
                           <TrendingUp className="w-3 h-3" />
-                          <span>+R$ {saasMetrics.revenue.mrrChange}</span>
+                          <span>+{formatBRL(saasMetrics.revenue.mrrChange)}</span>
                         </div>
                       </div>
                       <div className="w-10 h-10 rounded-md bg-status-success/15 dark:bg-status-success/30 flex items-center justify-center">
@@ -272,7 +274,7 @@ export default function ClientMetricasPage({
                           ARR (Receita Anual)
                         </p>
                         <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
-                          R$ {saasMetrics.revenue.arr.toLocaleString('pt-BR')}
+                          {formatBRL(saasMetrics.revenue.arr)}
                         </p>
                         <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           Plano: {saasMetrics.revenue.planName}
@@ -293,7 +295,7 @@ export default function ClientMetricasPage({
                           LTV Estimado
                         </p>
                         <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
-                          R$ {saasMetrics.revenue.ltv.toLocaleString('pt-BR')}
+                          {formatBRL(saasMetrics.revenue.ltv)}
                         </p>
                         <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           {saasMetrics.revenue.ltvMonths} meses projetados
@@ -314,7 +316,7 @@ export default function ClientMetricasPage({
                           CAC (Custo Aquisição)
                         </p>
                         <p className="text-2xl font-semibold mt-1 text-lia-text-primary dark:text-lia-text-primary">
-                          R$ {saasMetrics.acquisition.cac.toLocaleString('pt-BR')}
+                          {formatBRL(saasMetrics.acquisition.cac)}
                         </p>
                         <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary">
                           Payback: {saasMetrics.acquisition.paybackMonths} meses
@@ -450,7 +452,7 @@ export default function ClientMetricasPage({
                               {new Date(payment.date).toLocaleDateString('pt-BR')}
                             </td>
                             <td className="py-3 text-sm font-medium text-lia-text-primary dark:text-lia-text-primary">
-                              R$ {payment.amount.toLocaleString('pt-BR')}
+                              {formatBRL(payment.amount)}
                             </td>
                             <td className="py-3 text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
                               {payment.method}

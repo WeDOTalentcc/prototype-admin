@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 "use client"
 
 import React, { useState } from "react"
@@ -230,7 +232,7 @@ export function AnaliseCompetenciasPlaceholder() {
                 <Badge className={`${badgeStyles.error} dark:bg-status-error/30 dark:text-status-error`}>CRÍTICO</Badge>
               </div>
               <p className={`${textStyles.bodySmall}`}>
-                Gap de 73% • ROI estimado: R$ 280k economia em headhunting
+                Gap de 73% • ROI estimado: {CURRENCY_SYMBOL} 280k economia em headhunting
               </p>
             </div>
 
@@ -259,7 +261,7 @@ export function AnaliseCompetenciasPlaceholder() {
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-wedo-magenta" />
             <p className="text-sm font-open-sans text-lia-text-primary">
-              <strong>Gap crítico em ML/AI:</strong> 73% de gap pode inviabilizar expansão planejada. Investimento em bootcamp interno economizaria R$ 280k vs. headhunting.
+              <strong>Gap crítico em ML/AI:</strong> 73% de gap pode inviabilizar expansão planejada. Investimento em bootcamp interno economizaria {CURRENCY_SYMBOL} 280k vs. headhunting.
             </p>
           </div>
           <div className="flex items-start gap-3">

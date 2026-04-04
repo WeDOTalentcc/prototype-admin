@@ -9,6 +9,8 @@
  */
 'use client'
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { 
@@ -75,9 +77,9 @@ export function FastTrackSuggestions({
   const formatSalary = (min?: number, max?: number) => {
     if (!min && !max) return null
     const formatK = (n: number) => `${(n / 1000).toFixed(0)}k`
-    if (min && max) return `R$ ${formatK(min)} - ${formatK(max)}`
-    if (min) return `A partir de R$ ${formatK(min)}`
-    return `Até R$ ${formatK(max!)}`
+    if (min && max) return `${CURRENCY_SYMBOL} ${formatK(min)} - ${formatK(max)}`
+    if (min) return `A partir de ${CURRENCY_SYMBOL} ${formatK(min)}`
+    return `Até ${CURRENCY_SYMBOL} ${formatK(max!)}`
   }
   
   const getMatchBadgeColor = (score: number) => {

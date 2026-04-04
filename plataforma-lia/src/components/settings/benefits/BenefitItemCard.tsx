@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -70,7 +72,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
   const formatBenefitValue = (b: Benefit) => {
     if (b.value_type === "monetary" && b.value) {
       const prefix = b.is_discount ? "Desconto: " : ""
-      return prefix + "R$ " + b.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })
+      return prefix + CURRENCY_SYMBOL + " " +  b.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })
     }
     if (b.value_type === "percentage" && b.percentage_value) {
       return b.percentage_value + "%"

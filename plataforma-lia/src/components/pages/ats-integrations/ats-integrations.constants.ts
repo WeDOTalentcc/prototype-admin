@@ -1,3 +1,4 @@
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import type { ATSSystem, Integration, SyncLog, SystemField, MappingTemplate } from './ats-integrations.types'
 
 export const ATS_SYSTEMS: ATSSystem[] = [
@@ -160,7 +161,7 @@ export const LIA_FIELDS: SystemField[] = [
   { id: 'url_curriculo', name: 'URL do Currículo', type: 'url', required: false, description: 'Link para o currículo' },
   { id: 'data_candidatura', name: 'Data da Candidatura', type: 'date', required: true, description: 'Data de aplicação' },
   { id: 'status_processo', name: 'Status do Processo', type: 'select', required: true, description: 'Situação atual no processo seletivo' },
-  { id: 'pretensao_salarial', name: 'Pretensão Salarial', type: 'number', required: false, description: 'Expectativa salarial em R$' },
+  { id: 'pretensao_salarial', name: 'Pretensão Salarial', type: 'number', required: false, description: `Expectativa salarial em ${CURRENCY_SYMBOL}` },
   { id: 'score_lia', name: 'Score LIA', type: 'number', required: false, description: 'Score de compatibilidade calculado pela LIA' }
 ]
 

@@ -4,6 +4,7 @@
  * Portabilidade Vue: funções puras, sem dependências React.
  */
 
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { type CompensationAnalysisResult } from '@/components/job-creation/compensation-analysis-panel'
 
 export function formatTimestamp(date: Date): string {
@@ -79,7 +80,7 @@ Para melhorar a competitividade da vaga, considere ajustar a faixa para **${sugM
 **Próximos passos:**
 • "confirmar" - manter os valores atuais
 • "aceitar sugestão" - aplicar os valores recomendados
-• "ajustar para R$ X a R$ Y" - definir novos valores manualmente`
+• "ajustar para ${CURRENCY_SYMBOL} X a ${CURRENCY_SYMBOL} Y" - definir novos valores manualmente`
 
   return text
 }

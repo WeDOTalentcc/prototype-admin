@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
+
 import React, { useState, useCallback, useEffect } from "react"
 import { textStyles, cardStyles, badgeStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { Button } from "@/components/ui/button"
@@ -63,7 +65,7 @@ const SENIORITY_LEVELS = [
 ]
 
 const VALUE_TYPES = [
-  { id: "monetary", name: "Valor Monetário", icon: DollarSign, description: "Valor fixo em R$" },
+  { id: "monetary", name: "Valor Monetário", icon: DollarSign, description: `Valor fixo em ${CURRENCY_SYMBOL}` },
   { id: "percentage", name: "Percentual", icon: Percent, description: "Porcentagem (ex: 5% contribuição)" },
   { id: "informative", name: "Informativo", icon: Info, description: "Apenas descrição, sem valor" },
 ]
@@ -459,7 +461,7 @@ export function BenefitsTab() {
   const formatBenefitValue = (benefit: Benefit) => {
     if (benefit.value_type === "monetary" && benefit.value) {
       const prefix = benefit.is_discount ? "Desconto: " : ""
-      return `${prefix}R$ ${benefit.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      return `${prefix}${formatBRL(benefit.value)}`
     }
     if (benefit.value_type === "percentage" && benefit.percentage_value) {
       return `${benefit.percentage_value}%`

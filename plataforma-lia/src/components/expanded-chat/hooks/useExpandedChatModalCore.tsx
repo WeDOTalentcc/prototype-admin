@@ -1,6 +1,8 @@
 "use client"
 
   
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import { X, Send, Search, Paperclip, Minimize2, Maximize2, Loader2, Check, Clock, FileText, ChevronRight, ChevronLeft, MessageSquare, ArrowUp, Lightbulb, Brain, Plus, Briefcase, Users, BarChart3, ChevronDown, Target, BookTemplate, Upload, History, Building2, MapPin, DollarSign, GraduationCap, Languages, Laptop, Code, Database, Wrench, Edit2, Star, MessageCircle, CheckCircle2, AlertCircle, Rocket, Eye, Phone, Circle, Settings, AlertTriangle, RefreshCw, Globe, Calendar, Bell, ExternalLink, Info, Heart, TrendingUp, User } from "lucide-react"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
@@ -412,7 +414,7 @@ import { useProceedToNextStage } from './useProceedToNextStage'
       if (criteria.salary_min || criteria.salary_max) {
         setDetectedCriteria(prev => ({ 
           ...prev, 
-          salario: `R$ ${criteria.salary_min?.toLocaleString() || '?'} - R$ ${criteria.salary_max?.toLocaleString() || '?'}` 
+          salario: `${CURRENCY_SYMBOL} ${criteria.salary_min?.toLocaleString() || '?'} - ${CURRENCY_SYMBOL} ${criteria.salary_max?.toLocaleString() || '?'}` 
         }))
       }
       if (criteria.location) {

@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 import { useEffect } from "react"
 import type { TechnicalSkill } from '..'
 import type { Benefit } from '../stages/SalaryStage'
@@ -242,7 +244,7 @@ export function useCompanyConfigLoader(ctx: UseCompanyConfigLoaderCtx) {
           const configBenefits: Benefit[] = config.benefits.map((b: any, idx: number) => ({
             id: `config-benefit-${idx}`,
             name: b.name,
-            value: b.value ? `R$ ${b.value}` : undefined,
+            value: b.value ? `${formatBRL(b.value)}` : undefined,
             enabled: true
           }))
 

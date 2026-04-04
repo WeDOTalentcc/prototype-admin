@@ -9,6 +9,7 @@
  */
 'use client'
 
+import { formatBRL } from "@/lib/pricing"
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { 
@@ -146,7 +147,7 @@ export function FastTrackReviewPanel({
     if (!value) return '-'
     const num = parseInt(value)
     if (isNaN(num)) return value
-    return `R$ ${(num / 1000).toFixed(0)}k`
+    return `${formatBRL(num / 1000)}k`
   }
   
   const canPublish = 

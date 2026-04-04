@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React from "react"
 import { textStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
@@ -49,7 +51,7 @@ const BENEFIT_CATEGORIES = [
 ]
 
 const VALUE_TYPES = [
-  { id: "monetary", name: "Valor Monetário", icon: DollarSign, description: "Valor fixo em R$" },
+  { id: "monetary", name: "Valor Monetário", icon: DollarSign, description: `Valor fixo em ${CURRENCY_SYMBOL}` },
   { id: "percentage", name: "Percentual", icon: Percent, description: "Porcentagem (ex: 5% contribuição)" },
   { id: "informative", name: "Informativo", icon: Info, description: "Apenas descrição, sem valor" },
 ]
@@ -209,7 +211,7 @@ export function BenefitFormModal({
 
               {editingBenefit.value_type === 'monetary' && (
                 <div>
-                  <Label className={textStyles.label}>Valor (R$)</Label>
+                  <Label className={textStyles.label}>Valor ({CURRENCY_SYMBOL})</Label>
                   <Input
                     type="number"
                     value={editingBenefit.value || ''}

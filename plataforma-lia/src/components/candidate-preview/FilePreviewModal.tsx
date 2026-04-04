@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState } from "react"
 import {
   FileText,
@@ -517,7 +519,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                         3:45 • Candidato
                       </p>
                       <p className="text-lia-text-primary">
-                        "Estou disponível para início imediato e minha expectativa salarial está na faixa de R$ 25.000 a R$ 30.000, considerando o nível de senioridade e responsabilidades da posição."
+                        `Estou disponível para início imediato e minha expectativa salarial está na faixa de ${CURRENCY_SYMBOL} 25.000 a ${CURRENCY_SYMBOL} 30.000, considerando o nível de senioridade e responsabilidades da posição.`
                       </p>
                     </div>
 

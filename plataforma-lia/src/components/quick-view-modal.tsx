@@ -1,5 +1,7 @@
 "use client"
 
+
+import { formatBRL } from "@/lib/pricing"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -216,8 +218,8 @@ export function QuickViewModal({
                       <div className="flex items-center gap-2 text-xs">
                         <DollarSign className="w-4 h-4 text-lia-text-secondary" />
                         <span className="text-lia-text-secondary">
-                          Atual: R$ {candidate.salary.current.toLocaleString()} |
-                          Pretensão: R$ {candidate.salary.expected.toLocaleString()}
+                          Atual: {formatBRL(candidate.salary.current)} |
+                          Pretensão: {formatBRL(candidate.salary.expected)}
                         </span>
                       </div>
                     )}

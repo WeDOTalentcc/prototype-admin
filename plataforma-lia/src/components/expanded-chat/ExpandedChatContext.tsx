@@ -1,5 +1,7 @@
 'use client'
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { createContext, useContext, ReactNode } from 'react'
 import { type WizardStage } from './config'
 import type { FastTrackJobData } from '@/hooks/useFastTrack'
@@ -203,14 +205,14 @@ export const INITIAL_SALARY_INFO: SalaryInfo = {
   maxBonus: '',
   bonusCriteria: '',
   benefits: [
-    { id: '1', name: 'Vale Refeição', value: 'R$ 35/dia', enabled: true },
+    { id: '1', name: 'Vale Refeição', value: `${CURRENCY_SYMBOL} 35/dia`, enabled: true },
     { id: '2', name: 'Vale Transporte', enabled: true },
     { id: '3', name: 'Plano de Saúde', enabled: true },
     { id: '4', name: 'Plano Odontológico', enabled: true },
     { id: '5', name: 'Seguro de Vida', enabled: true },
     { id: '6', name: 'Stock Options', enabled: false },
-    { id: '7', name: 'Auxílio Home Office', value: 'R$ 200/mês', enabled: true },
-    { id: '8', name: 'Auxílio Educação', value: 'Até R$ 500/mês', enabled: true },
+    { id: '7', name: 'Auxílio Home Office', value: `${CURRENCY_SYMBOL} 200/mês`, enabled: true },
+    { id: '8', name: 'Auxílio Educação', value: `Até ${CURRENCY_SYMBOL} 500/mês`, enabled: true },
     { id: '9', name: 'Gympass', enabled: false },
     { id: '10', name: 'Day Off Aniversário', enabled: true },
   ]

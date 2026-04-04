@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 import React, { useState } from "react"
 import {
   FileText,
@@ -59,7 +61,7 @@ function formatCurrency(value: number | string | undefined): string {
   if (value === undefined || value === null || value === "") return ""
   const num = typeof value === "string" ? parseFloat(value) : value
   if (isNaN(num)) return ""
-  return `R$ ${num.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+  return `${formatBRL(num)}`
 }
 
 function getCompetencyName(item: {competency?: string; name?: string; weight?: number} | string): string {

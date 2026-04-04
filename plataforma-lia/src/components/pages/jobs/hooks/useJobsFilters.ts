@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState, useEffect, useRef, useMemo } from "react"
 import { useJobFiltersPersistence, type SavedSearch } from "@/hooks/useJobFiltersPersistence"
 import { toast } from "sonner"
@@ -294,9 +296,9 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
       if (advancedFilters.budget_ranges.length > 0) {
         matchesAdvancedFilters = matchesAdvancedFilters && advancedFilters.budget_ranges.some(range => {
           const budget = job.budget || 0
-          if (range === "Até R$ 50.000") return budget <= 50000
-          if (range === "R$ 50.000 - R$ 100.000") return budget >= 50000 && budget <= 100000
-          if (range === "R$ 100.000+") return budget >= 100000
+          if (range === `Até ${CURRENCY_SYMBOL} 50.000`) return budget <= 50000
+          if (range === `${CURRENCY_SYMBOL} 50.000 - ${CURRENCY_SYMBOL} 100.000`) return budget >= 50000 && budget <= 100000
+          if (range === `${CURRENCY_SYMBOL} 100.000+`) return budget >= 100000
           return false
         })
       }
@@ -488,7 +490,7 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
     setSelectedTemplate(persona)
     switch (persona) {
       case "Vagas Tech Sênior":
-        setAdvancedFilters(prev => ({ ...prev, job_titles: ["Desenvolvedor Frontend", "Desenvolvedor Backend", "Tech Lead"], seniority_levels: ["Sênior", "Especialista"], departments: ["Tecnologia"], salary_ranges: ["R$ 10.000 - R$ 15.000", "R$ 15.000+"] }))
+        setAdvancedFilters(prev => ({ ...prev, job_titles: ["Desenvolvedor Frontend", "Desenvolvedor Backend", "Tech Lead"], seniority_levels: ["Sênior", "Especialista"], departments: ["Tecnologia"], salary_ranges: [`${CURRENCY_SYMBOL} 10.000 - ${CURRENCY_SYMBOL} 15.000`, `${CURRENCY_SYMBOL} 15.000+`] }))
         setBooleanSearch("(Frontend OR Backend OR Tech Lead) AND Senior")
         break
       case "Vagas Design":
@@ -504,7 +506,7 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
         setBooleanSearch("Urgente OR Imediato")
         break
       case "Vagas Júnior":
-        setAdvancedFilters(prev => ({ ...prev, seniority_levels: ["Júnior", "Trainee"], salary_ranges: ["R$ 3.000 - R$ 6.000", "R$ 6.000 - R$ 10.000"] }))
+        setAdvancedFilters(prev => ({ ...prev, seniority_levels: ["Júnior", "Trainee"], salary_ranges: [`${CURRENCY_SYMBOL} 3.000 - ${CURRENCY_SYMBOL} 6.000`, `${CURRENCY_SYMBOL} 6.000 - ${CURRENCY_SYMBOL} 10.000`] }))
         setBooleanSearch("Junior OR Júnior OR Trainee")
         break
     }

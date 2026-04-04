@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React, { useState } from "react"
 import { 
   ClipboardList, BarChart3, Brain, Lightbulb, Layers3, Settings, 
@@ -602,7 +604,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             <p className="text-micro font-medium text-lia-text-primary mb-1">Insights da LIA</p>
             <ul className="space-y-0.5 text-micro text-lia-text-secondary">
               <li>• Triagens 6.5x mais rápidas que processo manual</li>
-              <li>• Economia estimada: R$ {(() => {
+              <li>• Economia estimada: {CURRENCY_SYMBOL} {(() => {
                 const triagens = Math.round(funnel.total * 0.85)
                 const horasEconomizadas = Math.round((triagens * 15) / 60)
                 return (horasEconomizadas * 80).toLocaleString('pt-BR')

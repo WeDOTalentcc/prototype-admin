@@ -1,4 +1,5 @@
 // Auto-extracted constants from setup-empresa/page.tsx
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import {
   Utensils,
   Car,
@@ -37,7 +38,7 @@ export const SENIORITY_LEVELS = [
 ]
 
 export const VALUE_TYPES = [
-  { id: "monetary", name: "Valor Monetário", icon: DollarSign, description: "Valor fixo em R$" },
+  { id: "monetary", name: "Valor Monetário", icon: DollarSign, description: `Valor fixo em ${CURRENCY_SYMBOL}` },
   { id: "percentage", name: "Percentual", icon: Percent, description: "Porcentagem (ex: 5% contribuição)" },
   { id: "informative", name: "Informativo", icon: Info, description: "Apenas descrição, sem valor" },
 ]

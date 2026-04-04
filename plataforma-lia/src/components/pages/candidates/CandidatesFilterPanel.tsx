@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 /**
  * CandidatesFilterPanel — Painel lateral de refinamento de resultados.
  *
@@ -346,7 +348,7 @@ export function CandidatesFilterPanel({
             </h4>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className={`${textStyles.label} mb-1 block`}>Mín. (R$)</label>
+                <label className={`${textStyles.label} mb-1 block`}>Mín. ({CURRENCY_SYMBOL})</label>
                 <Input
                   type="number"
                   min={0}
@@ -362,7 +364,7 @@ export function CandidatesFilterPanel({
                 />
               </div>
               <div>
-                <label className={`${textStyles.label} mb-1 block`}>Máx. (R$)</label>
+                <label className={`${textStyles.label} mb-1 block`}>Máx. ({CURRENCY_SYMBOL})</label>
                 <Input
                   type="number"
                   min={0}

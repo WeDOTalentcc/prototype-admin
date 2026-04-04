@@ -1,5 +1,7 @@
 'use client'
 
+import { formatBRL } from "@/lib/pricing"
+
 import { useState, useCallback, useRef, useMemo } from 'react'
 
 export type FieldChangeSource = 'panel' | 'chat' | 'orchestrator'
@@ -85,7 +87,7 @@ function formatSalaryValue(value: unknown): string {
   const strVal = typeof value === 'string' ? value : String(value)
   const numValue = typeof value === 'string' ? parseFloat(value.replace(/\D/g, '')) : (typeof value === 'number' ? value : NaN)
   if (isNaN(numValue)) return strVal
-  return `R$ ${numValue.toLocaleString('pt-BR')}`
+  return `${formatBRL(numValue)}`
 }
 
 function getNamedValue(value: unknown): string {

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatBRL } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -232,7 +233,7 @@ export function JobDescriptionFinal({
               {data.compensation.salary_min && data.compensation.salary_max && data.compensation.show_salary && (
                 <p>
                   <strong>Salário:</strong>{" "}
-                  R$ {data.compensation.salary_min.toLocaleString('pt-BR')} - R$ {data.compensation.salary_max.toLocaleString('pt-BR')}
+                  {formatBRL(data.compensation.salary_min)} - {formatBRL(data.compensation.salary_max)}
                 </p>
               )}
               {data.compensation.bonus_percentage && (

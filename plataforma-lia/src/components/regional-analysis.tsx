@@ -1,5 +1,7 @@
 "use client"
 
+
+import { formatBRL } from "@/lib/pricing"
 import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -365,7 +367,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                       <div className="flex items-center gap-6 text-sm">
                         <div className="text-center">
                           <div className="text-lg font-bold text-lia-text-primary">
-                            R$ {item.salarioMedio.toLocaleString()}
+                            {formatBRL(item.salarioMedio)}
                           </div>
                           <div className="text-xs text-lia-text-primary">Salário médio</div>
                         </div>
@@ -461,7 +463,7 @@ export function RegionalAnalysis({ className }: RegionalAnalysisProps) {
                               </div>
 
                               <div className="text-xs text-lia-text-secondary">
-                                <div>R$ {estado.salarioMedio.toLocaleString()} salário médio</div>
+                                <div>{formatBRL(estado.salarioMedio)} salário médio</div>
                                 <div className={estado.crescimento > 0 ? 'text-status-success' : 'text-status-error'}>
                                   {estado.crescimento > 0 ? '+' : ''}{estado.crescimento}% crescimento
                                 </div>

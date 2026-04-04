@@ -1,5 +1,6 @@
 "use client"
 
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React from "react"
 import { classifyRiskScore, isRiskCritical } from "@/lib/score-utils"
 import Link from "next/link"
@@ -32,7 +33,7 @@ const risks = [
   { id: 'RISK-008', name: 'Fraude em processos seletivos', category: 'Financeiro', probability: 'low', impact: 'medium', score: 6, status: 'accepted', owner: 'Compliance', identifiedDate: '2024-12-01' },
 ]
 
-const insuranceCoverage = 'R$ 5.000.000,00'
+const insuranceCoverage = `${CURRENCY_SYMBOL} 5.000.000,00`
 
 const riskStats = {
   total: risks.length,

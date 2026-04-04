@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 import React, { useCallback } from "react"
 import { type ParecerLIAData } from "@/components/chat/parecer-lia-card"
 import { liaApi, type JobVacancyCreateRequest } from "@/services/lia-api"
@@ -232,7 +234,7 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
     const salaryItems: string[] = []
     const salarySuggestions: string[] = []
     if (salaryInfo.minSalary && salaryInfo.maxSalary) {
-      salaryItems.push(`Faixa: R$ ${salaryInfo.minSalary} - R$ ${salaryInfo.maxSalary}`)
+      salaryItems.push(`Faixa: ${formatBRL(Number(salaryInfo.minSalary))} - ${formatBRL(Number(salaryInfo.maxSalary))}`)
     }
     if (salaryInfo.minBonus || salaryInfo.maxBonus) {
       salaryItems.push(`Bônus: ${salaryInfo.minBonus || '0'}% - ${salaryInfo.maxBonus || '0'}%`)
@@ -257,8 +259,8 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
       if (marketMin > 0) {
         marketComparisons.push({
           field: "Faixa Salarial",
-          yourValue: `R$ ${salaryInfo.minSalary} - ${salaryInfo.maxSalary}`,
-          marketValue: `R$ ${marketMin.toLocaleString('pt-BR')} - ${marketMax.toLocaleString('pt-BR')}`,
+          yourValue: `${formatBRL(Number(salaryInfo.minSalary))} - ${formatBRL(Number(salaryInfo.maxSalary))}`,
+          marketValue: `${formatBRL(marketMin)} - ${marketMax.toLocaleString('pt-BR')}`,
           status: yourMin > marketMax ? "above" : yourMin < marketMin * 0.8 ? "below" : "aligned"
         })
       }
@@ -598,7 +600,7 @@ export function useWizardPublishHandlers(ctx: WizardPublishHandlersContext) {
           justification: c.justification
         })),
         salary: salaryInfo.minSalary && salaryInfo.maxSalary
-          ? `R$ ${parseInt(salaryInfo.minSalary).toLocaleString('pt-BR')} - R$ ${parseInt(salaryInfo.maxSalary).toLocaleString('pt-BR')}`
+          ? `${formatBRL(parseInt(salaryInfo.minSalary))} - ${formatBRL(parseInt(salaryInfo.maxSalary))}`
           : undefined,
         salary_range: (salaryInfo.minSalary || salaryInfo.maxSalary || salaryInfo.minBonus || salaryInfo.maxBonus) ? {
           min: salaryInfo.minSalary ? parseInt(salaryInfo.minSalary) : undefined,
@@ -812,7 +814,7 @@ ${skills ? `• Experiência com: ${skills}` : '• Conhecimentos técnicos na �
 ${competencies ? `• Perfil: ${competencies}` : '• Profissional colaborativo e proativo'}
 • Experiência compatível com a posição
 
-${salaryInfo.minSalary && salaryInfo.maxSalary ? `💰 **Faixa salarial:** R$ ${salaryInfo.minSalary} - R$ ${salaryInfo.maxSalary}` : ''}
+${salaryInfo.minSalary && salaryInfo.maxSalary ? `💰 **Faixa salarial:** ${formatBRL(Number(salaryInfo.minSalary))} - ${formatBRL(Number(salaryInfo.maxSalary))}` : ''}
 
 Venha fazer parte do nosso time! 🚀`
 

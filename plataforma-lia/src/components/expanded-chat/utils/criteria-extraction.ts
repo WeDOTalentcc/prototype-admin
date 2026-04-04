@@ -1,3 +1,4 @@
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import type { DetectedCriteria } from '../ExpandedChatContext'
 
 export function extractCriteriaFromTextPure(text: string, currentCriteria: DetectedCriteria): DetectedCriteria {
@@ -419,13 +420,13 @@ export function extractCriteriaFromTextPure(text: string, currentCriteria: Detec
           if (!isNaN(num1) && !isNaN(num2)) {
             const min = num1 < 1000 ? num1 * 1000 : num1
             const max = num2 < 1000 ? num2 * 1000 : num2
-            newCriteria.salario = `R$ ${min.toLocaleString('pt-BR')} - R$ ${max.toLocaleString('pt-BR')}`
+            newCriteria.salario = `${formatBRL(min)} - ${formatBRL(max)}`
           }
         } else if (val1) {
           const num = parseFloat(val1)
           if (!isNaN(num)) {
             const value = num < 1000 ? num * 1000 : num
-            newCriteria.salario = `R$ ${value.toLocaleString('pt-BR')}`
+            newCriteria.salario = `${formatBRL(value)}`
           }
         }
         break
@@ -631,7 +632,7 @@ export function extractCriteriaFromTextPure(text: string, currentCriteria: Detec
           newCriteria.bonus = `${match[1]} a ${match[2]} salários`
         } else if (match[1]) {
           newCriteria.bonus = match[1].includes('.') || match[1].includes(',') 
-            ? `R$ ${match[1]}` 
+            ? `${CURRENCY_SYMBOL} ${match[1]}` 
             : `${match[1]} salários`
         }
         break

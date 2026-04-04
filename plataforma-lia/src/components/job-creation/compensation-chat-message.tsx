@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React, { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -301,7 +303,7 @@ export function CompensationChatMessage({
           {showInput && (
             <div className="flex gap-2 pt-2 border-t">
               <Input
-                placeholder="Ex: R$ 15.000 a R$ 18.000"
+                placeholder={`Ex: ${CURRENCY_SYMBOL} 15.000 a ${CURRENCY_SYMBOL} 18.000`}
                 value={salaryInput}
                 onChange={(e) => setSalaryInput(e.target.value)}
                 onKeyDown={handleKeyDown}

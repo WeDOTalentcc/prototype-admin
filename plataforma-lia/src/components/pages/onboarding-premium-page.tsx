@@ -1,5 +1,7 @@
 "use client"
 
+
+import { formatBRL } from "@/lib/pricing"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -756,7 +758,7 @@ function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboardingMod
                       </div>
                       <div>
                         <p className="text-sm font-medium text-lia-text-secondary">Salário</p>
-                        <p className="text-sm">R$ {candidate.salary.toLocaleString()}</p>
+                        <p className="text-sm">{formatBRL(candidate.salary)}</p>
                       </div>
                       <div>
                         <p className="text-sm font-medium text-lia-text-secondary">Data de Contratação</p>

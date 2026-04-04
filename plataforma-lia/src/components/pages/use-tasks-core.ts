@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 // Camada 1 (hooks): Estado e ações centralizadas do TasksPage
 // Padrão: { state, actions } — compatível com futura migração Pinia/Vue
 
@@ -213,8 +215,8 @@ export const MOCK_TASKS: Task[] = [
   { id: '4', title: 'Revisar Perfis', description: '15 candidatos pendentes • Sugestão LIA', type: 'ia', status: 'pending', dueDate: new Date(2025, 9, 11, 11, 0), priority: 'medium', relatedTo: 'Triagem rápida', color: 'border-l-lia-border-strong dark:border-l-lia-border-default' },
   { id: '5', title: 'Autorizar Feedback - Ana Costa', description: 'UX Designer • Processo finalizado', type: 'minha', status: 'pending', dueDate: new Date(2025, 9, 11, 14, 0), priority: 'high', relatedTo: 'Aprovação necessária', color: 'border-l-lia-border-strong dark:border-l-lia-border-default' },
   { id: '6', title: 'Publicar Vaga - UX Designer', description: 'Área de Produto • Revisão final', type: 'minha', status: 'pending', dueDate: new Date(2025, 9, 11, 15, 30), priority: 'medium', relatedTo: 'Publicação em 3 canais', color: 'border-l-lia-border-strong dark:border-l-lia-border-default' },
-  { id: '7', title: 'Aprovar Oferta', description: 'Lucas Mendes - Backend • Sugestão LIA', type: 'ia', status: 'pending', dueDate: new Date(2025, 9, 11, 16, 0), priority: 'high', relatedTo: 'Oferta R$ 12.000', color: 'border-l-lia-border-strong dark:border-l-lia-border-default' },
-  { id: '8', title: 'Enviar Oferta - Lucas Mendes', description: 'Backend Developer • Aprovado', type: 'oferta', status: 'pending', dueDate: new Date(2025, 9, 11, 16, 30), priority: 'high', relatedTo: 'R$ 12.000', color: 'border-l-lia-border-strong dark:border-l-lia-border-default' }
+  { id: '7', title: 'Aprovar Oferta', description: 'Lucas Mendes - Backend • Sugestão LIA', type: 'ia', status: 'pending', dueDate: new Date(2025, 9, 11, 16, 0), priority: 'high', relatedTo: `Oferta ${CURRENCY_SYMBOL} 12.000`, color: 'border-l-lia-border-strong dark:border-l-lia-border-default' },
+  { id: '8', title: 'Enviar Oferta - Lucas Mendes', description: 'Backend Developer • Aprovado', type: 'oferta', status: 'pending', dueDate: new Date(2025, 9, 11, 16, 30), priority: 'high', relatedTo: `${CURRENCY_SYMBOL} 12.000`, color: 'border-l-lia-border-strong dark:border-l-lia-border-default' }
 ]
 
 export const MOCK_JOBS_WITH_ALERTS: JobWithAlert[] = [
@@ -251,7 +253,7 @@ export const MOCK_JOB_REQUESTS: JobRequest[] = [
   {
     id: '1', requestId: 'REQ-2025-045', title: 'Desenvolvedor Full Stack Sênior', department: 'Tecnologia',
     requester: 'Carlos Mendes', requesterEmail: 'carlos.mendes@sodexo.com', requestDate: '2025-10-05',
-    status: 'pending_approval', priority: 'critical', headcount: 2, estimatedSalary: 'R$ 12.000 - R$ 15.000',
+    status: 'pending_approval', priority: 'critical', headcount: 2, estimatedSalary: `${CURRENCY_SYMBOL} 12.000 - ${CURRENCY_SYMBOL} 15.000`,
     workModel: 'hybrid', justification: 'Expansão do time de produto para atender demanda de novos projetos estratégicos.',
     approvers: [
       { name: 'Roberto Silva', role: 'Diretor de Tecnologia', status: 'approved', date: '2025-10-06', comments: 'Aprovado. Projeto crítico.' },
@@ -262,7 +264,7 @@ export const MOCK_JOB_REQUESTS: JobRequest[] = [
   {
     id: '2', requestId: 'REQ-2025-046', title: 'UX Designer Pleno', department: 'Design',
     requester: 'Juliana Oliveira', requesterEmail: 'juliana.oliveira@sodexo.com', requestDate: '2025-10-08',
-    status: 'in_review', priority: 'high', headcount: 1, estimatedSalary: 'R$ 8.000 - R$ 10.000',
+    status: 'in_review', priority: 'high', headcount: 1, estimatedSalary: `${CURRENCY_SYMBOL} 8.000 - ${CURRENCY_SYMBOL} 10.000`,
     workModel: 'remote', justification: 'Necessidade de reforço no time para redesign da plataforma mobile.',
     approvers: [
       { name: 'Roberto Silva', role: 'Head de Design', status: 'approved', date: '2025-10-09', comments: 'Aprovado com ressalvas sobre budget' },
@@ -272,7 +274,7 @@ export const MOCK_JOB_REQUESTS: JobRequest[] = [
   {
     id: '3', requestId: 'REQ-2025-047', title: 'Analista de Marketing Digital', department: 'Marketing',
     requester: 'Marina Santos', requesterEmail: 'marina.santos@sodexo.com', requestDate: '2025-10-09',
-    status: 'requires_changes', priority: 'medium', headcount: 1, estimatedSalary: 'R$ 6.000 - R$ 8.000',
+    status: 'requires_changes', priority: 'medium', headcount: 1, estimatedSalary: `${CURRENCY_SYMBOL} 6.000 - ${CURRENCY_SYMBOL} 8.000`,
     workModel: 'hybrid', justification: 'Reforço para campanhas de lançamento de novos produtos.',
     approvers: [
       { name: 'Paula Lima', role: 'Diretora de Marketing', status: 'rejected', date: '2025-10-10', comments: 'Solicito revisão do budget e escopo' }
@@ -281,7 +283,7 @@ export const MOCK_JOB_REQUESTS: JobRequest[] = [
   {
     id: '4', requestId: 'REQ-2025-048', title: 'Gerente de Vendas - Região Sul', department: 'Vendas',
     requester: 'Fernando Costa', requesterEmail: 'fernando.costa@sodexo.com', requestDate: '2025-10-01',
-    status: 'approved', priority: 'high', headcount: 1, estimatedSalary: 'R$ 15.000 - R$ 18.000',
+    status: 'approved', priority: 'high', headcount: 1, estimatedSalary: `${CURRENCY_SYMBOL} 15.000 - ${CURRENCY_SYMBOL} 18.000`,
     workModel: 'hybrid', justification: 'Expansão da operação comercial na região Sul.',
     approvers: [
       { name: 'Ricardo Alves', role: 'VP de Vendas', status: 'approved', date: '2025-10-02', comments: 'Aprovado. Iniciar processo imediatamente.' },
@@ -291,7 +293,7 @@ export const MOCK_JOB_REQUESTS: JobRequest[] = [
   {
     id: '5', requestId: 'REQ-2025-049', title: 'Assistente Administrativo', department: 'Operações',
     requester: 'Carla Mendes', requesterEmail: 'carla.mendes@sodexo.com', requestDate: '2025-10-10',
-    status: 'draft', priority: 'low', headcount: 1, estimatedSalary: 'R$ 3.500 - R$ 4.500',
+    status: 'draft', priority: 'low', headcount: 1, estimatedSalary: `${CURRENCY_SYMBOL} 3.500 - ${CURRENCY_SYMBOL} 4.500`,
     workModel: 'onsite', justification: 'Reposição de colaborador que será promovido internamente.',
     approvers: [{ name: 'Ana Costa', role: 'VP de Operações', status: 'pending' }],
     daysWaiting: 1

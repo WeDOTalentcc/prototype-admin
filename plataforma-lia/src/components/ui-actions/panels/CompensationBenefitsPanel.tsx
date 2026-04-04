@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL, CURRENCY_PLACEHOLDER, CURRENCY_SYMBOL } from "@/lib/pricing"
+
 import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -82,7 +84,7 @@ function CurrencyInput({
       id={id}
       value={displayValue}
       onChange={handleChange}
-      placeholder={placeholder || "R$ 0,00"}
+      placeholder={placeholder || `${CURRENCY_SYMBOL} 0,00`}
       className="text-right dark:bg-lia-bg-primary dark:border-lia-border-subtle"
     />
   )
@@ -187,7 +189,7 @@ export function CompensationBenefitsPanel({
                 id="salary_min"
                 value={salaryMin}
                 onChange={setSalaryMin}
-                placeholder="R$ 0,00"
+                placeholder={CURRENCY_PLACEHOLDER}
               />
             </div>
             <div className="space-y-2">
@@ -196,7 +198,7 @@ export function CompensationBenefitsPanel({
                 id="salary_max"
                 value={salaryMax}
                 onChange={setSalaryMax}
-                placeholder="R$ 0,00"
+                placeholder={CURRENCY_PLACEHOLDER}
               />
             </div>
           </div>
@@ -217,7 +219,7 @@ export function CompensationBenefitsPanel({
                 id="bonus_min"
                 value={bonusMin}
                 onChange={setBonusMin}
-                placeholder="R$ 0,00"
+                placeholder={CURRENCY_PLACEHOLDER}
               />
             </div>
             <div className="space-y-2">
@@ -226,7 +228,7 @@ export function CompensationBenefitsPanel({
                 id="bonus_max"
                 value={bonusMax}
                 onChange={setBonusMax}
-                placeholder="R$ 0,00"
+                placeholder={CURRENCY_PLACEHOLDER}
               />
             </div>
           </div>
@@ -333,7 +335,7 @@ function BenefitRow({
   onValueChange: (value: string) => void
 }) {
   const valueDisplay = benefit.value_type === 'monetary' && benefit.value
-    ? `R$ ${benefit.value.toLocaleString('pt-BR')}`
+    ? `${formatBRL(benefit.value)}`
     : benefit.value_type === 'percentage' && benefit.percentage_value
     ? `${benefit.percentage_value}%`
     : ''

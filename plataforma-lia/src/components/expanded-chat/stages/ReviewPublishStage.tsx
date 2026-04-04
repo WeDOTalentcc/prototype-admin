@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 /**
  * ReviewPublishStage — painel lateral da etapa review-publish.
  * Extraído de expanded-chat-modal.tsx (Sprint 4.4 — 2026-03-27).
@@ -201,12 +203,12 @@ export function ReviewPublishStage({
           </div>
           <div className="text-xs text-lia-text-primary">
             {salaryInfo.minSalary && salaryInfo.maxSalary ? (
-              <span className="font-medium">R$ {salaryInfo.minSalary} - R$ {salaryInfo.maxSalary}</span>
+              <span className="font-medium">{CURRENCY_SYMBOL} {salaryInfo.minSalary} - {CURRENCY_SYMBOL} {salaryInfo.maxSalary}</span>
             ) : (
               <span className="lia-text-secondary">Faixa salarial não definida</span>
             )}
             {salaryInfo.minBonus && salaryInfo.maxBonus && (
-              <span className="lia-text-secondary ml-2">+ Bônus R$ {salaryInfo.minBonus} - R$ {salaryInfo.maxBonus}</span>
+              <span className="lia-text-secondary ml-2">+ Bônus {CURRENCY_SYMBOL} {salaryInfo.minBonus} - {CURRENCY_SYMBOL} {salaryInfo.maxBonus}</span>
             )}
           </div>
           <div className="text-micro text-lia-text-secondary mt-1">

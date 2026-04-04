@@ -1,3 +1,4 @@
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import type { DetectedCriteria } from ".."
 
 export function extractCriteriaFromText(text: string, currentCriteria: DetectedCriteria): DetectedCriteria {
@@ -569,10 +570,9 @@ export function extractCriteriaFromText(text: string, currentCriteria: DetectedC
     /sal[áa]rio\s+entre\s+([\d.,]+)\s*(?:mil)?\s*(?:reais?)?\s*(?:e|a|até|-)\s*([\d.,]+)\s*(?:mil|k)?\s*(?:reais?)?/i,
     // "entre 20 e 25 mil" without "salário" prefix
     /entre\s+([\d.,]+)\s*(?:mil)?\s*(?:reais?)?\s*(?:e|a|até|-)\s*([\d.,]+)\s*(?:mil|k)\s*(?:reais?)?/i,
-    // "de 20 a 25 mil reais"
+    // "de 20 a 25 mil reais`
     /(?:de\s+)?([\d.,]+)\s*(?:a|até|-)\s*([\d.,]+)\s*(?:mil|k)\s*(?:reais?)?/i,
-    // Standard patterns with R$
-    /sal[áa]rio\s*(?:de)?\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)\s*(?:a|até|-)\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)/i,
+    // Standard patterns with ${CURRENCY_SYMBOL} /sal[áa]rio\s*(?:de)?\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)\s*(?:a|até|-)\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)/i,
     /(?:r\$)\s*([\d.,]+\s*(?:k|mil)?)\s*(?:a|até|-)\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)/i,
     /faixa\s*(?:salarial)?\s*(?:de)?\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)\s*(?:a|até|-)\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)/i,
     /remunera[çc][ãa]o\s*(?:de)?\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)\s*(?:a|até|-)\s*(?:r\$)?\s*([\d.,]+\s*(?:k|mil)?)/i,
@@ -587,7 +587,7 @@ export function extractCriteriaFromText(text: string, currentCriteria: DetectedC
       let minValue = parseSalaryValue(match[1])
       let maxValue = match[2] ? parseSalaryValue(match[2]) : null
       
-      // Handle case like "entre 20 e 25 mil" where only max has "mil"
+      // Handle case like `entre 20 e 25 mil" where only max has "mil"
       // If minValue is small (< 100) and maxValue is large (> 10000), apply multiplier to min
       if (minValue && maxValue && minValue < 100 && maxValue >= 1000) {
         minValue = minValue * 1000
@@ -602,9 +602,9 @@ export function extractCriteriaFromText(text: string, currentCriteria: DetectedC
       
       if (minValue && minValue >= 1000) {
         if (maxValue && maxValue >= minValue) {
-          newCriteria.salario = `R$ ${minValue.toLocaleString('pt-BR')} - R$ ${maxValue.toLocaleString('pt-BR')}`
+          newCriteria.salario = `${formatBRL(minValue)} - ${formatBRL(maxValue)}`
         } else {
-          newCriteria.salario = `R$ ${minValue.toLocaleString('pt-BR')}`
+          newCriteria.salario = `${formatBRL(minValue)}`
         }
         break
       }

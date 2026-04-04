@@ -1,5 +1,6 @@
 "use client"
 
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React from "react"
 import {
   TrendingUp, Calendar, UserCheck, Workflow, Target, Award,
@@ -142,7 +143,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Detalhes da Contratação</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div><p className="text-xs text-lia-text-secondary mb-1">Data de Início:</p><p className="font-medium">15 de Março, 2024</p></div>
-                    <div><p className="text-xs text-lia-text-secondary mb-1">Salário Negociado:</p><p className="font-semibold text-lia-text-primary">R$ 47.500</p></div>
+                    <div><p className="text-xs text-lia-text-secondary mb-1">Salário Negociado:</p><p className="font-semibold text-lia-text-primary">{CURRENCY_SYMBOL} 47.500</p></div>
                   </div>
                 </div>
                 <div className="flex gap-3 pt-4">

@@ -1,5 +1,7 @@
 "use client"
 
+
+import { formatBRL } from "@/lib/pricing"
 import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -237,7 +239,7 @@ export function WorkModelAnalyticsPage() {
                         {item.percentual}% do total
                       </div>
                       <div className="text-sm font-medium text-lia-text-primary">
-                        R$ {item.salarioMedio.toLocaleString()} salário médio
+                        {formatBRL(item.salarioMedio)} salário médio
                       </div>
                     </div>
                   </CardContent>
@@ -261,7 +263,7 @@ export function WorkModelAnalyticsPage() {
                       Candidatos analisados
                     </div>
                     <div className="text-sm font-medium text-lia-text-primary">
-                      R$ {Math.round(salarioMedioGeral).toLocaleString()} salário médio
+                      {formatBRL(Math.round(salarioMedioGeral))} salário médio
                     </div>
                   </div>
                 </CardContent>
@@ -354,7 +356,7 @@ export function WorkModelAnalyticsPage() {
                               {level.total} candidatos
                             </div>
                             <div className="text-xs font-medium text-status-success">
-                              R$ {level.salarioMedio.toLocaleString()}
+                              {formatBRL(level.salarioMedio)}
                             </div>
                           </div>
                         </div>

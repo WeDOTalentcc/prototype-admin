@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState } from "react"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Button } from "@/components/ui/button"
@@ -51,8 +53,8 @@ const mockCandidateDetails = {
   skills: ["Figma", "Sketch", "Prototyping", "User Research", "Design System", "Adobe Creative Suite"],
   languages: ["Português (Nativo)", "Inglês (Avançado)", "Espanhol (Intermediário)"],
   salary: {
-    current: "R$ 7.500",
-    expected: "R$ 9.000 - R$ 12.000"
+    current: `${CURRENCY_SYMBOL} 7.500`,
+    expected: `${CURRENCY_SYMBOL} 9.000 - ${CURRENCY_SYMBOL} 12.000`
   },
   availability: "Disponível em 30 dias",
   source: "LinkedIn",

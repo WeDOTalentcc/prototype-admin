@@ -1,3 +1,4 @@
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import {
   Plus, Users, TrendingUp, Network, Settings, Target, Workflow, Database, BarChart3, Shield,
   DollarSign, Heart, Building, Clock, Laptop, Globe, FileText, Edit, CheckCircle, X,
@@ -248,26 +249,26 @@ const modernConversationPart1: Message[] = [
         position: "Diretor de TI",
         market_analysis: {
           salary_research: {
-            market_median: "R$ 42.500",
-            percentile_25: "R$ 35.000",
-            percentile_75: "R$ 50.000",
-            percentile_90: "R$ 62.000",
+            market_median: `${CURRENCY_SYMBOL} 42.500`,
+            percentile_25: `${CURRENCY_SYMBOL} 35.000`,
+            percentile_75: `${CURRENCY_SYMBOL} 50.000`,
+            percentile_90: `${CURRENCY_SYMBOL} 62.000`,
             regional_adjustment: "São Paulo = 100% (base)",
             industry_premium: "+8% (Tech/Fintech)",
             size_adjustment: "+5% (500-1000 employees)"
           },
           benchmarking_companies: [
-            { company: "Nubank", range: "R$ 45-65k", notes: "Alto equity" },
-            { company: "iFood", range: "R$ 40-55k", notes: "Forte variável" },
-            { company: "Stone", range: "R$ 38-52k", notes: "Equity generoso" },
-            { company: "PagSeguro", range: "R$ 42-58k", notes: "Benefícios premium" }
+            { company: "Nubank", range: `${CURRENCY_SYMBOL} 45-65k`, notes: "Alto equity" },
+            { company: "iFood", range: `${CURRENCY_SYMBOL} 40-55k`, notes: "Forte variável" },
+            { company: "Stone", range: `${CURRENCY_SYMBOL} 38-52k`, notes: "Equity generoso" },
+            { company: "PagSeguro", range: `${CURRENCY_SYMBOL} 42-58k`, notes: "Benefícios premium" }
           ]
         },
         recommended_package: {
           base_salary: {
-            min: "R$ 35.000",
-            target: "R$ 42.500",
-            max: "R$ 50.000",
+            min: `${CURRENCY_SYMBOL} 35.000`,
+            target: `${CURRENCY_SYMBOL} 42.500`,
+            max: `${CURRENCY_SYMBOL} 50.000`,
             positioning: "Mediana de mercado",
             rationale: "Competitivo para atrair top talent"
           },
@@ -288,39 +289,39 @@ const modernConversationPart1: Message[] = [
               plan: "Premium nacional",
               coverage: "Titular + dependentes",
               copay: "Zero",
-              estimated_value: "R$ 2.400/mês"
+              estimated_value: `${CURRENCY_SYMBOL} 2.400/mês`
             },
             mobility: {
-              car_allowance: "R$ 3.500/mês",
-              fuel_card: "R$ 800/mês",
-              uber_corporate: "R$ 500/mês backup",
-              estimated_value: "R$ 4.800/mês"
+              car_allowance: `${CURRENCY_SYMBOL} 3.500/mês`,
+              fuel_card: `${CURRENCY_SYMBOL} 800/mês`,
+              uber_corporate: `${CURRENCY_SYMBOL} 500/mês backup`,
+              estimated_value: `${CURRENCY_SYMBOL} 4.800/mês`
             },
             development: {
-              education_budget: "R$ 30.000/ano",
+              education_budget: `${CURRENCY_SYMBOL} 30.000/ano`,
               conferences: "2 internacionais + nacionais",
               books_courses: "Ilimitado",
-              estimated_value: "R$ 2.500/mês"
+              estimated_value: `${CURRENCY_SYMBOL} 2.500/mês`
             },
             flexibility: {
               vacation: "30 dias + 5 extras",
               sabbatical: "1 mês após 3 anos",
               flexible_hours: "Core time 10-16h",
               remote_work: "3 dias home office",
-              estimated_value: "R$ 1.500/mês"
+              estimated_value: `${CURRENCY_SYMBOL} 1.500/mês`
             },
             technology: {
               equipment: "MacBook Pro M3 + setup",
-              home_office: "R$ 8.000 one-time",
+              home_office: `${CURRENCY_SYMBOL} 8.000 one-time`,
               mobile_plan: "Corporate unlimited",
-              estimated_value: "R$ 800/mês"
+              estimated_value: `${CURRENCY_SYMBOL} 800/mês`
             }
           },
           total_compensation: {
-            cash_total: "R$ 55.250 (base + target bonus)",
-            benefits_value: "R$ 12.000/mês",
-            equity_annual: "R$ 50.000/ano",
-            total_annual: "R$ 807.000",
+            cash_total: `${CURRENCY_SYMBOL} 55.250 (base + target bonus)`,
+            benefits_value: `${CURRENCY_SYMBOL} 12.000/mês`,
+            equity_annual: `${CURRENCY_SYMBOL} 50.000/ano`,
+            total_annual: `${CURRENCY_SYMBOL} 807.000`,
             positioning: "Top 25% do mercado"
           }
         }
@@ -354,7 +355,7 @@ const modernConversationPart1: Message[] = [
           company: "Sodexo Enterprise",
           location: "São Paulo, SP (Híbrido - 3 dias presencial)",
           employment_type: "CLT - Tempo Integral",
-          salary_range: "R$ 35.000 - R$ 50.000 + Benefícios Premium",
+          salary_range: `${CURRENCY_SYMBOL} 35.000 - ${CURRENCY_SYMBOL} 50.000 + Benefícios Premium`,
           posting_date: "22 de Fevereiro de 2024"
         },
         key_responsibilities: {
@@ -363,7 +364,7 @@ const modernConversationPart1: Message[] = [
             "Liderar a transformação digital end-to-end da organização"
           ],
           operational_excellence: [
-            "Gerenciar orçamento de TI de R$ 15M+ anuais",
+            `Gerenciar orçamento de TI de ${CURRENCY_SYMBOL} 15M+ anuais`,
             "Implementar frameworks de governança e compliance"
           ]
         },
@@ -378,10 +379,10 @@ const modernConversationPart1: Message[] = [
           ]
         },
         compensation_highlights: {
-          total_package: "R$ 807.000/ano (Total Compensation)",
-          salary_range: "R$ 35.000 - R$ 50.000 (CLT)",
+          total_package: `${CURRENCY_SYMBOL} 807.000/ano (Total Compensation)`,
+          salary_range: `${CURRENCY_SYMBOL} 35.000 - ${CURRENCY_SYMBOL} 50.000 (CLT)`,
           variable_bonus: "Até 50% do salário base (target: 30%)",
-          benefits_value: "R$ 12.000/mês em benefícios premium"
+          benefits_value: `${CURRENCY_SYMBOL} 12.000/mês em benefícios premium`
         }
       }
     }
@@ -407,9 +408,9 @@ const modernConversationPart1: Message[] = [
       manager: "Carlos Silva - Head de TI",
       items: [
         { label: "Posição", value: "Diretor de Tecnologia da Informação" },
-        { label: "Salário proposto", value: "R$ 35.000 - R$ 50.000 + benefícios" },
-        { label: "Orçamento total anual", value: "R$ 807.000" },
-        { label: "Orçamento de publicação", value: "R$ 5.500" },
+        { label: "Salário proposto", value: `${CURRENCY_SYMBOL} 35.000 - ${CURRENCY_SYMBOL} 50.000 + benefícios` },
+        { label: "Orçamento total anual", value: `${CURRENCY_SYMBOL} 807.000` },
+        { label: "Orçamento de publicação", value: `${CURRENCY_SYMBOL} 5.500` },
         { label: "Prazo estimado", value: "45 dias" }
       ]
     },
@@ -440,9 +441,9 @@ const modernConversationPart1: Message[] = [
           status: "Published"
         },
         publication_channels: [
-          { platform: "LinkedIn Jobs", status: "Published", reach: "50K+ professionals", budget: "R$ 2.500" },
-          { platform: "Indeed Premium", status: "Published", reach: "25K+ candidates", budget: "R$ 1.800" },
-          { platform: "Glassdoor", status: "Published", reach: "15K+ tech talent", budget: "R$ 1.200" }
+          { platform: "LinkedIn Jobs", status: "Published", reach: "50K+ professionals", budget: `${CURRENCY_SYMBOL} 2.500` },
+          { platform: "Indeed Premium", status: "Published", reach: "25K+ candidates", budget: `${CURRENCY_SYMBOL} 1.800` },
+          { platform: "Glassdoor", status: "Published", reach: "15K+ tech talent", budget: `${CURRENCY_SYMBOL} 1.200` }
         ],
         success_metrics: {
           targets: {

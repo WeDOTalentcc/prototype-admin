@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -56,7 +58,7 @@ export function CompanyBenefitsSummaryCard({
 
   const formatValue = (benefit: CompanyBenefit) => {
     if (benefit.value_type === "monetary" && benefit.value) {
-      return `R$ ${benefit.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+      return `${formatBRL(benefit.value)}`
     }
     if (benefit.value_type === "percentage" && benefit.percentage_value) {
       return `${benefit.percentage_value}%`

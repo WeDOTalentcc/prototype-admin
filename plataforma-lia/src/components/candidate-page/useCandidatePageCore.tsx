@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import {
@@ -82,9 +84,9 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
       jobTitle: 'UX Designer Sênior',
       status: 'sent',
       statusLabel: 'Enviada',
-      summary: 'Oferta formal enviada com salário de R$ 20.000 CLT + benefícios.',
+      summary: `Oferta formal enviada com salário de ${CURRENCY_SYMBOL} 20.000 CLT + benefícios.`,
       details: {
-        salary: 'R$ 20.000',
+        salary: `${CURRENCY_SYMBOL} 20.000`,
         contractType: 'CLT',
         benefits: ['Vale Refeição', 'Vale Alimentação', 'Plano de Saúde', 'Gympass'],
         startDate: '01/02/2025',
@@ -141,7 +143,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
         ],
         keyPoints: {
           availability: 'Imediata após 30 dias',
-          salary: 'R$ 18-22k CLT',
+          salary: `${CURRENCY_SYMBOL} 18-22k CLT`,
           english: 'Fluente',
           remote: 'Aceita híbrido ou remoto',
           motivation: 'Busca novos desafios e crescimento'
@@ -199,7 +201,7 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
         concerns: 'Nenhuma preocupação significativa',
         recommendation: 'Fazer oferta',
         suggestedLevel: 'Senior',
-        suggestedSalary: 'R$ 20.000'
+        suggestedSalary: `${CURRENCY_SYMBOL} 20.000`
       }
     }
   ]

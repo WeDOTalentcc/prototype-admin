@@ -8,6 +8,7 @@
  * To disable demo data, set NEXT_PUBLIC_USE_DEMO_DATA=false in your environment.
  */
 
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import {
   Mail,
   Calendar,
@@ -274,7 +275,7 @@ WeDo Talent
           },
           { 
             question: 'Qual sua pretensão salarial?', 
-            answer: 'Entre R$ 25.000 e R$ 30.000 CLT',
+            answer: `Entre ${CURRENCY_SYMBOL} 25.000 e ${CURRENCY_SYMBOL} 30.000 CLT`,
             isRequired: true,
             isQualifying: false,
             passed: true
@@ -396,7 +397,7 @@ WeDo Talent
           'Liderou time de 6 desenvolvedores no Nubank',
           'Migrou app com 5M+ usuários para micro-frontends',
           'Disponibilidade imediata (aviso prévio 30 dias)',
-          'Pretensão salarial: R$ 28-32k CLT'
+          `Pretensão salarial: ${CURRENCY_SYMBOL} 28-32k CLT`
         ],
         redFlags: [],
         overallImpression: 'Candidato demonstrou excelente comunicação, conhecimento técnico profundo e experiência relevante em liderança. Respostas claras e objetivas, com exemplos concretos de situações reais.',
@@ -497,21 +498,21 @@ WeDo Talent
         offerDate: '06/01/2026',
         validUntil: '20/01/2026',
         daysRemaining: 7,
-        salary: 'R$ 28.000,00',
+        salary: `${CURRENCY_SYMBOL} 28.000,00`,
         salaryType: 'CLT',
         annualBonus: 'Até 3 salários (performance)',
         stockOptions: '1.000 opções (vesting 4 anos)',
-        signingBonus: 'R$ 10.000,00',
+        signingBonus: `${CURRENCY_SYMBOL} 10.000,00`,
         benefits: [
-          { name: 'Vale Refeição', value: 'R$ 1.200/mês', icon: '🍽️' },
-          { name: 'Vale Alimentação', value: 'R$ 800/mês', icon: '🛒' },
+          { name: 'Vale Refeição', value: `${CURRENCY_SYMBOL} 1.200/mês`, icon: '🍽️' },
+          { name: 'Vale Alimentação', value: `${CURRENCY_SYMBOL} 800/mês`, icon: '🛒' },
           { name: 'Plano de Saúde', value: 'Bradesco Top Nacional', icon: '🏥' },
           { name: 'Plano Odontológico', value: 'Odontoprev', icon: '🦷' },
           { name: 'Seguro de Vida', value: '24x salário', icon: '🛡️' },
           { name: 'PLR', value: 'Até 2 salários/ano', icon: '💰' },
           { name: 'Home Office', value: 'Híbrido (2x escritório)', icon: '🏠' },
           { name: 'Gympass', value: 'Plano Gold', icon: '💪' },
-          { name: 'Auxílio Home Office', value: 'R$ 200/mês', icon: '💻' },
+          { name: 'Auxílio Home Office', value: `${CURRENCY_SYMBOL} 200/mês`, icon: '💻' },
           { name: 'Day Off Aniversário', value: 'Folga no aniversário', icon: '🎂' },
           { name: 'Buddy Days', value: '2 dias/mês flexíveis', icon: '📅' }
         ],
@@ -523,11 +524,11 @@ WeDo Talent
         teamSize: '8-12 desenvolvedores',
         probationPeriod: '90 dias',
         negotiationHistory: [
-          { date: '05/01/2026', action: 'Proposta inicial enviada', salary: 'R$ 26.000', status: 'Recusada' },
-          { date: '06/01/2026', action: 'Contraproposta recebida', salary: 'R$ 30.000', status: 'Analisando' },
-          { date: '06/01/2026', action: 'Proposta revisada enviada', salary: 'R$ 28.000', status: 'Aguardando' }
+          { date: '05/01/2026', action: 'Proposta inicial enviada', salary: `${CURRENCY_SYMBOL} 26.000`, status: 'Recusada' },
+          { date: '06/01/2026', action: 'Contraproposta recebida', salary: `${CURRENCY_SYMBOL} 30.000`, status: 'Analisando' },
+          { date: '06/01/2026', action: 'Proposta revisada enviada', salary: `${CURRENCY_SYMBOL} 28.000`, status: 'Aguardando' }
         ],
-        negotiationNotes: 'Candidato solicitou revisão do valor de VR (de R$1.000 para R$1.200) e possibilidade de 100% remoto após período de experiência. VR foi ajustado. Modelo 100% remoto negado, mas oferecemos 2x presencial após 6 meses.',
+        negotiationNotes: `Candidato solicitou revisão do valor de VR (de ${CURRENCY_SYMBOL} 1.000 para ${CURRENCY_SYMBOL} 1.200) e possibilidade de 100% remoto após período de experiência. VR foi ajustado. Modelo 100% remoto negado, mas oferecemos 2x presencial após 6 meses.`,
         documentsToSign: [
           'Contrato de Trabalho',
           'Termo de Confidencialidade (NDA)',

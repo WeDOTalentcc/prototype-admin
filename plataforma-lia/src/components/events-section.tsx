@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -133,7 +135,7 @@ const afternoonEvents = [
     time: "16:00",
     type: "offer",
     priority: "high",
-    details: "Sugerido pela LIA • Oferta R$ 12.000",
+    details: `Sugerido pela LIA • Oferta ${CURRENCY_SYMBOL} 12.000`,
     hasReminder: false,
     isSuggested: true,
     actions: [
@@ -148,7 +150,7 @@ const afternoonEvents = [
     time: "16:30",
     type: "offer",
     priority: "high",
-    details: "Oferta salarial • R$ 12.000 • CLT",
+    details: `Oferta salarial • ${CURRENCY_SYMBOL} 12.000 • CLT`,
     hasReminder: true,
     isSuggested: false,
     candidateInfo: {

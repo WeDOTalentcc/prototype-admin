@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 import { useState, useEffect, useRef } from "react"
 import type { WizardStage } from '../config'
 import type { Message } from '../types'
@@ -90,7 +92,7 @@ export function useProactiveMessages(options: UseProactiveMessagesOptions): UseP
 
       const statusParts: string[] = []
       if (minSalary > 0 && maxSalary > 0) {
-        statusParts.push(`**Faixa salarial:** R$ ${minSalary.toLocaleString('pt-BR')} - R$ ${maxSalary.toLocaleString('pt-BR')}`)
+        statusParts.push(`**Faixa salarial:** ${formatBRL(minSalary)} - ${formatBRL(maxSalary)}`)
       } else if (!isSalaryRequired) {
         statusParts.push('**Remuneração:** Usando configuração padrão da empresa')
       }

@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 import React from "react"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -267,7 +269,7 @@ export function JobScreeningSection({
                               const fmt = (v: number | string | null | undefined) => {
                                 if (!v) return ''
                                 const n = typeof v === 'string' ? parseFloat(v) : v
-                                return isNaN(n) ? '' : `R$ ${n.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                                return isNaN(n) ? '' : `${formatBRL(n)}`
                               }
                               return (
                                 <>

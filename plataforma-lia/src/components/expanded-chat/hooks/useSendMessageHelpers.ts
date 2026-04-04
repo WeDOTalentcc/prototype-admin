@@ -1,3 +1,4 @@
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import type { SendMessageHandlersContext } from './useSendMessageHandlers'
 import type { Message } from '../types'
 import type { VacancyFullDetails } from '@/components/job-creation/vacancy-full-summary'
@@ -428,7 +429,7 @@ export async function handleFastTrackFlow(
         const liaMessage: Message = {
           id: `lia-adjust-${Date.now()}`,
           role: 'assistant',
-          content: `✅ **Ajuste aplicado!**\n\nAtualizei os valores conforme solicitado. Revise o resumo atualizado:\n\n• Salário: R$ ${salaryMin} - R$ ${salaryMax}\n• Modelo: ${updatedVacancy.work_model}\n• Local: ${updatedVacancy.location}\n\nSe quiser fazer mais ajustes, me diga. Quando estiver pronto, digite **"confirmar"** para publicar.`,
+          content: `✅ **Ajuste aplicado!**\n\nAtualizei os valores conforme solicitado. Revise o resumo atualizado:\n\n• Salário: ${CURRENCY_SYMBOL} ${salaryMin} - ${CURRENCY_SYMBOL} ${salaryMax}\n• Modelo: ${updatedVacancy.work_model}\n• Local: ${updatedVacancy.location}\n\nSe quiser fazer mais ajustes, me diga. Quando estiver pronto, digite **"confirmar"** para publicar.`,
           timestamp: new Date()
         }
         ctx.setMessages(prev => [...prev, liaMessage])
@@ -857,7 +858,7 @@ export function handleLocalCommands(
         const errorMessage: Message = {
           id: `edit-salary-error-${Date.now()}`,
           role: 'assistant',
-          content: `❌ Não consegui entender o valor do salário. Por favor, use formatos como:\n• "15k" (para R$ 15.000)\n• "R$ 10.000 a R$ 15.000"\n• "10k a 15k"`,
+          content: `❌ Não consegui entender o valor do salário. Por favor, use formatos como:\n• "15k" (para ${CURRENCY_SYMBOL} 15.000)\n• "${CURRENCY_SYMBOL} 10.000 a ${CURRENCY_SYMBOL} 15.000"\n• "10k a 15k"`,
           timestamp: new Date()
         }
         ctx.setMessages(prev => [...prev, errorMessage])

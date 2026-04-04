@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 interface JobData {
   id: string
   jobId: string
@@ -52,7 +54,7 @@ export default function JobPage() {
       .then(vacancy => {
         const salaryRange = vacancy.salary_range
         const salaryStr = salaryRange
-          ? `R$ ${Number(salaryRange.min || 0).toLocaleString('pt-BR')} - R$ ${Number(salaryRange.max || 0).toLocaleString('pt-BR')}`
+          ? `${formatBRL(Number(salaryRange.min || 0))} - ${formatBRL(Number(salaryRange.max || 0))}`
           : undefined
 
         // Extended vacancy has fields not in current TypeScript type definitions

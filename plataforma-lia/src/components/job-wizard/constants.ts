@@ -1,3 +1,4 @@
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import type { WizardPhaseConfig, WizardStageConfig, WizardStage } from './types'
 import type { JobBenefit } from '@/types/benefits'
 
@@ -201,14 +202,14 @@ Os campos operacionais (modelo de trabalho, localização, tipo de contrato) ser
 Digite sua descrição ou anexe um JD existente para começarmos!`
 
 export const INITIAL_BENEFITS: JobBenefit[] = [
-  { id: '1', name: 'Vale Refeição', description: '', category: 'food', value_type: 'monetary', value_details: 'R$ 35/dia', seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
+  { id: '1', name: 'Vale Refeição', description: '', category: 'food', value_type: 'monetary', value_details: `${CURRENCY_SYMBOL} 35/dia`, seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
   { id: '2', name: 'Vale Transporte', description: '', category: 'transport', value_type: 'informative', seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
   { id: '3', name: 'Plano de Saúde', description: '', category: 'health', value_type: 'informative', seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
   { id: '4', name: 'Plano Odontológico', description: '', category: 'health', value_type: 'informative', seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
   { id: '5', name: 'Seguro de Vida', description: '', category: 'security', value_type: 'informative', seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
   { id: '6', name: 'Stock Options', description: '', category: 'financial', value_type: 'informative', seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: false },
-  { id: '7', name: 'Auxílio Home Office', description: '', category: 'quality_life', value_type: 'monetary', value_details: 'R$ 200/mês', seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
-  { id: '8', name: 'Auxílio Educação', description: '', category: 'education', value_type: 'monetary', value_details: 'Até R$ 500/mês', seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
+  { id: '7', name: 'Auxílio Home Office', description: '', category: 'quality_life', value_type: 'monetary', value_details: `${CURRENCY_SYMBOL} 200/mês`, seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
+  { id: '8', name: 'Auxílio Educação', description: '', category: 'education', value_type: 'monetary', value_details: `Até ${CURRENCY_SYMBOL} 500/mês`, seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
   { id: '9', name: 'Gympass', description: '', category: 'health', value_type: 'informative', seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: false },
   { id: '10', name: 'Day Off Aniversário', description: '', category: 'quality_life', value_type: 'informative', seniority_levels: ['all'], waiting_period_days: 0, is_mandatory: false, is_active: true, is_highlighted: false, is_discount: false, enabled: true },
 ]

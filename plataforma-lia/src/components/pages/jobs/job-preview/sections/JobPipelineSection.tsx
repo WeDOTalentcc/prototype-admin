@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL, formatBRLCompact } from "@/lib/pricing"
 import React from "react"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -238,7 +240,7 @@ export function JobPipelineSection({
                           <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-elevated/50 rounded-md">
                             <p className={`${textStyles.bodySmall}`}>Salário</p>
                             <p className="text-sm font-bold text-lia-text-primary">
-                              {previewJob.salary > 'R$ 10.000' ? '+15%' : '-5%'}
+                              {previewJob.salary > `${CURRENCY_SYMBOL} 10.000` ? '+15%' : '-5%'}
                             </p>
                             <p className={textStyles.bodySmall}>vs. mercado</p>
                           </div>
@@ -284,7 +286,7 @@ export function JobPipelineSection({
                               <div className="flex items-center justify-between">
                                 <span className={`${textStyles.bodySmall}`}>Budget</span>
                                 <span className="text-xs font-bold text-lia-text-primary">
-                                  R$ {(previewJob.budget / 1000).toFixed(0)}k
+                                  {formatBRLCompact(previewJob.budget)}
                                 </span>
                               </div>
                               <div className="flex items-center justify-between">

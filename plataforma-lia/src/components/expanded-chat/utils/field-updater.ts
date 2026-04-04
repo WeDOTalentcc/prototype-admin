@@ -5,6 +5,7 @@
  * Handles salary parsing (15k → 15000) and skill detection
  */
 
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import type { TechnicalSkill, BehavioralCompetency, SalaryInfo } from '../ExpandedChatContext'
 
 export interface SalaryParseResult {
@@ -55,7 +56,7 @@ function normalizeNumber(value: string): number {
 
 /**
  * Parse salary value from natural language text
- * Handles formats like: "15k", "R$ 15.000", "10k a 15k", etc.
+ * Handles formats like: "15k", `${CURRENCY_SYMBOL} 15.000`, "10k a 15k", etc.
  */
 export function parseSalaryValue(text: string): SalaryParseResult {
   const trimmed = text.trim().toLowerCase()
@@ -69,7 +70,7 @@ export function parseSalaryValue(text: string): SalaryParseResult {
       min,
       max,
       isValid: min > 0 && max >= min,
-      formatted: `R$ ${min.toLocaleString('pt-BR')} - R$ ${max.toLocaleString('pt-BR')}`,
+      formatted: `${formatBRL(min)} - ${formatBRL(max)}`,
     }
   }
   
@@ -82,7 +83,7 @@ export function parseSalaryValue(text: string): SalaryParseResult {
       min,
       max,
       isValid: min > 0 && max >= min,
-      formatted: `R$ ${min.toLocaleString('pt-BR')} - R$ ${max.toLocaleString('pt-BR')}`,
+      formatted: `${formatBRL(min)} - ${formatBRL(max)}`,
     }
   }
   
@@ -94,7 +95,7 @@ export function parseSalaryValue(text: string): SalaryParseResult {
       min: value,
       max: value,
       isValid: value > 0,
-      formatted: `R$ ${value.toLocaleString('pt-BR')}`,
+      formatted: `${formatBRL(value)}`,
     }
   }
   
@@ -106,7 +107,7 @@ export function parseSalaryValue(text: string): SalaryParseResult {
       min: value,
       max: value,
       isValid: value > 0,
-      formatted: `R$ ${value.toLocaleString('pt-BR')}`,
+      formatted: `${formatBRL(value)}`,
     }
   }
   
@@ -119,7 +120,7 @@ export function parseSalaryValue(text: string): SalaryParseResult {
       min: adjustedValue,
       max: adjustedValue,
       isValid: adjustedValue > 0,
-      formatted: `R$ ${adjustedValue.toLocaleString('pt-BR')}`,
+      formatted: `${formatBRL(adjustedValue)}`,
     }
   }
   
@@ -151,7 +152,7 @@ export function applySalaryUpdate(
     const oldMin = updated.minSalary
     updated.minSalary = parsedValue.min.toString()
     if (oldMin !== updated.minSalary) {
-      changes.push(`Salário mínimo: ${oldMin || 'não definido'} → R$ ${parsedValue.min.toLocaleString('pt-BR')}`)
+      changes.push(`Salário mínimo: ${oldMin || 'não definido'} → ${formatBRL(parsedValue.min)}`)
     }
   }
   
@@ -160,7 +161,7 @@ export function applySalaryUpdate(
     const oldMax = updated.maxSalary
     updated.maxSalary = newMax.toString()
     if (oldMax !== updated.maxSalary) {
-      changes.push(`Salário máximo: ${oldMax || 'não definido'} → R$ ${newMax.toLocaleString('pt-BR')}`)
+      changes.push(`Salário máximo: ${oldMax || 'não definido'} → ${formatBRL(newMax)}`)
     }
   }
   

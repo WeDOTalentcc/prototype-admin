@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 "use client"
 
 import React, { useState } from "react"
@@ -170,9 +172,9 @@ export function PrevisoesIAPlaceholder() {
             <div className="p-4 bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-status-success/30 dark:border-status-success/30">
               <p className={`${textStyles.description} mb-1`}>Custo por Contratação</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-inter font-bold text-lia-text-primary">R$ 3.2k</span>
+                <span className="text-2xl font-inter font-bold text-lia-text-primary">${CURRENCY_SYMBOL} 3.2k</span>
               </div>
-              <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>-R$ 420 vs. anterior</p>
+              <p className={`${textStyles.bodySmall} text-status-success dark:text-status-success mt-1`}>-${CURRENCY_SYMBOL} 420 vs. anterior</p>
             </div>
           </div>
         </CardContent>

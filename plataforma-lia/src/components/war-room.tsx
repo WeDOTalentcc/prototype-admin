@@ -1,5 +1,7 @@
 "use client"
 
+
+import { formatBRL } from "@/lib/pricing"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -236,7 +238,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
 
                       <div className="flex justify-between text-xs">
                         <span>{campaign.targets.length} alvos</span>
-                        <span>R$ {(campaign.budget / 1000).toFixed(0)}k budget</span>
+                        <span>{formatBRL((campaign.budget / 1000))} budget</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -360,7 +362,7 @@ export function WarRoom({ isOpen, onClose }: WarRoomProps) {
                         <div className="space-y-2 text-sm text-lia-text-primary">
                           <div className="flex justify-between">
                             <span>Budget por contratação:</span>
-                            <span className="font-medium">R$ {selectedCampaignData.strategy.budget_per_hire.toLocaleString()}</span>
+                            <span className="font-medium">{formatBRL(selectedCampaignData.strategy.budget_per_hire)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Timeline:</span>

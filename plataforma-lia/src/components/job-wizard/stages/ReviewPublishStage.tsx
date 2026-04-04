@@ -1,5 +1,7 @@
 'use client'
 
+
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import React, { useState } from 'react'
 import { 
   FileText, MapPin, Building, Users, DollarSign, Brain, Code, 
@@ -112,7 +114,7 @@ ${enabledBenefits.map(b => `- ${b.name}${b.value ? ` - ${b.value}` : ''}`).join(
 
 **Remuneração**
 ${salaryInfo.minSalary && salaryInfo.maxSalary 
-  ? `R$ ${salaryInfo.minSalary} - R$ ${salaryInfo.maxSalary}`
+  ? `${formatBRL(Number(salaryInfo.minSalary))} - ${formatBRL(Number(salaryInfo.maxSalary))}`
   : 'A combinar'}`
     
     setJobDescription(fallback)
@@ -279,7 +281,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
             <span className="lia-text-secondary">Salário Base:</span>
             <span className="font-medium text-lia-text-primary">
               {salaryInfo.minSalary && salaryInfo.maxSalary 
-                ? `R$ ${salaryInfo.minSalary} - R$ ${salaryInfo.maxSalary}`
+                ? `${formatBRL(Number(salaryInfo.minSalary))} - ${formatBRL(Number(salaryInfo.maxSalary))}`
                 : 'Não informado'}
             </span>
           </div>
@@ -287,7 +289,7 @@ ${salaryInfo.minSalary && salaryInfo.maxSalary
             <div className="flex justify-between">
               <span className="lia-text-secondary">Bônus:</span>
               <span className="font-medium text-lia-text-primary">
-                R$ {salaryInfo.minBonus} - R$ {salaryInfo.maxBonus}
+                {CURRENCY_SYMBOL} {salaryInfo.minBonus} - {CURRENCY_SYMBOL} {salaryInfo.maxBonus}
               </span>
             </div>
           )}

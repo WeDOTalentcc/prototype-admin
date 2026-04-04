@@ -1,6 +1,7 @@
 "use client"
 
-  import { useState } from "react"
+  import { CURRENCY_SYMBOL } from "@/lib/pricing"
+import { useState } from "react"
   import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
   import { Button } from "@/components/ui/button"
   import { Badge } from "@/components/ui/badge"
@@ -547,12 +548,12 @@ export function InstitutionalTab({ onSettingsChange }: { onSettingsChange: (chan
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
                 <option value="">Selecione a faixa</option>
-                <option value="ate100k">Até R$ 100.000</option>
-                <option value="100k500k">R$ 100.001 a R$ 500.000</option>
-                <option value="500k2m">R$ 500.001 a R$ 2.000.000</option>
-                <option value="2m10m">R$ 2.000.001 a R$ 10.000.000</option>
-                <option value="10m50m">R$ 10.000.001 a R$ 50.000.000</option>
-                <option value="acima50m">Acima de R$ 50.000.000</option>
+                <option value="ate100k">{`Até ${CURRENCY_SYMBOL} 100.000`}</option>
+                <option value="100k500k">{`${CURRENCY_SYMBOL} 100.001 a ${CURRENCY_SYMBOL} 500.000`}</option>
+                <option value="500k2m">{`${CURRENCY_SYMBOL} 500.001 a ${CURRENCY_SYMBOL} 2.000.000`}</option>
+                <option value="2m10m">{`${CURRENCY_SYMBOL} 2.000.001 a ${CURRENCY_SYMBOL} 10.000.000`}</option>
+                <option value="10m50m">{`${CURRENCY_SYMBOL} 10.000.001 a ${CURRENCY_SYMBOL} 50.000.000`}</option>
+                <option value="acima50m">{`Acima de ${CURRENCY_SYMBOL} 50.000.000`}</option>
               </select>
             </div>
             <div>

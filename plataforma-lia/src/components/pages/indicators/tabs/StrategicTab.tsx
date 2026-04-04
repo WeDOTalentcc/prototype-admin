@@ -1,3 +1,4 @@
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -75,7 +76,7 @@ export function StrategicTab() {
             <div className="text-2xl font-bold text-wedo-orange">325%</div>
             <div className="text-xs text-wedo-orange mt-1">Retorno sobre investimento</div>
             <div className="mt-3 text-xs text-lia-text-secondary">
-              Economia de R$ 2.4M em terceirização
+              Economia de {CURRENCY_SYMBOL} 2.4M em terceirização
             </div>
           </CardContent>
         </Card>

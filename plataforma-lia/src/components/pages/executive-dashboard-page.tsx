@@ -1,5 +1,7 @@
 "use client"
 
+
+import { formatBRL } from "@/lib/pricing"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -506,10 +508,10 @@ export function ExecutiveDashboardPage() {
                           <span className="text-sm font-medium">Custo por Hire</span>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-bold">R$ {data.summary.averageCostPerHire.toLocaleString()}</div>
+                          <div className="text-lg font-bold">{formatBRL(data.summary.averageCostPerHire)}</div>
                           <div className={`text-xs ${data.summary.averageCostPerHire < data.benchmarks.industryAverages.costPerHire ? 'text-status-success' : 'text-status-error'}`}>
                             {data.summary.averageCostPerHire < data.benchmarks.industryAverages.costPerHire ? '↑' : '↓'}
-                            R$ {Math.abs(data.summary.averageCostPerHire - data.benchmarks.industryAverages.costPerHire).toLocaleString()} vs mercado
+                            {formatBRL(Math.abs(data.summary.averageCostPerHire - data.benchmarks.industryAverages.costPerHire))} vs mercado
                           </div>
                         </div>
                       </div>
@@ -550,13 +552,13 @@ export function ExecutiveDashboardPage() {
                         <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
                           <div className="text-xs text-lia-text-secondary mb-1">Orçamento Total</div>
                           <div className="text-lg font-bold text-lia-text-primary">
-                            R$ {data.financialMetrics.totalBudget.toLocaleString()}
+                            {formatBRL(data.financialMetrics.totalBudget)}
                           </div>
                         </div>
                         <div className="p-3 bg-lia-bg-tertiary dark:bg-lia-bg-secondary rounded-md">
                           <div className="text-xs text-lia-text-secondary mb-1">Utilizado</div>
                           <div className="text-lg font-bold text-lia-text-secondary">
-                            R$ {data.financialMetrics.spentToDate.toLocaleString()}
+                            {formatBRL(data.financialMetrics.spentToDate)}
                           </div>
                         </div>
                       </div>
@@ -585,7 +587,7 @@ export function ExecutiveDashboardPage() {
                           <div className="text-xs text-status-success">ROI</div>
                         </div>
                         <div className="p-3 bg-status-success/10 dark:bg-status-success/20 rounded-md text-center">
-                          <div className="text-2xl font-bold text-status-success">R$ {(data.financialMetrics.costSavings / 1000).toFixed(0)}k</div>
+                          <div className="text-2xl font-bold text-status-success">{formatBRL((data.financialMetrics.costSavings / 1000))}</div>
                           <div className="text-xs text-status-success">Economia</div>
                         </div>
                       </div>

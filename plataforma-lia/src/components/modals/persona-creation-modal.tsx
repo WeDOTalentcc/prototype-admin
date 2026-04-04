@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { formatBRL } from "@/lib/pricing"
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -297,7 +297,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-lia-text-primary mb-2">
-                      Salário Mínimo (R$)
+                      Salário Mínimo ({CURRENCY_SYMBOL})
                     </label>
                     <Input
                       type="number"
@@ -309,7 +309,7 @@ export function PersonaCreationModal({ isOpen, onClose, baseJob, suggestedCandid
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-lia-text-primary mb-2">
-                      Salário Máximo (R$)
+                      Salário Máximo ({CURRENCY_SYMBOL})
                     </label>
                     <Input
                       type="number"

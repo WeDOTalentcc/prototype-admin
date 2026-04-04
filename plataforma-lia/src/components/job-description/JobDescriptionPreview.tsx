@@ -1,5 +1,6 @@
 "use client";
 
+import { formatBRL } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -298,7 +299,7 @@ export function JobDescriptionPreview({
                 <p className="flex items-center">
                   <strong>Salário:</strong>
                   <span className="ml-2">
-                    R$ {data.compensation.salary_min.toLocaleString('pt-BR')} - R$ {data.compensation.salary_max.toLocaleString('pt-BR')}
+                    {formatBRL(data.compensation.salary_min)} - {formatBRL(data.compensation.salary_max)}
                   </span>
                   {data.compensation.has_alert && (
                     <AlertBadge message={data.compensation.alert_message} />

@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -60,8 +62,8 @@ const templates: JobTemplate[] = [
       title: "UX Designer Sênior",
       description: "Buscamos UX Designer experiente para liderar projetos de produtos digitais inovadores, criando experiências excepcionais que impactem milhões de usuários.",
       requirements: ["5+ anos em UX/UI", "Figma avançado", "Design Systems", "Prototipagem", "Pesquisa de usuário"],
-      benefits: ["Vale alimentação R$ 1.200", "Plano de saúde premium", "Home office híbrido", "Day off aniversário"],
-      salaryRange: "R$ 8.000 - R$ 12.000",
+      benefits: [`Vale alimentação ${CURRENCY_SYMBOL} 1.200`, "Plano de saúde premium", "Home office híbrido", "Day off aniversário"],
+      salaryRange: `${CURRENCY_SYMBOL} 8.000 - ${CURRENCY_SYMBOL} 12.000`,
       responsibilities: ["Liderar projetos de UX", "Criar wireframes e protótipos", "Conduzir pesquisas de usuário", "Colaborar com PMs e Devs"]
     },
     aiInsights: {
@@ -91,7 +93,7 @@ const templates: JobTemplate[] = [
       description: "Desenvolvedor React experiente para trabalhar com arquiteturas modernas e tecnologias de ponta em ambiente 100% remoto.",
       requirements: ["React 18+", "TypeScript", "Next.js", "Node.js", "Testes automatizados"],
       benefits: ["Flexibilidade total", "Equipment allowance", "Cursos e certificações", "Bônus performance"],
-      salaryRange: "R$ 10.000 - R$ 15.000",
+      salaryRange: `${CURRENCY_SYMBOL} 10.000 - ${CURRENCY_SYMBOL} 15.000`,
       responsibilities: ["Desenvolver features", "Code review", "Mentoring júniores", "Arquitetura de soluções"]
     },
     aiInsights: {
@@ -121,7 +123,7 @@ const templates: JobTemplate[] = [
       description: "PM para liderar produtos financeiros digitais, trabalhando com regulamentações e compliance do setor.",
       requirements: ["3+ anos como PM", "Experiência Fintech", "Analytics", "Regulamentações financeiras"],
       benefits: ["Plano de saúde premium", "Previdência privada", "Stock options", "Auxílio educação"],
-      salaryRange: "R$ 12.000 - R$ 18.000",
+      salaryRange: `${CURRENCY_SYMBOL} 12.000 - ${CURRENCY_SYMBOL} 18.000`,
       responsibilities: ["Product roadmap", "Stakeholder management", "Analytics", "Go-to-market"]
     },
     aiInsights: {

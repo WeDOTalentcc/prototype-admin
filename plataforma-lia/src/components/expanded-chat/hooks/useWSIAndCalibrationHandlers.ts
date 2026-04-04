@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
+
 import React, { useCallback, useEffect } from "react"
 import { liaApi, type WizardOrchestratorResponse, type VacancySearchCriteria, type VacancyAdjustments } from "@/services/lia-api"
 import {
@@ -366,8 +368,8 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
         const salaryDetectedFields: Array<{ label: string; value: string; confidence?: "high" | "medium" | "low" }> = []
         const detectedMin = detectedCriteriaFromBackend.salary_min || detectedCriteriaFromBackend.min_salary
         const detectedMax = detectedCriteriaFromBackend.salary_max || detectedCriteriaFromBackend.max_salary
-        if (detectedMin) salaryDetectedFields.push({ label: "Salário Mínimo", value: `R$ ${detectedMin}`, confidence: "high" })
-        if (detectedMax) salaryDetectedFields.push({ label: "Salário Máximo", value: `R$ ${detectedMax}`, confidence: "high" })
+        if (detectedMin) salaryDetectedFields.push({ label: "Salário Mínimo", value: `${formatBRL(Number(detectedMin))}`, confidence: "high" })
+        if (detectedMax) salaryDetectedFields.push({ label: "Salário Máximo", value: `${formatBRL(Number(detectedMax))}`, confidence: "high" })
         if (detectedCriteriaFromBackend.bonus_min) salaryDetectedFields.push({ label: "Bônus Mínimo", value: `${detectedCriteriaFromBackend.bonus_min}%`, confidence: "medium" })
         if (detectedCriteriaFromBackend.bonus_max) salaryDetectedFields.push({ label: "Bônus Máximo", value: `${detectedCriteriaFromBackend.bonus_max}%`, confidence: "medium" })
 
@@ -653,9 +655,9 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       if (department) detectedFields.push(`Departamento: **${department}**`)
       if ((techSkills as unknown[])?.length > 0) detectedFields.push(`Skills Técnicas: **${(techSkills as string[]).slice(0, 3).join(', ')}**`)
       if (salaryMin && salaryMax) {
-        const minFormatted = typeof salaryMin === 'number' ? salaryMin.toLocaleString('pt-BR') : salaryMin
-        const maxFormatted = typeof salaryMax === 'number' ? salaryMax.toLocaleString('pt-BR') : salaryMax
-        detectedFields.push(`Faixa Salarial: **R$ ${minFormatted} - R$ ${maxFormatted}**`)
+        const minFormatted = typeof salaryMin === 'number' ? formatBRL(salaryMin) : `${CURRENCY_SYMBOL} ${salaryMin}`
+        const maxFormatted = typeof salaryMax === 'number' ? formatBRL(salaryMax) : `${CURRENCY_SYMBOL} ${salaryMax}`
+        detectedFields.push(`Faixa Salarial: **${minFormatted} - ${maxFormatted}**`)
       }
       
       const summaryText = detectedFields.length > 0 
@@ -672,9 +674,9 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
       if (department) detectedFieldsStructured.push({ label: "Departamento", value: String(department), confidence: "medium" })
       if ((techSkills as unknown[])?.length > 0) detectedFieldsStructured.push({ label: "Skills Técnicas", value: (techSkills as string[]).slice(0, 5).join(", "), confidence: "high" })
       if (salaryMin && salaryMax) {
-        const minF = typeof salaryMin === 'number' ? salaryMin.toLocaleString('pt-BR') : salaryMin
-        const maxF = typeof salaryMax === 'number' ? salaryMax.toLocaleString('pt-BR') : salaryMax
-        detectedFieldsStructured.push({ label: "Faixa Salarial", value: `R$ ${minF} - R$ ${maxF}`, confidence: "medium" })
+        const minF = typeof salaryMin === 'number' ? formatBRL(salaryMin) : `${CURRENCY_SYMBOL} ${salaryMin}`
+        const maxF = typeof salaryMax === 'number' ? formatBRL(salaryMax) : `${CURRENCY_SYMBOL} ${salaryMax}`
+        detectedFieldsStructured.push({ label: "Faixa Salarial", value: `${minF} - ${maxF}`, confidence: "medium" })
       }
 
       // Set awaiting confirmation state

@@ -1,5 +1,7 @@
 "use client"
 
+import { formatBRL } from "@/lib/pricing"
+
 import { useState, useEffect, useCallback } from "react"
 import type { TechnicalSkill, BasicInfoFields, SalaryInfo, DetectedCriteria, Benefit } from '../ExpandedChatContext'
 import type { FieldOrigin } from '../../job-creation/field-origin-badge'
@@ -270,7 +272,7 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
           const configBenefits: Benefit[] = config.benefits.map((b, idx) => ({
             id: `config-benefit-${idx}`,
             name: b.name,
-            value: b.value ? `R$ ${b.value}` : undefined,
+            value: b.value ? `${formatBRL(b.value)}` : undefined,
             enabled: true
           }))
 

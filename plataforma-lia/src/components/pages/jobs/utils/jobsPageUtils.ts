@@ -1,3 +1,4 @@
+import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import type { Job, JobFilters } from "@/components/jobs"
 import type { JobVacancy } from "@/services/lia-api"
 
@@ -58,7 +59,7 @@ export function convertBackendJobToFrontend(jv: JobVacancy, index: number): Job 
     workModel: (raw.work_model as Job['workModel']) || 'híbrido',
     type: (raw.employment_type as string) || 'CLT',
     level: (raw.seniority_level as string) || 'Pleno',
-    salary: salaryRange ? `R$ ${salaryRange.min?.toLocaleString()} - R$ ${salaryRange.max?.toLocaleString()}` : 'A combinar',
+    salary: salaryRange ? `${formatBRL(Number(salaryRange.min ?? 0))} - ${formatBRL(Number(salaryRange.max ?? 0))}` : 'A combinar',
     benefits: (raw.benefits as string[]) || [],
     status: (jv.status as Job['status']) || 'Rascunho',
     stage: stageMapping[(raw.stage as string) || ''] || 'Triagem',
@@ -148,7 +149,7 @@ export function convertBackendJobSimple(jv: Record<string, unknown>, index: numb
     workModel: (jv.work_model as Job['workModel']) || 'híbrido',
     type: (jv.employment_type as string) || 'CLT',
     level: (jv.seniority_level as string) || 'Pleno',
-    salary: jv.salary_range ? `R$ ${(jv.salary_range as Record<string, number>).min?.toLocaleString()} - R$ ${(jv.salary_range as Record<string, number>).max?.toLocaleString()}` : 'A combinar',
+    salary: jv.salary_range ? `${formatBRL(Number((jv.salary_range as Record<string, number>).min ?? 0))} - ${formatBRL(Number((jv.salary_range as Record<string, number>).max ?? 0))}` : 'A combinar',
     status: (jv.status as Job['status']) || 'Rascunho',
     stage: stageMapping[(jv.stage as string) || ''] || 'Triagem',
     openDate: (jv.open_date as string)?.split('T')[0] || (jv.created_at as string)?.split('T')[0] || new Date().toISOString().split('T')[0],
@@ -351,9 +352,9 @@ export function filterJobs(
       matchesAdvancedFilters = matchesAdvancedFilters && advancedFilters.budget_ranges.some(range => {
         const budget = job.budget || 0
         switch (range) {
-          case "Até R$ 50.000": return budget <= 50000
-          case "R$ 50.000 - R$ 100.000": return budget >= 50000 && budget <= 100000
-          case "R$ 100.000+": return budget >= 100000
+          case `Até ${CURRENCY_SYMBOL} 50.000`: return budget <= 50000
+          case `${CURRENCY_SYMBOL} 50.000 - ${CURRENCY_SYMBOL} 100.000`: return budget >= 50000 && budget <= 100000
+          case `${CURRENCY_SYMBOL} 100.000+`: return budget >= 100000
           default: return false
         }
       })

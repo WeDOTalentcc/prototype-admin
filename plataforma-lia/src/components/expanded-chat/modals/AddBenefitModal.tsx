@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL } from "@/lib/pricing"
 /**
  * AddBenefitModal — overlay para adicionar benefício customizado.
  * Extraído de expanded-chat-modal.tsx (Sprint 4.5 — 2026-03-27).
@@ -53,7 +55,7 @@ export function AddBenefitModal({
             type="text"
             value={benefitValue}
             onChange={(e) => onBenefitValueChange(e.target.value)}
-            placeholder="Valor (opcional, ex: R$ 500/mês)"
+            placeholder={`Valor (opcional, ex: ${CURRENCY_SYMBOL} 500/mês)`}
             className="w-full px-4 py-3 border border-lia-border-subtle rounded-md text-sm focus:outline-none focus:border-lia-border-medium"
            
           />

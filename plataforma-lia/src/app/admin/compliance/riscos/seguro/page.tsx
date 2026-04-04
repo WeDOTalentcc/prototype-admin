@@ -1,5 +1,7 @@
 "use client"
 
+
+import { CURRENCY_SYMBOL, CURRENCY_PLACEHOLDER } from "@/lib/pricing"
 import React, { useState, useEffect, useCallback } from "react"
 import { 
   ShieldPlus, 
@@ -508,7 +510,7 @@ export default function SeguroCiberneticoPage() {
                 <div>
                   <p className="text-xs text-lia-text-tertiary dark:text-lia-text-secondary" >Valor Coberto</p>
                   <p className="font-medium text-status-success">
-                    {activePolicy ? formatCurrency(activePolicy.coverage) : 'R$ 0,00'}
+                    {activePolicy ? formatCurrency(activePolicy.coverage) : CURRENCY_PLACEHOLDER}
                   </p>
                 </div>
               </div>
@@ -788,7 +790,7 @@ export default function SeguroCiberneticoPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Valor de Cobertura (R$)</Label>
+                <Label>Valor de Cobertura ({CURRENCY_SYMBOL})</Label>
                 <Input 
                   type="number"
                   value={policyForm.coverage || ''}
@@ -797,7 +799,7 @@ export default function SeguroCiberneticoPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Franquia (R$)</Label>
+                <Label>Franquia ({CURRENCY_SYMBOL})</Label>
                 <Input 
                   type="number"
                   value={policyForm.deductible || ''}
@@ -902,7 +904,7 @@ export default function SeguroCiberneticoPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Limite de Cobertura (R$)</Label>
+                <Label>Limite de Cobertura ({CURRENCY_SYMBOL})</Label>
                 <Input 
                   type="number"
                   value={coverageForm.coverageLimit || ''}
@@ -949,7 +951,7 @@ export default function SeguroCiberneticoPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Valor Estimado (R$)</Label>
+                <Label>Valor Estimado ({CURRENCY_SYMBOL})</Label>
                 <Input 
                   type="number"
                   value={claimForm.claimAmount || ''}
