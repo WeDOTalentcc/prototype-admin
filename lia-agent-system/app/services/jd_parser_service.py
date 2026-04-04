@@ -79,9 +79,9 @@ class JDParserService:
         prompt = prompt_template.format(job_description=jd_text)
 
         try:
-            response_text = await llm_service.generate(prompt, provider="gemini")
+            response_text = await llm_service.generate(prompt)
         except Exception as exc:
-            logger.warning(f"Gemini failed for JD extraction, falling back to Claude: {exc}")
+            logger.warning(f"Default LLM failed for JD extraction, falling back to Claude: {exc}")
             response_text = await llm_service.generate(prompt, provider="claude")
 
         match = re.search(r"\{[\s\S]*\}", response_text)

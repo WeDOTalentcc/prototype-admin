@@ -138,7 +138,6 @@ async def _try_extract_params_with_llm(
         response = await llm_service.generate_with_tools(
             messages=messages,
             tools=[tool_schema],
-            provider="claude",
             system_prompt=system_prompt,
             max_tokens=512,
         )

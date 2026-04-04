@@ -257,7 +257,7 @@ Responda APENAS em JSON:
             user_input=user_input[:500]
         )
 
-        response = await self._llm_service.generate(prompt, provider="claude")
+        response = await self._llm_service.generate(prompt)
 
         json_match = re.search(r'\{[\s\S]*?\}', response)
         if not json_match:

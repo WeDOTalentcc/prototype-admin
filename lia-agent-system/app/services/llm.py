@@ -130,12 +130,13 @@ class LLMService:
         
         raise ValueError("No OpenAI API key configured")
     
-    async def generate_with_gemini(self, prompt: str) -> str:
+    async def generate_with_gemini(self, prompt: str, model: Optional[str] = None) -> str:
         """Generate text using Gemini via Replit AI Integration."""
         client = self.gemini_native
-        
+        model_id = model or settings.LLM_GEMINI_MODEL
+
         response = client.models.generate_content(
-            model=settings.LLM_GEMINI_MODEL,
+            model=model_id,
             contents=prompt
         )
         
@@ -145,6 +146,7 @@ class LLMService:
         self,
         prompt: str,
         provider: LLMProvider = "gemini",
+        model: Optional[str] = None,
         **kwargs
     ) -> str:
         """
@@ -153,13 +155,14 @@ class LLMService:
         Args:
             prompt: Input prompt
             provider: LLM provider to use
+            model: Optional model name override (e.g. "gemini-2.5-flash", "claude-sonnet-4-6")
             **kwargs: Additional arguments (temperature, max_tokens, etc)
         
         Returns:
             Generated text
         """
         if provider == "gemini":
-            return await self.generate_with_gemini(prompt)
+            return await self.generate_with_gemini(prompt, model=model)
         elif provider == "claude":
             llm = self.claude
             if kwargs:
@@ -191,7 +194,7 @@ class LLMService:
         self,
         messages: List[Dict[str, Any]],
         tools: List[Dict[str, Any]],
-        provider: LLMProvider = "claude",
+        provider: LLMProvider = "gemini",
         system_prompt: Optional[str] = None,
         max_tokens: int = 4096
     ) -> ToolCallResponse:

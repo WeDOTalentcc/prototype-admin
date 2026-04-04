@@ -81,11 +81,12 @@ class LLMSettings(BaseSettings):
 
     # Model Names
     LLM_PRIMARY_MODEL: str = "claude-sonnet-4-6"
-    LLM_FAST_MODEL: str = "claude-haiku-4-5"
+    LLM_FAST_MODEL: str = "gemini-2.5-flash"              # Tier rápido — Gemini Flash (padrão)
     LLM_POWERFUL_MODEL: str = "claude-opus-4-6"
     LLM_GEMINI_MODEL: str = "gemini-2.5-flash"
-    LLM_ROUTER_MODEL: str = "claude-haiku-4-5-20251001"   # Roteamento barato (Tier 3)
-    LLM_AGENT_MODEL: str = "claude-sonnet-4-6"            # Execução de agentes
+    LLM_ROUTER_MODEL: str = "gemini-2.5-flash"            # Roteamento barato (Tier 3) — Gemini Flash
+    LLM_AGENT_MODEL: str = "claude-sonnet-4-6"            # Execução de agentes (Claude mantido para profundidade)
+    LLM_DEFAULT_PROVIDER: str = "gemini"                  # Provider padrão — Gemini 2.5 Flash
 
     # Generation parameters
     LLM_DEFAULT_TEMPERATURE: float = 0.7
@@ -341,6 +342,7 @@ class Settings(
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=True,
+        extra="ignore",
     )
 
 

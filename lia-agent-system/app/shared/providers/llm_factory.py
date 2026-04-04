@@ -17,7 +17,7 @@ from app.shared.providers.llm_provider import LLMProviderABC
 
 logger = logging.getLogger(__name__)
 
-FALLBACK_ORDER: List[str] = ["claude", "gemini", "openai"]
+FALLBACK_ORDER: List[str] = ["gemini", "claude", "openai"]
 
 
 # ---------------------------------------------------------------------------
@@ -136,8 +136,8 @@ class ProviderContainer:
     Usage:
         container = ProviderContainer(
             tenant_id="acme",
-            primary_provider="claude",
-            fallback_order=["claude", "openai", "gemini"],
+            primary_provider="gemini",
+            fallback_order=["gemini", "claude", "openai"],
         )
         provider = container.get_primary()
         result = await container.generate_with_fallback(prompt)

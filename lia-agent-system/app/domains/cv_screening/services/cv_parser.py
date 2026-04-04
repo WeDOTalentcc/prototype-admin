@@ -285,7 +285,6 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
         try:
             response = await self.llm_service.generate(
                 prompt=prompt,
-                provider="claude"
             )
             
             json_str = response.strip()

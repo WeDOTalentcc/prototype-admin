@@ -1,10 +1,10 @@
 """
 LLM Cascade Router — Tier 3 do Cost Cascade Orchestrator.
 
-Implementa a escada de custo Haiku → Sonnet → Opus:
-1. Tenta Haiku (mais barato) primeiro
-2. Se confiança < LLM_CASCADE_FAST_THRESHOLD, escalona para Sonnet
-3. Se confiança < LLM_CASCADE_MID_THRESHOLD, escalona para Opus (somente se configurado)
+Implementa a escada de custo Flash → Pro → Ultra (Gemini-first):
+1. Tenta Gemini Flash (mais barato) primeiro
+2. Se confiança < LLM_CASCADE_FAST_THRESHOLD, escalona para Gemini Pro / Claude Sonnet
+3. Se confiança < LLM_CASCADE_MID_THRESHOLD, escalona para o modelo mais poderoso
 
 O resultado inclui o modelo efetivamente usado e a confiança obtida,
 para rastreabilidade de custo por tenant.
@@ -17,7 +17,7 @@ import time
 from typing import Any, Dict, Optional, Tuple
 
 from app.core.config import settings
-from app.services.llm import llm_service
+from app.services.llm import LLMProvider, llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +54,9 @@ Responda SOMENTE com o JSON, sem texto extra."""
 
 class LLMCascadeRouter:
     """
-    Roteador LLM com escada de custo: Haiku → Sonnet → Opus.
+    Roteador LLM com escada de custo: Gemini Flash → Claude Sonnet → Claude Opus.
 
-    Tenta o modelo mais barato primeiro e escalona apenas se necessário.
+    Tenta o modelo mais barato (Gemini Flash) primeiro e escalona apenas se necessário.
     """
 
     def __init__(self):
@@ -112,22 +112,22 @@ class LLMCascadeRouter:
                     preferred_model, exc,
                 )
 
-        # Tier 3a — Haiku (mais barato)
+        # Tier 3a — Gemini Flash (mais barato)
         result, tokens = await self._call_model(
             message=message,
             model_name=settings.LLM_FAST_MODEL,
         )
         if result and result.get("confidence", 0) >= self._fast_threshold:
             result["model_used"] = settings.LLM_FAST_MODEL
-            result["tier"] = "haiku"
+            result["tier"] = "gemini-flash"
             result["tokens_est"] = tokens
             result["latency_ms"] = (time.time() - total_start) * 1000
             await self._record_tokens(company_id, tokens)
             return result
 
-        # Tier 3b — Sonnet (capacidade média)
+        # Tier 3b — Claude Sonnet (capacidade média)
         logger.debug(
-            "[LLMCascade] Haiku confidence=%.2f < %.2f, escalando para Sonnet",
+            "[LLMCascade] Gemini Flash confidence=%.2f < %.2f, escalando para Sonnet",
             result.get("confidence", 0) if result else 0,
             self._fast_threshold,
         )
@@ -144,7 +144,7 @@ class LLMCascadeRouter:
             await self._record_tokens(company_id, tokens)
             return result_sonnet
 
-        # Tier 3c — Opus (mais caro — somente se absolutamente necessário)
+        # Tier 3c — Claude Opus (mais caro — somente se absolutamente necessário)
         logger.debug(
             "[LLMCascade] Sonnet confidence=%.2f < %.2f, escalando para Opus",
             result_sonnet.get("confidence", 0) if result_sonnet else 0,
@@ -167,17 +167,41 @@ class LLMCascadeRouter:
         await self._record_tokens(company_id, tokens)
         return best
 
+    @staticmethod
+    def _provider_for_model(model_name: str) -> LLMProvider:
+        """Deriva o provider (LLMProvider) a partir do nome do modelo.
+
+        Mapeamento:
+          gemini-* → "gemini"
+          gpt-* / openai-* → "openai"
+          qualquer outro (claude-*) → "claude"
+        """
+        name = model_name.lower()
+        if "gemini" in name:
+            return "gemini"
+        if "gpt" in name or "openai" in name:
+            return "openai"
+        return "claude"
+
     async def _call_model(
         self, message: str, model_name: str
     ) -> Tuple[Optional[Dict[str, Any]], int]:
-        """Chama um modelo específico e retorna (resultado_parseado, tokens_estimados)."""
+        """Chama um modelo específico e retorna (resultado_parseado, tokens_estimados).
+
+        O provider é derivado do nome do modelo via _provider_for_model:
+          gemini-* → provider="gemini"
+          gpt-* / openai-* → provider="openai"
+          qualquer outro → provider="claude"
+        """
         prompt = _ROUTING_PROMPT.format(message=message[:500])
         tokens_est = len(prompt) // 4
+        provider: LLMProvider = self._provider_for_model(model_name)
 
         try:
             response = await llm_service.generate(
                 prompt=prompt,
-                provider="claude",
+                provider=provider,
+                model=model_name,
                 temperature=settings.LLM_ROUTER_TEMPERATURE,
             )
             tokens_est += len(response) // 4
@@ -193,7 +217,7 @@ class LLMCascadeRouter:
             return parsed, tokens_est
 
         except Exception as exc:
-            logger.debug("[LLMCascade] _call_model(%s) falhou: %s", model_name, exc)
+            logger.debug("[LLMCascade] _call_model(%s, provider=%s) falhou: %s", model_name, provider, exc)
             return None, tokens_est
 
     async def _record_tokens(self, company_id: Optional[str], tokens: int) -> None:

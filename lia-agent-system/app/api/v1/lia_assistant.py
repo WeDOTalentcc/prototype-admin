@@ -2797,7 +2797,7 @@ Total: {total} | Ativas/Publicadas: {active} | Pausadas: {paused} | Rascunhos: {
 - Destaque alertas de SLA quando relevante.
 - Sugira ações concretas quando identificar problemas."""
 
-        return await llm_service.generate(prompt, provider="claude")
+        return await llm_service.generate(prompt)
 
     except Exception as exc:
         logger.warning("[expanded-prompt/jobs] Erro ao buscar vagas: %s", exc)
@@ -2809,7 +2809,7 @@ Mensagem do recrutador: {message}
 
 Responda em Português Brasileiro de forma útil e profissional.
 Não solicite informações pessoais do usuário."""
-        return await llm_service.generate(prompt, provider="claude")
+        return await llm_service.generate(prompt)
 
 
 @router.post("/expanded-prompt", response_model=ExpandedPromptResponse)

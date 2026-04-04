@@ -185,7 +185,7 @@ async def health_check():
 
     try:
         llm = LLMService()
-        test_response = await llm.generate("Respond with OK", provider="claude", max_tokens=5)
+        test_response = await llm.generate("Respond with OK", max_tokens=5)
         if test_response and len(test_response.strip()) > 0:
             llm_status = "ok"
         else:
