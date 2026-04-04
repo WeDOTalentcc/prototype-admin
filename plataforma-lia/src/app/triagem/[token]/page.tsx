@@ -228,8 +228,8 @@ export default function TriagemPage() {
         }
         setPhoneCallStatus("done")
         setPhoneModalOpen(false)
-      } catch (err: any) {
-        setPhoneCallError(err.message || "Erro ao solicitar ligação")
+      } catch (err: unknown) {
+        setPhoneCallError(err instanceof Error ? err.message : "Erro ao solicitar ligação")
       } finally {
         setPhoneCallLoading(false)
       }

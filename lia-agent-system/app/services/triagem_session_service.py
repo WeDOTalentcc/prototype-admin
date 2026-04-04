@@ -1133,12 +1133,37 @@ class TriagemSessionService:
             if not call_id:
                 return {"error": "call_failed", "detail": str(call)}
 
+            from sqlalchemy import text as sql_text
+            wsi_session_id = str(uuid.uuid4())
+            job_vacancy_id = session.job_id
+            await db.execute(sql_text("""
+                INSERT INTO wsi_sessions (
+                    id, candidate_id, job_vacancy_id, screening_type, mode,
+                    status, call_id, agent_id
+                )
+                VALUES (
+                    :id, :candidate_id, :job_vacancy_id, :screening_type, :mode,
+                    :status, :call_id, :agent_id
+                )
+            """), {
+                "id": wsi_session_id,
+                "candidate_id": session.candidate_id,
+                "job_vacancy_id": job_vacancy_id,
+                "screening_type": "voice",
+                "mode": "compact",
+                "status": "in_progress",
+                "call_id": call_id,
+                "agent_id": agent_id,
+            })
+
             meta = session.metadata_json or {}
             meta["phone_call"] = {
                 "call_id": call_id,
                 "agent_id": agent_id,
+                "wsi_session_id": wsi_session_id,
                 "candidate_phone": candidate_phone,
                 "requested_at": datetime.utcnow().isoformat(),
+                "triagem_token": token,
             }
             session.metadata_json = meta
             session.status = "started" if session.status == "invited" else session.status

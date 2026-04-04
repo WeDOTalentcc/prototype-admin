@@ -444,8 +444,66 @@ IMPORTANTE:
                     logger.info(f"✅ WSI analysis complete - Overall WSI: {wsi_result.overall_wsi}/5.0")
         except Exception as e:
             logger.error(f"⚠️  WSI analysis failed for call {event.call_id}: {e}")
+
+        # Reconcile with TriagemSession if this call was initiated from the triagem phone flow
+        try:
+            await self._reconcile_triagem_session(event.call_id, result)
+        except Exception as e:
+            logger.error(f"⚠️  Triagem reconciliation failed for call {event.call_id}: {e}")
         
         return result
+
+    async def _reconcile_triagem_session(
+        self, call_id: str, call_result: Dict[str, Any]
+    ) -> None:
+        """Update TriagemSession when a phone call initiated from triagem completes."""
+        from sqlalchemy import text as sql_text
+
+        async with AsyncSessionLocal() as db:
+            from app.models.triagem import TriagemSession
+
+            from sqlalchemy import select
+            stmt = select(TriagemSession).where(
+                TriagemSession.metadata_json["phone_call"]["call_id"].as_string() == call_id
+            )
+            r = await db.execute(stmt)
+            session = r.scalar_one_or_none()
+            if not session:
+                return
+
+            logger.info(f"[Triagem] Reconciling phone call {call_id} with triagem session {session.token}")
+
+            meta = session.metadata_json or {}
+            phone_call = meta.get("phone_call", {})
+            phone_call["completed_at"] = datetime.utcnow().isoformat()
+            phone_call["duration_seconds"] = call_result.get("duration_seconds")
+
+            wsi_analysis = call_result.get("wsi_analysis")
+            if wsi_analysis:
+                phone_call["wsi_overall"] = wsi_analysis.get("overall_wsi")
+                phone_call["wsi_classification"] = wsi_analysis.get("classification")
+                session.wsi_final_score = wsi_analysis.get("overall_wsi")
+                session.recommendation = (
+                    "approved" if wsi_analysis.get("classification") in ("A", "B")
+                    else "rejected" if wsi_analysis.get("classification") in ("D", "E")
+                    else "pending"
+                )
+
+            ai_analysis = call_result.get("ai_analysis")
+            if ai_analysis and not wsi_analysis:
+                overall_score = ai_analysis.get("overall_evaluation", {}).get("overall_score", 0)
+                phone_call["ai_score"] = overall_score
+
+            meta["phone_call"] = phone_call
+            session.metadata_json = meta
+            session.status = "completed"
+            session.completed_at = datetime.utcnow()
+            await db.commit()
+
+            logger.info(
+                f"[Triagem] Phone triagem completed: token={session.token}, "
+                f"wsi={session.wsi_final_score}, recommendation={session.recommendation}"
+            )
     
     async def _save_screening_to_database(
         self,
