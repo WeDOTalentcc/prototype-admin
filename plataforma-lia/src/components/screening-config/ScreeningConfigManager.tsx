@@ -79,7 +79,7 @@ export const SCREENING_SECTIONS = [
 function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar }: ScreeningConfigManagerProps & { _externalActiveSection?: string; _hideOwnSidebar?: boolean }) {
   const core = useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, _externalActiveSection, _hideOwnSidebar })
   const {
-    activeSection, companyQuestions, configDone, currentSection, customQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited, editCalendarProvider, editChannels, editInterviewDuration, editMaxRetries, editMinScorePreset, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours, getConfigStatusInfo, isEditingScreening, isEditingScreeningConfig, jdDone, questionsDone, resetScreeningEditing, screeningConfig, selectedBankQuestions, setActiveSection, setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setIsEditingScreening, setIsEditingScreeningConfig, setShowScreeningToggleConfirm, showScreeningToggleConfirm, updateScreeningConfig,
+    activeSection, companyQuestions, configDone, currentSection, customQuestions, disabledCompanyQIds, editAutoApprovalPreset, editAvailableHours, editAvailableHoursInherited, editCalendarProvider, editChannels, editFallbackOrder, editInterviewDuration, editMaxRetries, editMinScorePreset, editPrimaryChannel, editSchedulingEnabled, editSchedulingMinScorePreset, editTimeoutHours, getConfigStatusInfo, isEditingScreening, isEditingScreeningConfig, jdDone, questionsDone, resetScreeningEditing, screeningConfig, selectedBankQuestions, setActiveSection, setEditAutoApprovalPreset, setEditAvailableHours, setEditAvailableHoursInherited, setEditCalendarProvider, setEditChannels, setEditFallbackOrder, setEditInterviewDuration, setEditMaxRetries, setEditMinScorePreset, setEditPrimaryChannel, setEditSchedulingEnabled, setEditSchedulingMinScorePreset, setEditTimeoutHours, setIsEditingScreening, setIsEditingScreeningConfig, setShowScreeningToggleConfirm, showScreeningToggleConfirm, updateScreeningConfig,
   } = core
 
 
@@ -154,6 +154,8 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                             chat_web: screeningConfig.channels?.chat_web?.enabled ?? true,
                             phone: screeningConfig.channels?.phone?.enabled ?? false
                           })
+                          setEditPrimaryChannel(screeningConfig.screening_channels?.primary_channel ?? 'chat_web')
+                          setEditFallbackOrder(screeningConfig.screening_channels?.fallback_order ?? ['whatsapp'])
                           setEditMinScorePreset(screeningConfig.settings?.min_score_preset ?? 'recommended')
                           setEditTimeoutHours(screeningConfig.settings?.response_timeout_hours ?? 48)
                           setEditMaxRetries(screeningConfig.settings?.max_retries ?? 2)
@@ -182,6 +184,16 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                               whatsapp: { enabled: editChannels.whatsapp, label: 'WhatsApp' },
                               chat_web: { enabled: editChannels.chat_web, label: 'Chat Web' },
                               phone: { enabled: editChannels.phone, label: 'Ligação' }
+                            },
+                            screening_channels: {
+                              primary_channel: editPrimaryChannel,
+                              fallback_order: editFallbackOrder
+                                .filter(k => k !== editPrimaryChannel)
+                                .filter(k => {
+                                  if (k === 'phone') return editChannels.phone
+                                  if (k === 'voip_web') return false
+                                  return true
+                                }),
                             },
                             settings: {
                               min_score: presetToScore(editMinScorePreset),

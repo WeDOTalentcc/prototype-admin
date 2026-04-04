@@ -2,6 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
+export type ScreeningChannelKey = 'chat_web' | 'phone' | 'whatsapp' | 'voip_web'
+
+export interface ScreeningChannelConfig {
+  primary_channel: ScreeningChannelKey
+  fallback_order: ScreeningChannelKey[]
+}
+
 export interface ScreeningConfig {
   status?: {
     enabled: boolean
@@ -16,6 +23,7 @@ export interface ScreeningConfig {
     chat_web?: { enabled: boolean; label?: string }
     phone?: { enabled: boolean; label?: string }
   }
+  screening_channels?: ScreeningChannelConfig
   settings?: {
     min_score?: number
     min_score_preset?: 'rigorous' | 'recommended' | 'flexible'
@@ -58,6 +66,10 @@ const DEFAULT_CONFIG: ScreeningConfig = {
     whatsapp: { enabled: true, label: 'WhatsApp' },
     chat_web: { enabled: true, label: 'Chat Web' },
     phone: { enabled: false, label: 'Ligação' }
+  },
+  screening_channels: {
+    primary_channel: 'chat_web',
+    fallback_order: ['whatsapp']
   },
   settings: {
     min_score: 3.8,
@@ -162,6 +174,9 @@ export function useScreeningConfig(jobId: string | number | null): UseScreeningC
           chat_web: { ...DEFAULT_CONFIG.channels?.chat_web, ...data.channels?.chat_web },
           phone: { ...DEFAULT_CONFIG.channels?.phone, ...data.channels?.phone },
         },
+        screening_channels: data.screening_channels
+          ? { ...DEFAULT_CONFIG.screening_channels, ...data.screening_channels }
+          : DEFAULT_CONFIG.screening_channels,
         settings: mergedSettings,
         metrics: { ...DEFAULT_CONFIG.metrics, ...data.metrics },
         scheduling: mergedScheduling,

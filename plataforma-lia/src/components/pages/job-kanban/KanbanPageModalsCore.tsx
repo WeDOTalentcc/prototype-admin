@@ -222,6 +222,13 @@ export function KanbanPageModalsCore(state: KanbanPageCoreState) {
                 }))
               ]
         }
+        screeningChannels={
+          currentJob.screening_config &&
+          typeof currentJob.screening_config === 'object' &&
+          (currentJob.screening_config as Record<string, unknown>).screening_channels
+            ? (currentJob.screening_config as Record<string, unknown>).screening_channels as import('@/hooks/useScreeningConfig').ScreeningChannelConfig
+            : undefined
+        }
       />
 
       <AddCandidatesToVacancyModal

@@ -17,8 +17,19 @@ import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { MessageComposer } from "@/components/communication"
 import { sanitizeHtml } from "@/lib/sanitize"
 import { toast } from "sonner"
+import type { ScreeningChannelConfig, ScreeningChannelKey } from "@/hooks/useScreeningConfig"
 
 type ContactChannel = 'email' | 'whatsapp' | 'telefone' | 'both'
+
+function screeningChannelToContact(key: ScreeningChannelKey): ContactChannel {
+  switch (key) {
+    case 'chat_web': return 'email'
+    case 'whatsapp': return 'whatsapp'
+    case 'phone':
+    case 'voip_web': return 'telefone'
+    default: return 'email'
+  }
+}
 
 interface Candidate {
   id: string
@@ -62,6 +73,7 @@ interface WSITriagemInviteModalProps {
   screeningQuestions?: ScreeningQuestion[]
   onSend?: (data: Record<string, unknown>) => void
   companyId?: string
+  screeningChannels?: ScreeningChannelConfig
 }
 
 const DEFAULT_SCREENING_QUESTIONS: ScreeningQuestion[] = [
@@ -80,9 +92,13 @@ export function WSITriagemInviteModal({
   jobId,
   screeningQuestions = DEFAULT_SCREENING_QUESTIONS,
   onSend,
-  companyId
+  companyId,
+  screeningChannels,
 }: WSITriagemInviteModalProps) {
-  const [channel, setChannel] = useState<ContactChannel>('email')
+  const defaultChannel: ContactChannel = screeningChannels?.primary_channel
+    ? screeningChannelToContact(screeningChannels.primary_channel)
+    : 'email'
+  const [channel, setChannel] = useState<ContactChannel>(defaultChannel)
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
   const [isSending, setIsSending] = useState(false)
@@ -165,7 +181,10 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
 
   useEffect(() => {
     if (!isOpen) {
-      setChannel('email')
+      const resetChannel: ContactChannel = screeningChannels?.primary_channel
+        ? screeningChannelToContact(screeningChannels.primary_channel)
+        : 'email'
+      setChannel(resetChannel)
       setMessage('')
       setSubject('')
       setShowQuestions(true)
@@ -173,7 +192,7 @@ Perfeito! Antes de começarmos, preciso informar que esta conversa será gravada
       setSelectedVacancyId(null)
       setSelectedStage('triagem')
     }
-  }, [isOpen])
+  }, [isOpen, screeningChannels])
 
   const handleSend = async () => {
     if (!candidate) return

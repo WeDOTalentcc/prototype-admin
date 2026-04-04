@@ -4,20 +4,30 @@ import React from "react"
 import { cn } from "@/lib/utils"
 import { SCREENING_STATUS_LABELS, type ScreeningStatus } from "@/types/screening"
 import { Card, CardContent } from "@/components/ui/card"
-import { approvalPresetToLimit } from '@/hooks/useScreeningConfig'
+import { approvalPresetToLimit, type ScreeningChannelKey } from '@/hooks/useScreeningConfig'
 import {
   AlertCircle, AlertTriangle, Calendar, CalendarCheck,
-  CheckCircle, Clock, Globe, MessageSquare, Pause, Phone, Play, ShieldAlert
+  CheckCircle, Clock, Globe, MessageSquare, Pause, Phone, Play, ShieldAlert,
+  Wifi, ArrowRight, Star, GripVertical
 } from "lucide-react"
 import type { useScreeningConfigManagerCore } from "./hooks/useScreeningConfigManagerCore"
 
 type Props = ReturnType<typeof useScreeningConfigManagerCore>
+
+const CHANNEL_DEFS: { key: ScreeningChannelKey; label: string; icon: React.ElementType; desc: string; comingSoon?: boolean }[] = [
+  { key: 'chat_web', label: 'Chat Web', icon: Globe, desc: 'Chat via portal de carreiras' },
+  { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, desc: 'Mensagens via WhatsApp Business' },
+  { key: 'phone', label: 'Ligação Telefônica', icon: Phone, desc: 'Chamada de voz via Twilio' },
+  { key: 'voip_web', label: 'VoIP Web', icon: Wifi, desc: 'Chamada no navegador (em breve)', comingSoon: true },
+]
 
 export function SCMSectionConfiguracoes({
   job, onJobUpdate,
   screeningConfig,
   isEditingScreeningConfig,
   editChannels, setEditChannels,
+  editPrimaryChannel, setEditPrimaryChannel,
+  editFallbackOrder, setEditFallbackOrder,
   editMinScorePreset, setEditMinScorePreset,
   editTimeoutHours, setEditTimeoutHours,
   editMaxRetries, setEditMaxRetries,
@@ -77,9 +87,53 @@ export function SCMSectionConfiguracoes({
               </div>
             </div>
 
+            {/* Canal de Triagem preview */}
+            <div>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canal de Triagem</h3>
+              {(() => {
+                const primaryKey = screeningConfig?.screening_channels?.primary_channel ?? 'chat_web'
+                const fallbackKeys = screeningConfig?.screening_channels?.fallback_order ?? ['whatsapp']
+                const primaryDef = CHANNEL_DEFS.find(c => c.key === primaryKey)
+                const PrimaryIcon = primaryDef?.icon ?? Globe
+                return (
+                  <div className="space-y-2">
+                    <div className="border border-lia-border-subtle rounded-md p-2.5 flex items-center gap-2.5 bg-lia-bg-secondary">
+                      <Star className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
+                      <PrimaryIcon className="w-3.5 h-3.5 text-lia-text-secondary flex-shrink-0" />
+                      <div className="flex-1">
+                        <div className="text-xs font-semibold text-lia-text-primary">{primaryDef?.label ?? primaryKey}</div>
+                        <div className="text-micro text-lia-text-tertiary">Canal principal</div>
+                      </div>
+                      {primaryDef?.comingSoon && (
+                        <span className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-disabled rounded-md">Em breve</span>
+                      )}
+                    </div>
+                    {fallbackKeys.length > 0 && (
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-micro text-lia-text-disabled">Fallback:</span>
+                        {fallbackKeys.map((fk, i) => {
+                          const fDef = CHANNEL_DEFS.find(c => c.key === fk)
+                          const FIcon = fDef?.icon ?? Globe
+                          return (
+                            <div key={fk} className="flex items-center gap-1">
+                              {i > 0 && <ArrowRight className="w-2.5 h-2.5 text-lia-text-disabled" />}
+                              <div className="flex items-center gap-1 px-1.5 py-0.5 bg-lia-bg-tertiary rounded-md border border-lia-border-subtle">
+                                <FIcon className="w-2.5 h-2.5 text-lia-text-tertiary" />
+                                <span className="text-micro text-lia-text-secondary">{fDef?.label ?? fk}</span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+            </div>
+
             {/* Channels preview */}
             <div>
-              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais Habilitados</h3>
               <div className="border border-lia-border-subtle rounded-md divide-y divide-lia-border-subtle">
                 {[
                   { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, enabled: screeningConfig?.channels?.whatsapp?.enabled ?? true },
@@ -334,9 +388,110 @@ export function SCMSectionConfiguracoes({
               </div>
             </div>
 
+            {/* Canal de Triagem editing */}
+            <div>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-1">Canal de Triagem</h3>
+              <p className="text-micro text-lia-text-disabled px-1 mb-3">Escolha o canal principal e a ordem de fallback caso o candidato não responda</p>
+              <div className="space-y-2">
+                {CHANNEL_DEFS.map((ch) => {
+                  const ChIcon = ch.icon
+                  const isPrimary = editPrimaryChannel === ch.key
+                  const fallbackIdx = editFallbackOrder.indexOf(ch.key)
+                  const isInFallback = fallbackIdx !== -1
+                  const isTwilioChannel = ch.key === 'phone'
+
+                  const isUnavailable = ch.comingSoon || (isTwilioChannel && !editChannels.phone)
+
+                  const handleSelectPrimary = () => {
+                    if (isUnavailable) return
+                    setEditPrimaryChannel(ch.key)
+                    setEditFallbackOrder(prev => prev.filter(k => k !== ch.key))
+                  }
+
+                  const handleToggleFallback = () => {
+                    if (isPrimary || isUnavailable) return
+                    if (isInFallback) {
+                      setEditFallbackOrder(prev => prev.filter(k => k !== ch.key))
+                    } else {
+                      setEditFallbackOrder(prev => [...prev, ch.key])
+                    }
+                  }
+
+                  return (
+                    <div
+                      key={ch.key}
+                      className={`border rounded-md p-2.5 transition-colors motion-reduce:transition-none ${
+                        isPrimary
+                          ? 'border-lia-btn-primary-bg bg-lia-bg-secondary ring-1 ring-lia-btn-primary-bg/30'
+                          : 'border-lia-border-subtle bg-lia-bg-primary'
+                      } ${isUnavailable ? 'opacity-60' : ''}`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <ChIcon className={`w-4 h-4 flex-shrink-0 ${isPrimary ? 'text-lia-text-secondary' : 'text-lia-text-tertiary'}`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-xs font-medium ${isPrimary ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`}>
+                              {ch.label}
+                            </span>
+                            {ch.comingSoon && (
+                              <span className="text-micro px-1 py-0 bg-lia-bg-tertiary text-lia-text-disabled rounded-md">Em breve</span>
+                            )}
+                            {isTwilioChannel && !editChannels.phone && !ch.comingSoon && (
+                              <span className="text-micro px-1 py-0 bg-status-warning/10 text-status-warning rounded-md border border-status-warning/20">Não disponível — config. pendente</span>
+                            )}
+                          </div>
+                          <div className="text-micro text-lia-text-disabled">{ch.desc}</div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {!isPrimary && !isUnavailable && (
+                            <button
+                              onClick={handleToggleFallback}
+                              className={`text-micro px-2 py-1 rounded-md border transition-colors motion-reduce:transition-none ${
+                                isInFallback
+                                  ? 'bg-lia-bg-tertiary border-lia-border-default text-lia-text-secondary'
+                                  : 'border-lia-border-subtle text-lia-text-disabled hover:border-lia-border-default'
+                              }`}
+                              title={isInFallback ? `Fallback ${fallbackIdx + 1} — clique para remover` : 'Adicionar como fallback'}
+                            >
+                              {isInFallback ? `Fallback ${fallbackIdx + 1}` : '+ Fallback'}
+                            </button>
+                          )}
+                          <button
+                            onClick={handleSelectPrimary}
+                            disabled={isUnavailable}
+                            className={`text-micro px-2 py-1 rounded-md border transition-colors motion-reduce:transition-none ${
+                              isPrimary
+                                ? 'bg-lia-btn-primary-bg border-lia-btn-primary-bg text-lia-btn-primary-text'
+                                : isUnavailable
+                                ? 'border-lia-border-subtle text-lia-text-disabled cursor-not-allowed'
+                                : 'border-lia-border-subtle text-lia-text-secondary hover:border-lia-border-default hover:text-lia-text-primary'
+                            }`}
+                          >
+                            {isPrimary ? '★ Principal' : 'Definir principal'}
+                          </button>
+                        </div>
+                      </div>
+                      {isInFallback && !isPrimary && editFallbackOrder.length > 1 && (
+                        <div className="mt-1.5 flex items-center gap-1">
+                          <span className="text-micro text-lia-text-disabled">Posição no fallback:</span>
+                          <div className="flex items-center gap-0.5">
+                            {editFallbackOrder.map((fk, i) => (
+                              <span key={fk} className={`text-micro px-1 py-0 rounded ${fk === ch.key ? 'bg-lia-border-default text-white' : 'text-lia-text-disabled'}`}>
+                                {i + 1}°
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* Channels editing */}
             <div>
-              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais</h3>
+              <h3 className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wider px-1 font-['Open_Sans',sans-serif] mb-3">Canais Habilitados</h3>
               <div className="border border-lia-border-subtle rounded-md divide-y divide-lia-border-subtle">
                 {([
                   { key: 'whatsapp' as const, label: 'WhatsApp', icon: MessageSquare },

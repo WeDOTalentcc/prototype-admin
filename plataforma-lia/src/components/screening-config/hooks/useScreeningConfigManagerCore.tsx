@@ -9,7 +9,7 @@ import {
   Layers, Info, Brain, Loader2, X, Archive, Gauge, GraduationCap, Target,
   Scale, ClipboardList, FileText, Edit, Calendar, Play, Pause, AlertCircle
 } from 'lucide-react'
-import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit } from '@/hooks/useScreeningConfig'
+import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit, type ScreeningChannelKey } from '@/hooks/useScreeningConfig'
 import { CompanyBankQuestions } from '../CompanyBankQuestions'
 import { CustomQuestions } from '../CustomQuestions'
 import type { CustomQuestion } from '../CustomQuestions'
@@ -166,6 +166,8 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   const [editChannels, setEditChannels] = useState({
     whatsapp: true, chat_web: true, phone: false
   })
+  const [editPrimaryChannel, setEditPrimaryChannel] = useState<ScreeningChannelKey>('chat_web')
+  const [editFallbackOrder, setEditFallbackOrder] = useState<ScreeningChannelKey[]>(['whatsapp'])
   const [editMinScorePreset, setEditMinScorePreset] = useState<'rigorous' | 'recommended' | 'flexible'>('recommended')
   const [editTimeoutHours, setEditTimeoutHours] = useState(48)
   const [editMaxRetries, setEditMaxRetries] = useState(2)
@@ -547,7 +549,16 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   const currentSection = SCREENING_SECTIONS.find(s => s.id === activeSection) || SCREENING_SECTIONS[0]
   const SectionIcon = currentSection.icon
 
+  const CHANNEL_LABELS: Record<ScreeningChannelKey, string> = {
+    chat_web: 'Chat Web',
+    whatsapp: 'WhatsApp',
+    phone: 'Ligação',
+    voip_web: 'VoIP Web',
+  }
+
   const getConfigStatusInfo = () => {
+    const primary = screeningConfig?.screening_channels?.primary_channel
+    if (primary) return `Canal: ${CHANNEL_LABELS[primary]}`
     const enabledChannels: string[] = []
     if (screeningConfig?.channels?.whatsapp?.enabled ?? true) enabledChannels.push('WhatsApp')
     if (screeningConfig?.channels?.chat_web?.enabled ?? true) enabledChannels.push('Chat Web')
@@ -576,9 +587,11 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     editAvailableHoursInherited,
     editCalendarProvider,
     editChannels,
+    editFallbackOrder,
     editInterviewDuration,
     editMaxRetries,
     editMinScorePreset,
+    editPrimaryChannel,
     editSchedulingEnabled,
     editSchedulingMinScorePreset,
     editTimeoutHours,
@@ -608,9 +621,11 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setEditAvailableHoursInherited,
     setEditCalendarProvider,
     setEditChannels,
+    setEditFallbackOrder,
     setEditInterviewDuration,
     setEditMaxRetries,
     setEditMinScorePreset,
+    setEditPrimaryChannel,
     setEditSchedulingEnabled,
     setEditSchedulingMinScorePreset,
     setEditTimeoutHours,
