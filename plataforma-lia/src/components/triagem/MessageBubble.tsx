@@ -137,6 +137,9 @@ const MessageBubble = memo(function MessageBubble({
     if (!autoPlayAudio || !isLia) return
     if (autoPlayTriggeredRef.current) return
 
+    const msgAge = Date.now() - new Date(message.timestamp).getTime()
+    if (msgAge > 15000) return
+
     if (effectiveAudioUrl) {
       autoPlayTriggeredRef.current = true
       playAudioFromUrl(effectiveAudioUrl)
@@ -147,7 +150,7 @@ const MessageBubble = memo(function MessageBubble({
       autoPlayTriggeredRef.current = true
       fetchAndPlayTts()
     }
-  }, [autoPlayAudio, effectiveAudioUrl, isLia, ttsToken, isTtsLoading, fetchAndPlayTts, playAudioFromUrl])
+  }, [autoPlayAudio, effectiveAudioUrl, isLia, ttsToken, isTtsLoading, fetchAndPlayTts, playAudioFromUrl, message.timestamp])
 
   const handleTtsPlay = useCallback(async () => {
     if (isTtsLoading) return
