@@ -159,6 +159,10 @@ class LLMService:
         **kwargs
     ) -> str:
         """
+        # E6: PII stripping (auto-injected)
+        if "prompt" in dir():
+            prompt = strip_pii_for_llm_prompt(prompt)
+
         Generate text using specified LLM.
         
         Args:
@@ -484,6 +488,9 @@ class LLMService:
         Returns:
             Final text response after tool execution
         """
+        # E6: PII stripping
+        if isinstance(prompt, str): prompt = strip_pii_for_llm_prompt(prompt)
+
         current_messages = list(messages)
         loop_count = 0
         
@@ -786,6 +793,9 @@ class LLMService:
         Raises:
             KeyError: If template not found in PromptLibrary
         """
+        # E6: PII stripping
+        if isinstance(prompt, str): prompt = strip_pii_for_llm_prompt(prompt)
+
         from app.prompts.templates import PromptLibrary
         
         template = PromptLibrary.get(template_name)
@@ -827,6 +837,9 @@ class LLMService:
         Returns:
             Validated Pydantic model instance
         """
+        # E6: PII stripping
+        if isinstance(prompt, str): prompt = strip_pii_for_llm_prompt(prompt)
+
         from app.prompts.templates import PromptLibrary
         
         template = PromptLibrary.get(template_name)
@@ -889,6 +902,9 @@ class LLMService:
           - Sonnet aceito se confidence >= LLM_CASCADE_MID_THRESHOLD  (0.70)
           - Opus   aceito se confidence >= LLM_CASCADE_FALLBACK_THRESHOLD (0.60)
         """
+        # E6: PII stripping
+        if isinstance(prompt, str): prompt = strip_pii_for_llm_prompt(prompt)
+
         import json as _json
         from langchain_core.output_parsers import JsonOutputParser
 
@@ -954,6 +970,46 @@ class LLMService:
             requires_human=True,
             reason="all_models_low_confidence",
         )
+
+
+
+    async def safe_invoke(self, prompt: str, provider: str = "claude", **kwargs) -> str:
+        """Wrapper for direct .claude.ainvoke() calls — adds PII stripping + audit.
+
+        Use this instead of llm_service.claude.ainvoke(prompt) directly.
+        Gradually migrate direct .ainvoke() calls to this method.
+        """
+        # E6: PII stripping
+        prompt = strip_pii_for_llm_prompt(prompt)
+
+        # E7: Audit
+        _cid = get_current_llm_tenant()
+        _start = _time.time()
+        logger.info(
+            "[LLMService] safe_invoke tenant=%s provider=%s prompt_len=%d",
+            _cid or "global", provider, len(prompt)
+        )
+
+        if provider == "claude":
+            response = await self.claude.ainvoke(prompt, **kwargs)
+        elif provider == "openai":
+            response = await self.openai.ainvoke(prompt, **kwargs)
+        else:
+            return await self.generate_with_gemini(prompt)
+
+        _latency = (_time.time() - _start) * 1000
+        content = response.content
+        if isinstance(content, list):
+            text_parts = []
+            for block in content:
+                if isinstance(block, dict) and block.get("type") == "text":
+                    text_parts.append(str(block.get("text", "")))
+                elif isinstance(block, str):
+                    text_parts.append(block)
+                elif hasattr(block, "text"):
+                    text_parts.append(str(getattr(block, "text", "")))
+            return "".join(text_parts)
+        return str(content) if content else ""
 
 
 llm_service = LLMService()

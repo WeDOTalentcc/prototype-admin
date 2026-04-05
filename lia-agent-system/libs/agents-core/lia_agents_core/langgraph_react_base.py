@@ -292,23 +292,95 @@ class LangGraphReActBase(LangGraphBase):
         return []
 
     def _get_model(self) -> Any:
-        """Retorna o LLM LangChain com streaming=True para suporte a StreamingCallback."""
+        """Retorna o LLM LangChain — tenant-aware via TenantProviderRegistry.
+
+        Choose Your AI: If tenant has a custom provider configured,
+        uses that instead of the global default.
+        """
         try:
-            from langchain_anthropic import ChatAnthropic
             from lia_config.config import settings
             import os
-            kwargs = dict(
-                model=settings.LLM_PRIMARY_MODEL,
-                temperature=settings.LLM_AGENT_TEMPERATURE,
-                api_key=settings.AI_INTEGRATIONS_ANTHROPIC_API_KEY or settings.ANTHROPIC_API_KEY,
-                streaming=True,
-            )
+
+            # Check tenant config first
+            company_id = ""
+            try:
+                from app.shared.tenant_llm_context import get_current_llm_tenant, get_tenant_llm_config
+                company_id = get_current_llm_tenant()
+            except ImportError:
+                pass
+
+            # Default to Claude (LangChain agents need ChatModel interface)
+            provider = "claude"
+            model_name = settings.LLM_PRIMARY_MODEL
+            api_key = settings.AI_INTEGRATIONS_ANTHROPIC_API_KEY or settings.ANTHROPIC_API_KEY
             base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL") or getattr(settings, "AI_INTEGRATIONS_ANTHROPIC_BASE_URL", None)
-            if base_url:
-                kwargs["base_url"] = base_url
-            return ChatAnthropic(**kwargs)
-        except ImportError:
-            raise RuntimeError("langchain-anthropic não instalado")
+
+            # Tenant override (if configured)
+            if company_id:
+                import asyncio
+                try:
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # Can't await in sync context, use cached config
+                        from app.shared.tenant_llm_context import _tenant_configs
+                        config = _tenant_configs.get(company_id)
+                    else:
+                        config = loop.run_until_complete(get_tenant_llm_config(company_id))
+
+                    if config:
+                        routing = config.get("routing", {})
+                        tenant_provider = routing.get("screening") or config.get("primary_provider")
+                        providers = config.get("providers", {})
+                        if tenant_provider and tenant_provider in providers:
+                            prov_config = providers[tenant_provider]
+                            if prov_config.get("api_key"):
+                                api_key = prov_config["api_key"]
+                            if prov_config.get("model"):
+                                model_name = prov_config["model"]
+                            provider = tenant_provider
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).debug("[_get_model] Tenant config error: %s", e)
+
+            # Build the appropriate ChatModel
+            if provider == "claude":
+                from langchain_anthropic import ChatAnthropic
+                kwargs = dict(
+                    model=model_name,
+                    temperature=settings.LLM_AGENT_TEMPERATURE,
+                    api_key=api_key,
+                    streaming=True,
+                )
+                if base_url:
+                    kwargs["base_url"] = base_url
+                return ChatAnthropic(**kwargs)
+            elif provider == "openai":
+                from langchain_openai import ChatOpenAI
+                return ChatOpenAI(
+                    model=model_name,
+                    temperature=settings.LLM_AGENT_TEMPERATURE,
+                    api_key=api_key,
+                    streaming=True,
+                )
+            elif provider == "gemini":
+                from langchain_google_genai import ChatGoogleGenerativeAI
+                return ChatGoogleGenerativeAI(
+                    model=model_name,
+                    temperature=settings.LLM_AGENT_TEMPERATURE,
+                    google_api_key=api_key,
+                    streaming=True,
+                )
+            else:
+                # Fallback to Claude
+                from langchain_anthropic import ChatAnthropic
+                return ChatAnthropic(
+                    model=model_name,
+                    temperature=settings.LLM_AGENT_TEMPERATURE,
+                    api_key=api_key,
+                    streaming=True,
+                )
+        except ImportError as e:
+            raise RuntimeError(f"LLM provider not installed: {e}")
 
     def _get_system_prompt(self, input: AgentInput) -> str:
         """Retorna system prompt. Subclasses devem sobrescrever."""

@@ -50,10 +50,23 @@ class GeminiVoiceService:
         "video/quicktime",  # MOV
     ]
     
-    def __init__(self):
-        """Initialize Gemini client with Replit AI Integrations."""
+    def __init__(self, company_id: str = ""):
+        """Initialize Gemini client — tenant-aware (Choose Your AI)."""
         api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
         base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
+
+        # Check tenant config for custom Gemini key
+        if company_id:
+            try:
+                from app.shared.tenant_llm_context import _tenant_configs
+                config = _tenant_configs.get(company_id)
+                if config and "gemini" in config.get("providers", {}):
+                    tenant_key = config["providers"]["gemini"].get("api_key")
+                    if tenant_key:
+                        api_key = tenant_key
+                        base_url = None  # Direct API with tenant key
+            except ImportError:
+                pass
         
         if not api_key or not base_url:
             raise ValueError(

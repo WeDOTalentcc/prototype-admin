@@ -477,8 +477,7 @@ Responda em JSON:
 }}"""
 
     try:
-        response = await llm_service.claude.ainvoke(prompt)
-        content = response.content if isinstance(response.content, str) else str(response.content)
+        content = await llm_service.safe_invoke(prompt, provider="claude")
         
         # Parse JSON
         if "```json" in content:
@@ -920,8 +919,7 @@ Responda em JSON:
     "confidence": 0.85
 }}"""
 
-                response = await llm_service.claude.ainvoke(analysis_prompt)
-                content = response.content if isinstance(response.content, str) else str(response.content)
+                content = await llm_service.safe_invoke(analysis_prompt, provider="claude")
                 
                 import json
                 if "```json" in content:

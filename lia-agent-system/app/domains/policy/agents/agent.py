@@ -208,9 +208,7 @@ class PolicySetupAgent:
                 default=json.dumps(question["default"]),
             )
 
-            response = await self.llm.claude.ainvoke([
-                {"role": "user", "content": prompt}
-            ])
+            response = type("R", (), {"content": await self.llm.safe_invoke(prompt, provider="claude")})()
 
             content = response.content if hasattr(response, 'content') else str(response)
             content = content.strip()
@@ -306,9 +304,7 @@ class PolicySetupAgent:
                 transition_context="",
                 next_question=next_q["question"],
             )
-            response = await self.llm.claude.ainvoke([
-                {"role": "user", "content": prompt}
-            ])
+            response = type("R", (), {"content": await self.llm.safe_invoke(prompt, provider="claude")})()
             return response.content if hasattr(response, 'content') else str(response)
         except Exception as e:
             logger.warning(f"LLM reply generation failed: {e}")
@@ -336,9 +332,7 @@ class PolicySetupAgent:
                 transition_context=f"FINAL DO BLOCO. Resumo do que foi salvo:\n{summary}\n\nProximo bloco: {next_block_name}. Pergunte se quer continuar.",
                 next_question="",
             )
-            response = await self.llm.claude.ainvoke([
-                {"role": "user", "content": prompt}
-            ])
+            response = type("R", (), {"content": await self.llm.safe_invoke(prompt, provider="claude")})()
             return response.content if hasattr(response, 'content') else str(response)
         except Exception as e:
             logger.warning(f"LLM block end reply failed: {e}")

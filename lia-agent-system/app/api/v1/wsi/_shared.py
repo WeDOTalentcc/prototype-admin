@@ -10,6 +10,7 @@ import uuid
 import asyncio
 import json
 import logging
+from app.shared.pii_masking import strip_pii_for_llm_prompt
 import os
 
 from app.core.database import get_db
@@ -254,16 +255,39 @@ def _jd_get_band(score: int):
 # ---------------------------------------------------------------------------
 
 async def get_anthropic_client():
-    """Get Anthropic client for AI analysis."""
+    """Get Anthropic client for AI analysis.
+
+    Choose Your AI: Uses tenant API key if configured.
+    PII stripping applied on all prompts.
+    """
     try:
         from anthropic import Anthropic
-        if not AI_INTEGRATIONS_ANTHROPIC_API_KEY or not AI_INTEGRATIONS_ANTHROPIC_BASE_URL:
+
+        # Check tenant config first
+        api_key = AI_INTEGRATIONS_ANTHROPIC_API_KEY
+        base_url = AI_INTEGRATIONS_ANTHROPIC_BASE_URL
+
+        try:
+            from app.shared.tenant_llm_context import get_current_llm_tenant, get_tenant_llm_config
+            cid = get_current_llm_tenant()
+            if cid:
+                from app.shared.tenant_llm_context import _tenant_configs
+                config = _tenant_configs.get(cid)
+                if config and "claude" in config.get("providers", {}):
+                    tenant_key = config["providers"]["claude"].get("api_key")
+                    if tenant_key:
+                        api_key = tenant_key
+                        base_url = None  # Use direct API with tenant key
+        except ImportError:
+            pass
+
+        if not api_key:
             logger.warning("Anthropic API not configured, using fallback responses")
             return None
-        return Anthropic(
-            api_key=AI_INTEGRATIONS_ANTHROPIC_API_KEY,
-            base_url=AI_INTEGRATIONS_ANTHROPIC_BASE_URL
-        )
+        kwargs = {"api_key": api_key}
+        if base_url:
+            kwargs["base_url"] = base_url
+        return Anthropic(**kwargs)
     except Exception as e:
         logger.error(f"Failed to create Anthropic client: {e}")
         return None

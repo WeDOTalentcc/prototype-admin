@@ -315,10 +315,7 @@ Responda em JSON:
   "confidence_score": 0.95
 }}"""
 
-        response = await self.llm.claude.ainvoke(prompt)
-        
-        # Parse JSON response
-        content_str = response.content if isinstance(response.content, str) else str(response.content)
+        content_str = await self.llm.safe_invoke(prompt, provider="claude")
         data = json.loads(content_str)
         
         # Converter para Competency objects
@@ -1836,7 +1833,8 @@ RETORNE APENAS JSON:
 }}"""
 
         try:
-            response = await self.llm.claude.ainvoke(prompt)
+            _response = await self.llm.safe_invoke(prompt, provider="claude")
+            response = type("R", (), {"content": _response})()
             data = safe_json_parse(response.content, fallback={
                 "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/5.0). Análise detalhada não disponível.",
                 "technical_analysis": {
@@ -1987,7 +1985,8 @@ RETORNE APENAS JSON:
         }
 
         try:
-            response = await self.llm.claude.ainvoke(prompt)
+            _response = await self.llm.safe_invoke(prompt, provider="claude")
+            response = type("R", (), {"content": _response})()
             data = safe_json_parse(response.content, fallback=_fallback)
         except Exception as e:
             logger.error(f"Failed to generate feedback for candidate {wsi_result.candidate_id}: {e}")

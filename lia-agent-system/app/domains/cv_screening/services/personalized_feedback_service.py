@@ -934,7 +934,8 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         """Generate a shorter WhatsApp-appropriate version of the feedback."""
         try:
             prompt = self.WHATSAPP_PROMPT_TEMPLATE.format(email_body=email_body)
-            response = await self.llm.claude.ainvoke(prompt)
+            _response = await self.llm.safe_invoke(prompt, provider="claude")
+            response = type("R", (), {"content": _response})()
             content = response.content if isinstance(response.content, str) else str(response.content)
             
             if len(content) > 500:

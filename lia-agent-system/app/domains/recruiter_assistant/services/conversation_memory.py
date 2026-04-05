@@ -600,8 +600,7 @@ Conversa:
 
 Resumo (máximo 200 palavras):"""
 
-            response = await self.llm_service.claude.ainvoke(prompt)
-            return response.content if hasattr(response, 'content') else str(response)
+            return await self.llm_service.safe_invoke(prompt, provider="claude")
             
         except Exception as e:
             logger.error(f"LLM summary generation failed: {e}")
@@ -709,8 +708,7 @@ Conversa:
 
 Resumo conciso:"""
 
-            response = await self.llm_service.claude.ainvoke(prompt)
-            return response.content if hasattr(response, 'content') else str(response)
+            return await self.llm_service.safe_invoke(prompt, provider="claude")
             
         except Exception as e:
             logger.error(f"LLM summary generation from dicts failed: {e}")
