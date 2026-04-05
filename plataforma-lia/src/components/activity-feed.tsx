@@ -43,9 +43,10 @@ interface ActivityFeedProps {
   candidateId?: string
   limit?: number
   className?: string
+  actorFilter?: 'lia' | 'recrutador'
 }
 
-export function ActivityFeed({ candidateId, limit = 20, className = "" }: ActivityFeedProps) {
+export function ActivityFeed({ candidateId, limit = 20, className = "", actorFilter }: ActivityFeedProps) {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -72,8 +73,21 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
         }
 
         const data = await response.json()
-        setActivities(data.activities || [])
-        setTotal(data.total || 0)
+        let filtered = data.activities || []
+        if (actorFilter === 'lia') {
+          filtered = filtered.filter((a: Activity) =>
+            a.actor?.type === 'ai' || a.actor?.type === 'system' ||
+            (a.actor?.name || '').toLowerCase().includes('lia')
+          )
+        } else if (actorFilter === 'recrutador') {
+          filtered = filtered.filter((a: Activity) =>
+            a.actor?.type === 'user' || a.actor?.type === 'recruiter' ||
+            (a.actor?.type !== 'ai' && a.actor?.type !== 'system' &&
+             !(a.actor?.name || '').toLowerCase().includes('lia'))
+          )
+        }
+        setActivities(filtered)
+        setTotal(filtered.length)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro desconhecido')
       } finally {
@@ -82,7 +96,7 @@ export function ActivityFeed({ candidateId, limit = 20, className = "" }: Activi
     }
 
     fetchActivities()
-  }, [candidateId, limit])
+  }, [candidateId, limit, actorFilter])
 
   const getActivityIcon = (type: string) => {
     switch (type) {

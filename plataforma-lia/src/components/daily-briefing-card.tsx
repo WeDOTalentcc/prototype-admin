@@ -110,6 +110,7 @@ export function DailyBriefingCard({
   const [expanded, setExpanded] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
 
   const displayName = userName || user?.name?.split(' ')[0] || "Recrutador"
 

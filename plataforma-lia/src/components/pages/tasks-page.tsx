@@ -35,6 +35,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
   } = actions
 
   const [subtitleText, setSubtitleText] = useState<string | null>(null)
+  const [activityActorFilter, setActivityActorFilter] = useState<'todos' | 'lia' | 'recrutador'>('todos')
 
   return (
     <>
@@ -157,18 +158,38 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
 
                 <Card className="border-lia-border-subtle dark:border-lia-border-subtle">
                   <CardHeader className="pb-2">
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-3.5 h-3.5 text-lia-text-primary" />
-                      <CardTitle className={`${textStyles.label} font-semibold text-lia-text-primary`}>
-                        Atividades Recentes
-                      </CardTitle>
-                      <Badge variant="outline" className="text-xs font-inter">
-                        LIA + Recrutador
-                      </Badge>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-3.5 h-3.5 text-lia-text-primary" />
+                        <CardTitle className={`${textStyles.label} font-semibold text-lia-text-primary`}>
+                          Atividades Recentes
+                        </CardTitle>
+                      </div>
+                      <div className="flex gap-1">
+                        {([
+                          { key: 'todos', label: 'Todos' },
+                          { key: 'lia', label: 'LIA' },
+                          { key: 'recrutador', label: 'Recrutador' },
+                        ] as const).map(({ key, label }) => (
+                          <Button
+                            key={key}
+                            variant={activityActorFilter === key ? 'default' : 'ghost'}
+                            size="sm"
+                            className="h-6 px-2 text-xs"
+                            onClick={() => setActivityActorFilter(key)}
+                          >
+                            {label}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0 pb-2">
-                    <ActivityFeed limit={20} className="max-h-[400px] overflow-y-auto" />
+                    <ActivityFeed
+                      limit={20}
+                      actorFilter={activityActorFilter === 'todos' ? undefined : activityActorFilter}
+                      className="max-h-[400px] overflow-y-auto"
+                    />
                   </CardContent>
                 </Card>
               </>

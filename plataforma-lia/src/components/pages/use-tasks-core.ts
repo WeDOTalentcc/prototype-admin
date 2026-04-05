@@ -253,9 +253,9 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
     try {
       const [tasksRes, summaryRes, alertsRes, jobsRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/tasks?limit=50`),
+        fetch(`${API_BASE}/tasks?limit=50&status=pending`),
         fetch(`${API_BASE}/tasks/summary`),
-        fetch(`${API_BASE}/alerts?limit=20`),
+        fetch(`${API_BASE}/alerts?limit=20&status=active`),
         fetch(`${API_BASE}/job-vacancies?limit=20`),
       ])
 
@@ -378,7 +378,11 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
   const handleConfirmTask = useCallback(async (task: PendingTask) => {
     try {
-      const res = await fetch(`${API_BASE}/tasks/${task.id}/complete`, { method: 'POST' })
+      const res = await fetch(`${API_BASE}/task-lifecycle/${task.id}/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirmed_by: 'current_user' }),
+      })
       if (res.ok) {
         setPendingTasks(prev => prev.filter(t => t.id !== task.id))
         setMetrics(prev => ({
@@ -398,7 +402,11 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
   const handleRejectTask = useCallback(async (task: PendingTask) => {
     try {
-      const res = await fetch(`${API_BASE}/tasks/${task.id}/cancel`, { method: 'POST' })
+      const res = await fetch(`${API_BASE}/task-lifecycle/${task.id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rejected_by: 'current_user' }),
+      })
       if (res.ok) {
         setPendingTasks(prev => prev.filter(t => t.id !== task.id))
         setMetrics(prev => ({
