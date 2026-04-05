@@ -382,10 +382,10 @@ export function SSIJDMode(props: SSIJDModeProps) {
       </div>
     )}
 
-    <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+    <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
       <div className="flex items-start gap-2">
-        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
-        <p className="text-xs text-lia-text-primary">
+        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+        <p className="text-xs text-lia-text-secondary">
           <strong>Dica:</strong> Selecione uma vaga existente ou cole a JD completa para extrair automaticamente requisitos técnicos e comportamentais.
         </p>
       </div>

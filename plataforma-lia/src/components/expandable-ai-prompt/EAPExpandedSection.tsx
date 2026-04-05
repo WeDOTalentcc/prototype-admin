@@ -273,16 +273,18 @@ activeSearchTab === 'filtros' ? 'lia-pill-active' : 'lia-pill'
           <EAPTabContent {...core} />
         </div>
 
-        <div className="flex items-start gap-2 p-2 bg-lia-bg-secondary rounded-md mb-3 border border-lia-border-subtle">
-          <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
-          <p className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">
-            {activeSearchTab === 'natural' && 'Dica: Para melhores resultados, seja específico sobre skills, senioridade e localização.'}
-            {activeSearchTab === 'similar' && 'Dica: Cole o link do LinkedIn de um candidato que você considera ideal.'}
-            {activeSearchTab === 'job-description' && 'Dica: Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.'}
-            {activeSearchTab === 'boolean' && 'Dica: Use aspas para termos exatos e parênteses para agrupar condições.'}
-            {activeSearchTab === 'filtros' && 'Dica: Combine filtros para refinar sua busca de forma precisa.'}
-            {activeSearchTab === 'arquetipos' && 'Dica: Use arquétipos para salvar perfis ideais e reutilizar em buscas futuras.'}
-          </p>
+        <div className="p-2.5 bg-white rounded-md mb-3 border border-lia-border-subtle">
+          <div className="flex items-start gap-2">
+            <Lightbulb className="w-3.5 h-3.5 text-lia-text-secondary mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">
+              {activeSearchTab === 'natural' && <><strong>Dica:</strong> Para melhores resultados, seja específico sobre skills, senioridade e localização.</>}
+              {activeSearchTab === 'similar' && <><strong>Dica:</strong> Cole o link do LinkedIn de um candidato que você considera ideal.</>}
+              {activeSearchTab === 'job-description' && <><strong>Dica:</strong> Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.</>}
+              {activeSearchTab === 'boolean' && <><strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições.</>}
+              {activeSearchTab === 'filtros' && <><strong>Dica:</strong> Combine filtros para refinar sua busca de forma precisa.</>}
+              {activeSearchTab === 'arquetipos' && <><strong>Dica:</strong> Use arquétipos para salvar perfis ideais e reutilizar em buscas futuras.</>}
+            </p>
+          </div>
         </div>
       </div>
 

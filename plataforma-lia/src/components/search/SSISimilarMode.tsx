@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
-  Brain, FileText, Globe, HelpCircle, Home, Linkedin, Loader2,
+  Brain, FileText, Globe, HelpCircle, Home, Lightbulb, Linkedin, Loader2,
   Mail, Phone, Search, Upload, Wand2, X, Zap
 } from "lucide-react"
 import { MAX_SIMILAR_URLS, MAX_CV_FILES } from "./hooks/smartSearchConstants"
@@ -285,10 +285,10 @@ export function SSISimilarMode(props: SSISimilarModeProps) {
       </div>
     )}
 
-    <div className="p-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary/50">
+    <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
       <div className="flex items-start gap-2">
-        <Wand2 className="w-3 h-3 text-wedo-cyan mt-0.5 flex-shrink-0" />
-        <p className="text-xs text-lia-text-primary">
+        <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+        <p className="text-xs text-lia-text-secondary">
           <strong>Dica:</strong> Cole 1 a 3 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
         </p>
       </div>

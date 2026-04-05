@@ -231,10 +231,10 @@ export function SimilarProfilesInput({
       </button>
 
       {/* Dica */}
-      <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+      <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
         <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
-          <p className="text-xs text-lia-text-primary">
+          <p className="text-xs text-lia-text-secondary">
             <strong>Dica:</strong> Cole 1 a 2 links do LinkedIn ou faça upload de até 2 CVs. Com 2+ perfis, a LIA combina as melhores características e sugere palavras-chave para encontrar candidatos similares.
           </p>
         </div>

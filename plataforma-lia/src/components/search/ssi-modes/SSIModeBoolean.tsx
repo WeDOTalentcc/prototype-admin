@@ -244,10 +244,10 @@ export const SSIModeBoolean = React.memo(function SSIModeBoolean(props: SSIModeB
       </div>
 
       {/* Dica contextual padronizada */}
-      <div className="p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+      <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
         <div className="flex items-start gap-2">
-          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
-          <p className="text-xs text-lia-text-primary">
+          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+          <p className="text-xs text-lia-text-secondary">
             <strong>Dica:</strong> Use aspas para termos exatos e parênteses para agrupar condições. Ex: (Python OR Java) AND &quot;São Paulo&quot;
           </p>
         </div>

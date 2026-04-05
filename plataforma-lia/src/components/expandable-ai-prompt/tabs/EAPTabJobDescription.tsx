@@ -24,16 +24,18 @@ export const EAPTabJobDescription = React.memo(function EAPTabJobDescription(pro
         className="border border-input bg-background rounded-lg text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring w-full px-4 py-2.5 text-sm resize-none"
         rows={3}
       />
-      <div className="flex justify-between items-center">
-        {/* Dica contextual */}
-        <div className="flex items-start gap-2 flex-1">
+      {/* Dica contextual */}
+      <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
+        <div className="flex items-start gap-2">
           <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
-          <p className="text-xs lia-body">
+          <p className="text-xs text-lia-text-secondary">
             <strong>Dica:</strong> Cole a descrição do cargo completa para extrair automaticamente requisitos técnicos e comportamentais.
           </p>
         </div>
+      </div>
+      <div className="flex justify-end">
         <button
-          className="ml-3 px-3 py-1.5 lia-btn-primary text-xs disabled:opacity-50"
+          className="px-3 py-1.5 lia-btn-primary text-xs disabled:opacity-50"
           onClick={() => jobDescriptionText.trim() && onCommand(jobDescriptionText, 'extract_from_jd')}
           disabled={!jobDescriptionText.trim()}
         >

@@ -109,10 +109,10 @@ export const TabSimilar = React.memo(function TabSimilar({
           className="w-full p-3 text-xs rounded-md border focus:outline-none transition-colors motion-reduce:transition-none bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle"
         />
       </div>
-      <div className="p-3 rounded-md bg-wedo-cyan/[0.06]">
+      <div className="p-2.5 rounded-md bg-white border border-lia-border-subtle">
         <div className="flex items-start gap-2">
-          <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
-          <p className="text-xs text-lia-text-primary">
+          <Lightbulb className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+          <p className="text-xs text-lia-text-secondary">
             <strong>Dica:</strong> Cole o link do LinkedIn de um candidato que voc\u00ea considera ideal para encontrar perfis similares.
           </p>
         </div>
