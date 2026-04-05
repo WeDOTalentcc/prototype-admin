@@ -173,7 +173,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
                         ] as const).map(({ key, label }) => (
                           <Button
                             key={key}
-                            variant={activityActorFilter === key ? 'default' : 'ghost'}
+                            variant={activityActorFilter === key ? 'primary' : 'ghost'}
                             size="sm"
                             className="h-6 px-2 text-xs"
                             onClick={() => setActivityActorFilter(key)}

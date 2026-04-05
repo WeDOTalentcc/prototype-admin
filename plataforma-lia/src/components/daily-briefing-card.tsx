@@ -54,6 +54,30 @@ interface Insight {
   action_type?: string
 }
 
+interface PipelinePredictionVacancy {
+  job_id: string
+  title: string
+  closure_probability: number
+  predicted_days_to_close: number
+  risk_level: string
+}
+
+interface PipelinePrediction {
+  available: boolean
+  vacancies: PipelinePredictionVacancy[]
+  at_risk_count?: number
+  near_closure_count?: number
+}
+
+interface RecruiterBenchmark {
+  benchmark_available: boolean
+  overall_performance?: string
+  comparison?: {
+    response_time?: { recruiter?: number; company_avg?: number; diff_pct?: number }
+    advanced_per_week?: { recruiter?: number; company_avg?: number; diff_pct?: number }
+  }
+}
+
 interface BriefingData {
   id: string
   generated_at: string
@@ -68,6 +92,8 @@ interface BriefingData {
   pipeline: PipelineSummary
   schedule: ScheduleItem[]
   insights: Insight[]
+  pipeline_prediction?: PipelinePrediction
+  recruiter_benchmark?: RecruiterBenchmark
 }
 
 interface DailyBriefingCardProps {
@@ -308,6 +334,22 @@ export function DailyBriefingCard({
 
       {expanded && (
         <CardContent className="px-5 pb-5 pt-0 space-y-4">
+          {fetchError && (
+            <div className="p-3 rounded-md border border-status-warning/30 bg-status-warning/5 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-status-warning shrink-0" />
+              <p className="text-xs text-lia-text-secondary">
+                Não foi possível carregar o briefing do servidor. Exibindo dados parciais.
+              </p>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="ml-auto text-xs h-6 px-2"
+                onClick={handleRefresh}
+              >
+                Tentar novamente
+              </Button>
+            </div>
+          )}
           {/* Cards de Métricas - Paleta Monocromática WeDo DS */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {/* Card Urgentes */}
@@ -482,6 +524,76 @@ export function DailyBriefingCard({
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {briefing.recruiter_benchmark?.benchmark_available && (
+            <div className="p-3 rounded-md border" style={{backgroundColor: 'var(--lia-bg-secondary)'}}>
+              <h4 className="text-xs font-medium flex items-center gap-2 mb-2" style={{color: 'var(--wedo-cyan-dark)'}}>
+                <TrendingUp className="w-4 h-4 text-wedo-cyan" />
+                Benchmark do Recrutador
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                {briefing.recruiter_benchmark.comparison?.response_time && (
+                  <div>
+                    <p className="text-xs text-lia-text-secondary">Tempo de Resposta</p>
+                    <p className="text-sm font-semibold text-lia-text-primary">
+                      {briefing.recruiter_benchmark.comparison.response_time.recruiter?.toFixed(1)}h
+                    </p>
+                    <p className="text-xs text-lia-text-tertiary">
+                      Média empresa: {briefing.recruiter_benchmark.comparison.response_time.company_avg?.toFixed(1)}h
+                    </p>
+                  </div>
+                )}
+                {briefing.recruiter_benchmark.comparison?.advanced_per_week && (
+                  <div>
+                    <p className="text-xs text-lia-text-secondary">Avanços/Semana</p>
+                    <p className="text-sm font-semibold text-lia-text-primary">
+                      {briefing.recruiter_benchmark.comparison.advanced_per_week.recruiter}
+                    </p>
+                    <p className="text-xs text-lia-text-tertiary">
+                      Média empresa: {briefing.recruiter_benchmark.comparison.advanced_per_week.company_avg}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {briefing.recruiter_benchmark.overall_performance && (
+                <p className="text-xs mt-2 text-lia-text-secondary">
+                  Performance geral: <strong className="text-lia-text-primary">{briefing.recruiter_benchmark.overall_performance}</strong>
+                </p>
+              )}
+            </div>
+          )}
+
+          {briefing.pipeline_prediction?.available && (briefing.pipeline_prediction.at_risk_count ?? 0) > 0 && (
+            <div className="p-3 rounded-md border" style={{backgroundColor: 'var(--lia-bg-secondary)'}}>
+              <h4 className="text-xs font-medium flex items-center gap-2 mb-2" style={{color: 'var(--wedo-cyan-dark)'}}>
+                <Target className="w-4 h-4 text-wedo-cyan" />
+                Predição de Pipeline
+              </h4>
+              <div className="space-y-1.5">
+                {briefing.pipeline_prediction.vacancies
+                  .filter(v => v.closure_probability < 50)
+                  .slice(0, 3)
+                  .map(v => (
+                    <div key={v.job_id} className="flex items-center justify-between text-xs">
+                      <span className="text-lia-text-primary truncate flex-1">{v.title}</span>
+                      <span className={`ml-2 font-medium ${v.closure_probability < 30 ? 'text-status-error' : 'text-status-warning'}`}>
+                        {v.closure_probability}% chance de fechar
+                      </span>
+                    </div>
+                  ))}
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs font-semibold text-lia-text-secondary mt-2 h-auto p-0"
+                onClick={() => onActionClick?.('view_pipeline_prediction', {
+                  pipeline_prediction: briefing.pipeline_prediction,
+                })}
+              >
+                Ver todas predições <ArrowRight className="w-3 h-3 ml-1" />
+              </Button>
             </div>
           )}
 

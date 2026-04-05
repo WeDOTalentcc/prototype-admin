@@ -17,8 +17,9 @@ export const getTaskPriorityStyle = (priority: 'high' | 'medium' | 'low') => {
   }
 }
 
-export const getAlertSeverityStyle = (severity: 'high' | 'medium' | 'low') => {
+export const getAlertSeverityStyle = (severity: 'critical' | 'high' | 'medium' | 'low') => {
   switch (severity) {
+    case 'critical': return 'bg-lia-brand-primary-light text-lia-text-primary'
     case 'high': return 'bg-lia-brand-primary-light text-lia-text-primary'
     case 'medium': return 'bg-wedo-amber-light text-lia-text-primary'
     case 'low': return 'bg-lia-info-light text-lia-text-primary'
@@ -33,8 +34,9 @@ export const getPriorityLabel = (priority: 'high' | 'medium' | 'low') => {
   }
 }
 
-export const getSeverityLabel = (severity: 'high' | 'medium' | 'low') => {
+export const getSeverityLabel = (severity: 'critical' | 'high' | 'medium' | 'low') => {
   switch (severity) {
+    case 'critical': return 'Crítico'
     case 'high': return 'Alto'
     case 'medium': return 'Médio'
     case 'low': return 'Baixo'

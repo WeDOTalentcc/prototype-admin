@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
-import { useAuth } from "@/contexts/auth-context"
+import { useJWTAuth } from "@/contexts/auth-context"
 import { toast } from "@/lib/toast"
 
 const API_BASE = '/api/backend-proxy'
@@ -291,7 +291,7 @@ function mapJobToJobWithAlert(job: Partial<BackendJob>): JobWithAlert {
 }
 
 export function useTasksCore(onNavigate?: (page: string) => void) {
-  const { user } = useAuth()
+  const { user } = useJWTAuth()
   const [jobSearchTerm, setJobSearchTerm] = useState("")
   const [showJobFilters, setShowJobFilters] = useState(false)
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([])
@@ -380,7 +380,9 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
       if (jobsRes.status === 'fulfilled' && jobsRes.value.ok) {
         const jobsData = await jobsRes.value.json()
-        const jobsList: Partial<BackendJob>[] = Array.isArray(jobsData) ? jobsData : (jobsData.jobs || jobsData.vacancies || [])
+        const jobsList: Partial<BackendJob>[] = Array.isArray(jobsData)
+          ? jobsData
+          : (jobsData.items || jobsData.jobs || jobsData.vacancies || [])
         const mapped: JobWithAlert[] = jobsList.map(mapJobToJobWithAlert)
         setJobsWithAlerts(mapped)
       }

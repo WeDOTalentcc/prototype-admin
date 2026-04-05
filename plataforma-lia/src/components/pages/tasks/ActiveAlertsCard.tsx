@@ -11,7 +11,7 @@ interface Alert {
   id: string
   title: string
   description: string
-  severity: 'high' | 'medium' | 'low'
+  severity: 'critical' | 'high' | 'medium' | 'low'
   jobId: string
   jobTitle: string
   createdAt: Date
@@ -45,7 +45,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
               className="border-0 text-xs font-medium"
               style={{backgroundColor: 'var(--lia-brand-primary-light)', color: 'var(--lia-text-primary)'}}
             >
-              {activeAlerts.filter(a => a.severity === 'high').length} Alto
+              {activeAlerts.filter(a => a.severity === 'critical' || a.severity === 'high').length} Alto/Crítico
             </Badge>
             <Badge
               className="border-0 text-xs font-medium"
@@ -74,7 +74,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
                   <div
                     className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${getAlertSeverityStyle(alert.severity)}`}
                   >
-                    {alert.severity === 'high' && <AlertTriangle className="w-3.5 h-3.5" />}
+                    {(alert.severity === 'critical' || alert.severity === 'high') && <AlertTriangle className="w-3.5 h-3.5" />}
                     {alert.severity === 'medium' && <AlertCircle className="w-3.5 h-3.5" />}
                     {alert.severity === 'low' && <Info className="w-3.5 h-3.5" />}
                   </div>
