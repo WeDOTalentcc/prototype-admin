@@ -39,6 +39,7 @@ export type StreamingEventType =
   | 'plan_progress'
   | 'clarification'
   | 'panel_update'
+  | 'background_task_update'
 
 export interface StreamingEvent {
   type: StreamingEventType

@@ -38,7 +38,8 @@ PUBLIC_PATHS = {
     "/api/v1/auth/workos/callback",
     "/api/v1/data-request",
     "/api/v1/webhooks/whatsapp",
-    "/api/v1/webhooks/teams",
+    "/api/v1/teams/webhook",
+    "/api/v1/teams/messages",
     "/api/v1/webhooks/twilio-voice",
     "/favicon.ico",
 }

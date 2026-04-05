@@ -27,30 +27,33 @@ export interface PanelUpdateEvent {
   action: "open" | "update" | "close"
 }
 
+export interface BackgroundTaskEvent {
+  task_id: string
+  task_type: "sourcing" | "screening" | "communication" | "analysis"
+  label: string
+  status: "running" | "completed" | "failed"
+  progress?: number
+  message?: string
+  result?: Record<string, unknown>
+}
+
 export interface UseFloatStreamingResult {
   isConnected: boolean
   isStreaming: boolean
-  /** true enquanto aguarda para reconectar (backoff ativo) */
   isReconnecting: boolean
-  /** Número da tentativa de reconexão atual (0 = sem tentativa em curso) */
   reconnectAttempt: number
-  /** Tokens acumulados durante streaming — mostrar em tempo real */
   streamingContent: string
   error: string | null
-  /** Preenchido quando o agente solicita aprovação humana */
   hitlPending: HITLPending | null
-  /** E7: etapas de raciocínio ReAct acumuladas durante processamento */
   thinkingSteps: string[]
-  /** E7: true enquanto o agente está no loop ReAct */
   isThinking: boolean
-  /** FAR-2/C: warnings de viés implícito detectados na última resposta */
   fairnessWarnings: string[]
-  /** Envia mensagem ao agente especificando o domain e opcionalmente o scope */
+  backgroundTasks: BackgroundTaskEvent[]
   sendMessage: (content: string, domain?: string, scope?: string) => void
-  /** Confirma ou rejeita a ação HITL pendente */
   sendApproval: (approved: boolean) => void
-  /** FAR-2/C: limpa fairness warnings (após dismiss pelo recrutador) */
   dismissFairnessWarnings: () => void
+  clearBackgroundTask: (taskId: string) => void
+  resetBackgroundTasks: () => void
   planProgressSteps: Array<{ task_id: string; action_id: string; domain_id: string; status: string }>
   activePlanId: string | null
   connect: () => void
@@ -66,15 +69,12 @@ export function useFloatStreaming(
   const hitlRef = useRef<HITLPending | null>(null)
   const onCompleteRef = useRef(onComplete)
   const onPanelUpdateRef = useRef(onPanelUpdate)
-  // Plan progress tracking
   const [planProgressSteps, setPlanProgressSteps] = useState<Array<{task_id: string; action_id: string; domain_id: string; status: string}>>([])
   const [activePlanId, setActivePlanId] = useState<string | null>(null)
-
-  // E7: estado de pensamentos ReAct
   const [thinkingSteps, setThinkingSteps] = useState<string[]>([])
   const [isThinking, setIsThinking] = useState(false)
-  // FAR-2/C: warnings de viés implícito
   const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([])
+  const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTaskEvent[]>([])
 
   useEffect(() => {
     onCompleteRef.current = onComplete
@@ -152,8 +152,30 @@ export function useFloatStreaming(
         break
       }
 
+      case 'background_task_update': {
+        const bgEvent = event as Record<string, unknown>
+        const taskUpdate: BackgroundTaskEvent = {
+          task_id: (bgEvent.task_id as string) || "",
+          task_type: (bgEvent.task_type as BackgroundTaskEvent["task_type"]) || "analysis",
+          label: (bgEvent.label as string) || "",
+          status: (bgEvent.status as BackgroundTaskEvent["status"]) || "running",
+          progress: bgEvent.progress as number | undefined,
+          message: bgEvent.message as string | undefined,
+          result: bgEvent.result as Record<string, unknown> | undefined,
+        }
+        setBackgroundTasks(prev => {
+          const idx = prev.findIndex(t => t.task_id === taskUpdate.task_id)
+          if (idx >= 0) {
+            const updated = [...prev]
+            updated[idx] = taskUpdate
+            return updated
+          }
+          return [...prev, taskUpdate]
+        })
+        break
+      }
+
       case 'message':
-        // resposta final (direto ou pós-HITL) — encerra modo thinking
         setIsThinking(false)
         hitlRef.current = null
         setHitlPending(null)
@@ -237,6 +259,14 @@ export function useFloatStreaming(
 
   const dismissFairnessWarnings = useCallback(() => setFairnessWarnings([]), [])
 
+  const clearBackgroundTask = useCallback((taskId: string) => {
+    setBackgroundTasks(prev => prev.filter(t => t.task_id !== taskId))
+  }, [])
+
+  const resetBackgroundTasks = useCallback(() => {
+    setBackgroundTasks([])
+  }, [])
+
   return {
     isConnected,
     isStreaming,
@@ -248,7 +278,10 @@ export function useFloatStreaming(
     thinkingSteps,
     isThinking,
     fairnessWarnings,
+    backgroundTasks,
     dismissFairnessWarnings,
+    clearBackgroundTask,
+    resetBackgroundTasks,
     planProgressSteps,
     activePlanId,
     sendMessage,

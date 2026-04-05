@@ -14,6 +14,7 @@ Protocolo de mensagens (JSON):
     { "type": "token", "content": "..." }  — streaming de token (futuro)
     { "type": "message", "content": "...", "confidence": 0.9 }  — resposta final
     { "type": "panel_update", "panel_type": "...", "panel_data": {...}, "panel_title": "...", "action": "open|update|close" }
+    { "type": "background_task_update", "task_id": "...", "task_type": "sourcing|screening|communication|analysis", "label": "...", "status": "running|completed|failed", "progress": 0-100, "message": "..." }
     { "type": "error", "message": "..." }
     { "type": "pong" }
 
@@ -105,6 +106,40 @@ async def send_panel_update(
         })
     except Exception as exc:
         logger.debug("[AgentChatWS] panel_update send failed: %s", exc)
+
+
+async def send_background_task_update(
+    session_id: str,
+    task_id: str,
+    task_type: str,
+    label: str,
+    status: str,
+    progress: Optional[int] = None,
+    message: str = "",
+    result: Optional[Dict[str, Any]] = None,
+) -> None:
+    """Send a background_task_update event to the frontend via WebSocket.
+
+    task_type: one of sourcing, screening, communication, analysis
+    status: "running" | "completed" | "failed"
+    progress: 0-100 (optional, only for running tasks)
+    """
+    payload: Dict[str, Any] = {
+        "type": "background_task_update",
+        "task_id": task_id,
+        "task_type": task_type,
+        "label": label,
+        "status": status,
+        "message": message,
+    }
+    if progress is not None:
+        payload["progress"] = progress
+    if result is not None:
+        payload["result"] = result
+    try:
+        await ws_manager.send_to_session(session_id, payload)
+    except Exception as exc:
+        logger.debug("[AgentChatWS] background_task_update send failed: %s", exc)
 
 
 # Timeout por mensagem (segundos) — evita travamento em agentes lentos

@@ -102,6 +102,8 @@ export function useLiaChatPanelState() {
     addMessage(msg)
   }, [addMessage])
 
+  const [showSwitchTask, setShowSwitchTask] = useState(false)
+
   const {
     isConnected,
     isStreaming,
@@ -111,12 +113,26 @@ export function useLiaChatPanelState() {
     error: wsError,
     hitlPending,
     fairnessWarnings,
+    backgroundTasks,
     dismissFairnessWarnings,
+    clearBackgroundTask,
+    resetBackgroundTasks,
     sendMessage: wsSend,
     sendApproval,
     connect: wsConnect,
     disconnect: wsDisconnect,
   } = useFloatStreaming(wsSessionId, handleStreamComplete, handlePanelUpdate)
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault()
+        setShowSwitchTask(prev => !prev)
+      }
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [])
 
   useEffect(() => {
     if (isOpen && conversationId) {
@@ -180,7 +196,8 @@ export function useLiaChatPanelState() {
     clearIntent()
     setShowHistory(false)
     closeDynamicPanel()
-  }, [wsDisconnect, setMessages, setConversationId, clearIntent, closeDynamicPanel])
+    resetBackgroundTasks()
+  }, [wsDisconnect, setMessages, setConversationId, clearIntent, closeDynamicPanel, resetBackgroundTasks])
 
   const handleClear = useCallback(() => {
     setMessages([])
@@ -201,8 +218,9 @@ export function useLiaChatPanelState() {
     setActiveActionType(null)
     setActionLabel(null)
     setShowHistory(false)
+    resetBackgroundTasks()
     loadHistory(id)
-  }, [setMessages, setConversationId, loadHistory])
+  }, [setMessages, setConversationId, loadHistory, resetBackgroundTasks])
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -577,7 +595,9 @@ export function useLiaChatPanelState() {
     messagesEndRef, inputRef, fileInputRef,
     isConnected, isStreaming, isReconnecting, reconnectAttempt,
     streamingContent, wsError, hitlPending, fairnessWarnings,
-    dismissFairnessWarnings, wsSend, sendApproval, wsConnect, wsDisconnect,
+    backgroundTasks, showSwitchTask, setShowSwitchTask,
+    dismissFairnessWarnings, clearBackgroundTask, resetBackgroundTasks,
+    wsSend, sendApproval, wsConnect, wsDisconnect,
     handleCvFileAttach, handleCvFileButtonClick, handleExpand,
     handleNewChat, handleClear, handleToggleHistory, handleLoadConversation,
     handleFileUpload, handleChipSend, handleSend, handleKeyDown,
