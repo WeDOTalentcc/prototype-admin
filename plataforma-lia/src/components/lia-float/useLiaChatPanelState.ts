@@ -369,13 +369,14 @@ export function useLiaChatPanelState() {
     wsSend(text, "", currentScope)
   }, [conversationId, addMessage, initConversation, setSharedConversationId, wsConnect, wsSend, currentScope])
 
-  const updateRecentItem = useCallback((text: string) => {
-    if (!conversationId) return
+  const updateRecentItem = useCallback((text: string, overrideConvId?: string) => {
+    const cid = overrideConvId ?? conversationId
+    if (!cid) return
     const store = useUIPreferencesStore.getState()
     const existing = store.liaRecentItems
-    const idx = existing.findIndex(i => i.id === conversationId)
-    const item = {
-      id: conversationId,
+    const idx = existing.findIndex(i => i.id === cid)
+    const item: LiaRecentItem = {
+      id: cid,
       type: "chat",
       title: idx >= 0 ? existing[idx].title : text.slice(0, 80),
       timestamp: Date.now(),
@@ -402,8 +403,6 @@ export function useLiaChatPanelState() {
       content: text,
       timestamp: formatMessageTime(),
     })
-
-    updateRecentItem(text)
 
     if (awaitingCandidateName && pendingCvFields && Object.keys(pendingCvFields).length > 0) {
       const normalized = text.toLowerCase().trim()
@@ -554,6 +553,8 @@ export function useLiaChatPanelState() {
       setSharedConversationId(convId)
       wsConnect()
     }
+
+    updateRecentItem(text, convId ?? undefined)
 
     if (attachedCvFile) {
       const vacancyHint = text.length > 3 ? text : undefined

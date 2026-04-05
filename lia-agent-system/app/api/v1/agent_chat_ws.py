@@ -672,6 +672,8 @@ async def agent_chat_ws(
                         domain_workflow=_domain_workflow,
                     )
 
+                    _plan_task_id = f"plan-{session_id[:8]}"
+
                     async def _ws_plan_progress(event_type: str, data: dict) -> None:
                         try:
                             await ws_manager.send_to_session(session_id, {
@@ -679,8 +681,30 @@ async def agent_chat_ws(
                                 "event": event_type,
                                 **data,
                             })
+                            _progress = data.get("progress", 0)
+                            _label = data.get("label", _detected_plan.detected_pattern or "Plano multi-step")
+                            _status = "completed" if event_type == "plan_complete" else ("failed" if event_type == "plan_error" else "running")
+                            await send_background_task_update(
+                                session_id=session_id,
+                                task_id=_plan_task_id,
+                                task_type="analysis",
+                                label=_label,
+                                status=_status,
+                                progress=_progress,
+                                message=data.get("message", ""),
+                            )
                         except Exception:
                             pass
+
+                    await send_background_task_update(
+                        session_id=session_id,
+                        task_id=_plan_task_id,
+                        task_type="analysis",
+                        label=_detected_plan.detected_pattern or "Plano multi-step",
+                        status="running",
+                        progress=0,
+                        message=f"Executando plano com {len(_detected_plan.tasks)} tarefas",
+                    )
 
                     _executed = await _plan_executor.execute(
                         plan=_detected_plan,
@@ -711,6 +735,15 @@ async def agent_chat_ws(
                         "source": "plan_executor",
                         "execution_plan": _executed.get_summary(),
                     })
+                    await send_background_task_update(
+                        session_id=session_id,
+                        task_id=_plan_task_id,
+                        task_type="analysis",
+                        label=_detected_plan.detected_pattern or "Plano multi-step",
+                        status="completed",
+                        progress=100,
+                        message="Plano executado com sucesso",
+                    )
                     _plan_handled = True
             except Exception as _plan_exc:
                 logger.warning(
@@ -796,7 +829,6 @@ async def agent_chat_ws(
                 from app.shared.messaging.message_schemas import AgentChatMessage
 
                 if is_async_domain(active_domain) and await domain_dispatcher.is_available():
-                    # Domínio assíncrono — despacha via RabbitMQ + Celery
                     chat_msg = AgentChatMessage(
                         session_id=session_id,
                         user_id=user_id,
@@ -807,12 +839,24 @@ async def agent_chat_ws(
                         conversation_history=conversation_history[-10:],
                     )
                     job_id = await domain_dispatcher.dispatch(chat_msg)
+                    _task_type_map = {
+                        "sourcing": "sourcing", "cv_screening": "screening",
+                        "communication": "communication",
+                    }
+                    await send_background_task_update(
+                        session_id=session_id,
+                        task_id=job_id,
+                        task_type=_task_type_map.get(active_domain, "analysis"),
+                        label=f"Agente {active_domain}",
+                        status="running",
+                        progress=0,
+                        message="Processando em background...",
+                    )
                     await ws_manager.send_to_session(session_id, {
                         "type": "thinking",
                         "job_id": job_id,
                         "message": "Processando em background...",
                     })
-                    # Resultado chegará via rabbitmq_consumer → ws_manager.send_to_session()
                     continue
             except Exception as _dispatch_exc:
                 logger.debug(
