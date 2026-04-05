@@ -1905,9 +1905,23 @@ RETORNE APENAS JSON:
         responses: List[ResponseAnalysis],
         decision: Literal["aprovado", "aguardando", "nao_aprovado"]
     ) -> CandidateFeedback:
-        """Gera feedback construtivo para candidato."""
+        """Gera feedback construtivo para candidato.
         
-        # Identificar pontos fortes
+        IMPORTANTE — NEUTRALIDADE DE TOM:
+        O feedback pós-triagem é enviado ANTES da decisão do recrutador.
+        O candidato NÃO sabe (e não deve saber) se será aprovado ou não.
+        Por isso o tom é SEMPRE construtivo e neutro, independente da
+        recomendação interna da LIA. O parâmetro `decision` é mantido
+        apenas para rastreabilidade interna (audit trail), NUNCA para
+        modular o tom do feedback ao candidato.
+        
+        Alinhado com wsi_feedback_generator.py:
+          - Sem score numérico
+          - Sem classificação (aprovado / reprovado / aguardando)
+          - Sem comparação com outros candidatos
+          - Foco em comportamentos observáveis e desenvolvimento
+        """
+        
         strong_responses = [r for r in responses if r.final_score >= 4.0]
         development_responses = [r for r in responses if r.final_score < 3.5]
         
@@ -1919,16 +1933,7 @@ RETORNE APENAS JSON:
             kw in r.competency.lower() for kw in ["python", "react", "java", "sql", "aws", "node", "go", "rust", "docker", "kubernetes", "api", "backend", "frontend", "devops", "data", "machine", "deep", "cloud"]
         )]
         
-        tone_map = {
-            "aprovado": "Empolgado e encorajador. Celebre as conquistas, demonstre entusiasmo genuíno pela performance.",
-            "aguardando": "Construtivo e empático. Reconheça pontos fortes, posicione gaps como oportunidades de crescimento.",
-            "nao_aprovado": "Respeitoso e construtivo. Agradeça sinceramente, destaque pontos positivos antes dos gaps, ofereça orientação de desenvolvimento."
-        }
-        
-        prompt = f"""Gere um feedback estruturado e construtivo para o candidato.
-
-DECISÃO: {decision.upper()}
-WSI GERAL: {wsi_result.overall_wsi}/5.0 ({wsi_result.classification})
+        prompt = f"""Gere um feedback estruturado e construtivo para o candidato após a etapa de triagem.
 
 PONTOS FORTES TÉCNICOS: {strong_competencies}
 PONTOS FORTES COMPORTAMENTAIS: {behav_strong_list or "Nenhum identificado com score >= 4.0"}
@@ -1939,19 +1944,24 @@ TEMPLATES DE REFERÊNCIA (exemplos do RAG):
 
 ---
 
-TOM OBRIGATÓRIO: {tone_map.get(decision, "Construtivo e empático")}
+TOM OBRIGATÓRIO: Construtivo, empático e neutro. Reconheça pontos fortes genuínos, posicione gaps como oportunidades de crescimento. NUNCA antecipar resultado do processo (aprovação ou reprovação). O candidato ainda aguarda a decisão do recrutador.
 
 REGRAS DE QUALIDADE DO FEEDBACK:
-1. **main_message**: Mínimo 150 caracteres. NUNCA começar com "Infelizmente". Começar agradecendo a participação.
+1. **main_message**: Mínimo 150 caracteres. Começar agradecendo a participação na etapa de triagem. NUNCA começar com "Infelizmente" ou "Parabéns". NUNCA sugerir aprovação ou reprovação.
 2. **technical_strengths**: Citar ao menos 2 competências específicas mencionadas nas respostas. Não usar genéricos como "Participação no processo".
 3. **development_opportunities**: Ser específico sobre o que melhorar (ex: "Aprofundar conhecimento em design patterns" vs "Estudar mais").
 4. **behavioral_strengths**: Citar comportamentos observados nas respostas (ex: "Demonstrou capacidade analítica ao descrever o diagnóstico do problema").
-5. **next_steps**: Ser claro e acionável. Para APROVADO: próxima etapa do processo. Para AGUARDANDO: o que será avaliado. Para NÃO APROVADO: encorajar nova candidatura futura.
+5. **next_steps**: Informar que a equipe de recrutamento analisará o desempenho e entrará em contato com os próximos passos. NUNCA antecipar qual será a decisão.
 6. **personalized_tip**: Uma dica prática e específica baseada nos gaps identificados.
 7. **development_plan**: Curto prazo (1-3 meses) e médio prazo (3-6 meses) com ações concretas.
 8. **recommended_resources**: Ao menos 2 recursos reais (cursos, livros, certificações, plataformas) relevantes para os gaps.
 
-NUNCA revelar scores numéricos ao candidato. Usar termos qualitativos ("excelente domínio", "bom conhecimento", "oportunidade de aprofundamento").
+PROIBIÇÕES ABSOLUTAS:
+- NUNCA revelar scores numéricos. Usar termos qualitativos ("excelente domínio", "bom conhecimento", "oportunidade de aprofundamento").
+- NUNCA revelar ou sugerir a decisão (aprovado/reprovado/aguardando).
+- NUNCA usar tom entusiasta/celebratório que sugira aprovação.
+- NUNCA usar tom consolador/lamentoso que sugira reprovação.
+- NUNCA comparar com outros candidatos.
 
 RETORNE APENAS JSON:
 {{
@@ -1965,40 +1975,32 @@ RETORNE APENAS JSON:
   "recommended_resources": ["Curso X", "Projeto Y"]
 }}"""
 
+        _fallback = {
+            "main_message": "Obrigado por participar da etapa de triagem. Valorizamos o tempo e a dedicação que você investiu neste processo. A equipe de recrutamento analisará seu desempenho e entrará em contato com os próximos passos.",
+            "technical_strengths": strong_competencies[:2] if strong_competencies else ["Participação completa na triagem técnica"],
+            "development_opportunities": ["Continue desenvolvendo suas competências técnicas e comportamentais"],
+            "behavioral_strengths": ["Engajamento demonstrado durante o processo"],
+            "next_steps": "A equipe de recrutamento analisará seu desempenho e entrará em contato em breve com os próximos passos do processo.",
+            "personalized_tip": "Continue aprimorando suas competências técnicas e comportamentais.",
+            "development_plan": {"curto_prazo": ["Revisar conceitos fundamentais"], "medio_prazo": ["Desenvolver projetos práticos"]},
+            "recommended_resources": []
+        }
+
         try:
             response = await self.llm.claude.ainvoke(prompt)
-            data = safe_json_parse(response.content, fallback={
-                "main_message": f"Obrigado por participar do processo seletivo. Seu desempenho foi {wsi_result.classification}.",
-                "technical_strengths": ["Participação no processo"],
-                "development_opportunities": ["Continue desenvolvendo suas habilidades"],
-                "behavioral_strengths": ["Engajamento"],
-                "next_steps": "Aguarde retorno da equipe de recrutamento.",
-                "personalized_tip": "Continue aprimorando suas competências técnicas e comportamentais.",
-                "development_plan": {"curto_prazo": ["Revisar conceitos fundamentais"], "medio_prazo": ["Desenvolver projetos práticos"]},
-                "recommended_resources": []
-            })
+            data = safe_json_parse(response.content, fallback=_fallback)
         except Exception as e:
             logger.error(f"Failed to generate feedback for candidate {wsi_result.candidate_id}: {e}")
-            # Use fallback
-            data = {
-                "main_message": f"Obrigado por participar do processo seletivo. Seu desempenho foi {wsi_result.classification}.",
-                "technical_strengths": ["Participação no processo"],
-                "development_opportunities": ["Continue desenvolvendo suas habilidades"],
-                "behavioral_strengths": ["Engajamento"],
-                "next_steps": "Aguarde retorno da equipe de recrutamento.",
-                "personalized_tip": "Continue aprimorando suas competências técnicas e comportamentais.",
-                "development_plan": {"curto_prazo": ["Revisar conceitos fundamentais"], "medio_prazo": ["Desenvolver projetos práticos"]},
-                "recommended_resources": []
-            }
+            data = _fallback
         
         return CandidateFeedback(
             candidate_id=wsi_result.candidate_id,
             decision=decision,
-            main_message=data.get("main_message", "Obrigado por participar"),
+            main_message=data.get("main_message", _fallback["main_message"]),
             technical_strengths=data.get("technical_strengths", []),
             development_opportunities=data.get("development_opportunities", []),
             behavioral_strengths=data.get("behavioral_strengths", []),
-            next_steps=data.get("next_steps", "Aguarde retorno"),
+            next_steps=data.get("next_steps", _fallback["next_steps"]),
             personalized_tip=data.get("personalized_tip"),
             development_plan=data.get("development_plan"),
             recommended_resources=data.get("recommended_resources")
