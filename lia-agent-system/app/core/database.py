@@ -303,6 +303,45 @@ async def create_audit_logs_table():
     logger.info("Audit logs table verified/created successfully")
 
 
+async def add_audit_logs_output_columns():
+    """
+    Add the 5 columns from migration 052 to audit_logs if they are missing.
+
+    Alembic reports 052 as applied but the columns were never actually created.
+    Uses ADD COLUMN IF NOT EXISTS so this is safe to run repeatedly.
+    """
+    columns_to_add = [
+        ("session_id", "VARCHAR(255)"),
+        ("agent_used", "VARCHAR(255)"),
+        ("input_text", "TEXT"),
+        ("output_text", "TEXT"),
+        ("fairness_flags", "JSON"),
+    ]
+
+    async with engine.begin() as conn:
+        for column_name, column_type in columns_to_add:
+            try:
+                await conn.execute(
+                    text(f"ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
+                )
+                logger.debug(f"Ensured column audit_logs.{column_name} exists")
+            except Exception as e:
+                logger.warning(f"Could not add audit_logs column {column_name}: {e}")
+
+        try:
+            await conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_audit_logs_session_id ON audit_logs(session_id)"
+            ))
+            await conn.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_audit_logs_company_created ON audit_logs(company_id, created_at)"
+            ))
+            logger.debug("Ensured audit_logs output indexes exist")
+        except Exception as e:
+            logger.warning(f"Could not create audit_logs output indexes: {e}")
+
+    logger.info("Audit logs output columns (migration 052) verified/added successfully")
+
+
 async def create_candidate_lists_tables():
     """
     Create the candidate_lists and candidate_list_members tables.
@@ -1186,6 +1225,7 @@ async def init_db():
     await ensure_default_company()
     await migrate_default_company_ids()
     await create_audit_logs_table()
+    await add_audit_logs_output_columns()
     await create_candidate_lists_tables()
     await add_email_template_columns()
     await create_profile_analyses_table()
