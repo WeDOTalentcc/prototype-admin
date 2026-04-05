@@ -12,6 +12,11 @@ This replaces per-endpoint auth and eliminates the X-Company-ID header
 trust vulnerability (where a user could forge a different company_id).
 """
 import logging
+from contextvars import ContextVar
+
+# ContextVar for tenant isolation — read by get_db to inject RLS context
+_current_company_id: ContextVar[str] = ContextVar("_current_company_id", default="")
+
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -83,6 +88,7 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
             request.state.token_payload = payload
             request.state.user_id = user_id
             request.state.company_id = payload.get("company_id", "")
+            _current_company_id.set(payload.get("company_id", ""))
             request.state.user_role = payload.get("role", "")
 
             # If company_id from X-Company-ID header differs from JWT, reject

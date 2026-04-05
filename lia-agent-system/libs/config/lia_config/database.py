@@ -10,13 +10,24 @@ Exports:
 """
 import os
 import logging
+from contextvars import ContextVar
 from typing import AsyncGenerator
+import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 
 from lia_config.config import settings
 
 logger = logging.getLogger(__name__)
+
+def _get_current_company_id() -> str:
+    """Get company_id from AuthEnforcementMiddleware contextvar."""
+    try:
+        from app.middleware.auth_enforcement import _current_company_id
+        return _current_company_id.get("")
+    except (ImportError, LookupError):
+        return ""
+
 
 # Get DATABASE_URL from environment (Replit secrets or .env)
 database_url = os.environ.get("DATABASE_URL", settings.DATABASE_URL)
@@ -73,13 +84,24 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     FastAPI dependency: yields an AsyncSession, commits on success,
     rolls back on exception.
 
+    Automatically injects tenant context (company_id) for RLS isolation
+    if set by AuthEnforcementMiddleware via contextvar.
+
     Usage:
         @app.get("/items")
         async def get_items(db: AsyncSession = Depends(get_db)):
+            # RLS automatically filters by tenant
             ...
     """
     async with AsyncSessionLocal() as session:
         try:
+            # RLS: inject tenant context if available
+            _cid = _get_current_company_id()
+            if _cid:
+                await session.execute(
+                    sa.text("SET LOCAL app.company_id = :cid"),
+                    {"cid": _cid},
+                )
             yield session
             await session.commit()
         except Exception:

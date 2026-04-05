@@ -70,8 +70,10 @@ interface BackendJob {
   published_linkedin: boolean
   published_website: boolean
   published_indeed: boolean
+  is_published: boolean
   pipeline_stages: Record<string, number>
   stages: Record<string, number>
+  lia_pendencies: string[]
 }
 
 export interface Task {
@@ -102,7 +104,7 @@ export interface ActiveAlert {
   id: string
   title: string
   description: string
-  severity: 'high' | 'medium' | 'low'
+  severity: 'critical' | 'high' | 'medium' | 'low'
   jobId: string
   jobTitle: string
   createdAt: Date
@@ -205,6 +207,7 @@ function mapPriority(priority: string | null): PendingTask['priority'] {
 function mapAlertSeverity(severity: string | null): ActiveAlert['severity'] {
   switch (severity) {
     case 'critical':
+      return 'critical'
     case 'high':
       return 'high'
     case 'medium':
@@ -465,16 +468,12 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
         }))
         toast.success('Tarefa confirmada', task.title)
       } else {
-        toast.error('Erro ao confirmar tarefa', 'Redirecionando para LIA...')
-        const prompt = `Confirmar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
-        navigateToLIA(prompt)
+        toast.error('Erro ao confirmar tarefa', 'Tente novamente em instantes')
       }
     } catch {
-      toast.error('Erro de conexão', 'Redirecionando para LIA...')
-      const prompt = `Confirmar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
-      navigateToLIA(prompt)
+      toast.error('Erro de conexão', 'Verifique sua conexão e tente novamente')
     }
-  }, [navigateToLIA, currentUserId])
+  }, [currentUserId])
 
   const handleRejectTask = useCallback(async (task: PendingTask) => {
     try {
@@ -491,16 +490,12 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
         }))
         toast.success('Tarefa rejeitada', task.title)
       } else {
-        toast.error('Erro ao rejeitar tarefa', 'Redirecionando para LIA...')
-        const prompt = `Rejeitar/Cancelar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
-        navigateToLIA(prompt)
+        toast.error('Erro ao rejeitar tarefa', 'Tente novamente em instantes')
       }
     } catch {
-      toast.error('Erro de conexão', 'Redirecionando para LIA...')
-      const prompt = `Rejeitar/Cancelar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
-      navigateToLIA(prompt)
+      toast.error('Erro de conexão', 'Verifique sua conexão e tente novamente')
     }
-  }, [navigateToLIA, currentUserId])
+  }, [currentUserId])
 
   const handleAlertAction = useCallback(async (alert: ActiveAlert) => {
     const encodedUserId = encodeURIComponent(currentUserId)
