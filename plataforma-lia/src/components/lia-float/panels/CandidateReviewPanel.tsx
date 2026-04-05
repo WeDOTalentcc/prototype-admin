@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Users, MapPin, Briefcase, GraduationCap, ThumbsUp, ThumbsDown, Bookmark, ChevronRight } from "lucide-react"
+import { Users, MapPin, Briefcase, GraduationCap, ThumbsUp, ThumbsDown, Bookmark, ChevronRight, CheckCircle2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ReviewCandidate {
@@ -150,10 +150,19 @@ export function CandidateReviewPanel({ data, onUpdateData }: CandidateReviewPane
       </div>
 
       {candidates.length > 0 && (
-        <div className="px-4 py-3 border-t border-lia-border-subtle flex-shrink-0">
-          <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-wedo-cyan hover:bg-lia-bg-secondary transition-colors">
-            Revisar mais <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+        <div className="px-4 py-3 border-t border-lia-border-subtle flex-shrink-0 space-y-2">
+          {totalReviewed === candidates.length && totalReviewed > 0 ? (
+            <button
+              onClick={() => onUpdateData?.({ ...data, calibration_finished: true })}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium text-white bg-wedo-cyan hover:bg-wedo-cyan/90 transition-colors"
+            >
+              <CheckCircle2 className="w-4 h-4" /> Finalizar Calibração
+            </button>
+          ) : (
+            <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-wedo-cyan hover:bg-lia-bg-secondary transition-colors">
+              Revisar mais <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       )}
     </div>

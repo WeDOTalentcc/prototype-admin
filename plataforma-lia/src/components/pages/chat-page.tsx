@@ -23,6 +23,8 @@ import { CreditConfirmationDialog } from "@/components/search/credit-confirmatio
 import { SmartSearchInput } from "@/components/search/smart-search-input"
 import { AdvancedFiltersModal } from "@/components/search/advanced-filters-modal"
 import { SidePanelContainer } from "@/components/ui-actions"
+import { useLiaFloat } from "@/contexts/lia-float-context"
+import { DynamicContextPanel } from "@/components/lia-float/panels"
 import { EmptyFieldNotificationMessage } from "@/components/chat/empty-field-notification-message"
 import { AgentMemoryIndicator } from "@/components/chat/agent-memory-indicator"
 import { ChatContextPanel } from "@/components/chat/ChatContextPanel"
@@ -32,6 +34,8 @@ import { useChatPageCore } from "./chat-page/useChatPageCore"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
 export function ChatPage() {
+  const { dynamicPanel, closeDynamicPanel } = useLiaFloat()
+
   const {
     messages, setMessages,
     input, setInput,
@@ -608,6 +612,13 @@ export function ChatPage() {
         onClose={() => setIsPanelOpen(false)}
         onPipelineAction={handlePipelineAction}
       />
+
+      {/* Dynamic Context Panel (Split-Screen) */}
+      {dynamicPanel && !isPanelOpen && (
+        <div className="w-[380px] flex-shrink-0 border-l border-lia-border-subtle animate-in slide-in-from-right-5 duration-300">
+          <DynamicContextPanel panel={dynamicPanel} />
+        </div>
+      )}
 
       {/* Command Palette */}
       <CommandPalette

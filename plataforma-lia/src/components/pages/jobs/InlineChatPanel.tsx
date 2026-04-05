@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { useLiaFloat } from "@/contexts/lia-float-context"
+import { DynamicContextPanel } from "@/components/lia-float/panels"
 
 const ExpandedChatModal = dynamic(
   () => import("@/components/expanded-chat-modal").then((m) => ({ default: m.ExpandedChatModal })),
@@ -88,7 +89,7 @@ export function InlineChatPanel({
   liaInlineMessagesEndRef,
   onAddRecentItem,
 }: InlineChatPanelProps) {
-  const { open: openFloat } = useLiaFloat()
+  const { open: openFloat, dynamicPanel } = useLiaFloat()
 
   useEffect(() => {
     if ((showExpandedLIA || (showInlineChat && chatMode === "general")) && chatMode !== "job-creation") {
@@ -101,41 +102,49 @@ export function InlineChatPanel({
   if (!showInlineChat || chatMode !== "job-creation") return null
 
   return (
-    <div
-      className={`transition-colors motion-reduce:transition-none duration-300 relative group h-full ${
-        isTableCollapsed || (chatMode === "job-creation" && isChatFullscreen) ? "flex-1" : "flex-shrink-0"
-      }`}
-      style={{width:
-          isTableCollapsed || (chatMode === "job-creation" && isChatFullscreen)
-            ? "auto"
-            : chatMode === "job-creation"
-              ? "60%"
-              : `${liaWidth}px`,
-        maxWidth:
-          isTableCollapsed || (chatMode === "job-creation" && isChatFullscreen)
-            ? "none"
-            : chatMode === "job-creation"
-              ? "900px"
-              : `${liaWidth}px`,
-        transition: "all 0.3s ease-in-out"}}
-    >
-      <div className="h-full flex flex-col">
-        <ExpandedChatModal
-          isOpen={true}
-          onClose={onCloseChat}
-          initialMessage={inlineChatInitialMessage}
-          initialMessages={liaInlineMessages}
-          contextTitle="Criação de Vaga"
-          inline={true}
-          mode="job-creation"
-          onJobCreated={() => {
-            onReturnToGeneralChat()
-          }}
-          onReturnToLateral={onReturnToLateralPrompt}
-          onFullscreenChange={onSetIsChatFullscreen}
-          onMessagesUpdate={(msgs) => onSetLiaInlineMessages(msgs)}
-        />
+    <div className="flex h-full">
+      <div
+        className={`transition-colors motion-reduce:transition-none duration-300 relative group h-full ${
+          isTableCollapsed || (chatMode === "job-creation" && isChatFullscreen) ? "flex-1" : "flex-shrink-0"
+        }`}
+        style={{width:
+            isTableCollapsed || (chatMode === "job-creation" && isChatFullscreen)
+              ? "auto"
+              : chatMode === "job-creation"
+                ? "60%"
+                : `${liaWidth}px`,
+          maxWidth:
+            isTableCollapsed || (chatMode === "job-creation" && isChatFullscreen)
+              ? "none"
+              : chatMode === "job-creation"
+                ? "900px"
+                : `${liaWidth}px`,
+          transition: "all 0.3s ease-in-out"}}
+      >
+        <div className="h-full flex flex-col">
+          <ExpandedChatModal
+            isOpen={true}
+            onClose={onCloseChat}
+            initialMessage={inlineChatInitialMessage}
+            initialMessages={liaInlineMessages}
+            contextTitle="Criação de Vaga"
+            inline={true}
+            mode="job-creation"
+            onJobCreated={() => {
+              onReturnToGeneralChat()
+            }}
+            onReturnToLateral={onReturnToLateralPrompt}
+            onFullscreenChange={onSetIsChatFullscreen}
+            onMessagesUpdate={(msgs) => onSetLiaInlineMessages(msgs)}
+          />
+        </div>
       </div>
+
+      {dynamicPanel && (
+        <div className="w-[340px] flex-shrink-0 border-l border-lia-border-subtle animate-in slide-in-from-right-5 duration-300 h-full">
+          <DynamicContextPanel panel={dynamicPanel} />
+        </div>
+      )}
     </div>
   )
 }
