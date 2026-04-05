@@ -1364,7 +1364,7 @@ def run_retention_cleanup(self) -> dict:
 
 
 async def _run_retention_cleanup_async() -> dict:
-    from datetime import timezone, timedelta
+    from datetime import datetime, timezone, timedelta
     from uuid import uuid4
     from sqlalchemy import select, update
 

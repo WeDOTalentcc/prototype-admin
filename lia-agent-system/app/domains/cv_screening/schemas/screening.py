@@ -41,7 +41,7 @@ class ScreeningQuestion(BaseModel):
     )
     weight: float = Field(default=1.0, ge=0, le=1, description="Question weight for scoring")
     expected_signals: List[str] = Field(default=[], description="Expected positive signals in answer")
-    scoring_criteria: Dict[str, str] = Field(default={}, description="Scoring criteria by level")
+    scoring_criteria: Dict[str, Any] = Field(default={}, description="Scoring criteria by level")
     is_selected: bool = Field(default=True, description="Whether question is selected for use")
     order: int = Field(default=0, description="Display order")
 
@@ -79,7 +79,7 @@ class UnifiedScreeningQuestion(BaseModel):
     framework: str = Field(default="CBI", description="Framework used")
     weight: float = Field(default=1.0, ge=0, le=1, description="Question weight")
     expected_signals: List[str] = Field(default=[], description="Expected positive signals")
-    scoring_criteria: Dict[str, str] = Field(default={}, description="Scoring criteria")
+    scoring_criteria: Dict[str, Any] = Field(default={}, description="Scoring criteria")
     is_selected: bool = Field(default=True, description="Whether selected for use")
     is_eliminatory: bool = Field(default=False, description="Whether eliminatory")
     question_type: str = Field(default="open", description="Question format: open, yes_no, single_choice, multiple_choice, scale")

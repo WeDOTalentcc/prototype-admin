@@ -441,7 +441,7 @@ async def screening_collector(state: Dict[str, Any]) -> Dict[str, Any]:
             )
 
             company_questions = []
-            pipeline_response = wsi_screening_pipeline.build_pipeline(
+            pipeline_response = await wsi_screening_pipeline.build_pipeline(
                 request=pipeline_request,
                 company_questions_raw=company_questions,
             )

@@ -78,7 +78,7 @@ DREYFUS_STAGE_LABELS: dict[int, str] = {
 
 # ---------------------------------------------------------------------------
 # Seniority → Dreyfus/Bloom mappings (base, uncalibrated)
-# Usado em: wsi_question_generator, wsi_screening_pipeline,
+# Usado em: wsi_service, wsi_screening_pipeline,
 #           seniority_context_calibrator (como base antes de ajustes),
 #           wsi_endpoints
 # ---------------------------------------------------------------------------

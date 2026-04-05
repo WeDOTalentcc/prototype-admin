@@ -2,17 +2,13 @@
 WSI Questions API - Endpoints for WSI question generation and regeneration.
 
 Provides:
-- Generate WSI questions based on competencies using Gemini LLM
+- Generate WSI questions based on competencies via canonical WSIService (F6 pipeline)
 - Regenerate questions when competencies change
 - Validate question quality with WSI minimums (3+ technical, 2+ behavioral)
-- Template fallback if LLM is unavailable
 - A2/G1: FairnessGuard check on generated question texts
 """
 import logging
-import json
-import os
 from typing import List, Optional, Set
-from uuid import UUID
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, validator
@@ -28,30 +24,6 @@ MIN_BEHAVIORAL_QUESTIONS = 2
 MIN_ELIGIBILITY_QUESTIONS = 2
 DEFAULT_MAX_QUESTIONS = 12
 
-_gemini_model = None
-
-
-def _get_gemini_model():
-    global _gemini_model
-    if _gemini_model is None:
-        import google.generativeai as genai
-        api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
-        if not api_key:
-            raise ValueError("GOOGLE_API_KEY or GEMINI_API_KEY not configured")
-        genai.configure(api_key=api_key)
-        _gemini_model = genai.GenerativeModel("gemini-2.0-flash")
-    return _gemini_model
-
-
-def _clean_llm_json(response_text: str) -> str:
-    text = response_text.strip()
-    if text.startswith("```"):
-        text = text.split("\n", 1)[1] if "\n" in text else text[3:]
-    if text.endswith("```"):
-        text = text[:-3]
-    if text.startswith("json"):
-        text = text[4:]
-    return text.strip()
 
 
 class WSIQuestion(BaseModel):
@@ -173,259 +145,6 @@ def normalize_competency(comp: str) -> str:
     return comp.strip().lower()
 
 
-def generate_question_for_skill(skill: str, skill_type: str = "technical") -> Optional[WSIQuestion]:
-    templates = QUESTION_TEMPLATES.get(skill_type, {})
-    skill_normalized = skill.strip()
-
-    for template_skill, question in templates.items():
-        if template_skill.lower() in skill_normalized.lower() or skill_normalized.lower() in template_skill.lower():
-            return WSIQuestion(
-                id=f"wsi-{skill_type}-{skill_normalized.lower().replace(' ', '-').replace('/', '-')}",
-                question=question,
-                type="open",
-                required=True,
-                competency_validated=skill_normalized,
-                skill_type=skill_type
-            )
-
-    if skill_type == "technical":
-        return WSIQuestion(
-            id=f"wsi-tech-{skill_normalized.lower().replace(' ', '-').replace('/', '-')}",
-            question=f"Descreva sua experiência com {skill_normalized}. Em quais projetos aplicou essa tecnologia?",
-            type="open",
-            required=True,
-            competency_validated=skill_normalized,
-            skill_type=skill_type
-        )
-    else:
-        return WSIQuestion(
-            id=f"wsi-behav-{skill_normalized.lower().replace(' ', '-').replace('/', '-')}",
-            question=f"Conte sobre uma situação onde demonstrou {skill_normalized.lower()} no ambiente de trabalho.",
-            type="open",
-            required=True,
-            competency_validated=skill_normalized,
-            skill_type=skill_type
-        )
-
-
-def _generate_questions_from_templates(
-    technical_skills: List[str],
-    behavioral_competencies: List[str],
-    max_questions: int
-) -> List[WSIQuestion]:
-    questions: List[WSIQuestion] = []
-
-    for tmpl in ELIGIBILITY_TEMPLATES:
-        questions.append(tmpl.model_copy())
-
-    tech_target = min(max(MIN_TECHNICAL_QUESTIONS, len(technical_skills)), 5)
-    for skill in technical_skills[:tech_target]:
-        question = generate_question_for_skill(skill, "technical")
-        if question:
-            question.block_id = 3
-            questions.append(question)
-
-    behav_target = min(max(MIN_BEHAVIORAL_QUESTIONS, len(behavioral_competencies)), 3)
-    for comp in behavioral_competencies[:behav_target]:
-        question = generate_question_for_skill(comp, "behavioral")
-        if question:
-            question.block_id = 4
-            questions.append(question)
-
-    return questions[:max_questions]
-
-
-async def _generate_questions_with_llm(
-    job_title: str,
-    technical_skills: List[str],
-    behavioral_competencies: List[str],
-    responsibilities: List[str],
-    seniority: Optional[str],
-    department: Optional[str],
-    max_questions: int
-) -> List[WSIQuestion]:
-    elig_count = MIN_ELIGIBILITY_QUESTIONS
-    tech_count = min(max(MIN_TECHNICAL_QUESTIONS, len(technical_skills)), max_questions - MIN_BEHAVIORAL_QUESTIONS - elig_count)
-    behav_count = min(max(MIN_BEHAVIORAL_QUESTIONS, len(behavioral_competencies)), max_questions - tech_count - elig_count)
-    total = elig_count + tech_count + behav_count
-
-    system_prompt = f"""Você é especialista em metodologia WSI (WeDoTalent Skill Index) para triagem de candidatos.
-Gere perguntas de triagem organizadas por blocos WSI para a vaga descrita.
-
-METODOLOGIA WSI - BLOCOS DE TRIAGEM:
-
-Bloco 2 - Elegibilidade WSI ({elig_count} perguntas):
-- Perguntas eliminatórias e de fit básico
-- Verificam disponibilidade, modelo de trabalho, pretensão salarial, localização
-- Type: "eliminatory", category: "eligibility"
-- Exemplo: "Qual sua disponibilidade para início? Existe algum período de aviso prévio?"
-- Exemplo: "Esta posição é [remoto/híbrido/presencial] em [localização]. Isso é compatível com sua situação atual?"
-
-Bloco 3 - Avaliação Técnica ({tech_count} perguntas):
-- Perguntas abertas avaliando competências técnicas específicas
-- Cada pergunta deve validar UMA skill técnica listada
-- Type: "open", category: "technical"
-- Calibrar complexidade pela senioridade
-
-Bloco 4 - Análise Situacional e Fit ({behav_count} perguntas):
-- Perguntas situacionais e comportamentais
-- Testam competências comportamentais em cenários reais
-- Type: "open", category: "behavioral" ou "situational"
-- Incluir follow-ups implícitos (ex: "Qual foi o resultado?")
-
-REGRAS OBRIGATÓRIAS:
-1. Gere exatamente {elig_count} perguntas de elegibilidade (block_id: 2), {tech_count} perguntas técnicas (block_id: 3) e {behav_count} perguntas comportamentais (block_id: 4) ({total} total)
-2. Perguntas de elegibilidade devem ser eliminatórias (type: "eliminatory")
-3. Perguntas técnicas e comportamentais devem ser abertas (type: "open"), permitindo avaliação rica
-4. As perguntas devem ser contextuais ao título, skills, responsabilidades e senioridade da vaga
-5. Calibrar complexidade conforme senioridade: junior = conceitos básicos, senior = arquitetura e decisões
-6. Cada pergunta técnica deve validar uma skill específica listada
-7. Cada pergunta comportamental deve validar uma competência comportamental específica
-8. Perguntas devem ser em português do Brasil
-
-FORMATO DE SAÍDA (JSON array):
-[
-  {{
-    "id": "wsi-block{{N}}-nome",
-    "question": "texto da pergunta",
-    "type": "open|eliminatory",
-    "required": true,
-    "competency_validated": "nome da skill/competência alvo",
-    "skill_type": "technical|behavioral|eligibility",
-    "block_id": 2|3|4
-  }}
-]"""
-
-    context_parts = [f"Título da vaga: {job_title}"]
-    if seniority:
-        context_parts.append(f"Senioridade: {seniority}")
-    if department:
-        context_parts.append(f"Departamento: {department}")
-    if responsibilities:
-        context_parts.append(f"Responsabilidades: {', '.join(responsibilities[:10])}")
-    if technical_skills:
-        context_parts.append(f"Competências Técnicas ({len(technical_skills)}): {', '.join(technical_skills)}")
-    if behavioral_competencies:
-        context_parts.append(f"Competências Comportamentais ({len(behavioral_competencies)}): {', '.join(behavioral_competencies)}")
-
-    user_prompt = f"""Gere as perguntas de triagem WSI para esta vaga:
-
-{chr(10).join(context_parts)}
-
-Gere {elig_count} perguntas de elegibilidade (bloco 2), {tech_count} perguntas técnicas (bloco 3) cobrindo as skills listadas e {behav_count} perguntas comportamentais (bloco 4) cobrindo as competências listadas.
-Cada pergunta DEVE incluir o campo "block_id" correspondente ao seu bloco (2, 3 ou 4).
-Responda APENAS com JSON array válido, sem markdown."""
-
-    model = _get_gemini_model()
-    response = model.generate_content(
-        [{"role": "user", "parts": [{"text": system_prompt + "\n\n" + user_prompt}]}],
-        generation_config={
-            "temperature": 0.7,
-            "max_output_tokens": 4096,
-        }
-    )
-
-    response_text = _clean_llm_json(response.text)
-    raw_questions = json.loads(response_text)
-
-    questions: List[WSIQuestion] = []
-    for q in raw_questions:
-        skill_type = q.get("skill_type", "technical")
-        comp = q.get("competency_validated", "general")
-        # Guard: LLM may return a list instead of a string (fix WSI-Q-01)
-        if isinstance(comp, list):
-            comp = ", ".join(str(c) for c in comp) if comp else "general"
-        elif not isinstance(comp, str):
-            comp = str(comp) if comp else "general"
-        # Guard: LLM may return a list instead of a string (fix WSI-Q-01)
-        if isinstance(comp, list):
-            comp = ", ".join(str(c) for c in comp) if comp else "general"
-        elif not isinstance(comp, str):
-            comp = str(comp) if comp else "general"
-        safe_id = comp.lower().replace(" ", "-").replace("/", "-")
-        block_id = q.get("block_id")
-        if block_id is None:
-            if skill_type == "eligibility":
-                block_id = 2
-            elif skill_type == "technical":
-                block_id = 3
-            else:
-                block_id = 4
-        questions.append(WSIQuestion(
-            id=q.get("id", f"wsi-{skill_type}-{safe_id}"),
-            question=q.get("question", ""),
-            type=q.get("type", "open"),
-            required=q.get("required", True),
-            competency_validated=comp,
-            skill_type=skill_type,
-            block_id=block_id
-        ))
-
-    return questions[:max_questions]
-
-
-async def _generate_new_questions_with_llm(
-    skills: List[str],
-    skill_type: str,
-    job_title: str,
-    seniority: Optional[str]
-) -> List[WSIQuestion]:
-    if not skills:
-        return []
-
-    system_prompt = f"""Você é especialista em metodologia WSI para triagem de candidatos.
-Gere perguntas de triagem abertas e contextuais para as competências listadas.
-
-REGRAS:
-1. Gere exatamente 1 pergunta por competência fornecida
-2. Perguntas abertas, em português do Brasil
-3. Tipo: {"técnica" if skill_type == "technical" else "comportamental"}
-4. Calibrar para senioridade: {seniority or "não definida"}
-5. Contextualizar para a vaga: {job_title}
-
-FORMATO (JSON array):
-[
-  {{
-    "id": "wsi-{skill_type}-nome",
-    "question": "texto",
-    "type": "open",
-    "required": true,
-    "competency_validated": "competência",
-    "skill_type": "{skill_type}"
-  }}
-]"""
-
-    user_prompt = f"""Competências para gerar perguntas: {', '.join(skills)}
-Responda APENAS com JSON array válido, sem markdown."""
-
-    model = _get_gemini_model()
-    response = model.generate_content(
-        [{"role": "user", "parts": [{"text": system_prompt + "\n\n" + user_prompt}]}],
-        generation_config={
-            "temperature": 0.7,
-            "max_output_tokens": 2048,
-        }
-    )
-
-    response_text = _clean_llm_json(response.text)
-    raw_questions = json.loads(response_text)
-
-    questions: List[WSIQuestion] = []
-    for q in raw_questions:
-        comp = q.get("competency_validated", "general")
-        safe_id = comp.lower().replace(" ", "-").replace("/", "-")
-        questions.append(WSIQuestion(
-            id=q.get("id", f"wsi-{skill_type}-{safe_id}"),
-            question=q.get("question", ""),
-            type=q.get("type", "open"),
-            required=q.get("required", True),
-            competency_validated=comp,
-            skill_type=skill_type
-        ))
-
-    return questions
-
-
 def validate_question_coverage(
     questions: List[WSIQuestion],
     technical_skills: List[str],
@@ -519,7 +238,7 @@ async def generate_wsi_questions(request: GenerateQuestionsRequest):
         try:
             await audit_service.log_decision(
                 company_id=request.company_id or "default",
-                agent_name="wsi_question_generator",
+                agent_name="wsi_service",
                 decision_type="generate_wsi_questions",
                 action="generate_questions",
                 decision="generated",

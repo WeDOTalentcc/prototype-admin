@@ -405,7 +405,7 @@ class WSIInterviewNodes:
                         include_company_questions=False,
                     )
                     pipeline = WSIScreeningPipeline()
-                    result = pipeline.build_pipeline(req, [])
+                    result = await pipeline.build_pipeline(req, [])
                     state.question_blocks = [
                         WSIQuestionBlock(
                             block_id=q.get("id", str(uuid4())),
