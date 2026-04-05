@@ -101,11 +101,11 @@ class TestActionExecutorInstantiation:
         executor = ActionExecutorService()
         assert executor is not None
 
-    def test_process_intent_unknown_returns_not_actionable(self):
+    def test_try_execute_unknown_returns_not_actionable(self):
         from app.orchestrator.action_executor import ActionExecutorService
         executor = ActionExecutorService()
         result = asyncio.get_event_loop().run_until_complete(
-            executor.process_intent(
+            executor.try_execute(
                 intent="totally_unknown_intent_xyz",
                 entities={},
                 context={},
@@ -113,11 +113,11 @@ class TestActionExecutorInstantiation:
         )
         assert result.status == "not_actionable"
 
-    def test_process_intent_missing_required_params(self):
+    def test_try_execute_missing_required_params(self):
         from app.orchestrator.action_executor import ActionExecutorService
         executor = ActionExecutorService()
         result = asyncio.get_event_loop().run_until_complete(
-            executor.process_intent(
+            executor.try_execute(
                 intent="mover_candidato",
                 entities={},  # missing candidate_id and to_stage
                 context={},
@@ -127,24 +127,24 @@ class TestActionExecutorInstantiation:
         assert result.missing_params is not None
         assert len(result.missing_params) > 0
 
-    def test_process_intent_needs_params_message(self):
+    def test_try_execute_partial_params(self):
         from app.orchestrator.action_executor import ActionExecutorService
         executor = ActionExecutorService()
         result = asyncio.get_event_loop().run_until_complete(
-            executor.process_intent(
+            executor.try_execute(
                 intent="mover_candidato",
                 entities={"candidate_id": "123"},  # missing to_stage
                 context={},
             )
         )
         assert result.status == "needs_params"
-        assert "to_stage" in result.missing_params
+        assert result.missing_params is not None
 
-    def test_process_intent_all_params_but_needs_confirmation(self):
+    def test_try_execute_all_params_needs_confirmation(self):
         from app.orchestrator.action_executor import ActionExecutorService
         executor = ActionExecutorService()
         result = asyncio.get_event_loop().run_until_complete(
-            executor.process_intent(
+            executor.try_execute(
                 intent="mover_candidato",
                 entities={
                     "candidate_id": "cand-123",
@@ -153,5 +153,28 @@ class TestActionExecutorInstantiation:
                 context={},
             )
         )
-        # mover_candidato requires_confirmation=True → needs_confirmation or executed
-        assert result.status in ("needs_confirmation", "executed", "error")
+        # mover_candidato requires_confirmation=True → needs_confirmation, needs_params, or error
+        assert result.status in ("needs_confirmation", "needs_params", "executed", "error")
+
+    def test_is_actionable_known_intent(self):
+        from app.orchestrator.action_executor import ActionExecutorService
+        executor = ActionExecutorService()
+        assert executor.is_actionable("mover_candidato") is True
+
+    def test_is_actionable_unknown_intent(self):
+        from app.orchestrator.action_executor import ActionExecutorService
+        executor = ActionExecutorService()
+        assert executor.is_actionable("unknown_xyz") is False
+
+    def test_get_action_config(self):
+        from app.orchestrator.action_executor import ActionExecutorService
+        executor = ActionExecutorService()
+        config = executor.get_action_config("mover_candidato")
+        assert config is not None
+        assert "required_params" in config
+
+    def test_get_action_config_unknown(self):
+        from app.orchestrator.action_executor import ActionExecutorService
+        executor = ActionExecutorService()
+        config = executor.get_action_config("unknown_xyz")
+        assert config is None

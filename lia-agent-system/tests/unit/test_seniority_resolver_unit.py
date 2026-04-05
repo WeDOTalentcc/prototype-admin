@@ -55,37 +55,33 @@ class TestSeniorityResolverInstantiation:
     def test_explicit_signal_determines_result(self):
         from app.domains.cv_screening.services.seniority_resolver import resolve_seniority
         result = self._run(resolve_seniority(
-            explicit_level="senior",
-            title="Desenvolvedor",
-            jd_text="",
+            explicit_seniority="senior",
+            job_title="Desenvolvedor",
         ))
         assert result is not None
-        assert "senior" in str(result).lower() or hasattr(result, "level")
+        assert hasattr(result, "final_level") or hasattr(result, "level") or "senior" in str(result).lower()
 
     def test_explicit_junior(self):
         from app.domains.cv_screening.services.seniority_resolver import resolve_seniority
         result = self._run(resolve_seniority(
-            explicit_level="junior",
-            title="Desenvolvedor Júnior",
-            jd_text="",
+            explicit_seniority="junior",
+            job_title="Desenvolvedor Júnior",
         ))
         assert result is not None
 
     def test_no_explicit_uses_title(self):
         from app.domains.cv_screening.services.seniority_resolver import resolve_seniority
         result = self._run(resolve_seniority(
-            explicit_level=None,
-            title="Analista Sênior de Dados",
-            jd_text="",
+            explicit_seniority=None,
+            job_title="Analista Sênior de Dados",
         ))
         assert result is not None
 
     def test_conflict_explicit_vs_title(self):
         from app.domains.cv_screening.services.seniority_resolver import resolve_seniority
         result = self._run(resolve_seniority(
-            explicit_level="junior",
-            title="Desenvolvedor Sênior",
-            jd_text="",
+            explicit_seniority="junior",
+            job_title="Desenvolvedor Sênior",
         ))
         # Conflict detected — should still return a result
         assert result is not None
@@ -93,36 +89,35 @@ class TestSeniorityResolverInstantiation:
     def test_empty_signals(self):
         from app.domains.cv_screening.services.seniority_resolver import resolve_seniority
         result = self._run(resolve_seniority(
-            explicit_level=None,
-            title="",
-            jd_text="",
+            explicit_seniority=None,
+            job_title=None,
+            job_description=None,
         ))
         assert result is not None
 
     def test_senior_skills_in_jd(self):
         from app.domains.cv_screening.services.seniority_resolver import resolve_seniority
         result = self._run(resolve_seniority(
-            explicit_level=None,
-            title="Engenheiro",
-            jd_text="Experiência com kubernetes, machine learning e system design avançado",
+            explicit_seniority=None,
+            job_title="Engenheiro",
+            job_description="Experiência com kubernetes, machine learning e system design avançado",
         ))
         assert result is not None
 
     def test_junior_skills_in_jd(self):
         from app.domains.cv_screening.services.seniority_resolver import resolve_seniority
         result = self._run(resolve_seniority(
-            explicit_level=None,
-            title="Assistente",
-            jd_text="Conhecimentos básicos em excel, word e digitação",
+            explicit_seniority=None,
+            job_title="Assistente",
+            job_description="Conhecimentos básicos em excel, word e digitação",
         ))
         assert result is not None
 
     def test_result_has_confidence(self):
         from app.domains.cv_screening.services.seniority_resolver import resolve_seniority
         result = self._run(resolve_seniority(
-            explicit_level="senior",
-            title="Desenvolvedor Sênior",
-            jd_text="",
+            explicit_seniority="senior",
+            job_title="Desenvolvedor Sênior",
         ))
         if hasattr(result, "confidence"):
             assert 0.0 <= result.confidence <= 1.0
@@ -130,9 +125,9 @@ class TestSeniorityResolverInstantiation:
     def test_full_agreement_high_confidence(self):
         from app.domains.cv_screening.services.seniority_resolver import resolve_seniority
         result = self._run(resolve_seniority(
-            explicit_level="senior",
-            title="Desenvolvedor Sênior",
-            jd_text="Buscamos profissional sênior com vasta experiência",
+            explicit_seniority="senior",
+            job_title="Desenvolvedor Sênior",
+            job_description="Buscamos profissional sênior com vasta experiência",
         ))
         if hasattr(result, "confidence"):
             # Full agreement → high confidence

@@ -68,7 +68,12 @@ export function useJWTAuth() {
 export function useAuth() {
   const ctx = useJWTAuth()
   return {
-    user: ctx.user ? { name: ctx.user.name || ctx.user.email, email: ctx.user.email, role: "admin", company: "WeDo" } : null,
+    user: ctx.user ? {
+      name: ctx.user.name || ctx.user.email,
+      email: ctx.user.email,
+      role: ("role" in ctx.user ? ctx.user.role : null) ?? null,
+      company: ("company" in ctx.user ? ctx.user.company : null) ?? null,
+    } : null,
     login: ctx.login,
     logout: ctx.logout,
     isAuthenticated: ctx.isAuthenticated,

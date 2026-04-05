@@ -52,11 +52,18 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
 
   // User data from auth context
   const { user: authUser } = useAuth()
+
+  const roleLabels: Record<string, string> = {
+    admin: "Administrador(a)",
+    recruiter: "Recrutador(a)",
+    viewer: "Visualizador(a)",
+  }
+
   const currentUser = {
     name: authUser?.name || "Usuário",
     email: authUser?.email || "usuario@empresa.com",
-    role: "Recrutador(a)",
-    company: "Empresa",
+    role: authUser?.role ? (roleLabels[authUser.role] ?? authUser.role) : "Recrutador(a)",
+    company: authUser?.company || "",
     avatar: undefined as string | undefined
   }
 
