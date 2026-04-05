@@ -34,12 +34,17 @@ class WebSocketManager:
         self._company_sessions: Dict[str, Set[str]] = defaultdict(set)
         # session_id → company_id (reverse lookup)
         self._session_company: Dict[str, str] = {}
+        # session_id → user_id
+        self._session_user: Dict[str, str] = {}
+        # user_id → Set[session_id]
+        self._user_sessions: Dict[str, Set[str]] = defaultdict(set)
 
     async def connect(
         self,
         websocket: WebSocket,
         session_id: str,
         company_id: str,
+        user_id: str = "",
     ) -> bool:
         """
         Aceita conexão WebSocket.
@@ -66,6 +71,9 @@ class WebSocketManager:
         self._connections[session_id] = websocket
         self._company_sessions[company_id].add(session_id)
         self._session_company[session_id] = company_id
+        if user_id:
+            self._session_user[session_id] = user_id
+            self._user_sessions[user_id].add(session_id)
 
         logger.info(
             "[WSManager] Conectado session=%s company=%s (total_tenant=%d)",
@@ -80,6 +88,11 @@ class WebSocketManager:
             self._company_sessions[company_id].discard(session_id)
             if not self._company_sessions[company_id]:
                 del self._company_sessions[company_id]
+        user_id = self._session_user.pop(session_id, None)
+        if user_id:
+            self._user_sessions[user_id].discard(session_id)
+            if not self._user_sessions[user_id]:
+                del self._user_sessions[user_id]
         self._connections.pop(session_id, None)
         logger.info("[WSManager] Desconectado session=%s", session_id)
 
@@ -119,6 +132,10 @@ class WebSocketManager:
     def get_company_sessions(self, company_id: str) -> Set[str]:
         """Return the set of active session IDs for a company."""
         return self._company_sessions.get(company_id, set())
+
+    def get_user_sessions(self, user_id: str) -> Set[str]:
+        """Return the set of active session IDs for a specific user."""
+        return self._user_sessions.get(user_id, set())
 
     def get_stats(self) -> dict:
         return {

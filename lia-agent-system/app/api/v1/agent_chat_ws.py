@@ -148,17 +148,18 @@ async def list_active_sessions(
     authorization: str = Header(default=""),
     token: str = Query(default=""),
 ):
-    """List active WebSocket sessions for the current user's company.
+    """List active WebSocket sessions for the authenticated user.
 
-    Returns session IDs that currently have an active WebSocket connection.
+    Returns only session IDs belonging to the current user, not all
+    sessions in the company/tenant.
     """
     jwt_token = token or (authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else "")
     auth = _extract_auth(jwt_token)
-    company_id = auth.get("company_id", "")
-    if not company_id:
+    user_id = auth.get("user_id", "")
+    if not user_id or user_id == "anonymous":
         raise HTTPException(status_code=401, detail="Token required")
 
-    session_ids = list(ws_manager.get_company_sessions(company_id))
+    session_ids = list(ws_manager.get_user_sessions(user_id))
     return {
         "sessions": [
             {"id": sid, "active": True}
@@ -403,7 +404,7 @@ async def agent_chat_ws(
     company_id = auth["company_id"]
     user_id = auth["user_id"]
 
-    connected = await ws_manager.connect(websocket, session_id, company_id or "anonymous")
+    connected = await ws_manager.connect(websocket, session_id, company_id or "anonymous", user_id=user_id)
     if not connected:
         return
 
