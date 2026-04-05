@@ -1,9 +1,10 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.LIA_BACKEND_URL || "http://127.0.0.1:8001"
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,10 +12,15 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get("user_id") || "default_user"
     
     const response = await fetch(`${BACKEND_URL}/api/v1/briefing?user_id=${userId}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(request),
     })
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { success: false, error: "Failed to fetch briefing" },
+        { status: response.status }
+      )
+    }
     
     const data = await response.json()
     return NextResponse.json(data)
@@ -38,11 +44,16 @@ export async function POST(request: NextRequest) {
     
     const response = await fetch(`${BACKEND_URL}/api/v1/briefing/refresh`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { success: false, error: "Failed to refresh briefing" },
+        { status: response.status }
+      )
+    }
     
     const data = await response.json()
     return NextResponse.json(data)

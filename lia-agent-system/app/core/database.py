@@ -5,6 +5,7 @@ Core session management (engine, Base, AsyncSessionLocal, get_db) moved to
 libs/config (lia_config.database). Migration helpers remain here.
 """
 import logging
+from typing import AsyncGenerator
 import sqlalchemy as sa
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,6 +29,38 @@ async def set_tenant_context(db: AsyncSession, company_id: str) -> None:
     except Exception as exc:
         logger.warning("[RLS] Falha ao definir company_id na sessão: %s", exc)
 
+
+
+
+async def get_tenant_db(request: "Request") -> AsyncGenerator[AsyncSession, None]:
+    """
+    Tenant-aware DB dependency: injects company_id into PostgreSQL session
+    so that RLS policies enforce tenant isolation automatically.
+
+    Uses company_id from request.state (set by AuthEnforcementMiddleware).
+
+    Usage:
+        @app.get("/items")
+        async def get_items(
+            request: Request,
+            db: AsyncSession = Depends(get_tenant_db),
+        ):
+            # All queries are automatically scoped to the user's tenant
+            ...
+    """
+    from starlette.requests import Request
+    async with AsyncSessionLocal() as session:
+        try:
+            company_id = getattr(request.state, "company_id", None)
+            if company_id:
+                await set_tenant_context(session, company_id)
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
 
 async def add_task_lifecycle_columns():
     """

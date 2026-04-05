@@ -17,8 +17,9 @@ interface BackendTask {
   due_date: string | null
   created_at: string | null
   related_job_id: string | null
-  assigned_to: string | null
-  source: string | null
+  assigned_to_user_id: string | null
+  created_by_agent: string | null
+  is_automated: boolean
   context: {
     candidate_name?: string
     [key: string]: unknown
@@ -32,7 +33,6 @@ interface BackendSummary {
   overdue: number
   critical: number
   total_active: number
-  ia_originated?: number
 }
 
 interface BackendAlert {
@@ -313,27 +313,28 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const currentUserId = user?.id || user?.email || 'default_user'
   useEffect(() => {
     fetchAllData()
-  }, [])
+  }, [currentUserId])
 
   const fetchAllData = async () => {
     setLoading(true)
     setError(null)
 
     try {
-      const userId = user?.id || user?.email || 'default_user'
       const [tasksRes, summaryRes, alertsRes, jobsRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/tasks?limit=50&status=pending&assigned_to=${encodeURIComponent(userId)}`),
-        fetch(`${API_BASE}/tasks/summary?user_id=${encodeURIComponent(userId)}`),
+        fetch(`${API_BASE}/tasks?limit=50&status=pending&user_id=${encodeURIComponent(currentUserId)}`),
+        fetch(`${API_BASE}/tasks/summary?user_id=${encodeURIComponent(currentUserId)}`),
         fetch(`${API_BASE}/alerts?limit=20&status=active`),
         fetch(`${API_BASE}/job-vacancies?limit=20`),
       ])
 
+      let parsedTasks: BackendTask[] = []
       if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
         const tasksData = await tasksRes.value.json()
-        const tasksList: BackendTask[] = Array.isArray(tasksData) ? tasksData : (tasksData.tasks || [])
-        const mapped: PendingTask[] = tasksList.map((t) => ({
+        parsedTasks = Array.isArray(tasksData) ? tasksData : (tasksData.tasks || [])
+        const mapped: PendingTask[] = parsedTasks.map((t) => ({
           id: t.id,
           title: t.title || '',
           description: t.description || '',
@@ -349,11 +350,12 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
       if (summaryRes.status === 'fulfilled' && summaryRes.value.ok) {
         const summaryData: BackendSummary = await summaryRes.value.json()
+        const iaCount = parsedTasks.filter(t => t.is_automated || t.created_by_agent != null).length
         setMetrics({
           total: (summaryData.total_active || 0) + (summaryData.completed || 0),
           completed: summaryData.completed || 0,
           pending: summaryData.pending || 0,
-          iaTasks: summaryData.ia_originated || 0,
+          iaTasks: iaCount,
         })
       }
 
@@ -452,7 +454,7 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
       const res = await fetch(`${API_BASE}/task-lifecycle/${task.id}/confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ confirmed_by: user?.id || user?.email || 'unknown' }),
+        body: JSON.stringify({ confirmed_by: currentUserId }),
       })
       if (res.ok) {
         setPendingTasks(prev => prev.filter(t => t.id !== task.id))
@@ -472,14 +474,14 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
       const prompt = `Confirmar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
       navigateToLIA(prompt)
     }
-  }, [navigateToLIA, user])
+  }, [navigateToLIA, currentUserId])
 
   const handleRejectTask = useCallback(async (task: PendingTask) => {
     try {
       const res = await fetch(`${API_BASE}/task-lifecycle/${task.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rejected_by: user?.id || user?.email || 'unknown' }),
+        body: JSON.stringify({ rejected_by: currentUserId }),
       })
       if (res.ok) {
         setPendingTasks(prev => prev.filter(t => t.id !== task.id))
@@ -498,16 +500,19 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
       const prompt = `Rejeitar/Cancelar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
       navigateToLIA(prompt)
     }
-  }, [navigateToLIA, user])
+  }, [navigateToLIA, currentUserId])
 
   const handleAlertAction = useCallback(async (alert: ActiveAlert) => {
+    const encodedUserId = encodeURIComponent(currentUserId)
+    const isCritical = alert.severity === 'critical' || alert.severity === 'high'
+    const endpoint = isCritical
+      ? `${API_BASE}/alerts/${alert.id}/resolve?user_id=${encodedUserId}`
+      : `${API_BASE}/alerts/${alert.id}/acknowledge?user_id=${encodedUserId}`
     try {
-      const res = await fetch(`${API_BASE}/alerts/${alert.id}/acknowledge?user_id=${encodeURIComponent(user?.id || user?.email || 'unknown')}`, {
-        method: 'POST',
-      })
+      const res = await fetch(endpoint, { method: 'POST' })
       if (res.ok) {
         setActiveAlerts(prev => prev.filter(a => a.id !== alert.id))
-        toast.success('Alerta reconhecido', alert.title)
+        toast.success(isCritical ? 'Alerta resolvido' : 'Alerta reconhecido', alert.title)
       } else {
         toast.error('Erro ao processar alerta', 'Redirecionando para LIA...')
         navigateToLIA(`${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`)
@@ -516,7 +521,7 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
       toast.error('Erro de conexão', 'Redirecionando para LIA...')
       navigateToLIA(`${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`)
     }
-  }, [navigateToLIA, user])
+  }, [navigateToLIA, currentUserId])
 
   const handleLIAAction = useCallback((action: string, job: JobWithAlert) => {
     const prompts: Record<string, string> = {
