@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import {
   Send, Loader2, FileText, Search, MapPin, X,
-  ChevronDown, Play, Mic, AlertTriangle, Cpu
+  ChevronDown, Play, Mic, AlertTriangle, Cpu, Brain
 } from "lucide-react"
 import { InterviewSchedulingModal } from "@/components/ui/interview-scheduling-modal"
 import { PromptSuggestionsDock } from "@/components/ui/prompt-suggestions-dock"
@@ -196,13 +196,13 @@ export function ChatPage() {
         >
           {/* Empty state welcome message */}
           {isEmptyChat && (
-            <div className={`text-left pt-8 ${messagesContainerClass}`}>
-              <div className="mb-8">
-                <LIAIcon size="xl" className="mb-4" />
-                <h2 className="text-3xl font-semibold mb-3 text-lia-text-primary">
+            <div className={`text-left pt-6 ${messagesContainerClass}`}>
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-2 text-lia-text-primary flex items-center gap-2">
+                  <Brain className="w-7 h-7 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
                   Oi, eu sou a <span className="text-lia-text-secondary">LIA</span>.
                 </h2>
-                <p className="text-base text-lia-text-tertiary">
+                <p className="text-sm text-lia-text-tertiary">
                   Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                 </p>
               </div>
@@ -327,15 +327,18 @@ export function ChatPage() {
                 activeFiltersCount={getActiveFiltersCount()}
               />
             ) : (
-              <div className="rounded-lg p-5 space-y-4 bg-white border border-lia-border-subtle">
-
-                {/* Sugestões de Tarefas (empty state) */}
-                {isEmptyChat && (
+              <>
+              {/* Sugestões de Tarefas (empty state) — fora do card do prompt */}
+              {isEmptyChat && (
+                <div className="mb-3">
                   <PromptSuggestionsDock
                     onSelect={(command) => setInput(command)}
                     isEmpty={true}
                   />
-                )}
+                </div>
+              )}
+
+              <div className="rounded-lg p-5 space-y-4 bg-white border border-lia-border-subtle">
                 
                 {/* Sugestões Rápidas */}
                 {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && (searchFlow.flowState as string) !== "collecting_profile" && (
@@ -576,6 +579,7 @@ export function ChatPage() {
                 </div>
 
               </div>
+              </>
             )}
           </div>
         </div>

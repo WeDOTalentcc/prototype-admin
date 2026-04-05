@@ -184,22 +184,8 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
 
   if (isEmpty) {
     return (
-      <div className="w-full max-w-4xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 
-              className="text-sm font-semibold flex items-center gap-2"
-              style={{color: 'var(--lia-text-primary)'}}
-            >
-              <div className="p-1.5 rounded-md bg-lia-btn-primary-bg/[0.08]">
-                <Brain className="w-4 h-4 text-wedo-cyan" />
-              </div>
-              Tarefas Sugeridas
-            </h3>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-2">
+      <div className="w-full">
+        <div className="grid grid-cols-2 gap-1.5">
           {DASHBOARD_SUGGESTIONS.map((suggestion) => {
             const Icon = suggestion.icon
             const colors = CATEGORY_COLORS[suggestion.category]
@@ -207,7 +193,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               <button
                 key={suggestion.id}
                 onClick={() => onSelect(suggestion.command)}
-                className="p-3 rounded-md transition-colors motion-reduce:transition-none text-left group"
+                className="px-2.5 py-2 rounded-md transition-colors motion-reduce:transition-none text-left group"
                 style={{border: `1px solid ${colors.bg}`,
                   backgroundColor: 'var(--white)'}}
                 onMouseEnter={(e) => {
@@ -221,27 +207,19 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
-                <div className="flex items-start gap-2.5">
+                <div className="flex items-center gap-2">
                   <div 
-                    className="p-1.5 rounded-md flex-shrink-0"
+                    className="p-1 rounded flex-shrink-0"
                     style={{backgroundColor: colors.bg}}
                   >
-                    <Icon className="w-3.5 h-3.5" style={{color: colors.icon}} />
+                    <Icon className="w-3 h-3" style={{color: colors.icon}} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 
-                      className="font-medium text-xs leading-tight mb-0.5"
-                      style={{color: 'var(--lia-text-primary)'}}
-                    >
-                      {suggestion.title}
-                    </h3>
-                    <p 
-                      className="text-xs leading-snug line-clamp-2"
-                      style={{color: 'var(--lia-text-secondary)'}}
-                    >
-                      {suggestion.description}
-                    </p>
-                  </div>
+                  <span 
+                    className="font-medium text-xs leading-tight truncate"
+                    style={{color: 'var(--lia-text-primary)'}}
+                  >
+                    {suggestion.title}
+                  </span>
                 </div>
               </button>
             )
