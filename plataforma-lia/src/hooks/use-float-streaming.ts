@@ -222,6 +222,14 @@ export function useFloatStreaming(
     clearTokens,
   } = useAgentStreaming(sessionId, { authToken: wsAuthToken }, handleEvent)
 
+  useEffect(() => {
+    if (wsAuthToken && isConnected) {
+      disconnect()
+      setTimeout(() => connect(), 50)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsAuthToken])
+
   const sendMessage = useCallback(async (content: string, domain = '', scope?: string) => {
     // E7: limpa etapas de thinking ao enviar nova mensagem
     setThinkingSteps([])
