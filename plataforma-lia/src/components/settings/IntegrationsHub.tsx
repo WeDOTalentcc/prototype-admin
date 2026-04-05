@@ -39,7 +39,6 @@ const tabToCategoryMap: Record<string, IntegrationCategory | "all"> = {
   "ats": "ats",
   "calendar": "calendar",
   "communication": "communication",
-  "int-communication": "communication",
   "crm-hris": "crm_hris",
   "mcps-apis": "mcps_apis",
 }

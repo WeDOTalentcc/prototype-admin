@@ -164,7 +164,7 @@ const getDefaultSections = (): SettingsSection[] => [
       { id: 'ai-models', title: 'Modelos de IA', description: 'Provedores de IA (Gemini, Claude, OpenAI)', fields: ['ai_providers'] },
       { id: 'ats', title: 'ATS / Applicant Tracking', description: 'Gupy, Pandapé, Merge.dev', fields: ['ats_connections'] },
       { id: 'calendar', title: 'Calendário & Agendamento', description: 'Google Calendar, Microsoft Calendar', fields: ['calendar_integrations'] },
-      { id: 'int-communication', title: 'Comunicação', description: 'Teams, WhatsApp, Email/SMTP', fields: ['communication_integrations'] },
+      { id: 'communication', title: 'Comunicação', description: 'Teams, WhatsApp, Email/SMTP', fields: ['communication_integrations'] },
       { id: 'crm-hris', title: 'CRM & HRIS', description: 'Salesforce, SAP, Workday', fields: ['crm_hris_integrations'] },
       { id: 'mcps-apis', title: 'MCPs & APIs', description: 'Webhooks e API REST', fields: ['api_integrations'] },
     ]
@@ -215,7 +215,7 @@ export default function SettingsPageEnhanced() {
     'ai-models': false,
     'ats': false,
     'calendar': false,
-    'int-communication': false,
+    'communication': false,
     'crm-hris': false,
     'mcps-apis': false,
   })
