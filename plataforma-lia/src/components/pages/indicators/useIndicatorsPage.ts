@@ -1,8 +1,11 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import type { ActiveTab, ViewMode, TeamMetrics, RecruiterData } from "./indicators.types"
 import { recruitersData } from "./indicators.constants"
+import { useAuth } from "@/contexts/auth-context"
+
+const API_BASE = "/api/backend-proxy"
 
 export function useIndicatorsPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("recruiters")
@@ -15,6 +18,34 @@ export function useIndicatorsPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [selectedCandidates, setSelectedCandidates] = useState<any[]>([])
   const [showExportModal, setShowExportModal] = useState(false)
+
+  // Live metrics from backend (keyed by recruiter user_id)
+  const [liveMetrics, setLiveMetrics] = useState<Record<string, any>>({})
+
+  const { user } = useAuth()
+
+  // Fetch real metrics for current user from backend
+  useEffect(() => {
+    const fetchMyMetrics = async () => {
+      if (!user) return
+      try {
+        const companyId = "default" // fallback; real value comes from user context when available
+        const res = await fetch(
+          `${API_BASE}/recruiter-metrics/${user.email}?company_id=${companyId}`,
+          { headers: { "Content-Type": "application/json" } }
+        )
+        if (res.ok) {
+          const json = await res.json()
+          if (json.success && json.data) {
+            setLiveMetrics(prev => ({ ...prev, [user.email]: json.data }))
+          }
+        }
+      } catch {
+        // Silently fail — fall back to mock data
+      }
+    }
+    fetchMyMetrics()
+  }, [user])
 
   const recruiters = Object.values(recruitersData) as RecruiterData[]
   const departments = [...new Set(recruiters.map((r) => r.department))]
@@ -125,5 +156,6 @@ export function useIndicatorsPage() {
     getStatusColor,
     handleCommandAction,
     handleAlertAction,
+    liveMetrics,
   }
 }

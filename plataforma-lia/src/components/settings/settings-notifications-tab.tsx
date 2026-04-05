@@ -13,7 +13,6 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
     email: true,
     push: true,
     whatsapp: false,
-    slack: true,
     newCandidates: true,
     interviews: true,
     deadlines: true,
@@ -33,8 +32,7 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
           {[
             { key: "email", label: "Email", icon: Mail, desc: "Notificações por email" },
             { key: "push", label: "Push", icon: Bell, desc: "Notificações do navegador" },
-            { key: "whatsapp", label: "WhatsApp", icon: MessageSquare, desc: "Mensagens WhatsApp" },
-            { key: "slack", label: "Slack", icon: MessageSquare, desc: "Mensagens Slack" }
+            { key: "whatsapp", label: "WhatsApp", icon: MessageSquare, desc: "Mensagens WhatsApp" }
           ].map((channel) => (
             <div key={channel.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-md">
               <div className="flex items-center gap-3">

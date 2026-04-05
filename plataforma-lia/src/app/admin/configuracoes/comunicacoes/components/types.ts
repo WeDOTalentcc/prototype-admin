@@ -127,7 +127,7 @@ export interface TechnicalAlert {
   description: string
   severity: 'low' | 'medium' | 'high' | 'critical'
   enabled: boolean
-  channels: ('email' | 'slack' | 'webhook')[]
+  channels: ('email' | 'webhook')[]
   threshold?: number
   thresholdUnit?: string
 }

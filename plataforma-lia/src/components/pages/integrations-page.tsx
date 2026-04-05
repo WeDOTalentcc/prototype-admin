@@ -48,7 +48,7 @@ export function IntegrationsPage() {
                 Integrações Externas
               </h1>
               <p className="text-lia-text-secondary">
-                Configure notificações automáticas para Slack, Teams e outras ferramentas
+                Configure notificações automáticas para Teams e outras ferramentas
               </p>
             </div>
             <div className="flex gap-3">

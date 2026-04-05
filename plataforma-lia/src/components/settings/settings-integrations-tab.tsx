@@ -12,7 +12,6 @@
     CheckCircle, Edit, Settings, Check, X, Activity,
     CheckCircle2, XCircle, Minus, AlertCircle, Info
   } from "lucide-react"
-  import { Slack } from "lucide-react"
 
   interface ATSSystem {
     id: string
@@ -34,7 +33,7 @@
   interface CommunicationIntegration {
     id: string
     name: string
-    type: 'slack' | 'teams'
+    type: 'teams'
     status: 'active' | 'inactive' | 'error'
     icon: React.ElementType
     color: string
@@ -84,22 +83,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
 
   // Mock data das integrações de comunicação
   const [communicationIntegrations, setCommunicationIntegrations] = useState<CommunicationIntegration[]>([
-    {
-      id: 'slack-recruiting',
-      name: 'Canal #recrutamento',
-      type: 'slack',
-      status: 'active',
-      icon: Slack,
-      color: 'bg-wedo-purple/15 text-wedo-purple',
-      webhookUrl: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX',
-      channels: ['#recrutamento', '#aprovacoes', '#geral'],
-      events: ['novo_candidato', 'aprovacao', 'nova_nota', 'mencao'],
-      lastActivity: '2025-03-15T14:30:00Z',
-      messagesCount: 247,
-      errorCount: 2,
-      createdAt: '2025-01-15T10:00:00Z',
-      createdBy: 'Ana Silva'
-    },
+
     {
       id: 'teams-rh',
       name: 'Equipe RH',
@@ -127,7 +111,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
       message: 'O candidato **{candidate_name}** se candidatou para a vaga **{job_title}**.\n\n📊 Score LIA: **{lia_score}%**\n📍 Localização: {location}\n⭐ Match: {match_score}%',
       mentions: ['@channel'],
       active: true,
-      integrations: ['slack-recruiting', 'teams-rh']
+      integrations: ['teams-rh']
     },
     {
       id: 'aprovacao-candidato',
@@ -137,7 +121,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
       message: 'O candidato **{candidate_name}** foi aprovado para a vaga **{job_title}**!\n\n👤 Aprovado por: {approver}\n📅 Data: {date}',
       mentions: ['@here'],
       active: true,
-      integrations: ['slack-recruiting', 'teams-rh']
+      integrations: ['teams-rh']
     }
   ])
 
@@ -444,7 +428,7 @@ export function SettingsIntegrationsTab({ onSettingsChange }: { onSettingsChange
             Integrações
           </h2>
           <p className="text-sm text-lia-text-primary">
-            Conecte sistemas ATS, Slack, Teams e outras plataformas
+            Conecte sistemas ATS, Teams e outras plataformas
           </p>
         </div>
         <div className="flex items-center gap-2">

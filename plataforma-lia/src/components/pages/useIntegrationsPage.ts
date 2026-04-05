@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import {
-  Slack, MessageSquare, UserCheck, CheckCircle, Users,
+  MessageSquare, UserCheck, CheckCircle, Users,
   MessageCircle, AtSign, Calendar, BarChart3
 } from "lucide-react"
 import type {
@@ -10,22 +10,7 @@ import type {
 } from "./integrations-page.types"
 
 const INITIAL_INTEGRATIONS: Integration[] = [
-  {
-    id: 'slack-recruiting',
-    name: 'Canal #recrutamento',
-    type: 'slack',
-    status: 'active',
-    icon: Slack,
-    color: 'bg-wedo-purple/15 text-wedo-purple',
-    webhookUrl: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX',
-    channels: ['#recrutamento', '#aprovacoes', '#geral'],
-    events: ['novo_candidato', 'aprovacao', 'nova_nota', 'mencao'],
-    lastActivity: '2025-03-15T14:30:00Z',
-    messagesCount: 247,
-    errorCount: 2,
-    createdAt: '2025-01-15T10:00:00Z',
-    createdBy: 'Ana Silva'
-  },
+
   {
     id: 'teams-rh',
     name: 'Equipe RH',
@@ -42,22 +27,7 @@ const INITIAL_INTEGRATIONS: Integration[] = [
     createdAt: '2025-02-01T14:00:00Z',
     createdBy: 'Carlos Mendes'
   },
-  {
-    id: 'slack-tech',
-    name: 'Canal #tech-hiring',
-    type: 'slack',
-    status: 'error',
-    icon: Slack,
-    color: 'bg-status-error/15 text-status-error',
-    webhookUrl: 'https://hooks.slack.com/services/invalid',
-    channels: ['#tech-hiring'],
-    events: ['entrevista_tecnica', 'aprovacao_tech'],
-    lastActivity: '2025-03-14T16:45:00Z',
-    messagesCount: 89,
-    errorCount: 12,
-    createdAt: '2025-02-15T11:30:00Z',
-    createdBy: 'Marina Costa'
-  }
+
 ]
 
 const INITIAL_TEMPLATES: NotificationTemplate[] = [
@@ -69,7 +39,7 @@ const INITIAL_TEMPLATES: NotificationTemplate[] = [
     message: 'O candidato **{candidate_name}** se candidatou para a vaga **{job_title}**.\n\n📊 Score LIA: **{lia_score}%**\n📍 Localização: {location}\n⭐ Match: {match_score}%\n\n[Ver perfil completo]({candidate_url})',
     mentions: ['@channel'],
     active: true,
-    integrations: ['slack-recruiting', 'teams-rh']
+    integrations: ['teams-rh']
   },
   {
     id: 'aprovacao-candidato',
@@ -79,7 +49,7 @@ const INITIAL_TEMPLATES: NotificationTemplate[] = [
     message: 'O candidato **{candidate_name}** foi aprovado para **{job_title}**!\n\n👤 Aprovado por: {approver_name}\n📅 Data: {approval_date}\n💬 Comentário: "{approval_comment}"\n\n🎉 Próximo passo: {next_step}',
     mentions: ['@here'],
     active: true,
-    integrations: ['slack-recruiting', 'teams-rh']
+    integrations: ['teams-rh']
   },
   {
     id: 'nova-nota',
@@ -89,7 +59,7 @@ const INITIAL_TEMPLATES: NotificationTemplate[] = [
     message: '**{author_name}** adicionou uma nota sobre **{candidate_name}**:\n\n"{note_content}"\n\n🏷️ Tags: {tags}\n📂 Categoria: {category}\n\n[Ver nota completa]({note_url})',
     mentions: [],
     active: true,
-    integrations: ['slack-recruiting']
+    integrations: ['teams-rh']
   },
   {
     id: 'mencao',
@@ -99,7 +69,7 @@ const INITIAL_TEMPLATES: NotificationTemplate[] = [
     message: '**{author_name}** mencionou você em uma nota sobre **{candidate_name}**:\n\n"{note_content}"\n\n[Responder]({note_url})',
     mentions: ['{mentioned_user}'],
     active: true,
-    integrations: ['slack-recruiting', 'teams-rh']
+    integrations: ['teams-rh']
   },
   {
     id: 'aprovacao-lote',
@@ -116,7 +86,7 @@ const INITIAL_TEMPLATES: NotificationTemplate[] = [
 const INITIAL_EVENTS: WebhookEvent[] = [
   {
     id: '1',
-    integration: 'slack-recruiting',
+    integration: 'teams-rh',
     event: 'novo_candidato',
     status: 'success',
     timestamp: '2025-03-15T14:30:00Z',
@@ -133,7 +103,7 @@ const INITIAL_EVENTS: WebhookEvent[] = [
   },
   {
     id: '3',
-    integration: 'slack-tech',
+    
     event: 'entrevista_tecnica',
     status: 'failed',
     timestamp: '2025-03-15T12:00:00Z',
@@ -216,8 +186,8 @@ export function useIntegrationsPage() {
       name: newIntegration.name,
       type: newIntegration.type,
       status: 'active',
-      icon: newIntegration.type === 'slack' ? Slack : MessageSquare,
-      color: newIntegration.type === 'slack' ? 'bg-wedo-purple/15 text-wedo-purple' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary',
+      icon: MessageSquare,
+      color: 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary',
       webhookUrl: newIntegration.webhookUrl,
       channels: newIntegration.channels,
       events: newIntegration.events,
@@ -229,7 +199,7 @@ export function useIntegrationsPage() {
     }
     setIntegrations(prev => [...prev, integration])
     setShowNewIntegration(false)
-    setNewIntegration({ name: '', type: 'slack', webhookUrl: '', channels: [''], events: [] })
+    setNewIntegration({ name: '', type: 'teams', webhookUrl: '', channels: [''], events: [] })
   }
 
   const filteredEvents = webhookEvents.filter(event => {

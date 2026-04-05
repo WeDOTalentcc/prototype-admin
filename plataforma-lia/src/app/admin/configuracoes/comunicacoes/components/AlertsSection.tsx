@@ -20,7 +20,7 @@ interface AlertsSectionProps {
   fetchTechnicalAlerts: () => void
   saveTechnicalAlerts: () => void
   handleToggleAlert: (id: string) => void
-  handleToggleAlertChannel: (alertId: string, channel: 'email' | 'slack' | 'webhook') => void
+  handleToggleAlertChannel: (alertId: string, channel: 'email' | 'webhook') => void
   handleUpdateAlertThreshold: (id: string, threshold: number) => void
 }
 
@@ -131,23 +131,21 @@ export function AlertsSection({
                     
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium text-lia-text-secondary dark:text-lia-text-tertiary" >Canais:</span>
-                      {(['email', 'slack', 'webhook'] as const).map(channel => (
+                      {(['email', 'webhook'] as const).map(channel => (
                         <Badge
                           key={channel}
                           variant={alert.channels.includes(channel) ? 'default' : 'outline'}
                           className={`text-xs cursor-pointer transition-transform motion-reduce:transition-none hover:scale-105 ${
                             alert.channels.includes(channel) 
                               ? channel === 'email' ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:text-lia-text-primary dark:hover:bg-lia-interactive-active' 
-                                : channel === 'slack' ? 'bg-wedo-purple hover:bg-wedo-purple' 
                                 : 'bg-status-success hover:bg-status-success'
                               : ''
                           }`}
                           onClick={() => handleToggleAlertChannel(alert.id, channel)}
                         >
                           {channel === 'email' && <Mail className="w-3 h-3 mr-1" />}
-                          {channel === 'slack' && <Globe className="w-3 h-3 mr-1" />}
                           {channel === 'webhook' && <Webhook className="w-3 h-3 mr-1" />}
-                          {channel === 'email' ? 'Email' : channel === 'slack' ? 'Slack' : 'Webhook'}
+                          {channel === 'email' ? 'Email' : 'Webhook'}
                         </Badge>
                       ))}
                     </div>

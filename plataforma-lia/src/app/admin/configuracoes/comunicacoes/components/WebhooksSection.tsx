@@ -148,7 +148,7 @@ export function WebhooksSection({
                     <Input
                       value={editingWebhook.name}
                       onChange={(e) => setEditingWebhook({ ...editingWebhook, name: e.target.value })}
-                      placeholder="Ex: Slack Notifications"
+                      placeholder="Ex: Teams Notifications"
                     />
                   </div>
                   <div>

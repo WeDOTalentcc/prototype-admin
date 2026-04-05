@@ -1,16 +1,6 @@
-// Serviço de integrações para envio de webhooks Slack/Teams
+// Serviço de integrações para envio de webhooks (Teams e outros)
 
 type WebhookData = Record<string, unknown>
-
-interface SlackBlock {
-  type: string
-  text: { type: string; text: string }
-}
-
-interface SlackMessage {
-  text: string
-  blocks: SlackBlock[]
-}
 
 interface TeamsMessage {
   "@type": string
@@ -29,7 +19,7 @@ interface WebhookPayload {
 interface Integration {
   id: string
   name: string
-  type: 'slack' | 'teams' | 'discord' | 'email'
+  type: 'teams' | 'discord' | 'email'
   webhookUrl: string
   events: string[]
   active: boolean
@@ -66,31 +56,14 @@ class IntegrationsService {
     }
   }
 
-  private formatMessage(integration: Integration, event: string, data: WebhookData): SlackMessage | TeamsMessage | { text: string } {
+  private formatMessage(integration: Integration, event: string, data: WebhookData): TeamsMessage | { text: string } {
     const template = integration.templates[event] || this.getDefaultTemplate(event)
 
     switch (integration.type) {
-      case 'slack':
-        return this.formatSlackMessage(template, data)
       case 'teams':
         return this.formatTeamsMessage(template, data)
       default:
         return { text: this.interpolateTemplate(template, data) }
-    }
-  }
-
-  private formatSlackMessage(template: string, data: WebhookData): SlackMessage {
-    return {
-      text: this.interpolateTemplate(template, data),
-      blocks: [
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: this.interpolateTemplate(template, data)
-          }
-        }
-      ]
     }
   }
 
@@ -225,19 +198,6 @@ class IntegrationsService {
 }
 
 export const integrationsService = new IntegrationsService()
-
-integrationsService.addIntegration({
-  id: 'slack-recruiting',
-  name: 'Canal #recrutamento',
-  type: 'slack',
-  webhookUrl: 'https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX',
-  events: ['novo_candidato', 'aprovacao', 'nova_nota', 'mencao'],
-  active: true,
-  templates: {
-    novo_candidato: '🎯 *Novo candidato!*\n\n*Nome:* {candidate_name}\n*Vaga:* {job_title}\n*Score LIA:* {lia_score}%\n*Match:* {match_score}%\n\n<{candidate_url}|Ver perfil completo>',
-    aprovacao: '✅ *Candidato aprovado!*\n\n*Nome:* {candidate_name}\n*Vaga:* {job_title}\n*Aprovado por:* {approver_name}\n*Data:* {approval_date}\n\n💬 *Comentário:* "{approval_comment}"'
-  }
-})
 
 integrationsService.addIntegration({
   id: 'teams-rh',

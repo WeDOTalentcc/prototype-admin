@@ -3,7 +3,7 @@ import React from "react"
 export interface Integration {
   id: string
   name: string
-  type: 'slack' | 'teams' | 'discord' | 'email'
+  type: 'teams' | 'discord' | 'email'
   status: 'active' | 'inactive' | 'error'
   icon: React.ElementType
   color: string
@@ -41,7 +41,7 @@ export interface WebhookEvent {
 
 export interface NewIntegrationForm {
   name: string
-  type: 'slack' | 'teams'
+  type: 'teams'
   webhookUrl: string
   channels: string[]
   events: string[]

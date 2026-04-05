@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { LIAIcon } from "@/components/ui/lia-icon"
@@ -626,8 +627,8 @@ export function ChatPage() {
           candidateId={selectedCandidateForScheduling.id}
           jobTitle={selectedCandidateForScheduling.job_title}
           jobVacancyId={selectedCandidateForScheduling.job_vacancy_id}
-          userName="Ana Silva"
-          userEmail="ana.silva@wedotalent.com"
+          userName={useAuth().user?.name || "Recrutador"}
+          userEmail={useAuth().user?.email || ""}
         />
       )}
 

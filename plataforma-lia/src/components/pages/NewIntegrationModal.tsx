@@ -27,10 +27,9 @@ export function NewIntegrationModal({ newIntegration, onChange, onCreate, onCanc
               </label>
               <select
                 value={newIntegration.type}
-                onChange={(e) => onChange({...newIntegration, type: e.target.value as 'slack' | 'teams'})}
+                onChange={(e) => onChange({...newIntegration, type: e.target.value as 'teams'})}
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
               >
-                <option value="slack">Slack</option>
                 <option value="teams">Microsoft Teams</option>
               </select>
             </div>
@@ -56,7 +55,7 @@ export function NewIntegrationModal({ newIntegration, onChange, onCreate, onCanc
                 type="url"
                 value={newIntegration.webhookUrl}
                 onChange={(e) => onChange({...newIntegration, webhookUrl: e.target.value})}
-                placeholder="https://hooks.slack.com/services/..."
+                placeholder="https://outlook.office.com/webhook/..."
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
               />
             </div>
