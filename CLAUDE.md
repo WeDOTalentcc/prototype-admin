@@ -267,3 +267,35 @@ Serviço central: `app/services/notification_service.py`
 Padrão correto:
 - `className="transition-colors duration-200"` — para hover de cor, bg, border
 - `className="transition-all duration-200"` — SOMENTE quando width/height/transform também mudam (ex: expansão de painel, slide-in)
+
+---
+
+## ⛔ DO NOT MODIFY — Configurações Críticas de Integração
+
+> **ATENÇÃO:** As configurações abaixo são essenciais para o funcionamento da integração Microsoft Teams via Azure Bot.
+> **NÃO remova, altere ou comente** nenhum dos itens listados. Qualquer modificação pode quebrar a comunicação entre o Azure Bot e a plataforma LIA.
+
+### 1. Middleware de Autenticação — Rotas Públicas
+
+**Arquivo:** `lia-agent-system/app/middleware/auth_enforcement.py`
+
+A variável `PUBLIC_PREFIXES` **DEVE** incluir `"/api/v1/teams/"`. Esta rota é acessada diretamente pelo Azure Bot Service e não passa por autenticação de usuário.
+
+```python
+PUBLIC_PREFIXES = (
+    "/api/v1/teams/",   # ← NÃO REMOVER — necessário para Azure Bot (Microsoft Teams)
+    ...
+)
+```
+
+### 2. Secrets do Replit — Credenciais Azure Bot
+
+Os seguintes secrets são credenciais do Azure Bot Registration e **NÃO devem ser removidos**:
+
+| Secret | Descrição |
+|--------|-----------|
+| `MICROSOFT_APP_ID` | Application (client) ID do Azure Bot Registration |
+| `MICROSOFT_APP_PASSWORD` | Client secret do Azure Bot Registration |
+| `MICROSOFT_TENANT_ID` | Directory (tenant) ID do Azure AD |
+
+Esses secrets são consumidos pela integração Teams em `app/api/v1/teams/` e são obrigatórios para autenticação com o Microsoft Bot Framework.
