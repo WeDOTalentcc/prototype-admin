@@ -89,7 +89,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const close = useCallback(() => {
-    setState(prev => ({ ...prev, isOpen: false }))
+    setState(prev => ({ ...prev, isOpen: false, entityContext: null }))
   }, [])
 
   const toggle = useCallback(() => {
@@ -117,6 +117,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       ...prev,
       isOpen: false,
       isExpanded: false,
+      entityContext: null,
     }))
   }, [])
 

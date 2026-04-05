@@ -25,10 +25,13 @@ interface ChatMessage {
 
 interface Candidate {
   name?: string
+  nome?: string
   candidateId?: string
   id?: string
   position?: string
   score?: number
+  lia_score?: number
+  email?: string
 }
 
 interface LiaChatModalProps {
