@@ -375,7 +375,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 </span>
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-panel-sm p-3 max-w-panel-sm p-3 border-lia-border-default dark:border-lia-border-default">
+            <TooltipContent side="bottom" className="max-w-panel-sm p-3 border-lia-border-default dark:border-lia-border-default">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

@@ -12,7 +12,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
 
-from app.domains.communication.services.email_providers.base import EmailResult
+from app.services.email_providers.base import EmailResult
 from app.domains.communication.services.email_providers.fallback_provider import FallbackEmailProvider
 
 

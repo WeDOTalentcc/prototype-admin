@@ -124,27 +124,27 @@ class TestWhatsAppInitialContact:
 class TestBaseEmailFooter:
 
     def test_html_footer_mentions_mailgun(self):
-        from app.domains.communication.services.email_providers.base import BASE_EMAIL_FOOTER_HTML
+        from app.services.email_providers.base import BASE_EMAIL_FOOTER_HTML
         assert "Mailgun" in BASE_EMAIL_FOOTER_HTML
 
     def test_html_footer_mentions_lia(self):
-        from app.domains.communication.services.email_providers.base import BASE_EMAIL_FOOTER_HTML
+        from app.services.email_providers.base import BASE_EMAIL_FOOTER_HTML
         assert "LIA" in BASE_EMAIL_FOOTER_HTML
 
     def test_html_footer_has_privacy_link(self):
-        from app.domains.communication.services.email_providers.base import BASE_EMAIL_FOOTER_HTML
+        from app.services.email_providers.base import BASE_EMAIL_FOOTER_HTML
         assert "privacidade" in BASE_EMAIL_FOOTER_HTML.lower()
 
     def test_html_footer_has_opt_out(self):
-        from app.domains.communication.services.email_providers.base import BASE_EMAIL_FOOTER_HTML
+        from app.services.email_providers.base import BASE_EMAIL_FOOTER_HTML
         assert any(w in BASE_EMAIL_FOOTER_HTML for w in ["PRIVACIDADE", "cancelar", "opt"])
 
     def test_text_footer_mentions_lgpd(self):
-        from app.domains.communication.services.email_providers.base import BASE_EMAIL_FOOTER_TEXT
+        from app.services.email_providers.base import BASE_EMAIL_FOOTER_TEXT
         assert "LGPD" in BASE_EMAIL_FOOTER_TEXT
 
     def test_text_footer_has_opt_out(self):
-        from app.domains.communication.services.email_providers.base import BASE_EMAIL_FOOTER_TEXT
+        from app.services.email_providers.base import BASE_EMAIL_FOOTER_TEXT
         assert "PRIVACIDADE" in BASE_EMAIL_FOOTER_TEXT
 
 
@@ -155,37 +155,37 @@ class TestBaseEmailFooter:
 class TestWithLgpdFooter:
 
     def _make_message(self, html="<p>Corpo</p>", text="Corpo"):
-        from app.domains.communication.services.email_providers.base import EmailMessage
+        from app.services.email_providers.base import EmailMessage
         return EmailMessage(to="cand@test.com", subject="Vaga", html_content=html, text_content=text)
 
     def test_html_content_appended(self):
-        from app.domains.communication.services.email_providers.base import EmailProvider, BASE_EMAIL_FOOTER_HTML
+        from app.services.email_providers.base import EmailProvider, BASE_EMAIL_FOOTER_HTML
         msg = self._make_message()
         result = EmailProvider.with_lgpd_footer(msg)
         assert result.html_content.endswith(BASE_EMAIL_FOOTER_HTML)
 
     def test_text_content_appended(self):
-        from app.domains.communication.services.email_providers.base import EmailProvider, BASE_EMAIL_FOOTER_TEXT
+        from app.services.email_providers.base import EmailProvider, BASE_EMAIL_FOOTER_TEXT
         msg = self._make_message()
         result = EmailProvider.with_lgpd_footer(msg)
         assert result.text_content.endswith(BASE_EMAIL_FOOTER_TEXT)
 
     def test_original_not_mutated(self):
-        from app.domains.communication.services.email_providers.base import EmailProvider
+        from app.services.email_providers.base import EmailProvider
         msg = self._make_message()
         original_html = msg.html_content
         EmailProvider.with_lgpd_footer(msg)
         assert msg.html_content == original_html
 
     def test_other_fields_preserved(self):
-        from app.domains.communication.services.email_providers.base import EmailProvider
+        from app.services.email_providers.base import EmailProvider
         msg = self._make_message()
         result = EmailProvider.with_lgpd_footer(msg)
         assert result.to == msg.to
         assert result.subject == msg.subject
 
     def test_mailgun_in_html_after_footer(self):
-        from app.domains.communication.services.email_providers.base import EmailProvider
+        from app.services.email_providers.base import EmailProvider
         msg = self._make_message()
         result = EmailProvider.with_lgpd_footer(msg)
         assert "Mailgun" in result.html_content
