@@ -156,12 +156,12 @@ describe("useNavigationIntent", () => {
   })
 
   it("confidence exatamente 0.65 deve retornar resultado (boundary)", async () => {
-    mockFetch({ page: "Painel de Controle", confidence: 0.65, hint: "Ver painel", matched_pattern: "painel" })
+    mockFetch({ page: "Tarefas", confidence: 0.65, hint: "Ver tarefas", matched_pattern: "tarefas" })
     const { result } = renderHook(() => useNavigationIntent())
     let ret: unknown
     await act(async () => {
-      ret = await result.current.detect("abrir painel")
+      ret = await result.current.detect("abrir tarefas")
     })
-    expect((ret as { page: string }).page).toBe("Painel de Controle")
+    expect((ret as { page: string }).page).toBe("Tarefas")
   })
 })

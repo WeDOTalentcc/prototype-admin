@@ -63,7 +63,7 @@ export function TasksPageMVP({ onNavigate }: TasksPageMVPProps = {}) {
             <div>
               <h1 className="text-xl font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary flex items-center gap-2">
                 <LayoutDashboard className="w-5 h-5 text-lia-text-secondary" />
-                Painel de Controle
+                Tarefas
               </h1>
             </div>
           </div>

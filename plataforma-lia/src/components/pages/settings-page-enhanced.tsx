@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Settings, Building, Zap, Users, Database, GitBranch,
   ChevronRight, Plus, Edit, Trash2, Save, X, Check, AlertTriangle,
-  Globe, Link, Upload, Download, FileText, Mail, Phone, MapPin, LayoutDashboard,
+  Globe, Link, Upload, Download, FileText, Mail, Phone, MapPin,
   Calendar, Target, BarChart3, TrendingUp, UserCheck, Award,
   Key, Eye, EyeOff, Brain, MessageSquare, Clock,
   Copy, PlayCircle, PauseCircle, ArrowRight, CheckCircle, AlertCircle,
@@ -25,7 +25,6 @@ const RecruitmentHub = dynamic(() => import("@/components/settings/RecruitmentHu
 const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
 const GoalsPlanningHub = dynamic(() => import("@/components/settings/GoalsPlanningHub").then(m => ({ default: m.GoalsPlanningHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando metas..." /> })
 const GlobalSearchHub = dynamic(() => import("@/components/settings/GlobalSearchHub").then(m => ({ default: m.GlobalSearchHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando busca..." /> })
-const TasksPage = dynamic(() => import("@/components/pages/tasks-page").then(m => ({ default: m.TasksPage })), { ssr: false, loading: () => <LoadingFallback text="Carregando tarefas..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
@@ -150,20 +149,6 @@ const getDefaultSections = (): SettingsSection[] => [
       { id: 'costs', title: 'Custos', description: 'Tabela de custos da Busca Global', fields: ['credit_costs'] }
     ]
   },
-  {
-    id: 'control-panel',
-    title: 'Painel de Controle',
-    description: 'Tarefas, alertas e histórico de atividades',
-    icon: LayoutDashboard,
-    status: 'incomplete',
-    priority: 'medium',
-    category: 'advanced',
-    estimatedTime: 0,
-    subsections: [
-      { id: 'tasks', title: 'Tarefas', description: 'Gerenciar tarefas e alertas', fields: ['tasks'] },
-      { id: 'activities', title: 'Histórico', description: 'Histórico de atividades', fields: ['activities'] }
-    ]
-  },
 ]
 
 const settingsSections: SettingsSection[] = getDefaultSections()
@@ -187,7 +172,6 @@ export default function SettingsPageEnhanced() {
     'communication': 0,
     'goals-planning': 0,
     'global-search': 0,
-    'control-panel': 0
   })
 
   const [subsectionCompletion, setSubsectionCompletion] = useState<Record<string, boolean>>({
@@ -206,8 +190,6 @@ export default function SettingsPageEnhanced() {
     'limits': false,
     'options': false,
     'costs': false,
-    'tasks': false,
-    'activities': false
   })
 
   const [overallProgress, setOverallProgress] = useState<number>(0)
@@ -252,7 +234,6 @@ export default function SettingsPageEnhanced() {
           'hiring-policies': data.sections['hiring-policies'] ?? prev['hiring-policies'],
           'goals-planning': data.sections['goals-planning'] ?? prev['goals-planning'],
           'global-search': data.sections['global-search'] ?? prev['global-search'],
-          'control-panel': data.sections['control-panel'] ?? prev['control-panel']
         }))
       }
       
@@ -411,8 +392,6 @@ export default function SettingsPageEnhanced() {
           />
           </ErrorBoundarySection>
         )
-      case 'control-panel':
-        return <ErrorBoundarySection><TasksPage /></ErrorBoundarySection>
       default:
         return (
           <div className="text-center py-12">

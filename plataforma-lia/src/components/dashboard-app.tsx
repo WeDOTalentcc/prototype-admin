@@ -10,7 +10,7 @@ import { Sidebar } from "@/components/sidebar"
 import { CandidatesPage } from "@/components/pages/candidates-page"
 import { ChatPage } from "@/components/pages/chat-page"
 import { JobsPage } from "@/components/pages/jobs-page"
-import { TasksPageMVP } from "@/components/pages/tasks-page-mvp"
+import { TasksPage } from "@/components/pages/tasks-page"
 import { IndicatorsPage } from "@/components/pages/indicators-page"
 import { CommunicationHub } from "@/components/settings/CommunicationHub"
 import { TemplatesPage } from "@/components/pages/templates-page"
@@ -129,8 +129,8 @@ export function DashboardApp({ initialPage = "Funil de Talentos" }: DashboardApp
         return <LiaLibraryPage onNavigate={handleNavigate} />
       case "Templates":
         return <TemplatesPage />
-      case "Painel de Controle":
-        return <TasksPageMVP onNavigate={handleNavigate} />
+      case "Tarefas":
+        return <TasksPage onNavigate={handleNavigate} />
       case "Configurações":
         return <SettingsPageEnhanced />
       default:

@@ -40,7 +40,7 @@ export function TasksPage({ onNavigate }: TasksPageProps = {}) {
           <div>
             <h1 className="text-base font-['Open_Sans',sans-serif] font-semibold text-lia-text-primary mb-0.5 flex items-center gap-2">
               <Target className="w-4 h-4 text-lia-text-primary" />
-              Painel de Controle
+              Tarefas
             </h1>
             <p className={`${textStyles.bodySmall} text-lia-text-secondary`}>
               Você tem 30 novos candidatos e 4 vagas abertas.
