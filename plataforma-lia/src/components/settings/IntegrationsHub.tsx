@@ -71,6 +71,9 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
       .then((r) => r.json())
       .then((data) => {
         setMicrosoftStatus(data.graph_configured ? "connected" : "not_configured")
+        if (data.google_configured) {
+          setGoogleStatus("connected")
+        }
       })
       .catch(() => setMicrosoftStatus("not_configured"))
 
