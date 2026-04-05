@@ -40,19 +40,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/policy-engine", tags=["policy-engine"])
 
 
-def get_company_id_from_header(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID")
-) -> Optional[str]:
-    """Extract company ID from header if present."""
-    if x_company_id:
-        try:
-            UUID(x_company_id)
-            return x_company_id
-        except ValueError:
-            pass
-    return None
-
-
 def get_user_id_from_header(
     x_user_id: Optional[str] = Header(None, alias="X-User-ID")
 ) -> Optional[str]:

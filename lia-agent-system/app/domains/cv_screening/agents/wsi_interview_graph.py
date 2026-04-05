@@ -850,7 +850,7 @@ class WSIInterviewGraph:
     ) -> WSIInterviewState:
         """Cria uma nova sessão de entrevista WSI."""
         return WSIInterviewState(
-            session_id=str(uuid4()),
+            session_id=f"system:{uuid4()}",
             company_id=company_id,
             candidate_id=candidate_id,
             job_id=job_id,

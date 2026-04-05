@@ -38,22 +38,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/audit-logs", tags=["audit-logs"])
 
 
-def get_company_id_from_header(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID")
-) -> Optional[str]:
-    """Extract company ID from header (optional for platform-wide queries)."""
-    if x_company_id:
-        try:
-            UUID(x_company_id)
-        except ValueError:
-            if x_company_id not in ["demo_company", "platform"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Invalid X-Company-ID format"
-                )
-    return x_company_id
-
-
 @router.get("/stats", response_model=AuditStatsResponse, summary="Get audit log statistics")
 async def get_audit_stats(
     date_from: Optional[datetime] = Query(None, description="Start date for stats"),

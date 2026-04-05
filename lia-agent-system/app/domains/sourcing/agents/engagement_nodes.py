@@ -220,7 +220,7 @@ async def calibration_node(state: Dict[str, Any]) -> Dict[str, Any]:
         sourcing_state.update_candidate_status(candidate.candidate_id, CandidateStatus.CALIBRATION)
     
     session = CalibrationSession(
-        session_id=str(uuid.uuid4()),
+        session_id=f"system:{uuid.uuid4()}",
         candidates_presented=[c.candidate_id for c in calibration_candidates]
     )
     sourcing_state.calibration_sessions.append(session)

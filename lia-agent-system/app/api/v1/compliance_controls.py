@@ -36,25 +36,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/compliance", tags=["compliance-controls"])
 
 
-def get_company_id_from_header(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID")
-) -> str:
-    """Extract and validate company ID from header."""
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="X-Company-ID header required"
-        )
-    try:
-        UUID(x_company_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid X-Company-ID format"
-        )
-    return x_company_id
-
-
 @router.get("/controls", response_model=ControlLibraryListResponse, summary="List control library entries")
 async def list_control_library(
     framework: Optional[str] = Query(None, description="Filter by framework"),

@@ -780,7 +780,7 @@ async def wsi_screening(
             candidate_name = getattr(candidate, 'name', 'Candidato')
             job_title = getattr(job, 'title', 'Vaga')
             
-            screening_session_id = str(uuid.uuid4())
+            screening_session_id = f"system:{uuid.uuid4()}"
             
             screening_config = {
                 "bloom_levels": ["remember", "understand", "apply", "analyze", "evaluate", "create"],

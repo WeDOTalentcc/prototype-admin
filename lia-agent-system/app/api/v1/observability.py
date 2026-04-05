@@ -39,31 +39,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/observability", tags=["observability"])
 
 
-def get_company_id_from_header(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID")
-) -> str:
-    """Extract and validate company ID from header.
-    
-    Multi-tenant security: All observability endpoints require X-Company-ID header
-    to ensure tenant isolation. Returns 401 if header is missing.
-    """
-    if not x_company_id:
-        logger.warning("SECURITY: Request without X-Company-ID header rejected")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="X-Company-ID header required for authentication"
-        )
-    try:
-        UUID(x_company_id)
-    except ValueError:
-        logger.warning(f"SECURITY: Invalid company ID format attempted: {x_company_id[:50] if x_company_id else 'None'}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid X-Company-ID format"
-        )
-    return x_company_id
-
-
 def log_cross_tenant_attempt(requested_id: str, company_id: str, resource_type: str):
     """Log potential cross-tenant access attempts for security auditing."""
     logger.warning(

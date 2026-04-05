@@ -63,46 +63,6 @@ class WorkforcePlanResponse(BaseModel):
     updated_at: str
 
 
-def get_company_id_from_headers(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID")
-) -> str:
-    """Get company ID from request headers."""
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Company ID required. Please provide X-Company-ID header."
-        )
-    return x_company_id
-
-
-async def get_client(company_id: str, db: AsyncSession) -> ClientAccount:
-    """Get client account by company ID."""
-    try:
-        client_uuid = UUID(company_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid company ID format"
-        )
-    
-    query = select(ClientAccount).where(
-        and_(
-            ClientAccount.id == client_uuid,
-            ClientAccount.is_deleted == False
-        )
-    )
-    result = await db.execute(query)
-    client = result.scalar_one_or_none()
-    
-    if not client:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Client not found: {company_id}"
-        )
-    
-    return client
-
-
 def get_workforce_plans(client: ClientAccount) -> List[Dict[str, Any]]:
     """Get workforce plans from client settings."""
     if not client.settings:

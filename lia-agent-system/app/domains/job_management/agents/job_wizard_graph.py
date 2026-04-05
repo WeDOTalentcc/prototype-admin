@@ -259,7 +259,7 @@ class JobWizardGraph:
         if self._compiled_lg is None:
             self._compiled_lg = self._build_langgraph()
 
-        session_id = state.get("session_id", str(uuid4()))
+        session_id = state.get("session_id", f"system:{uuid4()}")
         if audit_callback:
             audit_callback.on_chain_start_manual()
 
@@ -389,7 +389,7 @@ class JobWizardGraph:
         Returns:
             Final state after graph execution
         """
-        session_id = state.get("session_id", str(uuid4()))
+        session_id = state.get("session_id", f"system:{uuid4()}")
         company_id = state.get("company_id")
 
         # A3 — restore prior state so accumulated job data survives restarts

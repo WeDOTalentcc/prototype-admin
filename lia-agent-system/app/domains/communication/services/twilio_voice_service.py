@@ -267,7 +267,7 @@ class TwilioVoiceService:
         Raises:
             TwilioVoiceUnconfiguredError: If Twilio is not configured (callers must fallback)
         """
-        session_id = session_id or str(uuid.uuid4())
+        session_id = session_id or f"system:{uuid.uuid4()}"
 
         if not self.is_configured:
             raise TwilioVoiceUnconfiguredError(

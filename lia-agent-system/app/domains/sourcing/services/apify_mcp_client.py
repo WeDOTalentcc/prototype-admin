@@ -98,7 +98,7 @@ class ApifyMCPClient:
                 return ApifyMCPClient._shared_session
             
             session = MCPSession(
-                session_id=str(uuid.uuid4()),
+                session_id=f"system:{uuid.uuid4()}",
                 created_at=datetime.utcnow()
             )
             

@@ -34,48 +34,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/trust-center", tags=["trust-center"])
 
 
-def get_company_id_from_header(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID")
-) -> str:
-    """Extract and validate company ID from header for admin endpoints."""
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="X-Company-ID header required for authentication"
-        )
-    try:
-        UUID(x_company_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid X-Company-ID format"
-        )
-    return x_company_id
-
-
-async def get_trust_center_settings_by_slug(
-    company_slug: str,
-    db: AsyncSession
-) -> TrustCenterSettings:
-    """Get trust center settings by company slug, checking if public."""
-    query = select(TrustCenterSettings).where(
-        and_(
-            TrustCenterSettings.company_slug == company_slug,
-            TrustCenterSettings.is_public == True
-        )
-    )
-    result = await db.execute(query)
-    settings = result.scalar_one_or_none()
-    
-    if not settings:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Trust center not found or not public"
-        )
-    
-    return settings
-
-
 @router.get("/{company_slug}/overview", response_model=TrustCenterOverviewResponse, summary="Get public trust center overview")
 async def get_trust_center_overview(
     company_slug: str,

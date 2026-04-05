@@ -147,7 +147,7 @@ class WSIVoiceOrchestrator:
         """
         logger.info(f"🎤 Starting WSI voice screening for {candidate_name} (candidate_id: {candidate_id})")
         
-        session_id = str(uuid.uuid4())
+        session_id = f"system:{uuid.uuid4()}"
         
         async def _execute_with_db(session: AsyncSession) -> VoiceScreeningResult:
             try:

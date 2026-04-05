@@ -38,7 +38,7 @@ class WSIAsyncSessionService:
         db: Any,
     ) -> str:
         """Cria nova sessão assíncrona. Retorna session_id."""
-        session_id = str(uuid.uuid4())
+        session_id = f"system:{uuid.uuid4()}"
         expires_at = datetime.utcnow() + timedelta(hours=WSI_SESSION_TIMEOUT_HOURS)
 
         session_data = {

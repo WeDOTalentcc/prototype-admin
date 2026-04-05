@@ -1558,7 +1558,7 @@ class TriagemSessionService:
             logger.warning("[Triagem] Cannot persist WSI results: missing candidate_id or job_id")
             return None
 
-        wsi_session_id = str(uuid.uuid4())
+        wsi_session_id = f"system:{uuid.uuid4()}"
         meta = session.metadata_json or {}
         qs_version = meta.get("wsi_question_set_version")
         qs_id = meta.get("wsi_question_set_id")

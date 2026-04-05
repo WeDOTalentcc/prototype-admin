@@ -581,7 +581,7 @@ class VoiceScreeningOrchestrator:
         await self.verify_consent(candidate_id, company_id, db)
 
         session = VoiceScreeningSession(
-            session_id=str(uuid4()),
+            session_id=f"system:{uuid4()}",
             candidate_id=candidate_id,
             candidate_name=candidate_name,
             job_title=job_title,

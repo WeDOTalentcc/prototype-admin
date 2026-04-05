@@ -41,27 +41,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/lgpd", tags=["lgpd-compliance"])
 
 
-def get_company_id_from_header(
-    x_company_id: Optional[str] = Header(None, alias="X-Company-ID")
-) -> str:
-    """Extract and validate company ID from header."""
-    if not x_company_id:
-        logger.warning("SECURITY: Request without X-Company-ID header rejected")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="X-Company-ID header required for authentication"
-        )
-    try:
-        UUID(x_company_id)
-    except ValueError:
-        logger.warning(f"SECURITY: Invalid company ID format attempted: {x_company_id[:50] if x_company_id else 'None'}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid X-Company-ID format"
-        )
-    return x_company_id
-
-
 @router.get("/stats", response_model=LGPDComplianceStats, summary="Get LGPD compliance statistics")
 async def get_lgpd_stats(
     company_id: str = Depends(get_verified_company_id),
