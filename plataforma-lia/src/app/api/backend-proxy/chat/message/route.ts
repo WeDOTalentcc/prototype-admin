@@ -4,7 +4,7 @@ import { validateBody } from '@/lib/api/validate'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8001'
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
@@ -16,10 +16,14 @@ export async function POST(request: NextRequest) {
 
     const body = bodyResult.data
 
-    const response = await fetch(`${BACKEND_URL}/chat/message`, {
+    const response = await fetch(`${BACKEND_URL}/api/v1/chat`, {
       method: 'POST',
       headers: getAuthHeaders(request),
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        content: body.message || body.content || '',
+        user_id: body.user_id,
+        conversation_id: body.conversation_id,
+      }),
     })
 
     if (!response.ok) {

@@ -1141,11 +1141,15 @@ async def _sse_event_generator(
     from anthropic import AsyncAnthropic
 
     api_key = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
+    base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
     if not api_key:
         yield f"data: {json.dumps({'error': 'LLM not configured'})}\n\n"
         return
 
-    client = AsyncAnthropic(api_key=api_key)
+    client_kwargs: dict = {"api_key": api_key}
+    if base_url:
+        client_kwargs["base_url"] = base_url
+    client = AsyncAnthropic(**client_kwargs)
     full_response = ""
 
     try:

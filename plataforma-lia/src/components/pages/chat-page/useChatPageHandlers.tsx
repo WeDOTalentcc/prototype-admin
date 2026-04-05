@@ -320,64 +320,95 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
         // isLoading reset by useEffect watching wsIsStreaming; finally block checks wsStreamingModeRef
 
       } else if (useStreaming) {
-        // SSE path — fallback when WS is not connected (direct Anthropic streaming)
-        const streamingMessage: Message = {
-          id: messages.length + 3,
-          sender: "lia",
-          content: "",
-          timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-          type: "text",
-        }
-        setMessages(prev => {
-          const newMsgs = [...prev]
-          newMsgs[newMsgs.length - 1] = streamingMessage
-          return newMsgs
-        })
+        // SSE path — fallback when WS is not connected (proxied to backend /api/v1/chat/stream)
+        let sseSucceeded = false
+        try {
+          const streamingMessage: Message = {
+            id: messages.length + 3,
+            sender: "lia",
+            content: "",
+            timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+            type: "text",
+          }
+          setMessages(prev => {
+            const newMsgs = [...prev]
+            newMsgs[newMsgs.length - 1] = streamingMessage
+            return newMsgs
+          })
 
-        const streamResp = await fetch('/api/lia/chat/stream', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: messageContent }),
-        })
+          const streamResp = await fetch('/api/lia/chat/stream', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: messageContent }),
+          })
 
-        if (!streamResp.ok || !streamResp.body) {
-          throw new Error(`Stream request failed: ${streamResp.status}`)
-        }
+          if (!streamResp.ok || !streamResp.body) {
+            throw new Error(`Stream request failed: ${streamResp.status}`)
+          }
 
-        const reader = streamResp.body.getReader()
-        const decoder = new TextDecoder()
-        let accumulated = ""
+          const reader = streamResp.body.getReader()
+          const decoder = new TextDecoder()
+          let accumulated = ""
 
-        outer: while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
+          outer: while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
 
-          const rawChunk = decoder.decode(value, { stream: true })
-          for (const line of rawChunk.split('\n')) {
-            if (!line.startsWith('data: ')) continue
-            const payload = line.slice(6).trim()
-            if (payload === '[DONE]') break outer
+            const rawChunk = decoder.decode(value, { stream: true })
+            for (const line of rawChunk.split('\n')) {
+              if (!line.startsWith('data: ')) continue
+              const payload = line.slice(6).trim()
+              if (payload === '[DONE]') break outer
 
-            try {
-              const parsed = JSON.parse(payload)
-              if (parsed.token) {
-                accumulated += parsed.token
-                const snapshot = accumulated
-                setMessages(prev => {
-                  const updated = [...prev]
-                  const last = updated[updated.length - 1]
-                  if (last?.sender === "lia") {
-                    updated[updated.length - 1] = { ...last, content: snapshot }
-                  }
-                  return updated
-                })
-              } else if (parsed.error) {
-                throw new Error(parsed.error)
+              try {
+                const parsed = JSON.parse(payload)
+                if (parsed.token) {
+                  accumulated += parsed.token
+                  const snapshot = accumulated
+                  setMessages(prev => {
+                    const updated = [...prev]
+                    const last = updated[updated.length - 1]
+                    if (last?.sender === "lia") {
+                      updated[updated.length - 1] = { ...last, content: snapshot }
+                    }
+                    return updated
+                  })
+                } else if (parsed.error) {
+                  throw new Error(parsed.error)
+                }
+              } catch (_) {
+                // ignore partial JSON chunks
               }
-            } catch (_) {
-              // ignore partial JSON chunks
             }
           }
+          sseSucceeded = true
+        } catch (_sseError) {
+          // SSE failed — fall through to REST API below
+        }
+
+        if (!sseSucceeded) {
+          const response = await liaApi.sendMessage({
+            content: messageContent,
+            user_id: "demo-user",
+          })
+
+          const liaResponse: Message = {
+            id: messages.length + 3,
+            sender: "lia",
+            content: response.message.content,
+            timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+            type: "text",
+            data: {
+              ...response.message.message_metadata,
+              workflow_data: response.conversation?.workflow_data || response.message.message_metadata?.workflow_data
+            }
+          }
+
+          setMessages(prev => {
+            const newMessages = [...prev]
+            newMessages[newMessages.length - 1] = liaResponse
+            return newMessages
+          })
         }
 
       } else {
