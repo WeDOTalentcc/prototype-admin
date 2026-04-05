@@ -2,7 +2,9 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import { liaApi } from "@/services/lia-api"
-import { useAgentStreaming } from "@/hooks/use-agent-streaming"
+import { useAgentStreaming, type StreamingEvent } from "@/hooks/use-agent-streaming"
+import { useLiaFloat } from "@/contexts/lia-float-context"
+import type { DynamicPanelType } from "@/contexts/lia-float-context"
 import type { Message, ContextPanelData, SelectedCandidateForScheduling, PendingPearchSearch } from "./chat-core.types"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
 import type { SearchPreviewData } from "@/components/search/search-preview-card"
@@ -123,6 +125,36 @@ export function useChatSession({
 
   const [activeTab, setActiveTab] = useState<"conversa" | "controle">("conversa")
 
+  // ── Dynamic panel (split-screen) ──────────────────────────
+  const VALID_PANEL_TYPES: DynamicPanelType[] = ["calibration", "candidate_review", "profile", "job_creation", "scheduling"]
+  const { openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel } = useLiaFloat()
+
+  const handleWsEvent = useCallback((event: StreamingEvent) => {
+    if (event.type !== 'panel_update') return
+    const raw = event as unknown as Record<string, unknown>
+    const panelType = raw.panel_type as string | undefined
+    const panelData = (raw.panel_data as Record<string, unknown>) || {}
+    const panelTitle = raw.panel_title as string | undefined
+    const action = (raw.action as string) || "open"
+
+    if (action === "close") {
+      closeDynamicPanel()
+      return
+    }
+
+    if (!panelType || !VALID_PANEL_TYPES.includes(panelType as DynamicPanelType)) return
+
+    if (action === "update" && dynamicPanel?.panelType === panelType) {
+      updateDynamicPanelData(panelData)
+    } else {
+      openDynamicPanel({
+        panelType: panelType as DynamicPanelType,
+        data: panelData,
+        title: panelTitle,
+      })
+    }
+  }, [openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Agent Streaming (WebSocket) ────────────────────────────
   const wsSessionId = chatId.replace('#', '')
   const {
@@ -133,7 +165,7 @@ export function useChatSession({
     disconnect: wsDisconnect,
     clearTokens: wsClearTokens,
     sendMessage: wsSendMessage,
-  } = useAgentStreaming(wsSessionId)
+  } = useAgentStreaming(wsSessionId, {}, handleWsEvent)
 
   const wsStreamingModeRef = useRef(false)
 
@@ -180,10 +212,11 @@ export function useChatSession({
       setContextData(null)
       setIsPanelOpen(false)
       setChatTitle('Nova Conversa')
+      closeDynamicPanel()
     }
     window.addEventListener('lia:new-chat', handleNewChat)
     return () => window.removeEventListener('lia:new-chat', handleNewChat)
-  }, [setMessages, setContextData, setIsPanelOpen])
+  }, [setMessages, setContextData, setIsPanelOpen, closeDynamicPanel])
 
   // "Open Pipeline"
   useEffect(() => {
