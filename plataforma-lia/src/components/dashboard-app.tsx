@@ -52,6 +52,14 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
     return () => window.removeEventListener("lia:navigate-chat-page", handler)
   }, [])
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("page") === "chat-lia") {
+      setCurrentPage("Chat LIA")
+      window.history.replaceState({}, "", window.location.pathname)
+    }
+  }, [])
+
   const handleNavigate = (page: string) => {
     if (page === "Ajuda") {
       router.push("/ajuda")
@@ -149,7 +157,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
   }
 
   return (
-    <div className="h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex overflow-hidden">
+    <div data-dashboard-shell className="h-screen bg-lia-bg-primary dark:bg-lia-bg-primary flex overflow-hidden">
       <Sidebar
         currentPage={currentPage}
         onNavigate={handleNavigate}

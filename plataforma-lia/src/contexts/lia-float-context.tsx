@@ -133,7 +133,11 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       isExpanded: false,
       splitView: INITIAL_SPLIT_VIEW,
     }))
-    window.dispatchEvent(new CustomEvent("lia:navigate-chat-page"))
+    if (document.querySelector("[data-dashboard-shell]")) {
+      window.dispatchEvent(new CustomEvent("lia:navigate-chat-page"))
+    } else {
+      window.location.href = "/?page=chat-lia"
+    }
   }, [])
 
   return (
