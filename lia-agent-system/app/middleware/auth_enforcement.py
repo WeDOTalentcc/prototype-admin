@@ -46,6 +46,7 @@ PUBLIC_PATHS = {
 
 # Path prefixes that are public (e.g. static files, docs)
 PUBLIC_PREFIXES = (
+    "/api/v1/teams/",
     "/docs/",
     "/static/",
     "/_next/",
