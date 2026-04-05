@@ -32,9 +32,9 @@ export function useChatLayout({ isEmptyChat, isPanelOpen }: UseChatLayoutProps):
   const chatContainerClass = useMemo(() => {
     switch (mode) {
       case 'empty':
-        return 'flex items-center justify-center px-4'
+        return 'flex flex-col items-center justify-center px-4'
       case 'chat-only':
-        return 'flex flex-col items-center px-4'
+        return 'flex flex-col px-4'
       case 'chat-with-panel':
         return 'flex flex-col w-full'
       default:

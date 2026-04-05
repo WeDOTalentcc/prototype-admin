@@ -60,15 +60,20 @@ const MessageBubbleComponent = memo(function MessageBubble({
     <div
       className={cn(
         "flex gap-2.5 animate-in fade-in duration-300",
-        isLia ? "justify-start" : "justify-end",
+        isLia ? "justify-end" : "justify-start",
         className
       )}
     >
-      {isLia && (
+      {!isLia && (
         <div className="flex-shrink-0 mt-1">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center">
-            <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
-          </div>
+          <Avatar className="h-7 w-7">
+            {userAvatar ? (
+              <AvatarImage src={userAvatar} alt={userName || "User"} />
+            ) : null}
+            <AvatarFallback className="bg-lia-interactive-active text-lia-text-secondary text-micro">
+              {userName ? userName.charAt(0).toUpperCase() : <User className="w-3.5 h-3.5" />}
+            </AvatarFallback>
+          </Avatar>
         </div>
       )}
 
@@ -77,8 +82,8 @@ const MessageBubbleComponent = memo(function MessageBubble({
           className={cn(
             "px-3.5 py-2.5",
             isLia
-              ? "bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px]"
-              : "bg-lia-bg-tertiary rounded-[14px] rounded-br-[4px]"
+              ? "bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-br-[4px]"
+              : "bg-lia-bg-tertiary rounded-[14px] rounded-bl-[4px]"
           )}
         >
           <RichTextContent
@@ -101,7 +106,7 @@ const MessageBubbleComponent = memo(function MessageBubble({
           <span
             className={cn(
               "text-xs font-['Inter',sans-serif] tabular-nums text-lia-text-tertiary",
-              !isLia && "ml-auto"
+              isLia && "ml-auto"
             )}
           >
             {timestamp}
@@ -118,16 +123,11 @@ const MessageBubbleComponent = memo(function MessageBubble({
         )}
       </div>
 
-      {!isLia && (
+      {isLia && (
         <div className="flex-shrink-0 mt-1">
-          <Avatar className="h-7 w-7">
-            {userAvatar ? (
-              <AvatarImage src={userAvatar} alt={userName || "User"} />
-            ) : null}
-            <AvatarFallback className="bg-lia-interactive-active text-lia-text-secondary text-micro">
-              {userName ? userName.charAt(0).toUpperCase() : <User className="w-3.5 h-3.5" />}
-            </AvatarFallback>
-          </Avatar>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center">
+            <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
+          </div>
         </div>
       )}
     </div>

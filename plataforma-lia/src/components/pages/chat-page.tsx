@@ -194,7 +194,7 @@ export function ChatPage() {
           style={{scrollBehavior: 'smooth'}} /* dynamic - scroll-smooth class not fully equivalent */
           onScroll={checkNewMessageIndicator}
         >
-          {/* Empty state with PromptSuggestionsDock */}
+          {/* Empty state welcome message */}
           {isEmptyChat && (
             <div className={`text-left pt-8 ${messagesContainerClass}`}>
               <div className="mb-8">
@@ -202,14 +202,9 @@ export function ChatPage() {
                 <h2 className="text-3xl font-semibold mb-3 text-lia-text-primary">
                   Oi, eu sou a <span className="text-lia-text-secondary">LIA</span>.
                 </h2>
-                <p className="text-base mb-8 text-lia-text-tertiary">
+                <p className="text-base text-lia-text-tertiary">
                   Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                 </p>
-                
-                <PromptSuggestionsDock
-                  onSelect={(command) => setInput(command)}
-                  isEmpty={true}
-                />
               </div>
             </div>
           )}
@@ -219,8 +214,8 @@ export function ChatPage() {
             <>
               {/* Notificação de campos vazios */}
               {emptyFieldNotifications.hasPendingNotifications && emptyFieldNotifications.currentNotification && (
-                <div className="flex justify-start">
-                  <div className="flex items-start gap-1 max-w-4xl">
+                <div className="flex justify-end">
+                  <div className="flex items-start gap-2 max-w-[80%] flex-row-reverse">
                     <div className="flex-shrink-0 pt-4">
                       <LIAIcon size="md" />
                     </div>
@@ -263,8 +258,8 @@ export function ChatPage() {
           )}
 
           {isLoading && (
-            <div className="flex justify-start">
-              <div className="flex items-start gap-1 max-w-4xl" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="flex justify-end">
+              <div className="flex items-start gap-2 max-w-[80%] flex-row-reverse" role="status" aria-live="polite" aria-label="Carregando...">
                 <div className="flex-shrink-0 pt-4" role="status" aria-live="polite" aria-label="Carregando...">
                   <LIAIcon size="md" />
                 </div>
@@ -333,6 +328,14 @@ export function ChatPage() {
               />
             ) : (
               <div className="rounded-lg p-5 space-y-4 bg-white border border-lia-border-subtle">
+
+                {/* Sugestões de Tarefas (empty state) */}
+                {isEmptyChat && (
+                  <PromptSuggestionsDock
+                    onSelect={(command) => setInput(command)}
+                    isEmpty={true}
+                  />
+                )}
                 
                 {/* Sugestões Rápidas */}
                 {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && (searchFlow.flowState as string) !== "collecting_profile" && (
@@ -675,13 +678,6 @@ export function ChatPage() {
         estimatedMatches={1000000}
       />
 
-      {/* Floating Prompt Suggestions Dock */}
-      {!isEmptyChat && (
-        <PromptSuggestionsDock
-          onSelect={(command) => setInput(command)}
-          isEmpty={false}
-        />
-      )}
 
       {/* UI Actions Side Panel Container */}
       <SidePanelContainer

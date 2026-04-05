@@ -68,7 +68,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
           <div
             key={message.id}
             data-message-id={message.id}
-            className={`flex justify-start ${
+            className={`flex ${message.sender === "lia" ? "justify-end" : "justify-start"} ${
               isCurrentMessage ? "ring-2 ring-lia-btn-primary-bg/20 rounded-md" : ""
             } ${
               isHighlighted
@@ -77,13 +77,12 @@ const ChatMessageListComponent = memo(function ChatMessageList({
             }`}
           >
             <div
-              className={`flex ${
+              className={`flex items-start gap-2 ${
                 message.sender === "lia"
-                  ? "items-start gap-1 max-w-4xl"
-                  : "items-start space-x-3 max-w-3xl ml-16"
+                  ? "max-w-[80%] flex-row-reverse"
+                  : "max-w-[80%]"
               }`}
             >
-              {/* Avatar */}
               {message.sender === "lia" ? (
                 <div className="flex-shrink-0 pt-4">
                   <LIAIcon size="md" />
