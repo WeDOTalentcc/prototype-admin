@@ -2,7 +2,7 @@
 
 import React from "react"
 import {
-  Brain, X, Maximize2, Plus, Eraser, History,
+  Brain, X, Maximize2, Plus, Eraser, History, ArrowRightLeft,
   Users, Briefcase, LayoutDashboard, Target, Settings,
   BarChart2, BookOpen, MessageCircle,
   type LucideIcon
@@ -39,13 +39,14 @@ export interface LiaChatHeaderProps {
   close: () => void
   setActiveActionType: (v: ActionType) => void
   setActionLabel: (v: string | null) => void
+  onSwitchTask?: () => void
 }
 
 export function LiaChatHeader({
   isConnected, showHistory, messagesLength, activeActionType, actionLabel,
   isReconnecting, reconnectAttempt, contextPage, entityContext,
   handleNewChat, handleClear, handleToggleHistory, handleExpand, close,
-  setActiveActionType, setActionLabel,
+  setActiveActionType, setActionLabel, onSwitchTask,
 }: LiaChatHeaderProps) {
   const ContextIcon = contextPage ? (CONTEXT_PAGE_ICONS[contextPage] || null) : null
   const entityLabel = entityContext?.name
@@ -92,6 +93,16 @@ export function LiaChatHeader({
           >
             <Eraser className="w-3.5 h-3.5" />
           </button>
+          {onSwitchTask && (
+            <button
+              onClick={onSwitchTask}
+              className="p-1.5 rounded-md text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+              title="Trocar tarefa (Cmd+K)"
+              aria-label="Trocar tarefa"
+            >
+              <ArrowRightLeft className="w-3.5 h-3.5" />
+            </button>
+          )}
           <button
             onClick={handleToggleHistory}
             className={cn(

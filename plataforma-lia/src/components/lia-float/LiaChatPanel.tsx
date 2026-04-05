@@ -99,6 +99,7 @@ export function LiaChatPanel() {
             close={state.close}
             setActiveActionType={state.setActiveActionType}
             setActionLabel={state.setActionLabel}
+            onSwitchTask={() => state.setShowSwitchTask(true)}
           />
 
           <LiaChatMessageList

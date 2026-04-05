@@ -26,8 +26,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     return NextResponse.json(
-      { sessions: [], count: 0 },
-      { status: 200 }
+      { error: 'Backend unavailable', sessions: [], count: 0 },
+      { status: 502 }
     )
   }
 }
