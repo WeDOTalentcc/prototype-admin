@@ -63,6 +63,7 @@ class UniversalContext:
             "candidates": self.candidates,
             "selected_candidate_ids": self.selected_candidate_ids,
             "channel": self.channel,
+            "company_id": self.company_id,
         }
         if self.job_context:
             ctx["job_context"] = self.job_context

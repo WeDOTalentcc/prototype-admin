@@ -44,6 +44,16 @@ def make_orchestrator_result(**kwargs) -> dict:
     return defaults
 
 
+def _patch_conversation_memory():
+    """Patch conversation_memory para evitar chamadas reais ao DB."""
+    mock_mem = AsyncMock()
+    mock_mem.get_conversation = AsyncMock(return_value=None)
+    mock_mem.get_or_create_conversation = AsyncMock(return_value=MagicMock(id="conv-123", message_count=0))
+    mock_mem.add_message = AsyncMock(return_value=None)
+    mock_mem.get_context_for_llm = AsyncMock(return_value={"messages": [], "summary": None})
+    return mock_mem
+
+
 # ---------------------------------------------------------------------------
 # ChatResponse helpers
 # ---------------------------------------------------------------------------
@@ -74,48 +84,63 @@ class TestChatResponseFromOrchestratorResult:
 
 class TestMainOrchestratorPhase2:
     @pytest.mark.asyncio
-    async def test_calls_process_request_with_memory(self):
+    async def test_calls_process_request(self):
+        """Phase 2 chama orchestrator.process_request (não process_request_with_memory)."""
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(
+        mock_orch.process_request = AsyncMock(
             return_value=make_orchestrator_result()
         )
+        mock_mem = _patch_conversation_memory()
         orch = MainOrchestrator(mock_orch)
         ctx = make_ctx()
         mock_db = MagicMock()
 
-        result = await orch.process(ctx, mock_db)
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.services.conversation_memory.conversation_memory", mock_mem):
+            mock_store.get.return_value = None
+            mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
 
-        mock_orch.process_request_with_memory.assert_called_once()
-        call_kwargs = mock_orch.process_request_with_memory.call_args.kwargs
-        assert call_kwargs["user_id"] == "user-1"
-        assert call_kwargs["message"] == "quem são os top 5 candidatos?"
-        assert call_kwargs["conversation_id"] == "conv-123"
-        assert call_kwargs["context_type"] == "talent_funnel"
+            result = await orch.process(ctx, mock_db)
+
+            mock_orch.process_request.assert_called_once()
+            call_kwargs = mock_orch.process_request.call_args.kwargs
+            assert call_kwargs["user_id"] == "user-1"
+            assert call_kwargs["message"] == "quem são os top 5 candidatos?"
 
     @pytest.mark.asyncio
     async def test_returns_chat_response(self):
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(
+        mock_orch.process_request = AsyncMock(
             return_value=make_orchestrator_result(response="resultado final")
         )
-        orch = MainOrchestrator(mock_orch)
-        result = await orch.process(make_ctx(), MagicMock())
+        mock_mem = _patch_conversation_memory()
 
-        assert isinstance(result, ChatResponse)
-        assert result.content == "resultado final"
-        assert result.success is True
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.services.conversation_memory.conversation_memory", mock_mem):
+            mock_store.get.return_value = None
+            mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
+
+            orch = MainOrchestrator(mock_orch)
+            result = await orch.process(make_ctx(), MagicMock())
+
+            assert isinstance(result, ChatResponse)
+            assert result.content == "resultado final"
+            assert result.success is True
 
     @pytest.mark.asyncio
     async def test_error_returns_graceful_response(self):
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(side_effect=Exception("DB timeout"))
-        orch = MainOrchestrator(mock_orch)
+        mock_orch.process_request = AsyncMock(side_effect=Exception("DB timeout"))
+        mock_mem = _patch_conversation_memory()
 
-        result = await orch.process(make_ctx(), MagicMock())
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.services.conversation_memory.conversation_memory", mock_mem):
+            mock_store.get.return_value = None
+            mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
 
-        assert result.success is False
-        assert "erro" in result.content.lower()
-        assert result.intent_detected == "error"
+            orch = MainOrchestrator(mock_orch)
+            result = await orch.process(make_ctx(), MagicMock())
+
+            assert result.success is False
+            assert "erro" in result.content.lower()
+            assert result.intent_detected == "error"
 
 
 # ---------------------------------------------------------------------------
@@ -138,10 +163,7 @@ class TestMainOrchestratorPendingAction:
         mock_exec_result.action_type = "mover_candidato"
         mock_exec_result.pending_action_id = None
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.is_confirmation", return_value=True), \
-             patch("app.orchestrator.main_orchestrator.ACTIONABLE_INTENTS", {"mover_candidato": {}}), \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.is_confirmation", return_value=True),              patch("app.orchestrator.main_orchestrator.ACTIONABLE_INTENTS", {"mover_candidato": {}}),              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
 
             mock_store.get.return_value = mock_pending
             mock_ae._execute_action = AsyncMock(return_value=mock_exec_result)
@@ -160,9 +182,7 @@ class TestMainOrchestratorPendingAction:
         mock_pending = MagicMock()
         mock_pending.awaiting_confirmation = True
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.is_confirmation", return_value=False), \
-             patch("app.orchestrator.main_orchestrator.is_rejection", return_value=True):
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.is_confirmation", return_value=False),              patch("app.orchestrator.main_orchestrator.is_rejection", return_value=True):
 
             mock_store.get.return_value = mock_pending
             orch = MainOrchestrator(mock_orch)
@@ -174,18 +194,19 @@ class TestMainOrchestratorPendingAction:
 
     @pytest.mark.asyncio
     async def test_no_pending_action_skips_phase_0(self):
+        """Sem pending action → vai direto para Phase 2 (process_request)."""
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(
-            return_value=make_orchestrator_result()
-        )
+        mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
+        mock_mem = _patch_conversation_memory()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store:
-            mock_store.get.return_value = None  # sem pending
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.services.conversation_memory.conversation_memory", mock_mem):
+            mock_store.get.return_value = None
+            mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
+
             orch = MainOrchestrator(mock_orch)
             result = await orch.process(make_ctx(), MagicMock())
 
-            # Deve ir direto para Phase 2
-            mock_orch.process_request_with_memory.assert_called_once()
+            mock_orch.process_request.assert_called_once()
             assert result.success is True
 
 
@@ -197,22 +218,20 @@ class TestMainOrchestratorActionExecutor:
     @pytest.mark.asyncio
     async def test_not_actionable_falls_through_to_phase2(self):
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(
-            return_value=make_orchestrator_result()
-        )
+        mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
+        mock_mem = _patch_conversation_memory()
+
         mock_exec_result = MagicMock()
         mock_exec_result.status = "not_actionable"
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
-
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.services.conversation_memory.conversation_memory", mock_mem):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=mock_exec_result)
 
             orch = MainOrchestrator(mock_orch)
             result = await orch.process(make_ctx(), MagicMock())
 
-            mock_orch.process_request_with_memory.assert_called_once()
+            mock_orch.process_request.assert_called_once()
             assert result.success is True
 
     @pytest.mark.asyncio
@@ -225,8 +244,7 @@ class TestMainOrchestratorActionExecutor:
         mock_exec_result.action_type = "mover_candidato"
         mock_exec_result.pending_action_id = None
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
 
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=mock_exec_result)
@@ -235,20 +253,17 @@ class TestMainOrchestratorActionExecutor:
             result = await orch.process(make_ctx(), MagicMock())
 
             # Phase 2 NÃO deve ser chamada
-            mock_orch.process_request_with_memory.assert_not_called()
+            mock_orch.process_request.assert_not_called()
             assert result.action_executed is True
             assert result.content == "Ação executada!"
 
     @pytest.mark.asyncio
     async def test_action_executor_exception_falls_through(self):
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(
-            return_value=make_orchestrator_result()
-        )
+        mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
+        mock_mem = _patch_conversation_memory()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
-
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.services.conversation_memory.conversation_memory", mock_mem):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(side_effect=Exception("AE failed"))
 
@@ -256,7 +271,7 @@ class TestMainOrchestratorActionExecutor:
             result = await orch.process(make_ctx(), MagicMock())
 
             # Deve fazer fallback para Phase 2
-            mock_orch.process_request_with_memory.assert_called_once()
+            mock_orch.process_request.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
@@ -267,12 +282,10 @@ class TestMainOrchestratorMultiTenant:
     @pytest.mark.asyncio
     async def test_company_id_passed_in_context(self):
         mock_orch = AsyncMock()
-        mock_orch.process_request_with_memory = AsyncMock(
-            return_value=make_orchestrator_result()
-        )
+        mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
+        mock_mem = _patch_conversation_memory()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.services.conversation_memory.conversation_memory", mock_mem):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
 
@@ -280,10 +293,11 @@ class TestMainOrchestratorMultiTenant:
             ctx = make_ctx(company_id="empresa-xyz")
             await orch.process(ctx, MagicMock())
 
-            call_context = mock_orch.process_request_with_memory.call_args.kwargs["context"]
-            # company_id deve estar acessível no contexto do orchestrator
-            assert call_context.get("company_id") == "empresa-xyz" or \
-                   ctx.company_id == "empresa-xyz"
+            mock_orch.process_request.assert_called_once()
+            call_kwargs = mock_orch.process_request.call_args.kwargs
+            # company_id deve estar no context passado para o orchestrator
+            context = call_kwargs.get("context", {})
+            assert context.get("company_id") == "empresa-xyz"
 
 
 # ---------------------------------------------------------------------------
