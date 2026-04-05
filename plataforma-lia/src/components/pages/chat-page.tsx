@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import {
-  Send, Loader2, FileText, MessageSquare, Search, MapPin, X,
+  Send, Loader2, FileText, Search, MapPin, X,
   ChevronDown, Play, Mic, AlertTriangle, Cpu
 } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { InterviewSchedulingModal } from "@/components/ui/interview-scheduling-modal"
 import { PromptSuggestionsDock } from "@/components/ui/prompt-suggestions-dock"
 import { ContextPill } from "@/components/ui/context-pill"
@@ -116,25 +115,30 @@ export function ChatPage() {
 
   return (
     <ErrorBoundarySection>
-    <div className="flex overflow-hidden flex-1 bg-lia-bg-secondary">
+    <div className="flex overflow-hidden flex-1 bg-white">
       {/* Main Chat Area */}
       <div className={`flex flex-col h-full transition-colors motion-reduce:transition-none duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
         {/* Header */}
-        <div className="py-3 px-6 flex-shrink-0 bg-lia-bg-secondary border-b border-lia-border-subtle">
+        <div className="py-3 px-6 flex-shrink-0 bg-white border-b border-lia-border-subtle">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <LIAIcon size="lg" />
-              <div>
-                <h1 className="text-base font-semibold text-lia-text-primary">
-                  Chat {chatId} - {chatTitle}
-                </h1>
-                <p className="text-xs font-open-sans text-lia-text-tertiary">
-                  Lia - Assistente de Recrutamento
-                </p>
-              </div>
+              <p className="text-sm font-open-sans text-lia-text-tertiary">
+                Lia - Assistente de Recrutamento
+              </p>
             </div>
 
             <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setActiveTab(activeTab === "controle" ? "conversa" : "controle")}
+                className={`transition-colors motion-reduce:transition-none duration-200 text-xs gap-1.5 ${activeTab === "controle" ? "text-wedo-cyan" : "text-lia-text-tertiary hover:text-lia-text-primary"}`}
+                title="Centro de Controle"
+              >
+                <Cpu className="w-4 h-4" />
+                Centro de Controle
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -149,14 +153,14 @@ export function ChatPage() {
 
           {/* Barra de Busca */}
           {showSearch && (
-            <div className="mt-4 flex items-center space-x-2">
+            <div className="mt-3 flex items-center space-x-2">
               <div className="flex-1 relative">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar na conversa..."
-                  className="w-full px-3 py-2 rounded-md text-sm focus:outline-none border border-lia-border-subtle bg-lia-bg-primary text-lia-text-primary"
+                  className="w-full px-3 py-2 rounded-md text-sm focus:outline-none border border-lia-border-subtle bg-white text-lia-text-primary"
                   autoFocus
                 />
                 <Search className="absolute right-3 top-2.5 w-4 h-4 text-lia-text-secondary" />
@@ -165,36 +169,12 @@ export function ChatPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowSearch(false)}
-                className="hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
+                className="hover:bg-lia-bg-tertiary"
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
           )}
-
-          {/* Tabs de Navegação */}
-          <div className="mt-2">
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "conversa" | "controle")}>
-              <TabsList className="bg-transparent p-0 h-auto gap-4 border-b border-lia-border-subtle">
-                <TabsTrigger 
-                  value="conversa" 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-lia-btn-primary-bg dark:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                  style={{color: activeTab === 'conversa' ? 'var(--lia-btn-primary-bg)' : 'var(--lia-text-secondary)'}} /* dynamic */
-                >
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Conversa
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="controle" 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-lia-btn-primary-bg dark:border-lia-border-medium transition-colors motion-reduce:transition-none"
-                  style={{color: activeTab === 'controle' ? 'var(--lia-btn-primary-bg)' : 'var(--lia-text-secondary)'}} /* dynamic */
-                >
-                  <Cpu className="w-4 h-4 mr-2" />
-                  Centro de Controle
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
 
           <AgentMemoryIndicator 
             sessionId={chatId.replace('#', '')} 
@@ -202,7 +182,7 @@ export function ChatPage() {
           />
         </div>
 
-        {/* Tab Content: Conversa */}
+        {/* Chat Content */}
         {activeTab === "conversa" && (
         <>
         {/* Messages com altura flexível e scroll */}
@@ -318,7 +298,7 @@ export function ChatPage() {
         </div>
 
         {/* Input Card */}
-        <div className="p-6 flex-shrink-0 bg-lia-bg-secondary">
+        <div className="p-6 flex-shrink-0 bg-white">
           <div className={inputContainerClass}>
             {/* Context Pills */}
             {contextData && (contextData.data as any)?.totalCount > 0 && (
@@ -352,7 +332,7 @@ export function ChatPage() {
                 activeFiltersCount={getActiveFiltersCount()}
               />
             ) : (
-              <div className="rounded-md p-5 space-y-4 bg-lia-bg-primary">
+              <div className="rounded-lg p-5 space-y-4 bg-white border border-lia-border-subtle">
                 
                 {/* Sugestões Rápidas */}
                 {(getQuickSuggestions().length > 0 || (hasSearchResults && contextData && getQuickActions().length > 0)) && !isLoading && (searchFlow.flowState as string) !== "collecting_profile" && (
@@ -364,7 +344,7 @@ export function ChatPage() {
                             key={suggestion}
                             size="sm"
                             onClick={() => setInput(suggestion)}
-                            className="text-xs h-7 px-3 transition-transform motion-reduce:transition-none duration-200 hover:scale-105 text-lia-text-primary border border-lia-border-subtle bg-lia-bg-secondary"
+                            className="text-xs h-7 px-3 transition-transform motion-reduce:transition-none duration-200 hover:scale-105 text-lia-text-primary border border-lia-border-subtle bg-white hover:bg-gray-50"
                           >
                             {suggestion}
                           </Button>
@@ -547,7 +527,7 @@ export function ChatPage() {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={handleKeyPress}
                       placeholder={getPlaceholderText()}
-                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-primary"
+                      className="w-full resize-none rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 border border-lia-border-subtle bg-white text-lia-text-primary"
                       rows={1}
                     />
                   </div>

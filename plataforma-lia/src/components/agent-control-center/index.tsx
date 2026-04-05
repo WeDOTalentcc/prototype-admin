@@ -133,7 +133,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
   }
 
   return (
-    <div className={`flex-1 overflow-y-auto p-6 bg-lia-bg-secondary dark:bg-lia-bg-primary ${className}`}>
+    <div className={`flex-1 overflow-y-auto p-6 bg-white dark:bg-lia-bg-primary ${className}`}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
