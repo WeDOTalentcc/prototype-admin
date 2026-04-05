@@ -41,18 +41,18 @@ export function JobsPage(props: JobsPageProps) {
     return { statusOrder: order, groupedJobs: grouped }
   }, [state.filteredJobs])
 
-  if (state.showKanban && state.selectedJob) {
-    return <JobKanbanPage key={`kanban-${state.selectedJob.id}`} job={state.selectedJob as any} onBack={state.handleBackToJobs} />
-  }
-  if (state.showKanban && !state.selectedJob) {
-    return (
-      <div className="h-full flex items-center justify-center bg-lia-bg-primary dark:bg-lia-bg-primary">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-lia-border-default border-t-lia-border-medium rounded-full animate-spin motion-reduce:animate-none mx-auto mb-3" />
-          <p className="text-base-ui text-lia-text-tertiary">Carregando vaga...</p>
+  if (state.showKanban) {
+    if (!state.selectedJob) {
+      return (
+        <div className="h-full flex items-center justify-center bg-lia-bg-primary dark:bg-lia-bg-primary">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-lia-border-default border-t-lia-border-medium rounded-full animate-spin motion-reduce:animate-none mx-auto mb-3" />
+            <p className="text-base-ui text-lia-text-tertiary">Carregando vaga...</p>
+          </div>
         </div>
-      </div>
-    )
+      )
+    }
+    return <JobKanbanPage key={`kanban-${state.selectedJob.id}`} job={state.selectedJob as any} onBack={state.handleBackToJobs} />
   }
 
   const {
@@ -81,7 +81,7 @@ export function JobsPage(props: JobsPageProps) {
     companyRecruiters, selectedJobsForBatch,
     setBackendJobs, setSelectedJob, setPreviewJob, setEditingJob,
     setPendingNavigateJobId, loadBackendJobs, setActivePreviewTab,
-    selectedJob,
+    selectedJob, navigateToCreatedJob,
   } = state
 
   if (!hasMounted) {
@@ -254,6 +254,7 @@ export function JobsPage(props: JobsPageProps) {
           onSetActiveFilter={setActiveFilter}
           onOpenJobCreationChat={openJobCreationChat}
           onSetPendingNavigateJobId={setPendingNavigateJobId}
+          onNavigateToCreatedJob={navigateToCreatedJob}
           onSetReactivateScreeningDialog={setShowReactivateScreeningDialog}
           onSetReactivateScreeningJobs={setReactivateScreeningJobs as any}
           onSetReactivateEndDate={setReactivateEndDate}

@@ -75,6 +75,7 @@ export interface JobsModalsSectionProps {
   onSetActiveFilter: (filter: string) => void
   onOpenJobCreationChat: (msg?: string) => void
   onSetPendingNavigateJobId: (id: string | null) => void
+  onNavigateToCreatedJob: (jobId: string, jobTitle: string) => void
   onSetReactivateScreeningDialog: (show: boolean) => void
   onSetReactivateScreeningJobs: (jobs: Job[]) => void
   onSetReactivateEndDate: (date: string) => void

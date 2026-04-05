@@ -156,7 +156,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     }
   }, [allJobs, onAddRecentItem, navigationStoreNavigateToCandidate, consumeNavigateToCandidate])
 
-  // Navigate to newly created job when it appears in allJobs
+  // Navigate to newly created job when it appears in allJobs (fallback)
   useEffect(() => {
     if (!previewState.pendingNavigateJobId || !allJobs.length) return
     const matched = allJobs.find(j => j.backendId === previewState.pendingNavigateJobId)
@@ -237,9 +237,8 @@ export function useJobsPageCore(props: JobsPageProps) {
   // -----------------------------------------------------------------------
   // Kanban navigation state
   // -----------------------------------------------------------------------
-  const [showKanban, setShowKanban] = React.useState(() => {
-    return !!navigationStoreNavigateToCandidate
-  })
+  // Must start false — store-driven navigation runs via useEffect after mount.
+  const [showKanban, setShowKanban] = React.useState(false)
   const [selectedJob, setSelectedJob] = React.useState<Job | null>(null)
 
   const setSelectedJobAndOpenKanban = (job: Job) => {
@@ -264,6 +263,13 @@ export function useJobsPageCore(props: JobsPageProps) {
     setShowKanban(false)
     setSelectedJob(null)
   }
+
+  // Direct navigation after manual job creation — uses explicit route push for reliability
+  const navigateToCreatedJob = React.useCallback((jobId: string, _jobTitle: string) => {
+    // Explicit route navigation is the most reliable approach —
+    // the /jobs/[id] page fetches the job independently of list state.
+    router.push(`/jobs/${jobId}`)
+  }, [router])
 
   // -----------------------------------------------------------------------
   // Return: flat object preserving EXACT public interface
@@ -292,6 +298,7 @@ export function useJobsPageCore(props: JobsPageProps) {
     setShowKanban,
     handleJobClick,
     handleBackToJobs,
+    navigateToCreatedJob,
 
     // --- filters ---
     searchTerm: filtersState.searchTerm,

@@ -5,6 +5,7 @@ import { formatBRL } from "@/lib/pricing"
 interface JobData {
   id: string
   jobId: string
+  backendId?: string
   title: string
   department?: string
   location?: string
@@ -70,6 +71,7 @@ export default function JobPage() {
         setJobData({
           id: v.id,
           jobId: v.job_code || v.id,
+          backendId: v.id,
           title: v.title,
           department: v.department,
           location: v.location,

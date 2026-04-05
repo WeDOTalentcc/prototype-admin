@@ -24,6 +24,7 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
     onSetActiveFilter,
     onOpenJobCreationChat,
     onSetPendingNavigateJobId,
+    onNavigateToCreatedJob,
     onSetReactivateScreeningDialog,
     onSetReactivateScreeningJobs,
     onSetReactivateEndDate,
@@ -342,12 +343,17 @@ export function useJobsStatusHandlers(props: JobsModalsSectionProps) {
     }
   }, [activeFilter, onCloseCreateJobModal, onSetActiveFilter, onOpenJobCreationChat])
 
-  const handleJobCreated = useCallback((jobId: string) => {
+  const handleJobCreated = useCallback((jobId: string, jobTitle: string) => {
     onCloseCreateJobModal()
     useJobUIStore.getState().setJobCreationMode(jobId)
+    // Set pendingNavigateJobId as fallback so the list-based useEffect can catch it
+    // if the router push somehow doesn't happen (e.g., navigation intercepted)
     onSetPendingNavigateJobId(jobId)
+    // Refresh the jobs list in the background so it stays consistent when user returns
     onRefreshJobs()
-  }, [onCloseCreateJobModal, onSetPendingNavigateJobId, onRefreshJobs])
+    // Primary path: navigate directly to the new job's detail page (deterministic)
+    onNavigateToCreatedJob(jobId, jobTitle)
+  }, [onCloseCreateJobModal, onSetPendingNavigateJobId, onRefreshJobs, onNavigateToCreatedJob])
 
   const handleEditSave = useCallback(async (jobId: string, updates: Record<string, unknown>) => {
     try {

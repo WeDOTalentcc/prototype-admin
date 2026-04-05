@@ -226,8 +226,8 @@ class Candidate(Base):
     is_blacklisted = Column(Boolean, default=False)
     blacklist_reason = Column(Text, nullable=True)
 
-    # Hired tracking
-    is_hired = Column(Boolean, default=False)
+    # Hired tracking (set when candidate accepts an offer; added by migration 057)
+    is_hired = Column(Boolean, nullable=False, default=False, server_default="false")
     hired_at = Column(DateTime, nullable=True)
     hired_job_id = Column(String(255), nullable=True)
     hired_job_title = Column(String(500), nullable=True)

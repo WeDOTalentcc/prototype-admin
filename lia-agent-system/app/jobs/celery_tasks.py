@@ -1386,6 +1386,17 @@ async def _run_retention_cleanup_async() -> dict:
     errors = []
 
     async with AsyncSessionLocal() as session:
+        # Verify is_hired column exists before running retention (migration 057).
+        # Abort early rather than risk anonymizing hired candidates without the filter.
+        from sqlalchemy import text as _text
+        try:
+            await session.execute(_text("SELECT is_hired FROM candidates LIMIT 0"))
+        except Exception:
+            await session.rollback()
+            raise RuntimeError(
+                "candidates.is_hired column missing — run 'alembic upgrade head' before retention cleanup"
+            )
+
         policies_result = await session.execute(
             select(CompanyRetentionPolicy).where(
                 CompanyRetentionPolicy.auto_anonymize == True  # noqa: E712

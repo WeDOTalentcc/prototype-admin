@@ -79,7 +79,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"❌ Database initialization failed: {e}")
         raise
-    
+
     # Domain auto-discovery
     from app.domains.registry import DomainRegistry
     domain_registry = DomainRegistry()
