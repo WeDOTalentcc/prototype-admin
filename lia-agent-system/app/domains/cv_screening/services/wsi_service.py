@@ -2008,10 +2008,10 @@ wsi_service = WSIService()
 
 async def generate_wsi_questions_tool(job_id: str, count: int = 5, **kwargs) -> List[Dict[str, Any]]:
     result = await wsi_service.generate_from_simple_inputs(
-        job_title=kwargs.get("job_title", ""),
-        technical_skills=kwargs.get("technical_skills", []),
-        behavioral_competencies=kwargs.get("behavioral_competencies", []),
-        seniority=kwargs.get("seniority"),
+        skills=kwargs.get("technical_skills", []),
+        behavioral=kwargs.get("behavioral_competencies"),
+        seniority=kwargs.get("seniority", "pleno"),
+        job_description=kwargs.get("job_description"),
         max_questions=count,
     )
     return [q.dict() if hasattr(q, "dict") else q for q in result]

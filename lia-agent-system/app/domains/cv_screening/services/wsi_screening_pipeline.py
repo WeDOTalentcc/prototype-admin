@@ -59,10 +59,10 @@ def _build_pipeline_calibration_context(request, seniority: str) -> CalibrationC
         company_size=getattr(request, 'company_size', None),
     )
 
-BLOCK_NAMES = {k: WSI_BLOCK_NAMES[k] for k in (2, 3, 4)}
+BLOCK_NAMES = {k: WSI_BLOCK_NAMES[k] for k in (2, 3, 4, 5)}
 
 MODEL_DISTRIBUTIONS = {
-    "compact": {"technical": 4, "behavioral": 3, "total": 7},
+    "compact": {"technical": 4, "behavioral": 3, "cultural": 1, "total": 8},
     "full": {"technical": 7, "behavioral": 5, "total": 12},
 }
 
@@ -472,19 +472,22 @@ class WSIScreeningPipeline:
         dreyfus_stage = SENIORITY_TO_DREYFUS.get(effective_seniority, 3)
         dreyfus_label = DREYFUS_STAGES.get(dreyfus_stage, "Competente")
         questions: List[UnifiedScreeningQuestion] = []
-        for wq in behav_questions[:target_count]:
+        selected = behav_questions[:target_count]
+        for idx, wq in enumerate(selected):
             bloom_level = wq.scoring_criteria.get("bloom_level", 3) if isinstance(wq.scoring_criteria, dict) else 3
             if not isinstance(bloom_level, int):
                 try:
                     bloom_level = int(bloom_level)
                 except (ValueError, TypeError):
                     bloom_level = 3
+            is_last = idx == len(selected) - 1
+            block_id = 5 if is_last and len(selected) > 1 else 4
             questions.append(
                 UnifiedScreeningQuestion(
                     id=wq.id,
                     text=wq.question_text,
                     category="behavioral",
-                    block_id=4,
+                    block_id=block_id,
                     source="wsi_generated",
                     trait=wq.scoring_criteria.get("ocean_trait") if isinstance(wq.scoring_criteria, dict) else None,
                     skill=wq.competency,
