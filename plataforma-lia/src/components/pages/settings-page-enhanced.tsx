@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState, useMemo, useCallback, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -162,7 +161,6 @@ const getCompletionBadgeColor = (percentage: number): string => {
 }
 
 export default function SettingsPageEnhanced() {
-  const router = useRouter()
   const { companyId, tenantInfo, isLoading: isTenantLoading } = useCompanyId()
   const [activeSection, setActiveSection] = useState<string>('company-team')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
@@ -561,7 +559,7 @@ export default function SettingsPageEnhanced() {
 
             <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
               <button
-                onClick={() => router.push('/configuracoes/integracoes')}
+                onClick={() => window.location.href = '/configuracoes/integracoes'}
                 className="w-full flex items-center gap-2 p-2.5 rounded-md text-left transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 text-lia-text-secondary"
               >
                 <Plug className="w-4 h-4 flex-shrink-0" />
