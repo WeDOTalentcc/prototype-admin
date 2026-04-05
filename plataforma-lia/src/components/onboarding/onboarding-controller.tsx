@@ -180,13 +180,6 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
           >
             Fazer Login
           </button>
-          <button
-            onClick={() => window.location.href = '/demo-onboarding'}
-            className="w-full bg-lia-bg-inverse text-white px-6 py-2 rounded-md hover:bg-lia-btn-primary-hover transition-colors motion-reduce:transition-none"
-           
-          >
-            🚀 Demonstração do Onboarding
-          </button>
         </div>
       </div>
     </div>

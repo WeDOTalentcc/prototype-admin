@@ -357,53 +357,6 @@ export function LoginPage() {
                 </a>
               </p>
 
-              {/* Demo & Onboarding Section */}
-              <div className="border-t border-lia-border-subtle pt-6 mt-6">
-                <h3 className="text-center text-sm font-medium text-lia-text-primary mb-4">
-                  🚀 Demonstrações da Plataforma
-                </h3>
-                <div className="space-y-3">
-                  <Button
-                    type="button"
-                    onClick={() => window.location.href = '/demo-onboarding'}
-                    variant="outline"
-                    className="w-full py-3 border-2 border-wedo-purple/30 hover:border-wedo-purple/30 rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 bg-wedo-purple/10 hover:bg-wedo-purple/15 font-medium text-wedo-purple"
-                  >
-                    <span className="text-lg">🌟</span>
-                    Tour de Onboarding Completo
-                  </Button>
-
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setError("Acesso demo não disponível nesta página. Use a página principal (/login).")
-                    }}
-                    variant="outline"
- className="w-full py-3 border-2 border-lia-border-default hover:border-lia-border-default rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 hover:bg-lia-bg-tertiary font-medium text-wedo-cyan-dark"
-                  >
-                    <span className="text-lg">🎯</span>
-                    Acesso Demo + Onboarding
-                  </Button>
-
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setError("Replay de onboarding não disponível nesta página. Use a página principal (/login).")
-                    }}
-                    variant="outline"
-                    className="w-full py-3 border-2 border-status-success/30 hover:border-status-success/30 rounded-md transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 bg-status-success/10 hover:bg-status-success/15 font-medium text-status-success"
-                  >
-                    <span className="text-lg">🔄</span>
-                    Login + Replay Onboarding
-                  </Button>
-                </div>
-
-                <div className="mt-4 p-3 bg-status-warning/10 border border-status-warning/30 rounded-md">
-                  <p className="text-xs text-status-warning text-center">
-                    💡 <strong>Dica:</strong> Use estes botões para testar o sistema de onboarding completo da plataforma LIA
-                  </p>
-                </div>
-              </div>
             </form>
           </div>
         </div>

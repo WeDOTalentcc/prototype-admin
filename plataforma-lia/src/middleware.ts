@@ -12,7 +12,6 @@ const PUBLIC_PATHS = [
   '/shared',
   '/forgot-password',
   '/acesso-negado',
-  '/demo-onboarding',
 ]
 
 const PUBLIC_API_PATHS = [
