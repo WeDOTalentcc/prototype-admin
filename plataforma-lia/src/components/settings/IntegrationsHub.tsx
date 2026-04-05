@@ -61,9 +61,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
-    if (activeSubsection) {
-      setActiveTab(activeSubsection)
-    }
+    setActiveTab(activeSubsection || "all")
   }, [activeSubsection])
 
   useEffect(() => {
