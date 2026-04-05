@@ -33,6 +33,7 @@ from app.schemas.policy import (
     PolicyEvaluationResultEnum
 )
 from app.services.policy_engine_service import PolicyEngineService
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ async def list_policies(
     target_type: Optional[str] = Query(None, description="Filter rate limit rules by target type"),
     trigger_type: Optional[str] = Query(None, description="Filter escalation rules by trigger type"),
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List all policy rules (business, rate limit, escalation)."""
@@ -128,7 +129,7 @@ async def list_policies(
 @router.post("/business-rules", response_model=BusinessRuleResponse, summary="Create business rule")
 async def create_business_rule(
     data: BusinessRuleCreate,
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     user_id: Optional[str] = Depends(get_user_id_from_header),
     db: AsyncSession = Depends(get_db)
 ):
@@ -251,7 +252,7 @@ async def delete_business_rule(
 @router.post("/rate-limit-rules", response_model=RateLimitRuleResponse, summary="Create rate limit rule")
 async def create_rate_limit_rule(
     data: RateLimitRuleCreate,
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new rate limit rule."""
@@ -318,7 +319,7 @@ async def update_rate_limit_rule(
 @router.post("/escalation-rules", response_model=EscalationRuleResponse, summary="Create escalation rule")
 async def create_escalation_rule(
     data: EscalationRuleCreate,
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new escalation rule."""
@@ -388,7 +389,7 @@ async def update_escalation_rule(
 @router.post("/evaluate", response_model=PolicyEvaluateResponse, summary="Evaluate policy")
 async def evaluate_policy(
     data: PolicyEvaluateRequest,
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     user_id: Optional[str] = Depends(get_user_id_from_header)
 ):
     """Evaluate whether an action is allowed by policies."""
@@ -423,7 +424,7 @@ async def evaluate_policy(
 @router.post("/check-rate-limit", response_model=RateLimitCheckResponse, summary="Check rate limit")
 async def check_rate_limit(
     data: RateLimitCheckRequest,
-    company_id: Optional[str] = Depends(get_company_id_from_header)
+    company_id: Optional[str] = Depends(get_verified_company_id)
 ):
     """Check rate limit for a specific target and action."""
     try:
@@ -445,7 +446,7 @@ async def check_rate_limit(
 @router.post("/trigger-escalation", response_model=EscalationTriggerResponse, summary="Trigger escalation")
 async def trigger_escalation(
     data: EscalationTriggerRequest,
-    company_id: Optional[str] = Depends(get_company_id_from_header)
+    company_id: Optional[str] = Depends(get_verified_company_id)
 ):
     """Trigger an escalation based on a rule or trigger type."""
     try:
@@ -544,7 +545,7 @@ async def get_evaluation_logs(
     agent_name: Optional[str] = Query(None, description="Filter by agent name"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get policy evaluation logs."""
@@ -579,7 +580,7 @@ async def get_escalation_logs(
     action_taken: Optional[str] = Query(None, description="Filter by action taken"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get escalation logs."""

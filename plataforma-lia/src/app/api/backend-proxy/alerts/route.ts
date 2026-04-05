@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
@@ -18,19 +19,23 @@ export async function GET(request: NextRequest) {
     
     const response = await fetch(backendUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(request),
     })
 
     if (!response.ok) {
-      return NextResponse.json([], { status: 200 })
+      return NextResponse.json(
+        { error: 'Erro ao buscar alertas' },
+        { status: response.status }
+      )
     }
 
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    return NextResponse.json([], { status: 200 })
+    return NextResponse.json(
+      { error: 'Erro ao conectar com o backend' },
+      { status: 500 }
+    )
   }
 }
 
@@ -48,9 +53,7 @@ export async function POST(request: NextRequest) {
     
     const response = await fetch(backendUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
 

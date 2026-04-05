@@ -350,6 +350,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 or (request.state.user.get("company_id") if isinstance(request.state.user, dict) else None)
             )
 
+        # Prefer JWT-validated company_id from AuthEnforcementMiddleware
+        state_company = getattr(request.state, "company_id", None)
+        if state_company:
+            return state_company
         company_id = request.headers.get("X-Company-ID")
         if company_id:
             return company_id

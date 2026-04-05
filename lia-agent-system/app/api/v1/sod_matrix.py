@@ -17,6 +17,7 @@ from uuid import UUID
 
 from app.core.database import get_db
 from app.models.observability import SoDRole, SoDConflict, SoDViolation
+from app.shared.tenant_guard import get_verified_company_id
 from app.schemas.sod_matrix import (
     SoDRoleResponse, SoDRoleListResponse, SoDRoleCreate, SoDRoleUpdate,
     SoDConflictResponse, SoDConflictListResponse, SoDConflictCreate, SoDExceptionApproval,
@@ -106,7 +107,7 @@ def violation_to_response(violation: SoDViolation) -> dict:
 
 @router.get("/stats", response_model=SoDStats, summary="Get SoD statistics")
 async def get_sod_stats(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get aggregated SoD statistics for the company."""
@@ -160,7 +161,7 @@ async def get_sod_stats(
 
 @router.get("/matrix", response_model=SoDMatrixResponse, summary="Get SoD matrix")
 async def get_sod_matrix(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get SoD matrix showing conflicts between roles."""
@@ -220,7 +221,7 @@ async def list_roles(
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List roles with optional filters."""
@@ -254,7 +255,7 @@ async def list_roles(
 @router.post("/roles", response_model=SoDRoleResponse, status_code=status.HTTP_201_CREATED, summary="Create role")
 async def create_role(
     data: SoDRoleCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new role."""
@@ -288,7 +289,7 @@ async def create_role(
 async def update_role(
     role_id: str,
     data: SoDRoleUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update an existing role."""
@@ -338,7 +339,7 @@ async def list_conflicts(
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List conflicts with optional filters."""
@@ -401,7 +402,7 @@ async def list_conflicts(
 @router.post("/conflicts", response_model=SoDConflictResponse, status_code=status.HTTP_201_CREATED, summary="Create conflict")
 async def create_conflict(
     data: SoDConflictCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new conflict definition."""
@@ -457,7 +458,7 @@ async def create_conflict(
 async def approve_exception(
     conflict_id: str,
     data: SoDExceptionApproval,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Approve an exception for a conflict."""
@@ -515,7 +516,7 @@ async def list_violations(
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List violations with optional filters."""
@@ -564,7 +565,7 @@ async def list_violations(
 async def resolve_violation(
     violation_id: str,
     data: SoDViolationResolve,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Resolve a violation."""

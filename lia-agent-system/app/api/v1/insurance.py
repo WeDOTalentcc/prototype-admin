@@ -17,6 +17,7 @@ import logging
 from uuid import UUID
 
 from app.core.database import get_db
+from app.shared.tenant_guard import get_verified_company_id
 from app.models.observability import (
     InsurancePolicy, InsuranceCoverage, InsuranceDocument, InsuranceClaim,
     InsurancePolicyStatusEnum, InsuranceCoverageTypeEnum, InsuranceDocumentTypeEnum,
@@ -70,7 +71,7 @@ def get_company_id_from_header(
 
 @router.get("/dashboard", response_model=InsuranceDashboard, summary="Get insurance dashboard")
 async def get_insurance_dashboard(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get insurance dashboard with active policy, coverages, gaps, and claims summary."""
@@ -178,7 +179,7 @@ async def get_insurance_dashboard(
 
 @router.get("/alerts", response_model=InsuranceAlertListResponse, summary="Get insurance alerts")
 async def get_insurance_alerts(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get insurance alerts for renewal and compliance issues."""
@@ -269,7 +270,7 @@ async def get_insurance_alerts(
 
 @router.get("/coverage-checklist", response_model=InsuranceCoverageChecklist, summary="Get BCB 498 coverage checklist")
 async def get_coverage_checklist(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get checklist of required BCB 498/2025 coverages with status."""
@@ -337,7 +338,7 @@ async def list_policies(
     insurer_name: Optional[str] = Query(None, description="Filter by insurer name"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List insurance policies with optional filters."""
@@ -376,7 +377,7 @@ async def list_policies(
 @router.get("/policies/{policy_id}", response_model=InsurancePolicyResponse, summary="Get policy details")
 async def get_policy(
     policy_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get policy details with coverages and documents."""
@@ -421,7 +422,7 @@ async def get_policy(
 @router.post("/policies/", response_model=InsurancePolicyResponse, status_code=status.HTTP_201_CREATED, summary="Create policy")
 async def create_policy(
     data: InsurancePolicyCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new insurance policy."""
@@ -462,7 +463,7 @@ async def create_policy(
 async def update_policy(
     policy_id: str,
     data: InsurancePolicyUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update an insurance policy."""
@@ -525,7 +526,7 @@ async def update_policy(
 @router.delete("/policies/{policy_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Deactivate policy")
 async def deactivate_policy(
     policy_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Deactivate (soft delete) an insurance policy."""
@@ -563,7 +564,7 @@ async def deactivate_policy(
 @router.get("/policies/{policy_id}/coverages/", response_model=List[InsuranceCoverageResponse], summary="List policy coverages")
 async def list_coverages(
     policy_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List coverages for a policy."""
@@ -599,7 +600,7 @@ async def list_coverages(
 async def add_coverage(
     policy_id: str,
     data: InsuranceCoverageCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Add a coverage to a policy."""
@@ -649,7 +650,7 @@ async def add_coverage(
 async def update_coverage(
     coverage_id: str,
     data: InsuranceCoverageUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a coverage."""
@@ -706,7 +707,7 @@ async def update_coverage(
 @router.delete("/coverages/{coverage_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Remove coverage")
 async def remove_coverage(
     coverage_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Remove a coverage."""
@@ -745,7 +746,7 @@ async def remove_coverage(
 @router.get("/policies/{policy_id}/documents/", response_model=List[InsuranceDocumentResponse], summary="List policy documents")
 async def list_documents(
     policy_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List documents for a policy."""
@@ -781,7 +782,7 @@ async def list_documents(
 async def upload_document(
     policy_id: str,
     data: InsuranceDocumentCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Upload a document to a policy."""
@@ -827,7 +828,7 @@ async def upload_document(
 @router.delete("/documents/{document_id}", status_code=status.HTTP_204_NO_CONTENT, summary="Remove document")
 async def remove_document(
     document_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Remove a document."""
@@ -869,7 +870,7 @@ async def list_claims(
     policy_id: Optional[str] = Query(None, description="Filter by policy ID"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List insurance claims."""
@@ -913,7 +914,7 @@ async def list_claims(
 @router.get("/claims/{claim_id}", response_model=InsuranceClaimResponse, summary="Get claim details")
 async def get_claim(
     claim_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get claim details."""
@@ -948,7 +949,7 @@ async def get_claim(
 @router.post("/claims/", response_model=InsuranceClaimResponse, status_code=status.HTTP_201_CREATED, summary="Create claim")
 async def create_claim(
     data: InsuranceClaimCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new insurance claim/sinistro."""
@@ -998,7 +999,7 @@ async def create_claim(
 async def update_claim(
     claim_id: str,
     data: InsuranceClaimUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update an insurance claim."""

@@ -14,6 +14,7 @@ import logging
 from uuid import UUID
 
 from app.core.database import get_db
+from app.shared.tenant_guard import get_verified_company_id
 from app.models.trust_center import (
     TrustCenterSettings, Subprocessor, TrustCenterResource, TrustCenterUpdate
 )
@@ -426,7 +427,7 @@ async def get_trust_center_updates(
 @router.post("/settings", response_model=TrustCenterSettingsResponse, summary="Create trust center settings")
 async def create_trust_center_settings(
     settings_data: TrustCenterSettingsCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create trust center settings for a company (admin only)."""
@@ -474,7 +475,7 @@ async def create_trust_center_settings(
 @router.put("/settings", response_model=TrustCenterSettingsResponse, summary="Update trust center settings")
 async def update_trust_center_settings(
     settings_data: TrustCenterSettingsUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update trust center settings (admin only)."""
@@ -526,7 +527,7 @@ async def update_trust_center_settings(
 
 @router.get("/settings", response_model=TrustCenterSettingsResponse, summary="Get trust center settings")
 async def get_trust_center_settings(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get trust center settings for authenticated company."""
@@ -556,7 +557,7 @@ async def get_trust_center_settings(
 @router.post("/resources", response_model=TrustCenterResourceResponse, summary="Add a resource")
 async def create_trust_center_resource(
     resource_data: TrustCenterResourceCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Add a downloadable resource (admin only)."""
@@ -582,7 +583,7 @@ async def create_trust_center_resource(
 @router.post("/subprocessors", response_model=SubprocessorResponse, summary="Add a subprocessor")
 async def create_subprocessor(
     subprocessor_data: SubprocessorCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Add a data subprocessor (admin only)."""
@@ -608,7 +609,7 @@ async def create_subprocessor(
 @router.post("/updates", response_model=TrustCenterUpdateResponse, summary="Post an update")
 async def create_trust_center_update(
     update_data: TrustCenterUpdateCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Post a compliance update/news (admin only)."""

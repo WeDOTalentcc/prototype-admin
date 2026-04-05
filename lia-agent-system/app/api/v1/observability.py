@@ -18,6 +18,7 @@ import logging
 from uuid import UUID
 
 from app.core.database import get_db
+from app.shared.tenant_guard import get_verified_company_id
 from app.models.observability import (
     AIInferenceLog, DataAccessLog, ConsentRecord,
     IncidentReport, ModelEvaluation, ComplianceControl, BiasAuditReport
@@ -76,7 +77,7 @@ async def get_ai_inference_stats(
     agent_type: Optional[str] = Query(None, description="Filter by agent type"),
     start_date: Optional[datetime] = Query(None, description="Start date filter"),
     end_date: Optional[datetime] = Query(None, description="End date filter"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get aggregated statistics for AI inference logs."""
@@ -150,7 +151,7 @@ async def list_ai_inference_logs(
     end_date: Optional[datetime] = Query(None, description="End date filter"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List AI inference logs with optional filters."""
@@ -196,7 +197,7 @@ async def list_ai_inference_logs(
 @router.get("/ai-logs/{log_id}", response_model=AIInferenceLogResponse, summary="Get AI inference log by ID")
 async def get_ai_inference_log(
     log_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific AI inference log by ID."""
@@ -233,7 +234,7 @@ async def get_data_access_stats(
     operation: Optional[str] = Query(None, description="Filter by operation"),
     start_date: Optional[datetime] = Query(None, description="Start date filter"),
     end_date: Optional[datetime] = Query(None, description="End date filter"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get aggregated statistics for data access logs (LGPD)."""
@@ -308,7 +309,7 @@ async def list_data_access_logs(
     end_date: Optional[datetime] = Query(None, description="End date filter"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List data access logs with optional filters (LGPD compliance)."""
@@ -359,7 +360,7 @@ async def list_consent_records(
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List consent records with optional filters."""
@@ -400,7 +401,7 @@ async def list_consent_records(
 async def get_candidate_consents(
     candidate_id: str,
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get all consent records for a specific candidate."""
@@ -437,7 +438,7 @@ async def get_candidate_consents(
 @router.post("/consents", response_model=ConsentRecordResponse, status_code=status.HTTP_201_CREATED, summary="Create consent record")
 async def create_consent_record(
     data: ConsentCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Register a new consent record."""
@@ -478,7 +479,7 @@ async def create_consent_record(
 async def revoke_consent(
     consent_id: str,
     data: ConsentRevoke,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Revoke an existing consent record."""
@@ -527,7 +528,7 @@ async def list_incidents(
     end_date: Optional[datetime] = Query(None, description="End date filter"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List incident reports with optional filters."""
@@ -573,7 +574,7 @@ async def list_incidents(
 @router.post("/incidents", response_model=IncidentReportResponse, status_code=status.HTTP_201_CREATED, summary="Create incident")
 async def create_incident(
     data: IncidentCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new incident report."""
@@ -609,7 +610,7 @@ async def create_incident(
 async def update_incident(
     incident_id: str,
     data: IncidentUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update an existing incident report."""
@@ -665,7 +666,7 @@ async def update_incident(
 async def resolve_incident(
     incident_id: str,
     data: IncidentResolve,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Mark an incident as resolved."""
@@ -713,7 +714,7 @@ async def resolve_incident(
 @router.get("/evaluations/summary", response_model=ModelEvaluationSummaryResponse, summary="Get evaluation summary")
 async def get_evaluation_summary(
     model_version: Optional[str] = Query(None, description="Filter by model version"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get summary of model evaluations by dimension."""
@@ -784,7 +785,7 @@ async def list_model_evaluations(
     passed: Optional[bool] = Query(None, description="Filter by pass status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List model evaluations with optional filters."""
@@ -828,7 +829,7 @@ async def list_model_evaluations(
 @router.get("/compliance/summary", response_model=ComplianceSummaryResponse, summary="Get compliance summary")
 async def get_compliance_summary(
     framework: Optional[str] = Query(None, description="Filter by framework"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get summary of compliance controls by framework."""
@@ -905,7 +906,7 @@ async def list_compliance_controls(
     risk_level: Optional[str] = Query(None, description="Filter by risk level"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List compliance controls with optional filters."""
@@ -948,7 +949,7 @@ async def list_compliance_controls(
 async def update_compliance_control(
     control_id: str,
     data: ComplianceControlUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a compliance control."""
@@ -1003,7 +1004,7 @@ async def update_compliance_control(
 @router.get("/dashboard", response_model=ObservabilityDashboardResponse, summary="Get dashboard data")
 async def get_observability_dashboard(
     period_days: int = Query(30, ge=1, le=365, description="Period in days"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get consolidated dashboard data for observability."""
@@ -1137,7 +1138,7 @@ async def get_observability_dashboard(
 
 @router.get("/bias-audits/latest", response_model=BiasAuditReportResponse, summary="Get latest bias audit")
 async def get_latest_bias_audit(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get the most recent bias audit report for the company."""
@@ -1166,7 +1167,7 @@ async def get_latest_bias_audit(
 
 @router.get("/bias-audits/summary", response_model=BiasAuditSummaryResponse, summary="Get bias audit summary")
 async def get_bias_audit_summary(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a summary of all bias audits for the company."""
@@ -1240,7 +1241,7 @@ async def list_bias_audits(
     end_date: Optional[datetime] = Query(None, description="End date filter"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List bias audit reports with optional filters."""
@@ -1284,7 +1285,7 @@ async def list_bias_audits(
 @router.get("/bias-audits/{audit_id}", response_model=BiasAuditReportResponse, summary="Get bias audit by ID")
 async def get_bias_audit(
     audit_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific bias audit report by ID."""
@@ -1318,7 +1319,7 @@ async def get_bias_audit(
 @router.post("/bias-audits", response_model=BiasAuditReportResponse, status_code=status.HTTP_201_CREATED, summary="Create bias audit")
 async def create_bias_audit(
     data: BiasAuditCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new bias audit report."""
@@ -1377,7 +1378,7 @@ async def create_bias_audit(
 async def publish_bias_audit(
     audit_id: str,
     data: BiasAuditPublish,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Publish or unpublish a bias audit report."""

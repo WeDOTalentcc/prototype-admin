@@ -20,6 +20,7 @@ import csv
 from uuid import UUID
 
 from app.core.database import get_db
+from app.shared.tenant_guard import get_verified_company_id
 from app.models.audit_logs import (
     SOXAuditLog, AuditRetentionPolicy,
     ActionCategory, AuditStatus,
@@ -58,7 +59,7 @@ async def get_audit_stats(
     date_from: Optional[datetime] = Query(None, description="Start date for stats"),
     date_to: Optional[datetime] = Query(None, description="End date for stats"),
     client_id: Optional[str] = Query(None, description="Filter by client ID"),
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get aggregated statistics for audit logs."""
@@ -149,7 +150,7 @@ async def export_audit_logs(
     date_to: Optional[datetime] = Query(None, description="End date"),
     client_id: Optional[str] = Query(None, description="Filter by client ID"),
     action_category: Optional[str] = Query(None, description="Filter by category"),
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Export audit logs as CSV file for compliance reporting."""
@@ -311,7 +312,7 @@ async def create_retention_policy(
 @router.get("/{log_id}", response_model=AuditLogResponse, summary="Get audit log by ID")
 async def get_audit_log(
     log_id: str,
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a single audit log entry by ID."""
@@ -357,7 +358,7 @@ async def list_audit_logs(
     resource_type: Optional[str] = Query(None, description="Filter by resource type"),
     limit: int = Query(50, ge=1, le=500, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    company_id: Optional[str] = Depends(get_company_id_from_header),
+    company_id: Optional[str] = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List audit logs with optional filtering and pagination."""

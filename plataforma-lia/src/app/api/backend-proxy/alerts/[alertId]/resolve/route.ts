@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8001"
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://127.0.0.1:8000"
 
 export async function POST(
   request: NextRequest,
@@ -15,7 +16,7 @@ export async function POST(
     let url = `${BACKEND_URL}/api/v1/alerts/${alertId}/resolve?user_id=${userId}`
     if (note) url += `&resolution_note=${encodeURIComponent(note)}`
 
-    const response = await fetch(url, { method: "POST" })
+    const response = await fetch(url, { method: "POST", headers: getAuthHeaders(request) })
     if (!response.ok) {
       return NextResponse.json({ success: false, error: "Backend error" }, { status: response.status })
     }

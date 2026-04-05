@@ -23,6 +23,7 @@ from uuid import UUID
 
 from app.core.database import get_db
 from app.models.observability import DataSubjectRequest
+from app.shared.tenant_guard import get_verified_company_id
 from app.schemas.data_subject_requests import (
     DataSubjectRequestCreate, DataSubjectRequestResponse, DataSubjectRequestListResponse,
     DataSubjectRequestPublicCreate, DataSubjectRequestPublicTrack, DataSubjectRequestAssign,
@@ -259,7 +260,7 @@ async def track_request_status(
 
 @router.get("/stats", response_model=DataSubjectRequestStats, summary="Get request statistics")
 async def get_request_stats(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get aggregated statistics for data subject requests."""
@@ -356,7 +357,7 @@ async def list_data_subject_requests(
     subject_email: Optional[str] = Query(None, description="Filter by subject email"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=200),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List data subject requests with filters and pagination."""
@@ -401,7 +402,7 @@ async def list_data_subject_requests(
 @router.get("/{request_id}", response_model=DataSubjectRequestResponse, summary="Get request details")
 async def get_data_subject_request(
     request_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get detailed information about a specific data subject request."""
@@ -435,7 +436,7 @@ async def get_data_subject_request(
 async def assign_request(
     request_id: str,
     data: DataSubjectRequestAssign,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Assign a data subject request to a user for handling."""
@@ -488,7 +489,7 @@ async def assign_request(
 async def verify_identity(
     request_id: str,
     data: DataSubjectRequestVerifyIdentity,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Verify the identity of the data subject making the request."""
@@ -540,7 +541,7 @@ async def verify_identity(
 @router.put("/{request_id}/process", response_model=DataSubjectRequestResponse, summary="Start processing request")
 async def start_processing(
     request_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Start processing a data subject request."""
@@ -593,7 +594,7 @@ async def start_processing(
 async def complete_request(
     request_id: str,
     data: DataSubjectRequestComplete,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Complete a data subject request with a response."""
@@ -671,7 +672,7 @@ async def complete_request(
 async def reject_request(
     request_id: str,
     data: DataSubjectRequestReject,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Reject a data subject request with a reason."""

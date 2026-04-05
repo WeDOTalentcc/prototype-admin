@@ -17,6 +17,7 @@ import logging
 from uuid import UUID
 
 from app.core.database import get_db
+from app.shared.tenant_guard import get_verified_company_id
 from app.models.observability import (
     ComplianceControlLibrary, CompanyComplianceControl,
     ComplianceAudit, SOXControl
@@ -176,7 +177,7 @@ async def list_company_controls(
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List company's compliance controls with their status."""
@@ -226,7 +227,7 @@ async def list_company_controls(
 @router.post("/company-controls", response_model=CompanyControlResponse, summary="Create company control")
 async def create_company_control(
     data: CompanyControlCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a company compliance control mapping."""
@@ -270,7 +271,7 @@ async def create_company_control(
 async def update_company_control(
     control_id: str,
     data: CompanyControlUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a company's compliance control status."""
@@ -322,7 +323,7 @@ async def update_company_control(
 async def upload_evidence(
     control_id: str,
     data: EvidenceUpload,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Upload evidence file for a control."""
@@ -370,7 +371,7 @@ async def list_audits(
     audit_type: Optional[str] = Query(None, description="Filter by audit type"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List compliance audits."""
@@ -410,7 +411,7 @@ async def list_audits(
 @router.post("/audits", response_model=ComplianceAuditResponse, summary="Create compliance audit")
 async def create_audit(
     data: ComplianceAuditCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new compliance audit."""
@@ -442,7 +443,7 @@ async def create_audit(
 
 @router.get("/audits/dashboard", response_model=ComplianceDashboardResponse, summary="Get compliance dashboard")
 async def get_compliance_dashboard(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get comprehensive compliance dashboard across all frameworks."""
@@ -554,7 +555,7 @@ async def list_sox_controls(
     test_result: Optional[str] = Query(None, description="Filter by test result"),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List SOX controls for a company."""
@@ -594,7 +595,7 @@ async def list_sox_controls(
 @router.post("/sox", response_model=SOXControlResponse, summary="Create SOX control")
 async def create_sox_control(
     data: SOXControlCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new SOX control."""
@@ -628,7 +629,7 @@ async def create_sox_control(
 async def update_sox_control(
     control_id: str,
     data: SOXControlUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a SOX control."""

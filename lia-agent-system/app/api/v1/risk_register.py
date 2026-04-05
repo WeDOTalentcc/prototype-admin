@@ -16,6 +16,7 @@ from uuid import UUID
 
 from app.core.database import get_db
 from app.models.observability import RiskEntry, RiskTreatment
+from app.shared.tenant_guard import get_verified_company_id
 from app.schemas.risk_register import (
     RiskResponse, RiskListResponse, RiskCreate, RiskUpdate,
     RiskTreatmentResponse, RiskTreatmentCreate, RiskTreatmentUpdate,
@@ -108,7 +109,7 @@ def treatment_to_response(treatment: RiskTreatment) -> dict:
 
 @router.get("/stats", response_model=RiskStats, summary="Get risk statistics")
 async def get_risk_stats(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get aggregated risk statistics for the company."""
@@ -167,7 +168,7 @@ async def get_risk_stats(
 
 @router.get("/matrix", response_model=RiskMatrixResponse, summary="Get risk matrix")
 async def get_risk_matrix(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get risk matrix showing count of risks by likelihood and impact."""
@@ -220,7 +221,7 @@ async def list_risks(
     risk_level: Optional[str] = Query(None, description="Filter by risk level"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List risks with optional filters."""
@@ -266,7 +267,7 @@ async def list_risks(
 @router.get("/{risk_id}", response_model=RiskResponse, summary="Get risk details")
 async def get_risk(
     risk_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific risk with its treatments."""
@@ -305,7 +306,7 @@ async def get_risk(
 @router.post("", response_model=RiskResponse, status_code=status.HTTP_201_CREATED, summary="Create risk")
 async def create_risk(
     data: RiskCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new risk."""
@@ -349,7 +350,7 @@ async def create_risk(
 async def update_risk(
     risk_id: str,
     data: RiskUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update an existing risk."""
@@ -413,7 +414,7 @@ async def update_risk(
 async def add_treatment(
     risk_id: str,
     data: RiskTreatmentCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Add a treatment to a risk."""
@@ -467,7 +468,7 @@ async def add_treatment(
 async def update_treatment(
     treatment_id: str,
     data: RiskTreatmentUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a risk treatment."""

@@ -15,6 +15,7 @@ import logging
 
 from app.core.database import get_db
 from app.models.client_account import ClientAccount
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/workforce-planning", tags=["workforce-planning"])
@@ -121,7 +122,7 @@ def save_workforce_plans(client: ClientAccount, plans: List[Dict[str, Any]]):
 async def list_workforce_plans(
     year: Optional[int] = Query(None, description="Filter by year"),
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
-    company_id: str = Depends(get_company_id_from_headers),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List all workforce plans for the company."""
@@ -160,7 +161,7 @@ async def list_workforce_plans(
 @router.get("/{plan_id}", summary="Get workforce plan by ID")
 async def get_workforce_plan(
     plan_id: str,
-    company_id: str = Depends(get_company_id_from_headers),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific workforce plan by ID."""
@@ -194,7 +195,7 @@ async def get_workforce_plan(
 @router.post("", summary="Create workforce plan", status_code=status.HTTP_201_CREATED)
 async def create_workforce_plan(
     data: WorkforcePlanCreate,
-    company_id: str = Depends(get_company_id_from_headers),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new workforce plan."""
@@ -243,7 +244,7 @@ async def create_workforce_plan(
 async def update_workforce_plan(
     plan_id: str,
     data: WorkforcePlanUpdate,
-    company_id: str = Depends(get_company_id_from_headers),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update an existing workforce plan."""
@@ -300,7 +301,7 @@ async def update_workforce_plan(
 @router.delete("/{plan_id}", summary="Delete workforce plan")
 async def delete_workforce_plan(
     plan_id: str,
-    company_id: str = Depends(get_company_id_from_headers),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a workforce plan."""
@@ -342,7 +343,7 @@ async def delete_workforce_plan(
 @router.get("/{plan_id}/departments", summary="List departments of a plan")
 async def list_plan_departments(
     plan_id: str,
-    company_id: str = Depends(get_company_id_from_headers),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List all departments in a workforce plan."""
@@ -383,7 +384,7 @@ async def list_plan_departments(
 @router.post("/{plan_id}/calculate", summary="Recalculate plan metrics")
 async def calculate_plan_metrics(
     plan_id: str,
-    company_id: str = Depends(get_company_id_from_headers),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Recalculate metrics for a workforce plan based on department data."""

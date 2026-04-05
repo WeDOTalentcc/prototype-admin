@@ -17,6 +17,7 @@ from uuid import UUID
 
 from app.core.database import get_db
 from app.models.observability import BusinessProcess, DisasterRecoveryPlan, ContinuityTest
+from app.shared.tenant_guard import get_verified_company_id
 from app.schemas.continuity import (
     CriticalProcessResponse, CriticalProcessListResponse, CriticalProcessCreate, CriticalProcessUpdate,
     DRPlanResponse, DRPlanListResponse, DRPlanCreate, DRPlanUpdate, DRPlanApproval,
@@ -124,7 +125,7 @@ def test_to_response(test: ContinuityTest, plan_name: str = None) -> dict:
 
 @router.get("/stats", response_model=ContinuityStats, summary="Get continuity statistics")
 async def get_continuity_stats(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get aggregated continuity statistics for the company."""
@@ -184,7 +185,7 @@ async def get_continuity_stats(
 
 @router.get("/dashboard", response_model=ContinuityDashboard, summary="Get continuity dashboard")
 async def get_continuity_dashboard(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get dashboard data for business continuity."""
@@ -253,7 +254,7 @@ async def list_processes(
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List critical processes with optional filters."""
@@ -290,7 +291,7 @@ async def list_processes(
 @router.post("/processes", response_model=CriticalProcessResponse, status_code=status.HTTP_201_CREATED, summary="Create process")
 async def create_process(
     data: CriticalProcessCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new critical process."""
@@ -329,7 +330,7 @@ async def create_process(
 async def update_process(
     process_id: str,
     data: CriticalProcessUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update an existing critical process."""
@@ -389,7 +390,7 @@ async def list_plans(
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List DR plans with optional filters."""
@@ -426,7 +427,7 @@ async def list_plans(
 @router.post("/plans", response_model=DRPlanResponse, status_code=status.HTTP_201_CREATED, summary="Create plan")
 async def create_plan(
     data: DRPlanCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new DR plan."""
@@ -461,7 +462,7 @@ async def create_plan(
 async def update_plan(
     plan_id: str,
     data: DRPlanUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update an existing DR plan."""
@@ -511,7 +512,7 @@ async def update_plan(
 async def approve_plan(
     plan_id: str,
     data: DRPlanApproval,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Approve a DR plan."""
@@ -557,7 +558,7 @@ async def list_tests(
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List continuity tests with optional filters."""
@@ -609,7 +610,7 @@ async def list_tests(
 @router.post("/tests", response_model=ContinuityTestResponse, status_code=status.HTTP_201_CREATED, summary="Schedule test")
 async def create_test(
     data: ContinuityTestCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Schedule a new continuity test."""
@@ -661,7 +662,7 @@ async def create_test(
 async def update_test(
     test_id: str,
     data: ContinuityTestUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a continuity test (including results)."""

@@ -21,6 +21,7 @@ from app.domains.cv_screening.services.personalized_feedback_service import Pers
 from app.api import orchestrator_routes
 from app.services.llm import LLMService
 from app.middleware.rate_limiter import RateLimitMiddleware, rate_limiter
+from app.middleware.auth_enforcement import AuthEnforcementMiddleware
 from app.middleware.request_id import RequestIdMiddleware
 from app.core.logging_middleware import StructuredLoggingMiddleware
 from app.domains.automation.services.automation_scheduler import automation_scheduler
@@ -277,6 +278,9 @@ Authorization: Bearer <token>
     docs_url="/docs",
     redoc_url="/docs/redoc",
 )
+
+# Auth enforcement — validates JWT and injects company_id (multi-tenancy)
+app.add_middleware(AuthEnforcementMiddleware)
 
 # Rate limiting middleware
 app.add_middleware(RateLimitMiddleware)

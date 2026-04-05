@@ -18,6 +18,7 @@ from uuid import UUID
 from app.auth.dependencies import require_admin
 from app.auth.models import User
 from app.core.database import get_db
+from app.shared.tenant_guard import get_verified_company_id
 from app.models.observability import (
     DPORegistry, BreachNotification, AutomatedDecisionExplanation
 )
@@ -63,7 +64,7 @@ def get_company_id_from_header(
 
 @router.get("/stats", response_model=LGPDComplianceStats, summary="Get LGPD compliance statistics")
 async def get_lgpd_stats(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get aggregated LGPD compliance statistics for the company."""
@@ -147,7 +148,7 @@ async def list_dpo_entries(
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List all DPO registry entries (admin view)."""
@@ -184,7 +185,7 @@ async def list_dpo_entries(
 @router.get("/dpo/{target_company_id}", response_model=DPORegistryResponse, summary="Get DPO for company")
 async def get_dpo_for_company(
     target_company_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get DPO registry entry for a specific company."""
@@ -211,7 +212,7 @@ async def get_dpo_for_company(
 @router.post("/dpo", response_model=DPORegistryResponse, status_code=status.HTTP_201_CREATED, summary="Register DPO")
 async def create_dpo_registry(
     data: DPORegistryCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Register or update DPO for the company."""
@@ -263,7 +264,7 @@ async def create_dpo_registry(
 @router.put("/dpo", response_model=DPORegistryResponse, summary="Update DPO")
 async def update_dpo_registry(
     data: DPORegistryUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update DPO registry for the company."""
@@ -310,7 +311,7 @@ async def list_breach_notifications(
     pending_anpd: Optional[bool] = Query(None, description="Filter breaches pending ANPD notification"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List breach notifications with optional filters."""
@@ -351,7 +352,7 @@ async def list_breach_notifications(
 @router.get("/breaches/{breach_id}", response_model=BreachNotificationResponse, summary="Get breach notification")
 async def get_breach_notification(
     breach_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific breach notification by ID."""
@@ -384,7 +385,7 @@ async def get_breach_notification(
 @router.post("/breaches", response_model=BreachNotificationResponse, status_code=status.HTTP_201_CREATED, summary="Report data breach")
 async def create_breach_notification(
     data: BreachNotificationCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Report a new data breach. LGPD requires ANPD notification within 48 hours."""
@@ -420,7 +421,7 @@ async def create_breach_notification(
 async def update_breach_notification(
     breach_id: str,
     data: BreachNotificationUpdate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Update a breach notification."""
@@ -473,7 +474,7 @@ async def update_breach_notification(
 async def mark_anpd_notified(
     breach_id: str,
     data: ANPDNotification,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Mark that ANPD has been notified about the breach (48h requirement)."""
@@ -522,7 +523,7 @@ async def mark_anpd_notified(
 async def mark_subjects_notified(
     breach_id: str,
     data: SubjectsNotification,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Mark that affected data subjects have been notified about the breach."""
@@ -567,7 +568,7 @@ async def mark_subjects_notified(
 async def resolve_breach(
     breach_id: str,
     data: BreachResolution,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Mark a breach as resolved."""
@@ -616,7 +617,7 @@ async def list_automated_decisions(
     pending_review: Optional[bool] = Query(None, description="Filter decisions pending human review"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """List automated decision explanations with optional filters."""
@@ -663,7 +664,7 @@ async def list_automated_decisions(
 @router.get("/decisions/{decision_id}", response_model=AutomatedDecisionResponse, summary="Get automated decision")
 async def get_automated_decision(
     decision_id: str,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific automated decision explanation by ID."""
@@ -696,7 +697,7 @@ async def get_automated_decision(
 @router.post("/decisions", response_model=AutomatedDecisionResponse, status_code=status.HTTP_201_CREATED, summary="Record automated decision")
 async def create_automated_decision(
     data: AutomatedDecisionCreate,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Record an automated decision for Article 20 compliance."""
@@ -733,7 +734,7 @@ async def create_automated_decision(
 async def request_human_review(
     decision_id: str,
     data: HumanReviewRequest,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Request human review of an automated decision (LGPD Article 20)."""
@@ -779,7 +780,7 @@ async def request_human_review(
 async def complete_human_review(
     decision_id: str,
     data: HumanReviewComplete,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
     """Complete human review of an automated decision."""
@@ -852,7 +853,7 @@ class ScheduleDeletionResponse(BaseModel):
 @router.post("/schedule-deletion", response_model=ScheduleDeletionResponse)
 async def schedule_candidate_deletion(
     data: ScheduleDeletionRequest,
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -887,7 +888,7 @@ async def schedule_candidate_deletion(
 @router.post("/run-cleanup")
 async def trigger_cleanup(
     dry_run: bool = Query(True, description="dry_run=true logs deletions without executing"),
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     _admin_user: User = Depends(require_admin),
 ):
     """
@@ -908,7 +909,7 @@ async def trigger_cleanup(
 
 @router.get("/pending-deletions")
 async def pending_deletions(
-    company_id: str = Depends(get_company_id_from_header),
+    company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ):
     """Return count of records pending deletion (monitoring/DPO dashboard)."""

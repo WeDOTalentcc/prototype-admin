@@ -13,6 +13,20 @@ import {
 import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { RubricEvaluationCard } from "@/components/rubric-evaluation-card"
 
+interface ActivityExtraData {
+  screening_id?: string
+  recommendation?: string
+  overall_score?: number
+  tech_score?: number
+  comm_score?: number
+  key_strengths?: string[]
+  score_label?: string
+  analysis_type?: string
+  red_flags?: string[]
+  green_flags?: string[]
+  [key: string]: string | number | boolean | string[] | undefined
+}
+
 interface Activity {
   id: string
   activity_type: string
@@ -29,7 +43,7 @@ interface Activity {
     name: string | null
     type: string | null
   } | null
-  extra_data: Record<string, any>
+  extra_data: ActivityExtraData
   priority: string
   category: string | null
   action: {
