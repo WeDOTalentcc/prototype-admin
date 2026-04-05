@@ -65,6 +65,7 @@ class ChatResponse(BaseModel):
     needs_confirmation: bool = False
     needs_params: bool = False
     pending_action_id: Optional[str] = None
+    fairness_warnings: List[str] = Field(default_factory=list)  # Soft advisory warnings do FairnessGuard
 
     @classmethod
     def from_orchestrator_result(cls, result: Dict[str, Any], conv_id: str) -> "ChatResponse":
@@ -170,14 +171,17 @@ class MainOrchestrator:
                     intent_detected="blocked_bias",
                     conversation_id=conv_id,
                 )
-            # Camada 2 — soft warnings (log apenas, não bloqueia)
+            # Camada 2 — soft warnings (advisory, não bloqueia — propagados no response)
+            _soft_warnings: List[str] = list(getattr(_fairness_result, "soft_warnings", None) or [])
             try:
                 _implicit_warnings = self._fairness_guard.check_implicit_bias(message_text)
                 if _implicit_warnings:
+                    for _w in _implicit_warnings:
+                        if _w not in _soft_warnings:
+                            _soft_warnings.append(_w)
                     logger.info(
-                        "[MainOrchestrator] FairnessGuard implicit bias soft warnings: "
-                        "user=%s warnings=%s",
-                        ctx.user_id, _implicit_warnings,
+                        "[MainOrchestrator] FairnessGuard soft warnings: user=%s count=%d",
+                        ctx.user_id, len(_soft_warnings),
                     )
             except Exception as _fg_exc:
                 logger.debug("[MainOrchestrator] FairnessGuard implicit check skipped: %s", _fg_exc)
@@ -194,15 +198,22 @@ class MainOrchestrator:
             # ── Phase 0: PendingAction ──────────────────────────────────────
             pending_response = await self._handle_pending_action(ctx, conv_id)
             if pending_response is not None:
+                if _soft_warnings and not pending_response.fairness_warnings:
+                    pending_response.fairness_warnings = _soft_warnings
                 return pending_response
 
             # ── Phase 1: ActionExecutor ────────────────────────────────────
             action_response = await self._try_action_executor(ctx, conv_id)
             if action_response is not None:
+                if _soft_warnings and not action_response.fairness_warnings:
+                    action_response.fairness_warnings = _soft_warnings
                 return action_response
 
             # ── Phase 2: Orchestrator completo ─────────────────────────────
-            return await self._process_via_orchestrator(ctx, conv_id, db, streaming_callback)
+            _phase2_response = await self._process_via_orchestrator(ctx, conv_id, db, streaming_callback)
+            if _soft_warnings and not _phase2_response.fairness_warnings:
+                _phase2_response.fairness_warnings = _soft_warnings
+            return _phase2_response
 
         except Exception as exc:
             logger.error(

@@ -315,3 +315,66 @@ class TestGetSuggestedPrompts:
 
     def test_returns_list(self):
         assert isinstance(_get_suggested_prompts("x", 3, 1), list)
+
+
+# ---------------------------------------------------------------------------
+# FairnessGuard soft_warnings propagation
+# ---------------------------------------------------------------------------
+
+class TestFairnessSoftWarnings:
+    def test_chat_response_has_fairness_warnings_field(self):
+        """ChatResponse deve ter campo fairness_warnings vazio por padrão."""
+        r = ChatResponse(success=True, content="ok")
+        assert hasattr(r, "fairness_warnings")
+        assert r.fairness_warnings == []
+
+    @pytest.mark.asyncio
+    async def test_soft_warnings_propagated_to_phase2_response(self):
+        """Soft warnings do FairnessGuard devem aparecer no response final."""
+        mock_orch = AsyncMock()
+        mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
+        mock_mem = _patch_conversation_memory()
+
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.services.conversation_memory.conversation_memory", mock_mem),              patch("app.orchestrator.main_orchestrator.FairnessGuard") as MockFG:
+
+            mock_fg_instance = MagicMock()
+            mock_fg_result = MagicMock()
+            mock_fg_result.is_blocked = False
+            mock_fg_result.soft_warnings = ["May indicate age bias."]
+            mock_fg_instance.check.return_value = mock_fg_result
+            mock_fg_instance.check_implicit_bias.return_value = ["Additional implicit bias warning."]
+            MockFG.return_value = mock_fg_instance
+
+            mock_store.get.return_value = None
+            mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
+
+            orch = MainOrchestrator(mock_orch)
+            result = await orch.process(make_ctx(), MagicMock())
+
+            assert result.fairness_warnings != []
+            assert any("age bias" in w for w in result.fairness_warnings)
+
+    @pytest.mark.asyncio
+    async def test_no_warnings_when_clean_query(self):
+        """Query limpa não deve ter fairness_warnings."""
+        mock_orch = AsyncMock()
+        mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
+        mock_mem = _patch_conversation_memory()
+
+        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.services.conversation_memory.conversation_memory", mock_mem),              patch("app.orchestrator.main_orchestrator.FairnessGuard") as MockFG:
+
+            mock_fg_instance = MagicMock()
+            mock_fg_result = MagicMock()
+            mock_fg_result.is_blocked = False
+            mock_fg_result.soft_warnings = []
+            mock_fg_instance.check.return_value = mock_fg_result
+            mock_fg_instance.check_implicit_bias.return_value = []
+            MockFG.return_value = mock_fg_instance
+
+            mock_store.get.return_value = None
+            mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
+
+            orch = MainOrchestrator(mock_orch)
+            result = await orch.process(make_ctx(), MagicMock())
+
+            assert result.fairness_warnings == []

@@ -45,25 +45,20 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
   const authIsAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const authIsLoading = useAuthStore((s) => s.isLoading)
 
-  const [userData, setUserData] = useState<UserData | null>(() => {
-    if (typeof window === 'undefined') {
-      return null
-    }
-
-    const storeState = useOnboardingStore.getState()
-    const storedUserData = storeState.userData
-
-    if (storedUserData) {
-      return storedUserData as unknown as UserData
-    }
-
-    return null
-  })
+  const [userData, setUserData] = useState<UserData | null>(null)
 
   const [isDevMode, setIsDevMode] = useState(false)
 
   useEffect(() => {
     setIsDevMode(process.env.NODE_ENV !== 'production')
+  }, [])
+
+  useEffect(() => {
+    const storeState = useOnboardingStore.getState()
+    const storedUserData = storeState.userData
+    if (storedUserData && !userData) {
+      setUserData(storedUserData as unknown as UserData)
+    }
   }, [])
 
   useEffect(() => {
