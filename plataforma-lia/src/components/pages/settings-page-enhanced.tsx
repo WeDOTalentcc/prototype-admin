@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useMemo, useCallback, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,7 +17,7 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle
+  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug
 } from "lucide-react"
 import dynamic from "next/dynamic"
 import { LoadingFallback } from "@/components/ui/loading"
@@ -161,6 +162,7 @@ const getCompletionBadgeColor = (percentage: number): string => {
 }
 
 export default function SettingsPageEnhanced() {
+  const router = useRouter()
   const { companyId, tenantInfo, isLoading: isTenantLoading } = useCompanyId()
   const [activeSection, setActiveSection] = useState<string>('company-team')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
@@ -556,6 +558,28 @@ export default function SettingsPageEnhanced() {
                 )
               })}
             </nav>
+
+            <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
+              <button
+                onClick={() => router.push('/configuracoes/integracoes')}
+                className="w-full flex items-center gap-2 p-2.5 rounded-md text-left transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 text-lia-text-secondary"
+              >
+                <Plug className="w-4 h-4 flex-shrink-0" />
+                {shouldShowContent && (
+                  <>
+                    <div className="flex-1 min-w-0">
+                      <div className={`${textStyles.sidebarItem} leading-tight`}>
+                        Integrações
+                      </div>
+                      <div className={`${textStyles.description} truncate leading-tight`}>
+                        Conectar serviços externos
+                      </div>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-tertiary" />
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </Card>
       </aside>
