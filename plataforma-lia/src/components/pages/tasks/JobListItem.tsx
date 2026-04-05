@@ -115,8 +115,7 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
         )}
 
         <div
-          className={`flex items-center gap-1 ${getAlertColor(job.alert.type)} rounded-md px-1.5 py-1 flex-1`}
-          style={getAlertStyle(job.alert.type) as React.CSSProperties}
+          className={`flex items-center gap-1 ${getAlertColor(job.alert.type)} ${getAlertStyle(job.alert.type)} rounded-md px-1.5 py-1 flex-1`}
         >
           {getAlertIcon(job.alert.type)}
           <span className="text-xs font-medium truncate flex-1">{job.alert.message}</span>
