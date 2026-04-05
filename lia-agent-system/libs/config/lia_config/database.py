@@ -99,7 +99,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             _cid = _get_current_company_id()
             if _cid:
                 await session.execute(
-                    sa.text("SET LOCAL app.company_id = :cid"),
+                    sa.text("SELECT set_config('app.company_id', :cid, true)"),
                     {"cid": _cid},
                 )
             yield session
