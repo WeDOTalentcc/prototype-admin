@@ -20,6 +20,13 @@ export interface HITLPending {
   data: Record<string, unknown>
 }
 
+export interface PanelUpdateEvent {
+  panel_type: string
+  panel_data: Record<string, unknown>
+  panel_title?: string
+  action: "open" | "update" | "close"
+}
+
 export interface UseFloatStreamingResult {
   isConnected: boolean
   isStreaming: boolean
@@ -53,10 +60,12 @@ export interface UseFloatStreamingResult {
 export function useFloatStreaming(
   sessionId: string,
   onComplete: (content: string, executionPlan?: Record<string, unknown>) => void,
+  onPanelUpdate?: (event: PanelUpdateEvent) => void,
 ): UseFloatStreamingResult {
   const [hitlPending, setHitlPending] = useState<HITLPending | null>(null)
   const hitlRef = useRef<HITLPending | null>(null)
   const onCompleteRef = useRef(onComplete)
+  const onPanelUpdateRef = useRef(onPanelUpdate)
   // Plan progress tracking
   const [planProgressSteps, setPlanProgressSteps] = useState<Array<{task_id: string; action_id: string; domain_id: string; status: string}>>([])
   const [activePlanId, setActivePlanId] = useState<string | null>(null)
@@ -70,6 +79,10 @@ export function useFloatStreaming(
   useEffect(() => {
     onCompleteRef.current = onComplete
   }, [onComplete])
+
+  useEffect(() => {
+    onPanelUpdateRef.current = onPanelUpdate
+  }, [onPanelUpdate])
 
   const handleEvent = useCallback((event: StreamingEvent) => {
     switch (event.type) {
@@ -127,6 +140,17 @@ export function useFloatStreaming(
       case 'approval_confirmed':
         // backend confirmou — aguardar resposta do agente via 'message'
         break
+
+      case 'panel_update': {
+        const panelEvent = event as Record<string, unknown>
+        onPanelUpdateRef.current?.({
+          panel_type: (panelEvent.panel_type as string) || "",
+          panel_data: (panelEvent.panel_data as Record<string, unknown>) || {},
+          panel_title: panelEvent.panel_title as string | undefined,
+          action: (panelEvent.action as "open" | "update" | "close") || "open",
+        })
+        break
+      }
 
       case 'message':
         // resposta final (direto ou pós-HITL) — encerra modo thinking

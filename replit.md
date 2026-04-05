@@ -57,6 +57,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Proactive Predictive Briefing**: LIA proactively presents a briefing with pipeline stats, candidate alerts, and ML predictions.
 - **Polling Optimization**: Frontend polling intervals reduced to prevent 429 cascading.
 - **SearchPresetsModal Unification (T004)**: Unifies multiple preset modals into a single generic `SearchPresetsModal<T>` component.
+- **Split-Screen Dinâmico (Task #12)**: Tezi/Manus-style dynamic contextual panel that opens to the right of the LIA float chat when context-specific visualizations are needed. Supports 5 panel types: calibration, candidate_review, profile, job_creation, scheduling. Backend agents can trigger panels via `panel_update` WebSocket events or `output.metadata.panel_update`. Panel lifecycle is scoped to chat session (cleared on new chat/close).
 - **Super Prompt Flutuante (LiaSuperPrompt)**: Expanding the mini chat opens a ~95% viewport overlay with tabs, dynamic contextual suggestions, and controls.
 - **HTTP Chat Fallback**: When WebSocket is unavailable, floating LIA chat falls back to HTTP.
 - **ReAct JSON Strip (`_strip_react_json`)**: Defense-in-depth against raw ReAct JSON leaking to users, extracting only the `response` field.

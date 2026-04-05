@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useNavigationIntent } from "@/hooks/use-navigation-intent"
 import { useActionIntent, actionTypeToDomain, type ActionType } from "@/hooks/use-action-intent"
-import { useFloatStreaming } from "@/hooks/use-float-streaming"
+import { useFloatStreaming, type PanelUpdateEvent } from "@/hooks/use-float-streaming"
+import type { DynamicPanelType } from "@/contexts/lia-float-context"
 import {
   useFloatConversation,
   formatMessageTime,
@@ -23,6 +24,7 @@ export function useLiaChatPanelState() {
   const {
     isOpen, conversationId: ctxConvId, close, expand, openSplitView,
     navigateToChat, contextPage, entityContext,
+    dynamicPanel, openDynamicPanel, closeDynamicPanel, updateDynamicPanelData,
     sharedMessages, addSharedMessage, setSharedMessages,
     sharedConversationId, setSharedConversationId,
   } = useLiaFloat()
@@ -64,6 +66,29 @@ export function useLiaChatPanelState() {
 
   const wsSessionId = conversationId ?? "float-pending"
 
+  const VALID_PANEL_TYPES: DynamicPanelType[] = ["calibration", "candidate_review", "profile", "job_creation", "scheduling"]
+
+  const handlePanelUpdate = useCallback((event: PanelUpdateEvent) => {
+    if (event.action === "close") {
+      closeDynamicPanel()
+      return
+    }
+    if (event.action === "update") {
+      if (dynamicPanel && event.panel_type && event.panel_type !== dynamicPanel.panelType) {
+        return
+      }
+      updateDynamicPanelData(event.panel_data)
+      return
+    }
+    if (VALID_PANEL_TYPES.includes(event.panel_type as DynamicPanelType)) {
+      openDynamicPanel({
+        panelType: event.panel_type as DynamicPanelType,
+        data: event.panel_data,
+        title: event.panel_title,
+      })
+    }
+  }, [openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel])
+
   const handleStreamComplete = useCallback((content: string, executionPlan?: Record<string, unknown>) => {
     const msg: FloatMessage = {
       id: `lia-${Date.now()}`,
@@ -91,7 +116,7 @@ export function useLiaChatPanelState() {
     sendApproval,
     connect: wsConnect,
     disconnect: wsDisconnect,
-  } = useFloatStreaming(wsSessionId, handleStreamComplete)
+  } = useFloatStreaming(wsSessionId, handleStreamComplete, handlePanelUpdate)
 
   useEffect(() => {
     if (isOpen && conversationId) {
@@ -154,7 +179,8 @@ export function useLiaChatPanelState() {
     setActionLabel(null)
     clearIntent()
     setShowHistory(false)
-  }, [wsDisconnect, setMessages, setConversationId, clearIntent])
+    closeDynamicPanel()
+  }, [wsDisconnect, setMessages, setConversationId, clearIntent, closeDynamicPanel])
 
   const handleClear = useCallback(() => {
     setMessages([])
@@ -537,7 +563,8 @@ export function useLiaChatPanelState() {
   const isEmpty = messages.length === 0 && !isStreaming && !isFetchingHistory
 
   return {
-    isOpen, close, expand, openSplitView, conversationId, contextPage, entityContext, messages, addMessage,
+    isOpen, close, expand, openSplitView, conversationId, contextPage, entityContext,
+    dynamicPanel, closeDynamicPanel, messages, addMessage,
     setMessages, setConversationId, setSharedConversationId,
     navIntent, detectIntent, clearIntent, detectAction, currentScope,
     activeActionType, setActiveActionType, actionLabel, setActionLabel,

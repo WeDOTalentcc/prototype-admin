@@ -38,6 +38,7 @@ export type StreamingEventType =
   | 'approval_confirmed'
   | 'plan_progress'
   | 'clarification'
+  | 'panel_update'
 
 export interface StreamingEvent {
   type: StreamingEventType

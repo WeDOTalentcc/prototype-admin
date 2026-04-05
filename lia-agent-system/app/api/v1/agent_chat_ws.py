@@ -13,6 +13,7 @@ Protocolo de mensagens (JSON):
     { "type": "thinking" }          — agente iniciou processamento
     { "type": "token", "content": "..." }  — streaming de token (futuro)
     { "type": "message", "content": "...", "confidence": 0.9 }  — resposta final
+    { "type": "panel_update", "panel_type": "...", "panel_data": {...}, "panel_title": "...", "action": "open|update|close" }
     { "type": "error", "message": "..." }
     { "type": "pong" }
 
@@ -81,6 +82,30 @@ def _strip_react_json(text: str) -> str:
         except (json.JSONDecodeError, ValueError):
             pass
     return text
+
+async def send_panel_update(
+    session_id: str,
+    panel_type: str,
+    panel_data: Dict[str, Any],
+    panel_title: str = "",
+    action: str = "open",
+) -> None:
+    """Send a panel_update event to the frontend via WebSocket.
+
+    panel_type: one of calibration, candidate_review, profile, job_creation, scheduling
+    action: "open" | "update" | "close"
+    """
+    try:
+        await ws_manager.send_to_session(session_id, {
+            "type": "panel_update",
+            "panel_type": panel_type,
+            "panel_data": panel_data,
+            "panel_title": panel_title,
+            "action": action,
+        })
+    except Exception as exc:
+        logger.debug("[AgentChatWS] panel_update send failed: %s", exc)
+
 
 # Timeout por mensagem (segundos) — evita travamento em agentes lentos
 _AGENT_TIMEOUT = settings.LLM_TIMEOUT_SECONDS
@@ -774,6 +799,16 @@ async def agent_chat_ws(
                 clean_message = _strip_react_json(output.message or "")
                 conversation_history.append({"role": "user", "content": content})
                 conversation_history.append({"role": "assistant", "content": clean_message})
+
+                _panel_meta = (output.metadata or {}).get("panel_update")
+                if _panel_meta and isinstance(_panel_meta, dict):
+                    await send_panel_update(
+                        session_id=session_id,
+                        panel_type=_panel_meta.get("panel_type", ""),
+                        panel_data=_panel_meta.get("panel_data", {}),
+                        panel_title=_panel_meta.get("panel_title", ""),
+                        action=_panel_meta.get("action", "open"),
+                    )
 
                 # FAR-3: incluir soft_warnings de fairness na resposta ao cliente
                 _fairness_warnings = (output.metadata or {}).get("fairness_warnings", [])

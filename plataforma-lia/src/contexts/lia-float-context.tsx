@@ -29,6 +29,19 @@ export interface EntityContext {
   meta?: Record<string, unknown>
 }
 
+export type DynamicPanelType =
+  | "calibration"
+  | "candidate_review"
+  | "profile"
+  | "job_creation"
+  | "scheduling"
+
+export interface DynamicPanelData {
+  panelType: DynamicPanelType
+  data: Record<string, unknown>
+  title?: string
+}
+
 interface LiaFloatState {
   isOpen: boolean
   isExpanded: boolean
@@ -36,6 +49,7 @@ interface LiaFloatState {
   splitView: SplitViewState
   contextPage: string | null
   entityContext: EntityContext | null
+  dynamicPanel: DynamicPanelData | null
 }
 
 interface LiaFloatContextType extends LiaFloatState {
@@ -51,6 +65,9 @@ interface LiaFloatContextType extends LiaFloatState {
   openWithEntity: (entity: EntityContext) => void
   openSplitView: (page: string, conversationId?: string) => void
   closeSplitView: () => void
+  openDynamicPanel: (panel: DynamicPanelData) => void
+  closeDynamicPanel: () => void
+  updateDynamicPanelData: (data: Record<string, unknown>) => void
   sharedMessages: FloatMessage[]
   addSharedMessage: (msg: FloatMessage) => void
   setSharedMessages: React.Dispatch<React.SetStateAction<FloatMessage[]>>
@@ -70,6 +87,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     splitView: INITIAL_SPLIT_VIEW,
     contextPage: null,
     entityContext: null,
+    dynamicPanel: null,
   })
 
   const [sharedMessages, setSharedMessages] = useState<FloatMessage[]>([])
@@ -89,7 +107,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const close = useCallback(() => {
-    setState(prev => ({ ...prev, isOpen: false, entityContext: null }))
+    setState(prev => ({ ...prev, isOpen: false, entityContext: null, dynamicPanel: null }))
   }, [])
 
   const toggle = useCallback(() => {
@@ -118,6 +136,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       isOpen: false,
       isExpanded: false,
       entityContext: null,
+      dynamicPanel: null,
     }))
   }, [])
 
@@ -158,6 +177,27 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
+  const openDynamicPanel = useCallback((panel: DynamicPanelData) => {
+    setState(prev => ({ ...prev, dynamicPanel: panel }))
+  }, [])
+
+  const closeDynamicPanel = useCallback(() => {
+    setState(prev => ({ ...prev, dynamicPanel: null }))
+  }, [])
+
+  const updateDynamicPanelData = useCallback((data: Record<string, unknown>) => {
+    setState(prev => {
+      if (!prev.dynamicPanel) return prev
+      return {
+        ...prev,
+        dynamicPanel: {
+          ...prev.dynamicPanel,
+          data: { ...prev.dynamicPanel.data, ...data },
+        },
+      }
+    })
+  }, [])
+
   const navigateToChat = useCallback(() => {
     setState(prev => ({
       ...prev,
@@ -179,6 +219,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         open, close, toggle, expand, collapse, closeAll,
         navigateToChat, setContextPage, setEntityContext, openWithEntity,
         openSplitView, closeSplitView,
+        openDynamicPanel, closeDynamicPanel, updateDynamicPanelData,
         sharedMessages, addSharedMessage, setSharedMessages,
         sharedConversationId, setSharedConversationId,
       }}
