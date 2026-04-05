@@ -23,7 +23,7 @@ from app.api.v1 import (
     trust_center, audit_logs, default_templates, global_policies,
     technical_tests, workforce_planning, big_five, experience_highlights,
     lia_profile_analysis, data_subject_requests, consent_management,
-    insurance, risk_register, sod_matrix, continuity, health_check,
+    health_check,
     rubric_evaluation, task_planner, policy_engine, semantic_search, workos,
     interview_notes, external_webhooks, automation_rules, merge_webhooks,
     whatsapp, company_benefits, screening_questions, pipeline_templates,
@@ -337,10 +337,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(bias_audit.router, prefix="/api/v1", tags=["bias-audit"])
     app.include_router(admin_bias_audit.router, prefix="/api/v1", tags=["bias-audit-admin"])
     app.include_router(guardrails.router, prefix="/api/v1", tags=["guardrails"])
-    app.include_router(insurance.router, prefix="/api/v1", tags=["insurance"])
-    app.include_router(risk_register.router, prefix="/api/v1", tags=["risk-register"])
-    app.include_router(sod_matrix.router, prefix="/api/v1", tags=["sod-matrix"])
-    app.include_router(continuity.router, prefix="/api/v1", tags=["continuity"])
 
     # ── Policy ────────────────────────────────────────────────────────────────
     app.include_router(policies.router, prefix="/api/v1", tags=["policies"])
