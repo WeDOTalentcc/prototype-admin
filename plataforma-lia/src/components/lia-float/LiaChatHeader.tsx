@@ -1,9 +1,25 @@
 "use client"
 
 import React from "react"
-import { Brain, X, Maximize2, Plus, Eraser, History } from "lucide-react"
+import {
+  Brain, X, Maximize2, Plus, Eraser, History,
+  Users, Briefcase, LayoutDashboard, Target, Settings,
+  BarChart2, BookOpen, MessageCircle,
+  type LucideIcon
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ActionType } from "@/hooks/use-action-intent"
+
+const CONTEXT_PAGE_ICONS: Record<string, LucideIcon> = {
+  "Funil de Talentos": Users,
+  "Vagas": Briefcase,
+  "Painel de Controle": LayoutDashboard,
+  "Tarefas": Target,
+  "Configurações": Settings,
+  "Indicadores": BarChart2,
+  "Biblioteca LIA": BookOpen,
+  "Chat LIA": MessageCircle,
+}
 
 export interface LiaChatHeaderProps {
   isConnected: boolean
@@ -13,6 +29,7 @@ export interface LiaChatHeaderProps {
   actionLabel: string | null
   isReconnecting: boolean
   reconnectAttempt: number
+  contextPage?: string | null
   handleNewChat: () => void
   handleClear: () => void
   handleToggleHistory: () => void
@@ -24,10 +41,12 @@ export interface LiaChatHeaderProps {
 
 export function LiaChatHeader({
   isConnected, showHistory, messagesLength, activeActionType, actionLabel,
-  isReconnecting, reconnectAttempt,
+  isReconnecting, reconnectAttempt, contextPage,
   handleNewChat, handleClear, handleToggleHistory, handleExpand, close,
   setActiveActionType, setActionLabel,
 }: LiaChatHeaderProps) {
+  const ContextIcon = contextPage ? (CONTEXT_PAGE_ICONS[contextPage] || null) : null
+
   return (
     <>
       <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle flex-shrink-0">
@@ -35,7 +54,15 @@ export function LiaChatHeader({
           <div className="w-7 h-7 rounded-full flex items-center justify-center">
             <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
           </div>
-          <span className="text-base-ui font-bold text-lia-text-primary" >LIA</span>
+          <div className="flex flex-col">
+            <span className="text-base-ui font-bold text-lia-text-primary leading-tight">LIA</span>
+            {contextPage && contextPage !== "Chat LIA" && (
+              <span className="inline-flex items-center gap-1 text-xs text-lia-text-tertiary leading-tight">
+                {ContextIcon && <ContextIcon className="w-3 h-3" />}
+                <span className="truncate max-w-[140px]">{contextPage}</span>
+              </span>
+            )}
+          </div>
           {isConnected && (
             <span className="w-1.5 h-1.5 rounded-full bg-status-success flex-shrink-0" title="Conectado" />
           )}

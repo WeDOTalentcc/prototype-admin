@@ -38,7 +38,11 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
   const { isAuthenticated, user, logout } = useAuth()
   const router = useRouter()
   const { recentItems, addRecentItem, removeRecentItem, clearAll: clearRecentItems } = useRecentItems()
-  const { open: openFloat, splitView } = useLiaFloat()
+  const { open: openFloat, splitView, setContextPage } = useLiaFloat()
+
+  useEffect(() => {
+    setContextPage(currentPage)
+  }, [currentPage, setContextPage])
 
   useEffect(() => {
     if (splitView.active && splitView.page) {

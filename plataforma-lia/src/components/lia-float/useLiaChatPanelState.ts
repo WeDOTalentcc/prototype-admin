@@ -22,7 +22,7 @@ export type { FloatMessage }
 export function useLiaChatPanelState() {
   const {
     isOpen, conversationId: ctxConvId, close, expand, openSplitView,
-    navigateToChat,
+    navigateToChat, contextPage,
     sharedMessages, addSharedMessage, setSharedMessages,
     sharedConversationId, setSharedConversationId,
   } = useLiaFloat()
@@ -537,7 +537,7 @@ export function useLiaChatPanelState() {
   const isEmpty = messages.length === 0 && !isStreaming && !isFetchingHistory
 
   return {
-    isOpen, close, expand, openSplitView, conversationId, messages, addMessage,
+    isOpen, close, expand, openSplitView, conversationId, contextPage, messages, addMessage,
     setMessages, setConversationId, setSharedConversationId,
     navIntent, detectIntent, clearIntent, detectAction, currentScope,
     activeActionType, setActiveActionType, actionLabel, setActionLabel,

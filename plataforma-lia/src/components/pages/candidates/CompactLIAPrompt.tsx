@@ -4,6 +4,7 @@ import React from "react"
 import { Brain } from "lucide-react"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { LIAToolbarBrainButton } from "@/components/ui/lia-toolbar-brain-button"
+import { useLiaFloat } from "@/contexts/lia-float-context"
 
 export interface CompactLIAPromptProps {
   isLIAThinking: boolean
@@ -15,13 +16,14 @@ export interface CompactLIAPromptProps {
 
 export function CompactLIAPrompt({
   isLIAThinking,
-  setShowExpandedLIA,
 }: CompactLIAPromptProps) {
+  const { open } = useLiaFloat()
+
   return (
     <div className="flex items-center gap-2">
       <LIAToolbarBrainButton
         isOpen={false}
-        onClick={() => setShowExpandedLIA(true)}
+        onClick={open}
         isThinking={isLIAThinking}
       />
 

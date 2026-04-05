@@ -19,7 +19,7 @@ export function LiaChatPanel() {
   return (
     <div
       className={cn(
-        "fixed bottom-[84px] right-6 z-50",
+        "fixed bottom-[84px] left-6 z-50",
         "w-[420px] h-[580px]",
         "flex flex-col",
         "bg-lia-bg-primary",
@@ -37,6 +37,7 @@ export function LiaChatPanel() {
         actionLabel={state.actionLabel}
         isReconnecting={state.isReconnecting}
         reconnectAttempt={state.reconnectAttempt}
+        contextPage={state.contextPage}
         handleNewChat={state.handleNewChat}
         handleClear={state.handleClear}
         handleToggleHistory={state.handleToggleHistory}

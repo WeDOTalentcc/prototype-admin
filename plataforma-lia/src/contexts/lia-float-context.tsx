@@ -27,6 +27,7 @@ interface LiaFloatState {
   isExpanded: boolean
   conversationId: string | null
   splitView: SplitViewState
+  contextPage: string | null
 }
 
 interface LiaFloatContextType extends LiaFloatState {
@@ -37,6 +38,7 @@ interface LiaFloatContextType extends LiaFloatState {
   collapse: () => void
   closeAll: () => void
   navigateToChat: () => void
+  setContextPage: (page: string | null) => void
   openSplitView: (page: string, conversationId?: string) => void
   closeSplitView: () => void
   sharedMessages: FloatMessage[]
@@ -56,6 +58,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     isExpanded: false,
     conversationId: null,
     splitView: INITIAL_SPLIT_VIEW,
+    contextPage: null,
   })
 
   const [sharedMessages, setSharedMessages] = useState<FloatMessage[]>([])
@@ -126,6 +129,10 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
+  const setContextPage = useCallback((page: string | null) => {
+    setState(prev => ({ ...prev, contextPage: page }))
+  }, [])
+
   const navigateToChat = useCallback(() => {
     setState(prev => ({
       ...prev,
@@ -145,7 +152,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       value={{
         ...state,
         open, close, toggle, expand, collapse, closeAll,
-        navigateToChat,
+        navigateToChat, setContextPage,
         openSplitView, closeSplitView,
         sharedMessages, addSharedMessage, setSharedMessages,
         sharedConversationId, setSharedConversationId,

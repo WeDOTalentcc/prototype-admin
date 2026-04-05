@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { X, MessageSquare, UserPlus, ChevronRight, Mic, Send } from "lucide-react"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { textStyles, formatScorePercent } from "@/lib/design-tokens"
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 import { useModalA11y } from "@/hooks/use-modal-a11y"
+import { useLiaFloat } from "@/contexts/lia-float-context"
 
 interface LiaAction {
   id: string
@@ -67,6 +69,15 @@ export function LiaChatModal({
   onAddToVacancy,
 }: LiaChatModalProps) {
   const dialogRef = useModalA11y(isOpen, onClose)
+  const { open: openFloat } = useLiaFloat()
+
+  React.useEffect(() => {
+    if (isOpen) {
+      openFloat()
+      onClose()
+    }
+  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!isOpen) return null
 
   const handleContact = () => {

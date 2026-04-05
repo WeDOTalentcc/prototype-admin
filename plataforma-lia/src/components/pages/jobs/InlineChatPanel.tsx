@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -9,6 +9,7 @@ import { ActionResultCard } from "@/components/chat/action-result-card"
 import { LiaVacancyQueriesGuide } from "@/components/ui/lia-vacancy-queries-guide"
 import { textStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
+import { useLiaFloat } from "@/contexts/lia-float-context"
 import {
   Brain,
   Maximize2,
@@ -108,12 +109,22 @@ export function InlineChatPanel({
   liaInlineMessagesEndRef,
   onAddRecentItem,
 }: InlineChatPanelProps) {
+  const { open: openFloat } = useLiaFloat()
   const [activeSearchTab, setActiveSearchTab] = useState<"ia-natural" | "job-description" | "templates">("ia-natural")
   const [jobDescriptionText, setJobDescriptionText] = useState("")
   const [isUploadingJD, setIsUploadingJD] = useState(false)
   const [jdUploadError, setJdUploadError] = useState<string | null>(null)
   const jdFileInputRef = useRef<HTMLInputElement>(null)
-  if (!showExpandedLIA && !showInlineChat) return null
+
+  useEffect(() => {
+    if ((showExpandedLIA || (showInlineChat && chatMode === "general")) && chatMode !== "job-creation") {
+      openFloat()
+      onCloseChat()
+      onSetShowExpandedLIA(false)
+    }
+  }, [showExpandedLIA, showInlineChat, chatMode]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!showInlineChat || chatMode !== "job-creation") return null
 
   // Internal state — only used within this panel
 
