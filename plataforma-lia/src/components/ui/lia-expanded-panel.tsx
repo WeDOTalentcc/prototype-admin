@@ -67,7 +67,7 @@ export function LiaExpandedPanel({
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
-                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 
@@ -135,7 +135,7 @@ export function LiaExpandedPanel({
         {/* Context Pills (quando há itens selecionados) */}
         {contextPills && (
           <div 
-            className="flex-shrink-0 px-4 py-3 bg-chat-cyan/[0.04] border-b border-lia-border-subtle"
+            className="flex-shrink-0 px-4 py-3 bg-wedo-cyan/[0.04] border-b border-lia-border-subtle"
           >
             {contextPills}
           </div>
@@ -362,7 +362,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
   return (
     <div className="flex items-center gap-2 px-3 py-2 rounded-[24px] border border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary">
       <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
-        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
       </div>
       <input
         type="text"
@@ -396,7 +396,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
           disabled={!value.trim() || isLoading}
           className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
  value.trim() && !isLoading
-              ? 'bg-chat-cyan text-white hover:opacity-90'
+              ? 'bg-wedo-cyan text-white hover:opacity-90'
               : 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary cursor-not-allowed'
           }`}
         >
@@ -453,7 +453,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
   return (
     <div className="flex items-start gap-2.5">
       <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
       </div>
       <div className="flex-1 flex flex-col gap-1">
         <div className="flex items-center gap-1.5 px-1">
@@ -464,7 +464,7 @@ export function LiaChatMessage({ type, content, timestamp, messageId, sessionId 
         <div 
           data-testid="chat-message"
           data-role="lia"
-          className="max-w-[85%] px-3.5 py-2.5 bg-chat-cyan/[0.04] rounded-[14px] rounded-bl-[4px]"
+          className="max-w-[85%] px-3.5 py-2.5 bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px]"
         >
           <div 
             className="text-base-ui leading-relaxed text-lia-text-secondary" 
@@ -492,7 +492,7 @@ export function LiaLoadingIndicator() {
   return (
     <div className="flex items-start gap-2.5">
       <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1 px-1">
@@ -500,9 +500,9 @@ export function LiaLoadingIndicator() {
             LIA
           </span>
         </div>
-        <div className="bg-chat-cyan/[0.04] rounded-[14px] rounded-bl-[4px] p-3 inline-block">
+        <div className="bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px] p-3 inline-block">
           <div className="flex items-center gap-1">
-            <ThinkingDots dotClassName="bg-chat-cyan" size="md" />
+            <ThinkingDots dotClassName="bg-wedo-cyan" size="md" />
           </div>
         </div>
       </div>

@@ -1657,7 +1657,7 @@ Direção principal: `bg-gradient-to-b` (vertical) com `from-gray-*` / `to-gray-
 |-------|---------------|-------|-----|
 | **Brand LIA/AI** | `wedo-cyan` | `#60BED1` | EXCLUSIVO para elementos de IA/LIA. Suporta opacity modifiers (`bg-wedo-cyan/10`) |
 | | `wedo-cyan-dark` | `#4DA8BB` | Hover do cyan |
-| | `chat-cyan` | `#00B8B8` | Variante para chat |
+| | `chat-cyan` | `#60BED1` | Alias de wedo-cyan (unificado) |
 | **Status Semânticos** | `status-success` | `#16A34A` | Obrigatório WCAG 1.4.1 |
 | | `status-error` | `#DC2626` | Obrigatório WCAG 1.4.1 |
 | | `status-warning` | `#D97706` | Obrigatório WCAG 1.4.1 |

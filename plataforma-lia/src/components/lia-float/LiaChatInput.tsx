@@ -46,7 +46,7 @@ export function LiaChatInput({
     <div className="px-4 pb-4 pt-2 flex-shrink-0 border-t border-lia-border-subtle">
       {attachedCvFile && (
         <div className="flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg bg-lia-bg-secondary border border-lia-border-subtle">
-          <FileText className="w-3.5 h-3.5 text-chat-cyan flex-shrink-0" />
+          <FileText className="w-3.5 h-3.5 text-wedo-cyan flex-shrink-0" />
           <span className="text-xs text-lia-text-primary truncate flex-1">{attachedCvFile.name}</span>
           <button
             onClick={() => setAttachedCvFile(null)}
@@ -59,7 +59,7 @@ export function LiaChatInput({
       )}
       <div className="flex items-center gap-2 px-3 py-2 rounded-[24px] bg-lia-bg-primary border border-lia-border-subtle">
         <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
-          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
         </div>
         <input
           ref={inputRef}
@@ -92,7 +92,7 @@ export function LiaChatInput({
           className={cn(
             "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none",
             isScreening
-              ? "text-chat-cyan animate-pulse"
+              ? "text-wedo-cyan animate-pulse"
               : "text-lia-text-disabled hover:text-lia-text-secondary disabled:opacity-40"
           )}
         >
@@ -113,7 +113,7 @@ export function LiaChatInput({
           className={cn(
             "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors",
             canSend
-              ? "bg-chat-cyan text-white hover:opacity-90"
+              ? "bg-wedo-cyan text-white hover:opacity-90"
               : "bg-lia-interactive-active text-lia-text-disabled"
           )}
         >

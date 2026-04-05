@@ -83,7 +83,7 @@ export function LiaChatPanel() {
             className="flex items-center gap-2 text-sm-ui text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse transition-colors motion-reduce:transition-none group w-full text-left"
             aria-label={`Abrir ${state.navIntent.page}`}
           >
-            <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 text-chat-cyan group-hover:translate-x-0.5 transition-transform motion-reduce:transition-none" />
+            <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 text-wedo-cyan group-hover:translate-x-0.5 transition-transform motion-reduce:transition-none" />
             <span>{state.navIntent.hint ?? `Ver em ${state.navIntent.page}`}</span>
           </button>
         </div>

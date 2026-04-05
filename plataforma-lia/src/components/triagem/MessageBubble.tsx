@@ -210,7 +210,7 @@ const MessageBubble = memo(function MessageBubble({
             className={cn(
               "px-3.5 py-2.5 text-sm font-['Open_Sans',sans-serif] leading-relaxed",
               isLia
-                ? "bg-chat-cyan/[0.04] text-lia-text-primary rounded-[14px] rounded-bl-[4px]"
+                ? "bg-wedo-cyan/[0.04] text-lia-text-primary rounded-[14px] rounded-bl-[4px]"
                 : "bg-lia-bg-tertiary text-lia-text-secondary rounded-[14px] rounded-br-[4px]"
             )}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(parseSimpleMarkdown(message.content)) }}

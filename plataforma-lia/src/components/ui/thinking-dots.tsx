@@ -11,7 +11,7 @@ interface ThinkingDotsProps {
  * Replaces inline animate-bounce patterns scattered across 11+ files.
  *
  * Usage:
- *   <ThinkingDots dotClassName="bg-chat-cyan" />           // LIA chat contexts
+ *   <ThinkingDots dotClassName="bg-wedo-cyan" />           // LIA chat contexts
  *   <ThinkingDots dotClassName="bg-lia-text-tertiary" />    // neutral contexts
  *   <ThinkingDots dotClassName="bg-lia-text-primary" size="sm" /> // settings
  */

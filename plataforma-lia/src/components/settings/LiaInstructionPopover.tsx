@@ -84,7 +84,7 @@ export function LiaInstructionPopover({
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Brain className="w-4 h-4 text-chat-cyan" />
+              <Brain className="w-4 h-4 text-wedo-cyan" />
               <span className="text-sm font-semibold text-lia-text-primary">Instrução para LIA</span>
             </div>
             <button

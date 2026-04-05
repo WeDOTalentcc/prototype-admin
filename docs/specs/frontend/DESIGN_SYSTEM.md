@@ -734,7 +734,7 @@ border-gray-200 dark:border-gray-700
 
 ## 14. Design Debt Conhecido
 
-O repositório `ats_front` (Vue/Vuetify — frontend legado) usa `#00B8B8` (teal genérico) hardcoded nos componentes de chat, em vez dos tokens do DS v4.2.1 (`#60BED1` para cyan, `#111827` para primário). O fix no codebase React (`plataforma-lia`) já foi aplicado em `LiaChatPanel.tsx` e `LiaSuperPrompt.tsx` usando `chat-format.ts`.
+O repositório `ats_front` (Vue/Vuetify — frontend legado) ainda usa teal genérico hardcoded nos componentes de chat, em vez dos tokens do DS v4.2.1 (`#60BED1` para cyan, `#111827` para primário). O codebase React (`plataforma-lia`) já foi totalmente unificado: todos os componentes usam `wedo-cyan` (`#60BED1`) e o token `chat-cyan` foi removido do Tailwind config.
 
 **Referência:** `docs/JIRA_CARD_CHAT_DESIGN_FIX.md`
 

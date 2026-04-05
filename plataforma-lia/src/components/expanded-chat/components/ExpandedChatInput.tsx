@@ -111,7 +111,7 @@ export function ExpandedChatInput({
         <div className="w-full max-w-lg">
           <div className="flex items-center gap-2 px-3 py-2 bg-lia-bg-primary border border-lia-border-subtle rounded-full">
             <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
-              <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+              <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
             </div>
             <input
               ref={inputRef}
@@ -180,7 +180,7 @@ export function ExpandedChatInput({
                 className={cn(
  "w-8 h-8 rounded-full flex items-center justify-center transition-[width,height] duration-200 ml-1",
                   inputValue.trim() && !isLoading && !isTypingEffect
-                    ? "bg-chat-cyan text-white hover:opacity-90"
+                    ? "bg-wedo-cyan text-white hover:opacity-90"
                     : "bg-lia-interactive-active text-lia-text-secondary cursor-not-allowed"
                 )}
                 type="button"
@@ -207,7 +207,7 @@ export function ExpandedChatInput({
                 )}
               >
                 <div className="flex items-center gap-1">
-                  <Brain className="w-2.5 h-2.5 text-chat-cyan" />
+                  <Brain className="w-2.5 h-2.5 text-wedo-cyan" />
                   <span>IA Natural</span>
                 </div>
               </button>
@@ -355,7 +355,7 @@ export function ExpandedChatInput({
                   }}
                   disabled={!inputValue.trim()}
                 >
-                  <Brain className="w-3 h-3 mr-1 text-chat-cyan" />
+                  <Brain className="w-3 h-3 mr-1 text-wedo-cyan" />
                   Criar Vaga a Partir do JD
                 </Button>
               </div>

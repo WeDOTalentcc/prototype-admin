@@ -229,7 +229,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                   aria-label="LIA está digitando"
                 >
                   <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                    <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 px-1">
@@ -237,7 +237,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                     </div>
                     <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-3 inline-block">
                       <div className="flex items-center gap-1">
-                        <ThinkingDots dotClassName="bg-chat-cyan" size="md" />
+                        <ThinkingDots dotClassName="bg-wedo-cyan" size="md" />
                       </div>
                     </div>
                   </div>

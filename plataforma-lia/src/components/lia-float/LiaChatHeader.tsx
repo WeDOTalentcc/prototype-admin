@@ -33,7 +33,7 @@ export function LiaChatHeader({
       <div className="flex items-center justify-between px-4 py-3 border-b border-lia-border-subtle flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full flex items-center justify-center">
-            <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+            <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
           </div>
           <span className="text-base-ui font-bold text-lia-text-primary" >LIA</span>
           {isConnected && (
@@ -63,7 +63,7 @@ export function LiaChatHeader({
             className={cn(
               "p-1.5 rounded-md transition-colors",
               showHistory
-                ? "text-chat-cyan bg-lia-bg-tertiary"
+                ? "text-wedo-cyan bg-lia-bg-tertiary"
                 : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
             )}
             title="Histórico de conversas"

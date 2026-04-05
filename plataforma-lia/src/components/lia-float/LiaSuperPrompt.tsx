@@ -224,7 +224,7 @@ export function LiaSuperPrompt() {
             >
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-chat-cyan" strokeWidth={2.5} />
+                  <Brain className="w-5 h-5 text-wedo-cyan" strokeWidth={2.5} />
                   <span
                     className="text-lg font-bold"
                     style={{color: "var(--lia-text-primary)", fontFamily: '"Inter", sans-serif'}}
@@ -238,7 +238,7 @@ export function LiaSuperPrompt() {
                     onClick={() => setActiveTab("conversa")}
                     className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none"
                     style={{backgroundColor: activeTab === "conversa" ? "var(--lia-bg-secondary)" : "transparent",
-                      color: activeTab === "conversa" ? "var(--chat-cyan)" : "var(--lia-text-tertiary)",
+                      color: activeTab === "conversa" ? "var(--wedo-cyan)" : "var(--lia-text-tertiary)",
                       borderRight: "1px solid var(--lia-border-subtle)"}}
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
@@ -248,7 +248,7 @@ export function LiaSuperPrompt() {
                     onClick={() => setActiveTab("controle")}
                     className="flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors motion-reduce:transition-none"
                     style={{backgroundColor: activeTab === "controle" ? "var(--lia-bg-secondary)" : "transparent",
-                      color: activeTab === "controle" ? "var(--chat-cyan)" : "var(--lia-text-tertiary)"}}
+                      color: activeTab === "controle" ? "var(--wedo-cyan)" : "var(--lia-text-tertiary)"}}
                   >
                     <LayoutDashboard className="w-3.5 h-3.5" />
                     Centro de Controle
@@ -278,7 +278,7 @@ export function LiaSuperPrompt() {
                   onClick={handleToggleHistory}
                   className={`p-2 rounded-lg transition-colors motion-reduce:transition-none ${
  showHistory
-                      ? "text-chat-cyan bg-lia-bg-tertiary"
+                      ? "text-wedo-cyan bg-lia-bg-tertiary"
                       : "lia-text-secondary hover:text-lia-text-secondary hover:bg-lia-interactive-hover"
                   }`}
                   title="Histórico de conversas"
@@ -346,7 +346,7 @@ export function LiaSuperPrompt() {
                       {isEmptyChat ? (
                         <div className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto">
                           <div className="text-center mb-8">
-                            <LIAIcon size="xl" useChatCyan className="mb-4 mx-auto" />
+                            <LIAIcon size="xl" className="mb-4 mx-auto" />
                             <h2
                               className="text-3xl font-semibold mb-3"
                               style={{color: "var(--lia-text-primary)"}}
@@ -360,7 +360,7 @@ export function LiaSuperPrompt() {
                               Sua assistente de recrutamento inteligente. Qual das tarefas abaixo quer que eu execute para você?
                             </p>
                             {hasContextualData && (
-                              <p className="text-xs text-chat-cyan font-medium">
+                              <p className="text-xs text-wedo-cyan font-medium">
                                 Sugestões personalizadas baseadas na sua atividade recente
                               </p>
                             )}
@@ -430,7 +430,7 @@ export function LiaSuperPrompt() {
                             <div className="flex items-start gap-2.5">
                               <div className="flex-shrink-0 pt-1">
                                 <div className="w-7 h-7 rounded-full flex items-center justify-center">
-                                  <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                                  <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
                                 </div>
                               </div>
                               <SuperPromptStreamingBubble content={streamingContent} />
@@ -441,12 +441,12 @@ export function LiaSuperPrompt() {
                             <div className="flex items-start gap-2.5">
                               <div className="flex-shrink-0 pt-1">
                                 <div className="w-7 h-7 rounded-full flex items-center justify-center">
-                                  <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                                  <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
                                 </div>
                               </div>
                               <div className="bg-lia-bg-primary border border-lia-border-subtle rounded-[14px] rounded-bl-[4px] p-4">
                                 <div className="flex items-center gap-1.5">
-                                  <ThinkingDots dotClassName="bg-chat-cyan" size="lg" />
+                                  <ThinkingDots dotClassName="bg-wedo-cyan" size="lg" />
                                 </div>
                               </div>
                             </div>
@@ -463,7 +463,7 @@ export function LiaSuperPrompt() {
                     <div className="max-w-3xl mx-auto">
                       <div className="flex items-center gap-2 px-4 py-2.5 rounded-[24px] bg-lia-bg-primary border border-lia-border-subtle">
                         <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center">
-                          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
                         </div>
                         <textarea
                           ref={inputRef}
@@ -484,7 +484,7 @@ export function LiaSuperPrompt() {
                           disabled={!input.trim() || isCreating || isStreaming}
                           className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
  input.trim() && !isCreating && !isStreaming
-                              ? "bg-chat-cyan text-white hover:opacity-90"
+                              ? "bg-wedo-cyan text-white hover:opacity-90"
                               : "bg-lia-interactive-active text-lia-text-secondary cursor-not-allowed"
                           }`}
                           aria-label="Enviar mensagem"
@@ -549,7 +549,7 @@ function SuperPromptBubble({ message, conversationId }: { message: { id: string;
     <div className="flex items-start gap-2.5 max-w-4xl">
       <div className="flex-shrink-0 pt-1">
         <div className="w-7 h-7 rounded-full flex items-center justify-center">
-          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
         </div>
       </div>
       <div className="flex-1 flex flex-col gap-1">
@@ -596,7 +596,7 @@ function SuperPromptStreamingBubble({ content }: { content: string }) {
          
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
         />
-        <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
+        <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
       </div>
     </div>
   )

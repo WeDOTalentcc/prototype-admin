@@ -7,7 +7,6 @@ interface LIAIconProps {
   size?: "xs" | "sm" | "md" | "lg" | "xl"
   animate?: boolean
   speaking?: boolean
-  useChatCyan?: boolean
 }
 
 const SoundWaveBars = React.memo(function SoundWaveBars({ size }: { size: string }) {
@@ -18,7 +17,7 @@ const SoundWaveBars = React.memo(function SoundWaveBars({ size }: { size: string
         <span
           key={i}
           className={cn(
-            "inline-block w-0.5 rounded-full bg-chat-cyan lia-sound-wave-bar",
+            "inline-block w-0.5 rounded-full bg-wedo-cyan lia-sound-wave-bar",
             barHeight
           )}
           style={{animationDelay: `${i * 0.15}s`}}
@@ -29,7 +28,7 @@ const SoundWaveBars = React.memo(function SoundWaveBars({ size }: { size: string
 })
 SoundWaveBars.displayName = 'SoundWaveBars'
 
-export const LIAIcon = React.memo(function LIAIcon({ className, size = "md", animate = false, speaking = false, useChatCyan = false }: LIAIconProps) {
+export const LIAIcon = React.memo(function LIAIcon({ className, size = "md", animate = false, speaking = false }: LIAIconProps) {
   const sizeClasses = {
     xs: "w-3.5 h-3.5",
     sm: "w-7 h-7",
@@ -49,7 +48,7 @@ export const LIAIcon = React.memo(function LIAIcon({ className, size = "md", ani
       <Brain 
         className={cn(
           "transition-opacity duration-200",
-          useChatCyan ? "text-chat-cyan" : "text-wedo-cyan",
+          "text-wedo-cyan",
           speaking && "opacity-30",
           size === "xs" && "w-3.5 h-3.5",
           size === "sm" && "w-4 h-4",

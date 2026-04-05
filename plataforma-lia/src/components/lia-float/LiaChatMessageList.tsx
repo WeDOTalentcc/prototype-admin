@@ -88,7 +88,7 @@ export function LiaChatMessageList({
           {hitlPending && (
             <div className="flex gap-2">
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-1.5 mb-1.5">
@@ -162,7 +162,7 @@ function EmptyState({ scope, onChipClick }: { scope: string; onChipClick: (promp
     <div className="flex flex-col items-start h-full gap-2.5 pt-5 px-1">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
-          <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+          <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
         </div>
         <div>
           <p className="text-base-ui font-medium text-lia-text-primary">Como posso ajudar?</p>
@@ -213,14 +213,14 @@ function ThinkingIndicator() {
   return (
     <div className="flex gap-2.5">
       <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-0.5">
           <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
         </div>
         <span className="flex gap-1 items-center h-5">
-          <ThinkingDots dotClassName="bg-chat-cyan" size="md" />
+          <ThinkingDots dotClassName="bg-wedo-cyan" size="md" />
         </span>
       </div>
     </div>
@@ -243,18 +243,18 @@ function StreamingBubble({ content }: { content: string }) {
   return (
     <div className="flex gap-2.5">
       <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1">
           <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
         </div>
-        <div className="bg-chat-cyan/[0.04] rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
+        <div className="bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
           <RichContent
             html={html}
             className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"
           />
-          <span className="inline-block w-1.5 h-3.5 bg-chat-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
+          <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan ml-0.5 animate-pulse motion-reduce:animate-none align-middle" />
         </div>
       </div>
     </div>
@@ -294,14 +294,14 @@ function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversatio
   return (
     <div className="flex gap-2.5">
       <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-1.5 mb-1">
           <span className="text-xs font-bold text-lia-text-primary" >LIA</span>
           <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums">{msg.timestamp}</span>
         </div>
-        <div className="bg-chat-cyan/[0.04] rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
+        <div className="bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px] px-3.5 py-2.5 max-w-[340px]">
           <RichContent
             html={renderedHtml}
             className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"

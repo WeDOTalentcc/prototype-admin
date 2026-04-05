@@ -405,7 +405,7 @@ export function WizardRightPanel({
             <div className="relative">
               <div className="w-12 h-12 rounded-full border-3 border-lia-border-default border-t-lia-border-default animate-spin motion-reduce:animate-none" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <Brain className="w-5 h-5 text-chat-cyan" />
+                <Brain className="w-5 h-5 text-wedo-cyan" />
               </div>
             </div>
             <div className="text-center">

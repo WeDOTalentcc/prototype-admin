@@ -135,7 +135,7 @@ export function ChatMessageList({
           ) : message.messageType === 'parecer-lia' && message.parecerData ? (
             <div className="flex items-start gap-2 max-w-[90%]">
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-2">
@@ -162,7 +162,7 @@ export function ChatMessageList({
             /* Compensation Analysis */
             <div className="flex items-start gap-2 max-w-[85%]">
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
@@ -261,7 +261,7 @@ export function ChatMessageList({
             /* Tool Confirmation Message */
             <div className="flex items-start gap-2 max-w-[85%]">
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
@@ -316,7 +316,7 @@ export function ChatMessageList({
             /* Tool Execution Feedback */
             <div className="flex items-start gap-2 max-w-[85%]">
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
@@ -352,12 +352,12 @@ export function ChatMessageList({
             /* Action Result */
             <div className="flex items-start gap-2 max-w-[85%]">
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-micro font-bold text-chat-cyan" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-micro px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{fontFamily: '"Inter", sans-serif'}}>ação executada</span>
+                  <span className="text-micro font-bold text-wedo-cyan" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
+                  <span className="text-micro px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan" style={{fontFamily: '"Inter", sans-serif'}}>ação executada</span>
                   <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                 </div>
                 <ActionResultCard
@@ -381,26 +381,26 @@ export function ChatMessageList({
             /* Proactive Suggestion */
             <div className="flex items-start gap-2 max-w-[85%]">
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="pt-1 flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-micro font-bold text-chat-cyan" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
-                  <span className="text-micro px-1.5 py-0.5 rounded-full bg-chat-cyan/10 text-chat-cyan" style={{fontFamily: '"Inter", sans-serif'}}>sugestão proativa</span>
+                  <span className="text-micro font-bold text-wedo-cyan" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
+                  <span className="text-micro px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan" style={{fontFamily: '"Inter", sans-serif'}}>sugestão proativa</span>
                   <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                 </div>
                 <div className={cn(
  "rounded-md border-l-4 p-2.5 mb-1",
                   message.proactiveData.severity === 'urgent' ? "border-l-status-error bg-status-error/5" :
                   message.proactiveData.severity === 'warning' ? "border-l-status-warning bg-status-warning/5" :
-                  "border-l-chat-cyan bg-chat-cyan/5"
+                  "border-l-wedo-cyan bg-wedo-cyan/5"
                 )}>
                   <p className="text-xs text-lia-text-primary leading-relaxed">{message.content}</p>
                 </div>
                 <div className="flex items-center gap-2 mt-1.5">
                   <button
                     onClick={() => onProactiveAccept(message.proactiveData!.actionId, message.id)}
-                    className="px-3 py-1 text-xs font-medium rounded-md bg-chat-cyan/15 text-chat-cyan hover:bg-chat-cyan/25 transition-colors motion-reduce:transition-none"
+                    className="px-3 py-1 text-xs font-medium rounded-md bg-wedo-cyan/15 text-wedo-cyan hover:bg-wedo-cyan/25 transition-colors motion-reduce:transition-none"
                     style={{fontFamily: '"Inter", sans-serif'}}
                   >
                     {message.proactiveData.actionLabel}
@@ -418,7 +418,7 @@ export function ChatMessageList({
           ) : message.messageType === 'detected-fields' && message.detectedFields && message.detectedFields.length > 0 ? (
             <div className="flex items-start gap-2 max-w-[85%]">
               <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
               </div>
               <div className="pt-1 flex-1 min-w-0">
                 <DetectedFieldsCard
@@ -456,18 +456,18 @@ export function ChatMessageList({
             >
               <div className="flex items-start gap-2.5">
                 <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+                  <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1 min-w-0 overflow-hidden flex flex-col gap-1">
                   <div className="flex items-center gap-1.5 px-1">
                     <span className="text-xs font-bold text-lia-text-primary" style={{fontFamily: '"Inter", sans-serif'}}>LIA</span>
                     <span className="text-xs text-lia-text-secondary" style={{fontFamily: '"Inter", sans-serif'}}>{formatTimestamp(message.timestamp)}</span>
                   </div>
-                  <div className="px-3.5 py-2.5 bg-chat-cyan/[0.04] rounded-[14px] rounded-bl-[4px]">
+                  <div className="px-3.5 py-2.5 bg-wedo-cyan/[0.04] rounded-[14px] rounded-bl-[4px]">
                     <div className="text-base-ui text-lia-text-secondary space-y-1 leading-relaxed break-words overflow-wrap-anywhere">
                       {formatMessageContent(message.content, message.isTyping || false, message.id)}
                       {message.isTyping && messages[messages.length - 1]?.id === message.id && isTypingEffect && (
-                        <span className="inline-block w-1.5 h-3.5 bg-chat-cyan animate-pulse motion-reduce:animate-none ml-0.5" />
+                        <span className="inline-block w-1.5 h-3.5 bg-wedo-cyan animate-pulse motion-reduce:animate-none ml-0.5" />
                       )}
                     </div>
                   </div>

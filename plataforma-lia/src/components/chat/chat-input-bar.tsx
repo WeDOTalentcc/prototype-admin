@@ -67,7 +67,7 @@ export function ChatInputBar({
       )}
     >
       <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center mb-0.5">
-        <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+        <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
       </div>
 
       <textarea
@@ -106,7 +106,7 @@ export function ChatInputBar({
         className={cn(
           "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors mb-0.5",
           canSend
-            ? "bg-chat-cyan text-white hover:opacity-90"
+            ? "bg-wedo-cyan text-white hover:opacity-90"
             : "bg-lia-interactive-active text-lia-text-tertiary cursor-not-allowed"
         )}
         aria-label="Enviar mensagem"

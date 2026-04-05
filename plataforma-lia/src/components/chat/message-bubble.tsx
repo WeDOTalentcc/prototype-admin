@@ -67,7 +67,7 @@ const MessageBubbleComponent = memo(function MessageBubble({
       {isLia && (
         <div className="flex-shrink-0 mt-1">
           <div className="w-7 h-7 rounded-full flex items-center justify-center">
-            <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
+            <Brain className="w-4 h-4 text-wedo-cyan" strokeWidth={2.5} />
           </div>
         </div>
       )}

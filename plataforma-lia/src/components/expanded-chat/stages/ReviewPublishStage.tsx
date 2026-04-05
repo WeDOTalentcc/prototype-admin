@@ -160,7 +160,7 @@ export function ReviewPublishStage({
         <div className="p-3 bg-lia-bg-primary border border-lia-border-subtle rounded-md">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Brain className="w-3.5 h-3.5 text-chat-cyan" />
+              <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
               <span className="text-xs font-medium text-lia-text-primary">
                 Competências Comportamentais
               </span>
@@ -276,7 +276,7 @@ export function ReviewPublishStage({
           )}
 
           <p className="text-micro text-lia-text-secondary mt-2 flex items-center gap-1">
-            <Brain className="w-3 h-3 text-chat-cyan" />
+            <Brain className="w-3 h-3 text-wedo-cyan" />
             Texto gerado por IA baseado nas informações da vaga
           </p>
         </div>

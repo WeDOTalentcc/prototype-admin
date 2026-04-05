@@ -224,7 +224,7 @@ export function SearchCalibrationStage({
           {searchPhase === 'global-complete' && (
             <div className="p-3 bg-lia-bg-secondary rounded-md border border-lia-border-subtle">
               <div className="flex items-center gap-2 mb-2">
-                <Brain className="w-3.5 h-3.5 text-chat-cyan" />
+                <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-medium text-lia-text-primary">
                   Análise da Busca
                 </span>

@@ -31,7 +31,6 @@ export default {
         // ──────────────────────────────────────────────
         'wedo-cyan': '#60BED1',
         'wedo-cyan-dark': '#4DA8BB',
-        'chat-cyan': '#00B8B8',
         // ──────────────────────────────────────────────
         // STATUS SEMÂNTICOS — obrigatórios WCAG 1.4.1
         // Fonte de verdade: design-tokens.css (--status-*)
