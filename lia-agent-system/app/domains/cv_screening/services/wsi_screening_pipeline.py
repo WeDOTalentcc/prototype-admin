@@ -59,10 +59,10 @@ def _build_pipeline_calibration_context(request, seniority: str) -> CalibrationC
         company_size=getattr(request, 'company_size', None),
     )
 
-BLOCK_NAMES = {k: WSI_BLOCK_NAMES[k] for k in (2, 3, 4, 5)}
+BLOCK_NAMES = {k: WSI_BLOCK_NAMES[k] for k in (2, 3, 4)}
 
 MODEL_DISTRIBUTIONS = {
-    "compact": {"technical": 4, "behavioral": 3, "cultural": 1, "total": 8},
+    "compact": {"technical": 4, "behavioral": 3, "total": 7},
     "full": {"technical": 7, "behavioral": 5, "total": 12},
 }
 
@@ -480,14 +480,12 @@ class WSIScreeningPipeline:
                     bloom_level = int(bloom_level)
                 except (ValueError, TypeError):
                     bloom_level = 3
-            is_last = idx == len(selected) - 1
-            block_id = 5 if is_last and len(selected) > 1 else 4
             questions.append(
                 UnifiedScreeningQuestion(
                     id=wq.id,
                     text=wq.question_text,
                     category="behavioral",
-                    block_id=block_id,
+                    block_id=4,
                     source="wsi_generated",
                     trait=wq.scoring_criteria.get("ocean_trait") if isinstance(wq.scoring_criteria, dict) else None,
                     skill=wq.competency,

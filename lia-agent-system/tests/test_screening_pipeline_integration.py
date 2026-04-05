@@ -2,8 +2,8 @@
 Testes de integração para WSIScreeningPipeline.
 
 Cobre:
-- Construção do pipeline (4 blocos: 2 empresa, 3 elegibilidade, 4 técnico, 5 comportamental)
-- Distribuição de perguntas: compact (8 total) vs full (12 total)
+- Construção do pipeline (3 blocos: 2 empresa, 3 técnico, 4 comportamental)
+- Distribuição de perguntas: compact (7 total) vs full (12 total)
 - Deduplicação de perguntas entre empresa e WSI
 - Calibração por senioridade (junior/pleno/senior)
 - Perguntas de ação afirmativa (PCD, racial, gênero, idade, LGBTQIA+)
@@ -72,9 +72,9 @@ PIPELINE = WSIScreeningPipeline()
 class TestModelDistributions:
     """Verifica as distribuições definidas para compact e full."""
 
-    def test_compact_total_is_8(self):
+    def test_compact_total_is_7(self):
         dist = MODEL_DISTRIBUTIONS["compact"]
-        assert dist["total"] == 8
+        assert dist["total"] == 7
 
     def test_full_total_is_12(self):
         dist = MODEL_DISTRIBUTIONS["full"]
@@ -152,13 +152,13 @@ class TestAffirmativeQuestions:
 # ---------------------------------------------------------------------------
 
 class TestBlockNames:
-    """Verifica nomenclatura dos 4 blocos do pipeline."""
+    """Verifica nomenclatura dos 3 blocos do pipeline (2: empresa, 3: técnico, 4: comportamental)."""
 
-    def test_four_blocks_defined(self):
-        assert len(BLOCK_NAMES) == 4
+    def test_three_blocks_defined(self):
+        assert len(BLOCK_NAMES) == 3
 
-    def test_block_ids_are_2_to_5(self):
-        assert set(BLOCK_NAMES.keys()) == {2, 3, 4, 5}
+    def test_block_ids_are_2_to_4(self):
+        assert set(BLOCK_NAMES.keys()) == {2, 3, 4}
 
     def test_block_names_are_strings(self):
         for block_id, name in BLOCK_NAMES.items():
@@ -378,4 +378,4 @@ class TestResponseSchema:
         result = self._build_simple()
         for q in result.questions:
             assert hasattr(q, "block_id"), f"Pergunta sem block_id: {q}"
-            assert q.block_id in {2, 3, 4, 5}, f"block_id inválido: {q.block_id}"
+            assert q.block_id in {2, 3, 4}, f"block_id inválido: {q.block_id}"
