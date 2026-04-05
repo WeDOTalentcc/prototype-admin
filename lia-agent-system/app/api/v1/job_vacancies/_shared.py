@@ -64,7 +64,7 @@ VALID_SCREENING_STATUSES = {"not_configured", "not_started", "active", "paused",
 # HELPER FUNCTIONS
 # =============================================
 
-def _generate_lia_metrics(funnel_data: Optional[dict]) -> dict:
+def generate_lia_metrics(funnel_data: Optional[dict]) -> dict:
     """Generate LIA performance metrics based on funnel data."""
     import random
 

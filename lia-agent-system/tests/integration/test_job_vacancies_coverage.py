@@ -459,10 +459,10 @@ def test_get_job_vacancy_analytics(client):
 # ===== Helper function unit tests =====
 
 def test_generate_lia_metrics_no_funnel_data():
-    """Test _generate_lia_metrics with no funnel data returns zeroed dict."""
-    from app.api.v1.job_vacancies import _generate_lia_metrics
+    """Test generate_lia_metrics with no funnel data returns zeroed dict."""
+    from app.api.v1.job_vacancies import generate_lia_metrics
 
-    result = _generate_lia_metrics(None)
+    result = generate_lia_metrics(None)
     assert result["pipeline_lia"] == 0
     assert result["triagens_agendadas"] == 0
     assert result["triagens_realizadas"] == 0
@@ -471,11 +471,11 @@ def test_generate_lia_metrics_no_funnel_data():
 
 
 def test_generate_lia_metrics_with_funnel_data():
-    """Test _generate_lia_metrics generates non-zero values for populated funnel."""
-    from app.api.v1.job_vacancies import _generate_lia_metrics
+    """Test generate_lia_metrics generates non-zero values for populated funnel."""
+    from app.api.v1.job_vacancies import generate_lia_metrics
 
     funnel = {"total": 100, "screening": 60, "interview": 20, "hired": 5}
-    result = _generate_lia_metrics(funnel)
+    result = generate_lia_metrics(funnel)
     assert isinstance(result["pipeline_lia"], int)
     assert isinstance(result["triagens_agendadas"], int)
 

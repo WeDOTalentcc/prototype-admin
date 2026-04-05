@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 # HELPER FUNCTIONS
 # =============================================
 
-def _generate_lia_metrics(funnel_data: Optional[dict]) -> dict:
+def generate_lia_metrics(funnel_data: Optional[dict]) -> dict:
     """
     Generate LIA performance metrics based on funnel data.
     These are simulated metrics for visualization purposes.
@@ -2015,7 +2015,7 @@ async def list_job_vacancies(
                     "updated_at": jv.updated_at.isoformat() if hasattr(jv.updated_at, 'isoformat') else None,
                     "deadline": jv.deadline.isoformat() if hasattr(jv, 'deadline') and jv.deadline else None,
                     "funnel_data": jv.funnel_data,
-                    "lia_metrics": jv.lia_metrics or _generate_lia_metrics(jv.funnel_data),
+                    "lia_metrics": jv.lia_metrics or generate_lia_metrics(jv.funnel_data),
                     "nps": jv.nps,
                     "budget": jv.budget,
                     "budget_used": jv.budget_used,
