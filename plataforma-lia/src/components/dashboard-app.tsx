@@ -29,7 +29,7 @@ interface DashboardAppProps {
   initialPage?: string
 }
 
-export function DashboardApp({ initialPage = "Funil de Talentos" }: DashboardAppProps) {
+export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [showGlobalSearch, setShowGlobalSearch] = useState(false)
   const [pendingChatOpen, setPendingChatOpen] = useState<{ mode: 'general' | 'job-creation' } | null>(null)
@@ -40,12 +40,17 @@ export function DashboardApp({ initialPage = "Funil de Talentos" }: DashboardApp
   const { recentItems, addRecentItem, removeRecentItem, clearAll: clearRecentItems } = useRecentItems()
   const { open: openFloat, splitView } = useLiaFloat()
 
-  // Navegar automaticamente quando split-view indica uma página
   useEffect(() => {
     if (splitView.active && splitView.page) {
       setCurrentPage(splitView.page)
     }
   }, [splitView.active, splitView.page])
+
+  useEffect(() => {
+    const handler = () => setCurrentPage("Chat LIA")
+    window.addEventListener("lia:navigate-chat-page", handler)
+    return () => window.removeEventListener("lia:navigate-chat-page", handler)
+  }, [])
 
   const handleNavigate = (page: string) => {
     if (page === "Ajuda") {
@@ -88,7 +93,7 @@ export function DashboardApp({ initialPage = "Funil de Talentos" }: DashboardApp
       setCurrentPage("Biblioteca LIA")
     },
     onChatOpen: () => {
-      setCurrentPage("Vagas")
+      setCurrentPage("Chat LIA")
     }
   })
 
@@ -109,6 +114,8 @@ export function DashboardApp({ initialPage = "Funil de Talentos" }: DashboardApp
     }
 
     switch (currentPage) {
+      case "Chat LIA":
+        return <ChatPage />
       case "Funil de Talentos":
         return <CandidatesPage onAddRecentItem={addRecentItem} pendingCandidateOpen={pendingCandidateOpen} onCandidateOpened={() => setPendingCandidateOpen(null)} />
       case "Vagas":

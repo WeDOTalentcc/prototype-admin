@@ -22,6 +22,7 @@ export type { FloatMessage }
 export function useLiaChatPanelState() {
   const {
     isOpen, conversationId: ctxConvId, close, expand, openSplitView,
+    navigateToChat,
     sharedMessages, addSharedMessage, setSharedMessages,
     sharedConversationId, setSharedConversationId,
   } = useLiaFloat()
@@ -142,8 +143,8 @@ export function useLiaChatPanelState() {
   }, [])
 
   const handleExpand = useCallback(() => {
-    expand()
-  }, [expand])
+    navigateToChat()
+  }, [navigateToChat])
 
   const handleNewChat = useCallback(() => {
     wsDisconnect()

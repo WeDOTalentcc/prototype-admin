@@ -36,6 +36,7 @@ interface LiaFloatContextType extends LiaFloatState {
   expand: () => void
   collapse: () => void
   closeAll: () => void
+  navigateToChat: () => void
   openSplitView: (page: string, conversationId?: string) => void
   closeSplitView: () => void
   sharedMessages: FloatMessage[]
@@ -125,11 +126,22 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
+  const navigateToChat = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      isOpen: false,
+      isExpanded: false,
+      splitView: INITIAL_SPLIT_VIEW,
+    }))
+    window.dispatchEvent(new CustomEvent("lia:navigate-chat-page"))
+  }, [])
+
   return (
     <LiaFloatContext.Provider
       value={{
         ...state,
         open, close, toggle, expand, collapse, closeAll,
+        navigateToChat,
         openSplitView, closeSplitView,
         sharedMessages, addSharedMessage, setSharedMessages,
         sharedConversationId, setSharedConversationId,
