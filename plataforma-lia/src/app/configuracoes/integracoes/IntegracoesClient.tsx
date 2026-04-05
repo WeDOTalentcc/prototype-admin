@@ -12,6 +12,7 @@ import {
   Building,
   Code,
   Plug,
+  ArrowLeft,
 } from "lucide-react"
 import {
   categories,
@@ -206,6 +207,13 @@ export default function IntegracoesPage() {
     <div className="flex flex-col lg:flex-row min-h-[calc(100vh-64px)]">
       <aside className="w-full lg:w-56 flex-shrink-0 border-b lg:border-b-0 lg:border-r border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary">
         <div className="p-4 lg:p-5">
+          <button
+            onClick={() => window.location.href = '/'}
+            className="flex items-center gap-1.5 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors font-['Open_Sans',sans-serif] mb-3"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Voltar ao menu
+          </button>
           <div className="flex items-center gap-2 mb-4">
             <Plug className="w-4 h-4 text-wedo-cyan dark:text-wedo-cyan" />
             <h1 className="text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary font-['Open_Sans',sans-serif]">
