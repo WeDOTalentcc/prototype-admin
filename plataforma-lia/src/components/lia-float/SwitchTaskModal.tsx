@@ -20,17 +20,39 @@ export function SwitchTaskModal({
 }: SwitchTaskModalProps) {
   const [query, setQuery] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [activeSessions, setActiveSessions] = useState<Set<string>>(new Set())
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
   const recentItems = useUIPreferencesStore((s) => s.liaRecentItems)
 
+  useEffect(() => {
+    if (!isOpen) return
+    const fetchActive = async () => {
+      try {
+        const res = await fetch("/api/backend-proxy/agent-chat/sessions/active")
+        if (res.ok) {
+          const data = await res.json()
+          const ids = (data.sessions || []).map((s: { id: string }) => s.id)
+          setActiveSessions(new Set(ids))
+        }
+      } catch {}
+    }
+    fetchActive()
+  }, [isOpen])
+
   const chatItems = useMemo(() => {
-    return recentItems
+    const items = recentItems
       .filter((item) => item.type === "chat")
-      .sort((a, b) => b.timestamp - a.timestamp)
+      .sort((a, b) => {
+        const aActive = activeSessions.has(a.id) ? 1 : 0
+        const bActive = activeSessions.has(b.id) ? 1 : 0
+        if (bActive !== aActive) return bActive - aActive
+        return b.timestamp - a.timestamp
+      })
       .slice(0, 15)
-  }, [recentItems])
+    return items
+  }, [recentItems, activeSessions])
 
   const filtered = useMemo(() => {
     if (!query.trim()) return chatItems
@@ -141,7 +163,12 @@ export function SwitchTaskModal({
                     isCurrent && "opacity-50"
                   )}
                 >
-                  <MessageSquare className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" />
+                  <div className="relative flex-shrink-0">
+                    <MessageSquare className="w-4 h-4 text-lia-text-tertiary" />
+                    {activeSessions.has(item.id) && (
+                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-500" />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-lia-text-primary truncate">
                       {item.title}
@@ -156,6 +183,11 @@ export function SwitchTaskModal({
                       <span className="text-xs text-lia-text-disabled">
                         {formatTime(item.timestamp)}
                       </span>
+                      {activeSessions.has(item.id) && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/30 text-green-400 ml-1">
+                          ativa
+                        </span>
+                      )}
                       {item.mode && (
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-tertiary ml-1">
                           {item.mode}

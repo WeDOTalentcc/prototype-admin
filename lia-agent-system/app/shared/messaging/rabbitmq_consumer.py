@@ -119,6 +119,23 @@ class RabbitMQConsumer:
                     async with message.process():
                         try:
                             data = json.loads(message.body.decode())
+                            _domain = data.get("domain", "")
+                            _task_id = data.get("job_id", data.get("task_id", f"async-{session_id[:8]}"))
+                            _is_error = bool(data.get("error"))
+                            _task_type_map = {
+                                "sourcing": "sourcing", "cv_screening": "screening",
+                                "communication": "communication",
+                            }
+                            _bg_status = "failed" if _is_error else "completed"
+                            await ws_manager.send_to_session(session_id, {
+                                "type": "background_task_update",
+                                "task_id": _task_id,
+                                "task_type": _task_type_map.get(_domain, "analysis"),
+                                "label": f"Agente {_domain}" if _domain else "Tarefa async",
+                                "status": _bg_status,
+                                "progress": 0 if _is_error else 100,
+                                "message": data.get("error", data.get("content", "")[:120]),
+                            })
                             await ws_manager.send_to_session(session_id, {
                                 "type": "message",
                                 "content": data.get("content", ""),
@@ -126,7 +143,7 @@ class RabbitMQConsumer:
                                 "actions": data.get("actions", []),
                                 "navigation": data.get("navigation"),
                                 "state_updates": data.get("state_updates", {}),
-                                "domain": data.get("domain", ""),
+                                "domain": _domain,
                                 "source": "celery_worker",
                             })
                             if data.get("done", True):
