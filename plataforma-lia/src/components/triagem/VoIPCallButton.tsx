@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
 import { Phone, PhoneOff, Mic, MicOff, Loader2, Volume2, WifiOff } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { Device as TwilioDevice, Call as TwilioCall } from "@twilio/voice-sdk"
 
 type VoIPState =
   | "idle"
@@ -23,18 +22,8 @@ interface VoIPCallButtonProps {
   onError?: (message: string) => void
 }
 
-let TwilioDeviceClass: typeof TwilioDevice | null = null
-let TwilioCallClass: typeof TwilioCall | null = null
-
-async function loadTwilioSDK(): Promise<{ Device: typeof TwilioDevice; Call: typeof TwilioCall }> {
-  if (TwilioDeviceClass && TwilioCallClass) {
-    return { Device: TwilioDeviceClass, Call: TwilioCallClass }
-  }
-  const mod = await import("@twilio/voice-sdk")
-  TwilioDeviceClass = mod.Device
-  TwilioCallClass = mod.Call
-  return { Device: mod.Device, Call: mod.Call }
-}
+const AUDIO_SAMPLE_RATE = 16000
+const AUDIO_BUFFER_SIZE = 4096
 
 export function VoIPCallButton({
   token,
@@ -44,15 +33,24 @@ export function VoIPCallButton({
   onCallEnded,
   onError,
 }: VoIPCallButtonProps) {
-  const [voipState, setVoIPState] = useState<VoIPState>("idle")
+  const [voipState, _setVoIPState] = useState<VoIPState>("idle")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [callDuration, setCallDuration] = useState(0)
-  const deviceRef = useRef<TwilioDevice | null>(null)
-  const callRef = useRef<TwilioCall | null>(null)
+  const wsRef = useRef<WebSocket | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const mediaStreamRef = useRef<MediaStream | null>(null)
+  const processorRef = useRef<ScriptProcessorNode | null>(null)
+  const playbackQueueRef = useRef<ArrayBuffer[]>([])
+  const isPlayingRef = useRef(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
-  const voipTokenRef = useRef<string | null>(null)
-  const voipSessionIdRef = useRef<string | null>(null)
-  const voipAvailableRef = useRef<boolean | null>(null)
+  const sessionIdRef = useRef<string | null>(null)
+  const isMutedRef = useRef(false)
+  const voipStateRef = useRef<VoIPState>("idle")
+
+  const setVoIPState = useCallback((state: VoIPState) => {
+    voipStateRef.current = state
+    _setVoIPState(state)
+  }, [])
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) {
@@ -61,53 +59,75 @@ export function VoIPCallButton({
     }
   }, [])
 
+  const stopAudio = useCallback(() => {
+    if (processorRef.current) {
+      try {
+        processorRef.current.disconnect()
+      } catch {}
+      processorRef.current = null
+    }
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((t) => t.stop())
+      mediaStreamRef.current = null
+    }
+    if (audioContextRef.current) {
+      try {
+        audioContextRef.current.close()
+      } catch {}
+      audioContextRef.current = null
+    }
+    playbackQueueRef.current = []
+    isPlayingRef.current = false
+  }, [])
+
   useEffect(() => {
     return () => {
       clearTimer()
-      if (callRef.current) {
+      stopAudio()
+      if (wsRef.current) {
         try {
-          callRef.current.disconnect()
-        } catch {}
-      }
-      if (deviceRef.current) {
-        try {
-          deviceRef.current.destroy()
+          wsRef.current.close()
         } catch {}
       }
     }
-  }, [clearTimer])
+  }, [clearTimer, stopAudio])
 
-  const fetchVoIPToken = useCallback(async (): Promise<string | null> => {
-    if (voipTokenRef.current) return voipTokenRef.current
-    try {
-      const res = await fetch(`/api/backend-proxy/triagem/${token}/voip-start`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        const msg = data.detail || "Não foi possível iniciar sessão VoIP"
-        setErrorMessage(msg)
-        onError?.(msg)
-        return null
+  const playAudioChunk = useCallback(async (audioData: ArrayBuffer) => {
+    const ctx = audioContextRef.current
+    if (!ctx || ctx.state === "closed") return
+
+    playbackQueueRef.current.push(audioData)
+    if (isPlayingRef.current) return
+
+    isPlayingRef.current = true
+    while (playbackQueueRef.current.length > 0) {
+      const chunk = playbackQueueRef.current.shift()
+      if (!chunk) break
+
+      try {
+        const pcmData = new Int16Array(chunk)
+        const floatData = new Float32Array(pcmData.length)
+        for (let i = 0; i < pcmData.length; i++) {
+          floatData[i] = pcmData[i] / 32768.0
+        }
+
+        const audioBuffer = ctx.createBuffer(1, floatData.length, AUDIO_SAMPLE_RATE)
+        audioBuffer.getChannelData(0).set(floatData)
+
+        const source = ctx.createBufferSource()
+        source.buffer = audioBuffer
+        source.connect(ctx.destination)
+
+        await new Promise<void>((resolve) => {
+          source.onended = () => resolve()
+          source.start()
+        })
+      } catch {
+        break
       }
-      const data = await res.json()
-      if (!data.voip_available || !data.token) {
-        voipAvailableRef.current = false
-        setVoIPState("unavailable")
-        return null
-      }
-      voipAvailableRef.current = true
-      voipTokenRef.current = data.token
-      voipSessionIdRef.current = data.session_id
-      return data.token
-    } catch {
-      const msg = "Erro de rede ao obter token VoIP"
-      setErrorMessage(msg)
-      onError?.(msg)
-      return null
     }
-  }, [token, onError])
+    isPlayingRef.current = false
+  }, [])
 
   const startCall = useCallback(async () => {
     if (disabled || voipState !== "idle") return
@@ -116,8 +136,17 @@ export function VoIPCallButton({
     setErrorMessage(null)
     setCallDuration(0)
 
+    let stream: MediaStream
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true })
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          sampleRate: AUDIO_SAMPLE_RATE,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+      })
+      mediaStreamRef.current = stream
     } catch {
       const msg = "Microfone não disponível. Verifique as permissões do navegador."
       setErrorMessage(msg)
@@ -126,123 +155,190 @@ export function VoIPCallButton({
       return
     }
 
-    const accessToken = await fetchVoIPToken()
-    if (!accessToken) {
-      setVoIPState(voipAvailableRef.current === false ? "unavailable" : "error")
-      return
+    let sessionRes: {
+      session_id: string
+      gemini_available: boolean
+      success: boolean
+      voice_provider?: string
+      ws_token?: string
+      message?: string
     }
-
-    let DeviceClass: typeof TwilioDevice
-    let CallClass: typeof TwilioCall
     try {
-      const sdk = await loadTwilioSDK()
-      DeviceClass = sdk.Device
-      CallClass = sdk.Call
+      const res = await fetch(`/api/backend-proxy/triagem/${token}/voip-start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        const msg = data.detail || "Não foi possível iniciar sessão de voz"
+        setErrorMessage(msg)
+        setVoIPState("error")
+        onError?.(msg)
+        stopAudio()
+        return
+      }
+      sessionRes = await res.json()
+
+      if (!sessionRes.success) {
+        const fallbackMsg = sessionRes.message || "Chamada de voz não disponível. Use o chat de texto."
+        setErrorMessage(fallbackMsg)
+        setVoIPState("unavailable")
+        stopAudio()
+        return
+      }
+
+      if (!sessionRes.gemini_available) {
+        const fallbackMsg = sessionRes.message || "Chamada de voz não disponível. Use o chat de texto."
+        setErrorMessage(fallbackMsg)
+        setVoIPState("unavailable")
+        stopAudio()
+        return
+      }
+      sessionIdRef.current = sessionRes.session_id
     } catch {
-      const msg = "Não foi possível carregar o sistema de chamada VoIP."
+      const msg = "Erro de rede ao iniciar sessão de voz"
       setErrorMessage(msg)
       setVoIPState("error")
       onError?.(msg)
+      stopAudio()
       return
     }
 
     try {
-      const device = new DeviceClass(accessToken, {
-        codecPreferences: [CallClass.Codec.Opus, CallClass.Codec.PCMU],
-        logLevel: "error",
-      })
-      deviceRef.current = device
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:"
+      const wsToken = sessionRes.ws_token ? `&ws_token=${encodeURIComponent(sessionRes.ws_token)}` : ""
+      const wsUrl = `${protocol}//${window.location.host}/api/v1/gemini-voice/live-stream?session_id=${sessionRes.session_id}${wsToken}`
 
-      device.on("error", (err: { message?: string }) => {
-        const errMsg = err?.message || "Erro na chamada VoIP"
-        setErrorMessage(errMsg)
-        setVoIPState("error")
-        clearTimer()
-        onError?.(errMsg)
-      })
+      const ws = new WebSocket(wsUrl)
+      wsRef.current = ws
 
-      const voipSessionId = voipSessionIdRef.current || ""
-      const call = await device.connect({
-        params: {
-          session_id: voipSessionId,
-          identity: `candidate_${voipSessionId.slice(0, 8)}`,
-        },
-      })
-      callRef.current = call
-
-      call.on("accept", () => {
+      ws.onopen = () => {
         setVoIPState("connected")
         onCallStarted?.()
         timerRef.current = setInterval(() => {
           setCallDuration((prev) => prev + 1)
         }, 1000)
-      })
 
-      call.on("disconnect", () => {
-        setVoIPState("ended")
-        clearTimer()
-        onCallEnded?.()
-        deviceRef.current?.destroy()
-        deviceRef.current = null
-        callRef.current = null
-      })
+        const ctx = new AudioContext({ sampleRate: AUDIO_SAMPLE_RATE })
+        audioContextRef.current = ctx
 
-      call.on("cancel", () => {
-        setVoIPState("idle")
-        clearTimer()
-        deviceRef.current?.destroy()
-        deviceRef.current = null
-        callRef.current = null
-      })
+        const source = ctx.createMediaStreamSource(stream)
+        const processor = ctx.createScriptProcessor(AUDIO_BUFFER_SIZE, 1, 1)
+        processorRef.current = processor
 
-      call.on("error", (err: { message?: string }) => {
-        const errMsg = err?.message || "Erro na chamada"
-        setErrorMessage(errMsg)
+        processor.onaudioprocess = (e) => {
+          if (isMutedRef.current) return
+          if (ws.readyState !== WebSocket.OPEN) return
+
+          const inputData = e.inputBuffer.getChannelData(0)
+          const pcmData = new Int16Array(inputData.length)
+          for (let i = 0; i < inputData.length; i++) {
+            const s = Math.max(-1, Math.min(1, inputData[i]))
+            pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7fff
+          }
+
+          ws.send(pcmData.buffer)
+        }
+
+        source.connect(processor)
+        processor.connect(ctx.destination)
+      }
+
+      ws.onmessage = async (event) => {
+        try {
+          const data = JSON.parse(event.data)
+
+          if (data.type === "audio" && data.data) {
+            const binaryStr = atob(data.data)
+            const bytes = new Uint8Array(binaryStr.length)
+            for (let i = 0; i < binaryStr.length; i++) {
+              bytes[i] = binaryStr.charCodeAt(i)
+            }
+            await playAudioChunk(bytes.buffer)
+          }
+
+          if (data.type === "status") {
+            if (data.status === "ended" || data.status === "timeout") {
+              setVoIPState("ended")
+              clearTimer()
+              onCallEnded?.()
+              stopAudio()
+            }
+          }
+
+          if (data.type === "error") {
+            const msg = data.message || "Erro na sessão de voz"
+            setErrorMessage(msg)
+            setVoIPState("error")
+            clearTimer()
+            onError?.(msg)
+            stopAudio()
+          }
+        } catch {}
+      }
+
+      ws.onerror = () => {
+        const msg = "Erro na conexão de voz"
+        setErrorMessage(msg)
         setVoIPState("error")
         clearTimer()
-        onError?.(errMsg)
-      })
+        onError?.(msg)
+        stopAudio()
+      }
+
+      ws.onclose = () => {
+        const currentState = voipStateRef.current
+        if (currentState === "connected" || currentState === "muted") {
+          setVoIPState("ended")
+          clearTimer()
+          onCallEnded?.()
+          stopAudio()
+        }
+      }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erro ao iniciar chamada VoIP"
+      const msg = err instanceof Error ? err.message : "Erro ao iniciar sessão de voz"
       setErrorMessage(msg)
       setVoIPState("error")
       onError?.(msg)
+      stopAudio()
     }
-  }, [disabled, voipState, fetchVoIPToken, clearTimer, onCallStarted, onCallEnded, onError])
+  }, [disabled, voipState, token, clearTimer, stopAudio, playAudioChunk, onCallStarted, onCallEnded, onError])
 
   const endCall = useCallback(() => {
-    if (callRef.current) {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       try {
-        callRef.current.disconnect()
+        wsRef.current.send(JSON.stringify({ type: "end" }))
+      } catch {}
+      try {
+        wsRef.current.close()
       } catch {}
     }
     clearTimer()
+    stopAudio()
     setVoIPState("ended")
     onCallEnded?.()
-  }, [clearTimer, onCallEnded])
+  }, [clearTimer, stopAudio, onCallEnded])
 
   const toggleMute = useCallback(() => {
-    if (!callRef.current) return
-    const isMuted = callRef.current.isMuted()
-    callRef.current.mute(!isMuted)
-    setVoIPState(isMuted ? "connected" : "muted")
+    isMutedRef.current = !isMutedRef.current
+    setVoIPState(isMutedRef.current ? "muted" : "connected")
   }, [])
 
   const reset = useCallback(() => {
     clearTimer()
-    if (deviceRef.current) {
+    stopAudio()
+    if (wsRef.current) {
       try {
-        deviceRef.current.destroy()
+        wsRef.current.close()
       } catch {}
-      deviceRef.current = null
+      wsRef.current = null
     }
-    callRef.current = null
-    voipTokenRef.current = null
-    voipSessionIdRef.current = null
+    sessionIdRef.current = null
+    isMutedRef.current = false
     setVoIPState("idle")
     setErrorMessage(null)
     setCallDuration(0)
-  }, [clearTimer])
+  }, [clearTimer, stopAudio])
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, "0")
@@ -252,19 +348,26 @@ export function VoIPCallButton({
 
   if (voipState === "unavailable") {
     return (
-      <button
-        type="button"
-        disabled
-        title="Chamada VoIP não disponível neste momento"
-        aria-label="Chamada VoIP indisponível"
-        className={cn(
-          "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-disabled text-sm font-medium opacity-50 cursor-not-allowed font-['Open_Sans',sans-serif]",
-          className
+      <div className="flex flex-col gap-1.5">
+        <button
+          type="button"
+          disabled
+          title="Chamada por voz não disponível neste momento"
+          aria-label="Chamada por voz indisponível"
+          className={cn(
+            "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-disabled text-sm font-medium opacity-50 cursor-not-allowed font-['Open_Sans',sans-serif]",
+            className
+          )}
+        >
+          <WifiOff className="w-4 h-4" />
+          Voz indisponível
+        </button>
+        {errorMessage && (
+          <p className="text-xs text-lia-text-secondary text-center leading-snug font-['Open_Sans',sans-serif] px-1">
+            {errorMessage}
+          </p>
         )}
-      >
-        <WifiOff className="w-4 h-4" />
-        VoIP indisponível
-      </button>
+      </div>
     )
   }
 
@@ -275,7 +378,7 @@ export function VoIPCallButton({
           type="button"
           onClick={reset}
           title="Tentar novamente"
-          aria-label="Tentar chamada VoIP novamente"
+          aria-label="Tentar chamada de voz novamente"
           className={cn(
             "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-status-error/40 text-status-error text-sm font-medium hover:bg-status-error/10 transition-colors font-['Open_Sans',sans-serif]",
             className
@@ -298,8 +401,8 @@ export function VoIPCallButton({
       <button
         type="button"
         onClick={reset}
-        title="Iniciar nova chamada VoIP"
-        aria-label="Iniciar nova chamada VoIP"
+        title="Iniciar nova chamada de voz"
+        aria-label="Iniciar nova chamada de voz"
         className={cn(
           "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-secondary text-sm font-medium hover:bg-lia-bg-tertiary transition-colors font-['Open_Sans',sans-serif]",
           className
@@ -334,7 +437,7 @@ export function VoIPCallButton({
           type="button"
           onClick={endCall}
           title="Encerrar chamada"
-          aria-label="Encerrar chamada VoIP"
+          aria-label="Encerrar chamada de voz"
           className="h-11 flex items-center justify-center gap-2 px-4 rounded-lg bg-status-error text-white text-sm font-medium hover:bg-status-error/90 transition-colors font-['Open_Sans',sans-serif]"
         >
           <PhoneOff className="w-4 h-4" />
@@ -349,7 +452,7 @@ export function VoIPCallButton({
       <button
         type="button"
         disabled
-        aria-label="Conectando chamada VoIP..."
+        aria-label="Conectando chamada de voz..."
         className={cn(
           "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-secondary text-sm font-medium opacity-70 cursor-not-allowed font-['Open_Sans',sans-serif]",
           className
@@ -366,8 +469,8 @@ export function VoIPCallButton({
       type="button"
       onClick={startCall}
       disabled={disabled}
-      title="Iniciar chamada de voz pelo navegador (VoIP)"
-      aria-label="Iniciar chamada de voz VoIP"
+      title="Iniciar chamada de voz pelo navegador"
+      aria-label="Iniciar chamada de voz"
       className={cn(
         "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none font-['Open_Sans',sans-serif]",
         className

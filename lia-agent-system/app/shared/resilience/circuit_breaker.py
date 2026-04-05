@@ -461,6 +461,16 @@ TWILIO_VOICE_CIRCUIT = CircuitBreaker(
     )
 )
 
+GEMINI_LIVE_CIRCUIT = CircuitBreaker(
+    "gemini_live",
+    CircuitBreakerConfig(
+        failure_threshold=3,
+        recovery_timeout=30.0,
+        success_threshold=2,
+        timeout=60.0,
+    )
+)
+
 ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
     "anthropic": ANTHROPIC_CIRCUIT,
     "openai": OPENAI_CIRCUIT,
@@ -476,6 +486,7 @@ ALL_CIRCUITS: Dict[str, CircuitBreaker] = {
     "iugu": IUGU_CIRCUIT,
     "vindi": VINDI_CIRCUIT,
     "twilio_voice": TWILIO_VOICE_CIRCUIT,
+    "gemini_live": GEMINI_LIVE_CIRCUIT,
 }
 
 
@@ -579,6 +590,13 @@ CIRCUIT_BREAKER_SLOS: Dict[str, Dict[str, Any]] = {
         "tier": "high",
         "description": "Screening por voz — Twilio Programmable Voice",
     },
+    "gemini_live": {
+        "availability_target": 0.995,
+        "latency_p95_ms": 500,
+        "error_budget_pct": 0.5,
+        "tier": "critical",
+        "description": "Screening por voz — Gemini Live Audio (VoIP)",
+    },
 }
 
 # F1-03: respostas de modo degradado — retornadas quando o circuit está OPEN
@@ -640,6 +658,10 @@ DEGRADED_MODE_RESPONSES: Dict[str, str] = {
     "twilio_voice": (
         "O screening por voz está temporariamente indisponível. "
         "A triagem será conduzida via chat ou WhatsApp como alternativa."
+    ),
+    "gemini_live": (
+        "O screening por voz via navegador está temporariamente indisponível. "
+        "Tentando pipeline alternativo (Twilio). Caso indisponível, use chat ou WhatsApp."
     ),
 }
 

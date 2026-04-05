@@ -93,6 +93,7 @@ class VoiceScreeningSession:
     consent_verified: bool = False
     job_context: Optional[Dict[str, Any]] = None
     presentation_done: bool = False
+    voice_provider: str = "twilio"
 
 
 class VoiceScreeningOrchestratorError(Exception):
@@ -158,6 +159,7 @@ class VoiceScreeningOrchestrator:
             "consent_verified": session.consent_verified,
             "job_context": session.job_context,
             "presentation_done": session.presentation_done,
+            "voice_provider": session.voice_provider,
         }
 
     def _state_to_session(self, state: Dict[str, Any]) -> "VoiceScreeningSession":
@@ -188,6 +190,7 @@ class VoiceScreeningOrchestrator:
             consent_verified=state.get("consent_verified", False),
             job_context=state.get("job_context"),
             presentation_done=state.get("presentation_done", False),
+            voice_provider=state.get("voice_provider", "twilio"),
         )
 
     async def _persist_session_state(self, session: "VoiceScreeningSession", db) -> None:
@@ -654,6 +657,125 @@ class VoiceScreeningOrchestrator:
 
         self._sessions[session.session_id] = session
         if db is not None and session.session_id:
+            await self._persist_session_state(session, db)
+        return session
+
+    async def initiate_voip_session(
+        self,
+        candidate_id: str,
+        candidate_name: str,
+        job_title: str,
+        company_id: str,
+        job_id: Optional[str] = None,
+        language: str = "pt-BR",
+        db=None,
+    ) -> VoiceScreeningSession:
+        """
+        Create a VoIP (browser) voice screening session using Gemini Live Audio.
+
+        Provider strategy:
+        - VoIP (browser) → Gemini Live Audio (new pipeline, sub-second latency)
+        - PSTN (phone) → Twilio pipeline (existing, via initiate_call)
+
+        This method is used when the candidate uses the browser VoIP button.
+        It verifies consent, creates the session, and returns it ready for
+        WebSocket connection to /gemini-voice/live-stream.
+
+        Fallback: If Gemini Live is unavailable, session status='fallback'
+        suggesting the caller try the Twilio pipeline or chat/WhatsApp.
+
+        Args:
+            candidate_id: Candidate UUID
+            candidate_name: Candidate's display name
+            job_title: Job title for screening context
+            company_id: Company/tenant UUID
+            job_id: Optional job vacancy UUID
+            language: Conversation language (default: pt-BR)
+            db: SQLAlchemy async session for consent check
+
+        Returns:
+            VoiceScreeningSession with voice_provider='gemini_live'
+
+        Raises:
+            ConsentNotGrantedError: If consent has been explicitly revoked
+        """
+        await self.verify_consent(candidate_id, company_id, db)
+
+        session = VoiceScreeningSession(
+            session_id=str(uuid4()),
+            candidate_id=candidate_id,
+            candidate_name=candidate_name,
+            job_title=job_title,
+            job_id=job_id,
+            company_id=company_id,
+            phone_number="voip",
+            language=language,
+            started_at=datetime.utcnow(),
+            consent_verified=True,
+            voice_provider="gemini_live",
+        )
+
+        try:
+            from app.services.gemini_live_audio_service import get_gemini_live_service
+            from app.shared.resilience.circuit_breaker import GEMINI_LIVE_CIRCUIT
+
+            live_service = get_gemini_live_service()
+
+            if not live_service.is_available:
+                logger.warning(
+                    "[VOICE SCREENING] Gemini Live Audio not available — returning fallback. "
+                    "session=%s",
+                    session.session_id,
+                )
+                session.status = "fallback"
+                session.voice_provider = "fallback"
+                session.error = "Gemini Live Audio not configured — use Twilio or chat/WhatsApp"
+            elif GEMINI_LIVE_CIRCUIT.state.value == "open":
+                logger.warning(
+                    "[VOICE SCREENING] GEMINI_LIVE_CIRCUIT open — returning fallback. "
+                    "session=%s",
+                    session.session_id,
+                )
+                session.status = "fallback"
+                session.voice_provider = "fallback"
+                session.error = "Gemini Live Audio circuit open — use Twilio or chat/WhatsApp"
+            else:
+                live_session = live_service.create_session(
+                    candidate_id=candidate_id,
+                    candidate_name=candidate_name,
+                    job_title=job_title,
+                    company_id=company_id,
+                    job_id=job_id,
+                    language=language,
+                )
+                session.session_id = live_session.session_id
+                session.status = "ready"
+
+                if db is not None:
+                    job_context = await self._fetch_job_context_from_db(
+                        job_id or "", db, company_id=company_id
+                    )
+                    if job_context:
+                        session.job_context = job_context
+                        live_session.job_context = job_context
+
+                    await self._register_wsi_session(session, db)
+
+                logger.info(
+                    "[VOICE SCREENING] VoIP session created via Gemini Live: session=%s",
+                    session.session_id,
+                )
+
+        except Exception as e:
+            logger.error(
+                "[VOICE SCREENING] VoIP session creation failed: %s", e
+            )
+            session.status = "fallback"
+            session.voice_provider = "fallback"
+            session.error = str(e)
+
+        self._sessions[session.session_id] = session
+        if db is not None:
             await self._persist_session_state(session, db)
         return session
 

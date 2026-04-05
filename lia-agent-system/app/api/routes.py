@@ -39,6 +39,7 @@ from app.api.v1 import (
 # ── Individual imports ────────────────────────────────────────────────────────
 from app.api.v1 import communication_optout
 from app.api.v1 import twilio_voice
+from app.api.v1 import gemini_voice
 from app.api.v1 import digest
 from app.api.v1 import task_monitoring
 from app.api.v1 import fairness_reports
@@ -204,6 +205,7 @@ def register_all_routes(app: FastAPI) -> None:
     # ── Voice / Communication Channels ───────────────────────────────────────
     app.include_router(voice.router, prefix="/api/v1", tags=["voice"])
     app.include_router(twilio_voice.router, prefix="/api/v1", tags=["twilio-voice"])
+    app.include_router(gemini_voice.router, prefix="/api/v1", tags=["gemini-voice"])
     app.include_router(whatsapp.router, prefix="/api/v1", tags=["whatsapp"])
     app.include_router(multi_channel.router, prefix="/api/v1", tags=["multi-channel"])
 

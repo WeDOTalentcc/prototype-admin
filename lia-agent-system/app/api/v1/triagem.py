@@ -400,33 +400,26 @@ async def voice_status(token: str, db: AsyncSession = Depends(get_db)):
 @router.post("/{token}/voip-start")
 async def voip_start(token: str, db: AsyncSession = Depends(get_db)):
     """
-    Initiate a VoIP (browser call) screening session and return the Twilio Access Token.
+    Initiate a VoIP (browser call) screening session.
 
-    This endpoint:
-    1. Validates the triagem token
-    2. Creates a VoiceScreeningSession in the voice screening orchestrator (no phone call placed)
-    3. Returns the Twilio Access Token for the browser's Twilio Client SDK
+    Provider strategy:
+    1. Gemini Live Audio (preferred) — single WebSocket, ~$0.065/interview
+    2. Twilio pipeline (PSTN fallback) — if Gemini Live unavailable
 
-    The browser then uses the token to place a VoIP call that is routed through
-    /api/v1/twilio-voice/voip-connect → /api/v1/twilio-voice/audio-stream (WebSocket)
-    following the same Gemini STT + LIA LLM + TTS pipeline as PSTN calls.
+    The browser connects via WebSocket to /gemini-voice/live-stream for Gemini Live,
+    or falls back to the Twilio Voice SDK pipeline.
 
     Returns:
-        - token: Twilio Access Token JWT
-        - session_id: Voice screening session ID (used as WebSocket session key)
-        - voip_available: False when Twilio VoIP is not configured (graceful degradation)
+        - success: Whether a session was created
+        - session_id: Voice screening session ID
+        - gemini_available: True when Gemini Live Audio is the provider
+        - voice_provider: "gemini_live" | "twilio" | "unavailable"
+        - voip_available: Backward-compat flag (True when any provider is ready)
     """
     from app.services.triagem_session_service import triagem_service
-    from app.domains.communication.services.twilio_voice_service import (
-        twilio_voice_service,
-        TwilioVoiceUnconfiguredError,
-    )
     from app.services.voice_screening_orchestrator import (
-        VoiceScreeningSession,
         voice_screening_orchestrator,
     )
-    from datetime import datetime
-    from uuid import uuid4
 
     validation = await triagem_service.validate_token(db, token)
     if not validation.get("valid"):
@@ -439,15 +432,6 @@ async def voip_start(token: str, db: AsyncSession = Depends(get_db)):
     if validation.get("completed"):
         raise HTTPException(status_code=409, detail="Triagem já foi concluída")
 
-    if not twilio_voice_service.is_voip_configured:
-        logger.info("[Triagem VoIP] VoIP not configured — returning unavailable for token=%s", token)
-        return JSONResponse(content={
-            "voip_available": False,
-            "token": "",
-            "session_id": "",
-            "message": "VoIP não configurado. Use o canal de texto ou solicite uma ligação telefônica.",
-        })
-
     session_data = validation.get("session") or {}
     if not session_data:
         raise HTTPException(status_code=404, detail="Sessão não encontrada")
@@ -456,78 +440,63 @@ async def voip_start(token: str, db: AsyncSession = Depends(get_db)):
     candidate_name = str(session_data.get("candidate_name") or "Candidato")
     job_title = str(session_data.get("job_title") or "a vaga")
     company_id = str(session_data.get("company_id") or "")
+    job_id = str(session_data.get("job_id") or "")
 
-    session_id = str(uuid4())
-    identity = f"candidate_{session_id[:8]}"
-
-    voice_session = VoiceScreeningSession(
-        session_id=session_id,
+    voip_session = await voice_screening_orchestrator.initiate_voip_session(
         candidate_id=candidate_id,
         candidate_name=candidate_name,
         job_title=job_title,
         company_id=company_id,
-        phone_number="voip",
-        job_id=str(session_data.get("job_id") or ""),
-        status="pending",
+        job_id=job_id,
         language="pt-BR",
-        started_at=datetime.utcnow(),
-        consent_verified=True,
+        db=db,
     )
-    voice_screening_orchestrator._sessions[session_id] = voice_session
 
-    await voice_screening_orchestrator._register_wsi_session(voice_session, db)
+    if voip_session.status == "ready" and voip_session.voice_provider == "gemini_live":
+        import asyncio as _asyncio
 
-    try:
-        token_result = twilio_voice_service.generate_voip_access_token(
-            session_id=session_id,
-            candidate_id=candidate_id,
-            identity=identity,
+        async def _cleanup_abandoned_voip_session(sid: str, delay: int = 7200) -> None:
+            await _asyncio.sleep(delay)
+            orphan = voice_screening_orchestrator._sessions.get(sid)
+            if orphan and orphan.status in ("pending", "ready"):
+                logger.info("[Triagem VoIP] Cleaning up abandoned VoIP session=%s", sid)
+                voice_screening_orchestrator._sessions.pop(sid, None)
+
+        _asyncio.create_task(_cleanup_abandoned_voip_session(voip_session.session_id))
+
+        logger.info(
+            "[Triagem VoIP] Gemini Live session created: session=%s candidate=%s",
+            voip_session.session_id,
+            candidate_id,
         )
-    except TwilioVoiceUnconfiguredError as e:
-        logger.warning("[Triagem VoIP] Token generation failed: %s", e)
-        voice_screening_orchestrator._sessions.pop(session_id, None)
-        try:
-            from sqlalchemy import text as _sql_text
-            await db.execute(
-                _sql_text(
-                    "UPDATE wsi_sessions SET status = 'aborted', updated_at = CURRENT_TIMESTAMP "
-                    "WHERE id = :session_id AND status = 'in_progress'"
-                ),
-                {"session_id": session_id},
-            )
-            await db.commit()
-        except Exception as _cleanup_err:
-            logger.warning("[Triagem VoIP] Failed to mark aborted wsi_session=%s: %s", session_id, _cleanup_err)
+
+        from app.api.v1.gemini_voice import _generate_ws_token
+        ws_token = _generate_ws_token(
+            voip_session.session_id, company_id, candidate_id,
+        )
+
         return JSONResponse(content={
-            "voip_available": False,
-            "token": "",
-            "session_id": "",
-            "message": "VoIP temporariamente indisponível.",
+            "success": True,
+            "voip_available": True,
+            "session_id": voip_session.session_id,
+            "gemini_available": True,
+            "voice_provider": "gemini_live",
+            "ws_token": ws_token,
+            "message": "Sessão de voz Gemini Live criada. Conecte via WebSocket.",
         })
 
-    import asyncio as _asyncio
-
-    async def _cleanup_abandoned_voip_session(sid: str, delay: int = 7200) -> None:
-        """Remove abandoned VoIP sessions that never connected after token expiry."""
-        await _asyncio.sleep(delay)
-        orphan = voice_screening_orchestrator._sessions.get(sid)
-        if orphan and orphan.status == "pending":
-            logger.info("[Triagem VoIP] Cleaning up abandoned VoIP session=%s", sid)
-            voice_screening_orchestrator._sessions.pop(sid, None)
-
-    _asyncio.create_task(_cleanup_abandoned_voip_session(session_id))
-
     logger.info(
-        "[Triagem VoIP] Session created and token issued: session=%s candidate=%s",
-        session_id,
-        candidate_id,
+        "[Triagem VoIP] Gemini Live unavailable (status=%s) for token=%s — falling back to chat (Twilio is PSTN-only)",
+        voip_session.status,
+        token,
     )
 
     return JSONResponse(content={
-        "voip_available": True,
-        "token": token_result["token"],
-        "session_id": session_id,
-        "identity": identity,
-        "expires_in": token_result.get("expires_in", 3600),
-        "message": "Token VoIP gerado. Inicie a chamada pelo navegador.",
+        "success": False,
+        "voip_available": False,
+        "session_id": "",
+        "gemini_available": False,
+        "voice_provider": "unavailable",
+        "fallback_channel": "chat",
+        "message": "Chamada de voz temporariamente indisponível. Use o chat de texto para continuar a triagem.",
     })

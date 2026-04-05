@@ -39,7 +39,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT).
 - **Multi-Channel Communication Dispatcher**: Sends messages to all available channels (email + WhatsApp) by default.
 - **Celery Scheduler & Automations**: Handles background automations for follow-ups, abandoned WSI checks, and feedback sending.
-- **Voice Analysis Integration**: Uses OpenAI Whisper STT + OpenAI TTS for voice mode in triagem.
+- **Voice Analysis Integration**: VoIP browser calls use Gemini Live Audio API (single WebSocket, ~$0.065/interview). Twilio remains as PSTN fallback only. Legacy pipeline: OpenAI Whisper STT + OpenAI TTS for PSTN calls via Twilio.
 - **Microsoft Teams Notifications**: TeamsBot provides adaptive cards for various notifications.
 - **Apify Candidate Enrichment**: Enriches candidate profiles via LinkedIn and email discovery.
 - **Gate 2 Re-Discovery Embedding**: Automatically generates Gemini embeddings for rejected candidates for future vector-similarity matching.
@@ -98,6 +98,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - Redis
 - Elasticsearch
 - Sentry (error monitoring)
-- OpenAI (Whisper, TTS)
-- Twilio (Voice)
+- OpenAI (Whisper, TTS — PSTN fallback only)
+- Twilio (Voice — PSTN fallback only)
+- Google Gemini Live Audio API (VoIP browser screening)
 - Celery
