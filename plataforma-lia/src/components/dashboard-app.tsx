@@ -56,7 +56,9 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
     const params = new URLSearchParams(window.location.search)
     if (params.get("page") === "chat-lia") {
       setCurrentPage("Chat LIA")
-      window.history.replaceState({}, "", window.location.pathname)
+      params.delete("page")
+      const qs = params.toString()
+      window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""))
     }
   }, [])
 
