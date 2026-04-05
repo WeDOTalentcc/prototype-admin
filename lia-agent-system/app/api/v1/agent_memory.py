@@ -93,7 +93,9 @@ async def get_active_sessions(
     logger.info(f"[access] active-sessions requested by user={getattr(current_user, 'id', 'unknown')} domain={domain}")
     try:
         async with AsyncSessionLocal() as session:
-            stmt = select(AgentWorkingMemory).order_by(
+            stmt = select(AgentWorkingMemory).where(
+                AgentWorkingMemory.company_id == current_user.company_id,
+            ).order_by(
                 desc(AgentWorkingMemory.updated_at)
             )
             if domain:
@@ -121,6 +123,7 @@ async def get_memory_summary(
                 select(AgentWorkingMemory).where(
                     AgentWorkingMemory.session_id == session_id,
                     AgentWorkingMemory.domain == domain,
+                    AgentWorkingMemory.company_id == current_user.company_id,
                 )
             )
             memory = result.scalar_one_or_none()
@@ -145,6 +148,7 @@ async def get_memory(
                 select(AgentWorkingMemory).where(
                     AgentWorkingMemory.session_id == session_id,
                     AgentWorkingMemory.domain == domain,
+                    AgentWorkingMemory.company_id == current_user.company_id,
                 )
             )
             memory = result.scalar_one_or_none()
@@ -169,6 +173,7 @@ async def reset_memory(
                 select(AgentWorkingMemory).where(
                     AgentWorkingMemory.session_id == session_id,
                     AgentWorkingMemory.domain == domain,
+                    AgentWorkingMemory.company_id == current_user.company_id,
                 )
             )
             memory = result.scalar_one_or_none()

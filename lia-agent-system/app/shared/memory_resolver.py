@@ -49,9 +49,10 @@ class MemoryResolver:
     ou 'a vaga que analisamos antes'.
     """
 
-    def __init__(self, session_id: str, user_id: str = "") -> None:
+    def __init__(self, session_id: str, user_id: str = "", company_id: str = "") -> None:
         self.session_id = session_id
         self.user_id = user_id
+        self.company_id = company_id  # Multi-tenancy: tenant isolation
         self._action_history: list[ActionRecord] = []
         self._intent_history: list[str] = []
         self._entity_cache: dict[str, Any] = {}
@@ -161,6 +162,7 @@ class MemoryResolver:
         return {
             "session_id": self.session_id,
             "user_id": self.user_id,
+            "company_id": self.company_id,
             "action_history": self.get_recent_actions(10),
             "intent_history": self.get_intent_history(5),
             "entity_cache": self._entity_cache,
@@ -178,20 +180,30 @@ class MemoryResolver:
 
 
 # Module-level session store (in-memory; for persistent storage use SessionBridge)
-_sessions: dict[str, MemoryResolver] = {}
+_sessions: dict[str, dict[str, MemoryResolver]] = {}  # {company_id: {session_id: resolver}}
 
 
-def get_or_create_resolver(session_id: str, user_id: str = "") -> MemoryResolver:
-    """Get or create a MemoryResolver for a session."""
-    if session_id not in _sessions:
-        _sessions[session_id] = MemoryResolver(session_id=session_id, user_id=user_id)
-    return _sessions[session_id]
+def get_or_create_resolver(session_id: str, user_id: str = "", company_id: str = "") -> MemoryResolver:
+    """Get or create a MemoryResolver for a session, partitioned by company_id."""
+    if company_id not in _sessions:
+        _sessions[company_id] = {}
+    if session_id not in _sessions[company_id]:
+        _sessions[company_id][session_id] = MemoryResolver(
+            session_id=session_id, user_id=user_id, company_id=company_id
+        )
+    return _sessions[company_id][session_id]
 
 
-def clear_session(session_id: str) -> bool:
-    """Remove a session's memory."""
-    if session_id in _sessions:
-        _sessions[session_id].clear()
-        del _sessions[session_id]
+def clear_session(session_id: str, company_id: str = "") -> bool:
+    """Remove a session's memory, scoped by company_id."""
+    if company_id and company_id in _sessions and session_id in _sessions[company_id]:
+        _sessions[company_id][session_id].clear()
+        del _sessions[company_id][session_id]
         return True
+    if not company_id:
+        for cid in list(_sessions.keys()):
+            if session_id in _sessions[cid]:
+                _sessions[cid][session_id].clear()
+                del _sessions[cid][session_id]
+                return True
     return False

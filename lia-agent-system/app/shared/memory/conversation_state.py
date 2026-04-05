@@ -11,6 +11,7 @@ MAX_SHORTLIST = 50
 
 @dataclass
 class ConversationState:
+    company_id: Optional[str] = None  # Multi-tenancy: tenant isolation
     last_candidates_shown: List[int] = field(default_factory=list)
     last_candidate_detailed: Optional[int] = None
     detailed_history: List[int] = field(default_factory=list)
@@ -28,6 +29,7 @@ class ConversationState:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
+            "company_id": self.company_id,
             "last_candidates_shown": self.last_candidates_shown,
             "last_candidate_detailed": self.last_candidate_detailed,
             "detailed_history": self.detailed_history,
@@ -46,6 +48,7 @@ class ConversationState:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ConversationState":
         return cls(
+            company_id=data.get("company_id"),
             last_candidates_shown=data.get("last_candidates_shown", []),
             last_candidate_detailed=data.get("last_candidate_detailed"),
             detailed_history=data.get("detailed_history", []),
@@ -62,6 +65,7 @@ class ConversationState:
         )
 
     def clear(self) -> None:
+        _company_id = self.company_id  # Preserve tenant context
         self.last_candidates_shown = []
         self.last_candidate_detailed = None
         self.detailed_history = []
@@ -75,6 +79,7 @@ class ConversationState:
         self.last_results_count = None
         self.last_entity = None
         self.pagination_cursor = 0
+        self.company_id = _company_id  # Restore tenant context
         logger.debug("ConversationState cleared")
 
     def update_after_action(self, action_id: str, domain_id: str, response_data: Any) -> None:

@@ -74,112 +74,39 @@ interface DailyBriefingCardProps {
   userName?: string
   onNavigate?: (page: string) => void
   onActionClick?: (action: string, context?: Record<string, unknown>) => void
+  onBriefingLoaded?: (briefing: BriefingData) => void
 }
 
 // [OPT-043] TODO: revisar inline styles dinâmicos (18 ocorrências)
 const API_BASE = '/api/backend-proxy'
 
-function getDefaultBriefing(): BriefingData {
+function getEmptyBriefing(): BriefingData {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite"
-  
+
   return {
-    id: 'default-briefing',
+    id: 'empty-briefing',
     generated_at: new Date().toISOString(),
     greeting,
-    summary: {
-      urgent_count: 3,
-      tasks_today: 8,
-      interviews_today: 2,
-      alerts_active: 4
-    },
-    urgent_actions: [
-      {
-        id: 'ua-1',
-        type: 'feedback_pending',
-        title: 'Feedback pendente há 48h',
-        description: 'João Silva aguarda retorno sobre entrevista técnica',
-        priority: 'high',
-        action_label: 'Avaliar',
-        action_type: 'provide_feedback',
-        related_candidate_id: 'cand-1'
-      },
-      {
-        id: 'ua-2',
-        type: 'critical_alert',
-        title: 'Vaga sem movimento há 5 dias',
-        description: 'UX Designer Sênior precisa de atenção',
-        priority: 'critical',
-        action_label: 'Verificar',
-        action_type: 'view_job',
-        related_job_id: 'job-1'
-      }
-    ],
-    pipeline: {
-      active_jobs: 6,
-      total_candidates: 45,
-      candidates_to_contact: 12,
-      awaiting_feedback: 5,
-      offers_pending: 2,
-      stages_summary: [
-        { stage: 'triagem', count: 12, label: 'Em Triagem' },
-        { stage: 'entrevista', count: 8, label: 'Entrevista' },
-        { stage: 'avaliacao', count: 5, label: 'Avaliação' },
-        { stage: 'oferta', count: 2, label: 'Oferta' }
-      ]
-    },
-    schedule: [
-      {
-        id: 'sch-1',
-        type: 'interview',
-        title: 'Entrevista: Maria Santos',
-        time: '10:00',
-        duration_minutes: 60,
-        location: 'Google Meet'
-      },
-      {
-        id: 'sch-2',
-        type: 'interview',
-        title: 'Entrevista: Carlos Oliveira',
-        time: '15:00',
-        duration_minutes: 45,
-        location: 'Presencial'
-      }
-    ],
-    insights: [
-      {
-        type: 'attention',
-        icon: 'AlertTriangle',
-        title: 'Feedbacks acumulados',
-        description: '5 candidatos aguardando avaliação. Priorize para não perder talentos.',
-        priority: 'high',
-        action: 'Ver candidatos',
-        action_type: 'view_awaiting_feedback'
-      },
-      {
-        type: 'opportunity',
-        icon: 'TrendingUp',
-        title: 'Ofertas pendentes',
-        description: '2 candidatos com oferta. Acompanhe para garantir aceite.',
-        priority: 'medium',
-        action: 'Ver ofertas',
-        action_type: 'view_offers'
-      }
-    ]
+    summary: { urgent_count: 0, tasks_today: 0, interviews_today: 0, alerts_active: 0 },
+    urgent_actions: [],
+    pipeline: { active_jobs: 0, total_candidates: 0, candidates_to_contact: 0, awaiting_feedback: 0, offers_pending: 0, stages_summary: [] },
+    schedule: [],
+    insights: [],
   }
 }
 
 export function DailyBriefingCard({
   userName,
   onNavigate,
-  onActionClick
+  onActionClick,
+  onBriefingLoaded,
 }: DailyBriefingCardProps) {
   const { user } = useAuth()
   const { user: jwtUser } = useJWTAuth()
-  // Usa user.id real via JWT; fallback para 'default_user' se não autenticado
   const userId = jwtUser?.id || 'default_user'
-  const [briefing, setBriefing] = useState<BriefingData | null>(() => getDefaultBriefing())
-  const [loading, setLoading] = useState(false)
+  const [briefing, setBriefing] = useState<BriefingData | null>(null)
+  const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -206,15 +133,30 @@ export function DailyBriefingCard({
   }, [])
 
   const fetchBriefing = async () => {
+    setLoading(true)
     try {
       const response = await fetch(`${API_BASE}/briefing?user_id=${userId}`)
       if (response.ok) {
         const result = await response.json()
         if (result.success && result.data) {
           setBriefing(result.data)
+          onBriefingLoaded?.(result.data)
+        } else {
+          const empty = getEmptyBriefing()
+          setBriefing(empty)
+          onBriefingLoaded?.(empty)
         }
+      } else {
+        const empty = getEmptyBriefing()
+        setBriefing(empty)
+        onBriefingLoaded?.(empty)
       }
     } catch (error) {
+      const empty = getEmptyBriefing()
+      setBriefing(empty)
+      onBriefingLoaded?.(empty)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -228,7 +170,10 @@ export function DailyBriefingCard({
       })
       if (response.ok) {
         const result = await response.json()
-        setBriefing(result.data)
+        if (result.data) {
+          setBriefing(result.data)
+          onBriefingLoaded?.(result.data)
+        }
       }
     } catch (error) {
     } finally {
@@ -288,7 +233,28 @@ export function DailyBriefingCard({
     }
   }
 
-  if (!briefing) return null
+  if (loading || !briefing) {
+    return (
+      <Card className="border-0 overflow-hidden bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+        <CardContent className="p-5">
+          <div className="animate-pulse space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 bg-lia-bg-secondary rounded" />
+              <div className="space-y-1.5 flex-1">
+                <div className="h-4 bg-lia-bg-secondary rounded w-48" />
+                <div className="h-3 bg-lia-bg-secondary rounded w-64" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="p-2 rounded-md bg-lia-bg-secondary h-14" />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card

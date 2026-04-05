@@ -1,11 +1,9 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
-import {
-  MOCK_PENDING_TASKS, MOCK_ACTIVE_ALERTS, MOCK_TASKS,
-  MOCK_JOBS_WITH_ALERTS, MOCK_JOB_REQUESTS
-} from "./tasks-mock-data"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+
+const API_BASE = '/api/backend-proxy'
 
 export interface Task {
   id: string
@@ -102,8 +100,125 @@ export interface JobRequest {
   daysWaiting: number
 }
 
+function mapTaskType(taskType: string | null): PendingTask['type'] {
+  switch (taskType) {
+    case 'feedback_pending':
+    case 'evaluation':
+    case 'feedback':
+      return 'feedback'
+    case 'interview_schedule':
+    case 'interview':
+    case 'interview_prep':
+      return 'entrevista'
+    case 'sourcing':
+    case 'candidate_outreach':
+    case 'screening':
+      return 'sourcing'
+    default:
+      return 'feedback'
+  }
+}
+
+function mapPriority(priority: string | null): PendingTask['priority'] {
+  switch (priority) {
+    case 'critical':
+    case 'high':
+      return 'high'
+    case 'medium':
+      return 'medium'
+    case 'low':
+      return 'low'
+    default:
+      return 'medium'
+  }
+}
+
+function mapAlertSeverity(severity: string | null): ActiveAlert['severity'] {
+  switch (severity) {
+    case 'critical':
+    case 'high':
+      return 'high'
+    case 'medium':
+      return 'medium'
+    case 'low':
+    case 'info':
+      return 'low'
+    default:
+      return 'medium'
+  }
+}
+
+function calculateUrgencyLevel(job: Record<string, any>): JobWithAlert['urgencyLevel'] {
+  const daysOpen = job.days_open || 0
+  const deadline = job.deadline ? new Date(job.deadline) : null
+  const daysUntilDeadline = deadline ? Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null
+
+  if (daysOpen > 45 || (daysUntilDeadline !== null && daysUntilDeadline < 7)) return 'critical'
+  if (daysOpen > 30 || (daysUntilDeadline !== null && daysUntilDeadline < 14)) return 'urgent'
+  return 'normal'
+}
+
+function mapJobToJobWithAlert(job: Record<string, any>): JobWithAlert {
+  const stages = job.pipeline_stages || job.stages || {}
+  const totalCandidates = job.total_candidates || job.candidates_count || Object.values(stages).reduce((sum: number, val: any) => sum + (Number(val) || 0), 0)
+  const daysOpen = job.days_open || (job.created_at ? Math.ceil((Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24)) : 0)
+  const urgencyLevel = calculateUrgencyLevel({ ...job, days_open: daysOpen })
+
+  let alertType: 'urgent' | 'warning' | 'info' | 'success' = 'info'
+  let alertMessage = 'Vaga em andamento'
+  let alertAction = 'Ver detalhes'
+
+  if (urgencyLevel === 'critical') {
+    alertType = 'urgent'
+    alertMessage = `Vaga aberta há ${daysOpen} dias - ação necessária`
+    alertAction = 'Acelerar processo'
+  } else if (urgencyLevel === 'urgent') {
+    alertType = 'warning'
+    alertMessage = `${totalCandidates} candidatos no pipeline`
+    alertAction = 'Revisar pipeline'
+  } else {
+    alertType = 'success'
+    alertMessage = `Pipeline com ${totalCandidates} candidatos`
+    alertAction = 'Ver candidatos'
+  }
+
+  return {
+    id: job.id || '',
+    jobId: job.code || job.id || '',
+    title: job.title || '',
+    department: job.department || job.area || 'Geral',
+    stage: job.status || 'Ativa',
+    totalCandidates,
+    manager: job.hiring_manager || job.manager_name || 'Não definido',
+    managerEmail: job.manager_email || '',
+    openDate: job.created_at || new Date().toISOString(),
+    daysOpen,
+    urgencyLevel,
+    budget: job.budget || undefined,
+    budgetUsed: job.budget_used || undefined,
+    publishedLinkedIn: job.published_linkedin || false,
+    publishedWebsite: job.published_website || job.is_published || false,
+    publishedIndeed: job.published_indeed || false,
+    stages: {
+      new: stages.new || stages.novo || 0,
+      uncontacted: stages.uncontacted || stages.triagem || 0,
+      contacted: stages.contacted || stages.contato || 0,
+      replied: stages.replied || stages.resposta || 0,
+      phoneScreen: stages.phone_screen || stages.telefone || 0,
+      onsite: stages.onsite || stages.entrevista || 0,
+      makeOffer: stages.make_offer || stages.oferta || 0,
+      hired: stages.hired || stages.contratado || 0,
+    },
+    alert: {
+      type: alertType,
+      message: alertMessage,
+      action: alertAction,
+    },
+    liaPendencies: job.lia_pendencies || [],
+  }
+}
+
 export function useTasksCore(onNavigate?: (page: string) => void) {
-  // Estados de filtros — vagas
   const [jobSearchTerm, setJobSearchTerm] = useState("")
   const [showJobFilters, setShowJobFilters] = useState(false)
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([])
@@ -111,34 +226,112 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
   const [selectedPublications, setSelectedPublications] = useState<string[]>([])
   const [jobSortBy, setJobSortBy] = useState<'daysOpen' | 'candidates' | 'urgency'>('urgency')
 
-  // Estados de filtros — requisições
   const [requestSearchTerm, setRequestSearchTerm] = useState("")
   const [showRequestFilters, setShowRequestFilters] = useState(false)
   const [selectedRequestStatus, setSelectedRequestStatus] = useState<string[]>([])
   const [selectedRequestDepartments, setSelectedRequestDepartments] = useState<string[]>([])
   const [requestSortBy, setRequestSortBy] = useState<'date' | 'priority' | 'status'>('priority')
 
-  // Estados de UI
   const [selectedActivity, setSelectedActivity] = useState<any | null>(null)
   const [showActivityModal, setShowActivityModal] = useState(false)
   const [pendingTaskFilter, setPendingTaskFilter] = useState<'all' | 'feedback' | 'entrevista' | 'sourcing'>('all')
 
-  // Dados estáticos (prontos para substituição por API)
-  const pendingTasks = MOCK_PENDING_TASKS
-  const activeAlerts = MOCK_ACTIVE_ALERTS
-  const tasks = MOCK_TASKS
-  const jobsWithAlerts = MOCK_JOBS_WITH_ALERTS
-  const jobRequests = MOCK_JOB_REQUESTS
+  const [pendingTasks, setPendingTasks] = useState<PendingTask[]>([])
+  const [activeAlerts, setActiveAlerts] = useState<ActiveAlert[]>([])
+  const [jobsWithAlerts, setJobsWithAlerts] = useState<JobWithAlert[]>([])
+  const [metrics, setMetrics] = useState({ total: 0, completed: 0, pending: 0, iaTasks: 0 })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const metrics = { total: 8, completed: 3, pending: 4, iaTasks: 1 }
+  useEffect(() => {
+    fetchAllData()
+  }, [])
 
-  // Derived state — tarefas filtradas
+  const fetchAllData = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const [tasksRes, summaryRes, alertsRes, jobsRes] = await Promise.allSettled([
+        fetch(`${API_BASE}/tasks?limit=50`),
+        fetch(`${API_BASE}/tasks/summary`),
+        fetch(`${API_BASE}/alerts?limit=20`),
+        fetch(`${API_BASE}/job-vacancies?limit=20`),
+      ])
+
+      if (tasksRes.status === 'fulfilled' && tasksRes.value.ok) {
+        const tasksData = await tasksRes.value.json()
+        const tasksList = Array.isArray(tasksData) ? tasksData : (tasksData.tasks || [])
+        const mapped: PendingTask[] = tasksList.map((t: Record<string, any>) => ({
+          id: t.id,
+          title: t.title || '',
+          description: t.description || '',
+          type: mapTaskType(t.task_type),
+          priority: mapPriority(t.priority),
+          dueDate: t.due_date ? new Date(t.due_date) : new Date(),
+          relatedJob: t.related_job_id || undefined,
+          candidateName: t.context?.candidate_name || undefined,
+          createdAt: t.created_at ? new Date(t.created_at) : new Date(),
+        }))
+        setPendingTasks(mapped)
+      }
+
+      if (summaryRes.status === 'fulfilled' && summaryRes.value.ok) {
+        const summaryData = await summaryRes.value.json()
+        setMetrics({
+          total: (summaryData.total_active || 0) + (summaryData.completed || 0),
+          completed: summaryData.completed || 0,
+          pending: summaryData.pending || 0,
+          iaTasks: summaryData.critical || 0,
+        })
+      }
+
+      if (alertsRes.status === 'fulfilled' && alertsRes.value.ok) {
+        const alertsData = await alertsRes.value.json()
+        const alertsList = Array.isArray(alertsData) ? alertsData : (alertsData.alerts || [])
+        const mapped: ActiveAlert[] = alertsList.map((a: Record<string, any>) => ({
+          id: a.id,
+          title: a.title || '',
+          description: a.message || a.description || '',
+          severity: mapAlertSeverity(a.severity),
+          jobId: a.job_id || '',
+          jobTitle: a.context?.job_title || a.title || '',
+          createdAt: a.created_at ? new Date(a.created_at) : new Date(),
+          action: a.suggested_actions?.[0] || 'Verificar',
+        }))
+        setActiveAlerts(mapped)
+      }
+
+      if (jobsRes.status === 'fulfilled' && jobsRes.value.ok) {
+        const jobsData = await jobsRes.value.json()
+        const jobsList = Array.isArray(jobsData) ? jobsData : (jobsData.jobs || jobsData.vacancies || [])
+        const mapped: JobWithAlert[] = jobsList.map(mapJobToJobWithAlert)
+        setJobsWithAlerts(mapped)
+      }
+
+      const failedRequests = [tasksRes, summaryRes, alertsRes, jobsRes].filter(
+        r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok)
+      )
+      if (failedRequests.length === 4) {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão.')
+      } else if (failedRequests.length > 0) {
+        setError('Alguns dados podem estar incompletos.')
+      }
+    } catch (err) {
+      setError('Erro ao carregar dados. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const tasks: Task[] = []
+  const jobRequests: JobRequest[] = []
+
   const filteredPendingTasks = useMemo(() => {
     if (pendingTaskFilter === 'all') return pendingTasks
     return pendingTasks.filter(task => task.type === pendingTaskFilter)
-  }, [pendingTaskFilter])
+  }, [pendingTaskFilter, pendingTasks])
 
-  // Derived state — vagas filtradas
   const filteredAndSortedJobs = useMemo(() => {
     const filtered = jobsWithAlerts.filter(job => {
       const searchLower = jobSearchTerm.toLowerCase()
@@ -169,51 +362,57 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
     return filtered
   }, [jobsWithAlerts, jobSearchTerm, selectedDepartments, selectedUrgencies, selectedPublications, jobSortBy])
 
-  // Derived state — requisições filtradas
   const filteredAndSortedRequests = useMemo(() => {
-    const filtered = jobRequests.filter(request => {
-      const searchLower = requestSearchTerm.toLowerCase()
-      const matchesSearch = requestSearchTerm === "" ||
-        request.title.toLowerCase().includes(searchLower) ||
-        request.requestId.toLowerCase().includes(searchLower) ||
-        request.requester.toLowerCase().includes(searchLower) ||
-        request.department.toLowerCase().includes(searchLower)
-      const matchesStatus = selectedRequestStatus.length === 0 || selectedRequestStatus.includes(request.status)
-      const matchesDepartment = selectedRequestDepartments.length === 0 || selectedRequestDepartments.includes(request.department)
-      return matchesSearch && matchesStatus && matchesDepartment
-    })
-    filtered.sort((a, b) => {
-      if (requestSortBy === 'date') return new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime()
-      if (requestSortBy === 'priority') {
-        const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 }
-        return priorityOrder[b.priority] - priorityOrder[a.priority]
-      }
-      const statusOrder: Record<string, number> = { requires_changes: 7, pending_approval: 6, in_review: 5, approved: 4, published: 3, draft: 2, rejected: 1 }
-      return (statusOrder[b.status] || 0) - (statusOrder[a.status] || 0)
-    })
-    return filtered
-  }, [jobRequests, requestSearchTerm, selectedRequestStatus, selectedRequestDepartments, requestSortBy])
+    return jobRequests
+  }, [jobRequests])
 
-  // Helpers de UI
   const activeJobFiltersCount = selectedDepartments.length + selectedUrgencies.length + selectedPublications.length
   const activeRequestFiltersCount = selectedRequestStatus.length + selectedRequestDepartments.length
   const uniqueDepartments = Array.from(new Set(jobsWithAlerts.map(job => job.department)))
-  const uniqueRequestDepartments = Array.from(new Set(jobRequests.map(req => req.department)))
+  const uniqueRequestDepartments: string[] = []
 
-  // Actions — navegação LIA
   const navigateToLIA = useCallback((prompt: string) => {
     useUIPreferencesStore.getState().setLiaPrompt(prompt)
     if (onNavigate) onNavigate('Chat com LIA')
   }, [onNavigate])
 
-  const handleConfirmTask = useCallback((task: PendingTask) => {
-    const prompt = `Confirmar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
-    navigateToLIA(prompt)
+  const handleConfirmTask = useCallback(async (task: PendingTask) => {
+    try {
+      const res = await fetch(`${API_BASE}/tasks/${task.id}/complete`, { method: 'POST' })
+      if (res.ok) {
+        setPendingTasks(prev => prev.filter(t => t.id !== task.id))
+        setMetrics(prev => ({
+          ...prev,
+          completed: prev.completed + 1,
+          pending: Math.max(0, prev.pending - 1),
+        }))
+      } else {
+        const prompt = `Confirmar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
+        navigateToLIA(prompt)
+      }
+    } catch {
+      const prompt = `Confirmar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
+      navigateToLIA(prompt)
+    }
   }, [navigateToLIA])
 
-  const handleRejectTask = useCallback((task: PendingTask) => {
-    const prompt = `Rejeitar/Cancelar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
-    navigateToLIA(prompt)
+  const handleRejectTask = useCallback(async (task: PendingTask) => {
+    try {
+      const res = await fetch(`${API_BASE}/tasks/${task.id}/cancel`, { method: 'POST' })
+      if (res.ok) {
+        setPendingTasks(prev => prev.filter(t => t.id !== task.id))
+        setMetrics(prev => ({
+          ...prev,
+          pending: Math.max(0, prev.pending - 1),
+        }))
+      } else {
+        const prompt = `Rejeitar/Cancelar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
+        navigateToLIA(prompt)
+      }
+    } catch {
+      const prompt = `Rejeitar/Cancelar tarefa: ${task.title} - ${task.description}${task.candidateName ? ` para candidato ${task.candidateName}` : ''}`
+      navigateToLIA(prompt)
+    }
   }, [navigateToLIA])
 
   const handleAlertAction = useCallback((alert: ActiveAlert) => {
@@ -233,47 +432,10 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
   }, [navigateToLIA])
 
   const handleRequestAction = useCallback((action: string, request: JobRequest) => {
-    const prompts: Record<string, string> = {
-      approve: `Aprovar a requisição ${request.requestId} - ${request.title} do departamento ${request.department} solicitada por ${request.requester}`,
-      reject: `Rejeitar a requisição ${request.requestId} - ${request.title} e notificar ${request.requester} com justificativa`,
-      request_changes: `Solicitar alterações na requisição ${request.requestId} - ${request.title} para ${request.requester}`,
-      send_approval: `Enviar a requisição ${request.requestId} - ${request.title} para aprovação dos gestores`,
-      edit: `Editar a requisição ${request.requestId} - ${request.title} incluindo justificativa, budget e requisitos`,
-      publish: `Publicar a vaga ${request.title} (${request.requestId}) nas plataformas LinkedIn, Site e Indeed`,
-      view_details: `Mostrar todos os detalhes da requisição ${request.requestId} - ${request.title} incluindo aprovadores e histórico`
-    }
-    navigateToLIA(prompts[action] || `Ajudar com a requisição ${request.requestId} - ${request.title}`)
+    navigateToLIA(`Ajudar com a requisição ${request.requestId} - ${request.title}`)
   }, [navigateToLIA])
 
-  const handleActivityClick = useCallback((task: Task) => {
-    const activityDetails = {
-      ...task,
-      candidateName: task.title.includes('João Silva') ? 'João Silva' :
-                     task.title.includes('Ana Costa') ? 'Ana Costa' :
-                     task.title.includes('Lucas Mendes') ? 'Lucas Mendes' : 'Candidato',
-      candidateEmail: 'candidato@email.com',
-      candidatePhone: '+55 11 98765-4321',
-      jobTitle: task.relatedTo,
-      createdAt: new Date(2025, 9, 8, 14, 30),
-      createdBy: 'Ana Silva',
-      history: [
-        { id: '1', type: 'created', user: 'Ana Silva', date: new Date(2025, 9, 8, 14, 30), description: 'Atividade criada', icon: 'plus' },
-        { id: '2', type: 'comment', user: 'Roberto Silva', date: new Date(2025, 9, 9, 10, 15), description: 'Candidato aprovado na triagem inicial.', icon: 'message' },
-        { id: '3', type: 'status_change', user: 'LIA', date: new Date(2025, 9, 10, 8, 0), description: 'Status alterado de "Triagem" para "Entrevista Agendada"', icon: 'check' },
-        { id: '4', type: 'reminder', user: 'Sistema', date: new Date(2025, 9, 10, 8, 45), description: 'Lembrete automático enviado - Entrevista em 15 minutos', icon: 'bell' }
-      ],
-      attachments: [
-        { id: '1', name: 'CV_JoaoSilva.pdf', size: '245 KB', uploadedBy: 'João Silva', date: new Date(2025, 9, 5) },
-        { id: '2', name: 'Portfolio.pdf', size: '1.2 MB', uploadedBy: 'João Silva', date: new Date(2025, 9, 5) }
-      ],
-      comments: [
-        { id: '1', user: 'Ana Silva', avatar: '/avatars/ana.jpg', date: new Date(2025, 9, 9, 16, 30), text: 'Candidato muito promissor.' },
-        { id: '2', user: 'Roberto Silva', avatar: '/avatars/roberto.jpg', date: new Date(2025, 9, 10, 8, 15), text: 'Confirmar equipamento necessário para entrevista técnica.' }
-      ],
-      nextSteps: ['Realizar entrevista técnica', 'Avaliar fit cultural', 'Enviar feedback em até 24h']
-    }
-    setSelectedActivity(activityDetails)
-    setShowActivityModal(true)
+  const handleActivityClick = useCallback((_task: Task) => {
   }, [])
 
   const clearJobFilters = useCallback(() => {
@@ -291,30 +453,23 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
 
   return {
     state: {
-      // Filtros vagas
       jobSearchTerm, showJobFilters, selectedDepartments, selectedUrgencies, selectedPublications, jobSortBy,
-      // Filtros requisições
       requestSearchTerm, showRequestFilters, selectedRequestStatus, selectedRequestDepartments, requestSortBy,
-      // UI
       selectedActivity, showActivityModal, pendingTaskFilter,
-      // Dados
       pendingTasks, activeAlerts, tasks, jobsWithAlerts, jobRequests, metrics,
-      // Derived
       filteredPendingTasks, filteredAndSortedJobs, filteredAndSortedRequests,
-      activeJobFiltersCount, activeRequestFiltersCount, uniqueDepartments, uniqueRequestDepartments
+      activeJobFiltersCount, activeRequestFiltersCount, uniqueDepartments, uniqueRequestDepartments,
+      loading, error,
     },
     actions: {
-      // Setters vagas
       setJobSearchTerm, setShowJobFilters, setSelectedDepartments, setSelectedUrgencies,
       setSelectedPublications, setJobSortBy, clearJobFilters,
-      // Setters requisições
       setRequestSearchTerm, setShowRequestFilters, setSelectedRequestStatus,
       setSelectedRequestDepartments, setRequestSortBy, clearRequestFilters,
-      // Setters UI
       setSelectedActivity, setShowActivityModal, setPendingTaskFilter,
-      // Actions LIA
       handleConfirmTask, handleRejectTask, handleAlertAction,
-      handleLIAAction, handleRequestAction, handleActivityClick
+      handleLIAAction, handleRequestAction, handleActivityClick,
+      refetch: fetchAllData,
     }
   }
 }
