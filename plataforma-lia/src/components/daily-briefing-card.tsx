@@ -106,21 +106,7 @@ interface DailyBriefingCardProps {
 // [OPT-043] TODO: revisar inline styles dinâmicos (18 ocorrências)
 const API_BASE = '/api/backend-proxy'
 
-function getEmptyBriefing(): BriefingData {
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite"
 
-  return {
-    id: 'empty-briefing',
-    generated_at: new Date().toISOString(),
-    greeting,
-    summary: { urgent_count: 0, tasks_today: 0, interviews_today: 0, alerts_active: 0 },
-    urgent_actions: [],
-    pipeline: { active_jobs: 0, total_candidates: 0, candidates_to_contact: 0, awaiting_feedback: 0, offers_pending: 0, stages_summary: [] },
-    schedule: [],
-    insights: [],
-  }
-}
 
 export function DailyBriefingCard({
   userName,
@@ -171,21 +157,12 @@ export function DailyBriefingCard({
           onBriefingLoaded?.(result.data)
         } else {
           setFetchError(true)
-          const empty = getEmptyBriefing()
-          setBriefing(empty)
-          onBriefingLoaded?.(empty)
         }
       } else {
         setFetchError(true)
-        const empty = getEmptyBriefing()
-        setBriefing(empty)
-        onBriefingLoaded?.(empty)
       }
-    } catch (error) {
+    } catch {
       setFetchError(true)
-      const empty = getEmptyBriefing()
-      setBriefing(empty)
-      onBriefingLoaded?.(empty)
     } finally {
       setLoading(false)
     }
@@ -194,10 +171,8 @@ export function DailyBriefingCard({
   const handleRefresh = async () => {
     setRefreshing(true)
     try {
-      const response = await fetch(`${API_BASE}/briefing`, {
+      const response = await fetch(`${API_BASE}/briefing?user_id=${userId}&refresh=true`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId })
       })
       if (response.ok) {
         const result = await response.json()
@@ -264,7 +239,7 @@ export function DailyBriefingCard({
     }
   }
 
-  if (loading || !briefing) {
+  if (loading) {
     return (
       <Card className="border-0 overflow-hidden bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
         <CardContent className="p-5">
@@ -281,6 +256,30 @@ export function DailyBriefingCard({
                 <div key={i} className="p-2 rounded-md bg-lia-bg-secondary h-14" />
               ))}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!briefing) {
+    return (
+      <Card className="border-0 overflow-hidden bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+        <CardContent className="p-5">
+          <div className="flex flex-col items-center gap-3 py-4">
+            <AlertCircle className="w-8 h-8 text-status-warning" />
+            <p className="text-sm text-lia-text-secondary text-center">
+              Não foi possível carregar o briefing diário.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Tentar novamente
+            </Button>
           </div>
         </CardContent>
       </Card>
