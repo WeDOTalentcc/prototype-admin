@@ -135,6 +135,7 @@ export function DailyBriefingCard({
 
   const fetchBriefing = async () => {
     setLoading(true)
+    setFetchError(false)
     try {
       const response = await fetch(`${API_BASE}/briefing?user_id=${userId}`)
       if (response.ok) {
@@ -143,16 +144,19 @@ export function DailyBriefingCard({
           setBriefing(result.data)
           onBriefingLoaded?.(result.data)
         } else {
+          setFetchError(true)
           const empty = getEmptyBriefing()
           setBriefing(empty)
           onBriefingLoaded?.(empty)
         }
       } else {
+        setFetchError(true)
         const empty = getEmptyBriefing()
         setBriefing(empty)
         onBriefingLoaded?.(empty)
       }
     } catch (error) {
+      setFetchError(true)
       const empty = getEmptyBriefing()
       setBriefing(empty)
       onBriefingLoaded?.(empty)
@@ -270,7 +274,9 @@ export function DailyBriefingCard({
                 {getGreeting()}, {displayName}!
               </CardTitle>
               <p className="text-sm mt-0.5 text-lia-text-tertiary">
-                Seu resumo do dia - {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                {fetchError
+                  ? 'Não foi possível carregar o briefing. Tente atualizar.'
+                  : `Seu resumo do dia - ${new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}`}
               </p>
             </div>
           </div>

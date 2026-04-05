@@ -107,6 +107,7 @@ class WorkingMemoryService:
                 select(AgentWorkingMemory).where(
                     AgentWorkingMemory.session_id == session_id,  # type: ignore
                     AgentWorkingMemory.domain == domain,  # type: ignore
+                    AgentWorkingMemory.company_id == company_id,  # type: ignore  # Multi-tenancy
                 )
             )
             memory = result.scalar_one_or_none()
@@ -144,6 +145,7 @@ class WorkingMemoryService:
         session_id: str,
         domain: str,
         updates: Dict[str, Any],
+        company_id: str = "",
     ) -> AgentWorkingMemory:
         """Update specific fields on the working memory record.
 
@@ -163,6 +165,7 @@ class WorkingMemoryService:
                 select(AgentWorkingMemory).where(
                     AgentWorkingMemory.session_id == session_id,  # type: ignore
                     AgentWorkingMemory.domain == domain,  # type: ignore
+                    AgentWorkingMemory.company_id == company_id,  # type: ignore  # Multi-tenancy
                 )
             )
             memory = result.scalar_one_or_none()
@@ -193,6 +196,7 @@ class WorkingMemoryService:
         value: Any,
         confidence: float,
         source: str,
+        company_id: str = "",
     ) -> None:
         """Add or update a collected field in the working memory.
 
@@ -209,6 +213,7 @@ class WorkingMemoryService:
                 select(AgentWorkingMemory).where(
                     AgentWorkingMemory.session_id == session_id,  # type: ignore
                     AgentWorkingMemory.domain == domain,  # type: ignore
+                    AgentWorkingMemory.company_id == company_id,  # type: ignore  # Multi-tenancy
                 )
             )
             memory = result.scalar_one_or_none()
@@ -240,6 +245,7 @@ class WorkingMemoryService:
         old_value: Any,
         new_value: Any,
         reason: str,
+        company_id: str = "",
     ) -> None:
         """Record a field value adjustment in the history.
 
@@ -256,6 +262,7 @@ class WorkingMemoryService:
                 select(AgentWorkingMemory).where(
                     AgentWorkingMemory.session_id == session_id,  # type: ignore
                     AgentWorkingMemory.domain == domain,  # type: ignore
+                    AgentWorkingMemory.company_id == company_id,  # type: ignore  # Multi-tenancy
                 )
             )
             memory = result.scalar_one_or_none()
@@ -287,6 +294,7 @@ class WorkingMemoryService:
         session_id: str,
         domain: str,
         plan: List[Any],
+        company_id: str = "",
     ) -> None:
         """Set the current plan (list of next steps) for the agent.
 
@@ -300,6 +308,7 @@ class WorkingMemoryService:
                 select(AgentWorkingMemory).where(
                     AgentWorkingMemory.session_id == session_id,  # type: ignore
                     AgentWorkingMemory.domain == domain,  # type: ignore
+                    AgentWorkingMemory.company_id == company_id,  # type: ignore  # Multi-tenancy
                 )
             )
             memory = result.scalar_one_or_none()
@@ -320,6 +329,7 @@ class WorkingMemoryService:
         self,
         session_id: str,
         domain: str,
+        company_id: str = "",
     ) -> str:
         """Generate a human-readable summary of the working memory state.
 
@@ -338,6 +348,7 @@ class WorkingMemoryService:
                 select(AgentWorkingMemory).where(
                     AgentWorkingMemory.session_id == session_id,  # type: ignore
                     AgentWorkingMemory.domain == domain,  # type: ignore
+                    AgentWorkingMemory.company_id == company_id,  # type: ignore  # Multi-tenancy
                 )
             )
             memory = result.scalar_one_or_none()
@@ -388,6 +399,7 @@ class WorkingMemoryService:
         self,
         session_id: str,
         domain: str,
+        company_id: str = "",
     ) -> None:
         """Increment the iteration counter for the working memory.
 
@@ -400,6 +412,7 @@ class WorkingMemoryService:
                 select(AgentWorkingMemory).where(
                     AgentWorkingMemory.session_id == session_id,  # type: ignore
                     AgentWorkingMemory.domain == domain,  # type: ignore
+                    AgentWorkingMemory.company_id == company_id,  # type: ignore  # Multi-tenancy
                 )
             )
             memory = result.scalar_one_or_none()
