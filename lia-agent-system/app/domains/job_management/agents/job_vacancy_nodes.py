@@ -9,9 +9,9 @@ from langchain_core.output_parsers import JsonOutputParser
 import logging
 
 from app.services.llm import llm_service
-from app.services.job_vacancy_service import job_vacancy_service
+from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
 from app.services.benefits_service import benefits_service
-from app.services.wsi_screening_pipeline import wsi_screening_pipeline
+from app.domains.cv_screening.services.wsi_screening_pipeline import wsi_screening_pipeline
 from app.schemas.screening import WSIScreeningPipelineRequest
 from app.schemas.job_vacancy_state import (
     JobVacancyState,
@@ -744,7 +744,7 @@ async def wsi_competencies_collector(state: Dict[str, Any]) -> Dict[str, Any]:
     
     # Call WSI service to suggest competencies
     try:
-        from app.services.wsi_service import wsi_service
+        from app.domains.cv_screening.services.wsi_service import wsi_service
         
         # Map seniority to expected format
         seniority_map = {

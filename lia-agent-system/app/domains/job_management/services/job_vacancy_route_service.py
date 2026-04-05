@@ -702,7 +702,7 @@ class JobVacancyRouteService:
         Returns:
             Dict with keys: items, total, limit, offset, has_more
         """
-        from app.services.job_audit_service import job_audit_service
+        from app.domains.job_management.services.job_audit_service import job_audit_service
 
         result = await db.execute(
             select(JobVacancy).where(
@@ -838,8 +838,8 @@ class JobVacancyRouteService:
         Returns:
             Dict with keys: success, job_vacancy_id, title, status, message
         """
-        from app.services.job_vacancy_service import job_vacancy_service
-        from app.services.job_audit_service import job_audit_service
+        from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
+        from app.domains.job_management.services.job_audit_service import job_audit_service
 
         if not job_vacancy_state.is_ready_for_publication():
             return {

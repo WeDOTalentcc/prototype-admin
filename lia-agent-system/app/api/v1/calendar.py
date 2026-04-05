@@ -25,7 +25,7 @@ from app.schemas.calendar import (
     CalendarEventResponse,
     MeetingSuggestion
 )
-from app.services.calendar_service import calendar_service
+from app.domains.interview_scheduling.services.calendar_service import calendar_service
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)

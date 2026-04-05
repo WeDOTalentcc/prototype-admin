@@ -35,8 +35,8 @@ from app.schemas.email_template import (
     TemplateAdjustData,
     TemplateAdjustResponse
 )
-from app.services.email_service import email_service
-from app.services.template_seeder import seed_default_templates as seed_system_templates, clone_templates_for_client as clone_for_client_service
+from app.domains.communication.services.email_service import email_service
+from app.domains.job_management.services.template_seeder import seed_default_templates as seed_system_templates, clone_templates_for_client as clone_for_client_service
 from app.core.database import get_db
 from app.core.template_channels import ALL_CHANNELS, CHANNEL_LABELS, CHANNEL_DESCRIPTIONS
 from app.auth.dependencies import get_current_user

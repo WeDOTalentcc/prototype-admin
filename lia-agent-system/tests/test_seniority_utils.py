@@ -1,5 +1,5 @@
 import pytest
-from app.services.seniority_utils import (
+from app.domains.cv_screening.services.seniority_utils import (
     WSI_SENIORITY_LEVELS,
     normalize_seniority,
     get_seniority_numeric,

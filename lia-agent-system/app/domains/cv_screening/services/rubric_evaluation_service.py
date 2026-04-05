@@ -526,7 +526,7 @@ class RubricEvaluationService:
         """Format evaluation criteria examples for prompt injection."""
         try:
             from app.core.database import AsyncSessionLocal
-            from app.services.evaluation_criteria_service import evaluation_criteria_service
+            from app.domains.cv_screening.services.evaluation_criteria_service import evaluation_criteria_service
 
             async with AsyncSessionLocal() as db:
                 req_texts = [r.requirement for r in requirements]

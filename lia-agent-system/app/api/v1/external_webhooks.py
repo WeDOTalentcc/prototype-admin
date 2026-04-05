@@ -187,7 +187,7 @@ async def handle_ats_webhook(
 async def process_ats_candidate_updated(platform: str, payload: Dict[str, Any]):
     """Sync candidate data from ATS to LIA."""
     try:
-        from app.services.ats_sync_service import ATSSyncService, ATSSyncTrigger
+        from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, ATSSyncTrigger
         
         sync_service = ATSSyncService()
         
@@ -213,7 +213,7 @@ async def process_ats_candidate_updated(platform: str, payload: Dict[str, Any]):
 async def process_ats_stage_changed(platform: str, payload: Dict[str, Any]):
     """Sync stage change from ATS to LIA (inbound sync)."""
     try:
-        from app.services.ats_sync_service import ATSSyncService
+        from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
         
         candidate_id = (
             payload.get("ats_candidate_id") or 

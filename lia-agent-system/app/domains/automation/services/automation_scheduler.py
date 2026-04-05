@@ -87,7 +87,7 @@ class AutomationScheduler:
         """Lazy load EmailService."""
         if self._email_service is None:
             try:
-                from app.services.email_service import EmailService
+                from app.domains.communication.services.email_service import EmailService
                 self._email_service = EmailService()
             except Exception as e:
                 logger.warning(f"Could not load EmailService: {e}")
@@ -97,7 +97,7 @@ class AutomationScheduler:
         """Lazy load WhatsAppService."""
         if self._whatsapp_service is None:
             try:
-                from app.services.whatsapp_service import WhatsAppService
+                from app.domains.communication.services.whatsapp_service import WhatsAppService
                 self._whatsapp_service = WhatsAppService()
             except Exception as e:
                 logger.warning(f"Could not load WhatsAppService: {e}")

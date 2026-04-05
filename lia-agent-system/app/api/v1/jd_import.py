@@ -23,8 +23,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
-from app.services.jd_import_service import JDImportService
-from app.services.wizard_data_priority_service import WizardDataPriorityService, JobContext
+from app.domains.job_management.services.jd_import_service import JDImportService
+from app.domains.job_management.services.wizard_data_priority_service import WizardDataPriorityService, JobContext
 
 router = APIRouter(tags=["Learning Loop"])
 logger = logging.getLogger(__name__)

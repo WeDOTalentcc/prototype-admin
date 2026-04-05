@@ -579,7 +579,7 @@ class WSIInterviewNodes:
             return state
 
         try:
-            from app.services.wsi_deterministic_scorer import calculate_wsi_deterministic
+            from app.domains.cv_screening.services.wsi_deterministic_scorer import calculate_wsi_deterministic
 
             score_result = calculate_wsi_deterministic(
                 response_text=response_text,
@@ -662,7 +662,7 @@ class WSIInterviewNodes:
         """Calcula score final WSI e gera parecer."""
         state.stage = WSIInterviewStage.GENERATE_FEEDBACK
         try:
-            from app.services.wsi_deterministic_scorer import calculate_final_wsi_score as deterministic_final
+            from app.domains.cv_screening.services.wsi_deterministic_scorer import calculate_final_wsi_score as deterministic_final
 
             # Usa SENIORITY_WEIGHTS da spec F8 (não hardcoded 70%/30%)
             _seniority = state.job_requirements.get("seniority")

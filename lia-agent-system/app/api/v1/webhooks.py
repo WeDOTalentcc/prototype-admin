@@ -10,7 +10,7 @@ from pydantic import BaseModel, HttpUrl
 import logging
 
 from app.core.database import get_db
-from app.services.webhook_service import webhook_service, WEBHOOK_EVENTS
+from app.domains.communication.services.webhook_service import webhook_service, WEBHOOK_EVENTS
 
 logger = logging.getLogger(__name__)
 

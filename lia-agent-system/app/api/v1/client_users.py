@@ -24,7 +24,7 @@ from app.schemas.client_user import (
     ClientUserCreate, ClientUserUpdate, ClientUserRoleUpdate, ClientUserResponse,
     AcceptInvitationRequest, AcceptInvitationResponse
 )
-from app.services.email_service import email_service
+from app.domains.communication.services.email_service import email_service
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://app.wedotalent.com")
 

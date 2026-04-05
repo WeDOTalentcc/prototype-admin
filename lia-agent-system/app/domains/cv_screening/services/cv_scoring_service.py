@@ -23,7 +23,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from app.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 from app.services.activity_service import activity_service
 from app.models.candidate import Candidate, VacancyCandidate
 from app.models.job_vacancy import JobVacancy

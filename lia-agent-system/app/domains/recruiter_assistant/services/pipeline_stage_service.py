@@ -28,7 +28,7 @@ from app.models.recruitment_stages import (
     STANDARD_STAGE_CATALOG,
 )
 from app.models.candidate import VacancyCandidate
-from app.services.ats_sync_service import ats_sync_service, ATSSyncTrigger
+from app.domains.ats_integration.services.ats_sync_service import ats_sync_service, ATSSyncTrigger
 from app.core.database import AsyncSessionLocal
 from app.auth.dependencies import derive_company_from_context
 
@@ -86,7 +86,7 @@ class PipelineStageService:
     def data_request_service(self):
         """Lazy load DataRequestService to avoid circular imports."""
         if self._data_request_service is None:
-            from app.services.data_request_service import data_request_service
+            from app.domains.communication.services.data_request_service import data_request_service
             self._data_request_service = data_request_service
         return self._data_request_service
     
@@ -94,7 +94,7 @@ class PipelineStageService:
     def automation_service(self):
         """Lazy load AutomationService to avoid circular imports."""
         if self._automation_service is None:
-            from app.services.automation_service import AutomationService
+            from app.domains.automation.services.automation_service import AutomationService
             self._automation_service = AutomationService()
         return self._automation_service
     

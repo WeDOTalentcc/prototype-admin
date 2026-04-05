@@ -843,7 +843,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> Dict[str, Any]:
 
         if candidate_email and notify_channel in ("email", "both"):
             try:
-                from app.services.communication_dispatcher import communication_dispatcher
+                from app.domains.communication.services.communication_dispatcher import communication_dispatcher
                 communication_dispatcher.send_email(
                     to_email=candidate_email,
                     subject=f"Entrevista cancelada — {interview_data.get('job_title', 'Vaga')}",
@@ -862,7 +862,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> Dict[str, Any]:
             candidate_phone = await _get_candidate_phone(interview_data.get("candidate_email", ""), interview_id)
             if candidate_phone:
                 try:
-                    from app.services.communication_dispatcher import communication_dispatcher
+                    from app.domains.communication.services.communication_dispatcher import communication_dispatcher
                     communication_dispatcher.send_whatsapp(
                         to_phone=candidate_phone,
                         message=f"Olá, {candidate_name}! Informamos que a entrevista agendada para {date_str} foi cancelada. Em breve entraremos em contato com mais informações.",
@@ -984,7 +984,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> Dict[str, Any]:
 
         if candidate_email and notify_channel in ("email", "both"):
             try:
-                from app.services.communication_dispatcher import communication_dispatcher
+                from app.domains.communication.services.communication_dispatcher import communication_dispatcher
                 communication_dispatcher.send_email(
                     to_email=candidate_email,
                     subject=f"Entrevista reagendada — {interview_data.get('job_title', 'Vaga')}",
@@ -1003,7 +1003,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> Dict[str, Any]:
             candidate_phone = await _get_candidate_phone(candidate_email, interview_id)
             if candidate_phone:
                 try:
-                    from app.services.communication_dispatcher import communication_dispatcher
+                    from app.domains.communication.services.communication_dispatcher import communication_dispatcher
                     communication_dispatcher.send_whatsapp(
                         to_phone=candidate_phone,
                         message=f"Olá, {candidate_name}! Sua entrevista foi reagendada para {new_date_str}. Em breve você receberá o convite atualizado.",

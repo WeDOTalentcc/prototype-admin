@@ -76,7 +76,7 @@ class TestGate1Aprovacao:
 
     def test_pipeline_stage_service_importable(self):
         """pipeline_stage_service deve ser importável."""
-        from app.services.pipeline_stage_service import pipeline_stage_service
+        from app.domains.recruiter_assistant.services.pipeline_stage_service import pipeline_stage_service
         assert pipeline_stage_service is not None
 
 
@@ -104,7 +104,7 @@ class TestEtapa56WSI:
 
     def test_rubric_evaluation_service_importable(self):
         """rubric_evaluation_service deve ser importável."""
-        from app.services.rubric_evaluation_service import rubric_evaluation_service
+        from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
         assert rubric_evaluation_service is not None
 
     def test_audit_service_importable(self):

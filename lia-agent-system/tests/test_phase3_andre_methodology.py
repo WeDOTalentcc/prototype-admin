@@ -23,7 +23,7 @@ from app.schemas.rubric import (
     RequirementPriorityEnum,
     EvaluationLevelEnum,
 )
-from app.services.rubric_evaluation_service import RubricEvaluationService
+from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService
 from app.schemas.rubric import JobRequirementCreate
 
 
@@ -301,7 +301,7 @@ class TestRubricEvaluationResultSchema:
 class TestEvaluationCriteriaService:
     def test_evidence_patterns_exist(self):
         """EVIDENCE_PATTERNS should have entries for all main categories."""
-        from app.services.evaluation_criteria_service import EVIDENCE_PATTERNS
+        from app.domains.cv_screening.services.evaluation_criteria_service import EVIDENCE_PATTERNS
         assert "technical_skill" in EVIDENCE_PATTERNS
         assert "behavioral_competency" in EVIDENCE_PATTERNS
         assert "responsibility" in EVIDENCE_PATTERNS
@@ -313,7 +313,7 @@ class TestEvaluationCriteriaService:
 
     def test_skill_specific_evidence_exists(self):
         """SKILL_SPECIFIC_EVIDENCE should have key skills."""
-        from app.services.evaluation_criteria_service import SKILL_SPECIFIC_EVIDENCE
+        from app.domains.cv_screening.services.evaluation_criteria_service import SKILL_SPECIFIC_EVIDENCE
         assert "Python" in SKILL_SPECIFIC_EVIDENCE
         assert "React" in SKILL_SPECIFIC_EVIDENCE
         assert "Liderança" in SKILL_SPECIFIC_EVIDENCE

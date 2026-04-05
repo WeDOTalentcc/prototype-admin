@@ -19,7 +19,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.models import JobVacancy
 from app.services.intent_classifier import IntentClassifierService, IntentType, intent_classifier_service
-from app.services.vacancy_search_service import vacancy_search_service
+from app.domains.job_management.services.vacancy_search_service import vacancy_search_service
 
 logger = logging.getLogger(__name__)
 

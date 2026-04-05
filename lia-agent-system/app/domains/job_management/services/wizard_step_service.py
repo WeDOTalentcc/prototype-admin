@@ -27,7 +27,7 @@ from app.services.confidence_policy_service import ConfidencePolicyService
 from app.services.config_completeness_service import ConfigCompletenessService
 from app.services.skills_catalog_service import skills_catalog_service
 from app.services.responsibilities_catalog_service import responsibilities_catalog_service
-from app.services.jd_generator_service import jd_generator_service
+from app.domains.job_management.services.jd_generator_service import jd_generator_service
 from app.services.feedback_learning_service import FeedbackLearningService
 from app.services.llm import llm_service
 

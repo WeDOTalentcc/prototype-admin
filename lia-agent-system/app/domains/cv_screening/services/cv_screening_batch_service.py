@@ -20,7 +20,7 @@ from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
 from app.models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
-from app.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 from app.shared.policy_middleware import get_policy_for_company
 
 logger = logging.getLogger(__name__)

@@ -17,7 +17,7 @@ from typing import Dict, Any, Optional
 
 import httpx
 
-from app.services.apify_mcp_client import ApifyMCPClient, MCPSession
+from app.domains.sourcing.services.apify_mcp_client import ApifyMCPClient, MCPSession
 
 
 class TestMCPSession:

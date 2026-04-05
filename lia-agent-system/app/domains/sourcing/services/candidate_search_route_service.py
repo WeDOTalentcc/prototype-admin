@@ -77,8 +77,8 @@ class CandidateSearchRouteService:
             total_count, credits_remaining, search_time_seconds, warning_message,
             can_load_more, should_expand_to_global, expansion_message, high_adherence_count
         """
-        from app.services.pearch_service import pearch_service
-        from app.services.pearch_service import HybridSearchRequest, SearchType
+        from app.domains.sourcing.services.pearch_service import pearch_service
+        from app.domains.sourcing.services.pearch_service import HybridSearchRequest, SearchType
 
         hybrid_request = HybridSearchRequest(
             query=query,
@@ -168,7 +168,7 @@ class CandidateSearchRouteService:
             rubric_evaluated, error
         """
         from app.models.candidate import Candidate, ExternalCandidateProfile
-        from app.services.rubric_evaluation_service import rubric_evaluation_service
+        from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 
         requirements = await self._get_job_requirements(db, job_id)
         if not requirements:
@@ -906,7 +906,7 @@ class CandidateSearchRouteService:
         """Fetch job requirements for rubric evaluation."""
         try:
             from app.models.job_vacancy import JobRequirement
-            from app.services.rubric_evaluation_service import JobRequirementCreate
+            from app.domains.cv_screening.services.rubric_evaluation_service import JobRequirementCreate
 
             def _normalize_priority(priority: Optional[str]) -> str:
                 if not priority:
@@ -944,7 +944,7 @@ class CandidateSearchRouteService:
         self, candidates: List[Dict[str, Any]], requirements: List[Any]
     ) -> List[Dict[str, Any]]:
         """Evaluate candidates using rubric service and update dicts in-place."""
-        from app.services.rubric_evaluation_service import rubric_evaluation_service
+        from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 
         for candidate in candidates:
             try:

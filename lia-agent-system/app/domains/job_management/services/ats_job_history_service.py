@@ -138,7 +138,7 @@ class ATSJobHistoryService:
     def _get_ats_service(self):
         """Lazy load ATS sync service to avoid circular imports."""
         if self._ats_service is None:
-            from app.services.ats_sync_service import ats_sync_service
+            from app.domains.ats_integration.services.ats_sync_service import ats_sync_service
             self._ats_service = ats_sync_service
         return self._ats_service
     

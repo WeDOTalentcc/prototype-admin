@@ -21,7 +21,7 @@ from lia_agents_core.state_machine import (
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import AsyncSessionLocal
-from app.services.job_vacancy_service import job_vacancy_service
+from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
 from app.domains.job_management.tools.job_wizard_tools import generate_enriched_jd
 
 router = APIRouter()

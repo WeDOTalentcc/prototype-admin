@@ -13,7 +13,7 @@ import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.job_analytics_prompt_service import job_analytics_prompt_service
+from app.domains.analytics.services.job_analytics_prompt_service import job_analytics_prompt_service
 
 logger = logging.getLogger(__name__)
 

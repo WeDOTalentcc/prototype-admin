@@ -21,7 +21,7 @@ from app.services.intelligent_data_orchestrator import (
     JobContext,
     DataSource
 )
-from app.services.jd_enrichment_service import JdEnrichmentService
+from app.domains.job_management.services.jd_enrichment_service import JdEnrichmentService
 from app.schemas.jd_enrichment import EnrichmentRequest
 
 logger = logging.getLogger(__name__)

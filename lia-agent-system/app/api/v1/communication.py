@@ -13,8 +13,8 @@ import uuid as uuid_mod
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, not_
 
-from app.services.communication_dispatcher import communication_dispatcher
-from app.services.communication_history_service import communication_history_service
+from app.domains.communication.services.communication_dispatcher import communication_dispatcher
+from app.domains.communication.services.communication_history_service import communication_history_service
 from app.core.database import get_db
 from app.models.job_vacancy import JobVacancy
 from app.models.candidate import VacancyCandidate

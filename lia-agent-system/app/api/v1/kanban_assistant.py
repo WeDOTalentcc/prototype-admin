@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 import logging
 
-from app.services.kanban_assistant_service import kanban_assistant_service
+from app.domains.recruiter_assistant.services.kanban_assistant_service import kanban_assistant_service
 
 logger = logging.getLogger(__name__)
 

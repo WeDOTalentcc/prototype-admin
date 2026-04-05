@@ -16,7 +16,7 @@ from typing import Dict, Any, List, Optional
 import logging
 import os
 
-from app.services.stage_transition_automation import stage_transition_service
+from app.domains.automation.services.stage_transition_automation import stage_transition_service
 from app.domains.automation.services.stage_transition_automation import SubStatusPredictor
 
 logger = logging.getLogger(__name__)

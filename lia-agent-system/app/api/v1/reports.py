@@ -9,8 +9,8 @@ from pydantic import BaseModel
 from enum import Enum
 
 from app.core.database import get_db
-from app.services.candidate_report_service import candidate_report_service
-from app.services.report_service import report_service
+from app.domains.analytics.services.candidate_report_service import candidate_report_service
+from app.domains.analytics.services.report_service import report_service
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 

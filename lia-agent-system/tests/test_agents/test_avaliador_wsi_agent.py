@@ -21,7 +21,7 @@ from app.domains.cv_screening.services.wsi_deterministic_scorer import (
     DREYFUS_LEVELS,
     WSI_CUTOFFS,
 )
-from app.services.wsi_deterministic_scorer import (
+from app.domains.cv_screening.services.wsi_deterministic_scorer import (
     calculate_wsi_deterministic,
     calculate_final_wsi_score,
     extract_autodeclaracao_score,
@@ -195,7 +195,7 @@ class TestNoLLMForScoring:
     
     def test_deterministic_scorer_no_llm_import(self):
         """Verify deterministic scorer doesn't import LLM."""
-        import app.services.wsi_deterministic_scorer as scorer
+        import app.domains.cv_screening.services.wsi_deterministic_scorer as scorer
         
         assert not hasattr(scorer, 'llm_service')
         assert not hasattr(scorer, 'claude')

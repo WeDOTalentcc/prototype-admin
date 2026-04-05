@@ -508,7 +508,7 @@ async def handle_ats_sync(
     logger.info(f"[HANDLER] ATS sync for candidate {candidate_id}: {previous_stage} -> {new_stage}")
     
     try:
-        from app.services.ats_sync_service import ATSSyncService
+        from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
         ats_sync_service = ATSSyncService()
         
         result = await ats_sync_service.sync_candidate_stage(
@@ -1036,7 +1036,7 @@ async def process_screening_queue(
                     conversation.state = ConversationState.SCREENING
                     conversation.current_question_index = 0
 
-                    from app.services.whatsapp_factory import WhatsAppProviderFactory
+                    from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
                     provider = await WhatsAppProviderFactory.get_provider(company_id, db)
 
                     screening_msg = (
@@ -1194,7 +1194,7 @@ async def handle_recruiter_override_approve(
     if conversation and conversation.phone_number:
         invite_channel = "whatsapp"
         try:
-            from app.services.whatsapp_factory import WhatsAppProviderFactory
+            from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
             from app.models.job_vacancy import JobVacancy
 
             provider = await WhatsAppProviderFactory.get_provider(company_id, db)
@@ -1293,7 +1293,7 @@ from datetime import datetime
 
 def register_all_handlers():
     """Register all handlers with the StageAutomationEngine."""
-    from app.services.stage_automation_engine import stage_automation_engine, TriggerType
+    from app.domains.automation.services.stage_automation_engine import stage_automation_engine, TriggerType
     
     stage_automation_engine.register_handler(TriggerType.SCREENING_COMPLETED, handle_screening_completed)
     stage_automation_engine.register_handler(TriggerType.INTERVIEW_SCHEDULED, handle_interview_scheduled)

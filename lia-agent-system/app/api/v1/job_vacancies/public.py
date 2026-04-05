@@ -316,7 +316,7 @@ async def apply_to_public_vacancy(
         cv_content = await cv_file.read()
         parsed_cv = {}
         try:
-            from app.services.cv_parser import cv_parser_service
+            from app.domains.cv_screening.services.cv_parser import cv_parser_service
             parsed_cv = await cv_parser_service.parse_cv(
                 file_content=cv_content,
                 filename=cv_file.filename

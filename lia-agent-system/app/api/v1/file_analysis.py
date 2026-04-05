@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 import io
 
-from app.services.cv_parser import cv_parser_service
+from app.domains.cv_screening.services.cv_parser import cv_parser_service
 
 logger = logging.getLogger(__name__)
 

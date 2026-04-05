@@ -40,7 +40,7 @@ async def finalize_job_vacancy(
         job_title = str(job_vacancy.title)
         job_status = str(job_vacancy.status)
 
-        from app.services.job_audit_service import job_audit_service
+        from app.domains.job_management.services.job_audit_service import job_audit_service
         await job_audit_service.log_creation(
             job_id=job_id,
             created_by=request.created_by,
@@ -244,7 +244,7 @@ async def find_job_by_identifier(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Find a job by ID, job_id code, or title."""
-    from app.services.job_clone_service import job_clone_service
+    from app.domains.job_management.services.job_clone_service import job_clone_service
 
     company_id = get_user_company_id(current_user)
 
@@ -606,7 +606,7 @@ async def update_job_vacancy(
                 setattr(job_vacancy, field, value)
 
         if changes:
-            from app.services.job_audit_service import job_audit_service
+            from app.domains.job_management.services.job_audit_service import job_audit_service
             changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
             await job_audit_service.log_update(
                 job_id=str(job_vacancy_id),
@@ -689,7 +689,7 @@ async def delete_job_vacancy(
         job_vacancy.status = "Arquivada"
         job_vacancy.updated_at = datetime.utcnow()
 
-        from app.services.job_audit_service import job_audit_service
+        from app.domains.job_management.services.job_audit_service import job_audit_service
         changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
         await job_audit_service.log_archive(
             job_id=str(job_vacancy_id),
@@ -750,7 +750,7 @@ async def update_job_vacancy_status(
         job_vacancy.status = status
         job_vacancy.updated_at = datetime.utcnow()
 
-        from app.services.job_audit_service import job_audit_service
+        from app.domains.job_management.services.job_audit_service import job_audit_service
         changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
         await job_audit_service.log_status_change(
             job_id=str(job_vacancy_id),
@@ -815,7 +815,7 @@ async def duplicate_job(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Duplicate a job vacancy with all its data."""
-    from app.services.job_clone_service import job_clone_service
+    from app.domains.job_management.services.job_clone_service import job_clone_service
 
     company_id = get_user_company_id(current_user)
 
@@ -855,7 +855,7 @@ async def clone_from_template(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Create a new job using an existing job as a template (no candidates)."""
-    from app.services.job_clone_service import job_clone_service
+    from app.domains.job_management.services.job_clone_service import job_clone_service
 
     company_id = get_user_company_id(current_user)
 
@@ -890,7 +890,7 @@ async def get_clone_summary(
     db: AsyncSession = Depends(get_db)
 ):
     """Get a summary of a job for displaying before cloning."""
-    from app.services.job_clone_service import job_clone_service
+    from app.domains.job_management.services.job_clone_service import job_clone_service
 
     try:
         summary = await job_clone_service.get_job_summary_for_clone(db, job_id)

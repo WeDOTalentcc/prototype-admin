@@ -14,7 +14,7 @@ from app.models.interview import Interview, InterviewFeedback
 from app.models.activity_feed import ActivityFeed
 from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
-from app.services.calendar_service import calendar_service
+from app.domains.interview_scheduling.services.calendar_service import calendar_service
 from app.services.llm import llm_service
 from app.services.activity_service import activity_service
 from app.shared.pii_masking import get_masked_logger
@@ -335,7 +335,7 @@ async def complete_interview(
         company_id: Company ID for event dispatch
     """
     try:
-        from app.services.scheduling_service import scheduling_service
+        from app.domains.interview_scheduling.services.scheduling_service import scheduling_service
         
         interview = await scheduling_service.complete_interview(
             db=db,

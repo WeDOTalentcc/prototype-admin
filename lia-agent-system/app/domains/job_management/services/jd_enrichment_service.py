@@ -38,7 +38,7 @@ from app.services.market_benchmark_service import MarketBenchmarkService
 from app.services.skills_catalog_service import SkillsCatalogService
 from app.services.responsibilities_catalog_service import ResponsibilitiesCatalogService
 from app.services.company_configuration_service import CompanyConfigurationService
-from app.services.ats_job_history_service import ATSJobHistoryService
+from app.domains.job_management.services.ats_job_history_service import ATSJobHistoryService
 
 logger = logging.getLogger(__name__)
 

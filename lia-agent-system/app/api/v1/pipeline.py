@@ -6,7 +6,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
-from app.services.pipeline_service import pipeline_service
+from app.domains.recruiter_assistant.services.pipeline_service import pipeline_service
 from app.core.database import get_db
 from app.shared.pii_masking import get_masked_logger
 from app.shared.compliance.audit_service import audit_service

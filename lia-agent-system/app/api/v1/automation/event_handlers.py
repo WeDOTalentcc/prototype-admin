@@ -149,7 +149,7 @@ async def handle_screening_completed(
             response_analyses = []
             for resp in request.responses:
                 # Create minimal ResponseAnalysis structure
-                from app.services.wsi_service import ResponseAnalysis
+                from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
                 analysis = ResponseAnalysis(
                     question_id=resp.get("question_id", str(uuid.uuid4())),
                     competency=resp.get("competency", "general"),
@@ -443,7 +443,7 @@ async def _analyze_transcript_for_wsi(
     Returns:
         List of ResponseAnalysis objects
     """
-    from app.services.wsi_service import ResponseAnalysis
+    from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
     from app.services.llm import llm_service
     import json
     
@@ -1866,7 +1866,7 @@ async def handle_ats_sync(
         ats_sync_service = get_ats_sync_service()
         
         if request.sync_direction == "outbound":
-            from app.services.ats_sync_service import ATSSyncTrigger
+            from app.domains.ats_integration.services.ats_sync_service import ATSSyncTrigger
             
             sync_data = {
                 "status": ats_stage,
@@ -2157,7 +2157,7 @@ async def handle_offer_sent(
         
         try:
             ats_sync_service = get_ats_sync_service()
-            from app.services.ats_sync_service import ATSSyncTrigger
+            from app.domains.ats_integration.services.ats_sync_service import ATSSyncTrigger
             
             sync_result = await ats_sync_service.trigger_sync(
                 trigger=ATSSyncTrigger.STATUS_CHANGE,
@@ -2290,7 +2290,7 @@ async def handle_candidate_hired(
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to send welcome email: {e}")
         
         try:
-            from app.services.pipeline_stage_service import PipelineStageService
+            from app.domains.recruiter_assistant.services.pipeline_stage_service import PipelineStageService
             pipeline_service = PipelineStageService()
             
             from app.models.candidate import VacancyCandidate
@@ -2324,7 +2324,7 @@ async def handle_candidate_hired(
         
         try:
             ats_sync_service = get_ats_sync_service()
-            from app.services.ats_sync_service import ATSSyncTrigger
+            from app.domains.ats_integration.services.ats_sync_service import ATSSyncTrigger
             
             sync_result = await ats_sync_service.trigger_sync(
                 trigger=ATSSyncTrigger.STATUS_CHANGE,
@@ -2537,7 +2537,7 @@ async def handle_candidate_rejected(
                 logger.error(f"❌ [CANDIDATE_REJECTED] Failed to add to talent pool: {e}")
         
         try:
-            from app.services.pipeline_stage_service import PipelineStageService
+            from app.domains.recruiter_assistant.services.pipeline_stage_service import PipelineStageService
             pipeline_service = PipelineStageService()
             
             from app.models.candidate import VacancyCandidate
@@ -2571,7 +2571,7 @@ async def handle_candidate_rejected(
         
         try:
             ats_sync_service = get_ats_sync_service()
-            from app.services.ats_sync_service import ATSSyncTrigger
+            from app.domains.ats_integration.services.ats_sync_service import ATSSyncTrigger
             
             sync_result = await ats_sync_service.trigger_sync(
                 trigger=ATSSyncTrigger.STATUS_CHANGE,

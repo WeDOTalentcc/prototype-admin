@@ -422,8 +422,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
         </div>
       )}
 
-      {/* Tags de critérios extraídos - Hidden when autocomplete is open */}
-      <div className={cn("flex flex-wrap items-center gap-1.5", showAutocomplete && autocompleteItems.length > 0 && "hidden")}>
+      <div className="flex flex-wrap items-center gap-1.5">
         {tags.map((tag) => {
           const getTagColors = (key: string, filled: boolean) => {
             if (!filled) return { bg: 'var(--lia-bg-secondary)', text: 'var(--lia-text-primary)', iconBg: 'var(--lia-text-tertiary)', iconBgLight: 'var(--lia-bg-secondary)' }
@@ -548,7 +547,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
         )}
       </div>
 
-      {value && searchAnalysis && !(showAutocomplete && autocompleteItems.length > 0) && (
+      {value && searchAnalysis && (
         <div className="space-y-2 pt-2 border-t border-lia-border-default dark:border-lia-border-default">
           {/* Barra de completude */}
           <div className="flex items-center gap-3">

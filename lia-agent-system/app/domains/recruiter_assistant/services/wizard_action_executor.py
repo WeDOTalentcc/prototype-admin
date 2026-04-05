@@ -301,7 +301,7 @@ class WizardActionExecutor:
 
         elif action_id == "generate_jd":
             try:
-                from app.services.jd_generator_service import jd_generator_service
+                from app.domains.job_management.services.jd_generator_service import jd_generator_service
                 job_data = {
                     "title": draft.get("title", ""),
                     "department": draft.get("department", ""),
@@ -340,7 +340,7 @@ class WizardActionExecutor:
             block = params.get("block")
             count = int(params.get("count", 5))
             try:
-                from app.services.wsi_service import WSIService
+                from app.domains.cv_screening.services.wsi_service import WSIService
                 wsi_svc = WSIService()
                 questions_raw = await wsi_svc.generate_from_simple_inputs(
                     skills=draft.get("required_skills", []),
@@ -381,7 +381,7 @@ class WizardActionExecutor:
         elif action_id == "apply_template":
             template_id = params.get("template_id", "")
             try:
-                from app.services.job_template_service import JobTemplateService
+                from app.domains.job_management.services.job_template_service import JobTemplateService
                 template_svc = JobTemplateService()
                 template = await template_svc.get_template_by_id(template_id)
                 if template:

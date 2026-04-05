@@ -19,7 +19,7 @@ import logging
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 
-from app.services.whatsapp_provider import (
+from app.domains.communication.services.whatsapp_provider import (
     WhatsAppProvider,
     ProviderType,
     SendResult,

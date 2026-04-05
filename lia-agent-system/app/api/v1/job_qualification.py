@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from app.core.database import get_db
 from app.models.job_vacancy import JobVacancy
-from app.services.job_qualification_service import job_qualification_service
+from app.domains.job_management.services.job_qualification_service import job_qualification_service
 
 logger = logging.getLogger(__name__)
 

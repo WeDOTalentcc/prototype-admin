@@ -21,7 +21,7 @@ from sqlalchemy import text
 from pydantic import BaseModel
 
 from app.core.database import AsyncSessionLocal
-from app.services.wsi_service import (
+from app.domains.cv_screening.services.wsi_service import (
     wsi_service,
     Competency,
     WSIQuestion,
@@ -151,7 +151,7 @@ class WSIVoiceOrchestrator:
         
         async def _execute_with_db(session: AsyncSession) -> VoiceScreeningResult:
             try:
-                from app.services.screening_question_set_service import screening_question_set_service
+                from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
                 active_qs = await screening_question_set_service.get_active_version(session, job_vacancy_id)
                 
                 if active_qs and active_qs.questions_snapshot:

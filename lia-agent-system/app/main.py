@@ -14,17 +14,17 @@ init_sentry()
 
 from app.core.config import settings
 from app.core.database import init_db
-from app.services.communication_service import (
+from app.domains.communication.services.communication_service import (
     PendingApproval, CommunicationLog, CandidateOptOut, CandidateQuarantine
 )
-from app.services.personalized_feedback_service import PersonalizedFeedbackRecord
+from app.domains.cv_screening.services.personalized_feedback_service import PersonalizedFeedbackRecord
 from app.api import orchestrator_routes
 from app.services.llm import LLMService
 from app.middleware.rate_limiter import RateLimitMiddleware, rate_limiter
 from app.middleware.request_id import RequestIdMiddleware
 from app.core.logging_middleware import StructuredLoggingMiddleware
-from app.services.automation_scheduler import automation_scheduler
-from app.services.automation_handlers import register_all_handlers
+from app.domains.automation.services.automation_scheduler import automation_scheduler
+from app.domains.automation.services.automation_handlers import register_all_handlers
 from app.config.langsmith import configure_langsmith
 from app.tools import initialize_tools
 from app.services.embedding_cache_service import embedding_cache

@@ -17,7 +17,7 @@ from app.services.tool_executor_service import (
     ToolExecutionResponse,
     tool_executor_service
 )
-from app.services.wizard_orchestrator_service import (
+from app.domains.job_management.services.wizard_orchestrator_service import (
     WizardOrchestratorService,
     wizard_orchestrator_service
 )

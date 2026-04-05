@@ -16,7 +16,7 @@ except Exception:
     _ws_manager = None  # WS not available in test context
 from app.shared.memory.conversation_state import ConversationState
 from app.services import job_analytics_prompt_service, COMMAND_TEMPLATES
-from app.services.conversation_memory import conversation_memory
+from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
 from app.services.response_cache_service import response_cache_service
 from app.tools import (
     tool_registry, initialize_tools, get_all_tool_schemas

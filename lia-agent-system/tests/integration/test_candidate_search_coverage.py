@@ -89,7 +89,7 @@ def client():
 def test_search_candidates_local_only(client):
     """POST /api/v1/search/candidates — local only, pearch disabled."""
     with patch(
-        "app.services.pearch_service.pearch_service.hybrid_search",
+        "app.domains.sourcing.services.pearch_service.pearch_service.hybrid_search",
         AsyncMock(return_value=_make_hybrid_result()),
     ):
         payload = {
@@ -104,7 +104,7 @@ def test_search_candidates_local_only(client):
 def test_search_candidates_with_pearch(client):
     """POST /api/v1/search/candidates — with pearch enabled."""
     with patch(
-        "app.services.pearch_service.pearch_service.hybrid_search",
+        "app.domains.sourcing.services.pearch_service.pearch_service.hybrid_search",
         AsyncMock(return_value=_make_hybrid_result()),
     ):
         payload = {
@@ -127,7 +127,7 @@ def test_search_candidates_empty_query(client):
 def test_search_candidates_with_job_id(client):
     """POST /api/v1/search/candidates — with job_id for rubric evaluation."""
     with patch(
-        "app.services.pearch_service.pearch_service.hybrid_search",
+        "app.domains.sourcing.services.pearch_service.pearch_service.hybrid_search",
         AsyncMock(return_value=_make_hybrid_result()),
     ):
         payload = {
@@ -143,7 +143,7 @@ def test_search_candidates_with_job_id(client):
 def test_search_candidates_with_search_spec(client):
     """POST /api/v1/search/candidates — with SearchSpec metadata."""
     with patch(
-        "app.services.pearch_service.pearch_service.hybrid_search",
+        "app.domains.sourcing.services.pearch_service.pearch_service.hybrid_search",
         AsyncMock(return_value=_make_hybrid_result()),
     ):
         payload = {
@@ -295,7 +295,7 @@ def test_filter_suggestions_empty(client):
 def test_search_similar_candidates(client):
     """POST /api/v1/search/similar — by reference profile."""
     with patch(
-        "app.services.pearch_service.pearch_service.hybrid_search",
+        "app.domains.sourcing.services.pearch_service.pearch_service.hybrid_search",
         AsyncMock(return_value=_make_hybrid_result()),
     ):
         payload = {

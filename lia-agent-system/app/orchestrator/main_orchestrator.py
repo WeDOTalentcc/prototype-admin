@@ -411,7 +411,7 @@ class MainOrchestrator:
         somente para process_request (roteamento + execução de domínio).
         """
         from app.core.config import settings
-        from app.services.conversation_memory import conversation_memory
+        from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
 
         orchestrator_context = ctx.to_orchestrator_context()
         if streaming_callback:

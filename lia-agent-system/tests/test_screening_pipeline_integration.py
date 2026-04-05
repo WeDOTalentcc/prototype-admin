@@ -235,7 +235,7 @@ class TestPipelineBuild:
             "app.domains.cv_screening.services.wsi_screening_pipeline.resolve_seniority_full",
             return_value=mock_resolution,
         ), patch(
-            "app.services.wsi_service.WSIService.generate_from_simple_inputs",
+            "app.domains.cv_screening.services.wsi_service.WSIService.generate_from_simple_inputs",
             new_callable=AsyncMock,
             return_value=mock_wsi_questions,
         ):
@@ -352,7 +352,7 @@ class TestResponseSchema:
             "app.domains.cv_screening.services.wsi_screening_pipeline.resolve_seniority_full",
             return_value=mock_resolution,
         ), patch(
-            "app.services.wsi_service.WSIService.generate_from_simple_inputs",
+            "app.domains.cv_screening.services.wsi_service.WSIService.generate_from_simple_inputs",
             new_callable=AsyncMock,
             return_value=[],
         ):

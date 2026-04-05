@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.approval import ApprovalRequest, ApprovalStatus, ApprovalType
-from app.services.email_service import email_service
+from app.domains.communication.services.email_service import email_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.compliance.audit_service import audit_service
 

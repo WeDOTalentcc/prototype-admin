@@ -18,10 +18,10 @@ from sqlalchemy import select
 
 from app.models.whatsapp_conversation import WhatsAppConversation, WhatsAppMessage, ConversationState
 from app.models.job_vacancy import JobVacancy
-from app.services.whatsapp_provider import WhatsAppProvider, SendResult
-from app.services.whatsapp_factory import WhatsAppProviderFactory
-from app.services.pre_qualification_service import pre_qualification_service, PreQualificationResult, PreQualificationDecision
-from app.services.eligibility_verification_service import (
+from app.domains.communication.services.whatsapp_provider import WhatsAppProvider, SendResult
+from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
+from app.domains.cv_screening.services.pre_qualification_service import pre_qualification_service, PreQualificationResult, PreQualificationDecision
+from app.domains.cv_screening.services.eligibility_verification_service import (
     eligibility_service,
     EligibilityQuestion,
     ReconsiderationContext,
@@ -651,7 +651,7 @@ class ConversationManager:
             return None
         
         try:
-            from app.services.rubric_evaluation_service import rubric_evaluation_service
+            from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
             from app.models.rubric import JobRequirement
             
             result = await self.db.execute(
@@ -1196,7 +1196,7 @@ class ConversationManager:
             Dict with success status and parsed data or error
         """
         try:
-            from app.services.cv_parser import CVParserService
+            from app.domains.cv_screening.services.cv_parser import CVParserService
             from fastapi import UploadFile
             
             media_id = media_data.get("id")
@@ -1358,7 +1358,7 @@ class ConversationManager:
         try:
             from app.models.candidate import Candidate, VacancyCandidate
             from app.models.candidate_job import CandidateJob
-            from app.services.stage_automation_engine import StageAutomationEngine, AutomationEvent, TriggerType
+            from app.domains.automation.services.stage_automation_engine import StageAutomationEngine, AutomationEvent, TriggerType
             
             cv_data = conversation.cv_parsed_data or {}
             

@@ -619,7 +619,7 @@ class ProactiveAlertService:
         alerts = []
         
         try:
-            from app.services.ats_sync_service import ats_sync_service
+            from app.domains.ats_integration.services.ats_sync_service import ats_sync_service
             
             sync_stats = ats_sync_service.get_sync_stats()
             threshold = self.get_threshold(AlertCondition.ATS_SYNC_FAILED)
@@ -641,7 +641,7 @@ class ProactiveAlertService:
             logger.debug(f"Error checking ATS sync: {e}")
         
         try:
-            from app.services.agent_monitoring_service import AgentMonitoringService
+            from app.domains.analytics.services.agent_monitoring_service import AgentMonitoringService
             
             agent_monitor = AgentMonitoringService(db)
             global_metrics = await agent_monitor.get_global_metrics()

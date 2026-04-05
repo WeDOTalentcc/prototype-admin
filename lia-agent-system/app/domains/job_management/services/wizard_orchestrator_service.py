@@ -263,7 +263,7 @@ class WizardOrchestratorService:
         Returns:
             Response dict with intent detection, tool suggestion, and injected context
         """
-        from app.services.conversation_memory import ConversationMemory
+        from app.domains.recruiter_assistant.services.conversation_memory import ConversationMemory
 
         conversation_context = None
         injected_context = None

@@ -616,7 +616,7 @@ async def trigger_proactive_check(
     predictive, system) and sends notifications for any triggered alerts.
     """
     try:
-        from app.services.proactive_alert_service import proactive_alert_service
+        from app.domains.automation.services.proactive_alert_service import proactive_alert_service
         
         triggered_alerts = await proactive_alert_service.check_all_conditions(
             user_id=request.user_id,
@@ -655,7 +655,7 @@ async def get_proactive_alert_history(
     understand notification patterns.
     """
     try:
-        from app.services.proactive_alert_service import proactive_alert_service
+        from app.domains.automation.services.proactive_alert_service import proactive_alert_service
         
         history = await proactive_alert_service.get_alert_history(user_id)
         
@@ -679,7 +679,7 @@ async def update_alert_threshold(
     each specific condition.
     """
     try:
-        from app.services.proactive_alert_service import (
+        from app.domains.automation.services.proactive_alert_service import (
             proactive_alert_service,
             AlertCondition
         )
@@ -714,7 +714,7 @@ async def get_alert_thresholds():
     including thresholds, cooldowns, and severity levels.
     """
     try:
-        from app.services.proactive_alert_service import (
+        from app.domains.automation.services.proactive_alert_service import (
             ThresholdConfig,
             AlertCondition
         )
@@ -752,8 +752,8 @@ async def send_job_created_notification(
     Recipients: recruiter (required) and manager/hiring manager (optional)
     """
     try:
-        from app.services.email_service import email_service
-        from app.services.teams_service import teams_service
+        from app.domains.communication.services.email_service import email_service
+        from app.domains.communication.services.teams_service import teams_service
         from datetime import datetime
         
         notifications_sent = {

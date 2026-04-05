@@ -92,7 +92,7 @@ from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from sqlalchemy import select
 
-from app.services.report_service import report_service
+from app.domains.analytics.services.report_service import report_service
 from app.core.database import AsyncSessionLocal
 
 logger = logging.getLogger(__name__)

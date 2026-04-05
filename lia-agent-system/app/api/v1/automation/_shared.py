@@ -17,12 +17,12 @@ import logging
 import uuid
 
 from app.core.database import get_db
-from app.services.automation_trigger_service import automation_trigger_service
-from app.services.automation_service import automation_service
-from app.services.rubric_evaluation_service import rubric_evaluation_service
-from app.services.cv_scoring_service import CVScoringService
+from app.domains.automation.services.automation_trigger_service import automation_trigger_service
+from app.domains.automation.services.automation_service import automation_service
+from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.cv_screening.services.cv_scoring_service import CVScoringService
 from app.services.audit_service import audit_service
-from app.services.communication_service import communication_service
+from app.domains.communication.services.communication_service import communication_service
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ def get_wsi_service():
     """Lazy load WSIService for conversational screening."""
     global _wsi_service
     if _wsi_service is None:
-        from app.services.wsi_service import WSIService
+        from app.domains.cv_screening.services.wsi_service import WSIService
         _wsi_service = WSIService()
     return _wsi_service
 
@@ -59,7 +59,7 @@ def get_email_service():
     """Lazy load EmailService."""
     global _email_service
     if _email_service is None:
-        from app.services.email_service import EmailService
+        from app.domains.communication.services.email_service import EmailService
         _email_service = EmailService()
     return _email_service
 
@@ -68,7 +68,7 @@ def get_whatsapp_service():
     """Lazy load WhatsAppService."""
     global _whatsapp_service
     if _whatsapp_service is None:
-        from app.services.whatsapp_service import WhatsAppService
+        from app.domains.communication.services.whatsapp_service import WhatsAppService
         _whatsapp_service = WhatsAppService()
     return _whatsapp_service
 
@@ -86,7 +86,7 @@ def get_scheduling_service():
     """Lazy load SchedulingService."""
     global _scheduling_service
     if _scheduling_service is None:
-        from app.services.scheduling_service import SchedulingService
+        from app.domains.interview_scheduling.services.scheduling_service import SchedulingService
         _scheduling_service = SchedulingService()
     return _scheduling_service
 
@@ -95,7 +95,7 @@ def get_calendar_service():
     """Lazy load CalendarService."""
     global _calendar_service
     if _calendar_service is None:
-        from app.services.calendar_service import CalendarService
+        from app.domains.interview_scheduling.services.calendar_service import CalendarService
         _calendar_service = CalendarService()
     return _calendar_service
 
@@ -107,7 +107,7 @@ def get_ats_sync_service():
     """Lazy load ATSSyncService."""
     global _ats_sync_service
     if _ats_sync_service is None:
-        from app.services.ats_sync_service import ATSSyncService
+        from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
         _ats_sync_service = ATSSyncService()
     return _ats_sync_service
 

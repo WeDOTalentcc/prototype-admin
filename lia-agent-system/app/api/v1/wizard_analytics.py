@@ -13,7 +13,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from app.services.wizard_analytics_service import wizard_analytics_service
+from app.domains.analytics.services.wizard_analytics_service import wizard_analytics_service
 
 router = APIRouter(prefix="/wizard-analytics", tags=["Wizard Analytics"])
 logger = logging.getLogger(__name__)

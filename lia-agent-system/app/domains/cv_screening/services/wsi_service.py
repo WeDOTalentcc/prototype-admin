@@ -17,7 +17,7 @@ import logging
 import re
 
 from app.services.llm import llm_service
-from app.services.wsi_deterministic_scorer import (
+from app.domains.cv_screening.services.wsi_deterministic_scorer import (
     calculate_wsi_deterministic,
     calculate_final_wsi_score,
     DeterministicWSIResult

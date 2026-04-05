@@ -530,7 +530,7 @@ async def get_job_vacancy_history(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Get audit history for a job vacancy."""
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
 
     try:
         company_id = get_user_company_id(current_user)

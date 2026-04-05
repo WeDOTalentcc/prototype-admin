@@ -21,7 +21,7 @@ from twilio.rest import Client
 from twilio.base.exceptions import TwilioRestException
 from twilio.request_validator import RequestValidator
 
-from app.services.whatsapp_provider import (
+from app.domains.communication.services.whatsapp_provider import (
     WhatsAppProvider,
     ProviderType,
     SendResult,

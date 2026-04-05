@@ -401,7 +401,7 @@ class TestWSIAuditTrail:
             create=True,
         ):
             with patch(
-                "app.services.wsi_deterministic_scorer.calculate_wsi_deterministic",
+                "app.domains.cv_screening.services.wsi_deterministic_scorer.calculate_wsi_deterministic",
                 new=AsyncMock(return_value=mock_score_result),
                 create=True,
             ):
@@ -436,7 +436,7 @@ class TestWSIAuditTrail:
         mock_db_ctx.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "app.services.wsi_deterministic_scorer.calculate_final_wsi_score",
+            "app.domains.cv_screening.services.wsi_deterministic_scorer.calculate_final_wsi_score",
             return_value=mock_final_result,
             create=True,
         ):
@@ -473,7 +473,7 @@ class TestWSIAuditTrail:
 
         # Simula falha catastrófica no audit — AsyncSessionLocal lança exceção
         with patch(
-            "app.services.wsi_deterministic_scorer.calculate_wsi_deterministic",
+            "app.domains.cv_screening.services.wsi_deterministic_scorer.calculate_wsi_deterministic",
             new=AsyncMock(return_value=mock_score_result),
             create=True,
         ):

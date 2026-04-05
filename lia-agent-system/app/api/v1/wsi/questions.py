@@ -18,7 +18,7 @@ import json
 import logging
 
 from app.core.database import get_db
-from app.services.screening_question_set_service import screening_question_set_service
+from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
 
 from ._shared import (
     GenerateQuestionsRequest, GenerateQuestionsResponse, WSIQuestionOutput,
@@ -69,7 +69,7 @@ async def generate_questions(
         job_desc_parts.append("Responsabilidades: " + ", ".join(requirements))
     job_description = "\n".join(job_desc_parts) if job_desc_parts else None
 
-    from app.services.wsi_service import WSIService
+    from app.domains.cv_screening.services.wsi_service import WSIService
     wsi_svc = WSIService()
     requested_count = request.max_questions or request.num_questions
     mode = "full" if requested_count > 10 else "compact"

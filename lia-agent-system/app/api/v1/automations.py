@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 import logging
 
 from app.core.database import get_db
-from app.services.automation_service import automation_service
+from app.domains.automation.services.automation_service import automation_service
 from app.models.automation import TriggerType, ActionType
 
 logger = logging.getLogger(__name__)

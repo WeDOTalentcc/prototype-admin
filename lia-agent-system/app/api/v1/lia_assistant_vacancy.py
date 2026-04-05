@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.services.vacancy_search_service import vacancy_search_service
+from app.domains.job_management.services.vacancy_search_service import vacancy_search_service
 
 logger = logging.getLogger(__name__)
 

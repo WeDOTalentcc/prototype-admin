@@ -12,8 +12,8 @@ import logging
 
 from app.core.database import get_db
 from app.models.job_vacancy import JobVacancy
-from app.services.job_board_service import job_board_service
-from app.services.email_service import email_service
+from app.domains.job_management.services.job_board_service import job_board_service
+from app.domains.communication.services.email_service import email_service
 from app.auth.dependencies import get_current_user, get_current_active_user, get_user_company_id
 from app.auth.models import User
 from pydantic import BaseModel

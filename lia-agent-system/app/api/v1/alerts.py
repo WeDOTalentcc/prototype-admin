@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import logging
 
 from app.core.database import get_db
-from app.services.job_alert_service import job_alert_service
+from app.domains.job_management.services.job_alert_service import job_alert_service
 from app.models.alert import AlertSeverity, AlertStatus, AlertConfig, AlertPreference
 
 logger = logging.getLogger(__name__)

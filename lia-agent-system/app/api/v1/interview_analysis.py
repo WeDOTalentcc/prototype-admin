@@ -22,8 +22,8 @@ import os
 from app.core.database import get_db
 from app.models.interview import Interview
 from app.models.lia_opinion import LiaOpinion
-from app.services.teams_recording_service import teams_recording_service
-from app.services.interview_transcript_analysis_service import interview_transcript_analysis_service
+from app.domains.communication.services.teams_recording_service import teams_recording_service
+from app.domains.interview_scheduling.services.interview_transcript_analysis_service import interview_transcript_analysis_service
 from app.schemas.lia_opinion import LiaOpinionCreate, OpinionTypeEnum, OpinionSourceEnum, RecommendationEnum
 from app.services.notification_service import notification_service, NotificationChannel, NotificationType, ProactiveNotificationType
 

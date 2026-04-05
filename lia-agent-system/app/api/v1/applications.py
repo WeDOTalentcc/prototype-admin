@@ -24,13 +24,13 @@ from app.models.job_vacancy import JobVacancy
 from app.models.candidate_feedback import CandidateFeedback
 from app.services.candidate_feedback_service import candidate_feedback_service
 from app.services.lia_score_service import LIAScoreService
-from app.services.cv_parser import cv_parser_service
+from app.domains.cv_screening.services.cv_parser import cv_parser_service
 from app.services.notification_service import (
     notification_service,
     NotificationType,
     ProactiveNotificationType
 )
-from app.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 from app.models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from enum import Enum as PyEnum

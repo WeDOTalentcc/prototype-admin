@@ -19,7 +19,7 @@ from app.schemas.screening import (
     WSIScreeningPipelineRequest,
     WSIScreeningPipelineResponse,
 )
-from app.services.wsi_screening_pipeline import wsi_screening_pipeline
+from app.domains.cv_screening.services.wsi_screening_pipeline import wsi_screening_pipeline
 from app.auth.dependencies import (
     get_current_active_user,
     get_current_user_or_demo,

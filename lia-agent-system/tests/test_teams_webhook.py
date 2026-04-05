@@ -104,10 +104,10 @@ class TestTeamsWebhookEndpoint:
 
     @patch("app.api.v1.teams.settings.TEAMS_WEBHOOK_SECRET", None)
     @patch(
-        "app.services.communication_dispatcher.communication_dispatcher.send_whatsapp"
+        "app.domains.communication.services.communication_dispatcher.communication_dispatcher.send_whatsapp"
     )
     @patch(
-        "app.services.communication_history_service.communication_history_service.log_communication",
+        "app.domains.communication.services.communication_history_service.communication_history_service.log_communication",
         new_callable=AsyncMock,
     )
     async def test_approve_action_initiates_screening(
@@ -249,10 +249,10 @@ class TestTeamsWebhookEndpoint:
 
     @patch("app.api.v1.teams.settings.TEAMS_WEBHOOK_SECRET", "test_secret_123")
     @patch(
-        "app.services.communication_dispatcher.communication_dispatcher.send_whatsapp"
+        "app.domains.communication.services.communication_dispatcher.communication_dispatcher.send_whatsapp"
     )
     @patch(
-        "app.services.communication_history_service.communication_history_service.log_communication",
+        "app.domains.communication.services.communication_history_service.communication_history_service.log_communication",
         new_callable=AsyncMock,
     )
     async def test_valid_signature_allows_request(

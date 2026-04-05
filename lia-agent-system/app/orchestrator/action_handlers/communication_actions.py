@@ -28,7 +28,7 @@ async def execute_communication_action(
 async def _send_email(params: Dict[str, Any], context: Dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
-        from app.services.email_providers import get_email_provider
+        from app.domains.communication.services.email_providers import get_email_provider
         import html as html_module
 
         provider = get_email_provider()

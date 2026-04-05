@@ -8,7 +8,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from app.services.conversation_memory import (
+from app.domains.recruiter_assistant.services.conversation_memory import (
     ConversationMemory,
     CONTEXT_COMPRESSION_CONFIG,
     MAX_CONTEXT_MESSAGES

@@ -18,7 +18,7 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
 from app.core.database import get_db
-from app.services.scheduling_service import scheduling_service
+from app.domains.interview_scheduling.services.scheduling_service import scheduling_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.compliance.audit_service import audit_service
 

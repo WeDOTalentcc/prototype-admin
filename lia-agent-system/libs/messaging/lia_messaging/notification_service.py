@@ -729,7 +729,7 @@ class NotificationService:
     ):
         """Send notification to Teams channel with adaptive card support."""
         try:
-            from app.services.teams_service import teams_service
+            from app.domains.communication.services.teams_service import teams_service
             
             actions = data.get("actions", []) if data else []
             
@@ -801,7 +801,7 @@ class NotificationService:
     ):
         """Send notification via email using Resend provider."""
         try:
-            from app.services.email_service import EmailService
+            from app.domains.communication.services.email_service import EmailService
 
             email_service = EmailService()
 

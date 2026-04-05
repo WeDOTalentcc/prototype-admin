@@ -14,7 +14,7 @@ import asyncio
 from app.shared.pii_masking import get_masked_logger
 from app.shared.compliance.audit_service import audit_service
 from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
-from app.services.pearch_service import pearch_service
+from app.domains.sourcing.services.pearch_service import pearch_service
 from app.models.pearch import PearchSearchRequest, PearchSearchResponse
 from app.models.candidate import Candidate, CandidateSearch, ViewedCandidate, CandidateFavorite, CandidateHidden, VacancyCandidate
 from app.models.communication_settings import LGPDConsent

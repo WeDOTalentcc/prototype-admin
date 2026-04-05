@@ -150,7 +150,7 @@ class StageAutomationEngine:
     async def _validate_multi_tenancy(self, db: AsyncSession, event: AutomationEvent) -> bool:
         """Validate that candidate/vacancy belong to company. FAIL CLOSED on errors."""
         try:
-            from app.services.automation_handlers import validate_multi_tenancy
+            from app.domains.automation.services.automation_handlers import validate_multi_tenancy
             result, error_msg = await validate_multi_tenancy(
                 db, 
                 event.candidate_id, 

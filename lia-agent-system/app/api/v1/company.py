@@ -77,8 +77,8 @@ from app.services.company_configuration_service import company_config_service
 from app.auth.models import User
 from app.auth.schemas import UserManagementCreate, UserManagementResponse, UserManagementUpdate
 from app.auth.security import get_password_hash, generate_secure_token
-from app.services.email_service import email_service
-from app.services.apify_service import apify_service
+from app.domains.communication.services.email_service import email_service
+from app.domains.sourcing.services.apify_service import apify_service
 import httpx
 import os
 

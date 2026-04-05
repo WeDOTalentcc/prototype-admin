@@ -189,7 +189,7 @@ def test_create_client(client):
         "plan_id": "starter",
     }
     with (
-        patch("app.services.template_seeder.clone_templates_for_client", new_callable=AsyncMock),
+        patch("app.domains.job_management.services.template_seeder.clone_templates_for_client", new_callable=AsyncMock),
         patch("app.services.workos_provisioning_service.provision_workos_organization", new_callable=AsyncMock),
         patch("app.services.hubspot_service.sync_client_to_hubspot", new_callable=AsyncMock),
     ):
@@ -201,7 +201,7 @@ def test_create_client_minimal(client):
     """POST /api/v1/clients/ with minimal payload."""
     payload = {"name": "Minimal Client"}
     with (
-        patch("app.services.template_seeder.clone_templates_for_client", new_callable=AsyncMock),
+        patch("app.domains.job_management.services.template_seeder.clone_templates_for_client", new_callable=AsyncMock),
         patch("app.services.workos_provisioning_service.provision_workos_organization", new_callable=AsyncMock),
         patch("app.services.hubspot_service.sync_client_to_hubspot", new_callable=AsyncMock),
     ):

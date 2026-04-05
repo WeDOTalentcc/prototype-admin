@@ -13,7 +13,7 @@ import logging
 import os
 
 from app.core.database import get_db
-from app.services.screening_question_set_service import screening_question_set_service
+from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
 
 logger = logging.getLogger(__name__)
 

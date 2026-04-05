@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Query, status, Header, Depends
 from typing import Optional, Dict, Any, List
 import logging
 
-from app.services.communication_history_service import communication_history_service
+from app.domains.communication.services.communication_history_service import communication_history_service
 
 
 from app.schemas.communication import (
@@ -18,7 +18,7 @@ from app.schemas.communication import (
     CommunicationListResponse,
     CommunicationStatusUpdate,
 )
-from app.services.email_service import (
+from app.domains.communication.services.email_service import (
     mailgun_email_service,
     SendEmailRequest,
     SendTemplateEmailRequest,
@@ -27,7 +27,7 @@ from app.services.email_service import (
     EmailSendResult,
     BulkEmailResult,
 )
-from app.services.whatsapp_service import (
+from app.domains.communication.services.whatsapp_service import (
     whatsapp_service,
     SendWhatsAppRequest,
     SendWhatsAppTemplateRequest,

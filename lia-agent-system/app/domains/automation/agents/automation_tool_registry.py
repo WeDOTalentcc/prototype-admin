@@ -85,7 +85,7 @@ Responda APENAS com JSON válido."""
 async def _wrap_decompose_task(**kwargs: Any) -> Dict[str, Any]:
     """Decompose a complex task into subtasks using LLM + PlannedTaskService."""
     from app.services.llm import LLMService
-    from app.services.planned_task_service import PlannedTaskService
+    from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.models.planned_task import PlannedTaskPriority
     from app.core.database import AsyncSessionLocal
 
@@ -185,7 +185,7 @@ async def _wrap_decompose_task(**kwargs: Any) -> Dict[str, Any]:
 
 async def _wrap_prioritize_tasks(**kwargs: Any) -> Dict[str, Any]:
     """Recalculate priority scores for tasks."""
-    from app.services.planned_task_service import PlannedTaskService
+    from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.core.database import AsyncSessionLocal
 
     task_ids = kwargs.get("task_ids", [])
@@ -224,7 +224,7 @@ async def _wrap_prioritize_tasks(**kwargs: Any) -> Dict[str, Any]:
 
 async def _wrap_get_execution_plan(**kwargs: Any) -> Dict[str, Any]:
     """Generate an execution plan with parallel levels."""
-    from app.services.planned_task_service import PlannedTaskService, CycleDetectedError
+    from app.domains.automation.services.planned_task_service import PlannedTaskService, CycleDetectedError
     from app.core.database import AsyncSessionLocal
 
     task_ids = kwargs.get("task_ids", [])
@@ -271,7 +271,7 @@ async def _wrap_get_execution_plan(**kwargs: Any) -> Dict[str, Any]:
 
 async def _wrap_build_dag(**kwargs: Any) -> Dict[str, Any]:
     """Build and validate a DAG from task dependencies."""
-    from app.services.planned_task_service import PlannedTaskService
+    from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.core.database import AsyncSessionLocal
 
     task_ids = kwargs.get("task_ids", [])
@@ -290,7 +290,7 @@ async def _wrap_build_dag(**kwargs: Any) -> Dict[str, Any]:
 
 async def _wrap_check_dependencies(**kwargs: Any) -> Dict[str, Any]:
     """Check dependency status for a task."""
-    from app.services.planned_task_service import PlannedTaskService
+    from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.core.database import AsyncSessionLocal
 
     task_id = kwargs.get("task_id")
@@ -309,7 +309,7 @@ async def _wrap_check_dependencies(**kwargs: Any) -> Dict[str, Any]:
 
 async def _wrap_get_next_tasks(**kwargs: Any) -> Dict[str, Any]:
     """Get tasks ready for execution."""
-    from app.services.planned_task_service import PlannedTaskService
+    from app.domains.automation.services.planned_task_service import PlannedTaskService
     from app.core.database import AsyncSessionLocal
 
     try:

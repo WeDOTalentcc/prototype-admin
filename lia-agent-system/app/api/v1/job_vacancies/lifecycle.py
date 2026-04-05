@@ -108,7 +108,7 @@ async def publish_job_vacancy_simple(
     job.status = "Ativa"
     job.open_date = datetime.utcnow()
 
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
     await job_audit_service.log_publication(
         job_id=str(job_id),
@@ -532,7 +532,7 @@ async def close_vacancy(
         if not vacancy:
             raise HTTPException(status_code=404, detail="Vacancy not found")
 
-        from app.services.communication_service import CommunicationService, MessageType, MessageChannel
+        from app.domains.communication.services.communication_service import CommunicationService, MessageType, MessageChannel
         communication_service = CommunicationService()
 
         notifications_sent = {"hired": None, "others": []}
@@ -663,7 +663,7 @@ async def bulk_pause_job_vacancies(
     current_user: User = Depends(get_current_active_user)
 ):
     """Pause multiple job vacancies."""
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
 
     company_id = get_user_company_id(current_user)
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
@@ -757,7 +757,7 @@ async def bulk_resume_job_vacancies(
     current_user: User = Depends(get_current_active_user)
 ):
     """Resume multiple paused job vacancies."""
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
 
     company_id = get_user_company_id(current_user)
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
@@ -838,7 +838,7 @@ async def bulk_archive_job_vacancies(
     current_user: User = Depends(get_current_active_user)
 ):
     """Archive multiple job vacancies (soft delete)."""
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
 
     company_id = get_user_company_id(current_user)
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
@@ -914,7 +914,7 @@ async def bulk_assign_recruiter(
     current_user: User = Depends(get_current_active_user)
 ):
     """Assign a recruiter to multiple job vacancies."""
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
 
     company_id = get_user_company_id(current_user)
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
@@ -985,7 +985,7 @@ async def bulk_change_status(
     current_user: User = Depends(get_current_active_user)
 ):
     """Change status for multiple job vacancies with transition validation."""
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
 
     company_id = get_user_company_id(current_user)
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)

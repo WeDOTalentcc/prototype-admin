@@ -313,7 +313,7 @@ def test_get_job_vacancy_metrics_not_found(client):
 def test_get_job_vacancy_history(client):
     """GET /api/v1/job-vacancies/{id}/history"""
     with patch(
-        "app.services.job_audit_service.job_audit_service.get_history",
+        "app.domains.job_management.services.job_audit_service.job_audit_service.get_history",
         AsyncMock(return_value={
             "items": [],
             "total": 0,
@@ -329,7 +329,7 @@ def test_get_job_vacancy_history(client):
 def test_get_job_vacancy_history_with_pagination(client):
     """GET /api/v1/job-vacancies/{id}/history?page=2&page_size=10"""
     with patch(
-        "app.services.job_audit_service.job_audit_service.get_history",
+        "app.domains.job_management.services.job_audit_service.job_audit_service.get_history",
         AsyncMock(return_value={
             "items": [],
             "total": 0,
@@ -375,7 +375,7 @@ def test_get_job_vacancies_stats_overview_with_filter(client):
 def test_duplicate_job_vacancy(client):
     """POST /api/v1/job-vacancies/{id}/duplicate"""
     with patch(
-        "app.services.job_clone_service.job_clone_service.duplicate_job",
+        "app.domains.job_management.services.job_clone_service.job_clone_service.duplicate_job",
         AsyncMock(return_value={
             "success": True,
             "total_jobs_created": 1,
@@ -390,7 +390,7 @@ def test_duplicate_job_vacancy(client):
 def test_duplicate_job_vacancy_not_found(client):
     """POST /api/v1/job-vacancies/{id}/duplicate — clone service returns not found."""
     with patch(
-        "app.services.job_clone_service.job_clone_service.duplicate_job",
+        "app.domains.job_management.services.job_clone_service.job_clone_service.duplicate_job",
         AsyncMock(return_value={
             "success": False,
             "error": "Job not found",
@@ -426,10 +426,10 @@ def test_get_screening_config_not_found(client):
 def test_finalize_job_vacancy(client):
     """POST /api/v1/job-vacancies/finalize"""
     with patch(
-        "app.services.job_vacancy_service.job_vacancy_service.finalize_job_vacancy",
+        "app.domains.job_management.services.job_vacancy_service.job_vacancy_service.finalize_job_vacancy",
         AsyncMock(return_value=_make_mock_job()),
     ), patch(
-        "app.services.job_audit_service.job_audit_service.log_creation",
+        "app.domains.job_management.services.job_audit_service.job_audit_service.log_creation",
         AsyncMock(),
     ):
         payload = {

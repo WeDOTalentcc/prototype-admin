@@ -25,14 +25,14 @@ from app.domains.cv_screening.constants.wsi_constants import (
     SENIORITY_TO_DREYFUS,
     SENIORITY_TO_BLOOM,
 )
-from app.services.seniority_context_calibrator import (
+from app.domains.cv_screening.services.seniority_context_calibrator import (
     calibrate_or_fallback,
     CalibrationContext,
     CalibrationResult,
     WSI_CONTEXTUAL_CALIBRATION_ENABLED,
 )
-from app.services.seniority_resolver import resolve_seniority_full, SENIORITY_RESOLVER_ENABLED
-from app.services.seniority_utils import normalize_seniority
+from app.domains.cv_screening.services.seniority_resolver import resolve_seniority_full, SENIORITY_RESOLVER_ENABLED
+from app.domains.cv_screening.services.seniority_utils import normalize_seniority
 from app.domains.cv_screening.constants.wsi_constants import WSI_BLOCK_NAMES, SENIORITY_DISTRIBUTIONS
 
 logger = logging.getLogger(__name__)
@@ -389,7 +389,7 @@ class WSIScreeningPipeline:
             logger.warning("No technical skills provided — cannot generate technical questions")
             return []
 
-        from app.services.wsi_service import WSIService
+        from app.domains.cv_screening.services.wsi_service import WSIService
         wsi_svc = WSIService()
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=available_skills,
@@ -455,7 +455,7 @@ class WSIScreeningPipeline:
                 f"No behavioral competencies provided — using Big Five traits as base ({len(behavioral_skills)} traits)"
             )
 
-        from app.services.wsi_service import WSIService
+        from app.domains.cv_screening.services.wsi_service import WSIService
         wsi_svc = WSIService()
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=[],

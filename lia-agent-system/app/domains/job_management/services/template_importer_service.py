@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 
 from app.models.job_template import JobTemplate
-from app.services.job_template_service import validate_wsi_quality
+from app.domains.job_management.services.job_template_service import validate_wsi_quality
 
 logger = logging.getLogger(__name__)
 

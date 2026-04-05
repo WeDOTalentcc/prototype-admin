@@ -13,12 +13,12 @@ import logging
 import uuid as uuid_lib
 
 from app.core.database import get_db
-from app.services.job_vacancy_service import job_vacancy_service
+from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
 from app.services.sourcing_pipeline_service import sourcing_pipeline_service
-from app.services.teams_service import TeamsService
+from app.domains.communication.services.teams_service import TeamsService
 from app.services.notification_service import NotificationService, NotificationType, NotificationChannel
-from app.services.job_status_webhook_service import job_status_webhook_service
-from app.services.job_report_service import job_report_service
+from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
+from app.domains.analytics.services.job_report_service import job_report_service
 from app.schemas.job_vacancy_state import JobVacancyState
 from app.models.job_vacancy import JobVacancy
 from app.models.candidate import VacancyCandidate, Candidate

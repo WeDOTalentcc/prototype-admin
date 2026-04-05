@@ -25,7 +25,7 @@ from app.schemas.rubric import (
     RequirementPriorityEnum,
     LegacyScoreWrapper,
 )
-from app.services.rubric_evaluation_service import rubric_evaluation_service
+from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service
 from app.services.consent_checker_service import ConsentCheckerService
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.pii_masking import get_masked_logger

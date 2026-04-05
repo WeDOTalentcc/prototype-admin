@@ -14,12 +14,12 @@ import logging
 import uuid as uuid_lib
 
 from app.core.database import get_db
-from app.services.job_vacancy_service import job_vacancy_service
+from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
 from app.services.sourcing_pipeline_service import sourcing_pipeline_service
-from app.services.teams_service import TeamsService
+from app.domains.communication.services.teams_service import TeamsService
 from app.services.notification_service import NotificationService, NotificationType, NotificationChannel
-from app.services.job_status_webhook_service import job_status_webhook_service
-from app.services.job_report_service import job_report_service
+from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
+from app.domains.analytics.services.job_report_service import job_report_service
 from app.schemas.job_vacancy_state import JobVacancyState
 from app.models.job_vacancy import JobVacancy
 from app.models.candidate import VacancyCandidate, Candidate
@@ -370,7 +370,7 @@ async def finalize_job_vacancy(
         job_title = str(job_vacancy.title)
         job_status = str(job_vacancy.status)
         
-        from app.services.job_audit_service import job_audit_service
+        from app.domains.job_management.services.job_audit_service import job_audit_service
         await job_audit_service.log_creation(
             job_id=job_id,
             created_by=request.created_by,
@@ -560,7 +560,7 @@ async def publish_job_vacancy(
     job.status = "Ativa"
     job.open_date = datetime.utcnow()
     
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
     await job_audit_service.log_publication(
         job_id=str(job_id),
@@ -1262,7 +1262,7 @@ async def get_job_vacancy_history(
     Returns all changes with timestamps and who made them.
     Multi-tenant: Only returns history for vacancies from user's company.
     """
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
     
     try:
         company_id = get_user_company_id(current_user)
@@ -2194,7 +2194,7 @@ async def update_job_vacancy(
                 setattr(job_vacancy, field, value)
         
         if changes:
-            from app.services.job_audit_service import job_audit_service
+            from app.domains.job_management.services.job_audit_service import job_audit_service
             changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
             await job_audit_service.log_update(
                 job_id=str(job_vacancy_id),
@@ -2278,7 +2278,7 @@ async def delete_job_vacancy(
         job_vacancy.status = "Arquivada"
         job_vacancy.updated_at = datetime.utcnow()
         
-        from app.services.job_audit_service import job_audit_service
+        from app.domains.job_management.services.job_audit_service import job_audit_service
         changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
         await job_audit_service.log_archive(
             job_id=str(job_vacancy_id),
@@ -2478,7 +2478,7 @@ async def update_job_vacancy_status(
                     notifications_sent["details"].append({"candidate_id": cand_id, "error": str(e)})
                     notifications_sent["failure_count"] += 1
 
-        from app.services.job_audit_service import job_audit_service
+        from app.domains.job_management.services.job_audit_service import job_audit_service
         changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
         close_reason = data.get("close_reason", "")
         pause_reason = data.get("pause_reason", "")
@@ -2922,7 +2922,7 @@ async def duplicate_job(
     
     Creates one or more copies of the job, optionally including candidates.
     """
-    from app.services.job_clone_service import job_clone_service
+    from app.domains.job_management.services.job_clone_service import job_clone_service
     
     company_id = get_user_company_id(current_user)
     
@@ -2966,7 +2966,7 @@ async def clone_from_template(
     
     Does NOT clone candidates - only job data (description, requirements, etc).
     """
-    from app.services.job_clone_service import job_clone_service
+    from app.domains.job_management.services.job_clone_service import job_clone_service
     
     company_id = get_user_company_id(current_user)
     
@@ -3006,7 +3006,7 @@ async def find_job_by_identifier(
     
     Used by LIA to find jobs when user provides partial information.
     """
-    from app.services.job_clone_service import job_clone_service
+    from app.domains.job_management.services.job_clone_service import job_clone_service
     
     company_id = get_user_company_id(current_user)
     
@@ -3040,7 +3040,7 @@ async def get_clone_summary(
     
     Returns job details and candidate breakdown for preview.
     """
-    from app.services.job_clone_service import job_clone_service
+    from app.domains.job_management.services.job_clone_service import job_clone_service
     
     try:
         summary = await job_clone_service.get_job_summary_for_clone(db, job_id)
@@ -3751,7 +3751,7 @@ async def apply_to_public_vacancy(
         cv_content = await cv_file.read()
         parsed_cv = {}
         try:
-            from app.services.cv_parser import cv_parser_service
+            from app.domains.cv_screening.services.cv_parser import cv_parser_service
             parsed_cv = await cv_parser_service.parse_cv(
                 file_content=cv_content,
                 filename=cv_file.filename
@@ -4092,7 +4092,7 @@ async def bulk_pause_job_vacancies(
     Only jobs with status 'Ativa' can be paused.
     Multi-tenant: Only affects jobs from the user's company.
     """
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
     
     company_id = get_user_company_id(current_user)
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
@@ -4191,7 +4191,7 @@ async def bulk_resume_job_vacancies(
     Only jobs with status 'Pausada' can be resumed.
     Multi-tenant: Only affects jobs from the user's company.
     """
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
     
     company_id = get_user_company_id(current_user)
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
@@ -4277,7 +4277,7 @@ async def bulk_archive_job_vacancies(
     Already archived jobs will be skipped with an error.
     Multi-tenant: Only affects jobs from the user's company.
     """
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
     
     company_id = get_user_company_id(current_user)
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
@@ -4360,7 +4360,7 @@ async def bulk_assign_recruiter(
     Updates recruiter_email and recruiter fields for all valid job IDs.
     Multi-tenant: Only affects jobs from the user's company.
     """
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
     
     company_id = get_user_company_id(current_user)
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
@@ -4445,7 +4445,7 @@ async def bulk_change_status(
     - Cancelada -> Arquivada
     - Arquivada -> (none)
     """
-    from app.services.job_audit_service import job_audit_service
+    from app.domains.job_management.services.job_audit_service import job_audit_service
     
     company_id = get_user_company_id(current_user)
     changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
@@ -4726,7 +4726,7 @@ async def close_vacancy(
         vacancy.status = "Concluída"
         vacancy.closed_at = datetime.utcnow()
 
-        from app.services.job_audit_service import job_audit_service
+        from app.domains.job_management.services.job_audit_service import job_audit_service
         changed_by = str(current_user.email) if hasattr(current_user, 'email') else str(current_user.id)
         await job_audit_service.log_status_change(
             job_id=vacancy_id,

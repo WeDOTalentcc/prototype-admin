@@ -80,7 +80,7 @@ class TestScoreResponseCallSignature:
         scorer_result = _make_scorer_result(score=3.8)
 
         with patch(
-            "app.services.wsi_deterministic_scorer.calculate_wsi_deterministic",
+            "app.domains.cv_screening.services.wsi_deterministic_scorer.calculate_wsi_deterministic",
             return_value=scorer_result,
         ) as mock_scorer:
             from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewNodes
@@ -104,7 +104,7 @@ class TestScoreResponseCallSignature:
         scorer_result = _make_scorer_result(score=4.1, bloom=4, dreyfus=3)
 
         with patch(
-            "app.services.wsi_deterministic_scorer.calculate_wsi_deterministic",
+            "app.domains.cv_screening.services.wsi_deterministic_scorer.calculate_wsi_deterministic",
             return_value=scorer_result,
         ):
             from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewNodes
@@ -125,7 +125,7 @@ class TestScoreResponseCallSignature:
         state.candidate_profile["_pending_response"] = {"text": ""}
 
         with patch(
-            "app.services.wsi_deterministic_scorer.calculate_wsi_deterministic"
+            "app.domains.cv_screening.services.wsi_deterministic_scorer.calculate_wsi_deterministic"
         ) as mock_scorer:
             from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewNodes
             nodes = WSIInterviewNodes()
@@ -162,7 +162,7 @@ class TestGenerateFeedbackRecommendation:
         state.behavioral_score = 3.8
 
         with patch(
-            "app.services.wsi_deterministic_scorer.calculate_final_wsi_score",
+            "app.domains.cv_screening.services.wsi_deterministic_scorer.calculate_final_wsi_score",
             return_value=self._patch_final("approved", 3.9),
         ):
             from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewNodes
@@ -180,7 +180,7 @@ class TestGenerateFeedbackRecommendation:
         state.behavioral_score = 3.0
 
         with patch(
-            "app.services.wsi_deterministic_scorer.calculate_final_wsi_score",
+            "app.domains.cv_screening.services.wsi_deterministic_scorer.calculate_final_wsi_score",
             return_value=self._patch_final("needs_review", 3.1),
         ):
             from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewNodes
@@ -197,7 +197,7 @@ class TestGenerateFeedbackRecommendation:
         state.behavioral_score = 1.8
 
         with patch(
-            "app.services.wsi_deterministic_scorer.calculate_final_wsi_score",
+            "app.domains.cv_screening.services.wsi_deterministic_scorer.calculate_final_wsi_score",
             return_value=self._patch_final("rejected", 1.9),
         ):
             from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewNodes
@@ -215,7 +215,7 @@ class TestGenerateFeedbackRecommendation:
         state.behavioral_score = 5.0
 
         with patch(
-            "app.services.wsi_deterministic_scorer.calculate_final_wsi_score",
+            "app.domains.cv_screening.services.wsi_deterministic_scorer.calculate_final_wsi_score",
             return_value=self._patch_final("needs_review", 5.0),
         ):
             from app.domains.cv_screening.agents.wsi_interview_graph import WSIInterviewNodes

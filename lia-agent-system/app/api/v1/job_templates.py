@@ -15,13 +15,13 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.job_template_service import (
+from app.domains.job_management.services.job_template_service import (
     JobTemplateService, 
     enrich_template_with_ai,
     validate_wsi_quality,
     WSI_QUALITY_GATES,
 )
-from app.services.template_importer_service import TemplateImporterService
+from app.domains.job_management.services.template_importer_service import TemplateImporterService
 
 router = APIRouter(prefix="/job-templates", tags=["Job Templates"])
 
@@ -376,7 +376,7 @@ async def seed_brazilian_market_templates(
     - Sales (Executivo de Vendas B2B, Customer Success)
     """
     from app.data.brazilian_job_templates import BRAZILIAN_TEMPLATES
-    from app.services.job_embedding_service import job_embedding_service
+    from app.domains.job_management.services.job_embedding_service import job_embedding_service
     
     created = []
     
@@ -459,7 +459,7 @@ async def import_from_esco(
     
     Searches ESCO occupations and creates templates with skills and competencies.
     """
-    from app.services.template_importer_service import TemplateImporterService
+    from app.domains.job_management.services.template_importer_service import TemplateImporterService
     
     importer = TemplateImporterService(db)
     try:
@@ -484,7 +484,7 @@ async def get_import_status(
     db: AsyncSession = Depends(get_db),
 ):
     """Get current template import status and progress toward 480 goal."""
-    from app.services.template_importer_service import TemplateImporterService
+    from app.domains.job_management.services.template_importer_service import TemplateImporterService
     
     importer = TemplateImporterService(db)
     try:
@@ -499,7 +499,7 @@ async def get_learning_stats(
     db: AsyncSession = Depends(get_db),
 ):
     """Get learning statistics for a company."""
-    from app.services.template_learning_service import TemplateLearningService
+    from app.domains.job_management.services.template_learning_service import TemplateLearningService
     
     learning = TemplateLearningService(db)
     return await learning.get_learning_stats(UUID(company_id))
@@ -512,7 +512,7 @@ async def get_learning_suggestions(
     db: AsyncSession = Depends(get_db),
 ):
     """Get suggestions for jobs that could benefit from templates."""
-    from app.services.template_learning_service import TemplateLearningService
+    from app.domains.job_management.services.template_learning_service import TemplateLearningService
     
     learning = TemplateLearningService(db)
     return await learning.suggest_templates_for_improvement(UUID(company_id), limit)
@@ -547,7 +547,7 @@ async def learn_from_job_creation(
     It analyzes the job data and may create a new company-specific template
     if similar jobs have been created before.
     """
-    from app.services.template_learning_service import TemplateLearningService
+    from app.domains.job_management.services.template_learning_service import TemplateLearningService
     
     learning = TemplateLearningService(db)
     

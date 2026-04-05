@@ -15,7 +15,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, Body
 from pydantic import BaseModel, Field
 
-from app.services.job_pattern_service import job_pattern_service
+from app.domains.job_management.services.job_pattern_service import job_pattern_service
 
 router = APIRouter(prefix="/learning", tags=["Job Learning"])
 logger = logging.getLogger(__name__)

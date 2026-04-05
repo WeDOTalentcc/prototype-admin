@@ -8,7 +8,7 @@ from anthropic import AsyncAnthropic
 import json
 
 from app.schemas.interview_scheduling_state import InterviewSchedulingState
-from app.services.calendar_service import calendar_service
+from app.domains.interview_scheduling.services.calendar_service import calendar_service
 from app.core.database import get_db
 from app.domains.interview_scheduling.agents.interview_system_prompt import get_extraction_prompt
 from app.models.interview import Interview

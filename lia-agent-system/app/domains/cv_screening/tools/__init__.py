@@ -15,7 +15,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "cv_text": {"type": "string", "description": "Texto do CV para análise", "required": True},
             "format": {"type": "string", "description": "Formato do CV (plain, html, pdf)", "required": False},
         },
-        "handler": "app.services.cv_parser.parse_cv",
+        "handler": "app.domains.cv_screening.services.cv_parser.parse_cv",
     },
     {
         "tool_id": "score_cv",
@@ -25,7 +25,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "candidate_id": {"type": "string", "description": "ID do candidato", "required": True},
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
         },
-        "handler": "app.services.cv_scoring_service.score_cv",
+        "handler": "app.domains.cv_screening.services.cv_scoring_service.score_cv",
     },
     {
         "tool_id": "evaluate_rubric",
@@ -36,7 +36,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
             "rubric_id": {"type": "string", "description": "ID da rubrica", "required": False},
         },
-        "handler": "app.services.rubric_evaluation_service.evaluate_rubric",
+        "handler": "app.domains.cv_screening.services.rubric_evaluation_service.evaluate_rubric",
     },
     {
         "tool_id": "calculate_wsi",
@@ -46,7 +46,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "candidate_id": {"type": "string", "description": "ID do candidato", "required": True},
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
         },
-        "handler": "app.services.wsi_service.calculate_wsi",
+        "handler": "app.domains.cv_screening.services.wsi_service.calculate_wsi",
     },
     {
         "tool_id": "generate_wsi_questions",
@@ -66,7 +66,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "question_ids": {"type": "list", "description": "IDs das perguntas a ajustar", "required": True},
             "feedback": {"type": "string", "description": "Feedback para ajuste", "required": False},
         },
-        "handler": "app.services.wsi_question_adjuster.adjust_questions",
+        "handler": "app.domains.cv_screening.services.wsi_question_adjuster.adjust_questions",
     },
     {
         "tool_id": "normalize_scores",
@@ -76,7 +76,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
             "candidate_ids": {"type": "list", "description": "IDs dos candidatos", "required": False},
         },
-        "handler": "app.services.score_normalization_service.normalize",
+        "handler": "app.domains.cv_screening.services.score_normalization_service.normalize",
     },
     {
         "tool_id": "assess_seniority",
@@ -86,7 +86,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "candidate_id": {"type": "string", "description": "ID do candidato", "required": True},
             "job_id": {"type": "string", "description": "ID da vaga", "required": False},
         },
-        "handler": "app.services.seniority_resolver.resolve_seniority",
+        "handler": "app.domains.cv_screening.services.seniority_resolver.resolve_seniority",
     },
     {
         "tool_id": "send_candidate_feedback",
@@ -96,7 +96,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "candidate_id": {"type": "string", "description": "ID do candidato", "required": True},
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
         },
-        "handler": "app.services.personalized_feedback_service.send_feedback",
+        "handler": "app.domains.cv_screening.services.personalized_feedback_service.send_feedback",
     },
     {
         "tool_id": "pre_qualify_candidate",
@@ -106,7 +106,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "candidate_id": {"type": "string", "description": "ID do candidato", "required": True},
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
         },
-        "handler": "app.services.pre_qualification_service.pre_qualify",
+        "handler": "app.domains.cv_screening.services.pre_qualification_service.pre_qualify",
     },
     {
         "tool_id": "run_screening_pipeline",
@@ -116,7 +116,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
             "candidate_ids": {"type": "list", "description": "IDs dos candidatos", "required": False},
         },
-        "handler": "app.services.wsi_screening_pipeline.run_pipeline",
+        "handler": "app.domains.cv_screening.services.wsi_screening_pipeline.run_pipeline",
     },
 ]
 

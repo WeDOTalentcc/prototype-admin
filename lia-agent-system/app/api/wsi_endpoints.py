@@ -20,10 +20,10 @@ import json
 import logging
 
 from app.core.database import get_db
-from app.services.wsi_service import wsi_service, Competency, WSIQuestion, ResponseAnalysis, WSIResult
-from app.services.wsi_voice_orchestrator import wsi_voice_orchestrator, VoiceScreeningRequest, VoiceScreeningResult
-from app.services.seniority_utils import normalize_seniority
-from app.services.seniority_context_calibrator import (
+from app.domains.cv_screening.services.wsi_service import wsi_service, Competency, WSIQuestion, ResponseAnalysis, WSIResult
+from app.domains.cv_screening.services.wsi_voice_orchestrator import wsi_voice_orchestrator, VoiceScreeningRequest, VoiceScreeningResult
+from app.domains.cv_screening.services.seniority_utils import normalize_seniority
+from app.domains.cv_screening.services.seniority_context_calibrator import (
     calibrate_or_fallback,
     CalibrationContext,
     WSI_CONTEXTUAL_CALIBRATION_ENABLED,
@@ -247,7 +247,7 @@ async def generate_questions(
     Saves questions to database with session_id.
     """
     try:
-        from app.services.screening_question_set_service import screening_question_set_service
+        from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
         active_qs = await screening_question_set_service.get_active_version(db, request.job_vacancy_id)
         
         if active_qs and active_qs.questions_snapshot:

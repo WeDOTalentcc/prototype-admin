@@ -20,7 +20,7 @@ class WhatsAppChannelAdapter(ChannelAdapter):
 
     async def is_available(self) -> bool:
         try:
-            from app.services.whatsapp_factory import WhatsAppProviderFactory
+            from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
             meta = WhatsAppProviderFactory.get_meta_provider()
             twilio = WhatsAppProviderFactory.get_twilio_provider()
             return meta.is_configured or twilio.is_configured
@@ -43,7 +43,7 @@ class WhatsAppChannelAdapter(ChannelAdapter):
                     error="Formato de número de telefone inválido",
                 )
 
-            from app.services.whatsapp_factory import WhatsAppProviderFactory
+            from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
 
             provider = await WhatsAppProviderFactory.get_provider(message.company_id)
 

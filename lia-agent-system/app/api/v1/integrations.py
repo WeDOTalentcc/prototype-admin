@@ -12,7 +12,7 @@ from pydantic import BaseModel
 import logging
 
 from app.core.database import get_db
-from app.services.teams_service import teams_service, AlertSeverity
+from app.domains.communication.services.teams_service import teams_service, AlertSeverity
 from app.auth.dependencies import get_current_user
 
 logger = logging.getLogger(__name__)

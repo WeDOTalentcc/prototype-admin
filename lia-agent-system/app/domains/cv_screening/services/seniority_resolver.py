@@ -31,8 +31,8 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
-from app.services.calibration_profiles import SALARY_REFERENCE_RANGES_BRL
-from app.services.seniority_utils import (
+from app.domains.cv_screening.services.calibration_profiles import SALARY_REFERENCE_RANGES_BRL
+from app.domains.cv_screening.services.seniority_utils import (
     WSI_SENIORITY_LEVELS,
     infer_seniority_from_title,
     is_valid_seniority_level,
@@ -302,7 +302,7 @@ def _collect_signals(
 
     if job_description:
         try:
-            from app.services.seniority_jd_analyzer import analyze_jd_for_seniority
+            from app.domains.job_management.services.seniority_jd_analyzer import analyze_jd_for_seniority
             jd_result = analyze_jd_for_seniority(job_description)
             jd_level = jd_result.get("level") if isinstance(jd_result, dict) else None
             jd_confidence = jd_result.get("confidence", 0.70) if isinstance(jd_result, dict) else 0.70

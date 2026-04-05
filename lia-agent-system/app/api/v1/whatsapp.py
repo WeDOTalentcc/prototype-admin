@@ -16,11 +16,11 @@ from sqlalchemy import select
 from pydantic import BaseModel
 
 from app.core.database import get_db
-from app.services.whatsapp_meta_service import meta_whatsapp_service
-from app.services.whatsapp_twilio_service import twilio_whatsapp_service
-from app.services.whatsapp_factory import WhatsAppProviderFactory
-from app.services.whatsapp_provider import ProviderType
-from app.services.conversation_manager import ConversationManager
+from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
+from app.domains.communication.services.whatsapp_twilio_service import twilio_whatsapp_service
+from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
+from app.domains.communication.services.whatsapp_provider import ProviderType
+from app.domains.recruiter_assistant.services.conversation_manager import ConversationManager
 
 logger = logging.getLogger(__name__)
 

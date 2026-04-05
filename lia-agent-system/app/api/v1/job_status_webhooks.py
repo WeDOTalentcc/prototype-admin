@@ -18,7 +18,7 @@ from app.models.webhook_registration import (
     WebhookDeliveryLog,
     JOB_STATUS_WEBHOOK_EVENTS
 )
-from app.services.job_status_webhook_service import job_status_webhook_service
+from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
 from app.auth.dependencies import (
     get_current_user,
     get_current_active_user,

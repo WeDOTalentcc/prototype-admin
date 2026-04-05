@@ -11,7 +11,7 @@ from typing import List, Optional, Dict, Any
 import logging
 import uuid
 
-from app.services.job_context_service import job_context_service, EnrichedJobContext
+from app.domains.job_management.services.job_context_service import job_context_service, EnrichedJobContext
 from app.api.orchestrator_routes import get_main_orchestrator
 from app.orchestrator.context_adapter import ContextAdapter
 from app.orchestrator.main_orchestrator import MainOrchestrator

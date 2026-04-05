@@ -308,7 +308,7 @@ def test_list_company_users(client):
 
 def test_create_company_user(client):
     """POST /api/v1/company/users"""
-    with patch("app.services.email_service.email_service.send_email", new_callable=AsyncMock):
+    with patch("app.domains.communication.services.email_service.email_service.send_email", new_callable=AsyncMock):
         payload = {
             "email": "newuser@company.com",
             "full_name": "New User",
@@ -388,7 +388,7 @@ def test_list_technical_test_templates(client):
 def test_enrich_company(client):
     """POST /api/v1/company/enrich"""
     with (
-        patch("app.services.apify_service.apify_service.scrape_linkedin_company", new_callable=AsyncMock, return_value={}),
+        patch("app.domains.sourcing.services.apify_service.apify_service.scrape_linkedin_company", new_callable=AsyncMock, return_value={}),
     ):
         payload = {"linkedin_url": "https://linkedin.com/company/test"}
         resp = client.post("/api/v1/company/enrich", json=payload)

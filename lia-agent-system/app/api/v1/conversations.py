@@ -15,7 +15,7 @@ import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
-from app.services.conversation_memory import ConversationMemory, conversation_memory
+from app.domains.recruiter_assistant.services.conversation_memory import ConversationMemory, conversation_memory
 from app.models.conversation import ConversationContextType
 
 logger = logging.getLogger(__name__)

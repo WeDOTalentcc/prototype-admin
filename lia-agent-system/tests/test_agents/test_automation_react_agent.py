@@ -183,7 +183,7 @@ class TestAutomationPrioritizeShim:
         mock_svc = MagicMock()
         mock_svc.get_tasks_by_goal = AsyncMock(return_value=[])
 
-        with patch("app.services.planned_task_service.PlannedTaskService", return_value=mock_svc), \
+        with patch("app.domains.automation.services.planned_task_service.PlannedTaskService", return_value=mock_svc), \
              patch("app.core.database.AsyncSessionLocal", return_value=mock_db_ctx):
             result = await _wrap_prioritize_tasks(task_ids=[], goal_id=None)
 

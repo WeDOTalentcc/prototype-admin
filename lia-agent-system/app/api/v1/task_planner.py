@@ -15,7 +15,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from app.core.database import get_db
-from app.services.planned_task_service import (
+from app.domains.automation.services.planned_task_service import (
     planned_task_service,
     CycleDetectedError
 )

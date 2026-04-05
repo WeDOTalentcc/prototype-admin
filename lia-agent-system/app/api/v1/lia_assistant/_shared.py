@@ -22,7 +22,7 @@ from app.models.job_draft import JobDraft, DraftFieldHistory, JobDraftStatus, Ch
 from app.services.intent_classifier import (
     IntentClassifierService, IntentType, ClassificationResult, intent_classifier_service
 )
-from app.services.job_insights_service import JobInsightsService
+from app.domains.analytics.services.job_insights_service import JobInsightsService
 from app.services.market_benchmark_service import MarketBenchmarkService
 from app.services.feedback_learning_service import FeedbackLearningService
 from app.services.llm import LLMService
@@ -31,10 +31,10 @@ from app.services.confidence_policy_service import ConfidencePolicyService
 from app.services.config_completeness_service import ConfigCompletenessService
 from app.services.skills_catalog_service import skills_catalog_service
 from app.services.responsibilities_catalog_service import responsibilities_catalog_service
-from app.services.jd_generator_service import jd_generator_service
+from app.domains.job_management.services.jd_generator_service import jd_generator_service
 from app.services.learning_hub_service import learning_hub_service
 # SourcingAgent and AvaliadorWSIAgent moved to lia_assistant_wizard_stages.py (Phase 6 deprecation)
-from app.services.vacancy_search_service import (
+from app.domains.job_management.services.vacancy_search_service import (
     vacancy_search_service, VacancySummary, VacancyFullDetails
 )
 from app.services.enhanced_intent_classifier import (
@@ -64,7 +64,7 @@ from app.services.llm import llm_service
 from app.services.graph_runner import graph_runner_service, GraphRunnerService
 from app.services.feedback_service import feedback_service, FeedbackService
 from app.services.voice_service import voice_service, VoiceServiceError, TranscriptionError, SynthesisError
-from app.services.autonomous_agent_service import autonomous_agent_service
+from app.domains.automation.services.autonomous_agent_service import autonomous_agent_service
 from app.services.multimodal_service import (
     multimodal_service,
     MultimodalServiceError,

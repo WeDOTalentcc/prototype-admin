@@ -15,7 +15,7 @@ from pydantic import BaseModel
 import logging
 
 from app.core.database import get_db
-from app.services.predictive_analytics_service import predictive_analytics_service
+from app.domains.analytics.services.predictive_analytics_service import predictive_analytics_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/analytics/predictions", tags=["predictive-analytics"])

@@ -1802,7 +1802,7 @@ class CommunicationService:
             Result dict with success status and details
         """
         from app.models.email_template import EmailTemplate
-        from app.services.email_service import email_service
+        from app.domains.communication.services.email_service import email_service
         
         try:
             situation = MESSAGE_TYPE_TO_SITUATION.get(message_type)

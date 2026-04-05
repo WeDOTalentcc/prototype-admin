@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.services.jd_generator_service import jd_generator_service
+from app.domains.job_management.services.jd_generator_service import jd_generator_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
 from app.shared.compliance.audit_service import audit_service
 import logging

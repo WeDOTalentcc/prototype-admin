@@ -15,9 +15,9 @@ from uuid import UUID
 
 from app.core.database import get_db
 from app.models.client_account import ClientAccount, ClientStatus, CLIENT_STATUS_OPTIONS, COMPANY_SIZE_OPTIONS
-from app.services.template_seeder import clone_templates_for_client
+from app.domains.job_management.services.template_seeder import clone_templates_for_client
 from app.services.workos_provisioning_service import provision_workos_organization
-from app.services.email_service import EmailService
+from app.domains.communication.services.email_service import EmailService
 from app.services.hubspot_service import hubspot_service, sync_client_to_hubspot
 from app.auth.workos_models import CompanyWorkOSConfig
 

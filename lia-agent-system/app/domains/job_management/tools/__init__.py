@@ -80,7 +80,7 @@ JOB_MANAGEMENT_TOOLS: List[Dict[str, Any]] = [
             "requirements": {"type": "list", "description": "Lista de requisitos da vaga", "required": False},
             "company_context": {"type": "string", "description": "Contexto da empresa para personalização", "required": False},
         },
-        "handler": "app.services.jd_generator_service.generate_job_description",
+        "handler": "app.domains.job_management.services.jd_generator_service.generate_job_description",
     },
     {
         "tool_id": "enrich_job_description",
@@ -90,7 +90,7 @@ JOB_MANAGEMENT_TOOLS: List[Dict[str, Any]] = [
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
             "sections": {"type": "list", "description": "Seções a enriquecer", "required": False},
         },
-        "handler": "app.services.jd_enrichment_service.enrich_job_description",
+        "handler": "app.domains.job_management.services.jd_enrichment_service.enrich_job_description",
     },
     {
         "tool_id": "import_job_description",
@@ -100,7 +100,7 @@ JOB_MANAGEMENT_TOOLS: List[Dict[str, Any]] = [
             "text": {"type": "string", "description": "Texto da job description", "required": True},
             "format": {"type": "string", "description": "Formato do texto (plain, html, markdown)", "required": False, "default": "plain"},
         },
-        "handler": "app.services.jd_import_service.import_job_description",
+        "handler": "app.domains.job_management.services.jd_import_service.import_job_description",
     },
     {
         "tool_id": "search_job_templates",
@@ -111,7 +111,7 @@ JOB_MANAGEMENT_TOOLS: List[Dict[str, Any]] = [
             "industry": {"type": "string", "description": "Indústria ou setor", "required": False},
             "limit": {"type": "integer", "description": "Número máximo de resultados", "required": False, "default": 10},
         },
-        "handler": "app.services.job_template_service.search_job_templates",
+        "handler": "app.domains.job_management.services.job_template_service.search_job_templates",
     },
     {
         "tool_id": "get_job_health",
@@ -120,7 +120,7 @@ JOB_MANAGEMENT_TOOLS: List[Dict[str, Any]] = [
         "parameters": {
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
         },
-        "handler": "app.services.job_insights_service.get_job_health",
+        "handler": "app.domains.analytics.services.job_insights_service.get_job_health",
     },
     {
         "tool_id": "get_wizard_step",
@@ -130,7 +130,7 @@ JOB_MANAGEMENT_TOOLS: List[Dict[str, Any]] = [
             "session_id": {"type": "string", "description": "ID da sessão do wizard", "required": True},
             "step": {"type": "string", "description": "Identificador da etapa", "required": False},
         },
-        "handler": "app.services.wizard_orchestrator_service.get_wizard_step",
+        "handler": "app.domains.job_management.services.wizard_orchestrator_service.get_wizard_step",
     },
     {
         "tool_id": "advance_wizard",
@@ -139,7 +139,7 @@ JOB_MANAGEMENT_TOOLS: List[Dict[str, Any]] = [
         "parameters": {
             "session_id": {"type": "string", "description": "ID da sessão do wizard", "required": True},
         },
-        "handler": "app.services.wizard_orchestrator_service.advance_wizard",
+        "handler": "app.domains.job_management.services.wizard_orchestrator_service.advance_wizard",
     },
     {
         "tool_id": "get_job_analytics",
@@ -149,7 +149,7 @@ JOB_MANAGEMENT_TOOLS: List[Dict[str, Any]] = [
             "job_id": {"type": "string", "description": "ID da vaga", "required": False},
             "date_range": {"type": "string", "description": "Período de análise (week, month, quarter)", "required": False, "default": "month"},
         },
-        "handler": "app.services.job_analytics_prompt_service.get_job_analytics",
+        "handler": "app.domains.analytics.services.job_analytics_prompt_service.get_job_analytics",
     },
 ]
 

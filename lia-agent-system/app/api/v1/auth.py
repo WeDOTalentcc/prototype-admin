@@ -24,7 +24,7 @@ from app.auth.security import (
     INVITATION_EXPIRE_HOURS, EMAIL_VERIFICATION_EXPIRE_DAYS
 )
 from app.auth.dependencies import get_current_active_user
-from app.services.email_service import email_service
+from app.domains.communication.services.email_service import email_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.compliance.audit_service import audit_service
 

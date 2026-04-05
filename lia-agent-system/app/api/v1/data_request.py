@@ -18,8 +18,8 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.services.data_request_service import data_request_service
-from app.services.data_request_whatsapp_service import data_request_whatsapp_service
+from app.domains.communication.services.data_request_service import data_request_service
+from app.domains.communication.services.data_request_whatsapp_service import data_request_whatsapp_service
 from app.models.data_request import (
     DataRequestStatus,
     DataFieldType,

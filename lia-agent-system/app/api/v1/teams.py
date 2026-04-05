@@ -22,8 +22,8 @@ import uuid
 
 from app.core.database import get_db
 from app.models.teams import TeamsConversation, TeamsMessage, TeamsActionAuditLog
-from app.services.teams_simple import simple_teams_bot
-from app.services.teams_auth import bot_auth
+from app.domains.communication.services.teams_simple import simple_teams_bot
+from app.domains.communication.services.teams_auth import bot_auth
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -225,8 +225,8 @@ async def _start_whatsapp_screening(
     Uses the CommunicationDispatcher to send screening invite via WhatsApp.
     """
     try:
-        from app.services.communication_dispatcher import communication_dispatcher
-        from app.services.communication_history_service import communication_history_service
+        from app.domains.communication.services.communication_dispatcher import communication_dispatcher
+        from app.domains.communication.services.communication_history_service import communication_history_service
         
         screening_message = f"""Olá {candidate_name}! 👋
 
@@ -840,7 +840,7 @@ async def send_proactive_notification(
             raise HTTPException(status_code=404, detail="Teams conversation not found")
         
         # Send notification via adaptive card
-        from app.services.teams_simple import SimpleTeamsBot
+        from app.domains.communication.services.teams_simple import SimpleTeamsBot
         bot = SimpleTeamsBot()
         
         # Create card based on notification type
@@ -1119,7 +1119,7 @@ async def teams_sso_callback(
 
         # Try to send card to the conversation
         try:
-            from app.services.teams_simple import simple_teams_bot
+            from app.domains.communication.services.teams_simple import simple_teams_bot
             await simple_teams_bot.send_adaptive_card(
                 service_url="",  # Will need stored service_url
                 conversation_id=conversation_id,
@@ -1470,7 +1470,7 @@ async def teams_tab_events(
     Card to the recruiter's Teams chat with a deep link to the platform.
     """
     from app.domains.communication.services.teams_tab_trigger import get_trigger_engine
-    from app.services.teams_simple import SimpleTeamsBot
+    from app.domains.communication.services.teams_simple import SimpleTeamsBot
     from sqlalchemy import select
 
     engine = get_trigger_engine()

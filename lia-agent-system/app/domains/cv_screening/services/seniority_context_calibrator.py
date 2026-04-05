@@ -29,14 +29,14 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
-from app.services.calibration_profiles import (
+from app.domains.cv_screening.services.calibration_profiles import (
     AREA_MATURITY_PROFILES,
     DEFAULT_PROFILE,
     GEOGRAPHIC_ADJUSTMENTS,
     SALARY_REFERENCE_RANGES_BRL,
     TECHNOLOGY_AGE_PROFILES,
 )
-from app.services.seniority_utils import normalize_seniority
+from app.domains.cv_screening.services.seniority_utils import normalize_seniority
 
 logger = logging.getLogger(__name__)
 

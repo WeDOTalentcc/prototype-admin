@@ -12,7 +12,7 @@ import logging
 import uuid as uuid_module
 
 from app.models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
-from app.services.recruitment_email_templates import (
+from app.domains.job_management.services.recruitment_email_templates import (
     seed_default_templates,
     get_template_for_stage,
     list_templates,

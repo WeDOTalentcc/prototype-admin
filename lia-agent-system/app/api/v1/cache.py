@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException
 from typing import Optional
 import logging
 
-from app.services.jd_template_cache_service import jd_template_cache_service
+from app.domains.job_management.services.jd_template_cache_service import jd_template_cache_service
 from app.services.embedding_cache_service import embedding_cache
 
 logger = logging.getLogger(__name__)

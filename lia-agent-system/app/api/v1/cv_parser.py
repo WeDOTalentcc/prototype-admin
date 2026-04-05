@@ -10,7 +10,7 @@ import logging
 
 from app.core.database import get_db
 from app.models.candidate import Candidate, CandidateExperience, CandidateEducation
-from app.services.cv_parser import cv_parser_service
+from app.domains.cv_screening.services.cv_parser import cv_parser_service
 from app.utils.skill_classifier import classify_skills
 import re
 from typing import Tuple, Optional, Optional as Opt

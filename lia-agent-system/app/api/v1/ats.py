@@ -20,8 +20,8 @@ from app.models.ats_integration import (
     ATSProvider,
     SyncStatus
 )
-from app.services.gupy_service import GupyService
-from app.services.pandape_service import PandapeService
+from app.domains.ats_integration.services.gupy_service import GupyService
+from app.domains.ats_integration.services.pandape_service import PandapeService
 from app.shared.encryption import encrypt_value, decrypt_value
 
 logger = logging.getLogger(__name__)

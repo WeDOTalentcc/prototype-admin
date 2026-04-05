@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.email_template import EmailTemplate, EmailLog
-from app.services.email_providers import (
+from app.domains.communication.services.email_providers import (
     EmailProvider,
     EmailResult,
     get_email_provider,

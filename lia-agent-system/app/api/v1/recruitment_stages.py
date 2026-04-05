@@ -31,7 +31,7 @@ from app.models.recruitment_stages import (
     PANDAPE_STAGE_MAPPINGS,
     STANDARD_STAGE_CATALOG
 )
-from app.services.pipeline_stage_service import pipeline_stage_service, TransitionError
+from app.domains.recruiter_assistant.services.pipeline_stage_service import pipeline_stage_service, TransitionError
 from app.domains.communication.services.return_event_service import ReturnEventService, ReturnEventType, RETURN_EVENT_CONFIG
 from app.core.database import get_db
 from app.auth.dependencies import (

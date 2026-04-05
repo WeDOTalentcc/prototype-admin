@@ -9,7 +9,7 @@ from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from app.services.wsi_question_adjuster import wsi_question_adjuster_service
+from app.domains.cv_screening.services.wsi_question_adjuster import wsi_question_adjuster_service
 
 router = APIRouter(prefix="/wsi", tags=["WSI Question Adjust"])
 logger = logging.getLogger(__name__)

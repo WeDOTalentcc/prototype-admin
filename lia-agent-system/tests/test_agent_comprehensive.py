@@ -241,7 +241,7 @@ class AgentTestSuite:
         results = {"name": "Memory Persistence", "tests": []}
         
         try:
-            from app.services.conversation_memory import ConversationMemory
+            from app.domains.recruiter_assistant.services.conversation_memory import ConversationMemory
             
             memory = ConversationMemory()
             

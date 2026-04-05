@@ -25,7 +25,7 @@ from app.models.email_template import EmailTemplate
 from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
-from app.services.email_providers import get_email_provider
+from app.domains.communication.services.email_providers import get_email_provider
 from pydantic import BaseModel, EmailStr
 
 logger = logging.getLogger(__name__)

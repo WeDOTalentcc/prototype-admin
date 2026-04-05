@@ -333,7 +333,7 @@ async def get_salary_benchmark(
 
     Combines internal company data with external market data.
     """
-    from app.services.job_insights_service import JobInsightsService
+    from app.domains.analytics.services.job_insights_service import JobInsightsService
     try:
         job_insights_svc = JobInsightsService()
 

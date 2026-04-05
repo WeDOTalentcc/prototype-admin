@@ -1,6 +1,6 @@
 import pytest
 
-from app.services.seniority_jd_analyzer import (
+from app.domains.job_management.services.seniority_jd_analyzer import (
     AUTONOMY_INDICATORS,
     COMPLEXITY_INDICATORS,
     _calculate_confidence,

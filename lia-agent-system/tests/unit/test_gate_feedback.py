@@ -44,7 +44,7 @@ class TestGateFeedbackBasic:
 
     @pytest.mark.asyncio
     async def test_screening_invited_returns_true_on_success(self):
-        with patch("app.services.email_service.email_service") as mock_email:
+        with patch("app.domains.communication.services.email_service.email_service") as mock_email:
             mock_email._send_email_provider = AsyncMock(return_value=True)
             svc = _make_service()
             result = await _call(svc, "screening_invited")
@@ -52,7 +52,7 @@ class TestGateFeedbackBasic:
 
     @pytest.mark.asyncio
     async def test_gate1_rejected_returns_true_on_success(self):
-        with patch("app.services.email_service.email_service") as mock_email:
+        with patch("app.domains.communication.services.email_service.email_service") as mock_email:
             mock_email._send_email_provider = AsyncMock(return_value=True)
             svc = _make_service()
             result = await _call(svc, "gate1_rejected")
@@ -60,7 +60,7 @@ class TestGateFeedbackBasic:
 
     @pytest.mark.asyncio
     async def test_gate2_rejected_returns_true_on_success(self):
-        with patch("app.services.email_service.email_service") as mock_email:
+        with patch("app.domains.communication.services.email_service.email_service") as mock_email:
             mock_email._send_email_provider = AsyncMock(return_value=True)
             svc = _make_service()
             result = await _call(svc, "gate2_rejected")
@@ -68,7 +68,7 @@ class TestGateFeedbackBasic:
 
     @pytest.mark.asyncio
     async def test_approved_returns_true_on_success(self):
-        with patch("app.services.email_service.email_service") as mock_email:
+        with patch("app.domains.communication.services.email_service.email_service") as mock_email:
             mock_email._send_email_provider = AsyncMock(return_value=True)
             svc = _make_service()
             result = await _call(svc, "approved")
@@ -84,7 +84,7 @@ class TestGateFeedbackFailSafe:
     @pytest.mark.asyncio
     async def test_email_service_error_returns_false(self):
         """Falha no envio → False sem raise."""
-        with patch("app.services.email_service.email_service") as mock_email:
+        with patch("app.domains.communication.services.email_service.email_service") as mock_email:
             mock_email._send_email_provider = AsyncMock(side_effect=Exception("SMTP down"))
             svc = _make_service()
             result = await _call(svc, "gate1_rejected")
@@ -117,7 +117,7 @@ class TestGateFeedbackFailSafe:
     @pytest.mark.asyncio
     async def test_email_service_returns_false_propagated(self):
         """email_service retorna False → send_gate_feedback também retorna False."""
-        with patch("app.services.email_service.email_service") as mock_email:
+        with patch("app.domains.communication.services.email_service.email_service") as mock_email:
             mock_email._send_email_provider = AsyncMock(return_value=False)
             svc = _make_service()
             result = await _call(svc, "approved")
@@ -138,7 +138,7 @@ class TestGateFeedbackContent:
             captured["body"] = body_text
             return True
 
-        with patch("app.services.email_service.email_service") as mock_email:
+        with patch("app.domains.communication.services.email_service.email_service") as mock_email:
             mock_email._send_email_provider = AsyncMock(side_effect=mock_send)
             svc = _make_service()
             await _call(
@@ -156,7 +156,7 @@ class TestGateFeedbackContent:
             captured["subject"] = subject
             return True
 
-        with patch("app.services.email_service.email_service") as mock_email:
+        with patch("app.domains.communication.services.email_service.email_service") as mock_email:
             mock_email._send_email_provider = AsyncMock(side_effect=mock_send)
             svc = _make_service()
             await _call(svc, "gate1_rejected")
@@ -172,7 +172,7 @@ class TestGateFeedbackContent:
             captured["body"] = body_text
             return True
 
-        with patch("app.services.email_service.email_service") as mock_email:
+        with patch("app.domains.communication.services.email_service.email_service") as mock_email:
             mock_email._send_email_provider = AsyncMock(side_effect=mock_send)
             svc = _make_service()
             await _call(
@@ -191,7 +191,7 @@ class TestGateFeedbackContent:
             captured["body"] = body_text
             return True
 
-        with patch("app.services.email_service.email_service") as mock_email:
+        with patch("app.domains.communication.services.email_service.email_service") as mock_email:
             mock_email._send_email_provider = AsyncMock(side_effect=mock_send)
             svc = _make_service()
             await _call(

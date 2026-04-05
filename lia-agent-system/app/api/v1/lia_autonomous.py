@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 import logging
 
-from app.services.autonomous_agent_service import autonomous_agent_service
+from app.domains.automation.services.autonomous_agent_service import autonomous_agent_service
 
 logger = logging.getLogger(__name__)
 

@@ -176,7 +176,7 @@ async def generate_wsi_questions(request: GenerateQuestionsRequest):
     Falls back to template-based generation if LLM is unavailable.
     """
     try:
-        from app.services.wsi_service import WSIService as _WSISvc
+        from app.domains.cv_screening.services.wsi_service import WSIService as _WSISvc
         _wsi = _WSISvc()
         _raw = await _wsi.generate_from_simple_inputs(
             skills=request.technical_skills,
@@ -316,7 +316,7 @@ async def regenerate_wsi_questions(request: RegenerateQuestionsRequest):
         behav_to_generate = new_behav[:max(behav_needed, 1)]
 
         if tech_to_generate or behav_to_generate:
-            from app.services.wsi_service import WSIService as _WSISvc
+            from app.domains.cv_screening.services.wsi_service import WSIService as _WSISvc
             _wsi = _WSISvc()
             _raw = await _wsi.generate_from_simple_inputs(
                 skills=tech_to_generate,

@@ -53,7 +53,7 @@ def get_communication_service():
     """Lazy load CommunicationService to avoid circular imports."""
     global _communication_service
     if _communication_service is None:
-        from app.services.communication_service import communication_service
+        from app.domains.communication.services.communication_service import communication_service
         _communication_service = communication_service
     return _communication_service
 
@@ -875,7 +875,7 @@ class SchedulingService:
         Returns:
             Result dict with success status and details
         """
-        from app.services.communication_service import MessageType, MessageChannel
+        from app.domains.communication.services.communication_service import MessageType, MessageChannel
         
         try:
             resolved_company_id = self._resolve_company_id(company_id)
@@ -980,7 +980,7 @@ class SchedulingService:
         Returns:
             Result dict with success status and details
         """
-        from app.services.communication_service import MessageType, MessageChannel
+        from app.domains.communication.services.communication_service import MessageType, MessageChannel
         from pytz import timezone as pytz_timezone
         
         try:

@@ -29,7 +29,7 @@ from app.models.data_request import (
     DataFieldType,
 )
 from app.models.candidate import Candidate
-from app.services.whatsapp_meta_service import meta_whatsapp_service
+from app.domains.communication.services.whatsapp_meta_service import meta_whatsapp_service
 
 logger = logging.getLogger(__name__)
 

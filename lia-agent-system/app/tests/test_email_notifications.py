@@ -17,7 +17,7 @@ from app.services.notification_service import (
     NotificationType, 
     NotificationChannel
 )
-from app.services.email_service import EmailService
+from app.domains.communication.services.email_service import EmailService
 
 
 class TestEmailNotifications:
@@ -40,7 +40,7 @@ class TestEmailNotifications:
     @pytest.mark.asyncio
     async def test_send_to_email_formats_html_correctly(self, notification_service, sample_notification_data):
         """Test that email HTML is formatted correctly."""
-        with patch('app.services.email_service.EmailService') as mock_email_service:
+        with patch('app.domains.communication.services.email_service.EmailService') as mock_email_service:
             mock_instance = MagicMock()
             mock_instance._send_email_provider = AsyncMock(return_value=True)
             mock_email_service.return_value = mock_instance
@@ -64,7 +64,7 @@ class TestEmailNotifications:
     @pytest.mark.asyncio
     async def test_send_to_email_includes_action_url(self, notification_service, sample_notification_data):
         """Test that email includes action URL button."""
-        with patch('app.services.email_service.EmailService') as mock_email_service:
+        with patch('app.domains.communication.services.email_service.EmailService') as mock_email_service:
             mock_instance = MagicMock()
             mock_instance._send_email_provider = AsyncMock(return_value=True)
             mock_email_service.return_value = mock_instance
@@ -86,7 +86,7 @@ class TestEmailNotifications:
     @pytest.mark.asyncio
     async def test_send_to_email_handles_missing_data(self, notification_service):
         """Test that email handles missing optional data gracefully."""
-        with patch('app.services.email_service.EmailService') as mock_email_service:
+        with patch('app.domains.communication.services.email_service.EmailService') as mock_email_service:
             mock_instance = MagicMock()
             mock_instance._send_email_provider = AsyncMock(return_value=True)
             mock_email_service.return_value = mock_instance
@@ -108,7 +108,7 @@ class TestEmailNotifications:
     @pytest.mark.asyncio
     async def test_send_to_email_raises_on_failure(self, notification_service):
         """Test that email raises exception on send failure."""
-        with patch('app.services.email_service.EmailService') as mock_email_service:
+        with patch('app.domains.communication.services.email_service.EmailService') as mock_email_service:
             mock_instance = MagicMock()
             mock_instance._send_email_provider = AsyncMock(return_value=False)
             mock_email_service.return_value = mock_instance
@@ -155,7 +155,7 @@ class TestEmailNotifications:
     @pytest.mark.asyncio
     async def test_email_template_styling(self, notification_service, sample_notification_data):
         """Test that email template has correct LIA styling."""
-        with patch('app.services.email_service.EmailService') as mock_email_service:
+        with patch('app.domains.communication.services.email_service.EmailService') as mock_email_service:
             mock_instance = MagicMock()
             mock_instance._send_email_provider = AsyncMock(return_value=True)
             mock_email_service.return_value = mock_instance

@@ -316,8 +316,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
         </div>
       )}
 
-      {/* Tags de Critérios - Hidden when autocomplete is open */}
-      <div className={cn("flex flex-wrap items-center gap-1.5 mt-2", showAutocomplete && autocompleteSuggestions.length > 0 && "hidden")}>
+      <div className="flex flex-wrap items-center gap-1.5 mt-2">
         {searchTags.map((tag) => {
           const colors = getTagColors(tag.key, tag.filled)
           const TagIcon = tag.icon
@@ -439,7 +438,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
         )}
       </div>
 
-      {naturalSearchValue && searchAnalysis && !(showAutocomplete && autocompleteSuggestions.length > 0) && (
+      {naturalSearchValue && searchAnalysis && (
         <div className="space-y-2 pt-2 mt-2 border-t border-lia-border-default dark:border-lia-border-default">
           {/* Barra de completude */}
           <div className="flex items-center gap-3">

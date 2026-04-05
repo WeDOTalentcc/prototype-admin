@@ -16,8 +16,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 
 from app.services.briefing_service import briefing_service, BriefingService
-from app.services.email_service import EmailService
-from app.services.email_providers import get_email_provider
+from app.domains.communication.services.email_service import EmailService
+from app.domains.communication.services.email_providers import get_email_provider
 from app.templates.report_templates import report_templates
 from app.core.database import AsyncSessionLocal
 

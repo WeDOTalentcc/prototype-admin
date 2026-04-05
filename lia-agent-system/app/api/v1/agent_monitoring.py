@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from app.core.database import get_db
-from app.services.agent_monitoring_service import AgentMonitoringService
+from app.domains.analytics.services.agent_monitoring_service import AgentMonitoringService
 
 router = APIRouter(prefix="/agent-monitoring", tags=["Agent Monitoring"])
 

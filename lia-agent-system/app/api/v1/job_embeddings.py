@@ -14,7 +14,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, Body
 from pydantic import BaseModel, Field
 
-from app.services.job_embedding_service import job_embedding_service
+from app.domains.job_management.services.job_embedding_service import job_embedding_service
 
 router = APIRouter(prefix="/job-embeddings", tags=["Job Embeddings"])
 logger = logging.getLogger(__name__)

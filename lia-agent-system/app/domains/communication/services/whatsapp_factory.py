@@ -11,9 +11,9 @@ from typing import Optional, Dict
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.services.whatsapp_provider import WhatsAppProvider, ProviderType
-from app.services.whatsapp_meta_service import MetaWhatsAppService
-from app.services.whatsapp_twilio_service import TwilioWhatsAppService
+from app.domains.communication.services.whatsapp_provider import WhatsAppProvider, ProviderType
+from app.domains.communication.services.whatsapp_meta_service import MetaWhatsAppService
+from app.domains.communication.services.whatsapp_twilio_service import TwilioWhatsAppService
 
 logger = logging.getLogger(__name__)
 

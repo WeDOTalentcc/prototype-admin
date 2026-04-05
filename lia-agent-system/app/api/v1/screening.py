@@ -110,7 +110,7 @@ async def generate_screening_questions(
         company_id = get_user_company_id(current_user)
         logger.info(f"Generating screening questions for: {request.title} ({request.seniority}) - company: {company_id}, user: {current_user.email}")
 
-        from app.services.wsi_service import WSIService
+        from app.domains.cv_screening.services.wsi_service import WSIService
         wsi_svc = WSIService()
         mode = "full" if request.question_count > 10 else "compact"
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
@@ -148,7 +148,7 @@ async def regenerate_questions(
         company_id = get_user_company_id(current_user)
         logger.info(f"Regenerating questions for: {request.context.title} - company: {company_id}, user: {current_user.email}")
 
-        from app.services.wsi_service import WSIService
+        from app.domains.cv_screening.services.wsi_service import WSIService
         wsi_svc = WSIService()
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=request.context.skills or [],

@@ -8,7 +8,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from app.core.database import get_db
-from app.services.task_service import task_service
+from app.domains.automation.services.task_service import task_service
 from app.models.task import TaskPriority, TaskStatus, TaskType
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])

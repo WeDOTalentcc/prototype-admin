@@ -153,7 +153,7 @@ async def handle_stage_changed(record: Dict, company_id: str, account_token: str
     logger.info(f"[MERGE] Stage changed: {application_id} -> {new_stage_name}")
     
     try:
-        from app.services.merge_ats_service import merge_ats_service
+        from app.domains.ats_integration.services.merge_ats_service import merge_ats_service
         lia_stage = merge_ats_service.map_merge_stage_to_lia(new_stage_name)
         
         from app.services.activity_service import activity_service

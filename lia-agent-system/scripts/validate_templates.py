@@ -20,7 +20,7 @@ from collections import defaultdict
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from app.data.templates import get_all_system_templates, TEMPLATE_CATEGORIES
-from app.services.job_template_service import validate_wsi_quality, WSI_QUALITY_GATES
+from app.domains.job_management.services.job_template_service import validate_wsi_quality, WSI_QUALITY_GATES
 
 
 class TemplateValidator:

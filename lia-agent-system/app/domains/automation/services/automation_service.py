@@ -47,7 +47,7 @@ class AutomationService:
     def email_service(self):
         """Lazy load EmailService to avoid circular imports."""
         if self._email_service is None:
-            from app.services.email_service import EmailService
+            from app.domains.communication.services.email_service import EmailService
             self._email_service = EmailService()
         return self._email_service
     
@@ -55,7 +55,7 @@ class AutomationService:
     def whatsapp_service(self):
         """Lazy load WhatsAppService to avoid circular imports."""
         if self._whatsapp_service is None:
-            from app.services.whatsapp_service import WhatsAppService
+            from app.domains.communication.services.whatsapp_service import WhatsAppService
             self._whatsapp_service = WhatsAppService()
         return self._whatsapp_service
     

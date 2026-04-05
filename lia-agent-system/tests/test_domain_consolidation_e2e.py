@@ -317,7 +317,7 @@ class TestBackwardCompatibility:
 
     def test_original_services_importable(self):
         """Original service files should still import correctly."""
-        from app.services.conversation_manager import ConversationManager
+        from app.domains.recruiter_assistant.services.conversation_manager import ConversationManager
         assert ConversationManager is not None
 
     def test_existing_tests_not_broken(self):

@@ -10,16 +10,16 @@ from pydantic import BaseModel, Field
 from app.core.database import get_db
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id, assert_resource_ownership
 from app.auth.models import User
-from app.services.cv_parser import cv_parser_service
-from app.services.search_analytics_service import search_analytics_service
+from app.domains.cv_screening.services.cv_parser import cv_parser_service
+from app.domains.analytics.services.search_analytics_service import search_analytics_service
 from app.services.archetype_builder_service import extract_tags_from_search_spec, build_archetype_from_search
 from app.schemas.archetype import ArchetypeFromSearchCreate, ArchetypeFromSearchResponse, ArchetypeResponse
-from app.services.rubric_evaluation_service import rubric_evaluation_service, get_recommendation
+from app.domains.cv_screening.services.rubric_evaluation_service import rubric_evaluation_service, get_recommendation
 from app.models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from uuid import UUID
 from enum import Enum as PyEnum
-from app.services.pearch_service import pearch_service
+from app.domains.sourcing.services.pearch_service import pearch_service
 from app.models.pearch import (
     HybridSearchRequest,
     HybridSearchResponse,
