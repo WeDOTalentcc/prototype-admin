@@ -169,6 +169,19 @@ export function useChatSession({
 
   // ── Agent Streaming (WebSocket) ────────────────────────────
   const wsSessionId = chatId.replace('#', '')
+  const [wsAuthToken, setWsAuthToken] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/auth/ws-token')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!cancelled && data?.token) setWsAuthToken(data.token)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
   const {
     tokens: wsTokens,
     isStreaming: wsIsStreaming,
@@ -177,14 +190,14 @@ export function useChatSession({
     disconnect: wsDisconnect,
     clearTokens: wsClearTokens,
     sendMessage: wsSendMessage,
-  } = useAgentStreaming(wsSessionId, {}, handleWsEvent)
+  } = useAgentStreaming(wsSessionId, { authToken: wsAuthToken }, handleWsEvent)
 
   const wsStreamingModeRef = useRef(false)
 
   useEffect(() => {
-    if (wsSessionId && wsSessionId !== '0000') wsConnect()
+    if (wsSessionId && wsSessionId !== '0000' && wsAuthToken) wsConnect()
     return () => { wsDisconnect() }
-  }, [wsSessionId, wsConnect, wsDisconnect])
+  }, [wsSessionId, wsAuthToken, wsConnect, wsDisconnect])
 
   useEffect(() => {
     if (!wsStreamingModeRef.current || !wsTokens) return

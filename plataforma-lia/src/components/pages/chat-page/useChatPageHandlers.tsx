@@ -360,10 +360,11 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
               const payload = line.slice(6).trim()
               if (payload === '[DONE]') break outer
 
-              try {
-                const parsed = JSON.parse(payload)
+              let parsed: Record<string, unknown> | null = null
+              try { parsed = JSON.parse(payload) } catch (_) { /* partial JSON chunk */ }
+              if (parsed) {
                 if (parsed.token) {
-                  accumulated += parsed.token
+                  accumulated += parsed.token as string
                   const snapshot = accumulated
                   setMessages(prev => {
                     const updated = [...prev]
@@ -374,10 +375,8 @@ Digite abaixo o perfil ideal e vou buscar simultaneamente no nosso banco proprie
                     return updated
                   })
                 } else if (parsed.error) {
-                  throw new Error(parsed.error)
+                  throw new Error(parsed.error as string)
                 }
-              } catch (_) {
-                // ignore partial JSON chunks
               }
             }
           }
