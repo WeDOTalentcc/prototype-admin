@@ -14,6 +14,9 @@ import { useJobsChat } from "./useJobsChat"
 import { useJobsBulkActions } from "./useJobsBulkActions"
 import { useJobsPreview } from "./useJobsPreview"
 
+// Stores
+import { useNavigationStore } from "@/stores/navigation-store"
+
 // Types
 import type { Job } from "@/components/jobs"
 
