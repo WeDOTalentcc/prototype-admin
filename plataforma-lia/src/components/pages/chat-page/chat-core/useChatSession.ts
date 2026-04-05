@@ -129,6 +129,17 @@ export function useChatSession({
   const VALID_PANEL_TYPES: DynamicPanelType[] = ["calibration", "candidate_review", "profile", "job_creation", "scheduling"]
   const { openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel } = useLiaFloat()
 
+  const panelHandlerRef = useRef<{
+    openDynamicPanel: typeof openDynamicPanel
+    closeDynamicPanel: typeof closeDynamicPanel
+    updateDynamicPanelData: typeof updateDynamicPanelData
+    dynamicPanel: typeof dynamicPanel
+  }>({ openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel })
+
+  useEffect(() => {
+    panelHandlerRef.current = { openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel }
+  }, [openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel])
+
   const handleWsEvent = useCallback((event: StreamingEvent) => {
     if (event.type !== 'panel_update') return
     const raw = event as unknown as Record<string, unknown>
@@ -136,24 +147,25 @@ export function useChatSession({
     const panelData = (raw.panel_data as Record<string, unknown>) || {}
     const panelTitle = raw.panel_title as string | undefined
     const action = (raw.action as string) || "open"
+    const { openDynamicPanel: open, closeDynamicPanel: close, updateDynamicPanelData: update, dynamicPanel: current } = panelHandlerRef.current
 
     if (action === "close") {
-      closeDynamicPanel()
+      close()
       return
     }
 
     if (!panelType || !VALID_PANEL_TYPES.includes(panelType as DynamicPanelType)) return
 
-    if (action === "update" && dynamicPanel?.panelType === panelType) {
-      updateDynamicPanelData(panelData)
+    if (action === "update" && current?.panelType === panelType) {
+      update(panelData)
     } else {
-      openDynamicPanel({
+      open({
         panelType: panelType as DynamicPanelType,
         data: panelData,
         title: panelTitle,
       })
     }
-  }, [openDynamicPanel, closeDynamicPanel, updateDynamicPanelData, dynamicPanel]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Agent Streaming (WebSocket) ────────────────────────────
   const wsSessionId = chatId.replace('#', '')
