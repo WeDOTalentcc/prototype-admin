@@ -13,7 +13,7 @@ import {
 } from "@/hooks/use-float-conversation"
 import { resolveScopeFromPathname } from "@/hooks/use-current-scope"
 import { useCvScreening } from "@/hooks/use-cv-screening"
-import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+import { useUIPreferencesStore, type LiaRecentItem } from "@/stores/ui-preferences-store"
 
 const MAX_INPUT_CHARS = 2000
 
