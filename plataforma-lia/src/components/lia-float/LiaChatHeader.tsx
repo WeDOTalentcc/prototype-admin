@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ActionType } from "@/hooks/use-action-intent"
+import type { EntityContext } from "@/contexts/lia-float-context"
 
 const CONTEXT_PAGE_ICONS: Record<string, LucideIcon> = {
   "Funil de Talentos": Users,
@@ -30,6 +31,7 @@ export interface LiaChatHeaderProps {
   isReconnecting: boolean
   reconnectAttempt: number
   contextPage?: string | null
+  entityContext?: EntityContext | null
   handleNewChat: () => void
   handleClear: () => void
   handleToggleHistory: () => void
@@ -41,11 +43,14 @@ export interface LiaChatHeaderProps {
 
 export function LiaChatHeader({
   isConnected, showHistory, messagesLength, activeActionType, actionLabel,
-  isReconnecting, reconnectAttempt, contextPage,
+  isReconnecting, reconnectAttempt, contextPage, entityContext,
   handleNewChat, handleClear, handleToggleHistory, handleExpand, close,
   setActiveActionType, setActionLabel,
 }: LiaChatHeaderProps) {
   const ContextIcon = contextPage ? (CONTEXT_PAGE_ICONS[contextPage] || null) : null
+  const entityLabel = entityContext?.name
+    ? `${entityContext.type === "candidate" ? "Candidato" : "Vaga"}: ${entityContext.name}`
+    : null
 
   return (
     <>
@@ -56,10 +61,12 @@ export function LiaChatHeader({
           </div>
           <div className="flex flex-col">
             <span className="text-base-ui font-bold text-lia-text-primary leading-tight">LIA</span>
-            {contextPage && contextPage !== "Chat LIA" && (
+            {(entityLabel || (contextPage && contextPage !== "Chat LIA")) && (
               <span className="inline-flex items-center gap-1 text-xs text-lia-text-tertiary leading-tight">
                 {ContextIcon && <ContextIcon className="w-3 h-3" />}
-                <span className="truncate max-w-[140px]">{contextPage}</span>
+                <span className="truncate max-w-[180px]">
+                  {entityLabel || contextPage}
+                </span>
               </span>
             )}
           </div>

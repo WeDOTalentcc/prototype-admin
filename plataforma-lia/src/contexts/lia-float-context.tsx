@@ -22,12 +22,20 @@ export interface SplitViewState {
   conversationId: string | null
 }
 
+export interface EntityContext {
+  type: "candidate" | "job" | null
+  id?: string | number
+  name?: string
+  meta?: Record<string, unknown>
+}
+
 interface LiaFloatState {
   isOpen: boolean
   isExpanded: boolean
   conversationId: string | null
   splitView: SplitViewState
   contextPage: string | null
+  entityContext: EntityContext | null
 }
 
 interface LiaFloatContextType extends LiaFloatState {
@@ -39,6 +47,8 @@ interface LiaFloatContextType extends LiaFloatState {
   closeAll: () => void
   navigateToChat: () => void
   setContextPage: (page: string | null) => void
+  setEntityContext: (ctx: EntityContext | null) => void
+  openWithEntity: (entity: EntityContext) => void
   openSplitView: (page: string, conversationId?: string) => void
   closeSplitView: () => void
   sharedMessages: FloatMessage[]
@@ -59,6 +69,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     conversationId: null,
     splitView: INITIAL_SPLIT_VIEW,
     contextPage: null,
+    entityContext: null,
   })
 
   const [sharedMessages, setSharedMessages] = useState<FloatMessage[]>([])
@@ -133,6 +144,19 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     setState(prev => ({ ...prev, contextPage: page }))
   }, [])
 
+  const setEntityContext = useCallback((ctx: EntityContext | null) => {
+    setState(prev => ({ ...prev, entityContext: ctx }))
+  }, [])
+
+  const openWithEntity = useCallback((entity: EntityContext) => {
+    setState(prev => ({
+      ...prev,
+      isOpen: true,
+      isExpanded: false,
+      entityContext: entity,
+    }))
+  }, [])
+
   const navigateToChat = useCallback(() => {
     setState(prev => ({
       ...prev,
@@ -152,7 +176,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
       value={{
         ...state,
         open, close, toggle, expand, collapse, closeAll,
-        navigateToChat, setContextPage,
+        navigateToChat, setContextPage, setEntityContext, openWithEntity,
         openSplitView, closeSplitView,
         sharedMessages, addSharedMessage, setSharedMessages,
         sharedConversationId, setSharedConversationId,

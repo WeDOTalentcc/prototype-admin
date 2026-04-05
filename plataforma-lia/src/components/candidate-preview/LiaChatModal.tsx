@@ -69,11 +69,19 @@ export function LiaChatModal({
   onAddToVacancy,
 }: LiaChatModalProps) {
   const dialogRef = useModalA11y(isOpen, onClose)
-  const { open: openFloat } = useLiaFloat()
+  const { openWithEntity } = useLiaFloat()
 
   React.useEffect(() => {
-    if (isOpen) {
-      openFloat()
+    if (isOpen && candidate) {
+      openWithEntity({
+        type: "candidate",
+        id: candidate.id,
+        name: candidate.name || candidate.nome,
+        meta: {
+          email: candidate.email,
+          score: candidate.score ?? candidate.lia_score,
+        },
+      })
       onClose()
     }
   }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps

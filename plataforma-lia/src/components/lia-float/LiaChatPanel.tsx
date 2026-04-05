@@ -38,6 +38,7 @@ export function LiaChatPanel() {
         isReconnecting={state.isReconnecting}
         reconnectAttempt={state.reconnectAttempt}
         contextPage={state.contextPage}
+        entityContext={state.entityContext}
         handleNewChat={state.handleNewChat}
         handleClear={state.handleClear}
         handleToggleHistory={state.handleToggleHistory}
