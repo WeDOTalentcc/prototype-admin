@@ -10,7 +10,7 @@ import {
   Globe, Link, Upload, Download, FileText, Mail, Phone, MapPin,
   Calendar, Target, BarChart3, TrendingUp, UserCheck, Award,
   Key, Eye, EyeOff, Brain, MessageSquare, Clock,
-  Copy, PlayCircle, PauseCircle, ArrowRight, CheckCircle, AlertCircle,
+  Copy, PlayCircle, PauseCircle, CheckCircle, AlertCircle,
   Timer, Workflow, Filter, Search, Heart, Star, Briefcase, GraduationCap,
   Network, DollarSign, Layers, Move, ArrowUp, ArrowDown, MoreHorizontal,
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
@@ -25,6 +25,7 @@ const RecruitmentHub = dynamic(() => import("@/components/settings/RecruitmentHu
 const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
 const GoalsPlanningHub = dynamic(() => import("@/components/settings/GoalsPlanningHub").then(m => ({ default: m.GoalsPlanningHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando metas..." /> })
 const GlobalSearchHub = dynamic(() => import("@/components/settings/GlobalSearchHub").then(m => ({ default: m.GlobalSearchHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando busca..." /> })
+const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando integrações..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
@@ -150,6 +151,24 @@ const getDefaultSections = (): SettingsSection[] => [
       { id: 'costs', title: 'Custos', description: 'Tabela de custos da Busca Global', fields: ['credit_costs'] }
     ]
   },
+  {
+    id: 'integrations',
+    title: 'Integrações',
+    description: 'Conecte serviços externos à plataforma',
+    icon: Plug,
+    status: 'incomplete',
+    priority: 'medium',
+    category: 'integrations',
+    estimatedTime: 10,
+    subsections: [
+      { id: 'ai-models', title: 'Modelos de IA', description: 'Provedores de IA (Gemini, Claude, OpenAI)', fields: ['ai_providers'] },
+      { id: 'ats', title: 'ATS / Applicant Tracking', description: 'Gupy, Pandapé, Merge.dev', fields: ['ats_connections'] },
+      { id: 'calendar', title: 'Calendário & Agendamento', description: 'Google Calendar, Microsoft Calendar', fields: ['calendar_integrations'] },
+      { id: 'communication', title: 'Comunicação', description: 'Teams, WhatsApp, Email/SMTP', fields: ['communication_integrations'] },
+      { id: 'crm-hris', title: 'CRM & HRIS', description: 'Salesforce, SAP, Workday', fields: ['crm_hris_integrations'] },
+      { id: 'mcps-apis', title: 'MCPs & APIs', description: 'Webhooks e API REST', fields: ['api_integrations'] },
+    ]
+  },
 ]
 
 const settingsSections: SettingsSection[] = getDefaultSections()
@@ -174,6 +193,7 @@ export default function SettingsPageEnhanced() {
     'communication': 0,
     'goals-planning': 0,
     'global-search': 0,
+    'integrations': 0,
   })
 
   const [subsectionCompletion, setSubsectionCompletion] = useState<Record<string, boolean>>({
@@ -192,6 +212,12 @@ export default function SettingsPageEnhanced() {
     'limits': false,
     'options': false,
     'costs': false,
+    'ai-models': false,
+    'ats': false,
+    'calendar': false,
+    'communication': false,
+    'crm-hris': false,
+    'mcps-apis': false,
   })
 
   const [overallProgress, setOverallProgress] = useState<number>(0)
@@ -236,6 +262,7 @@ export default function SettingsPageEnhanced() {
           'hiring-policies': data.sections['hiring-policies'] ?? prev['hiring-policies'],
           'goals-planning': data.sections['goals-planning'] ?? prev['goals-planning'],
           'global-search': data.sections['global-search'] ?? prev['global-search'],
+          'integrations': data.sections['integrations'] ?? prev['integrations'],
         }))
       }
       
@@ -392,6 +419,12 @@ export default function SettingsPageEnhanced() {
           <GlobalSearchHub
             activeSubsection={activeSubsection}
           />
+          </ErrorBoundarySection>
+        )
+      case 'integrations':
+        return (
+          <ErrorBoundarySection>
+            <IntegrationsHub activeSubsection={activeSubsection} />
           </ErrorBoundarySection>
         )
       default:
@@ -557,27 +590,6 @@ export default function SettingsPageEnhanced() {
               })}
             </nav>
 
-            <div className="mt-4 pt-4 border-t border-lia-border-subtle dark:border-lia-border-subtle">
-              <button
-                onClick={() => window.location.href = '/configuracoes/integracoes'}
-                className="w-full flex items-center gap-2 p-2.5 rounded-md text-left transition-colors motion-reduce:transition-none hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 text-lia-text-secondary"
-              >
-                <Plug className="w-4 h-4 flex-shrink-0" />
-                {shouldShowContent && (
-                  <>
-                    <div className="flex-1 min-w-0">
-                      <div className={`${textStyles.sidebarItem} leading-tight`}>
-                        Integrações
-                      </div>
-                      <div className={`${textStyles.description} truncate leading-tight`}>
-                        Conectar serviços externos
-                      </div>
-                    </div>
-                    <ArrowRight className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-tertiary" />
-                  </>
-                )}
-              </button>
-            </div>
           </div>
         </Card>
       </aside>
