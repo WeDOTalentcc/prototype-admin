@@ -142,6 +142,32 @@ async def send_background_task_update(
         logger.debug("[AgentChatWS] background_task_update send failed: %s", exc)
 
 
+@router.get("/sessions/active")
+async def list_active_sessions(
+    request: Request,
+    authorization: str = Header(default=""),
+    token: str = Query(default=""),
+):
+    """List active WebSocket sessions for the current user's company.
+
+    Returns session IDs that currently have an active WebSocket connection.
+    """
+    jwt_token = token or (authorization.replace("Bearer ", "") if authorization.startswith("Bearer ") else "")
+    auth = _extract_auth(jwt_token)
+    company_id = auth.get("company_id", "")
+    if not company_id:
+        raise HTTPException(status_code=401, detail="Token required")
+
+    session_ids = list(ws_manager.get_company_sessions(company_id))
+    return {
+        "sessions": [
+            {"id": sid, "active": True}
+            for sid in session_ids
+        ],
+        "count": len(session_ids),
+    }
+
+
 # Timeout por mensagem (segundos) — evita travamento em agentes lentos
 _AGENT_TIMEOUT = settings.LLM_TIMEOUT_SECONDS
 

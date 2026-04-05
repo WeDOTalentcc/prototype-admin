@@ -67,6 +67,8 @@ export interface LiaRecentItem {
   type: string
   title: string
   timestamp: number
+  lastMessage?: string
+  mode?: string
 }
 
 interface UIPreferencesState {

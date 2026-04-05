@@ -126,21 +126,6 @@ export function LiaChatHeader({
         </div>
       </div>
 
-      {activeActionType && actionLabel && (
-        <div className="px-4 py-1.5 bg-lia-bg-secondary border-b border-lia-border-subtle flex items-center justify-between flex-shrink-0">
-          <span className="text-xs text-lia-text-tertiary font-medium">
-            {actionLabel}
-          </span>
-          <button
-            onClick={() => { setActiveActionType(null); setActionLabel(null) }}
-            className="text-xs text-lia-text-secondary hover:text-lia-text-secondary dark:hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
-            aria-label="Sair do modo de ação"
-          >
-            Sair
-          </button>
-        </div>
-      )}
-
       {isReconnecting && (
         <div className="px-4 py-1.5 border-b flex-shrink-0 bg-status-warning/10 border-status-warning/30 dark:border-status-warning/30">
           <p className="text-xs text-status-warning">

@@ -146,11 +146,21 @@ export function SwitchTaskModal({
                     <p className="text-sm text-lia-text-primary truncate">
                       {item.title}
                     </p>
+                    {item.lastMessage && (
+                      <p className="text-xs text-lia-text-disabled truncate mt-0.5 italic">
+                        {item.lastMessage}
+                      </p>
+                    )}
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <Clock className="w-3 h-3 text-lia-text-disabled" />
                       <span className="text-xs text-lia-text-disabled">
                         {formatTime(item.timestamp)}
                       </span>
+                      {item.mode && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-tertiary ml-1">
+                          {item.mode}
+                        </span>
+                      )}
                       {isCurrent && (
                         <span className="text-xs text-wedo-cyan font-medium ml-1">
                           atual

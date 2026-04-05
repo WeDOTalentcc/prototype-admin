@@ -50,6 +50,17 @@ export function LiaChatPanel() {
     state.clearBackgroundTask(taskId)
   }, [state.clearBackgroundTask])
 
+  const handleViewResult = useCallback((task: BackgroundTask) => {
+    const resultSummary = task.message || "Tarefa concluída"
+    state.addMessage({
+      id: `bg-result-${task.id}-${Date.now()}`,
+      sender: "lia" as const,
+      content: `**${task.label}** — ${resultSummary}`,
+      timestamp: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+    })
+    state.clearBackgroundTask(task.id)
+  }, [state.addMessage, state.clearBackgroundTask])
+
   if (!state.isOpen) return null
 
   const hasDynamicPanel = !!state.dynamicPanel
@@ -113,6 +124,7 @@ export function LiaChatPanel() {
                 <BackgroundTaskNotification
                   key={task.id}
                   task={task}
+                  onViewResult={handleViewResult}
                   onDismiss={handleDismissTask}
                 />
               ))}
@@ -124,7 +136,10 @@ export function LiaChatPanel() {
             onDismiss={state.dismissFairnessWarnings}
           />
 
-          <BackgroundAgentsStatus tasks={bgTasks} />
+          <BackgroundAgentsStatus
+            tasks={bgTasks}
+            onViewResult={handleViewResult}
+          />
 
           {state.navIntent?.page && (
             <div className="px-4 py-2 border-t border-lia-border-subtle flex-shrink-0">

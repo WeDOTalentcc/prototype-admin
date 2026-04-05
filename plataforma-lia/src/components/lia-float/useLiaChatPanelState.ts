@@ -369,6 +369,28 @@ export function useLiaChatPanelState() {
     wsSend(text, "", currentScope)
   }, [conversationId, addMessage, initConversation, setSharedConversationId, wsConnect, wsSend, currentScope])
 
+  const updateRecentItem = useCallback((text: string) => {
+    if (!conversationId) return
+    const store = useUIPreferencesStore.getState()
+    const existing = store.liaRecentItems
+    const idx = existing.findIndex(i => i.id === conversationId)
+    const item = {
+      id: conversationId,
+      type: "chat",
+      title: idx >= 0 ? existing[idx].title : text.slice(0, 80),
+      timestamp: Date.now(),
+      lastMessage: text.slice(0, 120),
+      mode: actionLabel ?? undefined,
+    }
+    if (idx >= 0) {
+      const updated = [...existing]
+      updated[idx] = item
+      store.setLiaRecentItems(updated)
+    } else {
+      store.setLiaRecentItems([item, ...existing].slice(0, 20))
+    }
+  }, [conversationId, actionLabel])
+
   const handleSend = useCallback(async () => {
     const text = inputText.trim()
     if (!text || isCreating || isStreaming) return
@@ -380,6 +402,8 @@ export function useLiaChatPanelState() {
       content: text,
       timestamp: formatMessageTime(),
     })
+
+    updateRecentItem(text)
 
     if (awaitingCandidateName && pendingCvFields && Object.keys(pendingCvFields).length > 0) {
       const normalized = text.toLowerCase().trim()
@@ -565,6 +589,7 @@ export function useLiaChatPanelState() {
     addMessage, initConversation, detectAction, detectIntent,
     openSplitView, wsSend, wsConnect, setSharedConversationId, currentScope,
     pendingCvFields, uploadedFileInfo, setPendingCvFields, setUploadedFileInfo,
+    updateRecentItem,
   ])
 
   const handleKeyDown = useCallback(

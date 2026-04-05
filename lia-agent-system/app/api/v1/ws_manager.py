@@ -116,6 +116,10 @@ class WebSocketManager:
                 sent += 1
         return sent
 
+    def get_company_sessions(self, company_id: str) -> Set[str]:
+        """Return the set of active session IDs for a company."""
+        return self._company_sessions.get(company_id, set())
+
     def get_stats(self) -> dict:
         return {
             "total_connections": len(self._connections),
