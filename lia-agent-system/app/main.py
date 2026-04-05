@@ -1,6 +1,11 @@
 """
 LIA Agent System - Main FastAPI application.
 """
+# === LLM Bootstrap: monkey-patch SDK constructors for PII + audit + tenant ===
+# MUST be first import — before anything instantiates Anthropic/OpenAI/GenAI
+from app.shared.llm_bootstrap import install_llm_guards
+install_llm_guards()
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
