@@ -44,13 +44,15 @@ export interface UseFloatStreamingResult {
   sendApproval: (approved: boolean) => void
   /** FAR-2/C: limpa fairness warnings (após dismiss pelo recrutador) */
   dismissFairnessWarnings: () => void
+  planProgressSteps: Array<{ task_id: string; action_id: string; domain_id: string; status: string }>
+  activePlanId: string | null
   connect: () => void
   disconnect: () => void
 }
 
 export function useFloatStreaming(
   sessionId: string,
-  onComplete: (content: string) => void,
+  onComplete: (content: string, executionPlan?: Record<string, unknown>) => void,
 ): UseFloatStreamingResult {
   const [hitlPending, setHitlPending] = useState<HITLPending | null>(null)
   const hitlRef = useRef<HITLPending | null>(null)
@@ -138,7 +140,8 @@ export function useFloatStreaming(
           setFairnessWarnings([])
         }
         if (event.content) {
-          onCompleteRef.current(event.content)
+          const _execPlan = (event as Record<string, unknown>).execution_plan as Record<string, unknown> | undefined
+          onCompleteRef.current(event.content, _execPlan)
         }
         break
 
@@ -222,6 +225,8 @@ export function useFloatStreaming(
     isThinking,
     fairnessWarnings,
     dismissFairnessWarnings,
+    planProgressSteps,
+    activePlanId,
     sendMessage,
     sendApproval,
     connect,

@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { MessageFeedback } from "@/components/chat/message-feedback"
+import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { type FloatMessage } from "@/hooks/use-float-conversation"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { sanitizeHtml } from "@/lib/sanitize"
@@ -306,6 +307,9 @@ function MessageBubble({ msg, conversationId }: { msg: FloatMessage; conversatio
             html={renderedHtml}
             className="text-base-ui text-lia-text-secondary leading-relaxed font-['Open_Sans',sans-serif]"
           />
+          {msg.executionPlan && (
+            <PlanProgressCard plan={msg.executionPlan as unknown as ExecutionPlanData} />
+          )}
         </div>
         {conversationId && (
           <MessageFeedback

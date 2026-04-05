@@ -36,6 +36,8 @@ export type StreamingEventType =
   | 'pong'
   | 'approval_required'
   | 'approval_confirmed'
+  | 'plan_progress'
+  | 'clarification'
 
 export interface StreamingEvent {
   type: StreamingEventType

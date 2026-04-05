@@ -128,7 +128,8 @@ async def login(
     
     access_token = create_access_token(
         subject=str(user.id),
-        role=user.role.value
+        role=user.role.value,
+        company_id=getattr(user, "company_id", None),
     )
     refresh_token = create_refresh_token(subject=str(user.id))
     
@@ -213,7 +214,8 @@ async def refresh_token(
     
     access_token = create_access_token(
         subject=str(user.id),
-        role=user.role.value
+        role=user.role.value,
+        company_id=getattr(user, "company_id", None),
     )
     new_refresh_token = create_refresh_token(subject=str(user.id))
     

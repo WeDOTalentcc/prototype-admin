@@ -63,13 +63,17 @@ export function useLiaChatPanelState() {
 
   const wsSessionId = conversationId ?? "float-pending"
 
-  const handleStreamComplete = useCallback((content: string) => {
-    addMessage({
+  const handleStreamComplete = useCallback((content: string, executionPlan?: Record<string, unknown>) => {
+    const msg: FloatMessage = {
       id: `lia-${Date.now()}`,
       sender: "lia",
       content,
       timestamp: formatMessageTime(),
-    })
+    }
+    if (executionPlan) {
+      msg.executionPlan = executionPlan
+    }
+    addMessage(msg)
   }, [addMessage])
 
   const {

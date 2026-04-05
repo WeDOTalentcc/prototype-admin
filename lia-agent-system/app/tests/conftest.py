@@ -138,6 +138,7 @@ class TestUserFactory:
     def create_token(user: User) -> str:
         """Create a valid JWT token for the user."""
         return create_access_token(
+            company_id="test_company",
             subject=str(user.id),
             role=user.role.value
         )

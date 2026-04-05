@@ -547,6 +547,94 @@ async def agent_chat_ws(
             # Indicar que está processando
             await ws_manager.send_to_session(session_id, {"type": "thinking"})
 
+            # ── Plan Detection (multi-step workflows) ─────────────────────
+            _plan_handled = False
+            try:
+                # Budget check before plan execution (same as agent path)
+                try:
+                    _plan_budget = await get_plan_for_company(company_id)
+                    _budget_ok, _used, _limit = await check_budget(company_id, _plan_budget)
+                    if not _budget_ok:
+                        await ws_manager.send_to_session(session_id, {
+                            "type": "error",
+                            "message": (
+                                f"Limite diário de uso de IA atingido ({_used:,} / {_limit:,} tokens). "
+                                "O budget será renovado à meia-noite UTC."
+                            ),
+                            "error_code": "budget_exhausted",
+                        })
+                        continue
+                except Exception as _budget_exc:
+                    logger.warning("[AgentChatWS] Budget check falhou (plan path) — continuando: %s", _budget_exc)
+
+                from app.shared.execution import PlanDetector, PlanExecutor
+                from app.domains.registry import DomainRegistry
+                from app.domains.workflow import DomainWorkflow
+
+                _plan_detector = PlanDetector()
+                _detected_plan = _plan_detector.detect(content)
+                if _detected_plan:
+                    logger.info(
+                        "[AgentChatWS] Multi-step plan detected: %s (%d tasks)",
+                        _detected_plan.detected_pattern,
+                        len(_detected_plan.tasks),
+                    )
+                    _domain_registry = DomainRegistry()
+                    _domain_workflow = DomainWorkflow()
+                    _plan_executor = PlanExecutor(
+                        domain_registry=_domain_registry,
+                        domain_workflow=_domain_workflow,
+                    )
+
+                    async def _ws_plan_progress(event_type: str, data: dict) -> None:
+                        try:
+                            await ws_manager.send_to_session(session_id, {
+                                "type": "plan_progress",
+                                "event": event_type,
+                                **data,
+                            })
+                        except Exception:
+                            pass
+
+                    _executed = await _plan_executor.execute(
+                        plan=_detected_plan,
+                        user_id=user_id,
+                        session_id=session_id,
+                        tenant_id=company_id or "default",
+                        base_context={"company_id": company_id, "user_id": user_id},
+                        progress_callback=_ws_plan_progress,
+                    )
+                    _consolidated = _plan_executor.build_consolidated_response(_executed)
+                    _plan_msg = _strip_thought_tags(_consolidated.message or "Plano executado.")
+                    conversation_history.append({"role": "user", "content": content})
+                    conversation_history.append({"role": "assistant", "content": _plan_msg})
+
+                    # Meter token usage for plan execution
+                    _plan_tokens = int((len(content.split()) + len(_plan_msg.split())) * 1.3)
+                    if _plan_tokens > 0 and company_id:
+                        try:
+                            await increment_usage(company_id, _plan_tokens)
+                        except Exception as _inc_exc:
+                            logger.warning("[AgentChatWS] plan increment_usage falhou: %s", _inc_exc)
+
+                    await ws_manager.send_to_session(session_id, {
+                        "type": "message",
+                        "content": _plan_msg,
+                        "confidence": 0.9,
+                        "domain": "plan_executor",
+                        "source": "plan_executor",
+                        "execution_plan": _executed.get_summary(),
+                    })
+                    _plan_handled = True
+            except Exception as _plan_exc:
+                logger.warning(
+                    "[AgentChatWS] Plan detection/execution failed (non-blocking): %s",
+                    _plan_exc,
+                )
+
+            if _plan_handled:
+                continue
+
             # Roteamento via CascadedRouter (Fase 2 — Gap #2)
             # Verifica se o domínio precisa de clarificação antes de invocar agente
             if active_domain in ("auto", "recruiter_assistant", ""):
@@ -763,7 +851,7 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
     company_id = auth["company_id"]
     user_id = auth["user_id"]
 
-    session_id = req.session_id or create_session_id(current_user.company_id)
+    session_id = req.session_id or create_session_id(company_id)
     active_domain = req.domain or "recruiter_assistant"
     context = req.context or {}
     context.setdefault("company_id", company_id)
