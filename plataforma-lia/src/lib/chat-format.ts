@@ -12,6 +12,10 @@ export function escapeHtml(str: string): string {
 export function cleanAgentResponse(raw: string): string {
   let text = raw
 
+  const hadThought = /<thought>/i.test(text)
+  text = text.replace(/<thought>[\s\S]*?<\/thought>/gi, '')
+  text = text.replace(/<thought>[\s\S]*/gi, '')
+
   const jsonBlockRe = /```json\s*\{[\s\S]*?\}\s*```/g
   text = text.replace(jsonBlockRe, '')
 
@@ -29,6 +33,7 @@ export function cleanAgentResponse(raw: string): string {
 
   text = text.replace(/^\s*[\n\r]+/, '').replace(/[\n\r]+\s*$/, '')
 
+  if (hadThought) return text
   return text || raw
 }
 

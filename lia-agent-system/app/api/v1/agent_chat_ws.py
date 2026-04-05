@@ -47,10 +47,19 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["websocket"])
 
 
+def _strip_thought_tags(text: str) -> str:
+    """Remove <thought>...</thought> XML tags from LLM output."""
+    import re
+    cleaned = re.sub(r'<thought>[\s\S]*?</thought>', '', text, flags=re.IGNORECASE)
+    cleaned = re.sub(r'<thought>[\s\S]*', '', cleaned, flags=re.IGNORECASE)
+    return cleaned.strip()
+
+
 def _strip_react_json(text: str) -> str:
     """Remove JSON bruto do ReAct loop, retornando apenas o campo 'response'."""
     if not text:
         return text
+    text = _strip_thought_tags(text)
     stripped = text.strip()
     raw = stripped
     if stripped.startswith("```json"):

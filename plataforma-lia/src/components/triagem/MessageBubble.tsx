@@ -44,6 +44,15 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#039;")
 }
 
+function cleanThoughtTags(text: string): string {
+  const hadThought = /<thought>/i.test(text)
+  let cleaned = text.replace(/<thought>[\s\S]*?<\/thought>/gi, '')
+  cleaned = cleaned.replace(/<thought>[\s\S]*/gi, '')
+  cleaned = cleaned.replace(/^\s*[\n\r]+/, '').replace(/[\n\r]+\s*$/, '')
+  if (hadThought) return cleaned
+  return cleaned || text
+}
+
 function parseSimpleMarkdown(text: string): string {
   const escaped = escapeHtml(text)
   return escaped
@@ -213,7 +222,7 @@ const MessageBubble = memo(function MessageBubble({
                 ? "bg-wedo-cyan/[0.04] text-lia-text-primary rounded-[14px] rounded-bl-[4px]"
                 : "bg-lia-bg-tertiary text-lia-text-secondary rounded-[14px] rounded-br-[4px]"
             )}
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(parseSimpleMarkdown(message.content)) }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(parseSimpleMarkdown(cleanThoughtTags(message.content))) }}
           />
           {isLia && ttsToken && (
             <button

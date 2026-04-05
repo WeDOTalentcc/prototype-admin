@@ -45,6 +45,26 @@ describe("cleanAgentResponse", () => {
     const plain = "This is a normal response message."
     expect(cleanAgentResponse(plain)).toBe(plain)
   })
+
+  it("strips complete <thought>...</thought> blocks", () => {
+    const raw = "<thought>\n1. O recrutador quer resumo\n2. Ferramentas: check_pipeline\n</thought>\nAqui está seu resumo."
+    expect(cleanAgentResponse(raw)).toBe("Aqui está seu resumo.")
+  })
+
+  it("strips incomplete <thought> blocks during streaming", () => {
+    const raw = "<thought>\n1. Pensando sobre a pergunta\n2. Vou usar search_candidates"
+    expect(cleanAgentResponse(raw)).toBe("")
+  })
+
+  it("strips multiple <thought> blocks", () => {
+    const raw = "<thought>pensamento 1</thought>Olá!<thought>pensamento 2</thought> Como posso ajudar?"
+    expect(cleanAgentResponse(raw)).toBe("Olá! Como posso ajudar?")
+  })
+
+  it("handles case-insensitive <Thought> tags", () => {
+    const raw = "<Thought>raciocínio</Thought>Resposta final."
+    expect(cleanAgentResponse(raw)).toBe("Resposta final.")
+  })
 })
 
 describe("parseChatMarkdown", () => {
