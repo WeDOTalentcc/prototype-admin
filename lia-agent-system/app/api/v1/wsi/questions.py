@@ -71,12 +71,15 @@ async def generate_questions(
 
     from app.services.wsi_service import WSIService
     wsi_svc = WSIService()
+    requested_count = request.max_questions or request.num_questions
+    mode = "full" if requested_count > 10 else "compact"
     wsi_questions = await wsi_svc.generate_from_simple_inputs(
         skills=all_skills,
         behavioral=behavioral,
         seniority=seniority,
         job_description=job_description,
-        mode="compact",
+        mode=mode,
+        max_questions=requested_count,
     )
 
     questions = []
