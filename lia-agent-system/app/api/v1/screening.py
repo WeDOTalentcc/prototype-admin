@@ -112,12 +112,14 @@ async def generate_screening_questions(
 
         from app.services.wsi_service import WSIService
         wsi_svc = WSIService()
+        mode = "full" if request.question_count > 10 else "compact"
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=request.skills or [],
             behavioral=[],
             seniority=request.seniority or "pleno",
             job_description=request.job_description,
-            mode="compact",
+            mode=mode,
+            max_questions=request.question_count,
         )
 
         response = _wsi_questions_to_screening_response(wsi_questions, request)

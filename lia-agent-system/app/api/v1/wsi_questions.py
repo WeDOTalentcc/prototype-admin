@@ -1,11 +1,13 @@
 """
 WSI Questions API - Endpoints for WSI question generation and regeneration.
 
-Provides:
-- Generate WSI questions based on competencies via canonical WSIService (F6 pipeline)
-- Regenerate questions when competencies change
-- Validate question quality with WSI minimums (3+ technical, 2+ behavioral)
-- A2/G1: FairnessGuard check on generated question texts
+All question generation is delegated to the canonical WSIService (F6 pipeline:
+CBI + Bloom + Dreyfus + BigFive). This module handles:
+- HTTP request/response mapping and validation
+- FairnessGuard compliance checks (A2/G1)
+- Audit logging of generation events
+- Question coverage validation (3+ technical, 2+ behavioral minimums)
+- Template fallback endpoint (/question-templates GET)
 """
 import logging
 from typing import List, Optional, Set

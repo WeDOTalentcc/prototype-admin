@@ -465,12 +465,15 @@ Responda em JSON:
                 is_critical=False,
             ))
 
-        return await self.generate_screening_questions(
+        questions = await self.generate_screening_questions(
             competencies=competencies,
             mode=mode,
             job_description=job_description,
             seniority=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
         )
+        if max_questions is not None and len(questions) > max_questions:
+            questions = questions[:max_questions]
+        return questions
 
     @staticmethod
     def _build_competencies_from_enriched_jd(
