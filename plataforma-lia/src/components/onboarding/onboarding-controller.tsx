@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { FirstAccessManager } from "./first-access-manager"
 import { Button } from "@/components/ui/button"
 import { useOnboardingStore } from "@/stores/onboarding-store"
+import { useAuthStore } from "@/stores/auth-store"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Brain, Clock, Lightbulb, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react"
 import './onboarding-styles.css'
@@ -40,6 +41,9 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
   const [dontShowAgainFlag, setDontShowAgainFlag] = useState(false)
 
   const onboardingStore = useOnboardingStore()
+  const authUser = useAuthStore((s) => s.user)
+  const authIsAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const authIsLoading = useAuthStore((s) => s.isLoading)
 
   const [userData, setUserData] = useState<UserData | null>(() => {
     if (typeof window === 'undefined') {
@@ -55,6 +59,52 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 
     return null
   })
+
+  const [isDevMode, setIsDevMode] = useState(false)
+
+  useEffect(() => {
+    setIsDevMode(process.env.NODE_ENV !== 'production')
+  }, [])
+
+  useEffect(() => {
+    if (!userData && authIsAuthenticated && authUser && !authIsLoading) {
+      const syntheticUserData: UserData = {
+        id: authUser.id || 'auto',
+        name: authUser.name || authUser.email,
+        email: authUser.email,
+        role: ('role' in authUser ? authUser.role : 'viewer') || 'viewer',
+        companyId: ('company_id' in authUser ? (authUser as any).company_id : '') || 'demo_company',
+        companyName: ('company' in authUser ? (authUser as any).company : '') || 'WeDO Talent',
+        isFirstAccess: false,
+        permissions: ('permissions' in authUser ? (authUser as any).permissions : []) || [],
+        createdAt: ('created_at' in authUser ? (authUser as any).created_at : new Date().toISOString()),
+      }
+      setUserData(syntheticUserData)
+      onboardingStore.setUserData(syntheticUserData as unknown as Record<string, unknown>)
+    }
+  }, [authUser, authIsAuthenticated, authIsLoading, userData, onboardingStore])
+
+  useEffect(() => {
+    if (isDevMode && !userData) {
+      const timeout = setTimeout(() => {
+        if (userData) return
+        const fallbackUser: UserData = {
+          id: 'dev-auto',
+          name: 'Demo User',
+          email: 'demo@wedotalent.com',
+          role: 'recruiter',
+          companyId: 'demo_company',
+          companyName: 'WeDO Talent',
+          isFirstAccess: false,
+          permissions: [],
+          createdAt: new Date().toISOString(),
+        }
+        setUserData(fallbackUser)
+        onboardingStore.setUserData(fallbackUser as unknown as Record<string, unknown>)
+      }, 500)
+      return () => clearTimeout(timeout)
+    }
+  }, [isDevMode, userData, onboardingStore])
 
   useEffect(() => {
     if (showThankYouScreen) {
@@ -162,6 +212,14 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 
   if (userData) {
     return <>{children}</>
+  }
+
+  if (authIsLoading) {
+    return (
+      <div className="min-h-screen bg-lia-bg-primary flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600" />
+      </div>
+    )
   }
 
   return (

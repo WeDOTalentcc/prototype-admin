@@ -71,6 +71,13 @@ lia-agent-system/audit_logs/
 # Storybook assets (large PNGs)
 plataforma-lia/src/stories/assets/*.png
 
+# Redis snapshots — may contain runtime data/PII
+dump.rdb
+*.rdb
+
+# Replit Canvas internal files
+.canvas/
+
 # Temporary
 /tmp/
 *.tmp

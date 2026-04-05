@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 import { verifyAndDecodeSession } from '@/lib/session-crypto'
 
+const DEV_AUTO_LOGIN = process.env.NODE_ENV !== 'production'
+
 const PUBLIC_PATHS = [
   '/login',
   '/privacidade',
@@ -46,6 +48,13 @@ function denyAccess(request: NextRequest, pathname: string): NextResponse {
       { status: 401 }
     )
   }
+
+  if (DEV_AUTO_LOGIN) {
+    const autoLoginUrl = new URL('/api/auth/auto-login', request.url)
+    autoLoginUrl.searchParams.set('next', pathname)
+    return NextResponse.redirect(autoLoginUrl)
+  }
+
   const loginUrl = new URL('/login', request.url)
   loginUrl.searchParams.set('next', pathname)
   return NextResponse.redirect(loginUrl)
@@ -136,6 +145,15 @@ export async function middleware(request: NextRequest) {
   }
 
   const token = accessTokenCookie.value
+
+  if (DEV_AUTO_LOGIN) {
+    const requestHeaders = new Headers(request.headers)
+    if (!requestHeaders.get('Authorization')) {
+      requestHeaders.set('Authorization', `Bearer ${token}`)
+    }
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
+
   const payload = await verifyJwt(token)
   if (!payload) {
     return denyAccess(request, pathname)
