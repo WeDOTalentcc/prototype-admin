@@ -98,7 +98,7 @@ class LiaOpinion(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     created_by = Column(String(255), nullable=True)
     
-    company_id = Column(String(100), nullable=False, default="default", index=True)
+    company_id = Column(String(100), nullable=False, index=True)
     
     def __repr__(self):
         return f"<LiaOpinion {self.id} - {self.opinion_type} - Score: {self.score}>"

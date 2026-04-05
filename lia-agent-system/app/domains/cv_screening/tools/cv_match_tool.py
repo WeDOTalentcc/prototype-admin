@@ -134,7 +134,7 @@ async def analyze_cv_match(
         result = await scoring_service.screen_candidate(
             candidate_id=resolved_candidate_id,
             vacancy_id=resolved_vacancy_id,
-            company_id=company_id or "default",
+            company_id=company_id,
         )
 
         if not result.get("success"):

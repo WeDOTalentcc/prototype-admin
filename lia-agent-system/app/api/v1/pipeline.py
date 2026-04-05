@@ -68,7 +68,7 @@ async def execute_pipeline_action(
         try:
             _is_gate_action = request.action_id in ("advance_stage", "reject_candidate", "send_offer", "confirm_hire")
             await audit_service.log_decision(
-                company_id="default",
+                company_id=None,
                 agent_name="pipeline_module",
                 decision_type="move_stage",
                 action=request.action_id,

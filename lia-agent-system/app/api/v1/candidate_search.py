@@ -3476,7 +3476,8 @@ async def create_archetype(
 @router.post("/archetypes/from-search", response_model=ArchetypeFromSearchResponse)
 async def create_archetype_from_search(
     data: ArchetypeFromSearchCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo)
 ):
     """
     Cria um novo arquétipo a partir de um SearchSpec.
@@ -3493,8 +3494,10 @@ async def create_archetype_from_search(
     from app.models.archetype import SearchArchetype
     
     try:
-        company_id = "demo_company"
-        user_id = "demo_user"
+        company_id = current_user.company_id
+        user_id = str(current_user.id) if current_user.id else None
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id is required to create an archetype")
         
         extracted_tags = extract_tags_from_search_spec(data.search_spec)
         
@@ -5483,7 +5486,7 @@ async def add_candidates_to_vacancy(
             select(JobVacancy).where(JobVacancy.id == vacancy_id)
         )
         vacancy = vacancy_result.scalar_one_or_none()
-        vacancy_company_id = vacancy.company_id if vacancy else "default"
+        vacancy_company_id = vacancy.company_id if vacancy else None
         
         calibration_stmt = select(CalibrationSession).where(
             CalibrationSession.vacancy_id == vacancy_id,
@@ -5535,7 +5538,7 @@ async def add_candidates_to_vacancy(
                     new_vc = VacancyCandidate(
                         vacancy_id=uuid.UUID(vacancy_id),
                         candidate_id=uuid.UUID(candidate_id),
-                        company_id=vacancy_company_id or "default",
+                        company_id=vacancy_company_id,
                         source=request.source,
                         added_by=request.added_by,
                         status="sourced",

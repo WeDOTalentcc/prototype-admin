@@ -1017,7 +1017,7 @@ class ProactiveAgentWorker:
                         )
                     """), {
                         "id": alert_id,
-                        "company_id": alert.get("company_id", "demo_company"),
+                        "company_id": alert.get("company_id"),
                         "action_type": alert["type"],
                         "severity": alert.get("severity", "info"),
                         "title": alert["title"],

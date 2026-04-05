@@ -144,9 +144,9 @@ class PipelineStageService:
             if context is None:
                 context = {}
             
-            company_id = await derive_company_from_context(context, db, fallback="default")
+            company_id = await derive_company_from_context(context, db, fallback=None)
             
-            candidate_company = vacancy_candidate.company_id or "default"
+            candidate_company = vacancy_candidate.company_id
             if candidate_company != company_id:
                 raise PermissionError(
                     f"Access denied: Candidate belongs to company '{candidate_company}', "
@@ -422,9 +422,9 @@ class PipelineStageService:
             if not vacancy_candidate:
                 return None
             
-            effective_company_id = company_id or "default"
+            effective_company_id = company_id
             
-            candidate_company = vacancy_candidate.company_id or "default"
+            candidate_company = vacancy_candidate.company_id
             if candidate_company != effective_company_id:
                 return None
             
@@ -482,7 +482,7 @@ class PipelineStageService:
                 vacancy_candidate = await db.get(VacancyCandidate, uuid.UUID(vacancy_candidate_id))
                 if not vacancy_candidate:
                     return []
-                candidate_company = vacancy_candidate.company_id or "default"
+                candidate_company = vacancy_candidate.company_id
                 if candidate_company != company_id:
                     return []
             

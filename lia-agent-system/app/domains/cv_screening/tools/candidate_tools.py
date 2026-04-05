@@ -49,7 +49,7 @@ async def update_candidate_stage(
         Result with success status and message
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     user_id = context.user_id if context else "system"
     
     logger.info(f"🔄 Moving candidate {candidate_id} to stage: {target_stage} (company: {company_id})")
@@ -165,7 +165,7 @@ async def add_candidate_to_vacancy(
         Result with success status and message
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     user_id = context.user_id if context else "system"
     
     logger.info(f"➕ Adding candidate {candidate_id} to job {job_id} (company: {company_id})")
@@ -322,7 +322,7 @@ async def _generate_rediscovery_embedding(
             except Exception:
                 pass
 
-        company_id = str(getattr(candidate, "company_id", "default")) if candidate else "default"
+        company_id = str(getattr(candidate, "company_id", None)) if candidate else None
 
         candidate_embedding_id = str(_uuid.uuid5(
             _uuid.NAMESPACE_DNS,
@@ -422,7 +422,7 @@ async def reject_candidate(
                                 candidate_id=candidate_id,
                                 job_id=job_id,
                                 reason=reason,
-                                company_id=str(getattr(candidate, 'company_id', 'default')),
+                                company_id=str(candidate.company_id) if getattr(candidate, 'company_id', None) else None,
                             )
                             logger.info("Dispatched rejection feedback for candidate %s", candidate_id)
                         except Exception as fb_exc:
@@ -650,7 +650,7 @@ async def add_to_list(
         Result with success status and message
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     user_id = context.user_id if context else "system"
     
     logger.info(f"📋 Adding candidate {candidate_id} to list {list_id} (company: {company_id})")
@@ -726,7 +726,7 @@ async def wsi_screening(
         Result with success status and screening session details
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     user_id = context.user_id if context else "system"
     
     logger.info(f"🎯 Triggering WSI screening for candidate {candidate_id} on job {job_id} (company: {company_id})")
@@ -850,7 +850,7 @@ async def hide_candidate(
         Result with success status and message
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     user_id = context.user_id if context else "system"
     
     logger.info(f"🙈 Hiding candidate {candidate_id} (global={hide_globally}, job={job_id}, company={company_id})")

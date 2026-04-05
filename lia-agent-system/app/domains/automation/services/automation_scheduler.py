@@ -334,7 +334,7 @@ class AutomationScheduler:
                 for vc, candidate, vacancy in inactive_candidates:
                     try:
                         days_inactive = (datetime.utcnow() - vc.updated_at).days
-                        company_id = str(vacancy.company_id) if vacancy.company_id else (vc.company_id or "unknown")
+                        company_id = str(vacancy.company_id) if vacancy.company_id else vc.company_id
                         
                         await dispatcher.on_candidate_inactive(
                             candidate_id=str(vc.candidate_id),
@@ -401,7 +401,7 @@ class AutomationScheduler:
                         vacancy_id = str(interview.job_vacancy_id) if interview.job_vacancy_id else "unknown"
                         candidate_id = str(interview.candidate_id) if interview.candidate_id else "unknown"
                         
-                        company_id = "unknown"
+                        company_id = None
                         if interview.job_vacancy_id:
                             vacancy_result = await db.execute(
                                 select(JobVacancy.company_id).where(JobVacancy.id == interview.job_vacancy_id)

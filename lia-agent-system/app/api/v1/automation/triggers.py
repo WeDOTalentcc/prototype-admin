@@ -128,7 +128,7 @@ async def get_stage_suggestions(
     to_stage: str = Query(..., description="Target stage name"),
     candidate_id: Optional[str] = Query(None, description="Candidate ID"),
     vacancy_id: Optional[str] = Query(None, description="Vacancy ID"),
-    company_id: str = Query("demo_company", description="Company ID for multi-tenancy")
+    company_id: str = Query(..., description="Company ID for multi-tenancy")
 ):
     """
     Get AI-powered suggestions for automation actions based on stage transition.

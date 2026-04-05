@@ -79,7 +79,7 @@ class UserManagementCreate(BaseModel):
     email: EmailStr
     name: str = Field(..., min_length=2, max_length=255)
     role: UserRole = UserRole.viewer
-    company_id: Optional[str] = "demo_company"
+    company_id: Optional[str] = None
     permissions: List[str] = Field(default_factory=list)
     password: Optional[str] = Field(None, description="Password for the user. If not provided, a default will be used.")
 

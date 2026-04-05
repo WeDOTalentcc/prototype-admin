@@ -139,7 +139,7 @@ def verify_company_ownership(
     if user_company_id != target_client_id:
         log_cross_tenant_attempt(
             action="access",
-            user_company_id=user_company_id or "unknown",
+            user_company_id=user_company_id or None,
             target_company_id=target_client_id,
             user_id=current_user.get("user_id", "unknown"),
             resource_type=resource_type,

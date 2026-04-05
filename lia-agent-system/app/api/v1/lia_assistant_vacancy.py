@@ -72,7 +72,7 @@ async def search_previous_vacancies(
     current_user: User = Depends(get_current_user_or_demo)
 ) -> VacancySearchResponse:
     try:
-        company_id = current_user.company_id or "demo_company"
+        company_id = current_user.company_id
 
         vacancies = await vacancy_search_service.search_vacancies(
             criteria=request.search_criteria,
@@ -107,7 +107,7 @@ async def get_vacancy_full_details(
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Dict[str, Any]:
     try:
-        company_id = current_user.company_id or "demo_company"
+        company_id = current_user.company_id
         vacancy_details = await vacancy_search_service.get_vacancy_full_details(
             vacancy_id=vacancy_id,
             db=db,
@@ -163,7 +163,7 @@ async def extract_and_apply_adjustments(
         vacancy_details = await vacancy_search_service.get_vacancy_full_details(
             vacancy_id=request.vacancy_id,
             db=db,
-            company_id=current_user.company_id or "demo_company"
+            company_id=current_user.company_id
         )
         if not vacancy_details:
             raise HTTPException(status_code=404, detail="Vaga não encontrada")

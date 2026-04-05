@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 feedback_router = APIRouter()
 
-DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+_DEPRECATED_DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ class ThumbsFeedbackRequest(BaseModel):
     message_id: str
     thumbs: str  # "up" or "down"
     user_id: str = "default_user"
-    company_id: str = DEFAULT_COMPANY_UUID
+    company_id: str
     message_context: Optional[Dict[str, Any]] = None
 
 
@@ -39,7 +39,7 @@ class RatingFeedbackRequest(BaseModel):
     feedback_text: Optional[str] = None
     feedback_category: Optional[str] = None
     user_id: str = "default_user"
-    company_id: str = DEFAULT_COMPANY_UUID
+    company_id: str
     message_context: Optional[Dict[str, Any]] = None
 
 
@@ -50,7 +50,7 @@ class CorrectionFeedbackRequest(BaseModel):
     original_response: str
     correction: str
     user_id: str = "default_user"
-    company_id: str = DEFAULT_COMPANY_UUID
+    company_id: str
     message_context: Optional[Dict[str, Any]] = None
 
 
@@ -138,7 +138,7 @@ async def submit_correction(request: CorrectionFeedbackRequest) -> dict:
 
 @feedback_router.get("/feedback/metrics")
 async def get_feedback_metrics(
-    company_id: str = Query(default=DEFAULT_COMPANY_UUID),
+    company_id: str = Query(..., description="Company ID for tenant scoping"),
     days: int = Query(default=30, ge=1, le=365)
 ) -> dict:
     """Get aggregated feedback metrics (satisfaction rate, rating distribution, pattern insights)."""
@@ -167,7 +167,7 @@ async def process_feedback_batch() -> dict:
 
 @feedback_router.get("/training-data/export/openai")
 async def export_training_data_openai(
-    company_id: str = Query(default=DEFAULT_COMPANY_UUID),
+    company_id: str = Query(..., description="Company ID for tenant scoping"),
     min_rating: int = Query(default=4, ge=1, le=5),
     limit: int = Query(default=1000, ge=1, le=10000),
     db: AsyncSession = Depends(get_db)
@@ -194,7 +194,7 @@ async def export_training_data_openai(
 
 @feedback_router.get("/training-data/export/anthropic")
 async def export_training_data_anthropic(
-    company_id: str = Query(default=DEFAULT_COMPANY_UUID),
+    company_id: str = Query(..., description="Company ID for tenant scoping"),
     min_rating: int = Query(default=4, ge=1, le=5),
     limit: int = Query(default=1000, ge=1, le=10000),
     db: AsyncSession = Depends(get_db)
@@ -221,7 +221,7 @@ async def export_training_data_anthropic(
 
 @feedback_router.get("/training-data/export/dpo")
 async def export_dpo_pairs(
-    company_id: str = Query(default=DEFAULT_COMPANY_UUID),
+    company_id: str = Query(..., description="Company ID for tenant scoping"),
     limit: int = Query(default=500, ge=1, le=5000),
     db: AsyncSession = Depends(get_db)
 ):
@@ -247,7 +247,7 @@ async def export_dpo_pairs(
 
 @feedback_router.get("/training-data/statistics")
 async def get_training_data_stats(
-    company_id: str = Query(default=DEFAULT_COMPANY_UUID),
+    company_id: str = Query(..., description="Company ID for tenant scoping"),
     db: AsyncSession = Depends(get_db)
 ) -> Dict[str, Any]:
     """Get statistics about available training data (counts, quality, export readiness)."""
@@ -264,7 +264,7 @@ async def get_training_data_stats(
 
 @feedback_router.post("/training-data/curate")
 async def curate_training_data(
-    company_id: str = Query(default=DEFAULT_COMPANY_UUID),
+    company_id: str = Query(..., description="Company ID for tenant scoping"),
     target_count: int = Query(default=500, ge=1, le=5000),
     db: AsyncSession = Depends(get_db)
 ) -> Dict[str, Any]:

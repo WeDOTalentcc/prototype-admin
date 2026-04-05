@@ -32,7 +32,7 @@ class LiaProfileAnalysisResponse(BaseModel):
     is_active: bool = True
     created_at: Optional[datetime] = None
     created_by: Optional[str] = None
-    company_id: str = "default"
+    company_id: str
     
     class Config:
         from_attributes = True

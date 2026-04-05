@@ -141,7 +141,7 @@ async def get_job_draft(
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Dict[str, Any]:
     """Get the current job draft for a conversation."""
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     if conversation_id in _job_drafts:
         return {
             "success": True,
@@ -160,7 +160,7 @@ async def clear_job_draft(
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Dict[str, Any]:
     """Clear a job draft from memory."""
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     if conversation_id in _job_drafts:
         del _job_drafts[conversation_id]
         return {"success": True, "message": "Job draft cleared"}

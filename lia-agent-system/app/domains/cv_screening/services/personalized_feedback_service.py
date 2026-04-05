@@ -127,7 +127,7 @@ class PersonalizedFeedbackRequest(BaseModel):
     include_resources: bool = True
 
     recruiter_notes: Optional[str] = None
-    company_id: str = "default"
+    company_id: str
     requested_by: Optional[str] = None
     auto_send: bool = False
     # Gap #11/#12: Caminho de decisão + gates ativados para template determinístico
@@ -722,7 +722,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         candidate: CandidateContext,
         job: JobContext,
         evaluation: WSIEvaluationContext,
-        company_id: str = "default",
+        company_id: str = None,
         db: Optional[AsyncSession] = None,
     ) -> PersonalizedFeedbackResult:
         """Gap #11 — Path APROVADO: gera feedback de convite para próxima etapa."""
@@ -742,7 +742,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         candidate: CandidateContext,
         job: JobContext,
         evaluation: WSIEvaluationContext,
-        company_id: str = "default",
+        company_id: str = None,
         db: Optional[AsyncSession] = None,
     ) -> PersonalizedFeedbackResult:
         """Gap #11 — Path EM_AVALIACAO: gera feedback de análise em andamento."""
@@ -1198,7 +1198,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
             try:
                 await audit_service.log_decision(
-                    company_id=getattr(record, "company_id", None) or "default",
+                    company_id=getattr(record, "company_id", None),
                     agent_name="personalized_feedback",
                     decision_type="send_message",
                     action="feedback_sent",

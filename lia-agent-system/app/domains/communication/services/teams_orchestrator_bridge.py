@@ -224,10 +224,7 @@ class TeamsOrchestratorBridge:
             except Exception:
                 pass
 
-        # Fallback: use tenant_id as company identifier or demo
-        if tenant_id:
-            return f"tenant_{tenant_id}"
-        return "demo_company"
+        return None
 
 
 teams_orchestrator_bridge = TeamsOrchestratorBridge()

@@ -243,7 +243,7 @@ async def remuneration_collector(state: Dict[str, Any]) -> Dict[str, Any]:
         job_state.benefits = entities["benefits"]
     
     # Fetch company benefits from BenefitsService
-    company_id = state.get("company_id") or workflow_data.get("company_id") or "default"
+    company_id = state.get("company_id") or workflow_data.get("company_id")
     company_benefits = []
     company_benefits_formatted = ""
     
@@ -1219,7 +1219,7 @@ async def publication_node(state: Dict[str, Any]) -> Dict[str, Any]:
                 # Get context from state
                 conversation_id = state.get("conversation_id") or workflow_data.get("conversation_id")
                 user_id = state.get("user_id", "default_user")
-                company_id = state.get("company_id") or workflow_data.get("company_id", "default")
+                company_id = state.get("company_id") or workflow_data.get("company_id")
                 
                 # Persist to database
                 job_vacancy = await job_vacancy_service.finalize_job_vacancy(

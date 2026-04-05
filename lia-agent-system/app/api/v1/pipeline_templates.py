@@ -80,7 +80,7 @@ async def list_pipeline_templates(
     """
     List all pipeline templates for the company.
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     
     query = select(PipelineTemplate).where(
         PipelineTemplate.company_id == company_id
@@ -143,7 +143,7 @@ async def create_pipeline_template(
     """
     Create a new pipeline template.
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     user_email = current_user.email or "demo@example.com"
     
     if data.is_default:
@@ -199,7 +199,7 @@ async def get_pipeline_template(
     """
     Get a specific pipeline template by ID.
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     
     try:
         template_uuid = uuid.UUID(template_id)
@@ -242,7 +242,7 @@ async def update_pipeline_template(
     """
     Update a pipeline template.
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     
     try:
         template_uuid = uuid.UUID(template_id)
@@ -312,7 +312,7 @@ async def delete_pipeline_template(
     """
     Delete (soft delete) a pipeline template.
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     
     try:
         template_uuid = uuid.UUID(template_id)
@@ -350,7 +350,7 @@ async def clone_pipeline_template(
     """
     Clone an existing pipeline template.
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     user_email = current_user.email or "demo@example.com"
     
     try:
@@ -413,7 +413,7 @@ async def seed_default_templates(
     Seed default pipeline templates for the company.
     Creates standard templates if they don't exist.
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     user_email = current_user.email or "demo@example.com"
     
     existing = await db.execute(
@@ -479,7 +479,7 @@ async def increment_template_usage(
     """
     Increment the usage count of a template (called when applied to a job).
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     
     try:
         template_uuid = uuid.UUID(template_id)

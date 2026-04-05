@@ -499,7 +499,7 @@ REGRAS:
         """Create a new department.
 
         Extracted from POST /departments (lines 934-976).
-        Resolves company_id from "default" to actual profile if needed.
+        Resolves company_id to actual profile if needed.
 
         Returns:
             Dict with department data including id.
@@ -507,7 +507,7 @@ REGRAS:
         from app.models.company import CompanyProfile, Department
 
         resolved_company_id = None
-        if company_id and company_id != "default":
+        if company_id:
             try:
                 resolved_company_id = UUID(company_id)
             except ValueError:
@@ -821,7 +821,7 @@ REGRAS:
         import uuid as uuid_mod
 
         query = select(Benefit)
-        if company_id and company_id != "default":
+        if company_id:
             query = query.where(Benefit.company_id == uuid_mod.UUID(company_id))
 
         result = await db.execute(query)

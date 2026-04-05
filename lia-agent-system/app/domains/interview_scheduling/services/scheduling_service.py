@@ -110,7 +110,7 @@ class SchedulingService:
         Returns:
             Resolved company ID (either the provided ID or 'default' as fallback)
         """
-        return company_id if company_id else "default"
+        return company_id if company_id else None
     
     async def _resolve_company_name(
         self,

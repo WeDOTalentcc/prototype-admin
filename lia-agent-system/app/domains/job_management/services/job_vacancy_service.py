@@ -395,7 +395,7 @@ class JobVacancyService:
         conversation_id: str,
         created_by: str,
         db,
-        company_id: str = "default",
+        company_id: str,
         current_user: Optional[Any] = None,
         pipeline_template_id: Optional[str] = None
     ):
@@ -413,7 +413,7 @@ class JobVacancyService:
             conversation_id: UUID of the conversation
             created_by: User who created the vacancy
             db: Database session
-            company_id: Company ID for multi-tenancy (defaults to "default")
+            company_id: Company ID for multi-tenancy
             current_user: Currently logged-in user (for recruiter auto-fill)
             pipeline_template_id: Pipeline template ID for deadline calculation
         

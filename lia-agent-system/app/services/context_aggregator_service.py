@@ -272,7 +272,7 @@ class ContextAggregatorService:
     async def _get_historical_context(self, company_id: str, db: AsyncSession) -> HistoricalContext:
         """Obtém contexto histórico de vagas."""
         try:
-            effective_company_id = company_id if company_id != "default" else "demo_company"
+            effective_company_id = company_id
             
             total_result = await db.execute(
                 select(func.count(JobVacancy.id))

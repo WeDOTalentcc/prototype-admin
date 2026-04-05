@@ -284,9 +284,15 @@ def get_user_company_id(user: User) -> str:
         user: The authenticated user
         
     Returns:
-        The company ID for the user, or "demo_company" if not set
+        The company ID for the user
     """
-    return user.company_id or "demo_company"
+    if not user.company_id:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=400,
+            detail="User has no company_id assigned. A valid company_id is required for multi-tenant operations."
+        )
+    return user.company_id
 
 
 def assert_resource_ownership(resource, user: User, resource_type: str = "resource") -> None:
@@ -308,8 +314,8 @@ def assert_resource_ownership(resource, user: User, resource_type: str = "resour
     if not hasattr(resource, 'company_id'):
         return
     
-    resource_company = getattr(resource, 'company_id', None) or "default"
-    user_company = user.company_id or "default"
+    resource_company = getattr(resource, 'company_id', None)
+    user_company = user.company_id
     
     if user.role == UserRole.admin:
         if resource_company != user_company:
@@ -353,8 +359,8 @@ def assert_admin_cross_tenant_access(
     if not hasattr(resource, 'company_id'):
         return
     
-    resource_company = getattr(resource, 'company_id', None) or "default"
-    user_company = user.company_id or "default"
+    resource_company = getattr(resource, 'company_id', None)
+    user_company = user.company_id
     
     is_cross_tenant = resource_company != user_company
     

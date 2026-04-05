@@ -100,7 +100,7 @@ class TestE1AuthLogin:
 
             audit.log_decision.assert_called_once()
             kw = audit.log_decision.call_args.kwargs
-            assert kw["company_id"] == "default"
+            assert kw["company_id"] is None
             assert kw["decision_type"] == "reject_candidate"
             assert kw["action"] == "auth_failed"
             assert kw["decision"] == "rejected"
@@ -109,9 +109,9 @@ class TestE1AuthLogin:
             assert "email_match" in kw["criteria_used"]
             assert "password_hash_verify" in kw["criteria_used"]
 
-    def test_company_id_none_yields_default(self):
+    def test_company_id_none_yields_unknown(self):
         val = None
-        assert (str(val) if val else "default") == "default"
+        assert (str(val) if val else "unknown") == "unknown"
 
     def test_company_id_value_preserved(self):
         val = "corp-99"

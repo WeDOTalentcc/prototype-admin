@@ -165,7 +165,7 @@ class ToolExecutorService:
         
         context = ToolExecutionContext(
             user_id=request.user_id,
-            company_id=request.company_id or request.context.get("company_id", "default") if request.context else "default",
+            company_id=request.company_id or (request.context.get("company_id") if request.context else None),
             permissions=user_permissions,
             session_id=request.context.get("session_id") if request.context else None
         )

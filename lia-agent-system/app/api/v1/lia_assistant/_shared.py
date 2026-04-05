@@ -88,7 +88,7 @@ from app.dependencies.token_budget import require_token_budget
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+_DEPRECATED_DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 USE_ENHANCED_CLASSIFIER = True
 
 # ---------------------------------------------------------------------------
@@ -399,7 +399,7 @@ class WizardOrchestratorRequest(BaseModel):
     current_stage: str
     collected_data: Dict[str, Any]
     conversation_history: Optional[List[Dict[str, str]]] = None
-    company_id: Optional[str] = "default"
+    company_id: str
     use_structured_outputs: bool = False
     llm_provider: Optional[str] = "gemini"
 

@@ -189,7 +189,9 @@ async def send_email(
     - Logs the communication to CommunicationHistory
     """
     try:
-        company_id = x_company_id or request.company_id or "default"
+        company_id = x_company_id or request.company_id
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
         
         logger.info(f"📧 Sending email to {request.to_email} for company {company_id}")
         
@@ -305,7 +307,9 @@ async def send_whatsapp(
     - Logs the communication to CommunicationHistory
     """
     try:
-        company_id = x_company_id or request.company_id or "default"
+        company_id = x_company_id or request.company_id
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
         
         logger.info(f"📱 Sending WhatsApp to {request.to_phone} for company {company_id}")
         
@@ -425,7 +429,9 @@ async def send_screening_invite(
     All invitations are logged to CommunicationHistory for tracking.
     """
     try:
-        company_id = x_company_id or request.company_id or "default"
+        company_id = x_company_id or request.company_id
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
         channel = request.channel.lower()
         
         logger.info(f"Sending screening invite via {channel} to {request.candidate_name} for company {company_id}")

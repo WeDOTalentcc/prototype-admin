@@ -34,7 +34,9 @@ async def get_candidate_opinions_summary(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Get summary of all opinions for a candidate (for preview display)."""
-    company_id = current_user.company_id or "default"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     query = select(LiaOpinion).where(
         and_(
             LiaOpinion.candidate_id == candidate_id,
@@ -96,7 +98,9 @@ async def get_candidate_opinions_history(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Get full history of all opinions for a candidate (including non-current versions)."""
-    company_id = current_user.company_id or "default"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     query = select(LiaOpinion).where(
         and_(
             LiaOpinion.candidate_id == candidate_id,
@@ -166,7 +170,9 @@ async def list_candidate_opinions(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """List all opinions for a candidate with optional filters."""
-    company_id = current_user.company_id or "default"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     conditions = [
         LiaOpinion.candidate_id == candidate_id,
         LiaOpinion.company_id == company_id
@@ -251,7 +257,9 @@ async def get_opinion(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Get a specific opinion by ID."""
-    company_id = current_user.company_id or "default"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     query = select(LiaOpinion).where(
         and_(
             LiaOpinion.id == opinion_id,
@@ -315,7 +323,9 @@ async def create_opinion(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Create a new LIA opinion."""
-    company_id = current_user.company_id or "default"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     user_id = str(current_user.id)
     if data.opinion_type.value == "wsi" and not data.job_vacancy_id:
         raise HTTPException(
@@ -464,7 +474,9 @@ async def update_opinion(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Update a LIA opinion (e.g., recruiter notes or override)."""
-    company_id = current_user.company_id or "default"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     user_id = str(current_user.id)
     query = select(LiaOpinion).where(
         and_(
@@ -551,7 +563,9 @@ async def delete_opinion(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Delete a LIA opinion (soft delete by marking as non-current)."""
-    company_id = current_user.company_id or "default"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     query = select(LiaOpinion).where(
         and_(
             LiaOpinion.id == opinion_id,

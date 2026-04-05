@@ -161,24 +161,35 @@ async def schedule_interview(
         logger.info(f"✅ Interview scheduled: {interview.id}")
 
         try:
-            await audit_service.log_decision(
-                company_id="default",
-                agent_name="interviews_module",
-                decision_type="schedule_interview",
-                action="schedule_interview",
-                decision="scheduled",
-                reasoning=[
-                    "Interview scheduled via calendar integration",
-                    f"Type: {request.interview_type}",
-                    f"Mode: {request.interview_mode}",
-                    f"Scheduled: {request.start_time.isoformat() if request.start_time else 'N/A'}",
-                    f"Calendar sync status: confirmed",
-                ],
-                criteria_used=["candidate_contact_info", "interviewer_availability", "calendar_sync", "interview_mode"],
-                candidate_id=request.candidate_id,
-                job_vacancy_id=request.job_vacancy_id,
-                human_review_required=False,
-            )
+            audit_company_id = None
+            if request.job_vacancy_id:
+                vac_result = await db.execute(
+                    select(JobVacancy.company_id).where(JobVacancy.id == uuid.UUID(request.job_vacancy_id))
+                )
+                vac_row = vac_result.scalar_one_or_none()
+                if vac_row:
+                    audit_company_id = str(vac_row)
+            if audit_company_id:
+                await audit_service.log_decision(
+                    company_id=audit_company_id,
+                    agent_name="interviews_module",
+                    decision_type="schedule_interview",
+                    action="schedule_interview",
+                    decision="scheduled",
+                    reasoning=[
+                        "Interview scheduled via calendar integration",
+                        f"Type: {request.interview_type}",
+                        f"Mode: {request.interview_mode}",
+                        f"Scheduled: {request.start_time.isoformat() if request.start_time else 'N/A'}",
+                        f"Calendar sync status: confirmed",
+                    ],
+                    criteria_used=["candidate_contact_info", "interviewer_availability", "calendar_sync", "interview_mode"],
+                    candidate_id=request.candidate_id,
+                    job_vacancy_id=request.job_vacancy_id,
+                    human_review_required=False,
+                )
+            else:
+                logger.warning("Skipping audit log for schedule_interview: no company_id resolvable from vacancy")
         except Exception as audit_err:
             logger.warning(f"Audit log failed for schedule_interview: {audit_err}")
 

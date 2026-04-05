@@ -59,7 +59,7 @@ async def ensure_highlights_table(db: AsyncSession):
         CREATE TABLE IF NOT EXISTS candidate_experience_highlights (
             id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             candidate_id VARCHAR(255) NOT NULL,
-            company_id VARCHAR(255) NOT NULL DEFAULT 'demo_company',
+            company_id VARCHAR(255) NOT NULL,
             highlight_text TEXT NOT NULL,
             model_used VARCHAR(100) NOT NULL DEFAULT 'claude-sonnet-4-6',
             generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -202,7 +202,7 @@ async def get_experience_highlight(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> ExperienceHighlightResponse:
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     """
     Get cached experience highlight for a candidate.
     Returns 404 if no cached highlight exists.
@@ -241,7 +241,7 @@ async def generate_experience_highlight(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> ExperienceHighlightResponse:
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     """
     Generate or retrieve cached experience highlight for a candidate.
     
@@ -320,7 +320,7 @@ async def delete_experience_highlight(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     """Delete cached highlight for a candidate (admin use)."""
     await ensure_highlights_table(db)
     
@@ -339,7 +339,7 @@ async def batch_generate_highlights(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> list[ExperienceHighlightResponse]:
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     """
     Generate highlights for multiple candidates at once.
     Useful for pre-generating highlights for search results.

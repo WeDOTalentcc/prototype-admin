@@ -56,7 +56,7 @@ class AsyncTask:
     started_at: Optional[float] = None
     completed_at: Optional[float] = None
     user_id: str = ""
-    tenant_id: str = "default"
+    tenant_id: Optional[str] = None
     callback: Optional[str] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 

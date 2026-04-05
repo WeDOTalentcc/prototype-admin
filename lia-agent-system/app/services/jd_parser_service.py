@@ -56,7 +56,7 @@ class JDParserService:
     async def extract_requirements(
         self,
         jd_text: str,
-        company_id: str = "demo_company",
+        company_id: str = None,
     ) -> Dict[str, Any]:
         """
         Extract structured requirements from raw JD text.

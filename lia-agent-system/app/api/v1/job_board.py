@@ -405,7 +405,9 @@ async def get_indeed_xml_feed(
     
     The feed includes all jobs marked as published_indeed=True with status "Ativa" or "Publicada".
     """
-    target_company_id = company_id or "demo_company"
+    if not company_id:
+        raise HTTPException(status_code=400, detail="company_id is required for job feed generation")
+    target_company_id = company_id
     
     xml_content = await job_board_service.generate_job_feed_xml(target_company_id, db)
     

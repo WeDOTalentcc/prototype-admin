@@ -290,9 +290,9 @@ class ConversationManager:
         self,
         phone_number: str,
         message_content: str,
+        company_id: str,
         message_type: str = "text",
-        media_data: Optional[Dict[str, Any]] = None,
-        company_id: str = "demo_company"
+        media_data: Optional[Dict[str, Any]] = None
     ) -> Optional[str]:
         """
         Process an incoming WhatsApp message and return the response.
@@ -1206,7 +1206,7 @@ class ConversationManager:
                 logger.error("[CV PARSE] No media ID or URL in media_data")
                 return {"success": False, "error": "Não foi possível localizar o arquivo"}
             
-            provider = await self.get_provider(company_id or "default")
+            provider = await self.get_provider(company_id)
             
             media_identifier = media_id or media_url
             logger.info(f"[CV PARSE] Downloading media: {media_identifier[:50] if media_identifier else 'unknown'}...")

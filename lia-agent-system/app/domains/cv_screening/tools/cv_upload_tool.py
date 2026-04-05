@@ -294,7 +294,7 @@ async def add_to_vacancy(
                 id=uuid.uuid4(),
                 vacancy_id=UUID(job_id),
                 candidate_id=UUID(candidate_id),
-                company_id=company_id or "demo_company",
+                company_id=company_id,
                 source=source,
                 stage=initial_stage,
                 status="sourced",

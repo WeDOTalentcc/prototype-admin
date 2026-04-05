@@ -693,7 +693,7 @@ async def get_company_profile(
 ):
     """Get a company profile by ID, or resolve from authenticated user's tenant."""
     try:
-        effective_company_id = company_id if (company_id and company_id != "default") else None
+        effective_company_id = company_id if (company_id and company_id not in ("default", "unknown")) else None
 
         if not effective_company_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
             profile_result = await db.execute(
@@ -1075,7 +1075,7 @@ async def create_department(
 ):
     """Create a new department."""
     try:
-        if not company_id or company_id == "default":
+        if not company_id or company_id in ("default", "unknown"):
             raise HTTPException(status_code=400, detail="Valid company_id is required to create a department")
         
         try:
@@ -1419,7 +1419,7 @@ async def list_benefits(
 ):
     """List all benefits for a company."""
     try:
-        if not company_id or company_id == "default":
+        if not company_id or company_id in ("default", "unknown"):
             logger.warning("list_benefits called without valid company_id — returning empty list to prevent cross-tenant data leak")
             return []
         
@@ -1457,7 +1457,7 @@ async def create_benefit(
 ):
     """Create a new benefit."""
     try:
-        if not company_id or company_id == "default":
+        if not company_id or company_id in ("default", "unknown"):
             raise HTTPException(status_code=400, detail="Valid company_id is required to create a benefit")
         
         try:
@@ -1569,7 +1569,7 @@ async def list_active_benefits(
         query = select(Benefit).where(Benefit.is_active == True)
         
         if company_id:
-            if company_id != "default":
+            if company_id not in ("default", "unknown"):
                 query = query.where(Benefit.company_id == uuid.UUID(company_id))
         
         query = query.order_by(Benefit.order, Benefit.category)
@@ -1607,7 +1607,7 @@ async def list_highlighted_benefits(
         )
         
         if company_id:
-            if company_id != "default":
+            if company_id not in ("default", "unknown"):
                 query = query.where(Benefit.company_id == uuid.UUID(company_id))
         
         query = query.order_by(Benefit.order, Benefit.category)
@@ -1631,7 +1631,7 @@ async def get_benefits_summary(
     Includes formatted text ready for use in prompts.
     """
     try:
-        if not company_id or company_id == "default":
+        if not company_id or company_id in ("default", "unknown"):
             logger.warning("get_benefits_summary called without valid company_id — returning empty summary")
             return {"total": 0, "active": 0, "highlighted": 0, "categories": {}, "formatted_text": "", "benefits": []}
         
@@ -2739,7 +2739,7 @@ async def create_approver(
     """Create a new approver."""
     try:
         resolved_company_id = None
-        if company_id and company_id != "default":
+        if company_id and company_id not in ("default", "unknown"):
             try:
                 resolved_company_id = uuid.UUID(company_id)
             except ValueError:
@@ -3028,7 +3028,7 @@ async def import_departments(
         logger.info(f"Starting departments import from file: {file.filename}")
         
         resolved_company_id = None
-        if company_id and company_id != "default":
+        if company_id and company_id not in ("default", "unknown"):
             try:
                 resolved_company_id = uuid.UUID(company_id)
             except ValueError:
@@ -3157,12 +3157,14 @@ async def import_departments(
 
 @router.get("/global-search-settings", response_model=GlobalSearchSettingsResponse)
 async def get_global_search_settings(
-    company_id: Optional[str] = Query("demo_company", description="Company ID for multi-tenant isolation"),
+    company_id: Optional[str] = Query(None, description="Company ID for multi-tenant isolation"),
     db: AsyncSession = Depends(get_db)
 ):
     """Get global search settings for a specific company (multi-tenant isolated)."""
     try:
-        resolved_company_id = company_id or "demo_company"
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id is required")
+        resolved_company_id = company_id
         
         result = await db.execute(
             select(GlobalSearchSettings).where(
@@ -3197,12 +3199,14 @@ async def get_global_search_settings(
 @router.put("/global-search-settings", response_model=GlobalSearchSettingsResponse)
 async def update_global_search_settings(
     data: GlobalSearchSettingsUpdate,
-    company_id: Optional[str] = Query("demo_company", description="Company ID for multi-tenant isolation"),
+    company_id: Optional[str] = Query(None, description="Company ID for multi-tenant isolation"),
     db: AsyncSession = Depends(get_db)
 ):
     """Update global search settings for a specific company (multi-tenant isolated)."""
     try:
-        resolved_company_id = company_id or "demo_company"
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id is required")
+        resolved_company_id = company_id
         
         result = await db.execute(
             select(GlobalSearchSettings).where(
@@ -3238,14 +3242,14 @@ async def update_global_search_settings(
 
 @router.get("/users", response_model=List[UserManagementResponse])
 async def list_users(
-    company_id: Optional[str] = Query("demo_company"),
+    company_id: str = Query(..., description="Company ID (required for tenant isolation)"),
     db: AsyncSession = Depends(get_db)
 ):
     """List all users for a company."""
+    if not company_id or company_id in ("default", "unknown"):
+        raise HTTPException(status_code=400, detail="Valid company_id is required")
     try:
-        query = select(User)
-        if company_id:
-            query = query.where(User.company_id == company_id)
+        query = select(User).where(User.company_id == company_id)
         query = query.order_by(User.created_at.desc())
         
         result = await db.execute(query)
@@ -3260,7 +3264,7 @@ async def list_users(
 @router.post("/users", response_model=UserManagementResponse, status_code=201)
 async def create_user(
     data: UserManagementCreate,
-    company_id: Optional[str] = Query("demo_company"),
+    company_id: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
     """Create a new user with invitation token. User will be inactive until invitation is accepted."""
@@ -3271,7 +3275,9 @@ async def create_user(
         if existing.scalar_one_or_none():
             raise HTTPException(status_code=400, detail="Email already registered")
         
-        resolved_company_id = data.company_id or company_id or "demo_company"
+        resolved_company_id = data.company_id or company_id
+        if not resolved_company_id:
+            raise HTTPException(status_code=400, detail="company_id is required")
         
         invitation_token = generate_secure_token()
         invitation_sent_at = datetime.utcnow()
@@ -3473,7 +3479,9 @@ async def list_company_users(
     Returns users with their active job counts and performance scores.
     """
     try:
-        company_id = current_user.company_id or "demo_company"
+        if not current_user.company_id:
+            raise HTTPException(status_code=400, detail="User has no company_id assigned")
+        company_id = current_user.company_id
         
         query = select(User).where(User.company_id == company_id)
         
@@ -3634,7 +3642,7 @@ Qual opção você prefere?"""
             try:
                 resolved_company_uuid = UUID_type(company_id)
             except (ValueError, TypeError):
-                # company_id is not valid UUID (e.g., "default"), find default profile's company_id
+                # company_id is not valid UUID, find default profile's company_id
                 profile_result = await db.execute(
                     select(CompanyProfile).where(CompanyProfile.is_default == True).limit(1)
                 )

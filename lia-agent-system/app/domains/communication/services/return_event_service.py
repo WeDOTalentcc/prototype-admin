@@ -292,7 +292,7 @@ class ReturnEventService:
                 "candidate_email": candidate.email or "",  # type: ignore[truthy-bool]
                 "stage": vc.stage or "",  # type: ignore[truthy-bool]
                 "status": vc.status or "",  # type: ignore[truthy-bool]
-                "company_id": vc.company_id or "demo_company",  # type: ignore[truthy-bool]
+                "company_id": vc.company_id or None,  # type: ignore[truthy-bool]
                 "added_by": vc.added_by or "",  # type: ignore[truthy-bool]
             }
 

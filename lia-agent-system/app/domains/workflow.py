@@ -599,7 +599,7 @@ class DomainWorkflow:
             agent = factory.create_agent(
                 domain=agent_domain,
                 session_id=state.context.session_id or "",
-                company_id=state.context.tenant_id or "default",
+                company_id=state.context.tenant_id,
                 user_id=state.context.user_id or "",
             )
 
@@ -613,7 +613,7 @@ class DomainWorkflow:
                     "extracted_params": state.intent_result.extracted_params if state.intent_result else {},
                 },
                 session_id=state.context.session_id or "",
-                company_id=state.context.tenant_id or "default",
+                company_id=state.context.tenant_id,
                 user_id=state.context.user_id or "",
             )
 

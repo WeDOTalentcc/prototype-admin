@@ -613,7 +613,7 @@ class WSIInterviewNodes:
             try:
                 from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
                 await audit_service.log_decision(
-                    company_id=str(state.company_id) if state.company_id else "default",
+                    company_id=str(state.company_id) if state.company_id else None,
                     agent_name="wsi_interview_graph",
                     decision_type="score_candidate",
                     action="wsi_block_scored",
@@ -713,7 +713,7 @@ class WSIInterviewNodes:
                 from app.shared.compliance.audit_service import audit_service, PROTECTED_CRITERIA
                 _passed = state.recommendation == "aprovado"
                 await audit_service.log_decision(
-                    company_id=str(state.company_id) if state.company_id else "default",
+                    company_id=str(state.company_id) if state.company_id else None,
                     agent_name="wsi_interview_graph",
                     decision_type="approved" if _passed else "rejected",
                     action="wsi_final_evaluation",

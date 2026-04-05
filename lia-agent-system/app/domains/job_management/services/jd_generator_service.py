@@ -183,8 +183,8 @@ class JobDescriptionGeneratorService:
     async def generate_full_description(
         self,
         job_data: Dict[str, Any],
+        company_id: str,
         provider: Optional[LLMProvider] = None,
-        company_id: str = "default",
         use_cache: bool = True
     ) -> Dict[str, Any]:
         """

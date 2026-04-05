@@ -560,7 +560,14 @@ async def complete_screening(
 
     # Create WSI Opinion after successful screening completion
     try:
-        company_id = "demo_company"  # TODO: Get from request or context
+        company_id = None
+        if request.job_vacancy_id:
+            vac_result = await db.execute(text(
+                "SELECT company_id FROM job_vacancies WHERE id = :vid LIMIT 1"
+            ), {"vid": request.job_vacancy_id})
+            vac_row = vac_result.fetchone()
+            if vac_row and vac_row.company_id:
+                company_id = str(vac_row.company_id)
 
         # Archive previous WSI opinions for same candidate/vacancy
         if request.job_vacancy_id:

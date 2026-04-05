@@ -4,7 +4,7 @@ All seed data is clearly marked with '[DEMO]' prefix for easy identification.
 """
 import uuid
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 import logging
@@ -16,7 +16,12 @@ from app.core.database import AsyncSessionLocal
 
 logger = logging.getLogger(__name__)
 
-COMPANY_ID = "demo_company"
+COMPANY_ID: Optional[str] = None
+
+def get_seed_company_id() -> str:
+    if not COMPANY_ID:
+        raise ValueError("COMPANY_ID must be set before seeding data. Set seed_service.COMPANY_ID = '<your_tenant_id>'")
+    return COMPANY_ID
 
 
 def generate_demo_job_vacancies() -> List[Dict[str, Any]]:
@@ -614,7 +619,7 @@ def generate_demo_job_vacancies() -> List[Dict[str, Any]]:
         
         job_record = {
             "id": str(uuid.uuid4()),
-            "company_id": COMPANY_ID,
+            "company_id": get_seed_company_id(),
             "job_id": f"WDT-2025-{str(i+1).zfill(3)}",
             "title": job["title"],
             "department": job["department"],
@@ -1179,7 +1184,7 @@ def generate_vacancy_candidates(job_ids: List[str], candidate_ids: List[str]) ->
                 "id": str(uuid.uuid4()),
                 "vacancy_id": job_id,
                 "candidate_id": candidate_id,
-                "company_id": COMPANY_ID,
+                "company_id": get_seed_company_id(),
                 "source": "SEED_DATA",
                 "lia_score": lia_score,
                 "match_percentage": match_percentage,

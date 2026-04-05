@@ -171,16 +171,15 @@ async def _create_note(params: Dict[str, Any], context: Dict[str, Any]):
         if not company_id:
             logger.warning(
                 "[_create_note] company_id is missing from context. "
-                "Note will be created without tenant association. "
-                "Ensure the caller provides company_id for proper multi-tenancy."
+                "Note will be created without tenant association."
             )
         if not candidate_id:
             logger.warning(
                 "[_create_note] candidate_id is missing from params. "
                 "Note will be created without candidate association."
             )
-        effective_company_id = str(company_id) if company_id else "00000000-0000-0000-0000-000000000000"
-        effective_candidate_id = str(candidate_id) if candidate_id else "00000000-0000-0000-0000-000000000000"
+        effective_company_id = str(company_id) if company_id else None
+        effective_candidate_id = str(candidate_id) if candidate_id else None
 
         async with AsyncSessionLocal() as db:
             await db.execute(text("""

@@ -239,7 +239,7 @@ async def generate_wsi_questions(request: GenerateQuestionsRequest):
 
         try:
             await audit_service.log_decision(
-                company_id=request.company_id or "default",
+                company_id=request.company_id or None,
                 agent_name="wsi_service",
                 decision_type="generate_wsi_questions",
                 action="generate_questions",

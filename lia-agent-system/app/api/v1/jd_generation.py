@@ -28,7 +28,7 @@ class GenerateJDRequest(BaseModel):
     company_industry: Optional[str] = None
     benefits: List[str] = []
     interview_stages: List[str] = []
-    company_id: str = "default"
+    company_id: str
 
 
 def _build_tags(request: GenerateJDRequest) -> List[str]:
@@ -139,7 +139,7 @@ async def generate_jd(
 
         try:
             await audit_service.log_decision(
-                company_id=request.company_id or "default",
+                company_id=request.company_id,
                 agent_name="jd_generator",
                 decision_type="generate_jd",
                 action="generate_full_description",
@@ -205,7 +205,7 @@ async def generate_jd(
 
             try:
                 await audit_service.log_decision(
-                    company_id=request.company_id or "default",
+                    company_id=request.company_id,
                     agent_name="jd_generator",
                     decision_type="generate_jd",
                     action="generate_description_fallback",

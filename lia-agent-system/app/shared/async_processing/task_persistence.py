@@ -30,7 +30,7 @@ class TaskPersistenceService:
         priority: int = 1,
         state: str = "queued",
         user_id: str = "",
-        tenant_id: str = "default",
+        tenant_id: Optional[str] = None,
         max_retries: int = 2,
         callback: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
@@ -161,7 +161,7 @@ class TaskPersistenceService:
         error: str = "",
         retry_count: int = 0,
         original_created_at: Optional[datetime] = None,
-        tenant_id: str = "default",
+        tenant_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         dlq_id = str(uuid.uuid4())

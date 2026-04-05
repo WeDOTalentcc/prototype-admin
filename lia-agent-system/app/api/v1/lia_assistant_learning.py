@@ -197,7 +197,7 @@ async def confirm_skill(
         if request.accepted:
             result = await learning_hub_service.record_skill_confirmation(
                 db=db,
-                company_id=current_user.company_id or "demo_company",
+                company_id=current_user.company_id,
                 skill_name=request.skill_name,
                 skill_type=request.skill_type,
                 role=request.role,
@@ -214,7 +214,7 @@ async def confirm_skill(
         else:
             success = await learning_hub_service.record_skill_rejection(
                 db=db,
-                company_id=current_user.company_id or "demo_company",
+                company_id=current_user.company_id,
                 skill_name=request.skill_name
             )
             return SkillConfirmationResponse(
@@ -240,7 +240,7 @@ async def confirm_responsibility(
         if request.accepted:
             result = await learning_hub_service.record_responsibility_confirmation(
                 db=db,
-                company_id=current_user.company_id or "demo_company",
+                company_id=current_user.company_id,
                 description=request.description,
                 category=request.category,
                 role=request.role,
@@ -277,7 +277,7 @@ async def get_learning_context(
     try:
         context = await learning_hub_service.get_learning_context(
             db=db,
-            company_id=current_user.company_id or "demo_company",
+            company_id=current_user.company_id,
             role=request.role,
             seniority=request.seniority
         )
@@ -301,7 +301,7 @@ async def record_job_outcome(
     try:
         result = await learning_hub_service.record_job_outcome(
             db=db,
-            company_id=current_user.company_id or "demo_company",
+            company_id=current_user.company_id,
             job_id=request.job_id,
             outcome=request.outcome.value,
             time_to_fill_days=request.time_to_fill_days,
@@ -347,7 +347,7 @@ async def get_outcome_insights(
     try:
         insights = await learning_hub_service.get_outcome_insights(
             db=db,
-            company_id=current_user.company_id or "demo_company",
+            company_id=current_user.company_id,
             role=request.role,
             seniority=request.seniority
         )
@@ -381,7 +381,7 @@ async def record_stage_feedback(
 
         result = await learning_hub_service.record_stage_feedback(
             db=db,
-            company_id=current_user.company_id or "demo_company",
+            company_id=current_user.company_id,
             stage_number=request.stage_number,
             field_name=request.field_name,
             suggested_value=request.suggested_value,
@@ -441,7 +441,7 @@ async def get_skills_deduplicated(
     try:
         skills = await learning_hub_service.get_skills_without_duplicates(
             db=db,
-            company_id=current_user.company_id or "demo_company",
+            company_id=current_user.company_id,
             role=request.role,
             exclude_already_selected=request.exclude_already_selected
         )

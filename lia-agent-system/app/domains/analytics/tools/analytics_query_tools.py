@@ -50,7 +50,7 @@ async def get_pipeline_stats(
         Pipeline statistics including conversion rates, volume metrics
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     effective_recruiter = recruiter_id or (context.user_id if context else None)
     
     logger.info(f"📊 Getting pipeline stats (company: {company_id}, period: {period})")
@@ -173,7 +173,7 @@ async def get_vacancy_funnel(
         Funnel metrics with conversion rates and stalled candidates
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"📊 Getting vacancy funnel: {job_id} (company: {company_id})")
     
@@ -307,7 +307,7 @@ async def compare_candidates(
         Side-by-side comparison of candidates
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"🔄 Comparing {len(candidate_ids)} candidates (company: {company_id})")
     
@@ -402,7 +402,7 @@ async def get_activity_summary(
         Activity summary with counts and details
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     effective_recruiter = recruiter_id or (context.user_id if context else None)
     
     logger.info(f"📊 Getting activity summary (company: {company_id}, period: {period})")
@@ -524,7 +524,7 @@ async def get_pending_actions(
         List of pending actions requiring attention
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     effective_recruiter = recruiter_id or (context.user_id if context else None)
     
     logger.info(f"📋 Getting pending actions (company: {company_id})")
@@ -655,7 +655,7 @@ async def get_recruiter_metrics(
         Recruiter metrics including jobs closed, time-to-fill, efficiency
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     effective_recruiter = recruiter_id or (context.user_id if context else None)
     
     logger.info(f"📊 Getting recruiter metrics for {effective_recruiter} (company: {company_id})")
@@ -772,7 +772,7 @@ async def get_velocity_metrics(
         jobs_within_sla, jobs_outside_sla
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     effective_recruiter = recruiter_id or (context.user_id if context else None)
     
     logger.info(f"⏱️ Getting velocity metrics (company: {company_id}, period: {period})")
@@ -864,7 +864,7 @@ async def get_efficiency_metrics(
         screening_to_offer_ratio
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"📈 Getting efficiency metrics (company: {company_id}, period: {period})")
     
@@ -973,7 +973,7 @@ async def get_comparative_metrics(
         Comparative metrics including my_metrics, comparison_metrics, difference_percentage
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     effective_recruiter = recruiter_id or (context.user_id if context else None)
     
     logger.info(f"📊 Getting comparative metrics (company: {company_id}, type: {comparison_type})")
@@ -1117,7 +1117,7 @@ async def get_workload_distribution(
         overloaded_recruiters, underloaded_recruiters
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"📊 Getting workload distribution (company: {company_id}, team: {team_id})")
     
@@ -1214,7 +1214,7 @@ async def get_bottleneck_analysis(
         slowest_stage, and recommendations
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"🔍 Analyzing bottlenecks for job: {job_id} (company: {company_id})")
     
@@ -1346,7 +1346,7 @@ async def get_stakeholder_metrics(
         delayed_decisions, stakeholder_bottlenecks
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"👥 Getting stakeholder metrics (company: {company_id}, job: {job_id})")
     
@@ -1501,7 +1501,7 @@ async def get_hiring_quality(
         Quality metrics including retention, satisfaction, and performance
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"⭐ Getting hiring quality metrics (company: {company_id}, period: {period})")
     
@@ -1592,7 +1592,7 @@ async def get_prediction_metrics(
         Predictions including success probability, estimated close date, and risk factors
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"🔮 Getting prediction metrics for job {job_id} (company: {company_id})")
     
@@ -1757,7 +1757,7 @@ async def get_cost_metrics(
         Cost metrics including cost per hire, sourcing investment, and ROI
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"💰 Getting cost metrics (company: {company_id}, period: {period})")
     
@@ -1901,7 +1901,7 @@ async def get_trends(
         Trend data including monthly values, direction, growth percentage, and seasonality
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"📈 Getting trends for {metric_type} (company: {company_id}, period: {period})")
     
@@ -2043,7 +2043,7 @@ async def get_ml_predictions(
         ML predictions including acceptance probability, retention risk, and performance prediction
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"🤖 Getting ML predictions (company: {company_id}, candidate: {candidate_id}, job: {job_id})")
     
@@ -2216,7 +2216,7 @@ async def get_conversion_patterns(
         Conversion patterns including top converting profiles, efficient sources, and funnel data
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"🔄 Getting conversion patterns (company: {company_id}, period: {period})")
     
@@ -2363,7 +2363,7 @@ async def get_smart_alerts(
         Smart alerts including SLA risks, cooling candidates, and bottleneck warnings
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"🚨 Getting smart alerts (company: {company_id}, severity: {severity})")
     

@@ -118,7 +118,7 @@ class EmailChannelAdapter(ChannelAdapter):
                         "Ensure company_id is set on outgoing messages for proper tenant isolation.",
                         message.recipient_contact
                     )
-                    _cid = "00000000-0000-0000-0000-000000000000"
+                    _cid = None
                 message.template_vars["unsubscribe_url"] = _generate_unsubscribe_url(
                     message.recipient_contact, _cid
                 )
@@ -142,7 +142,7 @@ class EmailChannelAdapter(ChannelAdapter):
             async with AsyncSessionLocal() as db:
                 queue_entry = MessageQueue(
                     id=message_id,
-                    company_id=message.company_id or "system",
+                    company_id=message.company_id,
                     candidate_id=message.recipient_id,
                     candidate_name=message.recipient_name,
                     candidate_email=message.recipient_contact,

@@ -75,10 +75,8 @@ class GraphSession(Base):
         """Create from JobWizardState dict."""
         import logging
         from uuid import UUID as UUID_type
-        from app.core.config import settings
         
         logger = logging.getLogger(__name__)
-        default_uuid = UUID_type(settings.DEFAULT_COMPANY_UUID)
         
         company_id = state.get("company_id")
         original_company_id = company_id
@@ -87,16 +85,15 @@ class GraphSession(Base):
             try:
                 company_id = UUID_type(company_id)
             except (ValueError, AttributeError):
-                logger.warning(
-                    f"Invalid company_id '{original_company_id}' provided, using default UUID. "
-                    "Consider passing a valid UUID for proper multi-tenant support."
+                raise ValueError(
+                    f"Invalid company_id '{original_company_id}'. "
+                    "A valid UUID is required for multi-tenant support."
                 )
-                company_id = default_uuid
         elif company_id is None:
-            logger.info(
-                "No company_id provided, using default UUID for development/demo."
+            raise ValueError(
+                "company_id is required. "
+                "A valid UUID must be provided for multi-tenant support."
             )
-            company_id = default_uuid
         
         return cls(
             session_id=session_id or state.get("session_id"),

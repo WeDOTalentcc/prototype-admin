@@ -28,7 +28,7 @@ from app.models.background_jobs import (
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+_DEPRECATED_DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 
 
 class AutonomousAgentService:
@@ -76,7 +76,7 @@ class AutonomousAgentService:
             try:
                 company_uuid = UUID(company_id) if isinstance(company_id, str) else company_id
             except ValueError:
-                company_uuid = UUID(DEFAULT_COMPANY_UUID)
+                raise ValueError(f"Invalid company_id format: '{company_id}'. A valid UUID is required.")
             
             job = BackgroundJob(
                 id=uuid4(),
@@ -129,7 +129,7 @@ class AutonomousAgentService:
             try:
                 company_uuid = UUID(company_id)
             except ValueError:
-                company_uuid = UUID(DEFAULT_COMPANY_UUID)
+                raise ValueError(f"Invalid company_id format: '{company_id}'. A valid UUID is required.")
             
             query = select(BackgroundJob).where(
                 BackgroundJob.company_id == company_uuid
@@ -332,7 +332,7 @@ class AutonomousAgentService:
             try:
                 company_uuid = UUID(company_id)
             except ValueError:
-                company_uuid = UUID(DEFAULT_COMPANY_UUID)
+                raise ValueError(f"Invalid company_id format: '{company_id}'. A valid UUID is required.")
             
             action = ProactiveAction(
                 id=uuid4(),
@@ -381,7 +381,7 @@ class AutonomousAgentService:
             try:
                 company_uuid = UUID(company_id)
             except ValueError:
-                company_uuid = UUID(DEFAULT_COMPANY_UUID)
+                raise ValueError(f"Invalid company_id format: '{company_id}'. A valid UUID is required.")
             
             conditions = [
                 ProactiveAction.company_id == company_uuid,
@@ -419,7 +419,7 @@ class AutonomousAgentService:
             try:
                 company_uuid = UUID(company_id)
             except ValueError:
-                company_uuid = UUID(DEFAULT_COMPANY_UUID)
+                raise ValueError(f"Invalid company_id format: '{company_id}'. A valid UUID is required.")
             
             result = await db.execute(
                 select(ProactiveAction)

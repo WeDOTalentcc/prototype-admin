@@ -373,7 +373,7 @@ class VacancyCandidate(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     vacancy_id = Column(UUID(as_uuid=True), nullable=False, index=True)
     candidate_id = Column(UUID(as_uuid=True), nullable=False, index=True)
-    company_id = Column(String(255), nullable=False, default="demo_company", index=True)  # Multi-tenancy
+    company_id = Column(String(255), nullable=False, index=True)
     
     source = Column(String(50), nullable=False, default="local")
     origin = Column(String(50), nullable=True, default="web", index=True)
@@ -428,7 +428,7 @@ class CandidateFavorite(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     candidate_id = Column(String(255), nullable=False, index=True)
     user_id = Column(String(255), nullable=False, default="default_user", index=True)
-    company_id = Column(String(255), nullable=False, default="demo_company", index=True)
+    company_id = Column(String(255), nullable=False, index=True)
     
     note = Column(Text, nullable=True)
     is_pinned = Column(Boolean, default=False)
@@ -455,7 +455,7 @@ class CandidateHidden(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     candidate_id = Column(String(255), nullable=False, index=True)
     user_id = Column(String(255), nullable=False, default="default_user", index=True)
-    company_id = Column(String(255), nullable=False, default="demo_company", index=True)
+    company_id = Column(String(255), nullable=False, index=True)
     
     reason = Column(Text, nullable=True)
     source = Column(String(50), nullable=True)
@@ -485,7 +485,7 @@ class ExternalCandidateProfile(Base):
     __tablename__ = "external_candidate_profiles"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    company_id = Column(String(255), nullable=False, default="demo_company", index=True)
+    company_id = Column(String(255), nullable=False, index=True)
     
     source = Column(String(50), nullable=False, index=True)
     source_profile_id = Column(String(255), nullable=False, index=True)

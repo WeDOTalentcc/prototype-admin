@@ -29,16 +29,14 @@ from app.domains.job_management.services.wizard_data_priority_service import Wiz
 router = APIRouter(tags=["Learning Loop"])
 logger = logging.getLogger(__name__)
 
-DEMO_COMPANY_UUID = UUID("00000000-0000-0000-0000-000000000001")
-
 def parse_company_id(company_id: str) -> UUID:
-    """Convert company_id string to UUID, handling demo_company."""
-    if company_id == "demo_company" or not company_id:
-        return DEMO_COMPANY_UUID
+    """Convert company_id string to UUID."""
+    if not company_id:
+        raise ValueError("company_id is required")
     try:
         return UUID(company_id)
     except ValueError:
-        return DEMO_COMPANY_UUID
+        raise ValueError(f"Invalid company_id: '{company_id}'. A valid UUID is required.")
 
 
 class JDImportItem(BaseModel):

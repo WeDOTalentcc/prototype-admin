@@ -505,7 +505,7 @@ class BiasAuditService:
             logger.warning(
                 "[BiasAuditService][FAR-5] Disparate impact em ranking: "
                 "dimension=%s flagged=%s company=%s",
-                dimension, flagged_groups, company_id or "unknown",
+                dimension, flagged_groups, company_id,
             )
 
         return {

@@ -62,7 +62,7 @@ async def search_jobs(
         List of matching jobs with their details
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"🔍 Searching jobs with filters (company: {company_id})")
     
@@ -172,7 +172,7 @@ async def get_job_details(
         Detailed job information with metrics
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"📋 Getting job details: {job_id} (company: {company_id})")
     
@@ -287,7 +287,7 @@ async def get_job_velocity(
         velocity_score, on_track status
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"🚀 Getting job velocity: {job_id} (company: {company_id})")
     
@@ -427,7 +427,7 @@ async def get_job_quality_metrics(
         top_candidates_count, quality_trend
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"⭐ Getting job quality metrics: {job_id} (company: {company_id})")
     
@@ -581,7 +581,7 @@ async def get_job_benchmark(
         Benchmark comparison including percentile ranking and key differences
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     
     logger.info(f"📊 Getting job benchmark for {job_id} (company: {company_id})")
     

@@ -75,7 +75,7 @@ async def fast_track_wizard_step(
         current_state = request.state
         user_input = request.user_input
         context = request.context or {}
-        company_id = current_user.company_id or "demo_company"
+        company_id = current_user.company_id
 
         lia_message = ""
         next_state = None
@@ -173,7 +173,7 @@ async def fast_track_wizard_step(
                 vacancy_details = await vacancy_search_service.get_vacancy_full_details(
                     vacancy_id=request.selected_vacancy_id,
                     db=db,
-                    company_id="demo_company"
+                    company_id=company_id
                 )
                 if vacancy_details:
                     selected_vacancy = vacancy_details.model_dump(mode='json')
@@ -214,7 +214,7 @@ async def fast_track_wizard_step(
                     vacancy_details = await vacancy_search_service.get_vacancy_full_details(
                         vacancy_id=selected_id,
                         db=db,
-                        company_id="demo_company"
+                        company_id=company_id
                     )
                     if vacancy_details:
                         stored_adjustments = context.get("adjustments", {})

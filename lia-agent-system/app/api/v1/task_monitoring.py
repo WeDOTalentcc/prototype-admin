@@ -20,7 +20,7 @@ class TaskSubmitRequest(BaseModel):
     action_id: str
     params: Dict[str, Any] = Field(default_factory=dict)
     user_id: str = ""
-    tenant_id: str = "default"
+    tenant_id: Optional[str] = None
     priority: int = 1
     max_retries: int = 2
     callback: Optional[str] = None
@@ -34,7 +34,7 @@ class ScheduleCreateRequest(BaseModel):
     cron_expression: str
     params: Dict[str, Any] = Field(default_factory=dict)
     priority: int = 1
-    tenant_id: str = "default"
+    tenant_id: Optional[str] = None
     user_id: str = "system"
     max_retries: int = 2
     metadata: Dict[str, Any] = Field(default_factory=dict)

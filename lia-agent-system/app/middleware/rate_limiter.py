@@ -293,7 +293,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if not user_id:
             user_id = request.client.host if request.client else "anonymous"
         if not company_id:
-            company_id = "default"
+            company_id = "anonymous"
 
         allowed, retry_after = await rate_limiter.check_rate_limit(user_id, company_id)
 

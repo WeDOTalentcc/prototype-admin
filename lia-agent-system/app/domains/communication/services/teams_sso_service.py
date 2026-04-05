@@ -129,7 +129,7 @@ class TeamsSSOService:
         Returns: {company_id, user_id, email, is_authenticated}
         """
         if not db:
-            return {"company_id": "demo_company", "user_id": teams_user_id, "is_authenticated": False}
+            return {"company_id": None, "user_id": teams_user_id, "is_authenticated": False}
 
         try:
             from app.models.teams import TeamsConversation
@@ -155,7 +155,7 @@ class TeamsSSOService:
                         user = user_result.scalar_one_or_none()
                         if user:
                             return {
-                                "company_id": str(user.company_id) if user.company_id else "demo_company",
+                                "company_id": str(user.company_id) if user.company_id else None,
                                 "user_id": str(user.id),
                                 "email": user.email,
                                 "is_authenticated": True,
@@ -175,7 +175,7 @@ class TeamsSSOService:
         except Exception as e:
             logger.warning(f"[TeamsSSOService] resolve_user error: {e}")
 
-        return {"company_id": "demo_company", "user_id": teams_user_id, "is_authenticated": False}
+        return {"company_id": None, "user_id": teams_user_id, "is_authenticated": False}
 
     async def save_user_mapping(
         self,

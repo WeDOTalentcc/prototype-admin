@@ -481,7 +481,7 @@ async def add_candidates_to_vacancy(
             select(JobVacancy).where(JobVacancy.id == vacancy_id)
         )
         vacancy = vacancy_result.scalar_one_or_none()
-        vacancy_company_id = vacancy.company_id if vacancy else "default"
+        vacancy_company_id = vacancy.company_id if vacancy else None
         
         calibration_stmt = select(CalibrationSession).where(
             CalibrationSession.vacancy_id == vacancy_id,
@@ -533,7 +533,7 @@ async def add_candidates_to_vacancy(
                     new_vc = VacancyCandidate(
                         vacancy_id=uuid.UUID(vacancy_id),
                         candidate_id=uuid.UUID(candidate_id),
-                        company_id=vacancy_company_id or "default",
+                        company_id=vacancy_company_id,
                         source=request.source,
                         added_by=request.added_by,
                         status="sourced",

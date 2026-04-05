@@ -242,7 +242,7 @@ async def handle_action_flow(
                 context = {
                     "user_id": user_id,
                     "conversation_id": conversation_id,
-                    "company_id": current_user.company_id or "demo_company",
+                    "company_id": current_user.company_id,
                 }
                 result = await action_executor._execute_action(
                     pending.intent, config, pending.collected_params, context
@@ -282,7 +282,7 @@ async def handle_action_flow(
                         logger.warning(f"Demo user {current_user.id} ({current_user.email}) executing destructive action: {pending.intent}")
                     # For demo mode, we allow execution with warning. For production, add additional checks as needed.
                 
-                context = {"user_id": user_id, "conversation_id": conversation_id, "company_id": current_user.company_id or "demo_company"}
+                context = {"user_id": user_id, "conversation_id": conversation_id, "company_id": current_user.company_id}
                 result = await action_executor._execute_action(
                     pending.intent, config, pending.collected_params, context
                 )
@@ -324,7 +324,7 @@ async def handle_action_flow(
     flat = _flatten_entities(entities)
     cargo = flat.get("cargo") or flat.get("titulo_vaga") or flat.get("job_title") or flat.get("vaga") or flat.get("titulo") or flat.get("title")
     if cargo:
-        company_id = current_user.company_id or "demo_company"
+        company_id = current_user.company_id
         job_info = await resolve_job_id_by_title(db, cargo, company_id)
         if job_info:
             collected_params["job_id"] = job_info["id"]
@@ -388,7 +388,7 @@ async def handle_action_flow(
             collected_params=collected_params,
             missing_params=[],
             conversation_id=conversation_id,
-            company_id=current_user.company_id or "demo_company",
+            company_id=current_user.company_id,
             awaiting_confirmation=True,
         )
         pending_action_store.save(conversation_id, pending_state)
@@ -411,7 +411,7 @@ async def handle_action_flow(
                 logger.warning(f"Demo user {current_user.id} ({current_user.email}) executing destructive action: {actionable_intent}")
             # For demo mode, we allow execution with warning. For production, add additional checks as needed.
         
-        context = {"user_id": user_id, "conversation_id": conversation_id, "company_id": current_user.company_id or "demo_company"}
+        context = {"user_id": user_id, "conversation_id": conversation_id, "company_id": current_user.company_id}
         result = await action_executor._execute_action(
             actionable_intent, config, collected_params, context
         )
@@ -434,7 +434,7 @@ async def handle_action_flow(
             collected_params=collected_params,
             missing_params=missing,
             conversation_id=conversation_id,
-            company_id=current_user.company_id or "demo_company",
+            company_id=current_user.company_id,
             awaiting_confirmation=False,
         )
         pending_action_store.save(conversation_id, pending_state)
@@ -633,7 +633,7 @@ async def send_message(
         user_message=message_data.content,
         user_id=user_id,
         conversation_id=conversation_id,
-        company_id=current_user.company_id or "demo_company",
+        company_id=current_user.company_id,
     )
     lia_response = orch_result["response"]
     detected_intent = orch_result["intent"]
@@ -833,7 +833,7 @@ async def send_message_with_attachments(
         user_message=augmented_content,
         user_id=user_id,
         conversation_id=conversation_id,
-        company_id=current_user.company_id or "demo_company",
+        company_id=current_user.company_id,
     )
     lia_response = orch_result["response"]
 
@@ -1022,10 +1022,10 @@ async def websocket_endpoint(
     }
     """
     await manager.connect(user_id, websocket)
+    company_id = None
     
     try:
         while True:
-            # Receive message
             data = await websocket.receive_json()
             
             if data["type"] == "message":
@@ -1062,7 +1062,7 @@ async def websocket_endpoint(
                     user_message=user_content,
                     user_id=user_id,
                     conversation_id=conversation_id,
-                    company_id="demo_company",
+                    company_id=company_id,
                 )
                 lia_response = ws_orch["response"]
 
@@ -1070,11 +1070,10 @@ async def websocket_endpoint(
                     ws_action_metadata = None
                     try:
                         from app.auth.models import User as _User
-                        # WebSocket usa user_id string; cria user mínimo para action flow
                         _ws_user = type("_U", (), {
                             "id": user_id,
                             "email": "",
-                            "company_id": "demo_company",
+                            "company_id": None,
                         })()
                         ws_action_metadata = await handle_action_flow(
                             conversation_id=conversation_id,
@@ -1319,7 +1318,7 @@ async def direct_candidate_field_update(
     ctx = {
         "user_id": str(current_user.id),
         "company_id": company_id,
-        "tenant_id": str(company_id or "default"),
+        "tenant_id": str(company_id) if company_id else None,
     }
 
     results = []

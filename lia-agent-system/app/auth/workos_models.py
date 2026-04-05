@@ -75,7 +75,7 @@ class SSOAuditLog(Base):
     __tablename__ = "sso_audit_logs"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    company_id = Column(String(255), nullable=False, index=True)
+    company_id = Column(String(255), nullable=True, index=True)
     event_type = Column(String(100), nullable=False, index=True)
     actor_id = Column(String(255), nullable=True, index=True)
     actor_email = Column(String(255), nullable=True)

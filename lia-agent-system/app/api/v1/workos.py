@@ -315,7 +315,7 @@ async def sync_workos_user(
     await db.refresh(user)
     
     audit_log = SSOAuditLog(
-        company_id=user_data.organization_id or "unknown",
+        company_id=user_data.organization_id or None,
         event_type="sso.login",
         actor_id=str(user.id),
         actor_email=user.email,
@@ -411,7 +411,7 @@ async def scim_user_created(
         await db.commit()
         
         audit_log = SSOAuditLog(
-            company_id=company_id or user_data.directory_id or "unknown",
+            company_id=company_id or user_data.directory_id or None,
             event_type="scim.user.linked",
             actor_id=user_data.workos_id,
             actor_email=user_data.email,
@@ -455,7 +455,7 @@ async def scim_user_created(
     await db.refresh(user)
     
     audit_log = SSOAuditLog(
-        company_id=company_id or user_data.directory_id or "unknown",
+        company_id=company_id or user_data.directory_id or None,
         event_type="scim.user.created",
         actor_id=user_data.workos_id,
         actor_email=user_data.email,
@@ -520,7 +520,7 @@ async def scim_user_updated(
     await db.commit()
     
     audit_log = SSOAuditLog(
-        company_id=user.workos_directory_id or user.workos_organization_id or "unknown",
+        company_id=user.workos_directory_id or user.workos_organization_id or None,
         event_type="scim.user.updated",
         actor_id=user_data.workos_id,
         actor_email=user.email,
@@ -572,7 +572,7 @@ async def scim_user_deleted(
     await db.commit()
     
     audit_log = SSOAuditLog(
-        company_id=user.workos_directory_id or user.workos_organization_id or "unknown",
+        company_id=user.workos_directory_id or user.workos_organization_id or None,
         event_type="scim.user.deleted",
         actor_id=user_data.workos_id,
         actor_email=user.email,
@@ -681,7 +681,7 @@ async def scim_group_action(
         message = "Group deactivated successfully"
     
     audit_log = SSOAuditLog(
-        company_id=group_data.directory_id or "unknown",
+        company_id=group_data.directory_id or None,
         event_type=f"scim.group.{action}",
         actor_id=group_data.workos_id,
         target_id=group_data.workos_id,
@@ -779,7 +779,7 @@ async def scim_group_membership(
             message = "Membership not found"
     
     audit_log = SSOAuditLog(
-        company_id=group.directory_id or user.workos_directory_id or "unknown",
+        company_id=group.directory_id or user.workos_directory_id or None,
         event_type=f"scim.group.user_{membership_data.action}",
         actor_id=membership_data.user_id,
         actor_email=user.email,
@@ -1608,7 +1608,7 @@ async def scim_webhook(
         elif "user" in data:
             directory_id = data.get("user", {}).get("directory_id")
     
-    company_id = await get_company_id_from_directory(directory_id, db) or "unknown"
+    company_id = await get_company_id_from_directory(directory_id, db) or None
     
     logger.info(f"Received WorkOS webhook: {event_type} (event_id={event_id}, directory={directory_id}, company={company_id})")
     

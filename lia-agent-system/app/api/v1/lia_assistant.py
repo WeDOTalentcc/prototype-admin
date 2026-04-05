@@ -93,7 +93,7 @@ from app.dependencies.token_budget import require_token_budget
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+_DEPRECATED_DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 
 
 async def get_structured_orchestration_decision(
@@ -1082,7 +1082,9 @@ async def get_dynamic_suggestions(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
-    company_id = current_user.company_id or "demo_company"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     user_id = str(current_user.id)
     """
     Generate dynamic suggestion cards for the homepage based on real data.
@@ -1555,7 +1557,7 @@ class WizardOrchestratorRequest(BaseModel):
     current_stage: str
     collected_data: Dict[str, Any]
     conversation_history: Optional[List[Dict[str, str]]] = None
-    company_id: Optional[str] = "default"
+    company_id: str
     use_structured_outputs: bool = False
     llm_provider: Optional[str] = "gemini"
 
@@ -1705,7 +1707,9 @@ async def orchestrate_wizard_message(
     When use_structured_outputs=True, uses the structured output feature
     for more reliable JSON parsing directly via LLM provider capabilities.
     """
-    company_id = current_user.company_id or "demo_company"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     try:
         stage_info = WIZARD_STAGES_INFO.get(request.current_stage, {
             "name": request.current_stage,
@@ -2105,12 +2109,7 @@ async def graph_orchestrate_wizard_message(request: GraphOrchestratorRequest):  
             from uuid import UUID as UUID_type
             UUID_type(company_id)
         except (ValueError, AttributeError):
-            logger.warning(
-                f"Invalid company_id format '{company_id}' in request. "
-                "Using default UUID. Pass a valid UUID for proper multi-tenant support."
-            )
-            from app.core.config import settings
-            company_id = settings.DEFAULT_COMPANY_UUID
+            raise HTTPException(status_code=400, detail=f"Invalid company_id format: '{company_id}'. A valid UUID is required.")
         
         result = await graph_runner_service.run_job_wizard(
             session_id=session_id,
@@ -2276,7 +2275,7 @@ class SalaryBenchmarkRequest(BaseModel):
     seniority: Optional[str] = None
     location: Optional[str] = None
     department: Optional[str] = None
-    company_id: Optional[str] = "default"
+    company_id: str
 
 
 class SalaryBenchmarkResponse(BaseModel):
@@ -2306,7 +2305,7 @@ async def get_salary_benchmark(
         try:
             internal_benchmark = await job_insights_service.get_salary_benchmark(
                 db=db,
-                company_id=current_user.company_id or "demo_company",
+                company_id=current_user.company_id or None,
                 role=request.job_title,
                 seniority=request.seniority,
                 location=request.location
@@ -2351,7 +2350,9 @@ async def evaluate_wizard_input(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
-    company_id = current_user.company_id or "demo_company"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     """
     Evaluate user input for job wizard and extract structured data using AI.
     
@@ -2559,7 +2560,9 @@ async def process_wizard_step(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Process a step in the conversational job creation wizard."""
-    company_id = current_user.company_id or "demo_company"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     recruiter_id = str(current_user.id)
     from app.domains.job_management.services.wizard_step_service import wizard_step_service
     return await wizard_step_service.process(request, db, company_id, recruiter_id)
@@ -2571,7 +2574,9 @@ async def generate_job_insights(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
-    company_id = current_user.company_id or "demo_company"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     """
     Generate dynamic insights for selected jobs.
     Uses Analytics and JobIntake agents for intelligent analysis.
@@ -2830,7 +2835,9 @@ async def process_expanded_prompt(
        (with 14-pattern multi-step plan detection enabled).
     3. Orchestrator fallback on any error.
     """
-    company_id = current_user.company_id or "demo_company"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     user_id = str(current_user.id)
 
     try:
@@ -2969,7 +2976,9 @@ async def get_job_draft(
     conversation_id: str,
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Dict[str, Any]:
-    company_id = current_user.company_id or "demo_company"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     """
     Get the current job draft for a conversation.
     """
@@ -2990,7 +2999,9 @@ async def clear_job_draft(
     conversation_id: str,
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Dict[str, Any]:
-    company_id = current_user.company_id or "demo_company"
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+    company_id = current_user.company_id
     """
     Clear a job draft from memory.
     """

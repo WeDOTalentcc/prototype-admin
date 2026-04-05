@@ -104,7 +104,7 @@ class DomainTaskManager:
         action_id: str,
         params: Optional[Dict[str, Any]] = None,
         user_id: str = "",
-        tenant_id: str = "default",
+        tenant_id: Optional[str] = None,
         priority: TaskPriority = TaskPriority.NORMAL,
         max_retries: int = 2,
         callback: Optional[str] = None,

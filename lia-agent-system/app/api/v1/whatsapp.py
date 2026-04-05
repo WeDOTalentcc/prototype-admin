@@ -201,8 +201,8 @@ async def receive_webhook(
             logger.debug(f"[WEBHOOK] phone_number_id={phone_number_id} -> company_id={company_id}")
         
         if not company_id:
-            company_id = "demo_company"
-            logger.warning(f"[WEBHOOK] No company mapping for phone_number_id={phone_number_id}, using default")
+            logger.warning(f"[WEBHOOK] No company mapping for phone_number_id={phone_number_id}, cannot process")
+            return {"status": "error", "detail": "No company mapping found for this phone number"}
         
         parsed = meta_whatsapp_service.parse_webhook_message(payload)
         
@@ -318,8 +318,8 @@ async def receive_twilio_webhook(
             company_id = await _get_company_from_twilio_number(to_number, db)
             
             if not company_id:
-                company_id = "demo_company"
-                logger.warning(f"[TWILIO WEBHOOK] No company mapping for To={to_number}, using default")
+                logger.warning(f"[TWILIO WEBHOOK] No company mapping for To={to_number}, cannot process")
+                return {"status": "error", "detail": "No company mapping found for this phone number"}
             
             provider = WhatsAppProviderFactory.get_twilio_provider()
             manager = ConversationManager(db, provider=provider)
@@ -371,7 +371,7 @@ class SendMessageRequest(BaseModel):
     """Request to send a message to a WhatsApp number."""
     phone_number: str
     message: str
-    company_id: Optional[str] = "demo_company"
+    company_id: Optional[str] = None
     provider: Optional[str] = None
 
 
@@ -453,7 +453,9 @@ async def list_conversations(
     from app.auth.models import User, UserRole
     from app.models.whatsapp_conversation import WhatsAppConversation, ConversationState
     
-    target_company_id = company_id or "demo_company"
+    if not company_id:
+        raise HTTPException(status_code=400, detail="company_id is required")
+    target_company_id = company_id
     
     query = select(WhatsAppConversation).where(
         WhatsAppConversation.company_id == target_company_id
@@ -506,7 +508,9 @@ async def list_conversations_authenticated(
                 )
             logger.info(f"[AUDIT] Admin {user.email} accessing conversations for company {company_id}")
     else:
-        target_company_id = company_id or "demo_company"
+        if not company_id:
+            raise HTTPException(status_code=400, detail="company_id is required")
+        target_company_id = company_id
     
     query = select(WhatsAppConversation).where(
         WhatsAppConversation.company_id == target_company_id

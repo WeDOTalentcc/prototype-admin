@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 autonomous_router = APIRouter()
 
-DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+_DEPRECATED_DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
@@ -25,7 +25,7 @@ class CreateJobRequest(BaseModel):
     config: dict = {}
     schedule: Optional[str] = None
     description: Optional[str] = None
-    company_id: str = DEFAULT_COMPANY_UUID
+    company_id: str
 
 
 class CreateActionRequest(BaseModel):
@@ -40,7 +40,7 @@ class CreateActionRequest(BaseModel):
     trigger_reason: Optional[str] = None
     auto_executable: bool = False
     expires_in_hours: Optional[int] = 24
-    company_id: str = DEFAULT_COMPANY_UUID
+    company_id: str
 
 
 # ── Background Jobs ────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ async def create_background_job(request: CreateJobRequest) -> dict:
 
 @autonomous_router.get("/autonomous/jobs")
 async def list_jobs(
-    company_id: str = Query(DEFAULT_COMPANY_UUID, description="Company ID"),
+    company_id: str = Query(..., description="Company ID for tenant scoping"),
     status: Optional[str] = Query(None, description="Filter by status"),
     job_type: Optional[str] = Query(None, description="Filter by job type"),
     limit: int = Query(50, ge=1, le=200, description="Maximum number of jobs to return")
@@ -160,7 +160,7 @@ async def create_proactive_action(request: CreateActionRequest) -> dict:
 
 @autonomous_router.get("/autonomous/actions")
 async def get_proactive_actions(
-    company_id: str = Query(DEFAULT_COMPANY_UUID, description="Company ID"),
+    company_id: str = Query(..., description="Company ID for tenant scoping"),
     status: str = Query("pending", description="Filter by status"),
     limit: int = Query(10, ge=1, le=100, description="Maximum number of actions to return")
 ) -> dict:

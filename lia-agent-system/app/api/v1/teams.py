@@ -258,7 +258,7 @@ Você está disponível para começar agora? Responda *SIM* para iniciar ou *DEP
                     subject=None,
                     message_content=screening_message,
                     sent_by=recruiter_name or "teams_automation",
-                    company_id=company_id or "default",
+                    company_id=company_id or None,
                     extra_data={
                         "message_id": result.get("message_id"),
                         "trigger": "teams_adaptive_card",
@@ -1379,7 +1379,7 @@ async def teams_tab_auth(
             access_token="dev-fallback-token",
             user_id="dev-user",
             email="dev@wedotalent.com",
-            company_id="demo_company",
+            company_id=None,
         )
 
     try:

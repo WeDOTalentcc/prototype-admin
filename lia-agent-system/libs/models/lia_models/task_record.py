@@ -19,7 +19,7 @@ class TaskRecord(Base):
     retry_count = Column(Integer, default=0)
     max_retries = Column(Integer, default=2)
     user_id = Column(String(255), default="")
-    tenant_id = Column(String(255), default="default", index=True)
+    tenant_id = Column(String(255), nullable=True, index=True)
     callback = Column(String(500), nullable=True)
     metadata_ = Column("metadata", JSON, default=dict)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
@@ -66,7 +66,7 @@ class TaskSchedule(Base):
     params = Column(JSON, default=dict)
     cron_expression = Column(String(100), nullable=False)
     priority = Column(Integer, default=1)
-    tenant_id = Column(String(255), default="default")
+    tenant_id = Column(String(255), nullable=True)
     user_id = Column(String(255), default="system")
     is_active = Column(Boolean, default=True, index=True)
     last_run_at = Column(DateTime, nullable=True)
@@ -113,7 +113,7 @@ class DeadLetterRecord(Base):
     moved_at = Column(DateTime, default=datetime.utcnow)
     resolved = Column(Boolean, default=False)
     resolved_at = Column(DateTime, nullable=True)
-    tenant_id = Column(String(255), default="default")
+    tenant_id = Column(String(255), nullable=True)
     metadata_ = Column("metadata", JSON, default=dict)
 
     def to_dict(self) -> dict:

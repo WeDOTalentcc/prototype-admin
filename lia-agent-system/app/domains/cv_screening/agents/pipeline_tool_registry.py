@@ -309,7 +309,7 @@ async def _wrap_send_communication(**kwargs: Any) -> Dict[str, Any]:
                 {"candidate_id": candidate_id},
             )
             vc_row = vc.mappings().first()
-            company_id = vc_row["company_id"] if vc_row else "demo_company"
+            company_id = vc_row["company_id"] if vc_row else None
             job_id = str(vc_row["vacancy_id"]) if vc_row else None
 
             comm_id = str(uuid.uuid4())

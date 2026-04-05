@@ -83,7 +83,7 @@ class AuditLogCreate(BaseModel):
             "example": {
                 "user_id": "550e8400-e29b-41d4-a716-446655440000",
                 "user_email": "user@example.com",
-                "client_id": "demo_company",
+                "client_id": "example_company",
                 "client_name": "Demo Company",
                 "action": "user.login",
                 "action_category": "authentication",

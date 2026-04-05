@@ -167,7 +167,7 @@ class Orchestrator:
                         plan=detected_plan,
                         user_id=user_id,
                         session_id=conversation_id or "",
-                        tenant_id=ctx.get("company_id", "default"),
+                        tenant_id=ctx.get("company_id"),
                         base_context=plan_context,
                         progress_callback=_plan_progress_callback,
                     )
@@ -200,7 +200,7 @@ class Orchestrator:
             domain = self._domain_registry.get_instance(domain_id)
             if domain:
                 dc = DomainContext(domain_id=domain_id, user_id=user_id,
-                    session_id=conversation_id or "", tenant_id=ctx.get("company_id", "default"),
+                    session_id=conversation_id or "", tenant_id=ctx.get("company_id"),
                     current_data=ctx, conversation_state=conv_state,
                     metadata={"conversation_id": conversation_id,
                               "constraints": policy.get("constraints", {})})
@@ -419,7 +419,7 @@ class Orchestrator:
             # ── Build execution context ───────────────────────────────────────
             exec_context = ToolExecutionContext(
                 user_id=context.get("user_id", "system"),
-                company_id=context.get("company_id", "default"),
+                company_id=context.get("company_id"),
                 session_id=context.get("session_id"),
             )
 
@@ -486,7 +486,7 @@ class Orchestrator:
             exec_plan.add_task(task)
         executed = await self._plan_executor.execute(
             plan=exec_plan, user_id="plan_executor",
-            session_id=conversation_id, tenant_id="default",
+            session_id=conversation_id, tenant_id=None,
         )
         results = []
         for task in executed.tasks:

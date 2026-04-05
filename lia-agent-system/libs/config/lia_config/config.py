@@ -184,8 +184,7 @@ class AppSettings(BaseSettings):
     SENTRY_DSN: Optional[str] = None
     SENTRY_TRACES_SAMPLE_RATE: float = 0.1
 
-    # Default Company (dev/demo)
-    DEFAULT_COMPANY_UUID: str = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+    _DEPRECATED_DEFAULT_COMPANY_UUID: str = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 
     # Feature Flags
     ENABLE_PEARCH_AI: bool = False

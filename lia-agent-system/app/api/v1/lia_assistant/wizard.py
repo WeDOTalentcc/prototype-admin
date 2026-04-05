@@ -172,7 +172,7 @@ async def orchestrate_wizard_message(
     When use_structured_outputs=True, uses the structured output feature
     for more reliable JSON parsing directly via LLM provider capabilities.
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     try:
         stage_info = WIZARD_STAGES_INFO.get(request.current_stage, {
             "name": request.current_stage,
@@ -344,7 +344,7 @@ async def get_salary_benchmark(
         try:
             internal_benchmark = await job_insights_svc.get_salary_benchmark(
                 db=db,
-                company_id=current_user.company_id or "demo_company",
+                company_id=current_user.company_id,
                 role=request.job_title,
                 seniority=request.seniority,
                 location=request.location
@@ -398,7 +398,7 @@ async def evaluate_wizard_input(
     - Suggests additional competencies based on the role
     - Returns confidence scores and field origins
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
 
     conversation_id = request.conversation_id or str(uuid4())
     user_input = request.user_input
@@ -593,7 +593,7 @@ async def process_wizard_step(
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """Process a step in the conversational job creation wizard."""
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     recruiter_id = str(current_user.id)
     from app.domains.job_management.services.wizard_step_service import wizard_step_service
     return await wizard_step_service.process(request, db, company_id, recruiter_id)

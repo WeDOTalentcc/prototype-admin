@@ -183,7 +183,7 @@ async def generate_profile_analysis(request: ProfileAnalysisRequest):
 @router.post("/save", response_model=LiaProfileAnalysisResponse)
 async def save_profile_analysis(
     request: LiaProfileAnalysisCreate,
-    company_id: str = Query("default", description="Company ID for multi-tenancy"),
+    company_id: str = Query(..., description="Company ID for multi-tenancy"),
     db: AsyncSession = Depends(get_db)
 ):
     """Save a generated profile analysis to the database."""
@@ -249,7 +249,7 @@ async def save_profile_analysis(
 @router.get("/candidate/{candidate_id}", response_model=CandidateAnalysesSummary)
 async def get_candidate_analyses(
     candidate_id: str,
-    company_id: str = Query("default", description="Company ID for multi-tenancy"),
+    company_id: str = Query(..., description="Company ID for multi-tenancy"),
     db: AsyncSession = Depends(get_db)
 ):
     """Get all saved analyses for a candidate."""
@@ -308,7 +308,7 @@ async def get_candidate_analyses(
 async def delete_candidate_analysis(
     candidate_id: str,
     analysis_type: str,
-    company_id: str = Query("default", description="Company ID for multi-tenancy"),
+    company_id: str = Query(..., description="Company ID for multi-tenancy"),
     db: AsyncSession = Depends(get_db)
 ):
     """Delete a specific analysis for a candidate."""

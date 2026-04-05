@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 voice_router = APIRouter()
 
-DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+_DEPRECATED_DEFAULT_COMPANY_UUID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
@@ -137,7 +137,7 @@ async def synthesize_speech(
 async def voice_chat(
     file: UploadFile = File(...),
     session_id: Optional[str] = Form(default=None),
-    company_id: str = Form(default=DEFAULT_COMPANY_UUID),
+    company_id: str = Form(..., description="Company ID for tenant scoping"),
     user_id: str = Form(default="default_user"),
     language: str = Form(default="pt-BR"),
     voice: str = Form(default="nova"),

@@ -278,7 +278,7 @@ class ActionExecutorService:
 
             from app.domains.base import DomainContext
             domain_context = DomainContext(
-                tenant_id=context.get("tenant_id", "default"),
+                tenant_id=context.get("tenant_id"),
                 user_id=context.get("user_id", "recruiter"),
                 conversation_id=context.get("conversation_id"),
                 metadata=context,

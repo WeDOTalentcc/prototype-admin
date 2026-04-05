@@ -1170,7 +1170,7 @@ async def search_candidates_local(
             _company = getattr(current_user, "company_id", None)
             active_filters = [k for k, v in (filters.model_dump() or {}).items() if v]
             await audit_service.log_decision(
-                company_id=str(_company) if _company else "default",
+                company_id=str(_company) if _company else None,
                 agent_name="candidate_search",
                 decision_type="search_candidates",
                 action="local_search",
@@ -1231,8 +1231,9 @@ async def search_candidates(request: PearchSearchRequest):
         _gs_duration_ms = round((_time.monotonic() - _gs_start) * 1000, 1)
         try:
             _result_count = len(getattr(result, "candidates", [])) if result else 0
+            _gs_company = getattr(current_user, "company_id", None)
             await audit_service.log_decision(
-                company_id="default",
+                company_id=str(_gs_company) if _gs_company else None,
                 agent_name="candidate_search",
                 decision_type="search_candidates",
                 action="global_search",
@@ -1512,7 +1513,9 @@ async def toggle_favorite(
     """
     try:
         user_id = str(current_user.id)
-        company_id = current_user.company_id or "default"
+        if not current_user.company_id:
+            raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+        company_id = current_user.company_id
         
         result = await db.execute(
             select(CandidateFavorite).where(
@@ -1721,7 +1724,9 @@ async def toggle_hidden(
     """
     try:
         user_id = str(current_user.id)
-        company_id = current_user.company_id or "default"
+        if not current_user.company_id:
+            raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
+        company_id = current_user.company_id
         
         result = await db.execute(
             select(CandidateHidden).where(
@@ -2063,7 +2068,7 @@ async def screening_decision(
             _vc_score = getattr(vacancy_candidate, "wsi_score", None) if vacancy_candidate else None
             _vc_ranking = getattr(vacancy_candidate, "ranking_position", None) if vacancy_candidate else None
             await audit_service.log_decision(
-                company_id=str(_vc_company) if _vc_company else "default",
+                company_id=str(_vc_company) if _vc_company else None,
                 agent_name="screening_module",
                 decision_type="approved" if request.decision == "approved" else "rejected",
                 action="screening_decision",

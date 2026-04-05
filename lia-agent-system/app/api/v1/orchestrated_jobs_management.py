@@ -348,7 +348,7 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
             agent_input = ReactAgentInput(
                 message=request.message,
                 session_id=conv_id,
-                company_id=request.company_id or "default",
+                company_id=request.company_id,
                 user_id=request.user_id or "recruiter",
                 context={
                     "jobs_context": request.jobs_context,

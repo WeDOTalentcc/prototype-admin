@@ -85,7 +85,7 @@ class PlanExecutor:
         plan: ExecutionPlan,
         user_id: str = "system",
         session_id: str = "",
-        tenant_id: str = "default",
+        tenant_id: Optional[str] = None,
         base_context: Optional[Dict[str, Any]] = None,
         progress_callback: Optional[ProgressCallback] = None,
     ) -> ExecutionPlan:

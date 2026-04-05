@@ -158,7 +158,7 @@ async def create_interview(
         
         try:
             await audit_service.log_decision(
-                company_id="default",
+                company_id=None,
                 agent_name="scheduling_module",
                 decision_type="schedule_interview",
                 action="create_interview",

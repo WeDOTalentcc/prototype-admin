@@ -255,7 +255,7 @@ async def upload_candidate_file(
     candidate_name: str = Form(default="Candidato"),
     category: str = Form(default=""),
     description: str = Form(default=""),
-    company_id: str = Form(default="demo_company"),
+    company_id: str = Form(...),
     uploaded_by: str = Form(default="system"),
     uploaded_by_name: str = Form(default="Sistema"),
 ):
@@ -343,7 +343,7 @@ async def upload_candidate_file(
 @candidate_attachments_router.get("/{candidate_id}/files", response_model=CandidateFilesResponse)
 async def get_candidate_files(
     candidate_id: str,
-    company_id: str = Query(default="demo_company", description="Company ID"),
+    company_id: str = Query(..., description="Company ID"),
     category: Optional[str] = Query(None, description="Filter by category"),
 ):
     """

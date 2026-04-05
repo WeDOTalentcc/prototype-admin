@@ -198,7 +198,7 @@ async def evaluate_candidate(
         dimension_summary = [f"{e.requirement}: {e.score}/5" for e in _evals[:5]]
         _n_dimensions = len(_evals)
         await audit_service.log_decision(
-            company_id=x_company_id or "default",
+            company_id=x_company_id or None,
             agent_name="rubric_evaluation",
             decision_type="score_candidate",
             action="evaluate_candidate",

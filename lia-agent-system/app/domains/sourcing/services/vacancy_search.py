@@ -220,8 +220,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             List of VacancySummary objects
         """
         try:
-            # Support both company_id directly and "default" which maps to demo_company
-            effective_company_id = company_id if company_id != "default" else "demo_company"
+            effective_company_id = company_id
             conditions = [JobVacancy.company_id == effective_company_id]
             
             # Include all valid statuses (both Portuguese and English, various cases)

@@ -476,7 +476,7 @@ async def _wrap_create_shortlist(**kwargs: Any) -> Dict[str, Any]:
     """Create a shortlist (CandidateList) from selected candidates."""
     candidate_ids = kwargs.get("candidate_ids", [])
     vacancy_id = kwargs.get("vacancy_id", "")
-    company_id = kwargs.get("company_id", "demo_company")
+    company_id = kwargs.get("company_id")
     created_by = kwargs.get("created_by", "lia_agent")
     logger.info(
         f"[talent_tools] create_shortlist called: candidates={len(candidate_ids)} vacancy={vacancy_id}"

@@ -56,7 +56,7 @@ class JobCloneService:
         self,
         db: AsyncSession,
         identifier: str,
-        company_id: str = "demo_company"
+        company_id: str
     ) -> Optional[JobVacancy]:
         """
         Find a job vacancy by ID, job_id, or title (partial match).
@@ -137,13 +137,13 @@ class JobCloneService:
         self,
         db: AsyncSession,
         source_job_id: uuid.UUID,
+        company_id: str,
         copies: int = 1,
         include_candidates: bool = True,
         candidate_filter: Optional[str] = None,
         candidate_status_override: Optional[str] = None,
         overrides: Optional[Dict[str, Any]] = None,
-        created_by: Optional[str] = None,
-        company_id: str = "demo_company"
+        created_by: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Duplicate a job vacancy with all its data.
@@ -298,10 +298,10 @@ class JobCloneService:
         self,
         db: AsyncSession,
         source_job_id: uuid.UUID,
+        company_id: str,
         new_title: Optional[str] = None,
         overrides: Optional[Dict[str, Any]] = None,
-        created_by: Optional[str] = None,
-        company_id: str = "demo_company"
+        created_by: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Create a new job using an existing job as a template.

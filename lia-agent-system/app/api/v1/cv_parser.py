@@ -528,7 +528,9 @@ async def upload_and_screen_cv(
 
     try:
         # Determine company_id from JWT or form field
-        resolved_company = company_id or getattr(current_user, "company_id", None) or "demo_company"
+        resolved_company = company_id or getattr(current_user, "company_id", None)
+        if not resolved_company:
+            raise HTTPException(status_code=400, detail="company_id is required")
         resolved_user = user_id or getattr(current_user, "id", "system")
 
         # Extract CV text

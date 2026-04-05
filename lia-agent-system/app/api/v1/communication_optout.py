@@ -239,12 +239,24 @@ async def process_unsubscribe(token: str, request: Request, db: AsyncSession = D
         proof_data = f"{email}|{company_id}|revoked|communication_email|{now.isoformat()}"
         proof_hash = hashlib.sha256(proof_data.encode()).hexdigest()
 
-        nil_version_id = uuid.UUID('00000000-0000-0000-0000-000000000000')
+        from lia_models.observability import ConsentVersion
+        cv_query = select(ConsentVersion.id).where(
+            and_(
+                ConsentVersion.company_id == company_uuid,
+                ConsentVersion.consent_type == "communication_email",
+                ConsentVersion.is_current == True,
+            )
+        ).limit(1)
+        cv_result = await db.execute(cv_query)
+        consent_version_row = cv_result.scalar_one_or_none()
+        if not consent_version_row:
+            logger.warning(f"No active consent version for company {company_id}, type communication_email")
+            return HTMLResponse(content=ERROR_HTML, status_code=400)
 
         consent_event = ConsentEvent(
             id=uuid.uuid4(),
             company_id=company_uuid,
-            consent_version_id=nil_version_id,
+            consent_version_id=consent_version_row,
             subject_email=email,
             subject_identifier=email,
             event_type='revoked',

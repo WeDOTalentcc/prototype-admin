@@ -262,9 +262,11 @@ async def apply_to_vacancy(
             try:
                 from sqlalchemy import func, and_, not_
                 from app.models.company import CompanyProfile
-                company_id = vacancy.company_id or "default"
+                company_id = vacancy.company_id
+                if not company_id:
+                    logger.warning(f"Vacancy {vacancy_id} has no company_id set")
                 threshold_web = 20
-                if company_id and company_id != "default":
+                if company_id:
                     cp_result = await db.execute(
                         select(CompanyProfile).where(CompanyProfile.id == company_id)
                     )
@@ -291,11 +293,13 @@ async def apply_to_vacancy(
 
             candidate_status = "awaiting_screening" if is_saturated else "applied"
 
+            if not vacancy.company_id:
+                raise HTTPException(status_code=400, detail="Vacancy has no company_id. Cannot process application without tenant.")
             vacancy_candidate = VacancyCandidate(
                 id=uuid.uuid4(),
                 vacancy_id=uuid.UUID(vacancy_id),
                 candidate_id=candidate.id,
-                company_id=vacancy.company_id or "default",
+                company_id=vacancy.company_id,
                 source="application",
                 lia_score=adherence_score,
                 match_percentage=score_result.breakdown.skills_match,
@@ -358,7 +362,7 @@ async def apply_to_vacancy(
                     job_title=vacancy.title or "Vaga",
                     job_code=getattr(vacancy, 'code', None) or getattr(vacancy, 'job_code', None),
                     requirements=requirements_list,
-                    company_id=vacancy.company_id or "default",
+                    company_id=vacancy.company_id,
                     created_by="application",
                 )
         except Exception as rubric_err:
@@ -493,11 +497,13 @@ async def resubmit_cv(
                 )
             )
             if not existing_assignment.scalar_one_or_none():
+                if not vacancy.company_id:
+                    raise HTTPException(status_code=400, detail="Vacancy has no company_id. Cannot process resubmission without tenant.")
                 vacancy_candidate = VacancyCandidate(
                     id=uuid.uuid4(),
                     vacancy_id=uuid.UUID(vacancy_id),
                     candidate_id=candidate.id,
-                    company_id=vacancy.company_id or "default",
+                    company_id=vacancy.company_id,
                     source="resubmission",
                     lia_score=new_adherence_score,
                     match_percentage=score_result.breakdown.skills_match,

@@ -283,7 +283,7 @@ async def send_analysis_notification(
 async def analyze_interview(
     interview_id: str,
     force_refresh: bool = Query(False, description="Force fetch new transcript from Teams"),
-    company_id: str = Query("default"),
+    company_id: str = Query(..., description="Company ID for tenant scoping"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -392,7 +392,7 @@ async def analyze_interview(
 @router.post("/analyze-transcript")
 async def analyze_raw_transcript(
     request: AnalyzeTranscriptRequest,
-    company_id: str = Query("default"),
+    company_id: str = Query(..., description="Company ID for tenant scoping"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -693,7 +693,8 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
             await db.commit()
             
             # Create LIA Opinion record
-            company_id = "default"  # Default company for background tasks
+            company_id = interview_record.company_id if hasattr(interview_record, 'company_id') and interview_record.company_id else None
+            logger.warning(f"Using company_id='{company_id}' for background interview analysis task")
             opinion_id = await create_opinion_from_analysis(
                 analysis_result=analysis_result,
                 company_id=company_id,

@@ -103,7 +103,7 @@ async def login(
     if not user or not verify_password(login_data.password, user.password_hash):
         try:
             await audit_service.log_decision(
-                company_id="default",
+                company_id=None,
                 agent_name="auth_module",
                 decision_type="reject_candidate",
                 action="auth_failed",
@@ -138,7 +138,7 @@ async def login(
     try:
         _company = getattr(user, "company_id", None)
         await audit_service.log_decision(
-            company_id=str(_company) if _company else "default",
+            company_id=str(_company) if _company else None,
             agent_name="auth_module",
             decision_type="move_stage",
             action="authenticated",

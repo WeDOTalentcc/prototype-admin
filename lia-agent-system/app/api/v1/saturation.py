@@ -134,7 +134,7 @@ async def _find_company(db: AsyncSession, company_id: str):
 
 @router.get("/settings/saturation", response_model=SaturationSettingsResponse, tags=["saturation"])
 async def get_saturation_settings(
-    company_id: str = Query("demo_company"),
+    company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
     x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
     x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
@@ -155,7 +155,7 @@ async def get_saturation_settings(
 @router.put("/settings/saturation", response_model=SaturationSettingsResponse, tags=["saturation"])
 async def update_saturation_settings(
     request: SaturationSettingsRequest,
-    company_id: str = Query("demo_company"),
+    company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
     x_company_id: Optional[str] = Header(None, alias="X-Company-ID"),
     x_user_id: Optional[str] = Header(None, alias="X-User-ID"),

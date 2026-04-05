@@ -48,7 +48,7 @@ async def generate_job_insights(
     Generate dynamic insights for selected jobs.
     Uses Analytics and JobIntake agents for intelligent analysis.
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     insights: List[InsightItem] = []
     summary: Dict[str, Any] = {
         "total_jobs": len(request.job_ids),
@@ -295,7 +295,7 @@ async def process_expanded_prompt(
        (with 14-pattern multi-step plan detection enabled).
     3. Orchestrator fallback on any error.
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     user_id = str(current_user.id)
 
     try:

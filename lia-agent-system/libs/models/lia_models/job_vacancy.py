@@ -22,7 +22,7 @@ class JobVacancy(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
     # Tenant scoping (multi-tenancy)
-    company_id = Column(String(255), nullable=False, default="demo_company", index=True)
+    company_id = Column(String(255), nullable=False, index=True)
     
     # Basic Information
     job_id = Column(String(50), nullable=True, index=True)  # WDT-2025-001

@@ -578,7 +578,7 @@ def send_daily_briefing_task(self) -> dict:
                     logger.info(
                         "[briefing.send_daily] sent user=%s company=%s urgent=%d",
                         user.id,
-                        getattr(user, "company_id", "unknown"),
+                        getattr(user, "company_id", None),
                         len(briefing.get("urgent_actions", [])),
                     )
                     sent += 1
@@ -663,7 +663,7 @@ def wsi_check_abandoned_task(self) -> dict:
 
 @celery_app.task(name="feedback.generate_and_send", bind=True, max_retries=2)
 def feedback_generate_and_send_task(
-    self, candidate_id: str, job_id: str, reason: str, company_id: str = "default"
+    self, candidate_id: str, job_id: str, reason: str, company_id: str = None
 ) -> dict:
     """
     Generate rejection feedback and auto-send (email + WhatsApp).

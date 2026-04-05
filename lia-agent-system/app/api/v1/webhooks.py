@@ -78,7 +78,7 @@ async def list_webhooks(
     
     Returns webhooks with their configuration and statistics.
     """
-    company_id = current_user.get("company_id", "demo_company")
+    company_id = current_user.get("company_id")
     
     result = await webhook_service.list_webhooks(
         company_id=company_id,
@@ -116,7 +116,7 @@ async def get_webhook(
     """
     Get a specific webhook by ID.
     """
-    company_id = current_user.get("company_id", "demo_company")
+    company_id = current_user.get("company_id")
     
     result = await webhook_service.get_webhook(
         webhook_id=webhook_id,
@@ -144,7 +144,7 @@ async def create_webhook(
     The webhook will be triggered when subscribed events occur.
     A secret key is generated if not provided for signing payloads.
     """
-    company_id = current_user.get("company_id", "demo_company")
+    company_id = current_user.get("company_id")
     user_id = current_user.get("id", current_user.get("user_id"))
     
     result = await webhook_service.register_webhook(
@@ -179,7 +179,7 @@ async def update_webhook(
     """
     Update an existing webhook.
     """
-    company_id = current_user.get("company_id", "demo_company")
+    company_id = current_user.get("company_id")
     
     updates = webhook_data.model_dump(exclude_none=True)
     
@@ -207,7 +207,7 @@ async def delete_webhook(
     """
     Delete a webhook.
     """
-    company_id = current_user.get("company_id", "demo_company")
+    company_id = current_user.get("company_id")
     
     result = await webhook_service.delete_webhook(
         webhook_id=webhook_id,
@@ -234,7 +234,7 @@ async def test_webhook(
     
     This sends a test payload to verify the webhook endpoint is working correctly.
     """
-    company_id = current_user.get("company_id", "demo_company")
+    company_id = current_user.get("company_id")
     
     result = await webhook_service.test_webhook(
         webhook_id=webhook_id,
@@ -263,7 +263,7 @@ async def get_webhook_logs(
     
     Shows history of webhook delivery attempts with status and response details.
     """
-    company_id = current_user.get("company_id", "demo_company")
+    company_id = current_user.get("company_id")
     
     result = await webhook_service.get_webhook_logs(
         webhook_id=webhook_id,

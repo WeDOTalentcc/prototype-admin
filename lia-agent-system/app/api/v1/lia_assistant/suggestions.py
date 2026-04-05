@@ -36,7 +36,7 @@ async def get_dynamic_suggestions(
     - Interview scheduling needs
     - Report opportunities
     """
-    company_id = current_user.company_id or "demo_company"
+    company_id = current_user.company_id
     user_id = str(current_user.id)
     suggestions = []
 

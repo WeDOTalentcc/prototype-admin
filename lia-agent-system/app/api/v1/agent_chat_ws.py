@@ -711,7 +711,7 @@ async def agent_chat_ws(
                         plan=_detected_plan,
                         user_id=user_id,
                         session_id=session_id,
-                        tenant_id=company_id or "default",
+                        tenant_id=company_id,
                         base_context={"company_id": company_id, "user_id": user_id},
                         progress_callback=_ws_plan_progress,
                     )

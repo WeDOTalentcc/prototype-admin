@@ -456,7 +456,7 @@ async def apply_to_public_vacancy(
             id=uuid_lib.uuid4(),
             vacancy_id=job.id,
             candidate_id=candidate.id,
-            company_id=str(job.company_id) if job.company_id else "default",
+            company_id=str(job.company_id) if job.company_id else None,
             source="web_application",
             origin="web",
             lia_score=adherence_score,

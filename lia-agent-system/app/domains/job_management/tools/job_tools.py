@@ -64,7 +64,7 @@ async def create_job(
         Result with job creation details
     """
     context = _extract_context(kwargs)
-    effective_company_id = context.company_id if context else (company_id or "demo_company")
+    effective_company_id = context.company_id if context else company_id
     user_id = context.user_id if context else (recruiter_id or "system")
     
     logger.info(f"📋 Creating job vacancy: {title} (company: {effective_company_id})")
@@ -160,7 +160,7 @@ async def update_job(
         Result with update details
     """
     context = _extract_context(kwargs)
-    company_id = context.company_id if context else "demo_company"
+    company_id = context.company_id if context else None
     user_id = context.user_id if context else "system"
     
     logger.info(f"🔄 Updating job vacancy: {job_id} (company: {company_id})")

@@ -310,8 +310,7 @@ async def graph_orchestrate_wizard_message(request: GraphOrchestratorRequest):
             from uuid import UUID as _UUID
             _UUID(company_id)
         except (ValueError, AttributeError):
-            from app.core.config import settings
-            company_id = settings.DEFAULT_COMPANY_UUID
+            raise HTTPException(status_code=400, detail=f"Invalid company_id format: '{company_id}'. A valid UUID is required.")
 
         result = await graph_runner_service.run_job_wizard(
             session_id=session_id,
