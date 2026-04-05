@@ -13,9 +13,10 @@ Cobre:
 Dependências externas (banco de dados) são mockadas.
 """
 import pytest
+import asyncio
 import sys
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 from typing import List, Dict, Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -171,6 +172,36 @@ class TestBlockNames:
 class TestPipelineBuild:
     """Testa a construção completa do pipeline com dependências mockadas."""
 
+    def _make_mock_wsi_questions(self, request):
+        """Create mock WSIQuestion objects matching the canonical WSIService output."""
+        tech_qs = [
+            MagicMock(
+                id=f"tech-{i}",
+                question_text=f"Descreva um projeto com {skill}.",
+                competency=skill,
+                framework="Bloom",
+                question_type="contextual",
+                weight=1.0,
+                expected_signals=["Context", "Action", "Result"],
+                scoring_criteria={"bloom_level": 4},
+            )
+            for i, skill in enumerate(request.technical_skills[:5])
+        ]
+        behav_qs = [
+            MagicMock(
+                id=f"beh-{i}",
+                question_text=f"Conte sobre uma situação de {comp}.",
+                competency=comp,
+                framework="BigFive",
+                question_type="situational",
+                weight=1.0,
+                expected_signals=["Context", "Action", "Result"],
+                scoring_criteria={"bloom_level": 4, "ocean_trait": comp},
+            )
+            for i, comp in enumerate(request.behavioral_competencies[:4])
+        ]
+        return tech_qs + behav_qs
+
     def _build(self, request: WSIScreeningPipelineRequest, company_questions=None):
         """Helper: executa build_pipeline com mocks de serviços externos."""
         if company_questions is None:
@@ -195,6 +226,8 @@ class TestPipelineBuild:
         mock_resolution.requires_confirmation = False
         mock_resolution.signals = []
 
+        mock_wsi_questions = self._make_mock_wsi_questions(request)
+
         with patch(
             "app.domains.cv_screening.services.wsi_screening_pipeline.calibrate_or_fallback",
             return_value=mock_calibration,
@@ -202,43 +235,13 @@ class TestPipelineBuild:
             "app.domains.cv_screening.services.wsi_screening_pipeline.resolve_seniority_full",
             return_value=mock_resolution,
         ), patch(
-            "app.domains.cv_screening.services.wsi_screening_pipeline.wsi_screening_generator"
-        ) as mock_gen:
-            mock_gen._generate_technical_questions.return_value = [
-                MagicMock(
-                    id=f"tech-{i}",
-                    text=f"Descreva um projeto com {skill}.",
-                    category="technical",
-                    block_id=3,
-                    source="wsi_generated",
-                    bloom_level=4, bloom_label="Analisar",
-                    dreyfus_stage=4, dreyfus_label="Proficiente",
-                    framework="Bloom", trait=None, skill=skill,
-                    weight=1.0, expected_signals=[], scoring_criteria={},
-                    is_selected=True, is_eliminatory=False,
-                    question_type="open", options=None, expected_answer=None, order=i,
-                )
-                for i, skill in enumerate(request.technical_skills[:5])
-            ]
-            mock_gen._generate_behavioral_questions.return_value = [
-                MagicMock(
-                    id=f"beh-{i}",
-                    text=f"Conte sobre uma situação de {comp}.",
-                    category="behavioral",
-                    block_id=4,
-                    source="wsi_generated",
-                    bloom_level=4, bloom_label="Analisar",
-                    dreyfus_stage=3, dreyfus_label="Competente",
-                    framework="CBI", trait=comp, skill=None,
-                    weight=1.0, expected_signals=[], scoring_criteria={},
-                    is_selected=True, is_eliminatory=False,
-                    question_type="open", options=None, expected_answer=None, order=i,
-                )
-                for i, comp in enumerate(request.behavioral_competencies[:4])
-            ]
-            mock_gen._generate_cultural_questions.return_value = []
-
-            return PIPELINE.build_pipeline(request, company_questions)
+            "app.services.wsi_service.WSIService.generate_from_simple_inputs",
+            new_callable=AsyncMock,
+            return_value=mock_wsi_questions,
+        ):
+            return asyncio.get_event_loop().run_until_complete(
+                PIPELINE.build_pipeline(request, company_questions)
+            )
 
     def test_build_returns_pipeline_response(self):
         """build_pipeline deve retornar WSIScreeningPipelineResponse."""
@@ -349,11 +352,13 @@ class TestResponseSchema:
             "app.domains.cv_screening.services.wsi_screening_pipeline.resolve_seniority_full",
             return_value=mock_resolution,
         ), patch(
-            "app.domains.cv_screening.services.wsi_screening_pipeline.wsi_screening_generator"
-        ) as mock_gen:
-            mock_gen.generate_technical_questions.return_value = []
-            mock_gen.generate_behavioral_questions.return_value = []
-            return PIPELINE.build_pipeline(request, [])
+            "app.services.wsi_service.WSIService.generate_from_simple_inputs",
+            new_callable=AsyncMock,
+            return_value=[],
+        ):
+            return asyncio.get_event_loop().run_until_complete(
+                PIPELINE.build_pipeline(request, [])
+            )
 
     def test_response_has_required_fields(self):
         """Resposta deve ter campos obrigatórios definidos no schema."""

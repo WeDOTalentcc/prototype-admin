@@ -409,7 +409,69 @@ Responda em JSON:
             job_description=job_description,
             seniority=seniority,
         )
-    
+
+    async def generate_from_simple_inputs(
+        self,
+        skills: List[str],
+        behavioral: Optional[List[str]] = None,
+        seniority: str = "pleno",
+        job_description: Optional[str] = None,
+        mode: Literal["compact", "full"] = "compact",
+        max_questions: Optional[int] = None,
+    ) -> List[WSIQuestion]:
+        """Convenience wrapper: converts string skill/behavioral lists into Competency
+        objects and delegates to ``generate_screening_questions()``.
+
+        This allows callers that only have simple string lists (e.g. API
+        endpoints, wizard) to use the canonical F6 pipeline without manually
+        building ``Competency`` objects.
+        """
+        _seniority = (seniority or "pleno").lower().strip()
+        _seniority_level = _seniority.replace(" ", "_").replace("-", "_")
+        _valid_levels = ("junior", "pleno", "senior", "lead", "executive", "estagiario", "principal", "diretor", "vp_clevel")
+        if _seniority_level not in _valid_levels:
+            _seniority_level = "pleno"
+
+        competencies: List[Competency] = []
+
+        for idx, skill in enumerate(skills or []):
+            if not skill or not skill.strip():
+                continue
+            competencies.append(Competency(
+                name=skill.strip(),
+                type="technical",
+                weight=round(max(0.1, 1.0 - idx * 0.05), 2),
+                seniority_level=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+                is_critical=idx < 3,
+            ))
+
+        for idx, comp in enumerate(behavioral or []):
+            if not comp or not comp.strip():
+                continue
+            competencies.append(Competency(
+                name=comp.strip(),
+                type="behavioral",
+                weight=round(max(0.1, 0.9 - idx * 0.05), 2),
+                seniority_level=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+                is_critical=False,
+            ))
+
+        if not competencies:
+            competencies.append(Competency(
+                name="General",
+                type="technical",
+                weight=1.0,
+                seniority_level="pleno",
+                is_critical=False,
+            ))
+
+        return await self.generate_screening_questions(
+            competencies=competencies,
+            mode=mode,
+            job_description=job_description,
+            seniority=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+        )
+
     @staticmethod
     def _build_competencies_from_enriched_jd(
         enriched_jd: dict,

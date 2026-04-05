@@ -112,20 +112,20 @@ class TestRetentionCleanupAsync:
     @pytest.mark.asyncio
     async def test_returns_summary_with_required_fields(self):
         """_run_retention_cleanup_async deve retornar dict com os 4 campos."""
-        from app.jobs.celery_tasks import _run_retention_cleanup_async
-
+        import sys
+        mock_candidate = MagicMock()
         mock_session = AsyncMock()
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
-
-        # Return empty policies list (no auto_anonymize companies)
         mock_result = MagicMock()
         mock_result.scalars.return_value.all.return_value = []
         mock_session.execute = AsyncMock(return_value=mock_result)
         mock_session.commit = AsyncMock()
 
-        with patch("app.jobs.celery_tasks.AsyncSessionLocal", return_value=mock_session):
-            result = await _run_retention_cleanup_async()
+        with patch.dict(sys.modules, {"libs.models.lia_models.candidate": mock_candidate}):
+            with patch("lia_config.database.AsyncSessionLocal", return_value=mock_session):
+                from app.jobs.celery_tasks import _run_retention_cleanup_async
+                result = await _run_retention_cleanup_async()
 
         assert "companies_processed" in result
         assert "total_anonymized" in result
@@ -135,19 +135,20 @@ class TestRetentionCleanupAsync:
     @pytest.mark.asyncio
     async def test_no_companies_processed_when_no_auto_anonymize(self):
         """Se nenhuma empresa tem auto_anonymize=True, nenhuma é processada."""
-        from app.jobs.celery_tasks import _run_retention_cleanup_async
-
+        import sys
+        mock_candidate = MagicMock()
         mock_session = AsyncMock()
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
-
         mock_result = MagicMock()
         mock_result.scalars.return_value.all.return_value = []
         mock_session.execute = AsyncMock(return_value=mock_result)
         mock_session.commit = AsyncMock()
 
-        with patch("app.jobs.celery_tasks.AsyncSessionLocal", return_value=mock_session):
-            result = await _run_retention_cleanup_async()
+        with patch.dict(sys.modules, {"libs.models.lia_models.candidate": mock_candidate}):
+            with patch("lia_config.database.AsyncSessionLocal", return_value=mock_session):
+                from app.jobs.celery_tasks import _run_retention_cleanup_async
+                result = await _run_retention_cleanup_async()
 
         assert result["companies_processed"] == 0
         assert result["total_anonymized"] == 0
@@ -156,9 +157,8 @@ class TestRetentionCleanupAsync:
     @pytest.mark.asyncio
     async def test_errors_list_is_populated_on_per_company_failure(self):
         """Erros por empresa devem ir para result["errors"] sem parar o job."""
-        from app.jobs.celery_tasks import _run_retention_cleanup_async
-
-        # Build a mock policy with auto_anonymize=True
+        import sys
+        mock_candidate = MagicMock()
         mock_policy = MagicMock()
         mock_policy.company_id = "company-bad"
         mock_policy.retention_months = 24
@@ -174,18 +174,18 @@ class TestRetentionCleanupAsync:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
-                # First call: return the policy list
                 mock_result = MagicMock()
                 mock_result.scalars.return_value.all.return_value = [mock_policy]
                 return mock_result
             else:
-                # Subsequent calls: simulate per-company DB error
                 raise Exception("Simulated DB error for company")
 
         mock_session.execute = mock_execute
 
-        with patch("app.jobs.celery_tasks.AsyncSessionLocal", return_value=mock_session):
-            result = await _run_retention_cleanup_async()
+        with patch.dict(sys.modules, {"libs.models.lia_models.candidate": mock_candidate}):
+            with patch("lia_config.database.AsyncSessionLocal", return_value=mock_session):
+                from app.jobs.celery_tasks import _run_retention_cleanup_async
+                result = await _run_retention_cleanup_async()
 
         assert len(result["errors"]) >= 1
         assert result["errors"][0]["company_id"] == "company-bad"

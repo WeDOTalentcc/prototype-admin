@@ -77,7 +77,7 @@ class TestLogOutputFields:
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
         captured = []
-        mock_session.add.side_effect = lambda obj: captured.append(obj)
+        mock_session.add = MagicMock(side_effect=lambda obj: captured.append(obj))
 
         with patch("app.shared.compliance.audit_service.AsyncSessionLocal", return_value=mock_session):
             await svc.log_output(
@@ -100,7 +100,7 @@ class TestLogOutputFields:
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
         captured = []
-        mock_session.add.side_effect = lambda obj: captured.append(obj)
+        mock_session.add = MagicMock(side_effect=lambda obj: captured.append(obj))
 
         with patch("app.shared.compliance.audit_service.AsyncSessionLocal", return_value=mock_session):
             await svc.log_output(
@@ -122,7 +122,7 @@ class TestLogOutputFields:
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
         captured = []
-        mock_session.add.side_effect = lambda obj: captured.append(obj)
+        mock_session.add = MagicMock(side_effect=lambda obj: captured.append(obj))
 
         with patch("app.shared.compliance.audit_service.AsyncSessionLocal", return_value=mock_session):
             await svc.log_output(
@@ -144,7 +144,7 @@ class TestLogOutputFields:
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
         captured = []
-        mock_session.add.side_effect = lambda obj: captured.append(obj)
+        mock_session.add = MagicMock(side_effect=lambda obj: captured.append(obj))
 
         now = datetime.utcnow()
 
@@ -170,7 +170,7 @@ class TestLogOutputFields:
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
         captured = []
-        mock_session.add.side_effect = lambda obj: captured.append(obj)
+        mock_session.add = MagicMock(side_effect=lambda obj: captured.append(obj))
 
         with patch("app.shared.compliance.audit_service.AsyncSessionLocal", return_value=mock_session):
             await svc.log_output(

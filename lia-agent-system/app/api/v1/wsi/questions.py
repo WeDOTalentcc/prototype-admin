@@ -32,6 +32,20 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+_FRAMEWORK_BLOOM_MAP = {
+    "CBI": 4,
+    "Bloom": 3,
+    "Dreyfus": 2,
+    "BigFive": 3,
+}
+
+_FRAMEWORK_CATEGORY_MAP = {
+    "CBI": "technical",
+    "Bloom": "technical",
+    "Dreyfus": "technical",
+    "BigFive": "behavioral",
+}
+
 
 @router.post("/generate-questions", response_model=GenerateQuestionsResponse)
 async def generate_questions(
@@ -39,131 +53,47 @@ async def generate_questions(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Generate WSI screening questions based on job requirements.
-
-    Questions target different Bloom taxonomy levels (Remember → Create)
-    to assess cognitive abilities across the spectrum.
+    Generate WSI screening questions using the canonical F6 pipeline
+    (CBI + Bloom + Dreyfus + BigFive via WSIService).
     """
     session_id = f"wsi_text_{uuid.uuid4().hex[:12]}"
 
     job_title = request.job_title or "Professional"
-    all_requirements = request.requirements or request.responsibilities or []
     all_skills = request.skills or request.technical_skills or ["Problem Solving", "Communication"]
     behavioral = request.behavioral_competencies or []
     seniority = request.seniority_level or request.seniority or "pleno"
-    num_q = request.max_questions or request.num_questions
-    department = request.department or ""
     description = request.description or ""
+    requirements = request.requirements or request.responsibilities or []
+    job_desc_parts = [description] if description else []
+    if requirements:
+        job_desc_parts.append("Responsabilidades: " + ", ".join(requirements))
+    job_description = "\n".join(job_desc_parts) if job_desc_parts else None
 
-    client = await get_anthropic_client()
-
-    if client:
-        prompt = f"""Você é um especialista em recrutamento usando a metodologia WSI (WeDoTalent Skill Index).
-Gere {num_q} perguntas de triagem para a vaga de {job_title}.
-
-CONTEXTO DA VAGA:
-- Cargo: {job_title}
-- Senioridade: {seniority}
-- Departamento: {department or 'Não especificado'}
-- Descrição: {description or 'Não fornecida'}
-- Responsabilidades: {', '.join(all_requirements) if all_requirements else 'Não especificadas'}
-- Competências Técnicas: {', '.join(all_skills) if all_skills else 'Não especificadas'}
-- Competências Comportamentais: {', '.join(behavioral) if behavioral else 'Não especificadas'}
-
-METODOLOGIA WSI - BLOCOS:
-- Bloco 2 (Elegibilidade): Perguntas eliminatórias sobre disponibilidade, requisitos mínimos, localização
-- Bloco 3 (Técnica): Perguntas sobre conhecimento técnico, experiência prática, profundidade nas skills requeridas
-- Bloco 4 (Situacional/Comportamental): Perguntas situacionais sobre competências comportamentais, liderança, trabalho em equipe
-
-REGRAS:
-1. Gere pelo menos 1 pergunta eliminatória (Bloco 2) sobre elegibilidade
-2. Distribua as perguntas técnicas (Bloco 3) entre as skills requeridas
-3. Inclua perguntas situacionais (Bloco 4) baseadas nas competências comportamentais
-4. Calibre a complexidade pela senioridade: junior=perguntas mais diretas, senior=perguntas mais profundas
-5. Cada pergunta deve ser em português brasileiro
-6. Use Taxonomia de Bloom para variar níveis cognitivos
-
-Retorne APENAS JSON válido:
-{{
-  "questions": [
-    {{
-      "text": "Texto da pergunta em português",
-      "bloom_level": 4,
-      "skill_targeted": "Nome da competência avaliada",
-      "question_type": "eliminatory|technical|situational|behavioral",
-      "block_id": 2,
-      "category": "eligibility|technical|behavioral",
-      "is_eliminatory": false
-    }}
-  ]
-}}"""
-
-        response = await _run_anthropic_sync(
-            client,
-            model="claude-sonnet-4-6",
-            max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}],
-            timeout=30.0
-        )
-        try:
-            if response is None:
-                raise ValueError("Anthropic call timed out or failed")
-            data = parse_json_response(response.content[0].text, {"questions": []})
-            questions_data = data.get("questions", [])
-        except Exception as e:
-            logger.error(f"AI generation failed: {e}")
-            questions_data = []
-    else:
-        questions_data = []
-
-    if not questions_data:
-        questions_data = [
-            {
-                "text": f"Qual sua experiência com {all_skills[0] if all_skills else 'a área'}? Cite um exemplo prático.",
-                "bloom_level": 2,
-                "skill_targeted": all_skills[0] if all_skills else "General",
-                "question_type": "contextual"
-            },
-            {
-                "text": "Descreva uma situação desafiadora que você enfrentou no trabalho. Como você a resolveu?",
-                "bloom_level": 4,
-                "skill_targeted": "Problem Solving",
-                "question_type": "situational"
-            },
-            {
-                "text": "Como você organiza suas tarefas e prioridades no dia a dia?",
-                "bloom_level": 3,
-                "skill_targeted": "Organization",
-                "question_type": "behavioral"
-            },
-            {
-                "text": "Conte sobre um projeto onde você precisou trabalhar em equipe. Qual foi seu papel?",
-                "bloom_level": 3,
-                "skill_targeted": "Teamwork",
-                "question_type": "contextual"
-            },
-            {
-                "text": "Se você pudesse melhorar um processo na sua área de atuação, o que seria e como faria?",
-                "bloom_level": 6,
-                "skill_targeted": "Innovation",
-                "question_type": "creative"
-            }
-        ][:num_q]
+    from app.services.wsi_service import WSIService
+    wsi_svc = WSIService()
+    wsi_questions = await wsi_svc.generate_from_simple_inputs(
+        skills=all_skills,
+        behavioral=behavioral,
+        seniority=seniority,
+        job_description=job_description,
+        mode="compact",
+    )
 
     questions = []
-    for idx, q in enumerate(questions_data):
+    for idx, wq in enumerate(wsi_questions):
         question_id = f"q_{session_id}_{idx+1}"
-        bloom_level = q.get("bloom_level", 3)
+        bloom_level = _FRAMEWORK_BLOOM_MAP.get(wq.framework, 3)
+        category = _FRAMEWORK_CATEGORY_MAP.get(wq.framework, "technical")
         questions.append(WSIQuestionOutput(
             id=question_id,
-            text=q.get("text", ""),
+            text=wq.question_text,
             bloom_level=bloom_level,
             bloom_level_name=BLOOM_LEVELS.get(bloom_level, BLOOM_LEVELS[3])["name"],
-            skill_targeted=q.get("skill_targeted", "General"),
-            question_type=q.get("question_type", "contextual"),
-            block_id=q.get("block_id"),
-            category=q.get("category"),
-            is_eliminatory=q.get("is_eliminatory", False)
+            skill_targeted=wq.competency,
+            question_type=wq.question_type,
+            block_id=3 if category == "technical" else 4,
+            category=category,
+            is_eliminatory=False
         ))
 
     try:
@@ -186,7 +116,7 @@ Retorne APENAS JSON válido:
             "question_set_id": qs_id,
         })
 
-        for q in questions:
+        for idx, q in enumerate(questions):
             await db.execute(text("""
                 INSERT INTO wsi_questions (
                     id, session_id, competency, framework, question_type,
@@ -199,13 +129,13 @@ Retorne APENAS JSON válido:
                 "id": q.id,
                 "session_id": session_id,
                 "competency": q.skill_targeted,
-                "framework": "Bloom",
+                "framework": wsi_questions[idx].framework if idx < len(wsi_questions) else "CBI",
                 "question_type": q.question_type,
                 "question_text": q.text,
-                "weight": 1.0 / len(questions),
-                "expected_signals": json.dumps(["Context", "Action", "Result"]),
-                "scoring_criteria": json.dumps({"bloom_level": q.bloom_level}),
-                "sequence_order": questions.index(q) + 1
+                "weight": wsi_questions[idx].weight if idx < len(wsi_questions) else 1.0 / max(len(questions), 1),
+                "expected_signals": json.dumps(wsi_questions[idx].expected_signals if idx < len(wsi_questions) else []),
+                "scoring_criteria": json.dumps(dict(wsi_questions[idx].scoring_criteria) if idx < len(wsi_questions) else {}),
+                "sequence_order": idx + 1
             })
         await db.commit()
     except Exception as e:

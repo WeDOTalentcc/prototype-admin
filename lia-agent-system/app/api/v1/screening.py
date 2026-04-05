@@ -13,7 +13,6 @@ from app.schemas.screening import (
     ScreeningQuestion,
     RegenerateQuestionsRequest
 )
-from app.services.wsi_question_generator import wsi_screening_generator
 from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
@@ -33,6 +32,75 @@ class AutoScreeningRequest(BaseModel):
     company_id: str
 
 
+def _wsi_questions_to_screening_response(wsi_questions, request) -> ScreeningQuestionResponse:
+    """Convert WSIQuestion list from canonical generator to ScreeningQuestionResponse."""
+    from app.domains.cv_screening.constants.wsi_constants import (
+        BLOOM_LEVEL_LABELS,
+        DREYFUS_STAGE_LABELS,
+        SENIORITY_TO_DREYFUS,
+        SENIORITY_TO_BLOOM,
+    )
+    all_questions = []
+    behavioral_questions = []
+    technical_questions = []
+    cultural_questions = []
+
+    for idx, wq in enumerate(wsi_questions):
+        is_behavioral = wq.framework == "BigFive" or wq.question_type == "situational"
+        category = "behavioral" if is_behavioral else "technical"
+        bloom_level = wq.scoring_criteria.get("bloom_level", 3) if isinstance(wq.scoring_criteria, dict) else 3
+        if not isinstance(bloom_level, int):
+            try:
+                bloom_level = int(bloom_level)
+            except (ValueError, TypeError):
+                bloom_level = 3
+        dreyfus_stage = SENIORITY_TO_DREYFUS.get(request.seniority or "pleno", 3)
+        bloom_info = BLOOM_LEVEL_LABELS.get(bloom_level, BLOOM_LEVEL_LABELS.get(3, {}))
+        dreyfus_info = DREYFUS_STAGE_LABELS.get(dreyfus_stage, DREYFUS_STAGE_LABELS.get(3, {}))
+
+        sq = ScreeningQuestion(
+            id=wq.id,
+            text=wq.question_text,
+            category=category,
+            trait=wq.scoring_criteria.get("ocean_trait") if isinstance(wq.scoring_criteria, dict) else None,
+            skill=wq.competency if category == "technical" else None,
+            bloom_level=bloom_level,
+            bloom_label=bloom_info.get("name_pt", "Aplicar") if isinstance(bloom_info, dict) else "Aplicar",
+            dreyfus_stage=dreyfus_stage,
+            dreyfus_label=dreyfus_info.get("name_pt", "Competente") if isinstance(dreyfus_info, dict) else "Competente",
+            framework=wq.framework,
+            weight=wq.weight,
+            expected_signals=wq.expected_signals,
+            scoring_criteria=wq.scoring_criteria if isinstance(wq.scoring_criteria, dict) else {},
+            is_selected=True,
+            question_type="open",
+            order=idx,
+        )
+        all_questions.append(sq)
+        if category == "behavioral":
+            behavioral_questions.append(sq)
+        else:
+            technical_questions.append(sq)
+
+    seniority = request.seniority or "pleno"
+    return ScreeningQuestionResponse(
+        questions=all_questions,
+        behavioral_questions=behavioral_questions,
+        technical_questions=technical_questions,
+        cultural_questions=cultural_questions,
+        total_count=len(all_questions),
+        metadata={
+            "seniority": seniority,
+            "dreyfus_stage": SENIORITY_TO_DREYFUS.get(seniority, 3),
+            "bloom_levels": SENIORITY_TO_BLOOM.get(seniority, [3, 4]),
+            "skills_count": len(request.skills) if request.skills else 0,
+            "title": request.title,
+            "department": request.department,
+            "generator": "wsi_service_canonical_f6",
+        }
+    )
+
+
 @router.post("/questions", response_model=ScreeningQuestionResponse)
 async def generate_screening_questions(
     request: ScreeningQuestionRequest,
@@ -41,16 +109,26 @@ async def generate_screening_questions(
     try:
         company_id = get_user_company_id(current_user)
         logger.info(f"Generating screening questions for: {request.title} ({request.seniority}) - company: {company_id}, user: {current_user.email}")
-        
-        response = wsi_screening_generator.generate_questions(request)
-        
+
+        from app.services.wsi_service import WSIService
+        wsi_svc = WSIService()
+        wsi_questions = await wsi_svc.generate_from_simple_inputs(
+            skills=request.skills or [],
+            behavioral=[],
+            seniority=request.seniority or "pleno",
+            job_description=request.job_description,
+            mode="compact",
+        )
+
+        response = _wsi_questions_to_screening_response(wsi_questions, request)
+
         logger.info(f"Generated {response.total_count} questions: "
                    f"{len(response.behavioral_questions)} behavioral, "
                    f"{len(response.technical_questions)} technical, "
                    f"{len(response.cultural_questions)} cultural")
-        
+
         return response
-        
+
     except Exception as e:
         logger.error(f"Error generating screening questions: {e}")
         raise HTTPException(
@@ -66,24 +144,30 @@ async def regenerate_questions(
 ) -> List[ScreeningQuestion]:
     try:
         company_id = get_user_company_id(current_user)
-        category = request.category
-        if not category:
-            full_response = wsi_screening_generator.generate_questions(request.context)
-            logger.info(f"Regenerated all questions for: {request.context.title} - company: {company_id}, user: {current_user.email}")
-            return full_response.questions
-        
-        logger.info(f"Regenerating {category} questions for: {request.context.title} - company: {company_id}, user: {current_user.email}")
-        
-        questions = wsi_screening_generator.regenerate_category(
-            context=request.context,
-            category=category,
-            exclude_ids=request.exclude_ids
+        logger.info(f"Regenerating questions for: {request.context.title} - company: {company_id}, user: {current_user.email}")
+
+        from app.services.wsi_service import WSIService
+        wsi_svc = WSIService()
+        wsi_questions = await wsi_svc.generate_from_simple_inputs(
+            skills=request.context.skills or [],
+            behavioral=[],
+            seniority=request.context.seniority or "pleno",
+            job_description=request.context.job_description,
+            mode="compact",
         )
-        
-        logger.info(f"Regenerated {len(questions)} {category} questions")
-        
-        return questions
-        
+
+        response = _wsi_questions_to_screening_response(wsi_questions, request.context)
+
+        if request.category:
+            filtered = [q for q in response.questions if q.category == request.category]
+            if request.exclude_ids:
+                filtered = [q for q in filtered if q.id not in request.exclude_ids]
+            logger.info(f"Regenerated {len(filtered)} {request.category} questions")
+            return filtered
+
+        logger.info(f"Regenerated all {len(response.questions)} questions")
+        return response.questions
+
     except Exception as e:
         logger.error(f"Error regenerating questions: {e}")
         raise HTTPException(

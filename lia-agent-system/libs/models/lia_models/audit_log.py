@@ -5,7 +5,7 @@ This module provides comprehensive audit logging for all AI decisions made
 by LIA agents, ensuring transparency, accountability, and LGPD compliance.
 """
 from datetime import datetime
-from sqlalchemy import Column, String, Float, DateTime, JSON, Boolean
+from sqlalchemy import Column, String, Float, DateTime, JSON, Boolean, Text
 from sqlalchemy.sql import func
 from lia_config.database import Base
 import enum
@@ -64,6 +64,13 @@ class AuditLog(Base):
     created_at = Column(DateTime, server_default=func.now(), index=True)
     
     retention_until = Column(DateTime, nullable=True)
+
+    # Etapa 2 — Output Auditing (migration 052)
+    session_id = Column(String(255), nullable=True, index=True)
+    agent_used = Column(String(255), nullable=True)
+    input_text = Column(Text, nullable=True)
+    output_text = Column(Text, nullable=True)
+    fairness_flags = Column(JSON, nullable=True, default=list)
     
     def __repr__(self):
         return f"<AuditLog {self.id} - {self.agent_name}: {self.decision_type} -> {self.decision}>"

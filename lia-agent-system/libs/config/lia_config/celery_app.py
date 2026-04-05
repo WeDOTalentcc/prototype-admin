@@ -199,6 +199,12 @@ celery_app.conf.update(
             "args": ["global"],
             "options": {"expires": 3600},
         },
+        # Etapa 4 — Retenção de dados LGPD: 1º de cada mês às 02h UTC
+        "data-retention-monthly": {
+            "task": "data.retention.run",
+            "schedule": crontab(day_of_month=1, hour=2, minute=0),
+            "options": {"expires": 7200},
+        },
         # E4 — Hot-Reload de Agentes: verificar agents_registry.yaml a cada minuto
         "agent-registry-hot-reload": {
             "task": "agents.registry.check_reload",

@@ -56,7 +56,7 @@ CV_SCREENING_TOOLS: List[Dict[str, Any]] = [
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
             "count": {"type": "integer", "description": "Número de perguntas a gerar", "required": False, "default": 5},
         },
-        "handler": "app.services.wsi_question_generator.generate_questions",
+        "handler": "app.services.wsi_service.WSIService.generate_from_simple_inputs",
     },
     {
         "tool_id": "adjust_wsi_questions",

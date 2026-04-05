@@ -340,13 +340,18 @@ class WizardActionExecutor:
             block = params.get("block")
             count = int(params.get("count", 5))
             try:
-                from app.services.wsi_question_service import WSIQuestionService
-                wsi_svc = WSIQuestionService()
-                questions = wsi_svc.generate_skill_specific_questions(
+                from app.services.wsi_service import WSIService
+                wsi_svc = WSIService()
+                questions_raw = await wsi_svc.generate_from_simple_inputs(
                     skills=draft.get("required_skills", []),
+                    behavioral=draft.get("behavioral_competencies", []),
                     seniority=draft.get("seniority_level", "pleno"),
-                    count=count,
+                    mode="compact",
                 )
+                questions = [
+                    {"id": q.id, "question": q.question_text, "competency": q.competency, "framework": q.framework}
+                    for q in questions_raw
+                ]
                 q_list = questions if isinstance(questions, list) else [questions]
                 formatted = "\n".join(f"{i+1}. {q}" for i, q in enumerate(q_list[:count]))
                 return WizardActionResult(

@@ -455,24 +455,32 @@ async def generate_wsi_questions(request: GenerateQuestionsRequest):
     Falls back to template-based generation if LLM is unavailable.
     """
     try:
-        try:
-            questions = await _generate_questions_with_llm(
-                job_title=request.job_title,
-                technical_skills=request.technical_skills,
-                behavioral_competencies=request.behavioral_competencies,
-                responsibilities=request.responsibilities,
-                seniority=request.seniority,
-                department=request.department,
-                max_questions=request.max_questions
-            )
-            logger.info(f"Generated {len(questions)} WSI questions via Gemini LLM for '{request.job_title}'")
-        except Exception as llm_error:
-            logger.warning(f"LLM generation failed, falling back to templates: {llm_error}")
-            questions = _generate_questions_from_templates(
-                technical_skills=request.technical_skills,
-                behavioral_competencies=request.behavioral_competencies,
-                max_questions=request.max_questions
-            )
+        from app.services.wsi_service import WSIService as _WSISvc
+        _wsi = _WSISvc()
+        _raw = await _wsi.generate_from_simple_inputs(
+            skills=request.technical_skills,
+            behavioral=request.behavioral_competencies,
+            seniority=request.seniority or "pleno",
+            job_description=f"{request.job_title}. " + ", ".join(request.responsibilities) if request.responsibilities else request.job_title,
+            mode="full" if request.max_questions >= 10 else "compact",
+        )
+        questions: List[WSIQuestion] = []
+        for wq in _raw:
+            skill_type = "behavioral" if wq.framework == "BigFive" or wq.question_type == "situational" else "technical"
+            block_id = 4 if skill_type == "behavioral" else 3
+            questions.append(WSIQuestion(
+                id=wq.id,
+                question=wq.question_text,
+                type="open",
+                required=True,
+                competency_validated=wq.competency,
+                skill_type=skill_type,
+                block_id=block_id,
+            ))
+        for tmpl in ELIGIBILITY_TEMPLATES:
+            questions.insert(0, tmpl.model_copy())
+        questions = questions[:request.max_questions]
+        logger.info(f"Generated {len(questions)} WSI questions via canonical F6 pipeline for '{request.job_title}'")
 
         # A2/G1: FairnessGuard check on generated question texts
         filtered_questions: List[WSIQuestion] = []
@@ -586,50 +594,33 @@ async def regenerate_wsi_questions(request: RegenerateQuestionsRequest):
         behav_needed = max(0, MIN_BEHAVIORAL_QUESTIONS - behav_count)
         behav_to_generate = new_behav[:max(behav_needed, 1)]
 
-        try:
-            if tech_to_generate:
-                new_tech_questions = await _generate_new_questions_with_llm(
-                    skills=tech_to_generate,
-                    skill_type="technical",
-                    job_title=request.job_title,
-                    seniority=request.seniority
+        if tech_to_generate or behav_to_generate:
+            from app.services.wsi_service import WSIService as _WSISvc
+            _wsi = _WSISvc()
+            _raw = await _wsi.generate_from_simple_inputs(
+                skills=tech_to_generate,
+                behavioral=behav_to_generate,
+                seniority=request.seniority or "pleno",
+                job_description=request.job_title,
+                mode="compact",
+            )
+            for wq in _raw:
+                if len(retained_questions) >= request.max_questions:
+                    break
+                skill_type = "behavioral" if wq.framework == "BigFive" or wq.question_type == "situational" else "technical"
+                block_id = 4 if skill_type == "behavioral" else 3
+                new_q = WSIQuestion(
+                    id=wq.id,
+                    question=wq.question_text,
+                    type="open",
+                    required=True,
+                    competency_validated=wq.competency,
+                    skill_type=skill_type,
+                    block_id=block_id,
                 )
-                for q in new_tech_questions:
-                    if len(retained_questions) < request.max_questions:
-                        retained_questions.append(q)
-                        covered_competencies.add(normalize_competency(q.competency_validated or ""))
-                        added_count += 1
-
-            if behav_to_generate:
-                new_behav_questions = await _generate_new_questions_with_llm(
-                    skills=behav_to_generate,
-                    skill_type="behavioral",
-                    job_title=request.job_title,
-                    seniority=request.seniority
-                )
-                for q in new_behav_questions:
-                    if len(retained_questions) < request.max_questions:
-                        retained_questions.append(q)
-                        covered_competencies.add(normalize_competency(q.competency_validated or ""))
-                        added_count += 1
-
-        except Exception as llm_error:
-            logger.warning(f"LLM regeneration failed, falling back to templates: {llm_error}")
-            for skill in tech_to_generate:
-                if len(retained_questions) < request.max_questions:
-                    question = generate_question_for_skill(skill, "technical")
-                    if question:
-                        retained_questions.append(question)
-                        covered_competencies.add(normalize_competency(skill))
-                        added_count += 1
-
-            for comp in behav_to_generate:
-                if len(retained_questions) < request.max_questions:
-                    question = generate_question_for_skill(comp, "behavioral")
-                    if question:
-                        retained_questions.append(question)
-                        covered_competencies.add(normalize_competency(comp))
-                        added_count += 1
+                retained_questions.append(new_q)
+                covered_competencies.add(normalize_competency(wq.competency))
+                added_count += 1
 
         changes = []
         if added_count > 0:

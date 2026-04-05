@@ -3,8 +3,8 @@ WSI Screening Pipeline Service - Unified orchestrator for all WSI screening bloc
 
 Orchestrates:
 - Block 2: Company default screening questions + eligibility (from database)
-- Block 3: Technical assessment (Bloom/Dreyfus via wsi_question_service)
-- Block 4: Behavioral/Situational (Big Five/CBI via wsi_question_generator)
+- Block 3: Technical assessment (Bloom/Dreyfus via WSIService)
+- Block 4: Behavioral/Situational (Big Five/CBI via WSIService)
 """
 import logging
 from typing import List, Optional, Dict, Any
@@ -19,7 +19,6 @@ from app.schemas.screening import (
     ScreeningQuestionRequest,
     BigFiveProfile,
 )
-from app.services.wsi_question_generator import wsi_screening_generator
 from app.domains.cv_screening.constants.wsi_constants import (
     BLOOM_LEVEL_LABELS as BLOOM_LEVELS,
     DREYFUS_STAGE_LABELS as DREYFUS_STAGES,
@@ -93,7 +92,7 @@ class WSIScreeningPipeline:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    def build_pipeline(
+    async def build_pipeline(
         self,
         request: WSIScreeningPipelineRequest,
         company_questions_raw: List[Dict[str, Any]],
@@ -231,7 +230,7 @@ class WSIScreeningPipeline:
             self.logger.info(f"Injected affirmative action question into Block 2: {request.affirmative_type or 'general'}")
 
         # --- Block 3: Technical ---
-        block_3 = self._build_technical_block(request, tech_target, effective_seniority)
+        block_3 = await self._build_technical_block(request, tech_target, effective_seniority)
         all_questions.extend(block_3)
         if len(block_3) < 2:
             quality_warnings.append(
@@ -240,7 +239,7 @@ class WSIScreeningPipeline:
         self.logger.info(f"Block 3: {len(block_3)} technical questions")
 
         # --- Block 4: Behavioral / Situational ---
-        block_4 = self._build_behavioral_block(request, behav_target, effective_seniority)
+        block_4 = await self._build_behavioral_block(request, behav_target, effective_seniority)
         all_questions.extend(block_4)
         if len(block_4) < 2:
             quality_warnings.append(
@@ -255,7 +254,7 @@ class WSIScreeningPipeline:
             self.logger.info(f"Rebalancing: {deficit} questions short of target {wsi_target}")
             existing_ids = {q.id for q in all_questions}
 
-            extra_behav = self._build_behavioral_block(request, behav_target + deficit + 2, effective_seniority)
+            extra_behav = await self._build_behavioral_block(request, behav_target + deficit + 2, effective_seniority)
             for q in extra_behav:
                 if deficit <= 0:
                     break
@@ -265,7 +264,7 @@ class WSIScreeningPipeline:
                     deficit -= 1
 
             if deficit > 0:
-                extra_tech = self._build_technical_block(request, tech_target + deficit + 2, effective_seniority)
+                extra_tech = await self._build_technical_block(request, tech_target + deficit + 2, effective_seniority)
                 for q in extra_tech:
                     if deficit <= 0:
                         break
@@ -378,67 +377,56 @@ class WSIScreeningPipeline:
             )
         return questions
 
-    def _build_technical_block(
+    async def _build_technical_block(
         self,
         request: WSIScreeningPipelineRequest,
         target_count: int,
         effective_seniority: str = "pleno",
     ) -> List[UnifiedScreeningQuestion]:
         available_skills = request.technical_skills or []
-        skill_count = len(available_skills)
 
-        if skill_count == 0:
+        if not available_skills:
             logger.warning("No technical skills provided — cannot generate technical questions")
             return []
 
-        if skill_count >= target_count:
-            fetch_count = max(4, target_count)
-            ctx = ScreeningQuestionRequest(
-                title=request.job_title,
-                department=request.department,
-                seniority=effective_seniority,
-                big_five_profile=request.big_five_profile,
-                skills=available_skills,
-                job_description=request.job_description,
-                question_count=fetch_count,
-            )
-            raw = wsi_screening_generator._generate_technical_questions(ctx)
-        else:
-            logger.info(
-                f"Skills ({skill_count}) < target ({target_count}) — "
-                f"distributing multiple questions per skill"
-            )
-            fetch_count = max(4, target_count + 2)
-            ctx = ScreeningQuestionRequest(
-                title=request.job_title,
-                department=request.department,
-                seniority=effective_seniority,
-                big_five_profile=request.big_five_profile,
-                skills=available_skills,
-                job_description=request.job_description,
-                question_count=fetch_count,
-            )
-            raw = wsi_screening_generator._generate_technical_questions(ctx)
+        from app.services.wsi_service import WSIService
+        wsi_svc = WSIService()
+        wsi_questions = await wsi_svc.generate_from_simple_inputs(
+            skills=available_skills,
+            seniority=effective_seniority,
+            job_description=request.job_description,
+            mode="compact",
+        )
+
+        tech_questions = [q for q in wsi_questions if q.question_type != "situational"]
 
         questions: List[UnifiedScreeningQuestion] = []
-        for q in raw[:target_count]:
+        dreyfus_stage = SENIORITY_TO_DREYFUS.get(effective_seniority, 3)
+        dreyfus_label = DREYFUS_STAGES.get(dreyfus_stage, "Competente")
+        for wq in tech_questions[:target_count]:
+            bloom_level = wq.scoring_criteria.get("bloom_level", 3) if isinstance(wq.scoring_criteria, dict) else 3
+            if not isinstance(bloom_level, int):
+                try:
+                    bloom_level = int(bloom_level)
+                except (ValueError, TypeError):
+                    bloom_level = 3
             questions.append(
                 UnifiedScreeningQuestion(
-                    id=q.id,
-                    text=q.text,
+                    id=wq.id,
+                    text=wq.question_text,
                     category="technical",
                     block_id=3,
                     source="wsi_generated",
-                    trait=q.trait,
-                    skill=q.skill,
-                    bloom_level=q.bloom_level,
-                    bloom_label=q.bloom_label,
-                    dreyfus_stage=q.dreyfus_stage,
-                    dreyfus_label=q.dreyfus_label,
-                    framework=q.framework,
-                    weight=q.weight,
-                    expected_signals=q.expected_signals,
-                    scoring_criteria=q.scoring_criteria,
+                    trait=wq.scoring_criteria.get("ocean_trait") if isinstance(wq.scoring_criteria, dict) else None,
+                    skill=wq.competency,
+                    bloom_level=bloom_level,
+                    bloom_label=BLOOM_LEVELS.get(bloom_level, "Aplicar"),
+                    dreyfus_stage=dreyfus_stage,
+                    dreyfus_label=dreyfus_label,
+                    framework=wq.framework,
+                    weight=wq.weight,
+                    expected_signals=wq.expected_signals,
+                    scoring_criteria=wq.scoring_criteria if isinstance(wq.scoring_criteria, dict) else {},
                     is_selected=True,
                     question_type="open",
                     order=0,
@@ -446,7 +434,7 @@ class WSIScreeningPipeline:
             )
         return questions
 
-    def _build_behavioral_block(
+    async def _build_behavioral_block(
         self,
         request: WSIScreeningPipelineRequest,
         target_count: int,
@@ -467,41 +455,47 @@ class WSIScreeningPipeline:
                 f"No behavioral competencies provided — using Big Five traits as base ({len(behavioral_skills)} traits)"
             )
 
-        fetch_count = max(4, target_count)
-        ctx = ScreeningQuestionRequest(
-            title=request.job_title,
-            department=request.department,
+        from app.services.wsi_service import WSIService
+        wsi_svc = WSIService()
+        wsi_questions = await wsi_svc.generate_from_simple_inputs(
+            skills=[],
+            behavioral=behavioral_skills,
             seniority=effective_seniority,
-            big_five_profile=request.big_five_profile,
-            skills=behavioral_skills,
             job_description=request.job_description,
-            question_count=fetch_count,
+            mode="compact",
         )
 
-        behavioral_raw = wsi_screening_generator._generate_behavioral_questions(ctx)
-        cultural_raw = wsi_screening_generator._generate_cultural_questions(ctx)
+        behav_questions = [q for q in wsi_questions if q.framework == "BigFive" or q.question_type == "situational"]
+        if not behav_questions:
+            behav_questions = wsi_questions
 
-        combined = behavioral_raw + cultural_raw
-
+        dreyfus_stage = SENIORITY_TO_DREYFUS.get(effective_seniority, 3)
+        dreyfus_label = DREYFUS_STAGES.get(dreyfus_stage, "Competente")
         questions: List[UnifiedScreeningQuestion] = []
-        for q in combined[:target_count]:
+        for wq in behav_questions[:target_count]:
+            bloom_level = wq.scoring_criteria.get("bloom_level", 3) if isinstance(wq.scoring_criteria, dict) else 3
+            if not isinstance(bloom_level, int):
+                try:
+                    bloom_level = int(bloom_level)
+                except (ValueError, TypeError):
+                    bloom_level = 3
             questions.append(
                 UnifiedScreeningQuestion(
-                    id=q.id,
-                    text=q.text,
-                    category=q.category,
+                    id=wq.id,
+                    text=wq.question_text,
+                    category="behavioral",
                     block_id=4,
                     source="wsi_generated",
-                    trait=q.trait,
-                    skill=q.skill,
-                    bloom_level=q.bloom_level,
-                    bloom_label=q.bloom_label,
-                    dreyfus_stage=q.dreyfus_stage,
-                    dreyfus_label=q.dreyfus_label,
-                    framework=q.framework,
-                    weight=q.weight,
-                    expected_signals=q.expected_signals,
-                    scoring_criteria=q.scoring_criteria,
+                    trait=wq.scoring_criteria.get("ocean_trait") if isinstance(wq.scoring_criteria, dict) else None,
+                    skill=wq.competency,
+                    bloom_level=bloom_level,
+                    bloom_label=BLOOM_LEVELS.get(bloom_level, "Aplicar"),
+                    dreyfus_stage=dreyfus_stage,
+                    dreyfus_label=dreyfus_label,
+                    framework=wq.framework,
+                    weight=wq.weight,
+                    expected_signals=wq.expected_signals,
+                    scoring_criteria=wq.scoring_criteria if isinstance(wq.scoring_criteria, dict) else {},
                     is_selected=True,
                     question_type="open",
                     order=0,

@@ -39,8 +39,8 @@ class TestServiceStubImports:
         m = importlib.import_module("app.services.template_learning_service")
         assert m is not None
 
-    def test_wsi_question_service_importable(self):
-        m = importlib.import_module("app.services.wsi_question_service")
+    def test_wsi_service_importable(self):
+        m = importlib.import_module("app.services.wsi_service")
         assert m is not None
 
     def test_seniority_jd_analyzer_importable(self):

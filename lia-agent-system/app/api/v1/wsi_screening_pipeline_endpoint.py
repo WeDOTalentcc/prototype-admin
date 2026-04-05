@@ -82,7 +82,7 @@ async def generate_screening_pipeline(
                 logger.warning(f"Could not fetch company questions: {e}")
                 company_questions_raw = []
 
-        response = wsi_screening_pipeline.build_pipeline(
+        response = await wsi_screening_pipeline.build_pipeline(
             request=request,
             company_questions_raw=company_questions_raw,
         )
