@@ -22,6 +22,7 @@ from app.api import orchestrator_routes
 from app.services.llm import LLMService
 from app.middleware.rate_limiter import RateLimitMiddleware, rate_limiter
 from app.middleware.auth_enforcement import AuthEnforcementMiddleware
+from app.api.v1.llm_config import router as llm_config_router
 from app.middleware.request_id import RequestIdMiddleware
 from app.core.logging_middleware import StructuredLoggingMiddleware
 from app.domains.automation.services.automation_scheduler import automation_scheduler

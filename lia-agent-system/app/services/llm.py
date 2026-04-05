@@ -17,6 +17,15 @@ from langchain_core.language_models import BaseChatModel
 
 from app.core.config import settings
 
+# === Choose Your AI: Tenant-aware LLM routing ===
+# === E6: PII stripping on all LLM calls ===
+from app.shared.pii_masking import strip_pii_for_llm_prompt
+# === E7: Audit logging on all LLM calls ===
+from app.shared.compliance.audit_service import audit_service as _audit_svc
+from app.shared.tenant_llm_context import get_current_llm_tenant, get_tenant_llm_config
+import time as _time
+
+
 T = TypeVar("T", bound=BaseModel)
 
 logger = logging.getLogger(__name__)
@@ -161,6 +170,35 @@ class LLMService:
         Returns:
             Generated text
         """
+        # === E6: PII stripping (LGPD Art. 12 / EU AI Act Art. 13) ===
+        _original_len = len(prompt)
+        prompt = strip_pii_for_llm_prompt(prompt)
+        _stripped = _original_len != len(prompt)
+
+        # === E7: Audit logging (every LLM call tracked) ===
+        _cid = getattr(self, '_current_tenant', '') or get_current_llm_tenant()
+        logger.info(
+            "[LLMService] generate provider=%s model=%s prompt_len=%d pii_stripped=%s tenant=%s",
+            provider, model or "default", len(prompt), _stripped, _cid or "global"
+        )
+        try:
+            if _cid and _audit_svc:
+                await _audit_svc.log_decision(
+                    company_id=_cid,
+                    action="llm_call",
+                    resource_type="llm_provider",
+                    resource_id=f"{provider}:{model or 'default'}",
+                    details={
+                        "provider": provider,
+                        "model": model or "default",
+                        "prompt_length": len(prompt),
+                        "pii_stripped": _stripped,
+                    },
+                    user_id="system",
+                )
+        except Exception:
+            pass  # Audit is non-blocking
+
         if provider == "gemini":
             return await self.generate_with_gemini(prompt, model=model)
         elif provider == "claude":
@@ -211,6 +249,9 @@ class LLMService:
         Returns:
             ToolCallResponse with either text or tool calls
         """
+        # E6: PII stripping
+        prompt = strip_pii_for_llm_prompt(prompt)
+
         if provider == "claude":
             return await self._generate_with_tools_claude(
                 messages, tools, system_prompt, max_tokens
@@ -557,6 +598,9 @@ class LLMService:
         Raises:
             ValueError: If structured output parsing fails
         """
+        # E6: PII stripping
+        prompt = strip_pii_for_llm_prompt(prompt)
+
         from app.services.structured_output import (
             structured_output_service,
             parse_json_from_text
