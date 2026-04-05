@@ -58,29 +58,24 @@ export function useSidebarState(): UseSidebarStateReturn {
     if (!isMounted) return
     setIsCollapsed(sidebarCollapsed)
     setSidebarWidth(storedWidth)
-  }, [isMounted, sidebarCollapsed, storedWidth])
-
-  useEffect(() => {
-    if (!isMounted) return
-    setSidebarCollapsed(isCollapsed)
-  }, [isCollapsed, isMounted, setSidebarCollapsed])
-
-  useEffect(() => {
-    if (!isMounted) return
-    setStoredWidth(sidebarWidth)
-  }, [sidebarWidth, isMounted, setStoredWidth])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMounted])
 
   // ── Keyboard shortcut Ctrl+B ───────────────────────────────────────────────
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.key === "b") {
         event.preventDefault()
-        setIsCollapsed((prev) => !prev)
+        setIsCollapsed((prev) => {
+          const next = !prev
+          setSidebarCollapsed(next)
+          return next
+        })
       }
     }
     window.addEventListener("keydown", handleKeydown)
     return () => window.removeEventListener("keydown", handleKeydown)
-  }, [])
+  }, [setSidebarCollapsed])
 
   // ── Resize logic ───────────────────────────────────────────────────────────
   const startResize = useCallback((e: React.MouseEvent) => {
@@ -100,6 +95,7 @@ export function useSidebarState(): UseSidebarStateReturn {
 
     const handleMouseUp = () => {
       setIsResizing(false)
+      setStoredWidth(sidebarWidth)
       document.removeEventListener("mousemove", handleMouseMove)
       document.removeEventListener("mouseup", handleMouseUp)
       document.body.style.cursor = ""
@@ -110,12 +106,16 @@ export function useSidebarState(): UseSidebarStateReturn {
     document.addEventListener("mouseup", handleMouseUp)
     document.body.style.cursor = "col-resize"
     document.body.style.userSelect = "none"
-  }, [sidebarWidth])
+  }, [sidebarWidth, setStoredWidth])
 
   // ── Actions ────────────────────────────────────────────────────────────────
   const toggleCollapse = useCallback(() => {
-    setIsCollapsed((prev) => !prev)
-  }, [])
+    setIsCollapsed((prev) => {
+      const next = !prev
+      setSidebarCollapsed(next)
+      return next
+    })
+  }, [setSidebarCollapsed])
 
   const handleMouseEnter = useCallback(() => {
     if (isCollapsed) setIsTemporaryExpanded(true)
