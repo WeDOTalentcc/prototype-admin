@@ -272,117 +272,6 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
           <Search className="w-4 h-4" />
         </Button>
 
-        {/* Autocomplete inline - lista vertical compacta */}
-        {showAutocomplete && autocompleteItems.length > 0 && (
-          <div
-            className="absolute top-full left-0 right-0 mt-0.5 rounded-md border border-lia-border-subtle flex flex-col gap-0 z-50 max-h-52 overflow-hidden bg-[var(--lia-bg-primary)] shadow-lg"
-          >
-            {/* Header com toggle e botão fechar */}
-            <div className="flex items-center justify-between px-3 py-1.5 border-b border-lia-border-subtle">
-              <div className="flex items-center gap-2">
-                <Brain className="w-3 h-3 text-wedo-cyan" />
-                <span className="text-micro font-medium text-lia-text-secondary">Sugestões</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setAutocompleteEnabled(false)}
-                  className="text-micro text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
-                  title="Desativar sugestões"
-                >
-                  Desativar
-                </button>
-                <button
-                  onClick={() => {
-                    setShowAutocomplete(false)
-                    setAutocompleteItems([])
-                  }}
-                  className="p-0.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
-                  title="Fechar lista"
-                >
-                  <X className="w-3 h-3 text-lia-text-tertiary" />
-                </button>
-              </div>
-            </div>
-            <div className="py-1 overflow-y-auto max-h-40">
-              {autocompleteItems.slice(0, 6).map((item, index) => {
-                const IconComponent =
-                  item.icon === "code" ? Code :
-                  item.icon === "briefcase" ? Briefcase :
-                  item.icon === "map-pin" ? MapPin :
-                  item.icon === "building" ? Building2 :
-                  item.icon === "award" ? Award :
-                  item.icon === "home" ? Building2 :
-                  item.icon === "globe" ? Globe :
-                  item.icon === "target" ? Target :
-                  item.icon === "users" ? Users :
-                  item.icon === "layers" ? Building2 :
-                  item.icon === "zap" ? TrendingUp :
-                  item.icon === "brain" ? Brain :
-                  item.icon === "database" ? Binary :
-                  item.icon === "bar-chart" ? TrendingUp :
-                  item.icon === "layout" ? FileText :
-                  item.icon === "smartphone" ? Binary :
-                  item.icon === "cloud" ? Globe :
-                  item.icon === "settings" ? Code :
-                  item.icon === "box" ? Binary :
-                  item.icon === "coffee" ? Code :
-                  item.icon === "file-code" ? Code :
-                  item.icon === "clipboard" ? FileText :
-                  item.icon === "pen-tool" ? Star :
-                  item.icon === "dollar-sign" ? DollarSign :
-                  item.icon === "credit-card" ? DollarSign :
-                  item.icon === "message-circle" ? Globe :
-                  item.icon === "book" ? GraduationCap :
-                  Brain
-
-                const getCategoryColor = (category: string) => {
-                  const cat = category.toLowerCase()
-                  if (cat.includes('cargo') || cat.includes('título') || cat.includes('job'))
-                    return { bg: 'var(--lia-bg-secondary)', accent: 'var(--lia-text-secondary)' }
-                  if (cat.includes('local') || cat.includes('cidade') || cat.includes('região'))
-                    return { bg: 'var(--lia-bg-tertiary)', accent: 'var(--wedo-purple)' }
-                  if (cat.includes('skill') || cat.includes('tecnologia') || cat.includes('ferramenta'))
-                    return { bg: 'var(--lia-bg-secondary)', accent: 'var(--wedo-green)' }
-                  if (cat.includes('experiência') || cat.includes('senioridade') || cat.includes('anos'))
-                    return { bg: 'var(--status-warning-bg)', accent: 'var(--wedo-orange)' }
-                  if (cat.includes('setor') || cat.includes('indústria') || cat.includes('área'))
-                    return { bg: 'var(--lia-bg-tertiary)', accent: 'var(--lia-text-secondary)' }
-                  return { bg: 'var(--lia-bg-secondary)', accent: 'var(--lia-text-secondary)' }
-                }
-                const catColor = getCategoryColor(item.category)
-                const isSelected = selectedAutocompleteIndex === index
-
-                return (
-                  <button
-                    key={`${item.text}-${index}`}
-                    onClick={() => handleAutocompleteSelect(item)}
-                    onMouseEnter={() => setSelectedAutocompleteIndex(index)}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 text-left transition-colors w-full",
-                      isSelected ? "bg-lia-bg-secondary" : "hover:bg-lia-bg-secondary"
-                    )}
-                  >
-                    <IconComponent
-                      className="w-3.5 h-3.5 flex-shrink-0"
-                      style={{color: catColor.accent}}
-                    />
-                    <span
-                      className="text-xs font-medium flex-1 truncate text-lia-text-primary"
-                    >
-                      {item.text}
-                    </span>
-                    <span
-                      className="text-micro text-lia-text-secondary flex-shrink-0"
-                    >
-                      {item.category}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
         {/* Ghost Text Tab hint */}
         {ghostTextSuffix && !showAutocomplete && (
           <div
@@ -423,8 +312,118 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
         </div>
       )}
 
-      {/* Tags de critérios extraídos - Cores WeDo DS */}
-      <div className="flex flex-wrap items-center gap-1.5">
+      {showAutocomplete && autocompleteItems.length > 0 && (
+        <div
+          className="rounded-md border border-lia-border-subtle flex flex-col gap-0 max-h-52 overflow-hidden bg-[var(--lia-bg-primary)] shadow-md"
+          data-testid="autocomplete-dropdown"
+        >
+          <div className="flex items-center justify-between px-3 py-1.5 border-b border-lia-border-subtle">
+            <div className="flex items-center gap-2">
+              <Brain className="w-3 h-3 text-wedo-cyan" />
+              <span className="text-micro font-medium text-lia-text-secondary">Sugestões</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setAutocompleteEnabled(false)}
+                className="text-micro text-lia-text-tertiary hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
+                title="Desativar sugestões"
+              >
+                Desativar
+              </button>
+              <button
+                onClick={() => {
+                  setShowAutocomplete(false)
+                  setAutocompleteItems([])
+                }}
+                className="p-0.5 rounded-md hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                title="Fechar lista"
+              >
+                <X className="w-3 h-3 text-lia-text-tertiary" />
+              </button>
+            </div>
+          </div>
+          <div className="py-1 overflow-y-auto max-h-40">
+            {autocompleteItems.slice(0, 6).map((item, index) => {
+              const IconComponent =
+                item.icon === "code" ? Code :
+                item.icon === "briefcase" ? Briefcase :
+                item.icon === "map-pin" ? MapPin :
+                item.icon === "building" ? Building2 :
+                item.icon === "award" ? Award :
+                item.icon === "home" ? Building2 :
+                item.icon === "globe" ? Globe :
+                item.icon === "target" ? Target :
+                item.icon === "users" ? Users :
+                item.icon === "layers" ? Building2 :
+                item.icon === "zap" ? TrendingUp :
+                item.icon === "brain" ? Brain :
+                item.icon === "database" ? Binary :
+                item.icon === "bar-chart" ? TrendingUp :
+                item.icon === "layout" ? FileText :
+                item.icon === "smartphone" ? Binary :
+                item.icon === "cloud" ? Globe :
+                item.icon === "settings" ? Code :
+                item.icon === "box" ? Binary :
+                item.icon === "coffee" ? Code :
+                item.icon === "file-code" ? Code :
+                item.icon === "clipboard" ? FileText :
+                item.icon === "pen-tool" ? Star :
+                item.icon === "dollar-sign" ? DollarSign :
+                item.icon === "credit-card" ? DollarSign :
+                item.icon === "message-circle" ? Globe :
+                item.icon === "book" ? GraduationCap :
+                Brain
+
+              const getCategoryColor = (category: string) => {
+                const cat = category.toLowerCase()
+                if (cat.includes('cargo') || cat.includes('título') || cat.includes('job'))
+                  return { bg: 'var(--lia-bg-secondary)', accent: 'var(--lia-text-secondary)' }
+                if (cat.includes('local') || cat.includes('cidade') || cat.includes('região'))
+                  return { bg: 'var(--lia-bg-tertiary)', accent: 'var(--wedo-purple)' }
+                if (cat.includes('skill') || cat.includes('tecnologia') || cat.includes('ferramenta'))
+                  return { bg: 'var(--lia-bg-secondary)', accent: 'var(--wedo-green)' }
+                if (cat.includes('experiência') || cat.includes('senioridade') || cat.includes('anos'))
+                  return { bg: 'var(--status-warning-bg)', accent: 'var(--wedo-orange)' }
+                if (cat.includes('setor') || cat.includes('indústria') || cat.includes('área'))
+                  return { bg: 'var(--lia-bg-tertiary)', accent: 'var(--lia-text-secondary)' }
+                return { bg: 'var(--lia-bg-secondary)', accent: 'var(--lia-text-secondary)' }
+              }
+              const catColor = getCategoryColor(item.category)
+              const isSelected = selectedAutocompleteIndex === index
+
+              return (
+                <button
+                  key={`${item.text}-${index}`}
+                  onClick={() => handleAutocompleteSelect(item)}
+                  onMouseEnter={() => setSelectedAutocompleteIndex(index)}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-1.5 text-left transition-colors w-full",
+                    isSelected ? "bg-lia-bg-secondary" : "hover:bg-lia-bg-secondary"
+                  )}
+                >
+                  <IconComponent
+                    className="w-3.5 h-3.5 flex-shrink-0"
+                    style={{color: catColor.accent}}
+                  />
+                  <span
+                    className="text-xs font-medium flex-1 truncate text-lia-text-primary"
+                  >
+                    {item.text}
+                  </span>
+                  <span
+                    className="text-micro text-lia-text-secondary flex-shrink-0"
+                  >
+                    {item.category}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Tags de critérios extraídos - Hidden when autocomplete is open */}
+      <div className={cn("flex flex-wrap items-center gap-1.5", showAutocomplete && autocompleteItems.length > 0 && "hidden")}>
         {tags.map((tag) => {
           const getTagColors = (key: string, filled: boolean) => {
             if (!filled) return { bg: 'var(--lia-bg-secondary)', text: 'var(--lia-text-primary)', iconBg: 'var(--lia-text-tertiary)', iconBgLight: 'var(--lia-bg-secondary)' }
@@ -549,8 +548,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
         )}
       </div>
 
-      {/* Assistente de Busca - Barra de completude e alertas */}
-      {value && searchAnalysis && (
+      {value && searchAnalysis && !(showAutocomplete && autocompleteItems.length > 0) && (
         <div className="space-y-2 pt-2 border-t border-lia-border-default dark:border-lia-border-default">
           {/* Barra de completude */}
           <div className="flex items-center gap-3">

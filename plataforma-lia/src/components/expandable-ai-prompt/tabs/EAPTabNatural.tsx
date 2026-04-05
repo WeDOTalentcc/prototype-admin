@@ -218,37 +218,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
           </button>
         </div>
 
-        {/* Autocomplete Dropdown */}
-        {showAutocomplete && autocompleteSuggestions.length > 0 && (
-          <div className="absolute left-0 right-0 top-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md z-50 max-h-48 overflow-y-auto shadow-lg">
-            {autocompleteSuggestions.map((suggestion, index) => (
-              <button
-                key={`sug-${index}`}
-                onClick={() => {
-                  setNaturalSearchValue(prev => {
-                    const words = prev.split(' ')
-                    words.pop()
-                    const insertValue = suggestion.insert_text || suggestion.text
-                    return [...words, insertValue].join(' ') + ' '
-                  })
-                  setShowAutocomplete(false)
-                }}
-                className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors motion-reduce:transition-none ${
-                  selectedAutocompleteIndex === index
-                    ? 'bg-lia-bg-tertiary'
-                    : 'hover:bg-lia-bg-secondary'
-                }`}
-              >
-                <span style={{color: 'var(--lia-btn-primary-bg)'}}>{suggestion.text}</span>
-                <span className="text-xs text-lia-text-secondary">{suggestion.category}</span>
-              </button>
-            ))}
-            <div className="px-3 py-1.5 text-xs flex items-center justify-between text-lia-text-secondary" style={{borderTop: '1px solid var(--overlay-05)'}}>
-              <span>Use ↑↓ para navegar, Tab para selecionar</span>
-              <span>Esc para fechar</span>
-            </div>
-          </div>
-        )}
+        
 
         {/* Premium Autocomplete - Company-based suggestions */}
         <PremiumAutocomplete
@@ -315,8 +285,39 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
         </div>
       )}
 
-      {/* Tags de Critérios - Sempre Visíveis */}
-      <div className="flex flex-wrap items-center gap-1.5 mt-2">
+      {showAutocomplete && autocompleteSuggestions.length > 0 && (
+        <div className="mt-2 bg-lia-bg-primary border border-lia-border-subtle rounded-md max-h-48 overflow-y-auto shadow-md" data-testid="autocomplete-dropdown">
+          {autocompleteSuggestions.map((suggestion, index) => (
+            <button
+              key={`sug-${index}`}
+              onClick={() => {
+                setNaturalSearchValue(prev => {
+                  const words = prev.split(' ')
+                  words.pop()
+                  const insertValue = suggestion.insert_text || suggestion.text
+                  return [...words, insertValue].join(' ') + ' '
+                })
+                setShowAutocomplete(false)
+              }}
+              className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between transition-colors motion-reduce:transition-none ${
+                selectedAutocompleteIndex === index
+                  ? 'bg-lia-bg-tertiary'
+                  : 'hover:bg-lia-bg-secondary'
+              }`}
+            >
+              <span style={{color: 'var(--lia-btn-primary-bg)'}}>{suggestion.text}</span>
+              <span className="text-micro text-lia-text-secondary">{suggestion.category}</span>
+            </button>
+          ))}
+          <div className="px-3 py-1.5 text-micro flex items-center justify-between text-lia-text-secondary" style={{borderTop: '1px solid var(--overlay-05)'}}>
+            <span>Use ↑↓ para navegar, Tab para selecionar</span>
+            <span>Esc para fechar</span>
+          </div>
+        </div>
+      )}
+
+      {/* Tags de Critérios - Hidden when autocomplete is open */}
+      <div className={cn("flex flex-wrap items-center gap-1.5 mt-2", showAutocomplete && autocompleteSuggestions.length > 0 && "hidden")}>
         {searchTags.map((tag) => {
           const colors = getTagColors(tag.key, tag.filled)
           const TagIcon = tag.icon
@@ -438,8 +439,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
         )}
       </div>
 
-      {/* Análise de Qualidade da Busca */}
-      {naturalSearchValue && searchAnalysis && (
+      {naturalSearchValue && searchAnalysis && !(showAutocomplete && autocompleteSuggestions.length > 0) && (
         <div className="space-y-2 pt-2 mt-2 border-t border-lia-border-default dark:border-lia-border-default">
           {/* Barra de completude */}
           <div className="flex items-center gap-3">
