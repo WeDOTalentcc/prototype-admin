@@ -275,7 +275,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
         {/* Autocomplete inline - lista vertical compacta */}
         {showAutocomplete && autocompleteItems.length > 0 && (
           <div
-            className="absolute top-full left-0 right-0 mt-0.5 rounded-md border border-lia-border-subtle flex flex-col gap-0 z-10 max-h-52 overflow-hidden bg-[var(--lia-bg-primary)]"
+            className="absolute top-full left-0 right-0 mt-0.5 rounded-md border border-lia-border-subtle flex flex-col gap-0 z-50 max-h-52 overflow-hidden bg-[var(--lia-bg-primary)] shadow-lg"
           >
             {/* Header com toggle e botão fechar */}
             <div className="flex items-center justify-between px-3 py-1.5 border-b border-lia-border-subtle">
@@ -497,7 +497,7 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
-                    <span className={cn("font-semibold text-sm", autocompleteEnabled ? "text-status-success" : "text-status-error")}>
+                    <span className={cn("font-semibold text-xs", autocompleteEnabled ? "text-status-success" : "text-status-error")}>
                       {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                     </span>
                   </div>
@@ -507,24 +507,24 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
                   </span>
                 </div>
                 <div>
-                  <span className="font-medium text-sm text-lia-text-primary">
+                  <span className="font-medium text-xs text-lia-text-primary">
                     Assistente de Busca Inteligente
                   </span>
                 </div>
-                <p className="text-xs text-lia-text-primary">
+                <p className="text-micro text-lia-text-primary">
                   Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
                 </p>
-                <ul className="text-xs space-y-1 text-lia-text-primary">
+                <ul className="text-micro space-y-1 text-lia-text-primary">
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-primary" />
+                    <CheckCircle2 className="w-2.5 h-2.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
                     <span>Indica critérios faltantes</span>
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-primary" />
+                    <CheckCircle2 className="w-2.5 h-2.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
                     <span>Sugere sinônimos e termos relacionados</span>
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-primary" />
+                    <CheckCircle2 className="w-2.5 h-2.5 mt-0.5 flex-shrink-0 text-lia-text-primary" />
                     <span>Alerta sobre buscas muito amplas ou restritivas</span>
                   </li>
                 </ul>

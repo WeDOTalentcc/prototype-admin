@@ -220,7 +220,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
 
         {/* Autocomplete Dropdown */}
         {showAutocomplete && autocompleteSuggestions.length > 0 && (
-          <div className="absolute left-0 right-0 top-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md z-50 max-h-48 overflow-y-auto">
+          <div className="absolute left-0 right-0 top-full mt-1 bg-lia-bg-primary border border-lia-border-subtle rounded-md z-50 max-h-48 overflow-y-auto shadow-lg">
             {autocompleteSuggestions.map((suggestion, index) => (
               <button
                 key={`sug-${index}`}
@@ -377,7 +377,7 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Brain className="w-4 h-4 text-wedo-cyan" />
-                    <span className="font-semibold text-sm" style={{color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
+                    <span className="font-semibold text-xs" style={{color: autocompleteEnabled ? 'var(--status-success)' : 'var(--status-error)'}}>
                       {autocompleteEnabled ? 'Ativado' : 'Desativado'}
                     </span>
                   </div>
@@ -387,24 +387,24 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
                   </span>
                 </div>
                 <div>
-                  <span className="font-medium text-sm text-lia-text-primary">
+                  <span className="font-medium text-xs text-lia-text-primary">
                     Assistente de Busca Inteligente
                   </span>
                 </div>
-                <p className="text-xs text-lia-text-tertiary">
+                <p className="text-micro text-lia-text-tertiary">
                   Enquanto você descreve o perfil, a LIA analisa e sugere melhorias:
                 </p>
-                <ul className="text-xs space-y-1 text-lia-text-tertiary">
+                <ul className="text-micro space-y-1 text-lia-text-tertiary">
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+                    <CheckCircle2 className="w-2.5 h-2.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
                     <span>Indica critérios faltantes</span>
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+                    <CheckCircle2 className="w-2.5 h-2.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
                     <span>Sugere sinônimos e termos relacionados</span>
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
+                    <CheckCircle2 className="w-2.5 h-2.5 mt-0.5 flex-shrink-0 text-lia-text-secondary" />
                     <span>Alerta sobre buscas muito amplas ou restritivas</span>
                   </li>
                 </ul>

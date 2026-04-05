@@ -1,5 +1,5 @@
 # Overview
-Plataforma LIA (Learning Intelligence Assistant) is an AI-powered recruitment and selection system designed to optimize hiring processes. It utilizes a multi-agent AI architecture and the WSI (WeDoTalent Skill Index) methodology for comprehensive candidate assessment (technical, behavioral, cultural fit). LIA aims to provide an intelligent, conversational, and data-driven platform with advanced AI capabilities, robust authentication, candidate comparison, specialized testing, KPI dashboards, real-time notifications, and predictive analytics. The project's vision is to revolutionize recruitment by offering a compliant, efficient, and intelligent solution that enhances hiring quality and reduces time-to-hire.
+Plataforma LIA (Learning Intelligence Assistant) is an AI-powered recruitment and selection system designed to optimize hiring processes. It uses a multi-agent AI architecture and the WSI (WeDoTalent Skill Index) methodology for comprehensive candidate assessment (technical, behavioral, cultural fit). LIA aims to provide an intelligent, conversational, and data-driven platform with advanced AI capabilities, robust authentication, candidate comparison, specialized testing, KPI dashboards, real-time notifications, and predictive analytics. The project's vision is to revolutionize recruitment by offering a compliant, efficient, and intelligent solution that enhances hiring quality and reduces time-to-hire.
 
 # User Preferences
 - Idioma: Português
@@ -20,7 +20,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 
 **Core Architectural Decisions & Features:**
 - **Multi-Agent AI System**: Orchestrates specialized AI agents using the WSI methodology for candidate evaluation.
-- **Intelligent Conversational Interface (LIA)**: The primary interaction model is chat-based for job creation and candidate screening, featuring intent classification, multi-step reasoning, and session persistence.
+- **Intelligent Conversational Interface (LIA)**: Primary interaction model is chat-based for job creation and candidate screening, featuring intent classification, multi-step reasoning, and session persistence.
 - **AI Stage Automation**: Employs a state machine for managing recruitment stages with smart transition automation.
 - **UI/UX Design**: Adheres to an "ElevenLabs pattern" with a monochromatic palette, cyan accents, a 3-font system, interactive pipeline flows, sortable columns, advanced pagination, and a command palette, all aligned with Design System v4.2.1.
 - **WSI Screening**: A 6-block (0-5) AI-powered methodology for comprehensive candidate evaluation.
@@ -33,10 +33,10 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Autonomous Agents System**: Manages background jobs and proactive LIA-initiated suggestions.
 - **Unified Tool Calling System**: Allows LIA to execute real actions with tenant scoping and persistent conversation memory.
 - **Talent Funnel Search Optimization**: Leverages Elasticsearch, PG Vector, and WRF for advanced search with LLM job classification and candidate scoring.
-- **LangGraph Agent System**: All agents use LangGraph natively (legacy ReActLoop removed). `react_loop.py` kept as compatibility shim for `ToolDefinition`/`ReActState`/`ReActConfig` re-exports. `agent_scaffold.py` generates `LangGraphReActBase`-based boilerplate. `USE_LANGGRAPH_NATIVE` feature flag removed from `.env`/config.
+- **LangGraph Agent System**: All agents use LangGraph natively.
 - **Progressive Automation & CompanyHiringPolicy**: Implements `CompanyHiringPolicy` to control automation levels with a confidence-based decision engine and conversational onboarding.
 - **WSI Saturation Intelligence**: Manages and displays candidate pipeline saturation for organic and sourcing pools.
-- **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT). Features on-demand TTS per LIA message (speaker button), voice auto-play toggle in InputBar (localStorage-persisted), single "Iniciar Conversa" button (no separate voice mode entry). Phone call screening channel via Twilio Voice — "Receber Ligação" button conditionally shown when recruiter enables phone channel in screening config; PhoneConfirmModal collects BR phone number and triggers automated call with 2-min cooldown rate limit.
+- **PUB-001 Public Triagem Chat Page**: Public candidate-facing chat web page for WSI screening with text and bidirectional audio support (TTS/STT).
 - **Multi-Channel Communication Dispatcher**: Sends messages to all available channels (email + WhatsApp) by default.
 - **Celery Scheduler & Automations**: Handles background automations for follow-ups, abandoned WSI checks, and feedback sending.
 - **Voice Analysis Integration**: Uses OpenAI Whisper STT + OpenAI TTS for voice mode in triagem.
@@ -62,22 +62,22 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **ReAct JSON Strip (`_strip_react_json`)**: Defense-in-depth against raw ReAct JSON leaking to users, extracting only the `response` field.
 - **WSI Pipeline Unification (Fonte Única de Verdade)**: Reads screening questions exclusively from `job_screening_questions` DB table, with fallbacks and standardized nomenclature.
 - **WSI Competency Minimums**: Minimum technical skills raised to 9 and behavioral competencies to 5, with pipeline adjustments and frontend warnings.
-- **Design Token Migration (Tasks #95–#98 Complete)**: Full codebase migration from hardcoded Tailwind color classes to semantic Design System LIA v4.2.1 tokens.
-- **Admin Audit & Streamlining (Task #100)**: Reduced accessible admin pages from 61 to 30 (51% reduction) by removing redundant or premature features and consolidating sections.
-- **Security Audit Tasks #105-107**: Removed hardcoded credentials, migrated authentication to httpOnly cookies with JWT and WorkOS SSO, and added API security measures including Zod validation, file/body size limits, HSTS, and X-XSS-Protection headers.
-- **Zustand State Management (Task #116)**: Introduced zustand for centralized state management. Created `src/stores/auth-store.ts` (auth state), `src/stores/kanban-store.ts` (kanban view/candidates), `src/stores/candidates-store.ts` (search/candidates). Auth context now delegates to zustand store. Kanban and candidates hooks consume from stores for shared state (viewMode, selectedCandidates, candidatesData, etc.).
-- **@ts-ignore Elimination (Quality Audit)**: Removed ALL 665 @ts-ignore comments from the entire frontend codebase (0 remaining). Fix patterns: String(value) for unknown→string, as Type assertions, optional chaining, proper callback typing, missing .map() index params, and variant prop casts.
-- **God Components Split (Quality Audit)**: Split 45+ largest components into hooks + sub-components. Zero files >800L (was ~55). Top results: LiaChatPanel (1075→112L), useKanbanPageCore (990→452L), useExpandedChatModalCore (1001→65L), RecruitersTab (925→254L), DepartmentsTab (859→290L), onboarding-page (830→106L), tasks-page (821→131L), etc.
-- **Performance: React.lazy + Error Boundaries**: Created ErrorBoundarySection and SuspenseFallback reusable components. Added lazy loading for 17+ modals. Wrapped 8 major pages with Error Boundaries. Settings tabs use next/dynamic.
-- **localStorage → Zustand Migration (93%)**: 16 Zustand stores total (auth, kanban, candidates, onboarding, ui-preferences, job-ui, navigation, job-filters, talent-funnel, wizard, template, triagem, recent-items, table-features, chat-state). Migrated 259 of 278 localStorage usages to centralized stores (19 remaining: session-cleanup, auth-service, SearchPresetsModal prop interface).
-- **StackOne Removal (Task #133)**: Removed all StackOne integration code, config, tests, and documentation. Merge.dev is now the sole universal ATS connector. ATS providers: Gupy (native), Pandapé (native), Merge.dev (universal). Webhook endpoint updated to support merge platform.
-- **Sentry Error Monitoring (Task #136)**: Activated Sentry integration for both backend (FastAPI) and frontend (Next.js). Backend uses `SENTRY_DSN` env var with PII scrubbing (email, CPF, phone) via `before_send` hook. Frontend uses `NEXT_PUBLIC_SENTRY_DSN` with client/server/edge configs. Both use `SENTRY_TRACES_SAMPLE_RATE=0.1` (10%). Config: `app/core/sentry.py`, `sentry.client.config.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`.
-- **Dead Integration Cleanup (Task #138)**: Removed OpenMic.ai, Deepgram, SynthFlow, StackOne, Neon, Prometheus, and Grafana integrations. Voice transcription now uses OpenAI Whisper only. Voice calls use Twilio Voice. Observability uses Sentry + LangSmith + OpenTelemetry (Prometheus/Grafana removed). Deleted service files, test files, config entries, routers, and cleaned all imports/references across the codebase.
-- **WSI Threshold Alignment**: Unified all WSI approval/decision thresholds across the codebase to match canonical WSI_CUTOFFS from `wsi_deterministic_scorer.py` (approved_auto ≥ 3.75/5 = 7.5/10, review_min ≥ 3.0/5 = 6.0/10). Fixed inconsistencies where event_handlers, wsi_service LLM prompts, and evaluation.py used 4.0/5 instead of canonical 3.75. Deduplicated SENIORITY_WEIGHTS in reports.py (now imports from canonical source). Removed stale .bak files (wsi.py.bak, automation.py.bak).
-- **WSI Constants Consolidation (Anti-Drift)**: Centralized Bloom/Dreyfus labels and seniority→framework mappings into `wsi_constants.py` as single source of truth. Previously duplicated across 6 files (`wsi_question_generator.py`, `wsi_deterministic_scorer.py`, `wsi_screening_pipeline.py`, `seniority_context_calibrator.py`, `wsi_endpoints.py`, `_shared.py`) with inconsistent label naming ("Novato"/"Lembrar" vs canonical "Iniciante"/"Recordar"). All consumers now import from `wsi_constants.py`: `BLOOM_LEVEL_LABELS`, `DREYFUS_STAGE_LABELS`, `SENIORITY_TO_DREYFUS`, `SENIORITY_TO_BLOOM`. Also resolved Twilio version conflict (removed duplicate `twilio==9.3.7` from requirements.txt, keeping `9.4.0`).
-- **Sidebar Infinite Loop Fix**: Fixed bidirectional Zustand↔local-state sync in `useSidebarState.ts` that caused "Maximum update depth exceeded" and "Invalid hook call" errors. Removed circular `useEffect` chain; replaced with one-time mount sync + direct store writes in actions.
-- **Backend Port 8001 Migration**: Moved uvicorn from port 8000 to 8001 to avoid conflict with Replit infrastructure proxy (PID 1 permanently binds `0.0.0.0:8000`). Environment variables `BACKEND_URL`, `LIA_BACKEND_URL`, `NEXT_PUBLIC_BACKEND_URL` set to `http://127.0.0.1:8001` in development. Workflow command updated accordingly.
-- **Dev Auto-Login**: In development (`NODE_ENV !== 'production'`), the platform auto-authenticates as demo user (`demo@wedotalent.com`/`demo123`) without showing the login screen. Flow: middleware redirects unauthenticated users to `/api/auth/auto-login` (instead of `/login`), which authenticates with the backend, sets JWT cookies (`lia_access_token`, `lia_refresh_token`, `lia_auth_method`), and redirects back. The `OnboardingController` has a 500ms dev-mode fallback that creates a synthetic user if auth initialization is slow. Key files: `middleware.ts` (DEV_AUTO_LOGIN flag), `api/auth/auto-login/route.ts`, `onboarding-controller.tsx`. Production is unaffected — always shows login page.
+- **Design Token Migration**: Full codebase migration from hardcoded Tailwind color classes to semantic Design System LIA v4.2.1 tokens.
+- **Admin Audit & Streamlining**: Reduced accessible admin pages by removing redundant or premature features and consolidating sections.
+- **Security Audit**: Removed hardcoded credentials, migrated authentication to httpOnly cookies with JWT and WorkOS SSO, and added API security measures including Zod validation, file/body size limits, HSTS, and X-XSS-Protection headers.
+- **Zustand State Management**: Introduced zustand for centralized state management, covering auth, kanban, and candidate data.
+- **@ts-ignore Elimination**: Removed all `@ts-ignore` comments from the frontend codebase.
+- **God Components Split**: Split large components into hooks + sub-components for better maintainability and readability.
+- **Performance: React.lazy + Error Boundaries**: Implemented lazy loading for modals and error boundaries for major pages.
+- **localStorage → Zustand Migration**: Migrated most `localStorage` usages to Zustand stores.
+- **StackOne Removal**: Removed all StackOne integration code; Merge.dev is now the sole universal ATS connector.
+- **Sentry Error Monitoring**: Activated Sentry integration for both backend and frontend.
+- **Dead Integration Cleanup**: Removed unused integrations like OpenMic.ai, Deepgram, SynthFlow, Neon, Prometheus, and Grafana.
+- **WSI Threshold Alignment**: Unified all WSI approval/decision thresholds across the codebase.
+- **WSI Constants Consolidation**: Centralized Bloom/Dreyfus labels and seniority→framework mappings into `wsi_constants.py` as a single source of truth.
+- **Sidebar Infinite Loop Fix**: Fixed state synchronization issues in `useSidebarState.ts`.
+- **Backend Port 8001 Migration**: Moved uvicorn from port 8000 to 8001 to avoid conflicts.
+- **Dev Auto-Login**: Implemented auto-authentication for demo users in development mode.
 
 # External Dependencies
 - Anthropic (Claude API)
@@ -97,3 +97,6 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - Redis
 - Elasticsearch
 - Sentry (error monitoring)
+- OpenAI (Whisper, TTS)
+- Twilio (Voice)
+- Celery
