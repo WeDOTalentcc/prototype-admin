@@ -423,8 +423,19 @@ export function useTasksCore(onNavigate?: (page: string) => void) {
     }
   }, [navigateToLIA])
 
-  const handleAlertAction = useCallback((alert: ActiveAlert) => {
-    navigateToLIA(`${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`)
+  const handleAlertAction = useCallback(async (alert: ActiveAlert) => {
+    try {
+      const res = await fetch(`${API_BASE}/alerts/${alert.id}/acknowledge?user_id=current_user`, {
+        method: 'POST',
+      })
+      if (res.ok) {
+        setActiveAlerts(prev => prev.filter(a => a.id !== alert.id))
+      } else {
+        navigateToLIA(`${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`)
+      }
+    } catch {
+      navigateToLIA(`${alert.action} para a vaga ${alert.jobTitle} (${alert.jobId}): ${alert.description}`)
+    }
   }, [navigateToLIA])
 
   const handleLIAAction = useCallback((action: string, job: JobWithAlert) => {

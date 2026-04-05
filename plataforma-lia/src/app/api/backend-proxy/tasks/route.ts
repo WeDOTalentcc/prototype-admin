@@ -17,12 +17,18 @@ export async function GET(request: NextRequest) {
     )
 
     if (!response.ok) {
-      return NextResponse.json([], { status: 200 })
+      return NextResponse.json(
+        { success: false, error: 'Backend unavailable' },
+        { status: response.status }
+      )
     }
 
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    return NextResponse.json([], { status: 200 })
+    return NextResponse.json(
+      { success: false, error: 'Connection failed' },
+      { status: 502 }
+    )
   }
 }

@@ -1857,6 +1857,7 @@ Ações disponíveis:
 
 # Graph orchestration schemas and endpoints moved to lia_assistant_graph.py (Sprint 7 split).
 # Re-export for backwards compatibility with any code that imported these directly.
+from app.shared.tenant_session import create_session_id
 from app.api.v1.lia_assistant_graph import (
     GraphOrchestratorRequest,
     GraphOrchestratorResponse,
@@ -1882,7 +1883,7 @@ async def graph_orchestrate_wizard_message(request: GraphOrchestratorRequest):  
     enabling multi-turn conversations with context preservation.
     """
     try:
-        session_id = request.session_id or str(uuid4())
+        session_id = request.session_id or create_session_id(current_user.company_id)
 
         # === PHASE 0: Check pending wizard action ===
         pending = pending_action_store.get(session_id)

@@ -18,8 +18,8 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { pending: 0, in_progress: 0, completed: 0, overdue: 0, critical: 0, total_active: 0 },
-        { status: 200 }
+        { success: false, error: 'Backend unavailable' },
+        { status: response.status }
       )
     }
 
@@ -27,8 +27,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     return NextResponse.json(
-      { pending: 0, in_progress: 0, completed: 0, overdue: 0, critical: 0, total_active: 0 },
-      { status: 200 }
+      { success: false, error: 'Connection failed' },
+      { status: 502 }
     )
   }
 }

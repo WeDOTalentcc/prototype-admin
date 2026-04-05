@@ -63,6 +63,7 @@ def generate_secure_token() -> str:
 def create_access_token(
     subject: str,
     role: Optional[str] = None,
+    company_id: Optional[str] = None,
     expires_delta: Optional[timedelta] = None
 ) -> str:
     """
@@ -86,6 +87,7 @@ def create_access_token(
         "exp": expire,
         "type": "access",
         "role": role,
+        "company_id": company_id,
         "iat": datetime.utcnow()
     }
     

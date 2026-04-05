@@ -30,6 +30,7 @@ from app.domains.recruiter_assistant.services.wizard_action_executor import (
 )
 from app.orchestrator.pending_action import PendingActionState, pending_action_store
 from app.orchestrator.action_executor import is_confirmation, is_rejection
+from app.shared.tenant_session import create_session_id
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +98,7 @@ class GraphInfoResponse(BaseModel):
 async def graph_orchestrate_wizard_message(request: GraphOrchestratorRequest):
     """LangGraph-based orchestrator for job wizard conversations."""
     try:
-        session_id = request.session_id or str(uuid4())
+        session_id = request.session_id or create_session_id(current_user.company_id)
 
         # Phase 0: Check pending wizard action
         pending = pending_action_store.get(session_id)

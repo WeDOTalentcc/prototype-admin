@@ -23,6 +23,7 @@ from app.auth.models import User
 from app.core.database import AsyncSessionLocal
 from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
 from app.domains.job_management.tools.job_wizard_tools import generate_enriched_jd
+from app.shared.tenant_session import create_session_id
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -440,7 +441,7 @@ async def smart_orchestrate(
     Returns:
         SmartOrchestrateResponse with LIA's message and extracted data
     """
-    session_id = request.conversation_id or str(uuid4())
+    session_id = request.conversation_id or create_session_id(current_user.company_id)
     company_id = request.company_id or get_user_company_id(current_user)
     user_id = request.user_id or (str(current_user.id) if current_user.id is not None else "anonymous")
     
@@ -614,7 +615,7 @@ async def react_orchestrate(
     if not use_react:
         return await smart_orchestrate(request, current_user)
 
-    session_id = request.conversation_id or str(uuid4())
+    session_id = request.conversation_id or create_session_id(current_user.company_id)
     company_id = request.company_id or get_user_company_id(current_user)
     user_id = request.user_id or (
         str(current_user.id) if current_user.id is not None else "anonymous"

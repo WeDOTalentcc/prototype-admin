@@ -181,6 +181,14 @@ async def get_current_user_or_demo(
         except (JWTError, Exception):
             pass
     
+    # Multi-tenancy: only allow demo user in development
+    from app.core.config import settings as app_settings
+    if getattr(app_settings, "ENVIRONMENT", "development") != "development":
+        raise HTTPException(
+            status_code=401,
+            detail="Authentication required"
+        )
+
     result = await db.execute(
         select(User).where(User.email == "demo@wedotalent.com")
     )

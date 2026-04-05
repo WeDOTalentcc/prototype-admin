@@ -40,6 +40,7 @@ from app.services.token_budget_service import (
     increment_usage,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
+from app.shared.tenant_session import create_session_id
 
 logger = logging.getLogger(__name__)
 
@@ -753,7 +754,7 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
     company_id = auth["company_id"]
     user_id = auth["user_id"]
 
-    session_id = req.session_id or str(uuid4())
+    session_id = req.session_id or create_session_id(current_user.company_id)
     active_domain = req.domain or "recruiter_assistant"
     context = req.context or {}
     context.setdefault("company_id", company_id)
