@@ -394,6 +394,9 @@ export const SSIModeNatural = React.memo(function SSIModeNatural(props: SSIModeN
               return (
                 <button
                   key={`${item.text}-${index}`}
+                  data-testid="autocomplete-item"
+                  role="option"
+                  aria-selected={isSelected}
                   onClick={() => handleAutocompleteSelect(item)}
                   onMouseEnter={() => setSelectedAutocompleteIndex(index)}
                   className={cn(

@@ -31,7 +31,7 @@ from app.schemas.compensation_analysis import (
 )
 from app.services.market_benchmark_service import MarketBenchmarkService
 from app.services.company_configuration_service import CompanyConfigurationService
-from app.services.job_insights_service import JobInsightsService
+from app.domains.analytics.services.job_insights_service import JobInsightsService
 
 logger = logging.getLogger(__name__)
 

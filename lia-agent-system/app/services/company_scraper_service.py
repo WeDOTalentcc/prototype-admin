@@ -73,7 +73,7 @@ class CompanyScraperService:
     def _get_mcp_client(self):
         """Lazy load MCP client."""
         if self._mcp_client is None:
-            from app.services.apify_mcp_client import ApifyMCPClient
+            from app.domains.sourcing.services.apify_mcp_client import ApifyMCPClient
             self._mcp_client = ApifyMCPClient()
         return self._mcp_client
     

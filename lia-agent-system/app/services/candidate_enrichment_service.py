@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.models.candidate import Candidate, CandidateExperience, CandidateEducation
-from app.services.apify_mcp_client import ApifyMCPClient
+from app.domains.sourcing.services.apify_mcp_client import ApifyMCPClient
 
 logger = logging.getLogger(__name__)
 

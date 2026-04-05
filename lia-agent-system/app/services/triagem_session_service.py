@@ -238,7 +238,7 @@ async def _load_or_generate_blocks(
         logger.warning(f"[Triagem] Could not load question set for job {job_id}: {exc}")
 
     try:
-        from app.services.wsi_service import wsi_service, Competency
+        from app.domains.cv_screening.services.wsi_service import wsi_service, Competency
         competencies = []
         if job and getattr(job, "screening_config", None):
             skills = job.screening_config.get("skills") or {}

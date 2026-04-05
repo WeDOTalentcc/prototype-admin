@@ -86,7 +86,7 @@ class EventDispatcher:
             return {"success": True, "skipped": True, "reason": "dispatcher_disabled"}
         
         if use_engine:
-            from app.services.stage_automation_engine import stage_automation_engine, AutomationEvent, TriggerType
+            from app.domains.automation.services.stage_automation_engine import stage_automation_engine, AutomationEvent, TriggerType
             from app.core.database import AsyncSessionLocal
             
             try:

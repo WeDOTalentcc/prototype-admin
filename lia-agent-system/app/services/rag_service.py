@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any
 from uuid import UUID
 from dataclasses import dataclass
 
-from app.services.memory_service import memory_service
+from app.domains.recruiter_assistant.services.memory_service import memory_service
 from app.services.llm import llm_service, LLMProvider
 
 logger = logging.getLogger(__name__)

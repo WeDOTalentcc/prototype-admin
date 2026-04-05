@@ -64,7 +64,7 @@ except ImportError:
     _ConsentCheckerService = None  # type: ignore[assignment]
 
 try:
-    from app.services.wsi_voice_orchestrator import WSIVoiceOrchestrator as _WSIVoiceOrchestrator
+    from app.domains.cv_screening.services.wsi_voice_orchestrator import WSIVoiceOrchestrator as _WSIVoiceOrchestrator
 except ImportError:
     _WSIVoiceOrchestrator = None  # type: ignore[assignment]
 
@@ -1440,7 +1440,7 @@ class VoiceScreeningOrchestrator:
 
             question_texts = []
             try:
-                from app.services.screening_question_set_service import screening_question_set_service
+                from app.domains.cv_screening.services.screening_question_set_service import screening_question_set_service
                 job_vacancy_id = session.job_id or session.session_id
                 active_qs = await screening_question_set_service.get_active_version(db, job_vacancy_id)
                 if active_qs and active_qs.questions_snapshot:

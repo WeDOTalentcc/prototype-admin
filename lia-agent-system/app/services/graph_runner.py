@@ -21,7 +21,7 @@ from lia_agents_core.state_machine import (
     create_initial_state,
     GraphExecutionLog
 )
-from app.services.memory_service import MemoryService, memory_service
+from app.domains.recruiter_assistant.services.memory_service import MemoryService, memory_service
 from app.models.graph_session import GraphSession
 
 logger = logging.getLogger(__name__)

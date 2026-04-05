@@ -167,14 +167,14 @@ class IntelligentDataOrchestrator:
     def _get_job_insights(self):
         """Lazy load job insights service."""
         if self._job_insights is None:
-            from app.services.job_insights_service import job_insights_service
+            from app.domains.analytics.services.job_insights_service import job_insights_service
             self._job_insights = job_insights_service
         return self._job_insights
     
     def _get_ats_history(self):
         """Lazy load ATS history service."""
         if self._ats_history is None:
-            from app.services.ats_job_history_service import ats_job_history_service
+            from app.domains.job_management.services.ats_job_history_service import ats_job_history_service
             self._ats_history = ats_job_history_service
         return self._ats_history
     

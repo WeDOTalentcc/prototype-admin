@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 
 from app.shared.robustness.input_validation import detect_language
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
-from app.services.jd_template_cache_service import jd_template_cache_service
+from app.domains.job_management.services.jd_template_cache_service import jd_template_cache_service
 
 logger = logging.getLogger(__name__)
 

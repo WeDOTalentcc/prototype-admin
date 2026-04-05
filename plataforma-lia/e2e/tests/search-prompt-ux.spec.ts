@@ -14,7 +14,7 @@ test.describe('Search Prompt UX — Funil de Talentos', () => {
     await expect(page.locator('textarea')).toBeVisible()
   })
 
-  test('typing triggers entity extraction and shows criteria tags', async ({ page }) => {
+  test('typing triggers entity extraction and shows criteria tags and quality bar', async ({ page }) => {
     const textarea = page.locator('textarea')
     await textarea.click()
     await textarea.fill('Desenvolvedor Python senior em São Paulo')
@@ -22,90 +22,100 @@ test.describe('Search Prompt UX — Funil de Talentos', () => {
 
     await expect(page.locator('text=Cargo')).toBeVisible()
     await expect(page.locator('text=Localização')).toBeVisible()
+    await expect(page.locator('text=Qualidade da busca')).toBeVisible()
   })
 
-  test('autocomplete dropdown and criteria tags are both visible without overlap', async ({ page }) => {
-    const textarea = page.locator('textarea')
-    await textarea.click()
-    await textarea.fill('Desenvolvedor Python')
-    await page.waitForTimeout(4000)
-
-    const autocomplete = page.locator('[data-testid="autocomplete-dropdown"]')
-    const isAutocompleteVisible = await autocomplete.isVisible().catch(() => false)
-
-    if (isAutocompleteVisible) {
-      const acBox = await autocomplete.boundingBox()
-      expect(acBox).toBeTruthy()
-
-      await expect(page.locator('text=Cargo')).toBeVisible()
-
-      const cargoTag = page.locator('text=Cargo').first()
-      const tagBox = await cargoTag.boundingBox()
-
-      if (acBox && tagBox) {
-        const acBottom = acBox.y + acBox.height
-        expect(acBottom).toBeLessThanOrEqual(tagBox.y + 2)
-      }
-    }
-  })
-
-  test('accepting autocomplete suggestion via click updates textarea', async ({ page }) => {
-    const textarea = page.locator('textarea')
-    await textarea.click()
-    await textarea.fill('Desenvolvedor Python')
-    await page.waitForTimeout(4000)
-
-    const autocomplete = page.locator('[data-testid="autocomplete-dropdown"]')
-    const isAutocompleteVisible = await autocomplete.isVisible().catch(() => false)
-
-    if (isAutocompleteVisible) {
-      const firstItem = autocomplete.locator('[role="option"]').first()
-      if (await firstItem.isVisible()) {
-        const itemText = await firstItem.textContent()
-        await firstItem.click()
-        await page.waitForTimeout(1000)
-
-        const currentValue = await textarea.inputValue()
-        expect(currentValue.length).toBeGreaterThan(0)
-      }
-    }
-  })
-
-  test('accepting autocomplete suggestion via Tab key', async ({ page }) => {
-    const textarea = page.locator('textarea')
-    await textarea.click()
-    await textarea.fill('Desenvolvedor Python')
-    await page.waitForTimeout(4000)
-
-    const autocomplete = page.locator('[data-testid="autocomplete-dropdown"]')
-    const isAutocompleteVisible = await autocomplete.isVisible().catch(() => false)
-
-    if (isAutocompleteVisible) {
-      await page.keyboard.press('Tab')
-      await page.waitForTimeout(1000)
-
-      const currentValue = await textarea.inputValue()
-      expect(currentValue.length).toBeGreaterThan(0)
-    }
-  })
-
-  test('quality bar remains visible when autocomplete is open', async ({ page }) => {
+  test('autocomplete dropdown does not overlap criteria tags', async ({ page }) => {
     const textarea = page.locator('textarea')
     await textarea.click()
     await textarea.fill('Desenvolvedor Python senior em São Paulo')
     await page.waitForTimeout(4000)
 
+    const autocomplete = page.locator('[data-testid="autocomplete-dropdown"]')
+    const cargoTag = page.locator('text=Cargo').first()
+
+    await expect(cargoTag).toBeVisible()
+
+    const isAutocompleteVisible = await autocomplete.isVisible()
+    if (isAutocompleteVisible) {
+      const acBox = await autocomplete.boundingBox()
+      const tagBox = await cargoTag.boundingBox()
+      expect(acBox).toBeTruthy()
+      expect(tagBox).toBeTruthy()
+      if (acBox && tagBox) {
+        expect(acBox.y + acBox.height).toBeLessThanOrEqual(tagBox.y + 2)
+      }
+    }
+
     await expect(page.locator('text=Qualidade da busca')).toBeVisible()
+  })
+
+  test('criteria tags remain visible when autocomplete is open', async ({ page }) => {
+    const textarea = page.locator('textarea')
+    await textarea.click()
+    await textarea.fill('Desenvolvedor Python senior em São Paulo')
+    await page.waitForTimeout(4000)
+
+    await expect(page.locator('text=Cargo')).toBeVisible()
+    await expect(page.locator('text=Localização')).toBeVisible()
+    await expect(page.locator('text=Qualidade da busca')).toBeVisible()
+  })
+
+  test('autocomplete items have correct accessibility attributes', async ({ page }) => {
+    const textarea = page.locator('textarea')
+    await textarea.click()
+    await textarea.fill('Desenvolvedor Python')
+    await page.waitForTimeout(4000)
 
     const autocomplete = page.locator('[data-testid="autocomplete-dropdown"]')
-    const isAutocompleteVisible = await autocomplete.isVisible().catch(() => false)
+    const isVisible = await autocomplete.isVisible()
+    if (isVisible) {
+      const items = autocomplete.locator('[data-testid="autocomplete-item"]')
+      const count = await items.count()
+      expect(count).toBeGreaterThan(0)
 
-    if (isAutocompleteVisible) {
-      await expect(page.locator('text=Qualidade da busca')).toBeVisible()
+      const firstItem = items.first()
+      await expect(firstItem).toHaveAttribute('role', 'option')
     }
   })
 
-  test('assistente de busca button is visible in tags area', async ({ page }) => {
+  test('clicking autocomplete item updates textarea value', async ({ page }) => {
+    const textarea = page.locator('textarea')
+    await textarea.click()
+    await textarea.fill('Desenvolvedor Python')
+    await page.waitForTimeout(4000)
+
+    const autocomplete = page.locator('[data-testid="autocomplete-dropdown"]')
+    const isVisible = await autocomplete.isVisible()
+    if (isVisible) {
+      const firstItem = autocomplete.locator('[data-testid="autocomplete-item"]').first()
+      await firstItem.click()
+      await page.waitForTimeout(1000)
+
+      const newValue = await textarea.inputValue()
+      expect(newValue.length).toBeGreaterThan(0)
+    }
+  })
+
+  test('Tab key accepts autocomplete suggestion', async ({ page }) => {
+    const textarea = page.locator('textarea')
+    await textarea.click()
+    await textarea.fill('Desenvolvedor Python')
+    await page.waitForTimeout(4000)
+
+    const autocomplete = page.locator('[data-testid="autocomplete-dropdown"]')
+    const isVisible = await autocomplete.isVisible()
+    if (isVisible) {
+      const valueBefore = await textarea.inputValue()
+      await page.keyboard.press('Tab')
+      await page.waitForTimeout(1000)
+
+      const valueAfter = await textarea.inputValue()
+      expect(valueAfter.length).toBeGreaterThan(0)
+    }
+  })
+
+  test('assistente de busca tooltip trigger is visible', async ({ page }) => {
     const textarea = page.locator('textarea')
     await textarea.click()
     await textarea.fill('Engenheiro de dados')

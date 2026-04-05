@@ -195,7 +195,7 @@ class CompanyRouteService:
             Dict with keys: success, linkedin_data, glassdoor_data,
             enriched_culture, errors
         """
-        from app.services.apify_service import apify_service
+        from app.domains.sourcing.services.apify_service import apify_service
 
         errors: List[str] = []
         linkedin_data: Dict[str, Any] = {}
@@ -619,7 +619,7 @@ REGRAS:
             Dict with keys: success, fields_updated, apify_data, inferred_data, errors
         """
         from app.models.company import CompanyProfile, CompanyCultureProfile
-        from app.services.apify_service import apify_service
+        from app.domains.sourcing.services.apify_service import apify_service
         from app.services.llm import llm_service
 
         errors: List[str] = []

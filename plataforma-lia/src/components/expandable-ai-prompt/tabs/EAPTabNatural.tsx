@@ -290,6 +290,9 @@ export const EAPTabNatural = React.memo(function EAPTabNatural(props: EAPTabNatu
           {autocompleteSuggestions.map((suggestion, index) => (
             <button
               key={`sug-${index}`}
+              data-testid="autocomplete-item"
+              role="option"
+              aria-selected={selectedAutocompleteIndex === index}
               onClick={() => {
                 setNaturalSearchValue(prev => {
                   const words = prev.split(' ')

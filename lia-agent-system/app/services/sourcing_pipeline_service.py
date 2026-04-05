@@ -20,7 +20,7 @@ from app.models.candidate import Candidate
 from app.models.interview import Interview
 from app.models.task import Task, TaskType, TaskPriority, TaskStatus
 from app.models.alert import Alert, AlertType, AlertSeverity, AlertStatus
-from app.services.pearch_service import pearch_service
+from app.domains.sourcing.services.pearch_service import pearch_service
 
 logger = logging.getLogger(__name__)
 

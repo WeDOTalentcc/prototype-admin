@@ -16,8 +16,8 @@ import logging
 import json
 
 from app.services.llm import llm_service
-from app.services.score_normalization_service import score_normalization_service
-from app.services.seniority_utils import normalize_seniority
+from app.domains.cv_screening.services.score_normalization_service import score_normalization_service
+from app.domains.cv_screening.services.seniority_utils import normalize_seniority
 from app.models.candidate import Candidate, VacancyCandidate
 from app.models.job_vacancy import JobVacancy
 from app.models.voice_screening import VoiceScreeningCall, VoiceScreeningAnalysis

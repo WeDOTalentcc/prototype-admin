@@ -20,7 +20,7 @@ from app.core.database import AsyncSessionLocal
 from app.models.candidate_feedback import CandidateFeedback, FeedbackType
 from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
-from app.services.email_service import email_service
+from app.domains.communication.services.email_service import email_service
 from app.services.notification_service import (
     notification_service, 
     NotificationType, 
@@ -707,7 +707,7 @@ class CandidateFeedbackService:
                 next_step_info=ctx.get("next_step_info", ""),
             )
 
-            from app.services.email_service import email_service as _email_svc
+            from app.domains.communication.services.email_service import email_service as _email_svc
             sent = await _email_svc._send_email_provider(
                 to_email=candidate_email,
                 subject=subject,

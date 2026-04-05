@@ -1,5 +1,5 @@
 # Services module
-from app.services.communication_service import (
+from app.domains.communication.services.communication_service import (
     CommunicationService,
     communication_service,
     MessageType,
@@ -11,7 +11,7 @@ from app.services.communication_service import (
     CandidateOptOut,
     CandidateQuarantine,
 )
-from app.services.personalized_feedback_service import (
+from app.domains.cv_screening.services.personalized_feedback_service import (
     PersonalizedFeedbackService,
     personalized_feedback_service,
     PersonalizedFeedbackRequest,
@@ -31,8 +31,8 @@ from app.services.benefits_service import (
     benefits_service,
     BENEFIT_CATEGORIES,
 )
-from app.services.apify_service import ApifyService, apify_service
-from app.services.communication_dispatcher import (
+from app.domains.sourcing.services.apify_service import ApifyService, apify_service
+from app.domains.communication.services.communication_dispatcher import (
     CommunicationDispatcher,
     communication_dispatcher,
 )
@@ -42,7 +42,7 @@ from app.services.intent_classifier import (
     IntentType,
     ClassificationResult,
 )
-from app.services.job_insights_service import (
+from app.domains.analytics.services.job_insights_service import (
     JobInsightsService,
     job_insights_service,
 )
@@ -50,14 +50,14 @@ from app.services.market_benchmark_service import (
     MarketBenchmarkService,
     market_benchmark_service,
 )
-from app.services.jd_generator_service import (
+from app.domains.job_management.services.jd_generator_service import (
     JobDescriptionGeneratorService,
     jd_generator_service,
     JobDescriptionSection,
     JobDescriptionInput,
     JobDescriptionOutput,
 )
-from app.services.job_analytics_prompt_service import (
+from app.domains.analytics.services.job_analytics_prompt_service import (
     JobAnalyticsPromptService,
     job_analytics_prompt_service,
     AnalyticsResponse,
@@ -67,7 +67,7 @@ from app.services.otp_service import (
     OTPService,
     otp_service,
 )
-from app.services.eligibility_verification_service import (
+from app.domains.cv_screening.services.eligibility_verification_service import (
     EligibilityVerificationService,
     eligibility_service,
     ReconsiderationResult,
@@ -104,7 +104,7 @@ from app.services.compensation_analysis_service import (
     CompensationAnalysisService,
     compensation_analysis_service,
 )
-from app.services.conversation_memory import (
+from app.domains.recruiter_assistant.services.conversation_memory import (
     ConversationMemory,
     conversation_memory,
 )
