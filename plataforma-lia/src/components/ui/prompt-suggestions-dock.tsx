@@ -199,7 +199,7 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
           </div>
         </div>
         
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2">
           {DASHBOARD_SUGGESTIONS.map((suggestion) => {
             const Icon = suggestion.icon
             const colors = CATEGORY_COLORS[suggestion.category]
@@ -207,30 +207,30 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
               <button
                 key={suggestion.id}
                 onClick={() => onSelect(suggestion.command)}
-                className="p-4 rounded-md transition-colors motion-reduce:transition-none text-left group"
+                className="p-3 rounded-md transition-colors motion-reduce:transition-none text-left group"
                 style={{border: `1px solid ${colors.bg}`,
-                  backgroundColor: 'var(--lia-bg-secondary)'}}
+                  backgroundColor: 'var(--white)'}}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = colors.hoverBg
                   e.currentTarget.style.borderColor = colors.border
-                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.transform = 'translateY(-1px)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--lia-bg-primary)'
+                  e.currentTarget.style.backgroundColor = 'var(--white)'
                   e.currentTarget.style.borderColor = colors.bg
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2.5">
                   <div 
-                    className="p-2 rounded-md flex-shrink-0"
+                    className="p-1.5 rounded-md flex-shrink-0"
                     style={{backgroundColor: colors.bg}}
                   >
-                    <Icon className="w-4 h-4" style={{color: colors.icon}} />
+                    <Icon className="w-3.5 h-3.5" style={{color: colors.icon}} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 
-                      className="font-semibold text-sm leading-tight mb-1"
+                      className="font-medium text-xs leading-tight mb-0.5"
                       style={{color: 'var(--lia-text-primary)'}}
                     >
                       {suggestion.title}
@@ -328,28 +328,28 @@ export function PromptSuggestionsDock({ onSelect, isEmpty, onClose }: PromptSugg
                     onSelect(suggestion.command)
                     setIsExpanded(false)
                   }}
-                  className="w-full p-3 rounded-md transition-colors motion-reduce:transition-none text-left group"
-                  style={{backgroundColor: 'var(--lia-bg-secondary)',
+                  className="w-full p-2.5 rounded-md transition-colors motion-reduce:transition-none text-left group"
+                  style={{backgroundColor: 'var(--white)',
                     border: `1px solid ${colors.bg}`}}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = colors.hoverBg
                     e.currentTarget.style.borderColor = colors.border
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--lia-bg-primary)'
+                    e.currentTarget.style.backgroundColor = 'var(--white)'
                     e.currentTarget.style.borderColor = colors.bg
                   }}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <div 
-                      className="p-2 rounded-md flex-shrink-0"
+                      className="p-1.5 rounded-md flex-shrink-0"
                       style={{backgroundColor: colors.bg}}
                     >
-                      <Icon className="w-4 h-4" style={{color: colors.icon}} />
+                      <Icon className="w-3.5 h-3.5" style={{color: colors.icon}} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 
-                        className="font-medium text-sm leading-tight"
+                        className="font-medium text-xs leading-tight"
                         style={{color: 'var(--lia-text-primary)'}}
                       >
                         {suggestion.title}

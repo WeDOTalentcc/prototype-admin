@@ -366,7 +366,7 @@ export function LiaSuperPrompt() {
                             )}
                           </div>
 
-                          <div className="grid grid-cols-2 gap-3 w-full max-w-2xl">
+                          <div className="grid grid-cols-2 gap-2 w-full max-w-2xl">
                             {suggestions.map((suggestion) => {
                               const Icon = suggestion.icon
                               const colors = CATEGORY_COLORS[suggestion.category] || CATEGORY_COLORS.vagas
@@ -374,13 +374,13 @@ export function LiaSuperPrompt() {
                                 <button
                                   key={suggestion.id}
                                   onClick={() => handleSuggestionClick(suggestion)}
-                                  className="p-4 rounded-lg transition-colors motion-reduce:transition-none text-left group"
+                                  className="p-3 rounded-lg transition-colors motion-reduce:transition-none text-left group"
                                   style={{border: `1px solid ${colors.bg}`,
                                     backgroundColor: "var(--white)"}}
                                   onMouseEnter={(e) => {
                                     e.currentTarget.style.backgroundColor = colors.hoverBg
                                     e.currentTarget.style.borderColor = colors.border
-                                    e.currentTarget.style.transform = "translateY(-2px)"
+                                    e.currentTarget.style.transform = "translateY(-1px)"
                                   }}
                                   onMouseLeave={(e) => {
                                     e.currentTarget.style.backgroundColor = "var(--white)"
@@ -388,16 +388,16 @@ export function LiaSuperPrompt() {
                                     e.currentTarget.style.transform = "translateY(0)"
                                   }}
                                 >
-                                  <div className="flex items-start gap-3">
+                                  <div className="flex items-start gap-2.5">
                                     <div
-                                      className="p-2 rounded-md flex-shrink-0"
+                                      className="p-1.5 rounded-md flex-shrink-0"
                                       style={{backgroundColor: colors.bg}}
                                     >
-                                      <Icon className="w-4 h-4" style={{color: colors.icon}} />
+                                      <Icon className="w-3.5 h-3.5" style={{color: colors.icon}} />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <h3
-                                        className="font-semibold text-sm leading-tight mb-1"
+                                        className="font-medium text-xs leading-tight mb-0.5"
                                         style={{color: "var(--lia-text-primary)"}}
                                       >
                                         {suggestion.title}

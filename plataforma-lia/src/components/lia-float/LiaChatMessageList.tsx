@@ -1,7 +1,13 @@
 "use client"
 
 import React, { useMemo } from "react"
-import { Brain, Clock, Loader2, User } from "lucide-react"
+import {
+  Brain, Clock, Loader2, User, Sun, AlertTriangle, Users, Plus, FileText,
+  TrendingUp, Search, Activity, ClipboardCheck, DollarSign, Edit, GitMerge,
+  Zap, Calendar, Star, ArrowRight, MoveRight, BarChart, CheckCircle, BarChart2,
+  CheckSquare, Download, Shield, Link, Home, Briefcase, GitBranch, Settings,
+  type LucideIcon
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { MessageFeedback } from "@/components/chat/message-feedback"
@@ -130,6 +136,13 @@ function scopeToContextPage(scope: string): string {
   }
 }
 
+const ICON_MAP: Record<string, LucideIcon> = {
+  Sun, AlertTriangle, Users, Plus, FileText, TrendingUp, Search, Activity,
+  ClipboardCheck, DollarSign, Edit, GitMerge, Zap, Calendar, Star, ArrowRight,
+  MoveRight, BarChart, CheckCircle, BarChart2, CheckSquare, Download, Shield,
+  Link, Home, Briefcase, User, GitBranch, Settings, Clock, Brain,
+}
+
 function EmptyState({ scope, onChipClick }: { scope: string; onChipClick: (prompt: string) => void }) {
   const [suggestions, setSuggestions] = React.useState<Array<{ id: string; icon: string; label: string; prompt: string }>>([])
   const [badge, setBadge] = React.useState<{ label: string; icon: string; color: string } | null>(null)
@@ -146,43 +159,49 @@ function EmptyState({ scope, onChipClick }: { scope: string; onChipClick: (promp
   }, [scope])
 
   return (
-    <div className="flex flex-col items-start h-full gap-3 pt-5 px-1">
+    <div className="flex flex-col items-start h-full gap-2.5 pt-5 px-1">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
           <Brain className="w-4 h-4 text-chat-cyan" strokeWidth={2.5} />
         </div>
         <div>
           <p className="text-base-ui font-medium text-lia-text-primary">Como posso ajudar?</p>
-          {badge && (
-            <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium mt-0.5"
-              style={{ backgroundColor: badge.color + "18", color: badge.color, border: `1px solid ${badge.color}35` }}
-            >
-              <span>{badge.icon}</span>
-              <span>{badge.label}</span>
-            </span>
-          )}
+          {badge && (() => {
+            const BadgeIcon = ICON_MAP[badge.icon] || Brain
+            return (
+              <span
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium mt-0.5"
+                style={{ backgroundColor: badge.color + "18", color: badge.color, border: `1px solid ${badge.color}35` }}
+              >
+                <BadgeIcon className="w-3 h-3" />
+                <span>{badge.label}</span>
+              </span>
+            )
+          })()}
         </div>
       </div>
       {suggestions.length > 0 && (
-        <div className="w-full flex flex-col gap-1.5">
-          {suggestions.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => onChipClick(s.prompt)}
-              className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-left
-                bg-lia-bg-secondary border border-lia-border-subtle
-                hover:border-lia-border-medium hover:bg-lia-interactive-hover
-                text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
-            >
-              <span className="text-base flex-shrink-0">{s.icon}</span>
-              <span className="flex-1 text-sm-ui truncate">{s.label}</span>
-            </button>
-          ))}
+        <div className="w-full flex flex-col gap-1">
+          {suggestions.map((s) => {
+            const Icon = ICON_MAP[s.icon] || Brain
+            return (
+              <button
+                key={s.id}
+                onClick={() => onChipClick(s.prompt)}
+                className="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-left
+                  bg-white border border-lia-border-subtle
+                  hover:border-lia-border-medium hover:bg-lia-interactive-hover
+                  text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none"
+              >
+                <Icon className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-tertiary" />
+                <span className="flex-1 text-xs truncate">{s.label}</span>
+              </button>
+            )
+          })}
         </div>
       )}
       {suggestions.length === 0 && (
-        <p className="text-sm-ui text-lia-text-disabled px-1">
+        <p className="text-xs text-lia-text-disabled px-1">
           Pergunte sobre vagas, candidatos, relatórios e muito mais.
         </p>
       )}
