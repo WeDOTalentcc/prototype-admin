@@ -52,7 +52,7 @@ class VectorSemanticCache:
                 from lia_config.config import settings as _s
                 similarity_threshold = _s.ROUTER_VECTOR_SIMILARITY_THRESHOLD
             except Exception:
-                similarity_threshold = 0.92
+                similarity_threshold = 0.85  # fallback se settings indisponível
         self.threshold = similarity_threshold
         self.embedding_model = embedding_model
         self._db_available: Optional[bool] = None  # None = não testado ainda

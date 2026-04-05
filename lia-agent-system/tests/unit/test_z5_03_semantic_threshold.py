@@ -2,7 +2,7 @@
 Tests — Z5-03: Threshold Semântico configurável + A/B flag no CascadedRouter.
 
 Cobre:
-  1.  settings inclui ROUTER_VECTOR_SIMILARITY_THRESHOLD com default 0.92
+  1.  settings inclui ROUTER_VECTOR_SIMILARITY_THRESHOLD com default 0.85
   2.  settings inclui ROUTER_VECTOR_NEAR_MISS_LOG_MARGIN com default 0.05
   3.  settings inclui ROUTER_VECTOR_CACHE_ENABLED com default True
   4.  VectorSemanticCache usa threshold do settings quando não passado explicitamente
@@ -26,7 +26,7 @@ def test_settings_has_vector_similarity_threshold():
     from app.core.config import settings
     assert hasattr(settings, "ROUTER_VECTOR_SIMILARITY_THRESHOLD")
     assert 0 < settings.ROUTER_VECTOR_SIMILARITY_THRESHOLD <= 1.0
-    assert settings.ROUTER_VECTOR_SIMILARITY_THRESHOLD == 0.92
+    assert settings.ROUTER_VECTOR_SIMILARITY_THRESHOLD == 0.85
 
 
 def test_settings_has_near_miss_log_margin():

@@ -5,7 +5,7 @@ Hierarquia de resolução (custo crescente):
   Tier 0: MemoryResolver  — pronomes/referências de contexto
   Tier 1: LRU in-process  — hash MD5 em memória local (O(1))
   Tier 2: Redis hash cache — distribuído, exato, compartilhado entre workers
-  Tier 3: VectorSemanticCache — pgvector, cosine similarity >= 0.92
+  Tier 3: VectorSemanticCache — pgvector, cosine similarity >= 0.85
   Tier 4: FastRouter      — regex/keyword (O(n) patterns)
   Tier 5: LLM Cascade     — Haiku→Sonnet→Opus (caro)
   Fallback: clarification_needed — pergunta ao usuário quando tudo falha

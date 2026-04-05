@@ -42,7 +42,7 @@ class CacheSettings(BaseSettings):
     SEMANTIC_CACHE_TTL: int = 86400       # Semantic cache TTL (segundos)
     ROUTER_CACHE_MAX_SIZE: int = 1000     # Max entries in-process LRU cache
     # Z5-03: threshold semântico configurável (Tier 3 — VectorSemanticCache)
-    ROUTER_VECTOR_SIMILARITY_THRESHOLD: float = 0.92  # Cosine similarity floor para cache hit
+    ROUTER_VECTOR_SIMILARITY_THRESHOLD: float = 0.85  # Cosine similarity floor para cache hit (reduzido de 0.92 para capturar queries semanticamente similares)
     ROUTER_VECTOR_NEAR_MISS_LOG_MARGIN: float = 0.05  # Loga near-misses dentro de threshold-margin
     ROUTER_VECTOR_CACHE_ENABLED: bool = True           # A/B flag: False desabilita Tier 3 completamente
 
