@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import {
   Users,
   Briefcase,
+  LayoutDashboard,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -38,6 +39,7 @@ import Image from "next/image"
 // Menu principal - apenas páginas operacionais do dia-a-dia
 const menuItems: MenuItemType[] = [
   { icon: Target, label: "Tarefas", isCore: true },
+  { icon: LayoutDashboard, label: "Painel de Controle", isCore: true },
   { icon: Briefcase, label: "Vagas", isCore: true },
   { icon: Users, label: "Funil de Talentos", isCore: true },
 ]
