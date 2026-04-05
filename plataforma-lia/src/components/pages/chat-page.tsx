@@ -118,7 +118,7 @@ export function ChatPage() {
     <ErrorBoundarySection>
     <div className="flex overflow-hidden flex-1 bg-lia-bg-secondary">
       {/* Main Chat Area */}
-      <div className={`flex flex-col transition-colors motion-reduce:transition-none duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
+      <div className={`flex flex-col h-full transition-colors motion-reduce:transition-none duration-300 overflow-hidden ${isPanelOpen ? 'w-3/5' : 'w-full'}`}>
         {/* Header */}
         <div className="py-3 px-6 flex-shrink-0 bg-lia-bg-secondary border-b border-lia-border-subtle">
           <div className="flex items-center justify-between">

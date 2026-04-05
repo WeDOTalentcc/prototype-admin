@@ -26,7 +26,7 @@ export function useChatMessages({
   const [searchTerm, setSearchTerm] = useState("")
   const [showSearch, setShowSearch] = useState(false)
   const [newMessageIndicator, setNewMessageIndicator] = useState(false)
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0)
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(-1)
 
   // File attachment state
   const [attachedFiles, setAttachedFiles] = useState<File[]>([])

@@ -102,7 +102,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
 
               {/* Message content */}
               <div
-                className={`rounded-md p-5 flex-1 text-lia-text-primary ${message.sender === "user" ? "bg-lia-bg-primary bg-lia-bg-primary" : "bg-lia-bg-tertiary"}`}
+                className={`rounded-md p-5 flex-1 text-lia-text-primary ${message.sender === "user" ? "bg-lia-bg-primary" : "bg-lia-bg-tertiary"}`}
               >
                 <div className="flex items-center space-x-2 mb-2">
                   <span
