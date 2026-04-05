@@ -30,7 +30,7 @@ interface UseCompanyBenefitsReturn {
 const benefitsCache: Map<string, { data: Benefit[]; timestamp: number }> = new Map()
 
 export function useCompanyBenefits({
-  companyId = 'default',
+  companyId = '',
   seniorityLevel,
   activeOnly = true,
   autoFetch = true,

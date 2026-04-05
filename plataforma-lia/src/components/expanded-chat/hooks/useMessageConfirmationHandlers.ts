@@ -24,6 +24,7 @@ import type { useWizardAnalytics } from "./useWizardAnalytics"
 export interface MessageConfirmationHandlersContext {
   // ─── User ───────────────────────────────────────────────────────────────────
   user: { id?: string; email?: string; company?: string } | null
+  resolvedCompanyId: string | null
 
   // ─── Mode flags ──────────────────────────────────────────────────────────────
   isInJobCreationMode: boolean
@@ -109,7 +110,7 @@ export function useMessageConfirmationHandlers(ctx: MessageConfirmationHandlersC
           competency_type: null as null,
         }))
         const result = await regenerateWSIQuestions({
-          company_id: user?.company || "default",
+          company_id: ctx.resolvedCompanyId ?? "",
           job_title: basicInfoFields.cargo,
           current_questions: currentQuestions,
           technical_skills: technicalSkills.map(s => s.name),

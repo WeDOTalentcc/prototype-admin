@@ -19,6 +19,7 @@ import { Plus, Brain } from "lucide-react"
 
 import { useExpandedChatProactiveHandlers } from "./useExpandedChatProactiveHandlers"
 import { useCompanyConfigLoader } from "./useCompanyConfigLoader"
+import { useCompanyId } from "@/hooks/useCompanyId"
 export function useExpandedChatEffects(ctx) {
   const {
     INITIAL_STAGES, PROACTIVE_MESSAGE_DELAY, analytics, approvedCandidates,
@@ -45,6 +46,8 @@ export function useExpandedChatEffects(ctx) {
     onMessagesUpdate, isLoadingEligibilityQuestions, companyEligibilityQuestions,
     isLoadingStages,
   } = ctx
+
+  const { companyId: resolvedTenantId } = useCompanyId()
 
   useEffect(() => {
     if (!fastTrackOriginalCompetencies || wsiRegenerationPrompted || awaitingWSIRegenerationConfirmation) {
@@ -303,7 +306,7 @@ export function useExpandedChatEffects(ctx) {
   useEffect(() => {
     const fetchProactiveSuggestions = async () => {
       try {
-        const companyId = user?.company || 'default-company'
+        const companyId = resolvedTenantId ?? ''
         const res = await fetch(`/api/backend-proxy/proactive-actions?path=feed/${companyId}&limit=5`)
         if (!res.ok) return
         const data = await res.json()

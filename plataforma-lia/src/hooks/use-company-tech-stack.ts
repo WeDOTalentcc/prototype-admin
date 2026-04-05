@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useCompanyId } from './useCompanyId'
 
 export const TECH_STACK_CATEGORIES = [
   { key: "backend", label: "Backend", suggestions: ["Node.js", "Python", "Java", ".NET", "Go", "Ruby", "PHP", "Rust"] },
@@ -67,13 +68,15 @@ export function useCompanyTechStack(): UseCompanyTechStackResult {
   const [techStack, setTechStack] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { companyId, isLoading: isLoadingCompany } = useCompanyId()
 
   const fetchTechStack = useCallback(async () => {
+    if (!companyId) return
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await fetch('/api/backend-proxy/company/culture-profile?company_id=default')
+      const response = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${encodeURIComponent(companyId)}`)
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -91,11 +94,15 @@ export function useCompanyTechStack(): UseCompanyTechStackResult {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [companyId])
 
   useEffect(() => {
-    fetchTechStack()
-  }, [fetchTechStack])
+    if (!isLoadingCompany && companyId) {
+      fetchTechStack()
+    } else if (!isLoadingCompany && !companyId) {
+      setIsLoading(false)
+    }
+  }, [fetchTechStack, isLoadingCompany, companyId])
 
   const techStackByCategory = useMemo(() => 
     parseTechStackToCategories(techStack), 

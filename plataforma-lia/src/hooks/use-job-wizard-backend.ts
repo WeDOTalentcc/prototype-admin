@@ -321,7 +321,7 @@ export function useJobWizardBackend(options: UseJobWizardBackendOptions = {}) {
     setError(null)
 
     try {
-      const companyId = options.companyId || 'default'
+      const companyId = options.companyId || ''
       const response = await fetch(`/api/backend-proxy/lia/job-wizard/evaluate?company_id=${encodeURIComponent(companyId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -431,7 +431,7 @@ export function useJobWizardBackend(options: UseJobWizardBackendOptions = {}) {
     setError(null)
 
     try {
-      const companyId = options.companyId || 'default'
+      const companyId = options.companyId || ''
       const response = await fetch('/api/backend-proxy/lia/learning/skills-deduplicated', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

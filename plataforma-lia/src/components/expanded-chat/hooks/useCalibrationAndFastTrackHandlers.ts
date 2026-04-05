@@ -75,6 +75,7 @@ export interface CalibrationAndFastTrackContext {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
   currentStage: string
   user: { name?: string; email?: string; company?: string; id?: string } | null
+  resolvedCompanyId: string | null
   onJobCreated?: () => void
 }
 
@@ -480,7 +481,7 @@ export function useCalibrationAndFastTrackHandlers(ctx: CalibrationAndFastTrackC
         const modifiedFields = Object.keys(ctx.fastTrackAdjustments).filter(
           key => ctx.fastTrackAdjustments[key as keyof VacancyAdjustments] !== undefined
         )
-        const tenantId = ctx.user?.company || 'default'
+        const tenantId = ctx.resolvedCompanyId ?? ''
         const newJobId = result.vacancy_id
         if (newJobId && newJobId !== ctx.fastTrackSelectedVacancy.id) {
           liaApi.recordFastTrackUsage({

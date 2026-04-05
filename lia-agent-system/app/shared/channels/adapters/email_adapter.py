@@ -110,7 +110,15 @@ class EmailChannelAdapter(ChannelAdapter):
             if not (message.template_vars or {}).get("unsubscribe_url"):
                 if message.template_vars is None:
                     message.template_vars = {}
-                _cid = getattr(message, "company_id", None) or "00000000-0000-0000-0000-000000000000"
+                _cid = getattr(message, "company_id", None)
+                if not _cid:
+                    logger.warning(
+                        "[EMAIL_ADAPTER] company_id missing on message to %s. "
+                        "Using null UUID fallback for unsubscribe URL. "
+                        "Ensure company_id is set on outgoing messages for proper tenant isolation.",
+                        message.recipient_contact
+                    )
+                    _cid = "00000000-0000-0000-0000-000000000000"
                 message.template_vars["unsubscribe_url"] = _generate_unsubscribe_url(
                     message.recipient_contact, _cid
                 )

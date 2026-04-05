@@ -19,6 +19,7 @@ class CompanyProfile(Base):
     __tablename__ = "company_profiles"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    client_account_id = Column(UUID(as_uuid=True), ForeignKey("client_accounts.id"), nullable=True, unique=True, index=True)
     
     name = Column(String(255), nullable=False)
     trading_name = Column(String(255), nullable=True)

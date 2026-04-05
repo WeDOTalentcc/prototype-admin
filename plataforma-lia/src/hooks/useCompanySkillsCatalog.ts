@@ -53,7 +53,7 @@ interface UseSkillSuggestionsResult {
   error: string | null
 }
 
-export function useCompanySkillsCatalog(companyId: string = 'default'): UseCompanySkillsCatalogResult {
+export function useCompanySkillsCatalog(companyId: string = ''): UseCompanySkillsCatalogResult {
   const [catalog, setCatalog] = useState<CompanySkillsCatalog | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

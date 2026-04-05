@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, useEffect } from "react"
 import type { ActiveTab, ViewMode, TeamMetrics, RecruiterData } from "./indicators.types"
 import { recruitersData } from "./indicators.constants"
 import { useAuth } from "@/contexts/auth-context"
+import { useCompanyId } from "@/hooks/useCompanyId"
 
 const API_BASE = "/api/backend-proxy"
 
@@ -23,13 +24,13 @@ export function useIndicatorsPage() {
   const [liveMetrics, setLiveMetrics] = useState<Record<string, any>>({})
 
   const { user } = useAuth()
+  const { companyId: resolvedCompanyId } = useCompanyId()
 
-  // Fetch real metrics for current user from backend
   useEffect(() => {
     const fetchMyMetrics = async () => {
       if (!user) return
       try {
-        const companyId = "default" // fallback; real value comes from user context when available
+        const companyId = resolvedCompanyId || ''
         const res = await fetch(
           `${API_BASE}/recruiter-metrics/${user.email}?company_id=${companyId}`,
           { headers: { "Content-Type": "application/json" } }

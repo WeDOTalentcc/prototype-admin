@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
+import { useCompanyId } from "@/hooks/useCompanyId"
 import { DEFAULT_ALERTS, MOCK_WORKFORCE, INITIAL_DEPARTMENTS, AlertConfig, WorkforceEntry, MonthlyPlanning, Position, DepartmentData } from "./goalsPlanningConstants"
 
 const defaultAlerts = DEFAULT_ALERTS
@@ -27,6 +28,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   const [briefingFrequency, setBriefingFrequency] = useState<'twice_daily' | 'daily' | 'weekly' | 'monthly'>('daily')
   const [selectedYear, setSelectedYear] = useState(2024)
 
+  const { companyId } = useCompanyId()
   const { instructions: liaInstructions, toggles: liaToggles, refetch: refetchLiaConfig } = useCompanyLiaInstructions()
 
   const [departments, setDepartments] = useState<DepartmentData[]>([...INITIAL_DEPARTMENTS])
@@ -69,7 +71,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
 
   const createDepartmentInBackend = useCallback(async (name: string): Promise<string | null> => {
     try {
-      const response = await fetch('/api/backend-proxy/company/departments?company_id=default', {
+      const response = await fetch(`/api/backend-proxy/company/departments?company_id=${encodeURIComponent(companyId || '')}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, description: `Departamento criado via Planejamento de Contratações`, headcount: 0 })
@@ -226,15 +228,16 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   }
 
   const getCompanyId = async (): Promise<string> => {
+    if (companyId) return companyId
     try {
       const res = await fetch('/api/backend-proxy/company/profile')
       if (res.ok) {
         const company = await res.json()
-        return company.id || 'default'
+        return company.id || ''
       }
     } catch (e) {
     }
-    return 'default'
+    return ''
   }
 
   const handleLiaToggleChange = async (fieldKey: string, isActive: boolean) => {

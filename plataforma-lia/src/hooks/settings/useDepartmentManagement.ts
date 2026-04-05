@@ -9,6 +9,7 @@ import {
   DEFAULT_NEW_DEPARTMENT,
   DEFAULT_NEW_MEMBER,
 } from "@/components/settings/companyTeamHub.types";
+import { useCompanyId } from "@/hooks/useCompanyId";
 
 export interface UseDepartmentManagementState {
   departments: Department[];
@@ -82,6 +83,7 @@ export function useDepartmentManagement({
   setError,
   setSuccessMessage,
 }: UseDepartmentManagementOptions): UseDepartmentManagementResult {
+  const { companyId } = useCompanyId();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
   const [showDepartmentForm, setShowDepartmentForm] = useState(false);
@@ -172,7 +174,7 @@ export function useDepartmentManagement({
     try {
       const method = isNew ? "POST" : "PUT";
       const url = isNew
-        ? "/api/backend-proxy/company/departments?company_id=default"
+        ? `/api/backend-proxy/company/departments?company_id=${encodeURIComponent(companyId || "")}`
         : `/api/backend-proxy/company/departments/${dept.id}`;
 
       const response = await fetch(url, {
@@ -402,7 +404,7 @@ export function useDepartmentManagement({
     try {
       const method = isNew ? "POST" : "PUT";
       const url = isNew
-        ? "/api/backend-proxy/company/approvers?company_id=default"
+        ? `/api/backend-proxy/company/approvers?company_id=${encodeURIComponent(companyId || "")}`
         : `/api/backend-proxy/company/approvers/${id}`;
 
       const response = await fetch(url, {

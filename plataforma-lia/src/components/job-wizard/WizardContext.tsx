@@ -141,7 +141,7 @@ interface WizardProviderProps {
   companyId?: string
 }
 
-export function WizardProvider({ children, initialStage = 'input-evaluation', companyId = 'default' }: WizardProviderProps) {
+export function WizardProvider({ children, initialStage = 'input-evaluation', companyId = '' }: WizardProviderProps) {
   // Stage navigation
   const [currentStage, setCurrentStage] = useState<WizardStage>(initialStage)
   

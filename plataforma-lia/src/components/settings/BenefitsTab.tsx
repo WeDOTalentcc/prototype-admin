@@ -3,6 +3,7 @@
 import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 
 import React, { useState, useCallback, useEffect } from "react"
+import { useCompanyId } from "@/hooks/useCompanyId"
 import { textStyles, cardStyles, badgeStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -125,6 +126,7 @@ const defaultBenefit: Benefit = {
 }
 
 export function BenefitsTab() {
+  const { companyId } = useCompanyId()
   const [benefits, setBenefits] = useState<Benefit[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -166,15 +168,16 @@ export function BenefitsTab() {
   }, [liaInstructions, liaToggles])
 
   const getCompanyId = async (): Promise<string> => {
+    if (companyId) return companyId
     try {
       const res = await fetch('/api/backend-proxy/company/profile')
       if (res.ok) {
         const company = await res.json()
-        return company.id || 'default'
+        return company.id || ''
       }
     } catch (e) {
     }
-    return 'default'
+    return ''
   }
 
   const saveLiaFieldToggles = async (toggles: Record<string, boolean>, instructions?: Record<string, string>) => {
@@ -217,7 +220,8 @@ export function BenefitsTab() {
   const loadBenefits = useCallback(async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/backend-proxy/company/benefits/?company_id=default')
+      const cid = companyId || ''
+      const response = await fetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(cid)}`)
       if (response.ok) {
         const data = await response.json()
         const rawBenefits = Array.isArray(data) ? data : data.items || []
@@ -228,7 +232,7 @@ export function BenefitsTab() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [companyId])
 
   useEffect(() => {
     loadBenefits()
@@ -287,7 +291,7 @@ export function BenefitsTab() {
     }
     
     try {
-      const response = await fetch('/api/backend-proxy/company/benefits/?company_id=default', {
+      const response = await fetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(companyId || '')}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newBenefit),
@@ -331,9 +335,10 @@ export function BenefitsTab() {
     setIsSaving(true)
     setError(null)
     try {
+      const cid = encodeURIComponent(companyId || '')
       const url = benefit.id 
-        ? `/api/backend-proxy/company/benefits/${benefit.id}?company_id=default`
-        : '/api/backend-proxy/company/benefits/?company_id=default'
+        ? `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`
+        : `/api/backend-proxy/company/benefits/?company_id=${cid}`
       
       const response = await fetch(url, {
         method: benefit.id ? 'PUT' : 'POST',
@@ -361,7 +366,7 @@ export function BenefitsTab() {
     if (!confirm("Tem certeza que deseja excluir este benefício?")) return
     
     try {
-      const response = await fetch(`/api/backend-proxy/company/benefits/${benefitId}?company_id=default`, {
+      const response = await fetch(`/api/backend-proxy/company/benefits/${benefitId}?company_id=${encodeURIComponent(companyId || '')}`, {
         method: 'DELETE',
       })
       if (response.ok) {
@@ -407,8 +412,9 @@ export function BenefitsTab() {
     setIsSaving(true)
     setError(null)
     try {
+      const cid = encodeURIComponent(companyId || '')
       const savePromises = Array.from(pendingChanges.values()).map(benefit => 
-        fetch(`/api/backend-proxy/company/benefits/${benefit.id}?company_id=default`, {
+        fetch(`/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(benefit),

@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { candidateId } = await params
-    const companyId = request.nextUrl.searchParams.get('company_id') || 'default'
+    const companyId = request.nextUrl.searchParams.get('company_id') || ''
     
     const response = await fetch(
       `${BACKEND_URL}/api/v1/lia/profile-analysis/candidate/${candidateId}?company_id=${companyId}`,

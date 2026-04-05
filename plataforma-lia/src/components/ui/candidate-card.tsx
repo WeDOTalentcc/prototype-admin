@@ -97,7 +97,7 @@ export function CandidateCard({
   email,
   linkedin,
   candidateId,
-  companyId = 'default',
+  companyId = '',
   onViewProfile,
   onContact,
   onScheduleInterview,

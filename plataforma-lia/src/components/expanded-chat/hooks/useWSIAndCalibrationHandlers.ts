@@ -137,6 +137,7 @@ export interface WSIAndCalibrationHandlersContext {
 
   // User
   user: { name?: string; email?: string; company?: string; id?: string } | null
+  resolvedCompanyId: string | null
 
   // Conversation memory
   conversationMemory: UseConversationMemoryReturn
@@ -263,6 +264,7 @@ export function useWSIAndCalibrationHandlers(ctx: WSIAndCalibrationHandlersConte
     setMessages: ctx.setMessages,
     currentStage: ctx.currentStage,
     user: ctx.user,
+    resolvedCompanyId: ctx.resolvedCompanyId as string | null ?? null,
     onJobCreated: ctx.onJobCreated,
   })
 

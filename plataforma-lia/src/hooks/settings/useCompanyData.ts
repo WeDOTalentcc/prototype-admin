@@ -365,13 +365,13 @@ export function useCompanyData(): UseCompanyDataResult {
 
   const saveLiaToggleToBackend = async (fieldKey: string, isActive: boolean) => {
     try {
-      let currentCompanyId = companyId || 'default';
+      let currentCompanyId = companyId || '';
 
-      if (!currentCompanyId || currentCompanyId === 'default') {
+      if (!currentCompanyId) {
         const profileRes = await fetch('/api/backend-proxy/company/profile');
         if (profileRes.ok) {
           const profile = await profileRes.json();
-          currentCompanyId = profile.id || 'default';
+          currentCompanyId = profile.id || '';
         }
       }
 

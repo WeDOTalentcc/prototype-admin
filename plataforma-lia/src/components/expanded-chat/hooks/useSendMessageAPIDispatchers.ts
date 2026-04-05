@@ -42,6 +42,7 @@ export function useSendMessageAPIDispatchers(ctx: SendMessageHandlersContext) {
     conversationId,
     setConversationId,
     user,
+    resolvedCompanyId,
     currentStage,
     setCurrentStage,
     isInJobCreationMode,
@@ -95,7 +96,7 @@ export function useSendMessageAPIDispatchers(ctx: SendMessageHandlersContext) {
         collected_data: collectedData,
         conversation_history: conversationHistory,
         conversation_id: conversationMemory.conversationId || undefined,
-        company_id: user?.company || undefined,
+        company_id: resolvedCompanyId ?? undefined,
         user_id: user?.email || undefined
       })
 

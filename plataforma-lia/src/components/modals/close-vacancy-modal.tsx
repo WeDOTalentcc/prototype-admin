@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils"
 import { useCommunicationTemplates, type CommunicationTemplate, type TemplateSituation } from "@/hooks/use-communication-templates"
 import { liaApi } from "@/services/lia-api"
 import { useAuth } from "@/contexts/auth-context"
+import { useCompanyId } from "@/hooks/useCompanyId"
 
 export interface CloseVacancyPayload {
   hired_candidate_ids: string[]
@@ -113,6 +114,7 @@ export function CloseVacancyModal({
   closeWithoutHire = false,
 }: CloseVacancyModalProps) {
   const { user } = useAuth()
+  const { companyId: resolvedCompanyId } = useCompanyId()
 
   const hiredCandidates = hiredCandidatesProp || (hiredCandidateProp ? [hiredCandidateProp] : [])
   const skipStep1 = closeWithoutHire || hiredCandidates.length === 0
@@ -292,7 +294,7 @@ export function CloseVacancyModal({
       
       await onConfirm(payload)
       
-      const tenantId = user?.company || 'default'
+      const tenantId = resolvedCompanyId ?? ''
       liaApi.updateJobOutcome({
         company_id: tenantId,
         job_id: vacancy.id,

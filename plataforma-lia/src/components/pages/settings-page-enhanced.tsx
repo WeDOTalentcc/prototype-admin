@@ -28,6 +28,7 @@ const GlobalSearchHub = dynamic(() => import("@/components/settings/GlobalSearch
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
+import { useCompanyId } from "@/hooks/useCompanyId"
 
 interface SettingsSubsection {
   id: string
@@ -160,6 +161,7 @@ const getCompletionBadgeColor = (percentage: number): string => {
 }
 
 export default function SettingsPageEnhanced() {
+  const { companyId, tenantInfo, isLoading: isTenantLoading } = useCompanyId()
   const [activeSection, setActiveSection] = useState<string>('company-team')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['company-team']))
@@ -575,6 +577,35 @@ export default function SettingsPageEnhanced() {
                   }
                 </p>
               </div>
+              {tenantInfo && (
+                <div className="flex items-center gap-3 text-right">
+                  <div>
+                    <p className={`${textStyles.labelSmall} text-lia-text-secondary`}>
+                      {tenantInfo.companyName || 'Empresa'}
+                    </p>
+                    <div className="flex items-center gap-2 justify-end mt-0.5">
+                      {tenantInfo.companyId && (
+                        <span className={`${textStyles.description} font-mono text-[10px]`}>
+                          ID: {tenantInfo.companyId.substring(0, 8)}...
+                        </span>
+                      )}
+                      {tenantInfo.planId && (
+                        <Badge className={badgeStyles.info}>
+                          {tenantInfo.planId}
+                        </Badge>
+                      )}
+                      {tenantInfo.status && (
+                        <Badge className={tenantInfo.status === 'active' ? badgeStyles.success : badgeStyles.warning}>
+                          {tenantInfo.status === 'active' ? 'Ativo' : tenantInfo.status}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div className="w-8 h-8 bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-md flex items-center justify-center">
+                    <Building className="w-4 h-4 text-lia-text-secondary" />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

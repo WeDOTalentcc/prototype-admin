@@ -23,6 +23,7 @@ import { useWizardAnalytics } from './useWizardAnalytics'
 import { useContextSwitching, type WizardSnapshot, type GeneralChatSnapshot } from './useContextSwitching'
 import { useAnalyticsSession } from './useAnalyticsSession'
 import { useConversationMemoryInit } from './useConversationMemoryInit'
+import { useCompanyId } from '@/hooks/useCompanyId'
 import type { Message, ExpandedChatModalProps } from '../types'
 
 interface UseExpandedChatCoreHooksParams {
@@ -79,10 +80,11 @@ export function useExpandedChatCoreHooks(params: UseExpandedChatCoreHooksParams)
     resetFastTrackConversationState,
   } = params
 
+  const { companyId: resolvedCompanyId, isLoading: isLoadingTenant } = useCompanyId()
   const jobWizard = useJobWizard()
 
   const fastTrack = useFastTrack({
-    companyId: 'default-company',
+    companyId: resolvedCompanyId ?? '',
     debounceMs: 600,
     minSimilarity: 0.70,
   })
@@ -111,7 +113,7 @@ export function useExpandedChatCoreHooks(params: UseExpandedChatCoreHooksParams)
     filterSkillSuggestions,
     isFetchingSkills
   } = useJobWizardBackend({
-    companyId: 'default',
+    companyId: resolvedCompanyId ?? '',
     onCriteriaDetected: (criteria, origins) => {
       if (criteria.job_title) {
         const jobTitle = criteria.job_title
@@ -252,7 +254,7 @@ export function useExpandedChatCoreHooks(params: UseExpandedChatCoreHooksParams)
   useEffect(() => {
     if (detectedCriteria?.cargo && mode === 'job-creation') {
       fetchWizardSuggestions({
-        companyId: 'default-company',
+        companyId: resolvedCompanyId || '',
         jobTitle: detectedCriteria.cargo,
         department: detectedCriteria.departamento || undefined,
         seniority: undefined

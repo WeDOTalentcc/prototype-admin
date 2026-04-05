@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     const body = bodyResult.data
     
     if (!companyId) {
-      companyId = 'default'
+      companyId = ''
     }
     
     const backendUrl = `${BACKEND_URL}/api/v1/company/approvers?company_id=${companyId}`

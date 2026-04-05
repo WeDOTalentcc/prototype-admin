@@ -160,7 +160,7 @@ export function useJDEvaluation(props: {
     try {
       const response = await fetch("/api/backend-proxy/skills-catalog/wizard/suggest-skills", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_id: companyId || "default", job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
+        body: JSON.stringify({ company_id: companyId || "", job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
       })
       const data = await response.json()
       if (data.technical_skills && data.technical_skills.length > 0) {
@@ -177,7 +177,7 @@ export function useJDEvaluation(props: {
     try {
       const response = await fetch("/api/backend-proxy/skills-catalog/wizard/suggest-skills", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company_id: companyId || "default", job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
+        body: JSON.stringify({ company_id: companyId || "", job_title: jobTitle, seniority: seniority || undefined, department: department || undefined, include_company_catalog: true, limit: 10 })
       })
       const data = await response.json()
       if (data.behavioral_competencies && data.behavioral_competencies.length > 0) {
@@ -199,7 +199,7 @@ export function useJDEvaluation(props: {
       setJdDynamicMessage('Gerando descrição com base na metodologia WSI...')
       const response = await fetch("/api/backend-proxy/jd/generate", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_title: jobTitle, department: department || undefined, seniority: seniority || undefined, description: editDescription || undefined, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, company_id: companyId || "default", company_name: companyName || undefined, company_description: companyDescription || undefined, company_industry: companyIndustry || undefined, benefits: benefits.length > 0 ? benefits : undefined, interview_stages: interviewStages.length > 0 ? interviewStages : undefined })
+        body: JSON.stringify({ job_title: jobTitle, department: department || undefined, seniority: seniority || undefined, description: editDescription || undefined, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, company_id: companyId || "", company_name: companyName || undefined, company_description: companyDescription || undefined, company_industry: companyIndustry || undefined, benefits: benefits.length > 0 ? benefits : undefined, interview_stages: interviewStages.length > 0 ? interviewStages : undefined })
       })
       const data = await response.json()
       if (data.success || data.full_description) {

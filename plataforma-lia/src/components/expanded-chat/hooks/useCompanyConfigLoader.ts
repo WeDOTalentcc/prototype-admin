@@ -3,6 +3,7 @@
 import { formatBRL } from "@/lib/pricing"
 
 import { useEffect } from "react"
+import { useCompanyId } from '@/hooks/useCompanyId'
 import type { TechnicalSkill } from '..'
 import type { Benefit } from '../stages/SalaryStage'
 
@@ -55,17 +56,20 @@ export function useCompanyConfigLoader(ctx: UseCompanyConfigLoaderCtx) {
     setConfigLoaded, setTechnicalSkills, setSalaryInfo, setWizardGreeting, setWizardGreetingLoaded,
   } = ctx
 
-  // Fetch company configuration when modal opens in job creation mode
+  const { companyId: resolvedCompanyId, isLoading: isLoadingTenant } = useCompanyId()
+
   useEffect(() => {
     const fetchCompanyConfig = async () => {
-      if (!isOpen || !isInJobCreationMode || configLoaded) return
+      if (!isOpen || !isInJobCreationMode || configLoaded || isLoadingTenant) return
 
       try {
+        const cidParam = resolvedCompanyId ? `company_id=${encodeURIComponent(resolvedCompanyId)}` : ''
+        const cidSep = cidParam ? `?${cidParam}` : ''
         const [profileRes, departmentsRes, benefitsRes, greetingRes] = await Promise.all([
-          fetch('/api/backend-proxy/company/profile'),
-          fetch('/api/backend-proxy/company/departments'),
-          fetch('/api/backend-proxy/company/benefits/?company_id=default'),
-          fetch('/api/backend-proxy/company/smart-wizard-greeting?company_id=default')
+          fetch(`/api/backend-proxy/company/profile${cidSep}`),
+          fetch(`/api/backend-proxy/company/departments${cidSep}`),
+          fetch(`/api/backend-proxy/company/benefits/${cidSep ? cidSep : '?'}`),
+          fetch(`/api/backend-proxy/company/smart-wizard-greeting${cidSep}`)
         ])
 
         const config: Record<string, any> = {}
@@ -267,7 +271,7 @@ export function useCompanyConfigLoader(ctx: UseCompanyConfigLoaderCtx) {
     }
 
     fetchCompanyConfig()
-  }, [isOpen, isInJobCreationMode, configLoaded, basicInfoFields.modeloTrabalho, basicInfoFields.localidade, basicInfoFields.area, setBasicInfoFields, setCompanyConfig, setCompanyMembersMap, setConfigLoaded, setDetectedCriteria, setFieldOrigins, setFieldsFromConfig, setJobConfig, setSalaryInfo, setTechnicalSkills, setWizardGreeting, setWizardGreetingLoaded])
+  }, [isOpen, isInJobCreationMode, configLoaded, isLoadingTenant, resolvedCompanyId, basicInfoFields.modeloTrabalho, basicInfoFields.localidade, basicInfoFields.area, setBasicInfoFields, setCompanyConfig, setCompanyMembersMap, setConfigLoaded, setDetectedCriteria, setFieldOrigins, setFieldsFromConfig, setJobConfig, setSalaryInfo, setTechnicalSkills, setWizardGreeting, setWizardGreetingLoaded])
 
   // Sync company screening questions from settings with companyDefaultQuestions state
   useEffect(() => {

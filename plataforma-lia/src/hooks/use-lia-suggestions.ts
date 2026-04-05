@@ -65,7 +65,7 @@ export interface ExpandedPromptResponse {
   follow_up_suggestions?: string[]
 }
 
-export function useLiaSuggestions(companyId: string = "default", limit: number = 6) {
+export function useLiaSuggestions(companyId: string = "", limit: number = 6) {
   const [suggestions, setSuggestions] = useState<SuggestionCard[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

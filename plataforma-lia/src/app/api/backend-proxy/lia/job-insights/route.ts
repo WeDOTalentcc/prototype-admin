@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const body = bodyResult.data
     const searchParams = request.nextUrl.searchParams
-    const companyId = searchParams.get("company_id") || "default"
+    const companyId = searchParams.get("company_id") || ""
     
     const response = await fetch(`${BACKEND_URL}/api/v1/lia/job-insights?company_id=${companyId}`, {
       method: "POST",

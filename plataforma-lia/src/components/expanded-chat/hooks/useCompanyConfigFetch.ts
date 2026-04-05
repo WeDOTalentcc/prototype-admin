@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from "react"
 import type { TechnicalSkill, BasicInfoFields, SalaryInfo, DetectedCriteria, Benefit } from '../ExpandedChatContext'
 import type { FieldOrigin } from '../../job-creation/field-origin-badge'
 import type { JobConfig } from './usePublishingState'
+import { useCompanyId } from '@/hooks/useCompanyId'
 
 export interface CompanyConfig {
   workModel?: string
@@ -66,6 +67,7 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
     basicInfoFields,
   } = options
 
+  const { companyId: resolvedCompanyId, isLoading: isLoadingTenant } = useCompanyId()
   const [companyConfig, setCompanyConfig] = useState<CompanyConfig | null>(null)
   const [configLoaded, setConfigLoaded] = useState(false)
   const [fieldsFromConfig, setFieldsFromConfig] = useState<Set<string>>(new Set())
@@ -74,14 +76,16 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
 
   useEffect(() => {
     const fetchCompanyConfig = async () => {
-      if (!isOpen || !isInJobCreationMode || configLoaded) return
+      if (!isOpen || !isInJobCreationMode || configLoaded || isLoadingTenant) return
 
       try {
+        const cidParam = resolvedCompanyId ? `company_id=${encodeURIComponent(resolvedCompanyId)}` : ''
+        const cidSep = cidParam ? `?${cidParam}` : ''
         const [profileRes, departmentsRes, benefitsRes, greetingRes] = await Promise.all([
-          fetch('/api/backend-proxy/company/profile'),
-          fetch('/api/backend-proxy/company/departments'),
-          fetch('/api/backend-proxy/company/benefits/?company_id=default'),
-          fetch('/api/backend-proxy/company/smart-wizard-greeting?company_id=default')
+          fetch(`/api/backend-proxy/company/profile${cidSep}`),
+          fetch(`/api/backend-proxy/company/departments${cidSep}`),
+          fetch(`/api/backend-proxy/company/benefits/${cidSep ? cidSep : '?'}`),
+          fetch(`/api/backend-proxy/company/smart-wizard-greeting${cidSep}`)
         ])
 
         const config: CompanyConfig = {}
@@ -300,7 +304,7 @@ export function useCompanyConfigFetch(options: UseCompanyConfigFetchOptions): Us
     }
 
     fetchCompanyConfig()
-  }, [isOpen, isInJobCreationMode, configLoaded, basicInfoFields.modeloTrabalho, basicInfoFields.localidade, basicInfoFields.area, setBasicInfoFields, setCompanyMembersMap, setDetectedCriteria, setFieldOrigins, setJobConfig, setSalaryInfo, setTechnicalSkills])
+  }, [isOpen, isInJobCreationMode, configLoaded, isLoadingTenant, resolvedCompanyId, basicInfoFields.modeloTrabalho, basicInfoFields.localidade, basicInfoFields.area, setBasicInfoFields, setCompanyMembersMap, setDetectedCriteria, setFieldOrigins, setJobConfig, setSalaryInfo, setTechnicalSkills])
 
   return {
     companyConfig,

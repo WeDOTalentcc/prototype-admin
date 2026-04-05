@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react"
 import { useAuth } from "@/contexts/auth-context"
+import { useCompanyId } from "@/hooks/useCompanyId"
 import { useCompanyEligibilityQuestions } from "@/hooks/use-company-eligibility-questions"
 import { useCompanyLiaInstructions } from "@/hooks/use-company-lia-instructions"
 import { useRecruitmentStages } from "@/hooks/use-recruitment-stages"
@@ -28,6 +29,7 @@ import { type Message } from '../types'
 
 export function useExpandedChatCoreState(mode: string = 'general') {
   const { user } = useAuth()
+  const { companyId: resolvedCompanyId } = useCompanyId()
   const { questions: companyEligibilityQuestions, isLoading: isLoadingEligibilityQuestions } = useCompanyEligibilityQuestions()
   const { interviewStages, sla, isLoading: isLoadingStages } = useRecruitmentStages()
   const { getBehavioralCompetencies, isLoading: isLoadingCompanyConfig } = useCompanyLiaInstructions()
@@ -173,7 +175,7 @@ export function useExpandedChatCoreState(mode: string = 'general') {
   const { setFastTrackMessageSent, setFastTrackSuggestionsShownTracked, setAwaitingFastTrackSelection, setAwaitingSensitiveFieldsConfirmation, setFastTrackAppliedData, setFastTrackOriginalCompetencies, setWsiRegenerationPrompted, setAwaitingWSIRegenerationConfirmation, resetFastTrackConversationState } = fastTrackActions
 
   return {
-    user, companyEligibilityQuestions, isLoadingEligibilityQuestions,
+    user, resolvedCompanyId, companyEligibilityQuestions, isLoadingEligibilityQuestions,
     interviewStages, sla, isLoadingStages,
     getBehavioralCompetencies, isLoadingCompanyConfig,
     isJobCreationMode, postCalibrationFlowStartedRef,

@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     if (!bodyResult.success) return bodyResult.response
 
     const body = bodyResult.data
-    const companyId = request.nextUrl.searchParams.get('company_id') || 'default'
+    const companyId = request.nextUrl.searchParams.get('company_id') || ''
     
     const response = await fetch(`${BACKEND_URL}/api/v1/lia/profile-analysis/save?company_id=${companyId}`, {
       method: 'POST',

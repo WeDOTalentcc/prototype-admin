@@ -64,6 +64,7 @@ export interface WizardPublishHandlersContext {
   wsiCandidates: Array<{ selected: boolean; question: string; category?: string; expectedAnswer?: unknown; type?: string }>
 
   user: { name?: string; email?: string; company?: string; id?: string } | null
+  resolvedCompanyId: string | null
 
   wizardFastTrackSourceJobId: string | null
   setWizardFastTrackSourceJobId: (id: string | null) => void

@@ -168,6 +168,17 @@ async def _create_note(params: Dict[str, Any], context: Dict[str, Any]):
         company_id = context.get("company_id") if context else None
 
         note_id = str(uuid_mod.uuid4())
+        if not company_id:
+            logger.warning(
+                "[_create_note] company_id is missing from context. "
+                "Note will be created without tenant association. "
+                "Ensure the caller provides company_id for proper multi-tenancy."
+            )
+        if not candidate_id:
+            logger.warning(
+                "[_create_note] candidate_id is missing from params. "
+                "Note will be created without candidate association."
+            )
         effective_company_id = str(company_id) if company_id else "00000000-0000-0000-0000-000000000000"
         effective_candidate_id = str(candidate_id) if candidate_id else "00000000-0000-0000-0000-000000000000"
 

@@ -80,6 +80,12 @@ class LLMProviderFactory:
     ) -> str:
         """Try providers in fallback order; return first success.
 
+        .. deprecated::
+            Use ``get_provider_for_tenant(company_id).generate_with_fallback()``
+            instead for proper multi-tenant provider isolation.
+            This class-level method uses shared global state and does not
+            respect per-tenant provider configuration.
+
         Args:
             prompt: User message/prompt.
             system: Optional system prompt.
@@ -91,6 +97,14 @@ class LLMProviderFactory:
         Raises:
             Exception: If all providers fail.
         """
+        import warnings
+        warnings.warn(
+            "LLMProviderFactory.generate_with_fallback() is deprecated. "
+            "Use get_provider_for_tenant(company_id).generate_with_fallback() "
+            "for proper multi-tenant provider isolation.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         from app.shared.resilience.circuit_breaker import CircuitBreakerError
 
         errors: List[str] = []

@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const candidateId = searchParams.get('candidate_id')
-    const companyId = request.headers.get('X-Company-ID') || searchParams.get('company_id') || 'default'
+    const companyId = request.headers.get('X-Company-ID') || searchParams.get('company_id') || ''
     const limit = searchParams.get('limit') || '5'
     const offset = searchParams.get('offset') || '0'
     

@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const body = bodyResult.data
     const searchParams = request.nextUrl.searchParams
-    const companyId = searchParams.get("company_id") || "default"
+    const companyId = searchParams.get("company_id") || ""
     const userId = searchParams.get("user_id") || "default_user"
     
     const response = await fetch(

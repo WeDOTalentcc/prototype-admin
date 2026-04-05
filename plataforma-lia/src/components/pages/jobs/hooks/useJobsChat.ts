@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import { callOrchestratedJobsManagement } from "@/lib/api/kanban-assistant"
 import { useLiaSuggestions, useJobInsights, useLiaExpandedPrompt } from "@/hooks/use-lia-suggestions"
+import { useCompanyId } from "@/hooks/useCompanyId"
 import type { Job } from "@/components/jobs"
 
 // ---------------------------------------------------------------------------
@@ -117,6 +118,7 @@ export function useJobsChat({
   setActiveFilter,
   loadBackendJobs,
 }: UseJobsChatOptions): UseJobsChatReturn {
+  const { companyId: resolvedCompanyId } = useCompanyId()
   const [showInlineChat, setShowInlineChat] = useState(false)
   const [chatMode, setChatMode] = useState<'general' | 'job-creation' | null>(null)
   const [inlineChatInitialMessage, setInlineChatInitialMessage] = useState<string | undefined>()
@@ -380,7 +382,7 @@ export function useJobsChat({
         })),
         action: action || 'general_query',
         conversation_id: jobsConversationId,
-        company_id: 'default',
+        company_id: resolvedCompanyId ?? '',
       } as any)
 
       if ((response as any).conversation_id) setJobsConversationId((response as any).conversation_id)

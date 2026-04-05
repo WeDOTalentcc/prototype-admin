@@ -62,7 +62,7 @@ const CollapsibleSection = ({
   </div>
 )
 
-export function DataRequestTab({ companyId = 'default' }: DataRequestTabProps) {
+export function DataRequestTab({ companyId = '' }: DataRequestTabProps) {
   const state = useDataRequestTabState(companyId)
 
   if (state.isLoading) {

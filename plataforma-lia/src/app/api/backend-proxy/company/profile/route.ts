@@ -5,6 +5,19 @@ import { z } from 'zod'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
 
+function getAuthHeaders(request: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const authHeader = request.headers.get('authorization')
+  if (authHeader) {
+    headers['Authorization'] = authHeader
+  }
+  const cookie = request.headers.get('cookie')
+  if (cookie) {
+    headers['Cookie'] = cookie
+  }
+  return headers
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -17,9 +30,7 @@ export async function GET(request: NextRequest) {
     
     const response = await fetch(backendUrl, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(request),
     })
 
     if (response.status === 404) {
@@ -59,9 +70,7 @@ export async function POST(request: NextRequest) {
     
     const response = await fetch(backendUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
 
@@ -91,20 +100,17 @@ export async function PUT(request: NextRequest) {
 
     const body = bodyResult.data
     
+    const authHeaders = getAuthHeaders(request)
     const getResponse = await fetch(`${BACKEND_URL}/api/v1/company/profile`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: authHeaders,
     })
     
     if (!getResponse.ok) {
-      if (getResponse.status === 404) {
+      if (getResponse.status === 404 || getResponse.status === 400) {
         const createResponse = await fetch(`${BACKEND_URL}/api/v1/company/profile`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: authHeaders,
           body: JSON.stringify(body),
         })
         
@@ -134,9 +140,7 @@ export async function PUT(request: NextRequest) {
     
     const response = await fetch(backendUrl, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: authHeaders,
       body: JSON.stringify(body),
     })
 

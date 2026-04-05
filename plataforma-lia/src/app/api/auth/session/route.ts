@@ -100,13 +100,32 @@ export async function GET() {
     const accessToken = cookieStore.get('lia_access_token')
     const authMethod = cookieStore.get('lia_auth_method')
 
+    let user: Record<string, unknown> | null = null
+    if (accessToken?.value) {
+      try {
+        const parts = accessToken.value.split('.')
+        if (parts.length === 3) {
+          const payload = JSON.parse(
+            Buffer.from(parts[1], 'base64url').toString('utf-8')
+          )
+          user = {
+            company_id: payload.company_id || payload.company || null,
+            company: payload.company_name || payload.company || null,
+            email: payload.email || payload.sub || null,
+          }
+        }
+      } catch {
+      }
+    }
+
     return NextResponse.json({
       authenticated: !!accessToken,
       authMethod: authMethod?.value || null,
+      user,
     })
   } catch {
     return NextResponse.json(
-      { authenticated: false, authMethod: null },
+      { authenticated: false, authMethod: null, user: null },
       { status: 500 }
     )
   }

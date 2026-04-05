@@ -250,7 +250,7 @@ export function useExpandedChatWiring({
     setWsiRegenerationPrompted: state.setWsiRegenerationPrompted,
     showCalibrationModal: state.showCalibrationModal,
     technicalSkills: state.technicalSkills, toolCalling: hooks.toolCalling,
-    trackFieldChange: hooks.trackFieldChange, typeText, user: state.user,
+    trackFieldChange: hooks.trackFieldChange, typeText, user: state.user, resolvedCompanyId: state.resolvedCompanyId,
     wizardFastTrackSourceJobId: state.wizardFastTrackSourceJobId,
     wizardMode: state.wizardMode, wsiCandidates: state.wsiCandidates,
     wsiGenerationBatch: state.wsiGenerationBatch,

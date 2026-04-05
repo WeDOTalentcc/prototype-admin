@@ -67,6 +67,7 @@ export interface SendMessageHandlersContext {
   conversationId: string | null
   setConversationId: (id: string | null) => void
   user: { id?: string; email?: string; company?: string } | null
+  resolvedCompanyId: string | null
   currentStage: WizardStage
   setCurrentStage: (stage: WizardStage) => void
   wizardMode: WizardMode

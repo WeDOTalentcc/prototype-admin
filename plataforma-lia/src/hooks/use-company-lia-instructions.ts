@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useCompanyId } from './useCompanyId'
 
 export interface LiaInstructions {
   [fieldKey: string]: string
@@ -178,13 +179,15 @@ export function useCompanyLiaInstructions(): UseCompanyLiaInstructionsResult {
   const [config, setConfig] = useState<CompanyConfigForLia | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { companyId, isLoading: isLoadingCompany } = useCompanyId()
 
   const fetchConfig = useCallback(async () => {
+    if (!companyId) return
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await fetch('/api/backend-proxy/company/culture-profile?company_id=default')
+      const response = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${encodeURIComponent(companyId)}`)
       
       if (!response.ok) {
         // 404 = not found, 422 = invalid company_id format (e.g., "default" instead of UUID)
@@ -229,11 +232,16 @@ export function useCompanyLiaInstructions(): UseCompanyLiaInstructionsResult {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [companyId])
 
   useEffect(() => {
-    fetchConfig()
-  }, [fetchConfig])
+    if (!isLoadingCompany && companyId) {
+      fetchConfig()
+    } else if (!isLoadingCompany && !companyId) {
+      setConfig(DEFAULT_CONFIG)
+      setIsLoading(false)
+    }
+  }, [fetchConfig, isLoadingCompany, companyId])
 
   const getInstructionForField = useCallback((fieldKey: string): string | undefined => {
     return config?.lia_instructions?.[fieldKey]

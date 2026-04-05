@@ -266,7 +266,7 @@ function WizardContent({ onClose, onMinimize, onJobCreated, inline }: Omit<Wizar
   )
 }
 
-export function WizardContainer({ companyId = 'default', ...props }: WizardContainerProps) {
+export function WizardContainer({ companyId = '', ...props }: WizardContainerProps) {
   return (
     <WizardProvider companyId={companyId}>
       <WizardContent {...props} />

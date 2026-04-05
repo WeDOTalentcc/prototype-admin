@@ -76,7 +76,7 @@ export async function handleStageAdvanceConfirmation(
         collected_data: collectedData,
         conversation_history: ctx.messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
         conversation_id: ctx.conversationMemory.conversationId || undefined,
-        company_id: ctx.user?.company || undefined,
+        company_id: ctx.resolvedCompanyId ?? undefined,
         user_id: ctx.user?.email || undefined
       }).then(async result => {
         ctx.setMessages(prev => prev.filter(m => m.id !== loadingMsg.id))

@@ -90,6 +90,90 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/company", tags=["company"])
 
 
+from app.auth.workos_models import CompanyWorkOSConfig
+from app.models.client_account import ClientAccount
+
+
+class TenantResolutionResponse(BaseModel):
+    client_account_id: Optional[str] = None
+    company_profile_id: Optional[str] = None
+    company_name: Optional[str] = None
+    plan_id: Optional[str] = None
+    status: Optional[str] = None
+
+
+@router.get("/resolve-tenant", response_model=TenantResolutionResponse)
+async def resolve_tenant(
+    workos_organization_id: Optional[str] = Query(None),
+    client_account_id: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user_or_demo)
+):
+    """Resolve tenant IDs from WorkOS organization ID or client account ID.
+
+    Given a workos_organization_id (from the user session), returns the
+    corresponding client_account_id and company_profile_id. This is the
+    central resolution endpoint for multi-tenancy.
+
+    Requires authentication. The caller can only resolve their own tenant
+    (validated against current_user.company_id when available).
+    """
+    try:
+        resolved_client_id = client_account_id
+
+        if not resolved_client_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
+            resolved_client_id = str(current_user.company_id)
+
+        if workos_organization_id and not resolved_client_id:
+            config_result = await db.execute(
+                select(CompanyWorkOSConfig).where(
+                    CompanyWorkOSConfig.workos_organization_id == workos_organization_id
+                )
+            )
+            config = config_result.scalars().first()
+            if config:
+                resolved_client_id = config.company_id
+
+        if not resolved_client_id:
+            raise HTTPException(
+                status_code=404,
+                detail="No tenant found for the given identifiers"
+            )
+
+        if current_user and hasattr(current_user, 'company_id') and current_user.company_id:
+            user_company = str(current_user.company_id)
+            if client_account_id and client_account_id != user_company:
+                logger.warning(f"Cross-tenant access attempt: user {current_user.email} (company={user_company}) tried to resolve tenant {client_account_id}")
+                raise HTTPException(status_code=403, detail="Access denied: cross-tenant resolution not allowed")
+
+        client_result = await db.execute(
+            select(ClientAccount).where(
+                ClientAccount.id == resolved_client_id
+            )
+        )
+        client = client_result.scalars().first()
+
+        profile_result = await db.execute(
+            select(CompanyProfile).where(
+                CompanyProfile.client_account_id == resolved_client_id
+            )
+        )
+        profile = profile_result.scalars().first()
+
+        return TenantResolutionResponse(
+            client_account_id=str(resolved_client_id) if resolved_client_id else None,
+            company_profile_id=str(profile.id) if profile else None,
+            company_name=client.name if client else (profile.name if profile else None),
+            plan_id=str(client.plan_id) if client and client.plan_id else None,
+            status=client.status if client else None,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error resolving tenant: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 class CompanyEnrichRequest(BaseModel):
     linkedin_url: Optional[str] = None
     glassdoor_company_name: Optional[str] = None
@@ -603,25 +687,59 @@ REGRAS:
 
 @router.get("/profile", response_model=CompanyProfileResponse)
 async def get_company_profile(
-    db: AsyncSession = Depends(get_db)
+    company_id: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user_or_demo)
 ):
-    """Get the default company profile."""
+    """Get a company profile by ID, or resolve from authenticated user's tenant."""
     try:
+        effective_company_id = company_id if (company_id and company_id != "default") else None
+
+        if not effective_company_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
+            profile_result = await db.execute(
+                select(CompanyProfile).where(
+                    CompanyProfile.client_account_id == str(current_user.company_id)
+                )
+            )
+            profile = profile_result.scalars().first()
+            if profile:
+                return profile
+            logger.warning(f"get_company_profile: no profile linked to user's company_id={current_user.company_id}")
+            raise HTTPException(status_code=404, detail="No company profile found for your tenant. Please complete company setup.")
+
+        if not effective_company_id:
+            logger.warning("get_company_profile called without company_id and no auth context — rejecting")
+            raise HTTPException(
+                status_code=400,
+                detail="company_id is required. Use /api/v1/company/resolve-tenant to obtain your tenant ID."
+            )
+
+        try:
+            company_uuid = uuid.UUID(effective_company_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid company_id format: {effective_company_id}")
+
+        if current_user and hasattr(current_user, 'company_id') and current_user.company_id:
+            user_company = str(current_user.company_id)
+            profile_check = await db.execute(
+                select(CompanyProfile).where(CompanyProfile.id == company_uuid)
+            )
+            profile = profile_check.scalars().first()
+            if profile and profile.client_account_id and str(profile.client_account_id) != user_company:
+                logger.warning(f"Cross-tenant access denied: user {current_user.email} (company={user_company}) tried to access profile {effective_company_id}")
+                raise HTTPException(status_code=403, detail="Access denied: this profile belongs to a different tenant")
+            if profile:
+                return profile
+            raise HTTPException(status_code=404, detail=f"Company profile not found for id: {effective_company_id}")
+
         result = await db.execute(
-            select(CompanyProfile).where(CompanyProfile.is_default == True).order_by(CompanyProfile.created_at.desc()).limit(1)
+            select(CompanyProfile).where(CompanyProfile.id == company_uuid)
         )
         profile = result.scalars().first()
+        if profile:
+            return profile
+        raise HTTPException(status_code=404, detail=f"Company profile not found for id: {effective_company_id}")
         
-        if not profile:
-            result = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_active == True).order_by(CompanyProfile.created_at.desc()).limit(1)
-            )
-            profile = result.scalars().first()
-        
-        if not profile:
-            raise HTTPException(status_code=404, detail="No company profile found")
-        
-        return profile
     except HTTPException:
         raise
     except Exception as e:
@@ -632,11 +750,23 @@ async def get_company_profile(
 @router.post("/profile", response_model=CompanyProfileResponse)
 async def create_company_profile(
     data: CompanyProfileCreate,
-    db: AsyncSession = Depends(get_db)
+    client_account_id: Optional[str] = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user_or_demo)
 ):
-    """Create a new company profile."""
+    """Create a new company profile, optionally linking to a ClientAccount.
+    
+    If client_account_id is not provided, attempts to resolve it from the
+    authenticated user's company association.
+    """
     try:
-        profile = CompanyProfile(**data.model_dump())
+        profile_data = data.model_dump()
+        resolved_client_id = client_account_id
+        if not resolved_client_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
+            resolved_client_id = str(current_user.company_id)
+        if resolved_client_id:
+            profile_data["client_account_id"] = resolved_client_id
+        profile = CompanyProfile(**profile_data)
         
         existing = await db.execute(
             select(CompanyProfile).where(CompanyProfile.is_default == True).limit(1)
@@ -648,7 +778,7 @@ async def create_company_profile(
         await db.commit()
         await db.refresh(profile)
         
-        logger.info(f"Created company profile: {profile.name}")
+        logger.info(f"Created company profile: {profile.name} (client_account_id={resolved_client_id})")
         return profile
     except Exception as e:
         await db.rollback()
@@ -660,7 +790,8 @@ async def create_company_profile(
 async def update_company_profile(
     profile_id: uuid.UUID,
     data: CompanyProfileUpdate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user_or_demo)
 ):
     """Update an existing company profile."""
     try:
@@ -675,6 +806,9 @@ async def update_company_profile(
         update_data = data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(profile, field, value)
+        
+        if not profile.client_account_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
+            profile.client_account_id = str(current_user.company_id)
         
         profile.updated_at = datetime.utcnow()
         
@@ -902,10 +1036,12 @@ async def list_departments(
 ):
     """List all departments for a company."""
     try:
-        query = select(Department)
+        if not company_id:
+            logger.warning("list_departments called without company_id — returning empty list to prevent cross-tenant data leak")
+            return []
         
-        if company_id:
-            query = query.where(Department.company_id == company_id)
+        query = select(Department)
+        query = query.where(Department.company_id == company_id)
         
         if not include_inactive:
             query = query.where(Department.is_active == True)
@@ -939,25 +1075,13 @@ async def create_department(
 ):
     """Create a new department."""
     try:
-        resolved_company_id = None
-        if company_id and company_id != "default":
-            try:
-                resolved_company_id = uuid.UUID(company_id)
-            except ValueError:
-                pass
+        if not company_id or company_id == "default":
+            raise HTTPException(status_code=400, detail="Valid company_id is required to create a department")
         
-        if not resolved_company_id:
-            result = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_default == True).order_by(CompanyProfile.created_at.desc()).limit(1)
-            )
-            profile = result.scalars().first()
-            if not profile:
-                result = await db.execute(
-                    select(CompanyProfile).where(CompanyProfile.is_active == True).order_by(CompanyProfile.created_at.desc()).limit(1)
-                )
-                profile = result.scalars().first()
-            if profile:
-                resolved_company_id = profile.id
+        try:
+            resolved_company_id = uuid.UUID(company_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid company_id format: {company_id}")
         
         department = Department(
             company_id=resolved_company_id,
@@ -1214,7 +1338,7 @@ async def list_managers(
         from app.services.manager_inference_service import manager_inference_service
         
         if not company_id:
-            company_id = str(getattr(current_user, 'company_id', None) or 'default')
+            company_id = str(getattr(current_user, 'company_id', None) or '')
         
         if search:
             managers = await manager_inference_service.search_managers(
@@ -1256,7 +1380,7 @@ async def infer_manager_email(
         from app.services.manager_inference_service import manager_inference_service
         
         if not company_id:
-            company_id = str(getattr(current_user, 'company_id', None) or 'default')
+            company_id = str(getattr(current_user, 'company_id', None) or '')
         
         result = await manager_inference_service.get_manager_by_name(
             manager_name=name,
@@ -1295,14 +1419,18 @@ async def list_benefits(
 ):
     """List all benefits for a company."""
     try:
+        if not company_id or company_id == "default":
+            logger.warning("list_benefits called without valid company_id — returning empty list to prevent cross-tenant data leak")
+            return []
+        
         query = select(Benefit)
         
-        if company_id and company_id != "default":
-            try:
-                company_uuid = uuid.UUID(company_id)
-                query = query.where(Benefit.company_id == company_uuid)
-            except ValueError:
-                pass
+        try:
+            company_uuid = uuid.UUID(company_id)
+            query = query.where(Benefit.company_id == company_uuid)
+        except ValueError:
+            logger.warning(f"list_benefits: invalid company_id format '{company_id}' — returning empty list")
+            return []
         
         if category:
             query = query.where(Benefit.category == category)
@@ -1329,25 +1457,13 @@ async def create_benefit(
 ):
     """Create a new benefit."""
     try:
-        resolved_company_id = None
-        if company_id and company_id != "default":
-            try:
-                resolved_company_id = uuid.UUID(company_id)
-            except ValueError:
-                pass
+        if not company_id or company_id == "default":
+            raise HTTPException(status_code=400, detail="Valid company_id is required to create a benefit")
         
-        if not resolved_company_id:
-            result = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_default == True).order_by(CompanyProfile.created_at.desc()).limit(1)
-            )
-            profile = result.scalars().first()
-            if not profile:
-                result = await db.execute(
-                    select(CompanyProfile).where(CompanyProfile.is_active == True).order_by(CompanyProfile.created_at.desc()).limit(1)
-                )
-                profile = result.scalars().first()
-            if profile:
-                resolved_company_id = profile.id
+        try:
+            resolved_company_id = uuid.UUID(company_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid company_id format: {company_id}")
         
         benefit = Benefit(
             company_id=resolved_company_id,
@@ -1515,11 +1631,17 @@ async def get_benefits_summary(
     Includes formatted text ready for use in prompts.
     """
     try:
+        if not company_id or company_id == "default":
+            logger.warning("get_benefits_summary called without valid company_id — returning empty summary")
+            return {"total": 0, "active": 0, "highlighted": 0, "categories": {}, "formatted_text": "", "benefits": []}
+        
         query = select(Benefit)
         
-        if company_id:
-            if company_id != "default":
-                query = query.where(Benefit.company_id == uuid.UUID(company_id))
+        try:
+            query = query.where(Benefit.company_id == uuid.UUID(company_id))
+        except ValueError:
+            logger.warning(f"get_benefits_summary: invalid company_id format '{company_id}'")
+            return {"total": 0, "active": 0, "highlighted": 0, "categories": {}, "formatted_text": "", "benefits": []}
         
         result = await db.execute(query)
         all_benefits = result.scalars().all()
@@ -2894,7 +3016,7 @@ async def download_benefits_import_template():
 @router.post("/departments/import", response_model=DepartmentImportResponse)
 async def import_departments(
     file: UploadFile = File(...),
-    company_id: str = Query("default"),
+    company_id: str = Query(""),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -3428,7 +3550,7 @@ class SmartWizardGreetingResponse(BaseModel):
 
 @router.get("/catalog-status", response_model=CatalogStatusResponse)
 async def get_catalog_status(
-    company_id: str = Query(default="default"),
+    company_id: str = Query(default=""),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -3451,7 +3573,7 @@ async def get_catalog_status(
 
 @router.get("/smart-wizard-greeting", response_model=SmartWizardGreetingResponse)
 async def get_smart_wizard_greeting(
-    company_id: str = Query(default="default"),
+    company_id: str = Query(default=""),
     db: AsyncSession = Depends(get_db)
 ):
     """

@@ -6,6 +6,7 @@ import { Copy } from "lucide-react"
 import { LoadingModal } from "@/components/ui/loading"
 import { toast } from "sonner"
 import type { KanbanPageCoreState } from "./hooks/useKanbanPageCore"
+import { useCompanyId } from "@/hooks/useCompanyId"
 
 const GeneralScoreModal = dynamic(() => import("@/components/modals/general-score-modal").then(m => ({ default: m.GeneralScoreModal })), { ssr: false, loading: () => <LoadingModal /> })
 const TechnicalTestModal = dynamic(() => import("@/components/modals/technical-test-modal").then(m => ({ default: m.TechnicalTestModal })), { ssr: false, loading: () => <LoadingModal /> })
@@ -19,6 +20,7 @@ const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-
 const BulkActionModal = dynamic(() => import("@/components/modals/bulk-action-modal").then(m => ({ default: m.BulkActionModal })), { ssr: false, loading: () => <LoadingModal /> })
 
 export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
+  const { companyId: resolvedCompanyId } = useCompanyId()
   const {
     showGeneralScoreModal, setShowGeneralScoreModal,
     showTechnicalTestModal, setShowTechnicalTestModal,
@@ -102,7 +104,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
         subStatusOptions={universalModalState.subStatusOptions}
         onConfirm={handleUniversalTransitionConfirm}
         onOpenSpecializedModal={handleOpenSpecializedModal}
-        companyId={user?.company as string | undefined}
+        companyId={resolvedCompanyId || undefined}
         jobTitle={currentJob?.title as string | undefined}
         initialPrompt={transitionInitialPrompt}
         availableStages={dynamicStages.map(s => ({ id: s.id, displayName: s.displayName, actionBehavior: s.actionBehavior }))}

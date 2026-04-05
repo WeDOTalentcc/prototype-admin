@@ -38,7 +38,7 @@ interface UseProactiveAlertsReturn {
 
 export function useProactiveAlerts({
   userId = 'default_user',
-  companyId = 'default_company',
+  companyId = '',
   pollingInterval = 60000,
   enabled = true
 }: UseProactiveAlertsOptions = {}): UseProactiveAlertsReturn {

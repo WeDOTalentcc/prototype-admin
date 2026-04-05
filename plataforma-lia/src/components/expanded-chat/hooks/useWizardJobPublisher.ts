@@ -167,9 +167,9 @@ export function useWizardJobPublisher(ctx: WizardPublishHandlersContext) {
       setPublishedJobId(String(jobId))
 
       if (wizardFastTrackSourceJobId && jobId && jobId !== wizardFastTrackSourceJobId) {
-        const tenantId = user?.company || 'default'
+        const tenantId = ctx.resolvedCompanyId ?? ''
         liaApi.recordFastTrackUsage({
-          company_id: tenantId as string,
+          company_id: tenantId,
           source_job_id: wizardFastTrackSourceJobId as string,
           new_job_id: String(jobId),
           modified_fields: [],

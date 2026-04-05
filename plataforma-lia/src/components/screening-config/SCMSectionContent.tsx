@@ -92,7 +92,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 onJobUpdate?.({ ...job, description: updates.description || job.description, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
               }}
               isGenerating={props.isGeneratingWSI}
-              companyId={(job as Record<string, unknown>).companyId as string || 'default'}
+              companyId={(job as Record<string, unknown>).companyId as string || ''}
               companyName={(job as Record<string, unknown>).companyName as string || undefined}
               companyDescription={undefined}
               companyIndustry={(job as Record<string, unknown>).industry as string || undefined}

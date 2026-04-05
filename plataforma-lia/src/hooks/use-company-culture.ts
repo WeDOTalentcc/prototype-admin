@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useCompanyId } from './useCompanyId'
 
 export interface BigFiveProfile {
   openness: number
@@ -60,13 +61,15 @@ export function useCompanyCulture(): UseCompanyCultureResult {
   const [culture, setCulture] = useState<CultureProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { companyId, isLoading: isLoadingCompany } = useCompanyId()
 
   const fetchCulture = useCallback(async () => {
+    if (!companyId) return
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await fetch('/api/backend-proxy/company/culture-profile?company_id=default')
+      const response = await fetch(`/api/backend-proxy/company/culture-profile?company_id=${encodeURIComponent(companyId)}`)
       
       if (!response.ok) {
         if (response.status === 404) {
@@ -112,11 +115,15 @@ export function useCompanyCulture(): UseCompanyCultureResult {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [companyId])
 
   useEffect(() => {
-    fetchCulture()
-  }, [fetchCulture])
+    if (!isLoadingCompany && companyId) {
+      fetchCulture()
+    } else if (!isLoadingCompany && !companyId) {
+      setIsLoading(false)
+    }
+  }, [fetchCulture, isLoadingCompany, companyId])
 
   const bigFive = useMemo(() => {
     return culture?.bigFive || DEFAULT_BIG_FIVE

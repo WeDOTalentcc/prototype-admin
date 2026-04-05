@@ -78,6 +78,7 @@ The platform's frontend uses Next.js, React, and TypeScript with Radix UI, shadc
 - **Sidebar Infinite Loop Fix**: Fixed state synchronization issues in `useSidebarState.ts`.
 - **Backend Port 8001 Migration**: Moved uvicorn from port 8000 to 8001 to avoid conflicts.
 - **Dev Auto-Login**: Implemented auto-authentication for demo users in development mode.
+- **Multi-Tenancy company_id Isolation**: Added `client_account_id` FK to `CompanyProfile` model (migration 058), created tenant resolution endpoint (`GET /api/v1/company/resolve-tenant`), built centralized `useCompanyId` React hook with module-level caching (5min TTL), replaced all hardcoded `company_id=default` across 30+ frontend files, added explicit backend warnings for missing `company_id` in `pipeline_actions.py` and `email_adapter.py`, deprecated `LLMProviderFactory.generate_with_fallback`, and added tenant info display (company name, plan, status) to the settings page header.
 
 # External Dependencies
 - Anthropic (Claude API)

@@ -267,7 +267,6 @@ function CustomSkillForm({ onAddCustomSkill, selectedSkills }: CustomSkillFormPr
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            company_id: 'default',
             skill_name: name.trim(),
             category: selectedCategory,
             default_weight: weight,

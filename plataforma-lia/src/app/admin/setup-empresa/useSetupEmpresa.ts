@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useCompanyId } from "@/hooks/useCompanyId"
 import { BENEFIT_CATEGORIES, defaultBenefit } from "./setup-empresa.constants"
 import type {
   Benefit,
@@ -11,6 +12,7 @@ import type {
 } from "./setup-empresa.types"
 
 export function useSetupEmpresa() {
+  const { companyId: resolvedCompanyId, isLoading: isLoadingTenant } = useCompanyId()
   const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState("profile")
   const [benefits, setBenefits] = useState<Benefit[]>([])
@@ -44,7 +46,8 @@ export function useSetupEmpresa() {
 
   const loadBenefits = useCallback(async () => {
     try {
-      const response = await fetch("/api/backend-proxy/company/benefits/")
+      const cidParam = resolvedCompanyId ? `?company_id=${encodeURIComponent(resolvedCompanyId)}` : ''
+      const response = await fetch(`/api/backend-proxy/company/benefits/${cidParam}`)
       if (response.ok) {
         const data = await response.json()
         const items = Array.isArray(data) ? data : data.items || []
@@ -54,11 +57,12 @@ export function useSetupEmpresa() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [resolvedCompanyId])
 
   const loadCompanyProfile = useCallback(async () => {
     try {
-      const response = await fetch("/api/backend-proxy/company/profile/")
+      const cidParam = resolvedCompanyId ? `?company_id=${encodeURIComponent(resolvedCompanyId)}` : ''
+      const response = await fetch(`/api/backend-proxy/company/profile/${cidParam}`)
       if (response.ok) {
         const data = await response.json()
         const additionalData = data.additional_data || {}
@@ -74,17 +78,18 @@ export function useSetupEmpresa() {
         }
       }
     } catch (error) {}
-  }, [])
+  }, [resolvedCompanyId])
 
   const loadDepartments = useCallback(async () => {
     try {
-      const response = await fetch("/api/backend-proxy/company/departments/")
+      const cidParam = resolvedCompanyId ? `?company_id=${encodeURIComponent(resolvedCompanyId)}` : ''
+      const response = await fetch(`/api/backend-proxy/company/departments/${cidParam}`)
       if (response.ok) {
         const data = await response.json()
         setDepartments(Array.isArray(data) ? data : data.items || [])
       }
     } catch (error) {}
-  }, [])
+  }, [resolvedCompanyId])
 
   const handleEnrichProfile = useCallback(async () => {
     if (!companyProfile.linkedin_url) {
@@ -311,11 +316,13 @@ export function useSetupEmpresa() {
   )
 
   useEffect(() => {
+    if (isLoadingTenant) return
     let cancelled = false
 
     const fetchData = async () => {
       try {
-        const benefitsResponse = await fetch("/api/backend-proxy/company/benefits/")
+        const cidParam = resolvedCompanyId ? `?company_id=${encodeURIComponent(resolvedCompanyId)}` : ''
+        const benefitsResponse = await fetch(`/api/backend-proxy/company/benefits/${cidParam}`)
         if (!cancelled && benefitsResponse.ok) {
           const data = await benefitsResponse.json()
           const items = Array.isArray(data) ? data : data.items || []
@@ -337,7 +344,7 @@ export function useSetupEmpresa() {
     return () => {
       cancelled = true
     }
-  }, [loadCompanyProfile, loadDepartments])
+  }, [isLoadingTenant, resolvedCompanyId, loadCompanyProfile, loadDepartments])
 
   const loadTemplates = useCallback(async (): Promise<number> => {
     setIsLoadingTemplates(true)
@@ -426,11 +433,13 @@ export function useSetupEmpresa() {
   )
 
   const handleSaveBenefit = async (benefit: Benefit) => {
+    if (!resolvedCompanyId) return
     setIsSaving(true)
     try {
+      const cid = encodeURIComponent(resolvedCompanyId)
       const url = benefit.id
-        ? `/api/backend-proxy/company/benefits/${benefit.id}?company_id=default`
-        : "/api/backend-proxy/company/benefits/?company_id=default"
+        ? `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`
+        : `/api/backend-proxy/company/benefits/?company_id=${cid}`
 
       const response = await fetch(url, {
         method: benefit.id ? "PUT" : "POST",
@@ -450,11 +459,12 @@ export function useSetupEmpresa() {
   }
 
   const handleDeleteBenefit = async (benefitId: string) => {
+    if (!resolvedCompanyId) return
     if (!confirm("Tem certeza que deseja excluir este benefício?")) return
 
     try {
       const response = await fetch(
-        `/api/backend-proxy/company/benefits/${benefitId}?company_id=default`,
+        `/api/backend-proxy/company/benefits/${benefitId}?company_id=${encodeURIComponent(resolvedCompanyId)}`,
         { method: "DELETE" }
       )
       if (response.ok) {
@@ -464,10 +474,10 @@ export function useSetupEmpresa() {
   }
 
   const handleToggleBenefitStatus = async (benefit: Benefit) => {
-    if (!benefit.id) return
+    if (!benefit.id || !resolvedCompanyId) return
     try {
       const response = await fetch(
-        `/api/backend-proxy/company/benefits/${benefit.id}?company_id=default`,
+        `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${encodeURIComponent(resolvedCompanyId)}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -481,7 +491,7 @@ export function useSetupEmpresa() {
   }
 
   const handleImportFile = async () => {
-    if (!importFile) return
+    if (!importFile || !resolvedCompanyId) return
 
     setIsImporting(true)
     try {
@@ -489,7 +499,7 @@ export function useSetupEmpresa() {
       formData.append("file", importFile)
 
       const response = await fetch(
-        "/api/backend-proxy/company/benefits/import?company_id=default",
+        `/api/backend-proxy/company/benefits/import?company_id=${encodeURIComponent(resolvedCompanyId)}`,
         { method: "POST", body: formData }
       )
 

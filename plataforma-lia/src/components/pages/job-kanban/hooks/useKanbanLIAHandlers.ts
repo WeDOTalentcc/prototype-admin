@@ -7,6 +7,7 @@ import { isClearChatCommand } from "@/lib/chat-commands"
 import { type KanbanCandidate } from "@/components/kanban"
 import { type CommunicationType } from "@/components/modals/unified-communication-modal"
 import { toast } from "sonner"
+import { useCompanyId } from "@/hooks/useCompanyId"
 
 interface KanbanJob {
   id?: string | number
@@ -89,6 +90,7 @@ export interface KanbanLIAHandlersContext {
 }
 
 export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
+  const { companyId: resolvedCompanyId } = useCompanyId()
   const {
     liaMessages,
     setLiaMessages,
@@ -358,7 +360,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         candidates: candidatesForApi as OrchestratedJobChatRequest['candidates'],
         selected_candidate_ids: selectedIds,
         conversation_id: liaConversationId,
-        company_id: user?.company || 'default',
+        company_id: resolvedCompanyId || '',
       })
 
       if (response.success) {
@@ -561,7 +563,7 @@ export function useKanbanLIAHandlers(ctx: KanbanLIAHandlersContext) {
         candidates: candidatesForApi as OrchestratedJobChatRequest['candidates'],
         selected_candidate_ids: selectedIds,
         conversation_id: liaConversationId,
-        company_id: user?.company || 'default',
+        company_id: resolvedCompanyId || '',
       })
 
       if ((response as Record<string, unknown>).error === 'auth_error') {

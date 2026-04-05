@@ -6,6 +6,7 @@ import { isConversationalMessage, isGenericQuestion } from "./liaMessageUtils"
 import type { Candidate } from "../types"
 import type { LIAChatMessage, CandidatesLIAHandlersContext } from "./useCandidatesLIAHandlers"
 import type { SearchFilters } from "@/components/search/advanced-filters-modal"
+import { useCompanyId } from "@/hooks/useCompanyId"
 
 type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
@@ -14,6 +15,7 @@ export function useLIAChatMessage(
   handleAICommand: (command: string) => void,
   handleTalentUIAction: (action: string, params?: Record<string, unknown>) => void,
 ) {
+  const { companyId: resolvedCompanyId } = useCompanyId()
   const {
     candidates,
     setChatMessages,
@@ -75,7 +77,7 @@ export function useLIAChatMessage(
         search_context: searchContextData,
         target_job: undefined,
         conversation_id: talentConversationId,
-        company_id: user?.company || 'default',
+        company_id: resolvedCompanyId || '',
       })
       if (response.conversation_id) {
         setTalentConversationId(response.conversation_id)

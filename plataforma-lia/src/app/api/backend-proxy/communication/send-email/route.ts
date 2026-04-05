@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     if (!bodyResult.success) return bodyResult.response
 
     const body = bodyResult.data
-    const companyId = request.headers.get('X-Company-ID') || (body.company_id as string | undefined) || 'default'
+    const companyId = request.headers.get('X-Company-ID') || (body.company_id as string | undefined) || ''
     
     const backendUrl = `${BACKEND_URL}/api/v1/communication/send-email`
     
