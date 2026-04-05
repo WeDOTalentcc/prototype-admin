@@ -1,5 +1,5 @@
 import React from "react"
-import { TrendingUp, Users, AlertTriangle, Globe, Brain, Layout, Trophy, Target, BarChart3 } from "lucide-react"
+import { TrendingUp, Users, AlertTriangle, Brain, Layout, Trophy, Target, BarChart3 } from "lucide-react"
 import type { ActiveTab, ViewMode } from "./indicators.types"
 
 // Dados dos recrutadores (mock data expandido)
@@ -196,7 +196,6 @@ export const TABS: Array<{ id: ActiveTab; label: string; icon: React.ComponentTy
   { id: "strategic", label: "Indicadores Estratégicos", icon: TrendingUp },
   { id: "recruiters", label: "Performance dos Recrutadores", icon: Users },
   { id: "alerts", label: "Alertas e Monitoramento", icon: AlertTriangle },
-  { id: "work_models", label: "Modelos de Trabalho", icon: Globe },
   { id: "predictions", label: "Previsoes e Tendencias", icon: Brain },
   { id: "agent_control", label: "Centro de Controle IA", icon: Brain },
 ]

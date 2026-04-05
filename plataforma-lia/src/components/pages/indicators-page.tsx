@@ -19,10 +19,6 @@ const RecruitersTab = dynamic(
   () => import("./indicators/tabs/RecruitersTab").then((m) => ({ default: m.RecruitersTab })),
   { ssr: false, loading: () => <div className="h-64 flex items-center justify-center text-lia-text-secondary">Carregando graficos...</div> }
 )
-const WorkModelsTab = dynamic(
-  () => import("./indicators/tabs/WorkModelsTab").then((m) => ({ default: m.WorkModelsTab })),
-  { ssr: false, loading: () => <div className="h-64 flex items-center justify-center text-lia-text-secondary">Carregando graficos...</div> }
-)
 const PredictionsTab = dynamic(
   () => import("./indicators/tabs/PredictionsTab").then((m) => ({ default: m.PredictionsTab })),
   { ssr: false, loading: () => <div className="h-64 flex items-center justify-center text-lia-text-secondary">Carregando...</div> }
@@ -146,7 +142,6 @@ export function IndicatorsPage() {
         <AlertsTab recruiters={recruiters} onAlertAction={handleAlertAction} />
       )}
 
-      {activeTab === "work_models" && <WorkModelsTab />}
 
       {activeTab === "predictions" && <PredictionsTab recruiters={recruiters} />}
 

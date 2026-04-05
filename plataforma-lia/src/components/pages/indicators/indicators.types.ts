@@ -77,7 +77,6 @@ export type ActiveTab =
   | "strategic"
   | "recruiters"
   | "alerts"
-  | "work_models"
   | "predictions"
   | "agent_control"
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -49,11 +50,11 @@ export function TopBar({ onNavigate, currentPage }: TopBarProps = {}) {
   const [passwordError, setPasswordError] = useState("")
   const [passwordSuccess, setPasswordSuccess] = useState(false)
 
-  // User data
-  // TODO: Replace with real user data from auth context
+  // User data from auth context
+  const { user: authUser } = useAuth()
   const currentUser = {
-    name: "Usuário",
-    email: "usuario@empresa.com",
+    name: authUser?.name || "Usuário",
+    email: authUser?.email || "usuario@empresa.com",
     role: "Recrutador(a)",
     company: "Empresa",
     avatar: undefined as string | undefined
