@@ -23,6 +23,7 @@ import {
   ChevronDown,
   ChevronUp,
   Brain,
+  MessageCircle,
   User,
   X,
   Trash2,
@@ -38,7 +39,7 @@ import Image from "next/image"
 // Memoizar os dados estáticos para evitar recriações
 // Menu principal - apenas páginas operacionais do dia-a-dia
 const menuItems: MenuItemType[] = [
-  { icon: Brain, label: "Chat LIA", isCore: true },
+  { icon: MessageCircle, label: "Chat LIA", isCore: true },
   { icon: Target, label: "Tarefas", isCore: true },
   { icon: LayoutDashboard, label: "Painel de Controle", isCore: true },
   { icon: Briefcase, label: "Vagas", isCore: true },
