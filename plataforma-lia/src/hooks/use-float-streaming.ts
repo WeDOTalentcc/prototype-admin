@@ -75,6 +75,18 @@ export function useFloatStreaming(
   const [isThinking, setIsThinking] = useState(false)
   const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([])
   const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTaskEvent[]>([])
+  const [wsAuthToken, setWsAuthToken] = useState<string | undefined>(undefined)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/auth/ws-token')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!cancelled && data?.token) setWsAuthToken(data.token)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     onCompleteRef.current = onComplete
@@ -208,7 +220,7 @@ export function useFloatStreaming(
     sendMessage: wsSend,
     sendRaw,
     clearTokens,
-  } = useAgentStreaming(sessionId, {}, handleEvent)
+  } = useAgentStreaming(sessionId, { authToken: wsAuthToken }, handleEvent)
 
   const sendMessage = useCallback(async (content: string, domain = '', scope?: string) => {
     // E7: limpa etapas de thinking ao enviar nova mensagem
