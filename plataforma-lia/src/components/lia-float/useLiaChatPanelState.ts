@@ -186,9 +186,17 @@ export function useLiaChatPanelState() {
   }, [disconnectChat, setMessages, setConversationId, clearIntent, closeDynamicPanel, resetBackgroundTasks])
 
   const handleClear = useCallback(() => {
+    disconnectChat()
     setMessages([])
+    setConversationId(null)
+    setActiveActionType(null)
+    setActionLabel(null)
+    clearIntent()
     setShowHistory(false)
-  }, [setMessages])
+    closeDynamicPanel()
+    resetBackgroundTasks()
+    setContextDismissed(false)
+  }, [disconnectChat, setMessages, setConversationId, clearIntent, closeDynamicPanel, resetBackgroundTasks])
 
   const handleToggleHistory = useCallback(() => {
     if (!showHistory) {

@@ -172,9 +172,13 @@ export function LiaSuperPrompt() {
   }, [disconnectChat, setSharedMessages, setSharedConversationId, setChatConversationId])
 
   const handleClear = useCallback(() => {
+    disconnectChat()
     setSharedMessages([])
+    setSharedConversationId(null)
+    setChatConversationId(null)
     setShowHistory(false)
-  }, [setSharedMessages])
+    setContextDismissed(false)
+  }, [disconnectChat, setSharedMessages, setSharedConversationId, setChatConversationId])
 
   const handleToggleHistory = useCallback(() => {
     if (!showHistory) {
