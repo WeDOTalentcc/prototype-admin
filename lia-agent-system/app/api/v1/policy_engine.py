@@ -9,15 +9,15 @@ Provides endpoints for:
 - Seeding default rules
 """
 import logging
-from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
-from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.policy import BusinessRule, EscalationLog, EscalationRule, PolicyEvaluationLog, RateLimitRule
+from app.domains.policy.dependencies import get_policy_repo
+from app.domains.policy.repositories.policy_repository import PolicyRepository
+from app.models.policy import BusinessRule, EscalationRule, RateLimitRule
 from app.schemas.policy import (
     BusinessRuleCreate,
     BusinessRuleResponse,
@@ -68,53 +68,27 @@ async def list_policies(
     trigger_type: str | None = Query(None, description="Filter escalation rules by trigger type"),
     is_active: bool | None = Query(None, description="Filter by active status"),
     company_id: str | None = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """List all policy rules (business, rate limit, escalation)."""
     try:
-        business_conditions = [BusinessRule.is_active] if is_active is None else [BusinessRule.is_active == is_active]
-        if rule_type:
-            business_conditions.append(BusinessRule.rule_type == rule_type)
-        if company_id:
-            business_conditions.append(
-                or_(BusinessRule.company_id is None, BusinessRule.company_id == UUID(company_id))
-            )
-        
-        business_query = select(BusinessRule).where(and_(*business_conditions)).order_by(BusinessRule.priority.asc())
-        business_result = await db.execute(business_query)
-        business_rules = business_result.scalars().all()
-        
-        rate_conditions = [RateLimitRule.is_active] if is_active is None else [RateLimitRule.is_active == is_active]
-        if target_type:
-            rate_conditions.append(RateLimitRule.target_type == target_type)
-        if company_id:
-            rate_conditions.append(
-                or_(RateLimitRule.company_id is None, RateLimitRule.company_id == UUID(company_id))
-            )
-        
-        rate_query = select(RateLimitRule).where(and_(*rate_conditions))
-        rate_result = await db.execute(rate_query)
-        rate_limit_rules = rate_result.scalars().all()
-        
-        esc_conditions = [EscalationRule.is_active] if is_active is None else [EscalationRule.is_active == is_active]
-        if trigger_type:
-            esc_conditions.append(EscalationRule.trigger_type == trigger_type)
-        if company_id:
-            esc_conditions.append(
-                or_(EscalationRule.company_id is None, EscalationRule.company_id == UUID(company_id))
-            )
-        
-        esc_query = select(EscalationRule).where(and_(*esc_conditions)).order_by(EscalationRule.priority.asc())
-        esc_result = await db.execute(esc_query)
-        escalation_rules = esc_result.scalars().all()
-        
+        business_rules = await repo.list_business_rules(
+            is_active=is_active, rule_type=rule_type, company_id=company_id
+        )
+        rate_limit_rules = await repo.list_rate_limit_rules(
+            is_active=is_active, target_type=target_type, company_id=company_id
+        )
+        escalation_rules = await repo.list_escalation_rules(
+            is_active=is_active, trigger_type=trigger_type, company_id=company_id
+        )
+
         return PolicyListResponse(
             business_rules=[BusinessRuleResponse(**r.to_dict()) for r in business_rules],
             rate_limit_rules=[RateLimitRuleResponse(**r.to_dict()) for r in rate_limit_rules],
             escalation_rules=[EscalationRuleResponse(**r.to_dict()) for r in escalation_rules],
             total_business_rules=len(business_rules),
             total_rate_limit_rules=len(rate_limit_rules),
-            total_escalation_rules=len(escalation_rules)
+            total_escalation_rules=len(escalation_rules),
         )
     except Exception as e:
         logger.error(f"Error listing policies: {e}", exc_info=True)
@@ -126,7 +100,7 @@ async def create_business_rule(
     data: BusinessRuleCreate,
     company_id: str | None = Depends(get_verified_company_id),
     user_id: str | None = Depends(get_user_id_from_header),
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Create a new business rule."""
     try:
@@ -141,15 +115,11 @@ async def create_business_rule(
             approval_config=data.approval_config,
             is_active=data.is_active,
             rule_metadata=data.rule_metadata,
-            created_by=UUID(user_id) if user_id else None
+            created_by=UUID(user_id) if user_id else None,
         )
-        db.add(rule)
-        await db.commit()
-        await db.refresh(rule)
-        
+        rule = await repo.create_business_rule(rule)
         return BusinessRuleResponse(**rule.to_dict())
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating business rule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -157,18 +127,14 @@ async def create_business_rule(
 @router.get("/business-rules/{rule_id}", response_model=BusinessRuleResponse, summary="Get business rule")
 async def get_business_rule(
     rule_id: str,
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Get a specific business rule."""
     try:
         rule_uuid = UUID(rule_id)
-        query = select(BusinessRule).where(BusinessRule.id == rule_uuid)
-        result = await db.execute(query)
-        rule = result.scalar_one_or_none()
-        
+        rule = await repo.get_business_rule(rule_uuid)
         if not rule:
             raise HTTPException(status_code=404, detail="Business rule not found")
-        
         return BusinessRuleResponse(**rule.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid rule ID format")
@@ -183,34 +149,22 @@ async def get_business_rule(
 async def update_business_rule(
     rule_id: str,
     data: BusinessRuleUpdate,
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Update a business rule."""
     try:
         rule_uuid = UUID(rule_id)
-        query = select(BusinessRule).where(BusinessRule.id == rule_uuid)
-        result = await db.execute(query)
-        rule = result.scalar_one_or_none()
-        
+        rule = await repo.get_business_rule(rule_uuid)
         if not rule:
             raise HTTPException(status_code=404, detail="Business rule not found")
-        
         update_data = data.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            if field == "rule_type" and value:
-                value = value.value
-            setattr(rule, field, value)
-        
-        await db.commit()
-        await db.refresh(rule)
-        
+        rule = await repo.update_business_rule(rule, update_data)
         return BusinessRuleResponse(**rule.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid rule ID format")
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating business rule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -218,28 +172,21 @@ async def update_business_rule(
 @router.delete("/business-rules/{rule_id}", summary="Delete business rule", response_model=None)
 async def delete_business_rule(
     rule_id: str,
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Delete a business rule."""
     try:
         rule_uuid = UUID(rule_id)
-        query = select(BusinessRule).where(BusinessRule.id == rule_uuid)
-        result = await db.execute(query)
-        rule = result.scalar_one_or_none()
-        
+        rule = await repo.get_business_rule(rule_uuid)
         if not rule:
             raise HTTPException(status_code=404, detail="Business rule not found")
-        
-        await db.delete(rule)
-        await db.commit()
-        
+        await repo.delete_business_rule(rule)
         return {"message": "Business rule deleted successfully"}
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid rule ID format")
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error deleting business rule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -248,7 +195,7 @@ async def delete_business_rule(
 async def create_rate_limit_rule(
     data: RateLimitRuleCreate,
     company_id: str | None = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Create a new rate limit rule."""
     try:
@@ -262,15 +209,11 @@ async def create_rate_limit_rule(
             limit_value=data.limit_value,
             window_seconds=data.window_seconds,
             burst_limit=data.burst_limit,
-            is_active=data.is_active
+            is_active=data.is_active,
         )
-        db.add(rule)
-        await db.commit()
-        await db.refresh(rule)
-        
+        rule = await repo.create_rate_limit_rule(rule)
         return RateLimitRuleResponse(**rule.to_dict())
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating rate limit rule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -279,34 +222,22 @@ async def create_rate_limit_rule(
 async def update_rate_limit_rule(
     rule_id: str,
     data: RateLimitRuleUpdate,
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Update a rate limit rule."""
     try:
         rule_uuid = UUID(rule_id)
-        query = select(RateLimitRule).where(RateLimitRule.id == rule_uuid)
-        result = await db.execute(query)
-        rule = result.scalar_one_or_none()
-        
+        rule = await repo.get_rate_limit_rule(rule_uuid)
         if not rule:
             raise HTTPException(status_code=404, detail="Rate limit rule not found")
-        
         update_data = data.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            if field == "target_type" and value:
-                value = value.value
-            setattr(rule, field, value)
-        
-        await db.commit()
-        await db.refresh(rule)
-        
+        rule = await repo.update_rate_limit_rule(rule, update_data)
         return RateLimitRuleResponse(**rule.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid rule ID format")
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating rate limit rule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -315,7 +246,7 @@ async def update_rate_limit_rule(
 async def create_escalation_rule(
     data: EscalationRuleCreate,
     company_id: str | None = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Create a new escalation rule."""
     try:
@@ -330,15 +261,11 @@ async def create_escalation_rule(
             notification_template=data.notification_template,
             cooldown_seconds=data.cooldown_seconds,
             priority=data.priority,
-            is_active=data.is_active
+            is_active=data.is_active,
         )
-        db.add(rule)
-        await db.commit()
-        await db.refresh(rule)
-        
+        rule = await repo.create_escalation_rule(rule)
         return EscalationRuleResponse(**rule.to_dict())
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error creating escalation rule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -347,36 +274,22 @@ async def create_escalation_rule(
 async def update_escalation_rule(
     rule_id: str,
     data: EscalationRuleUpdate,
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Update an escalation rule."""
     try:
         rule_uuid = UUID(rule_id)
-        query = select(EscalationRule).where(EscalationRule.id == rule_uuid)
-        result = await db.execute(query)
-        rule = result.scalar_one_or_none()
-        
+        rule = await repo.get_escalation_rule(rule_uuid)
         if not rule:
             raise HTTPException(status_code=404, detail="Escalation rule not found")
-        
         update_data = data.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            if field == "trigger_type" and value:
-                value = value.value
-            elif field == "escalation_action" and value:
-                value = value.value
-            setattr(rule, field, value)
-        
-        await db.commit()
-        await db.refresh(rule)
-        
+        rule = await repo.update_escalation_rule(rule, update_data)
         return EscalationRuleResponse(**rule.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid rule ID format")
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error updating escalation rule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -385,7 +298,7 @@ async def update_escalation_rule(
 async def evaluate_policy(
     data: PolicyEvaluateRequest,
     company_id: str | None = Depends(get_verified_company_id),
-    user_id: str | None = Depends(get_user_id_from_header)
+    user_id: str | None = Depends(get_user_id_from_header),
 ):
     """Evaluate whether an action is allowed by policies."""
     try:
@@ -397,9 +310,9 @@ async def evaluate_policy(
             company_id=data.company_id or company_id,
             user_id=data.user_id or user_id,
             check_rate_limit=data.check_rate_limit,
-            dry_run=data.dry_run
+            dry_run=data.dry_run,
         )
-        
+
         return PolicyEvaluateResponse(
             result=PolicyEvaluationResultEnum(result.result.value),
             allowed=result.allowed,
@@ -409,7 +322,7 @@ async def evaluate_policy(
             requires_approval=result.requires_approval,
             approval_config=result.approval_config,
             evaluation_time_ms=result.evaluation_time_ms,
-            rules_evaluated=result.rules_evaluated
+            rules_evaluated=result.rules_evaluated,
         )
     except Exception as e:
         logger.error(f"Error evaluating policy: {e}", exc_info=True)
@@ -419,7 +332,7 @@ async def evaluate_policy(
 @router.post("/check-rate-limit", response_model=RateLimitCheckResponse, summary="Check rate limit")
 async def check_rate_limit(
     data: RateLimitCheckRequest,
-    company_id: str | None = Depends(get_verified_company_id)
+    company_id: str | None = Depends(get_verified_company_id),
 ):
     """Check rate limit for a specific target and action."""
     try:
@@ -429,9 +342,8 @@ async def check_rate_limit(
             target_id=data.target_id,
             action=data.action,
             company_id=data.company_id or company_id,
-            increment=data.increment
+            increment=data.increment,
         )
-        
         return RateLimitCheckResponse(**result.to_dict())
     except Exception as e:
         logger.error(f"Error checking rate limit: {e}", exc_info=True)
@@ -441,7 +353,7 @@ async def check_rate_limit(
 @router.post("/trigger-escalation", response_model=EscalationTriggerResponse, summary="Trigger escalation")
 async def trigger_escalation(
     data: EscalationTriggerRequest,
-    company_id: str | None = Depends(get_verified_company_id)
+    company_id: str | None = Depends(get_verified_company_id),
 ):
     """Trigger an escalation based on a rule or trigger type."""
     try:
@@ -450,9 +362,8 @@ async def trigger_escalation(
             rule_id=data.rule_id,
             trigger_type=data.trigger_type.value if data.trigger_type else None,
             context=data.context,
-            company_id=data.company_id or company_id
+            company_id=data.company_id or company_id,
         )
-        
         return EscalationTriggerResponse(**result.to_dict())
     except Exception as e:
         logger.error(f"Error triggering escalation: {e}", exc_info=True)
@@ -462,7 +373,8 @@ async def trigger_escalation(
 @router.post(
     "/apply-sector/{company_id}",
     summary="Aplica defaults setoriais Alpha 1 para uma empresa",
-    response_model=None)
+    response_model=None,
+)
 async def apply_sector_defaults(
     company_id: str,
     sector: str = Query(..., description="Setor: tech | varejo | logistica | financeiro | saude | rpo"),
@@ -485,7 +397,7 @@ async def apply_sector_defaults(
     if sector_key not in valid_sectors:
         raise HTTPException(
             status_code=400,
-            detail=f"Setor '{sector}' não reconhecido. Válidos: {sorted(valid_sectors)}"
+            detail=f"Setor '{sector}' não reconhecido. Válidos: {sorted(valid_sectors)}",
         )
 
     try:
@@ -507,18 +419,18 @@ async def seed_default_policies():
     try:
         service = PolicyEngineService()
         stats = await service.load_default_rules()
-        
+
         total_created = (
-            stats["business_rules_created"] +
-            stats["rate_limit_rules_created"] +
-            stats["escalation_rules_created"]
+            stats["business_rules_created"]
+            + stats["rate_limit_rules_created"]
+            + stats["escalation_rules_created"]
         )
         total_skipped = (
-            stats["business_rules_skipped"] +
-            stats["rate_limit_rules_skipped"] +
-            stats["escalation_rules_skipped"]
+            stats["business_rules_skipped"]
+            + stats["rate_limit_rules_skipped"]
+            + stats["escalation_rules_skipped"]
         )
-        
+
         return PolicySeedResponse(
             business_rules_created=stats["business_rules_created"],
             business_rules_skipped=stats["business_rules_skipped"],
@@ -526,7 +438,7 @@ async def seed_default_policies():
             rate_limit_rules_skipped=stats["rate_limit_rules_skipped"],
             escalation_rules_created=stats["escalation_rules_created"],
             escalation_rules_skipped=stats["escalation_rules_skipped"],
-            message=f"Seeded {total_created} rules, skipped {total_skipped} existing rules"
+            message=f"Seeded {total_created} rules, skipped {total_skipped} existing rules",
         )
     except Exception as e:
         logger.error(f"Error seeding policies: {e}", exc_info=True)
@@ -541,28 +453,18 @@ async def get_evaluation_logs(
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str | None = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Get policy evaluation logs."""
     try:
-        conditions = []
-        if company_id:
-            conditions.append(PolicyEvaluationLog.company_id == UUID(company_id))
-        if action:
-            conditions.append(PolicyEvaluationLog.action == action)
-        if result:
-            conditions.append(PolicyEvaluationLog.result == result)
-        if agent_name:
-            conditions.append(PolicyEvaluationLog.agent_name == agent_name)
-        
-        query = select(PolicyEvaluationLog)
-        if conditions:
-            query = query.where(and_(*conditions))
-        query = query.order_by(desc(PolicyEvaluationLog.created_at)).limit(limit).offset(offset)
-        
-        db_result = await db.execute(query)
-        logs = db_result.scalars().all()
-        
+        logs = await repo.list_evaluation_logs(
+            company_id=company_id,
+            action=action,
+            result=result,
+            agent_name=agent_name,
+            limit=limit,
+            offset=offset,
+        )
         return [PolicyEvaluationLogResponse(**log.to_dict()) for log in logs]
     except Exception as e:
         logger.error(f"Error getting evaluation logs: {e}", exc_info=True)
@@ -576,26 +478,17 @@ async def get_escalation_logs(
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str | None = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Get escalation logs."""
     try:
-        conditions = []
-        if company_id:
-            conditions.append(EscalationLog.company_id == UUID(company_id))
-        if resolved is not None:
-            conditions.append(EscalationLog.resolved == resolved)
-        if action_taken:
-            conditions.append(EscalationLog.action_taken == action_taken)
-        
-        query = select(EscalationLog)
-        if conditions:
-            query = query.where(and_(*conditions))
-        query = query.order_by(desc(EscalationLog.created_at)).limit(limit).offset(offset)
-        
-        db_result = await db.execute(query)
-        logs = db_result.scalars().all()
-        
+        logs = await repo.list_escalation_logs(
+            company_id=company_id,
+            resolved=resolved,
+            action_taken=action_taken,
+            limit=limit,
+            offset=offset,
+        )
         return [EscalationLogResponse(**log.to_dict()) for log in logs]
     except Exception as e:
         logger.error(f"Error getting escalation logs: {e}", exc_info=True)
@@ -607,32 +500,20 @@ async def resolve_escalation(
     log_id: str,
     resolution_notes: str | None = Query(None, description="Resolution notes"),
     user_id: str | None = Depends(get_user_id_from_header),
-    db: AsyncSession = Depends(get_db)
+    repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Mark an escalation as resolved."""
     try:
         log_uuid = UUID(log_id)
-        query = select(EscalationLog).where(EscalationLog.id == log_uuid)
-        result = await db.execute(query)
-        log = result.scalar_one_or_none()
-        
+        log = await repo.get_escalation_log(log_uuid)
         if not log:
             raise HTTPException(status_code=404, detail="Escalation log not found")
-        
-        log.resolved = True
-        log.resolved_at = datetime.utcnow()
-        log.resolved_by = UUID(user_id) if user_id else None
-        log.resolution_notes = resolution_notes
-        
-        await db.commit()
-        await db.refresh(log)
-        
+        log = await repo.resolve_escalation_log(log, user_id, resolution_notes)
         return {"message": "Escalation resolved successfully", "log": log.to_dict()}
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid log ID format")
     except HTTPException:
         raise
     except Exception as e:
-        await db.rollback()
         logger.error(f"Error resolving escalation: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
