@@ -63,7 +63,7 @@ export interface UseCandidatesArchetypesParams {
   setLastSearchMode: (v: string) => void
   setActiveSearchTab: (v: string) => void
   setLiaPromptValue: (v: string) => void
-  setChatMessages: (fn: (prev: Record<string, unknown>[]) => Record<string, unknown>[]) => void
+  setChatMessages: (v: unknown[] | ((prev: unknown[]) => unknown[])) => void
 }
 
 export function useCandidatesArchetypes(params: UseCandidatesArchetypesParams) {

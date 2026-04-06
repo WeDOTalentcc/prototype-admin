@@ -1,4 +1,5 @@
 "use client"
+import type { ChatMessage } from "./candidates-core"
 
 import React from "react"
 import { isConversationalMessage, isGenericQuestion } from "./liaMessageUtils"
@@ -15,28 +16,8 @@ import { useLIAAICommands } from "./useLIAAICommands"
 
 type SearchTab = 'ia-natural' | 'similar' | 'job-description' | 'boolean' | 'arquetipos' | 'filtros'
 
-export interface LIAChatMessage {
-  id: string
-  type: 'user' | 'lia' | 'proactive_insight' | 'calibration'
-  content: string
-  timestamp: Date
-  metadata?: {
-    action_executed?: boolean
-    action_result?: Record<string, unknown>
-    action_type?: string
-    needs_confirmation?: boolean
-    needs_params?: boolean
-    pending_action_id?: string
-    conversation_id?: string
-  }
-  searchResults?: {
-    localCount: number
-    globalCount: number
-    query: string
-  }
-  analytics?: SearchAnalytics
-  candidates?: CalibrationCandidate[]
-}
+// LIAChatMessage is the same as ChatMessage from candidates-core
+export type { ChatMessage as LIAChatMessage } from './candidates-core'
 
 interface AppRouter {
   push: (href: string) => void
@@ -54,9 +35,9 @@ interface AuthUser {
 
 export interface CandidatesLIAHandlersContext {
   candidates: Candidate[]
-  setCandidates: (v: Candidate[]) => void
+  setCandidates: (v: Candidate[] | ((prev: Candidate[]) => Candidate[])) => void
   chatMessages: LIAChatMessage[]
-  setChatMessages: (v: LIAChatMessage[]) => void
+  setChatMessages: (v: LIAChatMessage[] | ((prev: LIAChatMessage[]) => LIAChatMessage[])) => void
   liaPromptValue: string
   setLiaPromptValue: (v: string) => void
   liaWidth: number

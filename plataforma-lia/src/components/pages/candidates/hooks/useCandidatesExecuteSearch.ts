@@ -21,8 +21,8 @@ interface PearchSearchOptions {
 }
 
 interface SearchResults {
-  local: import('./types').Candidate[]
-  global: import('./types').Candidate[]
+  local: Candidate[]
+  global: Candidate[]
   localCount: number
   globalCount: number
   query: string
@@ -36,9 +36,9 @@ interface ExecuteSearchDeps {
   pearchSearchOptions: PearchSearchOptions
   searchThreadId: string | undefined
   setSearchThreadId: (id: string | undefined) => void
-  hideViewedCandidatesFilter: (candidates: import('./types').Candidate[]) => import('./types').Candidate[]
+  hideViewedCandidatesFilter: (candidates: Candidate[]) => Candidate[]
   talentFunnel: { addToHistory: (entry: Record<string, unknown>) => void; [key: string]: unknown }
-  setCandidates: (c: import('./types').Candidate[]) => void
+  setCandidates: (c: Candidate[]) => void
   setSearchResults: (v: SearchResults | ((prev: SearchResults) => SearchResults)) => void
   setHasSearchResults: (v: boolean) => void
   setSearchResultsCount: (v: number) => void
@@ -50,8 +50,8 @@ interface ExecuteSearchDeps {
   setDisplayedResultsCount: (v: number) => void
   setCurrentSearchSource: (s: string) => void
   setHasSearched: (v: boolean) => void
-  setLastSearchEntities: (e: import('@/components/search/smart-search-input').ParsedEntities | null) => void
-  setLastSearchMetadata: (m: import('@/components/search/smart-search-input').SearchMetadata | undefined) => void
+  setLastSearchEntities: (e: ParsedEntities | null) => void
+  setLastSearchMetadata: (m: SearchMetadata | undefined) => void
   setLastSearchUsedPearch: (v: boolean) => void
   setSearchExecutionId: (fn: number | ((prev: number) => number)) => void
   setShowExpandGlobalOption: (v: boolean) => void
