@@ -9,20 +9,17 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
-from app.core.database import get_db
 from app.domains.communication.services.email_providers import get_email_provider
-from app.models.candidate import Candidate, VacancyCandidate
-from app.models.email_template import EmailTemplate
+from app.domains.shared_searches.dependencies import get_shared_search_repo
+from app.domains.shared_searches.repositories.shared_search_repository import (
+    SharedSearchRepository,
+)
 from app.models.shared_search import (
-    FeedbackDecision,
     SharedSearch,
     SharedSearchAccess,
-    SharedSearchFeedback,
     SharedSearchStatus,
     ShareType,
 )
@@ -98,12 +95,22 @@ def send_shared_search_invite_email(
             base_url = f"https://{base_url}"
         else:
             base_url = os.environ.get("PUBLIC_URL", "http://localhost:5000")
-        
+
         access_url = f"{base_url}/shared/{access_token}"
         recipient_greeting = to_name or "Gestor(a)"
-        expiry_text = f"<p style='color: #666; font-size: 14px;'>Este link expira em {expires_at.strftime('%d/%m/%Y às %H:%M') if expires_at else 'breve'}.</p>" if expires_at else ""
-        message_html = f"<p style='color: #333; font-size: 14px; background: #f5f5f5; padding: 12px; border-radius: 6px; margin: 16px 0;'><em>\"{message}\"</em></p>" if message else ""
-        
+        expiry_text = (
+            f"<p style='color: #666; font-size: 14px;'>Este link expira em "
+            f"{expires_at.strftime('%d/%m/%Y às %H:%M') if expires_at else 'breve'}.</p>"
+            if expires_at
+            else ""
+        )
+        message_html = (
+            f"<p style='color: #333; font-size: 14px; background: #f5f5f5; padding: 12px; "
+            f"border-radius: 6px; margin: 16px 0;'><em>\"{message}\"</em></p>"
+            if message
+            else ""
+        )
+
         html = f"""
         <!DOCTYPE html>
         <html>
@@ -117,16 +124,16 @@ def send_shared_search_invite_email(
                     <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">LIA</h1>
                     <p style="color: #60BED1; margin: 8px 0 0; font-size: 14px;">Learning Intelligence Assistant</p>
                 </div>
-                
+
                 <div style="padding: 32px;">
                     <h2 style="color: #1a1a1a; font-size: 20px; margin: 0 0 16px;">Olá, {recipient_greeting}!</h2>
-                    
+
                     <p style="color: #333; font-size: 14px; line-height: 1.6; margin: 0 0 16px;">
                         <strong>{recruiter_name}</strong> da <strong>{company_name}</strong> compartilhou uma seleção de candidatos com você para avaliação.
                     </p>
-                    
+
                     {message_html}
-                    
+
                     <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 24px 0;">
                         <p style="color: #666; font-size: 12px; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.5px;">Busca compartilhada</p>
                         <p style="color: #1a1a1a; font-size: 16px; font-weight: 600; margin: 0 0 8px;">{search_title}</p>
@@ -134,20 +141,20 @@ def send_shared_search_invite_email(
                             <strong>{candidate_count}</strong> candidato{"s" if candidate_count != 1 else ""} para avaliar
                         </p>
                     </div>
-                    
+
                     <div style="background: #60BED1; border-radius: 8px; padding: 20px; text-align: center; margin: 24px 0;">
                         <p style="color: white; font-size: 12px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.5px;">Seu código de acesso</p>
                         <p style="color: white; font-size: 32px; font-weight: 700; margin: 0; letter-spacing: 4px; font-family: monospace;">{otp_code}</p>
                     </div>
-                    
+
                     <a href="{access_url}" style="display: block; background: #1a1a1a; color: white; text-decoration: none; padding: 14px 24px; border-radius: 8px; text-align: center; font-size: 14px; font-weight: 600; margin: 24px 0;">
                         Avaliar Candidatos
                     </a>
-                    
+
                     {expiry_text}
-                    
+
                     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;">
-                    
+
                     <p style="color: #999; font-size: 12px; line-height: 1.5; margin: 0;">
                         Se você não esperava este email, pode ignorá-lo com segurança.<br>
                         Este é um email automático, por favor não responda.
@@ -157,7 +164,7 @@ def send_shared_search_invite_email(
         </body>
         </html>
         """
-        
+
         provider = get_email_provider()
         result = provider.send(
             to=to_email,
@@ -165,46 +172,16 @@ def send_shared_search_invite_email(
             html=html,
             from_name="LIA - WeDoTalent"
         )
-        
+
         if result.success:
             logger.info(f"Invite email sent to {to_email}")
         else:
             logger.warning(f"Failed to send invite email to {to_email}: {result.error}")
-        
+
         return result.success
     except Exception as e:
         logger.error(f"Error sending invite email: {e}")
         return False
-
-
-async def fetch_share_template(db: AsyncSession, channel: str, company_id: str | None = None) -> EmailTemplate | None:
-    """Fetch template with situation='share_with_manager' for the given channel."""
-    try:
-        if company_id:
-            result = await db.execute(
-                select(EmailTemplate).where(
-                    EmailTemplate.situation == "share_with_manager",
-                    EmailTemplate.channel == channel,
-                    EmailTemplate.is_active,
-                    EmailTemplate.company_id == company_id,
-                )
-            )
-            template = result.scalar_one_or_none()
-            if template:
-                return template
-
-        result = await db.execute(
-            select(EmailTemplate).where(
-                EmailTemplate.situation == "share_with_manager",
-                EmailTemplate.channel == channel,
-                EmailTemplate.is_active,
-                EmailTemplate.is_system_template,
-            )
-        )
-        return result.scalar_one_or_none()
-    except Exception as e:
-        logger.warning(f"Error fetching share template for channel={channel}: {e}")
-        return None
 
 
 def render_template_variables(template_str: str, variables: dict) -> str:
@@ -233,20 +210,19 @@ def send_whatsapp_simulated(
     return True
 
 
-async def build_candidate_snapshot(db: AsyncSession, candidate_ids: list[uuid.UUID]) -> list[dict]:
+async def build_candidate_snapshot(
+    repo: SharedSearchRepository, candidate_ids: list[uuid.UUID]
+) -> list[dict]:
     if not candidate_ids:
         return []
-    
-    result = await db.execute(
-        select(Candidate).where(Candidate.id.in_(candidate_ids))
-    )
-    candidates = result.scalars().all()
-    
+
+    candidates = await repo.get_candidates_by_ids(candidate_ids)
+
     snapshots = []
     for c in candidates:
         location_parts = [c.location_city, c.location_state, c.location_country]
         location = ", ".join([p for p in location_parts if p])
-        
+
         snapshots.append({
             "id": str(c.id),
             "name": c.name,
@@ -260,16 +236,16 @@ async def build_candidate_snapshot(db: AsyncSession, candidate_ids: list[uuid.UU
             "linkedin_url": c.linkedin_url,
             "resume_url": c.resume_url
         })
-    
+
     return snapshots
 
 
-def build_feedback_summary(feedbacks: list[SharedSearchFeedback], total_candidates: int) -> FeedbackSummary:
+def build_feedback_summary(feedbacks, total_candidates: int) -> FeedbackSummary:
     counts = {"approved": 0, "maybe": 0, "rejected": 0}
     for f in feedbacks:
         if f.decision.value in counts:
             counts[f.decision.value] += 1
-    
+
     reviewed = sum(counts.values())
     return FeedbackSummary(
         approved=counts["approved"],
@@ -282,7 +258,7 @@ def build_feedback_summary(feedbacks: list[SharedSearchFeedback], total_candidat
 @router.post("", response_model=None)
 async def create_shared_search(
     data: CreateSharedSearchRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """
@@ -293,29 +269,24 @@ async def create_shared_search(
         company_id = get_user_company_id(current_user)
         logger.info(f"Company ID: {company_id}")
         company_uuid = parse_company_uuid(company_id)
-        
+
         if not company_uuid:
-            from app.models.company import CompanyProfile
-            result = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
-            )
-            default_company = result.scalar_one_or_none()
-            if default_company:
-                company_uuid = default_company.id
+            company_uuid = await repo.get_default_company_id()
+            if company_uuid:
                 logger.info(f"Using default company UUID: {company_uuid}")
-        
+
         logger.info(f"Company UUID: {company_uuid}")
-        
+
         if not company_uuid:
             logger.error(f"Invalid company ID: {company_id}")
             raise HTTPException(status_code=400, detail="Company ID inválido para criar compartilhamento")
-        
+
         candidate_uuids = [uuid.UUID(str(cid)) for cid in data.candidate_ids]
-        snapshot_data = await build_candidate_snapshot(db, candidate_uuids)
-        
+        snapshot_data = await build_candidate_snapshot(repo, candidate_uuids)
+
         if not snapshot_data:
             raise HTTPException(status_code=400, detail="Nenhum candidato válido encontrado")
-        
+
         shared_search = SharedSearch(
             id=uuid.uuid4(),
             company_id=company_uuid,
@@ -333,15 +304,14 @@ async def create_shared_search(
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()
         )
-        
-        db.add(shared_search)
-        await db.flush()
-        
+
+        await repo.create_shared_search(shared_search)
+
         access_records = []
         for recipient in data.recipients:
             access_token = generate_access_token()
             otp = generate_otp()
-            
+
             access_record = SharedSearchAccess(
                 id=uuid.uuid4(),
                 shared_search_id=shared_search.id,
@@ -353,7 +323,7 @@ async def create_shared_search(
                 otp_expires_at=datetime.utcnow(),
                 created_at=datetime.utcnow()
             )
-            db.add(access_record)
+            await repo.create_access_record(access_record)
             access_records.append({
                 "email": recipient.email,
                 "name": recipient.name,
@@ -362,10 +332,10 @@ async def create_shared_search(
                 "access_token": access_token,
                 "otp": otp
             })
-        
-        await db.commit()
-        await db.refresh(shared_search)
-        
+
+        await repo.commit()
+        await repo.refresh(shared_search)
+
         recruiter_name = current_user.name or current_user.email or "Recrutador"
         company_name = "WeDoTalent"
         channel = data.channel
@@ -375,9 +345,9 @@ async def create_shared_search(
         email_template = None
         whatsapp_template = None
         if send_email:
-            email_template = await fetch_share_template(db, "email", company_id)
+            email_template = await repo.get_share_template("email", company_id)
         if send_whatsapp:
-            whatsapp_template = await fetch_share_template(db, "whatsapp", company_id)
+            whatsapp_template = await repo.get_share_template("whatsapp", company_id)
 
         import os
         base_url = os.environ.get("REPLIT_DEV_DOMAIN", "")
@@ -461,7 +431,7 @@ async def create_shared_search(
                     )
 
         logger.info(f"Shared search created id={shared_search.id} channel={channel.value}")
-        
+
         recipients_summary = [
             RecipientSummary(
                 email=r["email"],
@@ -474,7 +444,7 @@ async def create_shared_search(
             )
             for r in access_records
         ]
-        
+
         return {
             "id": str(shared_search.id),
             "company_id": str(shared_search.company_id),
@@ -490,12 +460,12 @@ async def create_shared_search(
             "recipients": [r.model_dump() for r in recipients_summary],
             "access_links": access_records
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error creating shared search: {e}", exc_info=True)
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -505,7 +475,7 @@ async def list_shared_searches(
     share_type: str | None = Query(None, description="Filter by type: search, list"),
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db),
+    repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """
@@ -514,48 +484,30 @@ async def list_shared_searches(
     try:
         company_id = get_user_company_id(current_user)
         company_uuid = parse_company_uuid(company_id)
-        
+
         if not company_uuid:
             return {"total": 0, "offset": offset, "limit": limit, "items": []}
-        
-        query = select(SharedSearch).where(
-            SharedSearch.company_id == company_uuid
+
+        total, searches = await repo.list_shared_searches(
+            company_uuid=company_uuid,
+            status=status,
+            share_type=share_type,
+            offset=offset,
+            limit=limit,
         )
-        
-        if status:
-            query = query.where(SharedSearch.status == SharedSearchStatus(status))
-        
-        if share_type:
-            query = query.where(SharedSearch.share_type == ShareType(share_type))
-        
-        count_query = select(func.count()).select_from(query.subquery())
-        total_result = await db.execute(count_query)
-        total = total_result.scalar() or 0
-        
-        query = query.offset(offset).limit(limit).order_by(SharedSearch.created_at.desc())
-        
-        result = await db.execute(query)
-        searches = result.scalars().all()
-        
+
         items = []
         for search in searches:
-            access_result = await db.execute(
-                select(SharedSearchAccess).where(SharedSearchAccess.shared_search_id == search.id)
-            )
-            access_records = access_result.scalars().all()
-            
-            feedback_result = await db.execute(
-                select(SharedSearchFeedback).where(SharedSearchFeedback.shared_search_id == search.id)
-            )
-            feedbacks = feedback_result.scalars().all()
-            
+            access_records = await repo.get_access_by_search(search.id)
+            feedbacks = await repo.get_feedbacks_by_search(search.id)
+
             candidates_in_snapshot = search.snapshot_payload.get("candidates", []) if search.snapshot_payload else []
             feedback_summary = build_feedback_summary(feedbacks, len(candidates_in_snapshot))
-            
+
             feedback_counts_by_email = {}
             for f in feedbacks:
                 feedback_counts_by_email[f.reviewer_email] = feedback_counts_by_email.get(f.reviewer_email, 0) + 1
-            
+
             recipients = [
                 RecipientSummary(
                     email=acc.email,
@@ -568,10 +520,10 @@ async def list_shared_searches(
                 )
                 for acc in access_records
             ]
-            
+
             first_recipient = access_records[0] if access_records else None
             share_url = f"/shared/{first_recipient.access_token}" if first_recipient else None
-            
+
             items.append({
                 "id": str(search.id),
                 "company_id": str(search.company_id),
@@ -596,14 +548,14 @@ async def list_shared_searches(
                 "first_accessed_at": first_recipient.first_accessed_at.isoformat() if first_recipient and first_recipient.first_accessed_at else None,
                 "recipients": [r.model_dump() for r in recipients]
             })
-        
+
         return {
             "total": total,
             "offset": offset,
             "limit": limit,
             "items": items
         }
-        
+
     except Exception as e:
         logger.error(f"Error listing shared searches: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -612,7 +564,7 @@ async def list_shared_searches(
 @router.get("/{search_id}", response_model=None)
 async def get_shared_search(
     search_id: str,
-    db: AsyncSession = Depends(get_db),
+    repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """
@@ -621,35 +573,20 @@ async def get_shared_search(
     try:
         company_id = get_user_company_id(current_user)
         company_uuid = parse_company_uuid(company_id)
-        
+
         if not company_uuid:
             raise HTTPException(status_code=404, detail="Compartilhamento não encontrado")
-        
-        result = await db.execute(
-            select(SharedSearch).where(
-                and_(
-                    SharedSearch.id == uuid.UUID(search_id),
-                    SharedSearch.company_id == company_uuid
-                )
-            )
-        )
-        search = result.scalar_one_or_none()
-        
+
+        search = await repo.get_by_id_and_company(uuid.UUID(search_id), company_uuid)
+
         if not search:
             raise HTTPException(status_code=404, detail="Compartilhamento não encontrado")
-        
-        access_result = await db.execute(
-            select(SharedSearchAccess).where(SharedSearchAccess.shared_search_id == search.id)
-        )
-        access_records = access_result.scalars().all()
-        
-        feedback_result = await db.execute(
-            select(SharedSearchFeedback).where(SharedSearchFeedback.shared_search_id == search.id)
-        )
-        feedbacks = feedback_result.scalars().all()
-        
+
+        access_records = await repo.get_access_by_search(search.id)
+        feedbacks = await repo.get_feedbacks_by_search(search.id)
+
         candidates_data = search.snapshot_payload.get("candidates", []) if search.snapshot_payload else []
-        
+
         feedback_by_candidate = {}
         for f in feedbacks:
             cid = str(f.candidate_id)
@@ -664,7 +601,7 @@ async def get_shared_search(
                 "comment": f.comment,
                 "created_at": f.created_at.isoformat() if f.created_at else None
             })
-        
+
         candidates_with_feedback = []
         for c in candidates_data:
             cid = c.get("id", "")
@@ -673,13 +610,13 @@ async def get_shared_search(
                 **c,
                 "feedbacks": c_feedback
             })
-        
+
         feedback_summary = build_feedback_summary(feedbacks, len(candidates_data))
-        
+
         feedback_counts_by_email = {}
         for f in feedbacks:
             feedback_counts_by_email[f.reviewer_email] = feedback_counts_by_email.get(f.reviewer_email, 0) + 1
-        
+
         recipients = [
             {
                 "email": acc.email,
@@ -693,7 +630,7 @@ async def get_shared_search(
             }
             for acc in access_records
         ]
-        
+
         all_feedbacks = [
             {
                 "id": str(f.id),
@@ -706,7 +643,7 @@ async def get_shared_search(
             }
             for f in feedbacks
         ]
-        
+
         return {
             "id": str(search.id),
             "company_id": str(search.company_id),
@@ -722,7 +659,7 @@ async def get_shared_search(
             "candidates": candidates_with_feedback,
             "feedbacks": all_feedbacks
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -734,7 +671,7 @@ async def get_shared_search(
 async def resend_invite(
     search_id: str,
     data: ResendInviteRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """
@@ -743,57 +680,42 @@ async def resend_invite(
     try:
         company_id = get_user_company_id(current_user)
         company_uuid = parse_company_uuid(company_id)
-        
+
         if not company_uuid:
             raise HTTPException(status_code=404, detail="Compartilhamento não encontrado")
-        
-        result = await db.execute(
-            select(SharedSearch).where(
-                and_(
-                    SharedSearch.id == uuid.UUID(search_id),
-                    SharedSearch.company_id == company_uuid
-                )
-            )
-        )
-        search = result.scalar_one_or_none()
-        
+
+        search = await repo.get_by_id_and_company(uuid.UUID(search_id), company_uuid)
+
         if not search:
             raise HTTPException(status_code=404, detail="Compartilhamento não encontrado")
-        
+
         if search.status != SharedSearchStatus.active:
             raise HTTPException(status_code=400, detail="Compartilhamento não está ativo")
-        
-        access_result = await db.execute(
-            select(SharedSearchAccess).where(
-                and_(
-                    SharedSearchAccess.shared_search_id == search.id,
-                    SharedSearchAccess.email == data.email
-                )
-            )
-        )
-        access_record = access_result.scalar_one_or_none()
-        
+
+        access_record = await repo.get_access_by_email(search.id, data.email)
+
         if not access_record:
             raise HTTPException(status_code=404, detail="Destinatário não encontrado")
-        
+
         new_otp = generate_otp()
-        access_record.otp_hash = hash_otp(new_otp)
-        access_record.otp_expires_at = datetime.utcnow()
-        
-        await db.commit()
-        
+        await repo.update_access_otp(
+            access_record,
+            otp_hash=hash_otp(new_otp),
+            otp_expires_at=datetime.utcnow(),
+        )
+
         return {
             "success": True,
             "message": "Convite reenviado com sucesso",
             "email": data.email,
             "otp": new_otp
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error resending invite: {e}", exc_info=True)
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -801,7 +723,7 @@ async def resend_invite(
 async def update_shared_search(
     search_id: str,
     data: UpdateSharedSearchRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """
@@ -810,44 +732,24 @@ async def update_shared_search(
     try:
         company_id = get_user_company_id(current_user)
         company_uuid = parse_company_uuid(company_id)
-        
+
         if not company_uuid:
             raise HTTPException(status_code=404, detail="Compartilhamento não encontrado")
-        
-        result = await db.execute(
-            select(SharedSearch).where(
-                and_(
-                    SharedSearch.id == uuid.UUID(search_id),
-                    SharedSearch.company_id == company_uuid
-                )
-            )
-        )
-        search = result.scalar_one_or_none()
-        
+
+        search = await repo.get_by_id_and_company(uuid.UUID(search_id), company_uuid)
+
         if not search:
             raise HTTPException(status_code=404, detail="Compartilhamento não encontrado")
-        
-        if data.status is not None:
-            if data.status == "revoked":
-                search.status = SharedSearchStatus.revoked
-            elif data.status == "active":
-                search.status = SharedSearchStatus.active
-            elif data.status == "expired":
-                search.status = SharedSearchStatus.expired
-        
-        if data.expires_at is not None:
-            search.expires_at = data.expires_at
-        
-        if data.description is not None:
-            search.description = data.description
-        
-        search.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        await db.refresh(search)
-        
+
+        search = await repo.update_shared_search(
+            search,
+            status=data.status,
+            expires_at=data.expires_at,
+            description=data.description,
+        )
+
         candidates_data = search.snapshot_payload.get("candidates", []) if search.snapshot_payload else []
-        
+
         return {
             "id": str(search.id),
             "company_id": str(search.company_id),
@@ -860,19 +762,19 @@ async def update_shared_search(
             "updated_at": search.updated_at.isoformat() if search.updated_at else None,
             "candidate_count": len(candidates_data)
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error updating shared search: {e}", exc_info=True)
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/{search_id}", response_model=None)
 async def delete_shared_search(
     search_id: str,
-    db: AsyncSession = Depends(get_db),
+    repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """
@@ -881,35 +783,24 @@ async def delete_shared_search(
     try:
         company_id = get_user_company_id(current_user)
         company_uuid = parse_company_uuid(company_id)
-        
+
         if not company_uuid:
             raise HTTPException(status_code=404, detail="Compartilhamento não encontrado")
-        
-        result = await db.execute(
-            select(SharedSearch).where(
-                and_(
-                    SharedSearch.id == uuid.UUID(search_id),
-                    SharedSearch.company_id == company_uuid
-                )
-            )
-        )
-        search = result.scalar_one_or_none()
-        
+
+        search = await repo.get_by_id_and_company(uuid.UUID(search_id), company_uuid)
+
         if not search:
             raise HTTPException(status_code=404, detail="Compartilhamento não encontrado")
-        
-        search.status = SharedSearchStatus.revoked
-        search.updated_at = datetime.utcnow()
-        
-        await db.commit()
-        
+
+        await repo.revoke_shared_search(search)
+
         return {"success": True, "message": "Compartilhamento revogado com sucesso"}
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error deleting shared search: {e}", exc_info=True)
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -917,7 +808,7 @@ async def delete_shared_search(
 async def add_approved_to_job(
     search_id: str,
     data: AddToJobRequest,
-    db: AsyncSession = Depends(get_db),
+    repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
     """
@@ -926,33 +817,17 @@ async def add_approved_to_job(
     try:
         company_id = get_user_company_id(current_user)
         company_uuid = parse_company_uuid(company_id)
-        
+
         if not company_uuid:
             raise HTTPException(status_code=404, detail="Compartilhamento não encontrado")
-        
-        result = await db.execute(
-            select(SharedSearch).where(
-                and_(
-                    SharedSearch.id == uuid.UUID(search_id),
-                    SharedSearch.company_id == company_uuid
-                )
-            )
-        )
-        search = result.scalar_one_or_none()
-        
+
+        search = await repo.get_by_id_and_company(uuid.UUID(search_id), company_uuid)
+
         if not search:
             raise HTTPException(status_code=404, detail="Compartilhamento não encontrado")
-        
-        feedback_result = await db.execute(
-            select(SharedSearchFeedback).where(
-                and_(
-                    SharedSearchFeedback.shared_search_id == search.id,
-                    SharedSearchFeedback.decision == FeedbackDecision.approved
-                )
-            )
-        )
-        approved_feedbacks = feedback_result.scalars().all()
-        
+
+        approved_feedbacks = await repo.get_approved_feedbacks(search.id)
+
         if data.all_approved:
             candidate_ids_to_add = [f.candidate_id for f in approved_feedbacks]
         elif data.candidate_ids:
@@ -961,7 +836,7 @@ async def add_approved_to_job(
             candidate_ids_to_add = list(requested_ids & approved_ids)
         else:
             raise HTTPException(status_code=400, detail="Especifique candidate_ids ou all_approved=true")
-        
+
         if not candidate_ids_to_add:
             return {
                 "success": True,
@@ -969,33 +844,26 @@ async def add_approved_to_job(
                 "already_in_job": 0,
                 "message": "Nenhum candidato aprovado para adicionar"
             }
-        
+
         job_uuid = uuid.UUID(data.job_id)
         added_count = 0
         already_in_job = 0
-        
+
         feedback_comments = {}
         if data.include_notes:
             for f in approved_feedbacks:
                 if f.comment:
                     feedback_comments[f.candidate_id] = f.comment
-        
+
         for candidate_id in candidate_ids_to_add:
-            existing = await db.execute(
-                select(VacancyCandidate).where(
-                    and_(
-                        VacancyCandidate.job_vacancy_id == job_uuid,
-                        VacancyCandidate.candidate_id == candidate_id
-                    )
-                )
-            )
-            
-            if existing.scalar_one_or_none():
+            existing = await repo.get_vacancy_candidate(job_uuid, candidate_id)
+
+            if existing:
                 already_in_job += 1
                 continue
-            
+
             notes = feedback_comments.get(candidate_id) if data.include_notes else None
-            
+
             new_vacancy_candidate = VacancyCandidate(
                 id=uuid.uuid4(),
                 company_id=company_uuid,
@@ -1009,12 +877,11 @@ async def add_approved_to_job(
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow()
             )
-            
-            db.add(new_vacancy_candidate)
+            await repo.create_vacancy_candidate(new_vacancy_candidate)
             added_count += 1
-        
-        await db.commit()
-        
+
+        await repo.commit()
+
         return {
             "success": True,
             "added": added_count,
@@ -1022,10 +889,10 @@ async def add_approved_to_job(
             "job_id": data.job_id,
             "total_approved": len(candidate_ids_to_add)
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error adding candidates to job: {e}", exc_info=True)
-        await db.rollback()
+        await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
