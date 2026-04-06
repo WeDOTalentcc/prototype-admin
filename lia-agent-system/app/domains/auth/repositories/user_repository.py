@@ -102,3 +102,28 @@ class UserRepository:
             user.last_sso_login_at = datetime.utcnow()
             user.updated_at = datetime.utcnow()
             await self.db.commit()
+
+    async def get_by_password_reset_token(self, token: str):
+        result = await self.db.execute(
+            select(User).where(User.password_reset_token == token)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_email_verification_token(self, token: str):
+        result = await self.db.execute(
+            select(User).where(User.email_verification_token == token)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_by_invitation_token(self, token: str):
+        result = await self.db.execute(
+            select(User).where(User.invitation_token == token)
+        )
+        return result.scalar_one_or_none()
+
+    async def create_flush(self, data: dict):
+        user = User(**data)
+        self.db.add(user)
+        await self.db.flush()
+        await self.db.refresh(user)
+        return user
