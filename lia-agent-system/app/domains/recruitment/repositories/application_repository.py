@@ -1,5 +1,5 @@
 """
-ApplicationRepository — persistence layer for candidate applications.
+ApplicationRepository -- persistence layer for candidate applications.
 Encapsulates all DB access for the applications API controller.
 """
 import logging
@@ -50,18 +50,18 @@ class ApplicationRepository:
     async def create_candidate(self, candidate_data: dict) -> Candidate:
         candidate = Candidate(
             id=uuid.uuid4(),
-            name=candidate_data[name],
-            email=candidate_data[email],
-            phone=candidate_data.get(phone),
-            linkedin_url=candidate_data.get(linkedin_url),
-            current_title=candidate_data.get(current_title),
-            current_company=candidate_data.get(current_company),
-            years_of_experience=candidate_data.get(years_of_experience),
-            technical_skills=candidate_data.get(technical_skills, []),
-            location_city=candidate_data.get(location),
-            desired_salary_min=candidate_data.get(salary_expectation),
-            source=application,
-            status=new,
+            name=candidate_data["name"],
+            email=candidate_data["email"],
+            phone=candidate_data.get("phone"),
+            linkedin_url=candidate_data.get("linkedin_url"),
+            current_title=candidate_data.get("current_title"),
+            current_company=candidate_data.get("current_company"),
+            years_of_experience=candidate_data.get("years_of_experience"),
+            technical_skills=candidate_data.get("technical_skills", []),
+            location_city=candidate_data.get("location"),
+            desired_salary_min=candidate_data.get("salary_expectation"),
+            source="application",
+            status="new",
         )
         self.db.add(candidate)
         return candidate
@@ -83,7 +83,7 @@ class ApplicationRepository:
     # VacancyCandidate
     # ------------------------------------------------------------------
 
-    async def get_vacancy_candidate(self, vacancy_id: str, candidate_id) -> VacancyCandidate | None:
+    async def get_vacancy_candidate(self, vacancy_id: str, candidate_id) -> "VacancyCandidate | None":
         result = await self.db.execute(
             select(VacancyCandidate).where(
                 VacancyCandidate.vacancy_id == uuid.UUID(vacancy_id),
@@ -97,7 +97,7 @@ class ApplicationRepository:
         active_filter = and_(
             VacancyCandidate.vacancy_id == uuid.UUID(vacancy_id),
             not_(VacancyCandidate.status.in_(EXCLUDED)),
-            VacancyCandidate.origin.in_((web, whatsapp)) if hasattr(VacancyCandidate, origin) else True,
+            VacancyCandidate.origin.in_(("web", "whatsapp")) if hasattr(VacancyCandidate, "origin") else True,
         )
         cnt = await self.db.execute(select(func.count(VacancyCandidate.id)).where(active_filter))
         return cnt.scalar() or 0
@@ -112,7 +112,7 @@ class ApplicationRepository:
         match_percentage: float,
         status: str,
         stage: str,
-        additional_data: dict | None = None,
+        additional_data: "dict | None" = None,
     ) -> VacancyCandidate:
         vacancy_candidate = VacancyCandidate(
             id=uuid.uuid4(),
@@ -143,10 +143,10 @@ class ApplicationRepository:
             )
             cp = cp_result.scalar_one_or_none()
             if cp and cp.additional_data:
-                sat_cfg = cp.additional_data.get(saturation_settings, {})
-                return sat_cfg.get(threshold_web, default_threshold)
+                sat_cfg = cp.additional_data.get("saturation_settings", {})
+                return sat_cfg.get("threshold_web", default_threshold)
         except Exception as e:
-            logger.warning(fCould not fetch company threshold: {e})
+            logger.warning(f"Could not fetch company threshold: {e}")
         return default_threshold
 
     # ------------------------------------------------------------------
