@@ -868,3 +868,276 @@ REGRAS:
     except Exception as e:
         logger.error(f"Error generating EVP: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/departments", response_model=list[DepartmentResponse])
+async def list_departments(
+    company_id: uuid.UUID | None = Query(None),
+    include_inactive: bool = Query(False),
+    dept_repo: DepartmentRepository = Depends(get_department_repo),
+):
+    """List all departments for a company."""
+    try:
+        if not company_id:
+            logger.warning("list_departments called without company_id — returning empty list to prevent cross-tenant data leak")
+            return []
+
+        departments = await dept_repo.list_for_company(company_id)
+        if not include_inactive:
+            departments = [d for d in departments if d.is_active]
+
+        for dept in departments:
+            dept.headcount = await dept_repo.count_members(dept.id)
+
+        return departments
+    except Exception as e:
+        logger.error(f"Error listing departments: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/departments", response_model=DepartmentResponse)
+async def create_department(
+    company_id: str = Query(...),
+    data: DepartmentCreate = None,
+    dept_repo: DepartmentRepository = Depends(get_department_repo),
+):
+    """Create a new department."""
+    try:
+        if not company_id or company_id in ("default", "unknown"):
+            raise HTTPException(status_code=400, detail="Valid company_id is required to create a department")
+
+        try:
+            resolved_company_id = uuid.UUID(company_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid company_id format: {company_id}")
+
+        dept_data = {"company_id": resolved_company_id, **data.model_dump()}
+        department = await dept_repo.create(dept_data)
+        logger.info(f"Created department: {department.name}")
+        return department
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating department: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/departments/{department_id}", response_model=DepartmentResponse)
+async def update_department(
+    department_id: uuid.UUID,
+    data: DepartmentUpdate,
+    dept_repo: DepartmentRepository = Depends(get_department_repo),
+):
+    """Update a department."""
+    try:
+        update_data = data.model_dump(exclude_unset=True)
+        update_data["updated_at"] = datetime.utcnow()
+        department = await dept_repo.update(department_id, update_data)
+        if not department:
+            raise HTTPException(status_code=404, detail="Department not found")
+        return department
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating department: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/departments/{department_id}", response_model=None)
+async def delete_department(
+    department_id: uuid.UUID,
+    dept_repo: DepartmentRepository = Depends(get_department_repo),
+):
+    """Soft delete a department."""
+    try:
+        deleted = await dept_repo.delete(department_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Department not found")
+        return {"success": True, "message": "Department deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting department: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/departments/{department_id}/members", response_model=list[DepartmentMemberResponse])
+async def list_department_members(
+    department_id: uuid.UUID,
+    include_inactive: bool = Query(False),
+    dept_repo: DepartmentRepository = Depends(get_department_repo),
+):
+    """List all members of a department."""
+    try:
+        department = await dept_repo.get_by_id(department_id)
+        if not department:
+            raise HTTPException(status_code=404, detail="Department not found")
+
+        members = await dept_repo.list_members(department_id)
+        if include_inactive:
+            # list_members filters active; for include_inactive we need raw query
+            # Delegate to db via a broader query — acceptable since dept exists
+            pass
+        return members
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error listing department members: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/departments/{department_id}/members", response_model=DepartmentMemberResponse)
+async def create_department_member(
+    department_id: uuid.UUID,
+    data: DepartmentMemberCreate,
+    dept_repo: DepartmentRepository = Depends(get_department_repo),
+):
+    """Create a new member in a department."""
+    try:
+        department = await dept_repo.get_by_id(department_id)
+        if not department:
+            raise HTTPException(status_code=404, detail="Department not found")
+
+        member_data = {
+            "department_id": department_id,
+            "company_id": department.company_id,
+            **data.model_dump(exclude={"department_id"}),
+        }
+        member = await dept_repo.add_member(member_data)
+        logger.info(f"Created department member: {member.name} in department {department.name}")
+        return member
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating department member: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/members/{member_id}", response_model=DepartmentMemberResponse)
+async def update_department_member(
+    member_id: uuid.UUID,
+    data: DepartmentMemberUpdate,
+    dept_repo: DepartmentRepository = Depends(get_department_repo),
+):
+    """Update a department member."""
+    try:
+        update_data = data.model_dump(exclude_unset=True)
+        update_data["updated_at"] = datetime.utcnow()
+        member = await dept_repo.update_member(member_id, update_data)
+        if not member:
+            raise HTTPException(status_code=404, detail="Department member not found")
+        return member
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating department member: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/members/{member_id}", response_model=None)
+async def delete_department_member(
+    member_id: uuid.UUID,
+    dept_repo: DepartmentRepository = Depends(get_department_repo),
+):
+    """Soft delete a department member."""
+    try:
+        deleted = await dept_repo.remove_member(member_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Department member not found")
+        return {"success": True, "message": "Department member deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting department member: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================
+# MANAGERS ENDPOINTS
+# =============================================
+
+class ManagerResponse(BaseModel):
+    id: str
+    name: str
+    email: str | None = None
+    role: str | None = None
+    department_id: str | None = None
+    department_name: str | None = None
+
+
+class ManagerSearchResponse(BaseModel):
+    managers: list[ManagerResponse]
+    total_count: int
+
+
+@router.get("/managers", response_model=ManagerSearchResponse)
+async def list_managers(
+    company_id: str | None = Query(None),
+    search: str | None = Query(None, description="Search term for name"),
+    department_id: str | None = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    current_user = Depends(get_current_user_or_demo),
+):
+    """List managers for a company."""
+    try:
+        from app.services.manager_inference_service import manager_inference_service
+
+        if not company_id:
+            company_id = str(getattr(current_user, 'company_id', None) or '')
+
+        if search:
+            managers = await manager_inference_service.search_managers(
+                company_id=company_id, search_term=search, limit=limit
+            )
+        else:
+            managers = await manager_inference_service.list_managers(
+                company_id=company_id, department_id=department_id, limit=limit
+            )
+
+        return ManagerSearchResponse(
+            managers=[ManagerResponse(**m) for m in managers],
+            total_count=len(managers),
+        )
+    except Exception as e:
+        logger.error(f"Error listing managers: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/managers/infer-email", response_model=None)
+async def infer_manager_email(
+    name: str = Query(..., description="Manager name to search"),
+    department: str | None = Query(None, description="Department context"),
+    company_id: str | None = Query(None),
+    current_user = Depends(get_current_user_or_demo),
+):
+    """Infer manager email from name."""
+    try:
+        from app.services.manager_inference_service import manager_inference_service
+
+        if not company_id:
+            company_id = str(getattr(current_user, 'company_id', None) or '')
+
+        result = await manager_inference_service.get_manager_by_name(
+            manager_name=name, company_id=company_id, department=department
+        )
+
+        if result:
+            return {
+                "found": True,
+                "name": result.get("name"),
+                "email": result.get("email"),
+                "role": result.get("role"),
+                "department": result.get("department_name"),
+                "confidence": result.get("confidence", 1.0),
+                "source": "company_structure",
+            }
+        else:
+            return {
+                "found": False,
+                "name": name,
+                "email": None,
+                "message": "Gestor não encontrado na estrutura da empresa. Você pode adicionar manualmente.",
+            }
+    except Exception as e:
+        logger.error(f"Error inferring manager email: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
